@@ -1,0 +1,685 @@
+{
+    "openapi": "3.0.2",
+    "info": {
+        "title": "ResourceServer",
+        "version": "1.0.0",
+        "description": "API object for the IUDX Resource Server"
+    },
+    "paths": {
+        "/entities": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/standardDataResponse"
+                                }
+                            }
+                        },
+                        "description": "Query is successful."
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/standardBadQueryResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad query."
+                    }
+                },
+                "operationId": "search",
+                "description": "Search for data which matches the given query."
+            },
+            "parameters": [
+                {
+                    "name": "id",
+                    "description": "ID of the entity",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "in": "query",
+                    "required": true
+                },
+                {
+                    "name": "type",
+                    "description": "Comma separated list of Entity type names to be retrieved",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "in": "query",
+                    "required": false
+                },
+                {
+                    "name": "idPattern",
+                    "description": "Regular expression that must be matched by Entity ids",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "in": "query",
+                    "required": false
+                },
+                {
+                    "name": "attrs",
+                    "description": "Comma separated list of attribute names (properties or relationships) to be retrieved",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "in": "query"
+                },
+                {
+                    "name": "q",
+                    "description": "Query",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "in": "query"
+                },
+                {
+                    "name": "geoRel",
+                    "description": "Geo Relationship",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "in": "query"
+                },
+                {
+                    "name": "geometry",
+                    "description": "Geometry type, for e.g, linestring, bbox, polygon.",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "in": "query"
+                },
+                {
+                    "name": "coordinates",
+                    "description": "Coordinates for the given geometry. It should be a string encoded multi dimensional array.",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "in": "query"
+                },
+                {
+                    "name": "geoproperty",
+                    "description": "The geoproperty on which the geo query is to be performed.",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "in": "query"
+                }
+            ]
+        },
+        "/entities/{entityId}": {
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/standardDataResponse"
+                                }
+                            }
+                        },
+                        "description": "Query is successful."
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/standardBadQueryResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad query."
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/standardBadQueryResponse"
+                                }
+                            }
+                        },
+                        "description": "No entity with the id is found."
+                    }
+                },
+                "operationId": "simpleSearch",
+                "description": "Search for data which matches the given query."
+            },
+            "parameters": [
+                {
+                    "name": "attrs",
+                    "description": "Comma separated list of attribute names (properties or relationships) to be retrieved",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "in": "query"
+                },
+                {
+                    "name": "entityId",
+                    "description": "Id of the entity.",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "in": "path",
+                    "required": true
+                }
+            ]
+        },
+        "/subscriptions": {
+            "description": "Subscribe to data from a resource server by matching a query.",
+            "get": {
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/subscriptionDescription"
+                                }
+                            }
+                        },
+                        "description": "List of subscriptions."
+                    }
+                },
+                "description": "Retrieves the subscriptions available in the system."
+            },
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/subscriptionDescription"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Subscription has been registered."
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/standardBadQueryResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad subscription request."
+                    },
+                    "409": {
+                        "description": "Subscription already exists."
+                    }
+                },
+                "description": "Register a subscription."
+            }
+        },
+        "/subscriptions/{subscriptionId}": {
+            "delete": {
+                "responses": {
+                    "204": {
+                        "description": "Subscription is deleted."
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/standardBadQueryResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad request."
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/standardBadQueryResponse"
+                                }
+                            }
+                        },
+                        "description": "No such subscription found."
+                    }
+                },
+                "description": "Delete subscription."
+            },
+            "patch": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/subscriptionDescription"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "description": "Subscription updated successfully."
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/standardBadQueryResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad subscription update request."
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/standardBadQueryResponse"
+                                }
+                            }
+                        },
+                        "description": "No subscription exists to update."
+                    }
+                },
+                "description": "Updates a specific Subscription within a system. The additional subscription parameters must include the id."
+            },
+            "parameters": [
+                {
+                    "name": "subscriptionId",
+                    "description": "Id of the subscription.",
+                    "schema": {
+                        "type": "string"
+                    },
+                    "in": "path",
+                    "required": true
+                }
+            ]
+        },
+        "/entities/search": {
+            "post": {
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/standardQuery"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/standardDataResponse"
+                                }
+                            }
+                        },
+                        "description": "Query successful"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/standardBadQueryResponse"
+                                }
+                            }
+                        },
+                        "description": "Bad query."
+                    },
+                    "404": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/standardBadQueryResponse"
+                                }
+                            }
+                        },
+                        "description": "No query can be performed."
+                    }
+                },
+                "operationId": "complexSearch",
+                "description": "Obtain results for a complex search."
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "standardDataResponse": {
+                "title": "Root Type for standardDataResponse",
+                "description": "Standard data response for an entities query",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "type": "string"
+                        },
+                        "location": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": "object"
+                                },
+                                "observedAt": {
+                                    "format": "date-time",
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "observationSpace": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": "object"
+                                },
+                                "observedAt": {
+                                    "format": "date-time",
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "operationSpace": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": "object"
+                                },
+                                "observedAt": {
+                                    "format": "date-time",
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "@context": {
+                            "type": "string"
+                        },
+                        "createdAt": {
+                            "format": "date-time",
+                            "type": "string"
+                        },
+                        "modifiedAt": {
+                            "format": "date-time",
+                            "type": "string"
+                        }
+                    }
+                },
+                "example": [
+                    {
+                        "id": "string",
+                        "type": "string",
+                        "location": {
+                            "type": "GeoProperty",
+                            "value": {
+
+                            },
+                            "observedAt": "2020-06-03T09:37:20.049Z"
+                        },
+                        "observationSpace": {
+                            "type": "GeoProperty",
+                            "value": {
+
+                            },
+                            "observedAt": "2020-06-03T09:37:20.049Z"
+                        },
+                        "operationSpace": {
+                            "type": "GeoProperty",
+                            "value": {
+
+                            },
+                            "observedAt": "2020-06-03T09:37:20.049Z"
+                        },
+                        "@context": "Unknown Type: string,object,array",
+                        "createdAt": "2020-06-03T09:37:20.049Z",
+                        "modifiedAt": "2020-06-03T09:37:20.049Z"
+                    }
+                ]
+            },
+            "standardBadQueryResponse": {
+                "title": "Root Type for standardBadQueryResponse",
+                "description": "Response for bad queries.",
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "detail": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "type": "string",
+                    "title": "string",
+                    "detail": "string"
+                }
+            },
+            "subscriptionDescription": {
+                "title": "Root Type for subscriptionDescription",
+                "description": "Payload describing information required to register a subscription.",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "watchedAttributes": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "timeInterval": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "geoQ": {
+                        "type": "object",
+                        "properties": {
+                            "geometry": {
+                                "type": "string"
+                            },
+                            "coordinates": {
+                                "type": "array",
+                                "items": {
+                                    "format": "int32",
+                                    "type": "integer"
+                                }
+                            },
+                            "georel": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "notification": {
+                        "type": "object",
+                        "properties": {
+                            "attributes": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            },
+                            "format": {
+                                "type": "string"
+                            },
+                            "endpoint": {
+                                "type": "object",
+                                "properties": {
+                                    "uri": {
+                                        "type": "string"
+                                    },
+                                    "accept": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "timesSent": {
+                                "format": "int32",
+                                "type": "integer"
+                            },
+                            "lastNotification": {
+                                "format": "date-time",
+                                "type": "string"
+                            },
+                            "lastFailure": {
+                                "format": "date-time",
+                                "type": "string"
+                            },
+                            "lastSuccess": {
+                                "format": "date-time",
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "expires": {
+                        "format": "date-time",
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "throttling": {
+                        "format": "int32",
+                        "type": "integer"
+                    },
+                    "q": {
+                        "type": "string"
+                    },
+                    "@context": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "entities": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "idPattern": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "example": {
+                    "id": "string",
+                    "name": "string",
+                    "description": "string",
+                    "watchedAttributes": [
+                        "string"
+                    ],
+                    "timeInterval": 0,
+                    "geoQ": {
+                        "geometry": "string",
+                        "coordinates": [
+                            0
+                        ],
+                        "georel": "string"
+                    },
+                    "notification": {
+                        "attributes": [
+                            "string"
+                        ],
+                        "format": "string",
+                        "endpoint": {
+                            "uri": "string",
+                            "accept": "application/json"
+                        },
+                        "timesSent": 0,
+                        "lastNotification": "2020-06-03T09:51:42.022Z",
+                        "lastFailure": "2020-06-03T09:51:42.022Z",
+                        "lastSuccess": "2020-06-03T09:51:42.022Z"
+                    },
+                    "expires": "2020-06-03T09:51:42.022Z",
+                    "status": "active",
+                    "throttling": 0,
+                    "q": "string",
+                    "@context": "Unknown Type: string,object,array",
+                    "type": "Subscription",
+                    "entities": [
+                        {
+                            "id": "string",
+                            "idPattern": "string",
+                            "type": "string"
+                        }
+                    ]
+                }
+            },
+            "standardQuery": {
+                "title": "Root Type for standardQuery",
+                "description": "A standard complex query body.",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "idPattern": {
+                        "type": "string"
+                    },
+                    "attrs": {
+                        "type": "string"
+                    },
+                    "q": {
+                        "type": "string"
+                    },
+                    "georel": {
+                        "type": "string"
+                    },
+                    "geometry": {
+                        "type": "string"
+                    },
+                    "coordinates": {
+                        "type": "string"
+                    },
+                    "geoproperty": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "id": "asidjf23qwaijsdfn23",
+                    "type": "type1, type2",
+                    "idPattern": ".*",
+                    "attrs": "attr1, attr2",
+                    "q": "attr1<attr2",
+                    "georel": "within",
+                    "geometry": "bbox",
+                    "coordinates": "[[1,2], [3,4]]",
+                    "geoproperty": "location"
+                }
+            }
+        }
+    }
+}

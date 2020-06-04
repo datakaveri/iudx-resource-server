@@ -1,0 +1,340 @@
+package iudx.resource.server.databroker;
+
+import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.codegen.annotations.ProxyGen;
+import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+
+/**
+ * The Data Broker Service.
+ * <h1>Data Broker Service</h1>
+ * <p>
+ * The Data Broker Service in the IUDX Resource Server defines the operations to be performed with
+ * the IUDX Data Broker server.
+ * </p>
+ * 
+ * @see io.vertx.codegen.annotations.ProxyGen
+ * @see io.vertx.codegen.annotations.VertxGen
+ * @version 1.0
+ * @since 2020-05-31
+ */
+
+@VertxGen
+@ProxyGen
+public interface DataBrokerService {
+
+  /**
+   * The registerAdaptor implements the adaptor registration operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService registerAdaptor(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The updateAdaptor implements the adaptor update operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService updateAdaptor(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The deleteAdaptor implements the adaptor delete operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService deleteAdaptor(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The listAdaptor implements the adaptor list operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService listAdaptor(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The registerStreamingSubscription implements the registration of streaming subscription
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService registerStreamingSubscription(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
+
+
+  /**
+   * The updateStreamingSubscription implements the updation of streaming subscription
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+  
+  @Fluent
+  DataBrokerService updateStreamingSubscription(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The deleteStreamingSubscription implements the deletion of streaming subscription
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService deleteStreamingSubscription(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The listStreamingSubscription implements the listing of streaming subscription
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService listStreamingSubscription(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The registerCallbackSubscription implements the registration of callback subscription
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService registerCallbackSubscription(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The updateCallbackSubscription implements the updation of callback subscription
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService updateCallbackSubscription(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The deleteCallbackSubscription implements the deletion of callback subscription
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService deleteCallbackSubscription(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The listCallbackSubscription implements the listing of callback subscription
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService listCallbackSubscription(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The createExchange implements the creation of exchange
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService createExchange(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The updateExchange implements the updation of exchange
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService updateExchange(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The deleteExchange implements the deletion of exchange
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService deleteExchange(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The listExchange implements the listing of exchange
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService listExchangeSubscribers(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The createQueue implements the creation of queue
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService createQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The updateQueue implements the updation of queue
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService updateQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The deleteQueue implements the deletion of queue
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService deleteQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The bindQueue implements the binding of queue
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService bindQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The unbindQueue implements the unbinding of queue
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService unbindQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The createvHost implements the creation of vHost
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService createvHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The updatevHost implements the updation of vHost
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService updatevHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The deletevHost implements the deletion of vHost
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService deletevHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The listvHost implements the listing of vHost
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService listvHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  @GenIgnore
+  static DataBrokerService createProxy(Vertx vertx, String address) {
+    return new DataBrokerServiceVertxEBProxy(vertx, address);
+  }
+}
