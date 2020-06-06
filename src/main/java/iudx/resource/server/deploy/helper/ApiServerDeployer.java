@@ -42,18 +42,18 @@ public class ApiServerDeployer {
 
   public static void main(String[] args) {
 
-    /** Create a reference to HazelcastClusterManager. */
+    /* Create a reference to HazelcastClusterManager. */
 
     mgr = new HazelcastClusterManager();
     options = new VertxOptions().setClusterManager(mgr);
 
-    /** Create or Join a Vert.x Cluster. */
+    /* Create or Join a Vert.x Cluster. */
 
     Vertx.clusteredVertx(options, res -> {
       if (res.succeeded()) {
         vertx = res.result();
 
-        /** Deploy the Api Server Verticle. */
+        /* Deploy the Api Server Verticle. */
 
         vertx.deployVerticle(new ApiServerVerticle(), ar -> {
           if (ar.succeeded()) {

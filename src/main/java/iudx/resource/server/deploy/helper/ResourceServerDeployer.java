@@ -47,51 +47,51 @@ public class ResourceServerDeployer {
 
   public static void main(String[] args) {
 
-    /** Create a reference to HazelcastClusterManager. */
+    /* Create a reference to HazelcastClusterManager. */
 
     mgr = new HazelcastClusterManager();
     options = new VertxOptions().setClusterManager(mgr);
 
-    /** Create or Join a Vert.x Cluster. */
+    /* Create or Join a Vert.x Cluster. */
 
     Vertx.clusteredVertx(options, res -> {
       if (res.succeeded()) {
         vertx = res.result();
 
-        /** Deploy the Database Verticle. */
+        /* Deploy the Database Verticle. */
 
-        vertx.deployVerticle(new DatabaseVerticle(), DatabaseVerticle -> {
-          if (DatabaseVerticle.succeeded()) {
+        vertx.deployVerticle(new DatabaseVerticle(), databaseVerticle -> {
+          if (databaseVerticle.succeeded()) {
             logger.info("The Database Service is ready !");
 
-            /** Deploy the Data Broker Verticle. */
+            /* Deploy the Data Broker Verticle. */
 
-            vertx.deployVerticle(new DataBrokerVerticle(), DataBrokerVerticle -> {
-              if (DataBrokerVerticle.succeeded()) {
+            vertx.deployVerticle(new DataBrokerVerticle(), dataBrokerVerticle -> {
+              if (dataBrokerVerticle.succeeded()) {
                 logger.info("The Data Broker Service is ready !");
 
-                /** Deploy the Authentication Server Verticle. */
+                /* Deploy the Authentication Server Verticle. */
 
-                vertx.deployVerticle(new AuthenticationVerticle(), AuthenticationVerticle -> {
-                  if (AuthenticationVerticle.succeeded()) {
+                vertx.deployVerticle(new AuthenticationVerticle(), authenticationVerticle -> {
+                  if (authenticationVerticle.succeeded()) {
                     logger.info("The Authentication Service is ready !");
 
-                    /** Deploy the File Download Verticle. */
+                    /* Deploy the File Download Verticle. */
 
-                    vertx.deployVerticle(new FileDownloadVerticle(), FileDownloadVerticle -> {
-                      if (FileDownloadVerticle.succeeded()) {
+                    vertx.deployVerticle(new FileDownloadVerticle(), fileDownloadVerticle -> {
+                      if (fileDownloadVerticle.succeeded()) {
                         logger.info("The File Download Service is ready !");
 
-                        /** Deploy the Media Verticle. */
+                        /* Deploy the Media Verticle. */
 
-                        vertx.deployVerticle(new MediaVerticle(), MediaVerticle -> {
-                          if (MediaVerticle.succeeded()) {
+                        vertx.deployVerticle(new MediaVerticle(), mediaVerticle -> {
+                          if (mediaVerticle.succeeded()) {
                             logger.info("The Media Service is ready !");
 
-                            /** Deploy the Api Server Verticle. */
+                            /* Deploy the Api Server Verticle. */
 
-                            vertx.deployVerticle(new ApiServerVerticle(), ar -> {
-                              if (ar.succeeded()) {
+                            vertx.deployVerticle(new ApiServerVerticle(), apiServerVerticle -> {
+                              if (apiServerVerticle.succeeded()) {
                                 logger.info("The Resource API Server is ready at 8443");
                                 logger.info("Check /apis/ for supported APIs");
                               } else {

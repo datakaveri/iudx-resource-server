@@ -1,8 +1,5 @@
 package iudx.resource.server.apiserver;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Properties;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -22,6 +19,9 @@ import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.filedownload.FileDownloadService;
 import iudx.resource.server.media.MediaService;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Properties;
 
 /**
  * The Resource Server API Verticle.
@@ -73,12 +73,12 @@ public class ApiServerVerticle extends AbstractVerticle {
   @Override
   public void start() throws Exception {
 
-    /** Create a reference to HazelcastClusterManager. */
+    /* Create a reference to HazelcastClusterManager. */
 
     mgr = new HazelcastClusterManager();
     options = new VertxOptions().setClusterManager(mgr);
 
-    /** Create or Join a Vert.x Cluster. */
+    /* Create or Join a Vert.x Cluster. */
 
     Vertx.clusteredVertx(options, res -> {
       if (res.succeeded()) {
@@ -88,12 +88,12 @@ public class ApiServerVerticle extends AbstractVerticle {
         properties = new Properties();
         inputstream = null;
 
-        /** Define the APIs, methods, endpoints and associated methods. */
+        /* Define the APIs, methods, endpoints and associated methods. */
 
         Router router = Router.router(vertx);
         router.route("/apis/*").handler(StaticHandler.create());
 
-        /** Read the configuration and set the HTTPs server properties. */
+        /* Read the configuration and set the HTTPs server properties. */
 
         try {
 
@@ -102,25 +102,24 @@ public class ApiServerVerticle extends AbstractVerticle {
 
           keystore = properties.getProperty("keystore");
           keystorePassword = properties.getProperty("keystorePassword");
-
         } catch (Exception ex) {
 
           logger.info(ex.toString());
 
         }
 
-        /** Setup the HTTPs server properties, APIs and port. */
+        /* Setup the HTTPs server properties, APIs and port. */
 
         server = vertx.createHttpServer(new HttpServerOptions().setSsl(true)
             .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword)));
 
         server.requestHandler(router).listen(port);
 
-        /** Get a handler for the Service Discovery interface. */
+        /* Get a handler for the Service Discovery interface. */
 
         discovery = ServiceDiscovery.create(vertx);
 
-        /** Get a handler for the DatabaseService from Service Discovery interface. */
+        /* Get a handler for the DatabaseService from Service Discovery interface. */
 
         EventBusService.getProxy(discovery, DatabaseService.class,
             databaseServiceDiscoveryHandler -> {
@@ -134,7 +133,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               }
             });
 
-        /** Get a handler for the DataBrokerService from Service Discovery interface. */
+        /* Get a handler for the DataBrokerService from Service Discovery interface. */
 
         EventBusService.getProxy(discovery, DataBrokerService.class,
             databrokerServiceDiscoveryHandler -> {
@@ -148,7 +147,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               }
             });
 
-        /** Get a handler for the AuthenticationService from Service Discovery interface. */
+        /* Get a handler for the AuthenticationService from Service Discovery interface. */
 
         EventBusService.getProxy(discovery, AuthenticationService.class,
             authenticatorServiceDiscoveryHandler -> {
@@ -162,7 +161,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               }
             });
 
-        /** Get a handler for the FileDownloadService from Service Discovery interface. */
+        /* Get a handler for the FileDownloadService from Service Discovery interface. */
 
         EventBusService.getProxy(discovery, FileDownloadService.class,
             filedownloadServiceDiscoveryHandler -> {
@@ -176,7 +175,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               }
             });
 
-        /** Get a handler for the MediaService from Service Discovery interface. */
+        /* Get a handler for the MediaService from Service Discovery interface. */
 
         EventBusService.getProxy(discovery, MediaService.class, mediaServiceDiscoveryHandler -> {
           if (mediaServiceDiscoveryHandler.succeeded()) {

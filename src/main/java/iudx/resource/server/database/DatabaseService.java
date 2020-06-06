@@ -49,9 +49,10 @@ public interface DatabaseService {
   DatabaseService countQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The queryDecoder implements the query decoder module.
-   * @param request which is a JsonObject
-   * @return JsonObject which is a JsonObject 
+   * The createProxy helps the code generation blocks to generate proxy code.
+   * @param vertx which is the vertx instance
+   * @param address which is the proxy address
+   * @return DatabaseServiceVertxEBProxy which is a service proxy 
    */
 
   @GenIgnore
