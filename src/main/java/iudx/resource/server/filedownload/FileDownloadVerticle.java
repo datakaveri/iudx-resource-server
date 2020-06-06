@@ -43,12 +43,12 @@ public class FileDownloadVerticle extends AbstractVerticle {
   @Override
   public void start() throws Exception {
 
-    /** Create a reference to HazelcastClusterManager. */
+    /* Create a reference to HazelcastClusterManager. */
 
     mgr = new HazelcastClusterManager();
     options = new VertxOptions().setClusterManager(mgr);
 
-    /** Create or Join a Vert.x Cluster. */
+    /* Create or Join a Vert.x Cluster. */
 
     Vertx.clusteredVertx(options, res -> {
       if (res.succeeded()) {
@@ -56,12 +56,12 @@ public class FileDownloadVerticle extends AbstractVerticle {
 
         fileDownload = new FileDownloadServiceImpl();
 
-        /** Publish the File Download service with the Event Bus against an address. */
+        /* Publish the File Download service with the Event Bus against an address. */
 
         new ServiceBinder(vertx).setAddress("iudx.rs.file.download.service")
             .register(FileDownloadService.class, fileDownload);
 
-        /** Get a handler for the Service Discovery interface and publish a service record. */
+        /* Get a handler for the Service Discovery interface and publish a service record. */
 
         discovery = ServiceDiscovery.create(vertx);
         record = EventBusService.createRecord("iudx.rs.file.download.service", // The service name

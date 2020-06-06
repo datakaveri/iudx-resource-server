@@ -55,6 +55,12 @@
 			<artifactId>maven-checkstyle-plugin</artifactId>
 			<version>3.1.1</version>
 		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-rabbitmq-client</artifactId>
+			<version>3.9.1</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -67,7 +73,7 @@
 					<dependency>
 						<groupId>com.puppycrawl.tools</groupId>
 						<artifactId>checkstyle</artifactId>
-						<version>8.7</version>
+						<version>8.33</version>
 					</dependency>
 				</dependencies>
 				<configuration>
@@ -75,6 +81,9 @@
 					<consoleOutput>true</consoleOutput>
 					<encoding>UTF-8</encoding>
 					<configLocation>google_checks.xml</configLocation>
+					<module name="LineLength">
+						<property name="max" value="120" />
+					</module>
 				</configuration>
 			</plugin>
 			<plugin>

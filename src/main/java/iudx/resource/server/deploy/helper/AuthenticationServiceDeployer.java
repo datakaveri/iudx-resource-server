@@ -6,7 +6,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
-import iudx.resource.server.apiserver.ApiServerVerticle;
 import iudx.resource.server.authenticator.AuthenticationVerticle;
 
 /**
@@ -43,18 +42,18 @@ public class AuthenticationServiceDeployer {
 
   public static void main(String[] args) {
 
-    /** Create a reference to HazelcastClusterManager. */
+    /* Create a reference to HazelcastClusterManager. */
 
     mgr = new HazelcastClusterManager();
     options = new VertxOptions().setClusterManager(mgr);
 
-    /** Create or Join a Vert.x Cluster. */
+    /* Create or Join a Vert.x Cluster. */
 
     Vertx.clusteredVertx(options, res -> {
       if (res.succeeded()) {
         vertx = res.result();
 
-        /** Deploy the Authentication Server Verticle. */
+        /* Deploy the Authentication Server Verticle. */
 
         vertx.deployVerticle(new AuthenticationVerticle(), ar -> {
           if (ar.succeeded()) {

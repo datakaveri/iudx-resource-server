@@ -5,6 +5,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rabbitmq.RabbitMQClient;
 
 /**
  * The Data Broker Service Implementation.
@@ -21,6 +22,28 @@ import io.vertx.core.logging.LoggerFactory;
 public class DataBrokerServiceImpl implements DataBrokerService {
 
   private static final Logger logger = LoggerFactory.getLogger(DataBrokerServiceImpl.class);
+  private RabbitMQClient client;
+
+  /**
+   * This is a constructor which is used by the DataBroker Verticle to instantiate a RabbitMQ
+   * client.
+   * 
+   * @param clientInstance which is a RabbitMQ client
+   */
+
+  public DataBrokerServiceImpl(RabbitMQClient clientInstance) {
+
+    logger.info("Got the RabbitMQ Client instance");
+    client = clientInstance;
+    
+    client.start(resultHandler -> {
+      if (resultHandler.succeeded()) {
+        logger.info("Client Connected");
+      } else {
+        logger.info("Client Not Connected");
+      }
+    });
+  }
 
   /**
    * {@inheritDoc}

@@ -1,5 +1,7 @@
 /target/
 !.mvn/wrapper/maven-wrapper.jar
+### IUDX ###
+config.properties
 
 ### STS ###
 .apt_generated
