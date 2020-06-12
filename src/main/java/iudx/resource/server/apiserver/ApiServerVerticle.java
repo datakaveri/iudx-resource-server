@@ -262,15 +262,17 @@ public class ApiServerVerticle extends AbstractVerticle {
 	private void handleTemporalQuery(RoutingContext routingContext) {
 		logger.info("handleTemporalQuery method started.");
 		HttpServerResponse response = routingContext.response();
+		// get query parameters
 		MultiMap params = getQueryParams(routingContext, response).get();
+		// validate request params
 		Validator.validate(params, response);
+		// parse query params
 		NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
 		QueryMapper queryMapper = new QueryMapper();
+		// create json
 		JsonObject json = queryMapper.toJson(ngsildquery, true);
 		logger.info("IUDX temporal json query : " + json);
 		System.out.println(json);
-		response.putHeader("content-type", "application/json").setStatusCode(200).end(json.toString());
-
 		database.searchQuery(json, handler -> {
 			if (handler.succeeded()) {
 				response.putHeader("content-type", "application/json").setStatusCode(ResponseType.Ok.getCode())

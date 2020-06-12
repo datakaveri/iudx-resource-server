@@ -21,7 +21,7 @@ public enum ResponseType {
 	private final int code;
 	private final String message;
 
-	private ResponseType(int code, String message) {
+ ResponseType(int code, String message) {
 		this.code = code;
 		this.message = message;
 	}
