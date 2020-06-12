@@ -2,8 +2,13 @@ package iudx.resource.server.apiserver;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
+import io.netty.handler.codec.http.HttpConstants;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
@@ -24,6 +29,8 @@ import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import iudx.resource.server.apiserver.query.NGSILDQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
+import iudx.resource.server.apiserver.response.ResponseType;
+import iudx.resource.server.apiserver.response.RestResponse;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
@@ -106,7 +113,6 @@ public class ApiServerVerticle extends AbstractVerticle {
 				/** NGSI-LD api endpoints */
 				router.get(ngsildBasePath + "/entities").handler(this::handleEntitiesQuery);
 				router.get(ngsildBasePath + "/temporal/entities").handler(this::handleTemporalQuery);
-				router.get(ngsildBasePath + "/hello").handler(this::hello);
 
 				/** Read the configuration and set the HTTPs server properties. */
 
@@ -211,11 +217,6 @@ public class ApiServerVerticle extends AbstractVerticle {
 		});
 	}
 
-	private void hello(RoutingContext routingContext) {
-		HttpServerResponse response = routingContext.response();
-		response.putHeader("content-type", "application/json").setStatusCode(200).end("Hello...");
-	}
-
 	/**
 	 * This method is used to handle all NGSI-LD queries for endpoint
 	 * /ngsi-ld/v1/entities/**
@@ -225,52 +226,88 @@ public class ApiServerVerticle extends AbstractVerticle {
 	private void handleEntitiesQuery(RoutingContext routingContext) {
 		logger.info("handleEntitiesQuery method started.");
 		HttpServerResponse response = routingContext.response();
-		MultiMap params = routingContext.queryParams();
-
+		// get query paramaters
+		MultiMap params = getQueryParams(routingContext, response).get();
+		// validate request parameters
+		Validator.validate(params, response);
 		// parse query params
 		NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
 		QueryMapper queryMapper = new QueryMapper();
 		// create json
-		JsonObject json = queryMapper.toJson(ngsildquery);
+		JsonObject json = queryMapper.toJson(ngsildquery, false);
 		logger.info("IUDX query json : " + json);
-		response.putHeader("content-type", "application/json").setStatusCode(200).end(json.toString());
 		// call database vertical for seaarch
-		// database.searchQuery(json, handler -> {
-		// if (handler.succeeded()) {
-		// response.putHeader("content-type", "application/json").setStatusCode(200)
-		// .end(handler.result().toString());
-		// } else {
-		// handler failed.
-		// }
-		// });
+		database.searchQuery(json, handler -> {
+			if (handler.succeeded()) {
+				response.putHeader("content-type", "application/json").setStatusCode(ResponseType.Ok.getCode())
+						.end(handler.result().toString());
+			} else if (handler.failed()) {
+				// handler.cause().getMessage();
+				// TODO: get cause from handler message and return appropriate error message.
+				response.putHeader("content-type", "application/json")
+						.setStatusCode(ResponseType.InternalError.getCode())
+						.end(new RestResponse.Builder().withError(ResponseType.InternalError)
+								.withMessage("Internal server error").build().toJsonString());
+			}
+		});
 	}
 
 	/**
 	 * This method is used to handler all temporal NGSI-LD queries for endpoint
-	 * /ngsi-ld/v1/tempotal/**
+	 * /ngsi-ld/v1/temporal/**
 	 * 
 	 * @param routingContext
+	 * 
 	 */
 	private void handleTemporalQuery(RoutingContext routingContext) {
 		logger.info("handleTemporalQuery method started.");
 		HttpServerResponse response = routingContext.response();
-		MultiMap params = routingContext.queryParams();
-
+		MultiMap params = getQueryParams(routingContext, response).get();
+		Validator.validate(params, response);
 		NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
 		QueryMapper queryMapper = new QueryMapper();
-		JsonObject json = queryMapper.toJson(ngsildquery);
+		JsonObject json = queryMapper.toJson(ngsildquery, true);
 		logger.info("IUDX temporal json query : " + json);
 		System.out.println(json);
 		response.putHeader("content-type", "application/json").setStatusCode(200).end(json.toString());
 
 		database.searchQuery(json, handler -> {
 			if (handler.succeeded()) {
-				response.putHeader("content-type", "application/json").setStatusCode(200)
+				response.putHeader("content-type", "application/json").setStatusCode(ResponseType.Ok.getCode())
 						.end(handler.result().toString());
-			} else {
-				// handler failed.
+			} else if (handler.failed()) {
+				response.putHeader("content-type", "application/json")
+						.setStatusCode(ResponseType.InternalError.getCode())
+						.end(new RestResponse.Builder().withError(ResponseType.InternalError)
+								.withMessage("Internal server error").build().toJsonString());
 			}
 		});
+	}
+
+	/**
+	 * Get the request query parameters delimited by <b>&</b>,
+	 * <i><b>;</b>(semicolon) is considered as part of the parameter</i>
+	 * 
+	 * @param routingContext
+	 * @param response
+	 * @return Optional<MultiMap> multimap of query parameters
+	 */
+	private Optional<MultiMap> getQueryParams(RoutingContext routingContext, HttpServerResponse response) {
+		MultiMap queryParams = null;
+		try {
+			queryParams = MultiMap.caseInsensitiveMultiMap();
+			Map<String, List<String>> decodedParams = new QueryStringDecoder(routingContext.request().uri(),
+					HttpConstants.DEFAULT_CHARSET, true, 1024, true).parameters();
+			for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
+				queryParams.add(entry.getKey(), entry.getValue());
+				System.out.println(entry.getKey() + " : " + entry.getValue());
+			}
+		} catch (IllegalArgumentException ex) {
+			response.putHeader("content-type", "application/json").setStatusCode(ResponseType.BadRequestData.getCode())
+					.end(new RestResponse.Builder().withError(ResponseType.BadRequestData)
+							.withMessage("Error while decoding query params").build().toJsonString());
+		}
+		return Optional.of(queryParams);
 	}
 
 }
