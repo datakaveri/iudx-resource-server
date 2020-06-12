@@ -48,7 +48,7 @@ public class NGSILDQueryParams {
 	private void create(MultiMap paramsMap) {
 		List<Entry<String, String>> entries = paramsMap.entries();
 
-		for (Entry<String, String> entry : entries) {
+		for (final Entry<String, String> entry : entries) {
 			switch (entry.getKey()) {
 			case "id": {
 				this.id = new ArrayList<URI>();
@@ -64,11 +64,15 @@ public class NGSILDQueryParams {
 			}
 			case "georel": {
 				String georel = entry.getValue();
-				this.geoRel.setRelation(georel);
-				if (paramsMap.contains("maxdistance")) {
-					this.geoRel.setMaxDistance(Double.parseDouble(paramsMap.get("maxdistance")));
-				} else if (paramsMap.contains("mindistance")) {
-					this.geoRel.setMinDistance(Double.parseDouble(paramsMap.get("mindistance")));
+				String[] values = georel.split(";");
+				this.geoRel.setRelation(values[0]);
+				if (values.length == 2) {
+					String[] distance = values[1].split("=");
+					if (distance[0].equalsIgnoreCase("maxdistance")) {
+						this.geoRel.setMaxDistance(Double.parseDouble(distance[1]));
+					} else if (distance[0].equalsIgnoreCase("mindistance")) {
+						this.geoRel.setMinDistance(Double.parseDouble(distance[1]));
+					}
 				}
 				break;
 			}
