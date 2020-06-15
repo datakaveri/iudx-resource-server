@@ -67,6 +67,7 @@
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-rabbitmq-client</artifactId>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
@@ -85,6 +86,13 @@
 			<artifactId>vertx-unit</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.elasticsearch.client</groupId>
+			<artifactId>elasticsearch-rest-client</artifactId>
+			<version>7.7.1</version>
+		</dependency>
+
 	</dependencies>
 	<build>
 		<plugins>

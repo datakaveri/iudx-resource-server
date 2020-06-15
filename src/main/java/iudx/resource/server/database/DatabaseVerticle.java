@@ -1,16 +1,25 @@
 package iudx.resource.server.database;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.servicediscovery.Record;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
 
 /**
  * The Database Verticle.
@@ -33,6 +42,7 @@ public class DatabaseVerticle extends AbstractVerticle {
   private ServiceDiscovery discovery;
   private Record record;
   private DatabaseService database;
+  private RestClient client;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
@@ -49,6 +59,7 @@ public class DatabaseVerticle extends AbstractVerticle {
 
     mgr = new HazelcastClusterManager();
     options = new VertxOptions().setClusterManager(mgr);
+    client = RestClient.builder(new HttpHost("localhost",9201,"http")).build();
 
     /* Create or Join a Vert.x Cluster. */
 
@@ -56,7 +67,12 @@ public class DatabaseVerticle extends AbstractVerticle {
       if (res.succeeded()) {
         vertx = res.result();
 
-        database = new DatabaseServiceImpl();
+        Router router = Router.router(vertx);
+        router.post("/search").handler(this::sendDataToService);
+        vertx.createHttpServer()
+                .requestHandler(router::accept).listen(54000);
+
+        database = new DatabaseServiceImpl(client);
 
         /* Publish the Database service with the Event Bus against an address. */
 
@@ -75,6 +91,7 @@ public class DatabaseVerticle extends AbstractVerticle {
           if (publishRecordHandler.succeeded()) {
             Record publishedRecord = publishRecordHandler.result();
             logger.info("Publication succeeded " + publishedRecord.toJson());
+            getDatabaseService();
           } else {
             logger.info("Publication failed " + publishRecordHandler.result());
           }
@@ -84,6 +101,31 @@ public class DatabaseVerticle extends AbstractVerticle {
 
     });
 
+  }
+
+  private void sendDataToService(RoutingContext context) {
+    HttpServerResponse httpResponse = context.response();
+    database.searchQuery(context.getBodyAsJson(),res->{
+      if(res.succeeded()){
+        JsonArray response = res.result();
+        logger.info("Successful: "+response.toString());
+        httpResponse.setStatusCode(200).end(response.toString());
+      }else{
+        logger.info("Error: "+ res.cause().getMessage());
+        httpResponse.setStatusCode(400).end(res.cause().getMessage());
+      }
+    });
+  }
+
+  private void getDatabaseService() {
+    EventBusService.getProxy(discovery,DatabaseService.class, ar->{
+      if(ar.succeeded()){
+        database = ar.result();
+        logger.info("Success with Proxy Class: " + database.getClass().toString());
+      }else{
+        logger.info("Database Proxy returned failed");
+      }
+    });
   }
 
 }
