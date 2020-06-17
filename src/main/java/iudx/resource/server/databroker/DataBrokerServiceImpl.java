@@ -1,6 +1,5 @@
 package iudx.resource.server.databroker;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -47,6 +46,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * client.
    * 
    * @param clientInstance which is a RabbitMQ client
+   * @param webClientInstance which is a Vertx Web client
    */
 
   public DataBrokerServiceImpl(RabbitMQClient clientInstance, WebClient webClientInstance,
@@ -214,7 +214,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
       // calls the common create exchange method
-      Future<JsonObject> result = createExchangeCommon(request);
+      Future<JsonObject> result = createExchange(request);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
 
@@ -228,320 +228,15 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     return null;
   }
 
-  /**
-   * {@inheritDoc}
-   */
-
-  @Override
-  public DataBrokerService updateExchange(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
-
-    return null;
-  }
 
   /**
-   * {@inheritDoc}
-   */
-
-  @Override
-  public DataBrokerService deleteExchange(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
-    if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = deleteExchangeCommon(request);
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-        }
-        if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
-        }
-      });
-    }
-    return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-
-  @Override
-  public DataBrokerService listExchangeSubscribers(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
-    if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = listExchangeSubscribersCommon(request);
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-        }
-        if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
-        }
-      });
-    }
-    return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-
-  @Override
-  public DataBrokerService createQueue(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
-    if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = createQueueCommon(request);
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-        }
-        if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
-        }
-      });
-    }
-    return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-
-  @Override
-  public DataBrokerService updateQueue(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
-
-    return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-
-  @Override
-  public DataBrokerService deleteQueue(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
-    if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = deleteQueueCommon(request);
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-        }
-        if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
-        }
-      });
-    }
-    return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-
-  @Override
-  public DataBrokerService bindQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-    if (request != null && !request.isEmpty()) {
-
-      Future<JsonObject> result = bindQueueCommon(request);
-
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-        }
-        if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
-        }
-      });
-    }
-
-    return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-
-  @Override
-  public DataBrokerService unbindQueue(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
-
-    if (request != null && !request.isEmpty()) {
-
-
-      Future<JsonObject> result = unbindQueueCommon(request);
-
-
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-        }
-        if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
-        }
-      });
-
-    }
-
-    return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-
-  @Override
-  public DataBrokerService createvHost(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
-    if (request != null && !request.isEmpty()) {
-
-      Future<JsonObject> result = createvHostCommon(request);
-
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-        }
-        if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
-        }
-      });
-    }
-
-    return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-
-  @Override
-  public DataBrokerService updatevHost(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
-
-    return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-
-  @Override
-  public DataBrokerService deletevHost(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
-    if (request != null && !request.isEmpty()) {
-
-      Future<JsonObject> result = deletevHostCommon(request);
-
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-        }
-        if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
-        }
-      });
-    }
-
-    return null;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-
-  @Override
-  public DataBrokerService listvHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-    if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = listvHostCommon(request);
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-        }
-        if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
-        }
-      });
-    }
-    return null;
-  }
-
-  /**
-   * The queryDecoder implements the query decoder module.
-   * 
-   * @param request which is a JsonObject
-   * @return JsonObject which is a JsonObject
-   */
-
-  public JsonObject queryDecoder(JsonObject request) {
-    JsonObject dataBrokerQuery = new JsonObject();
-    return dataBrokerQuery;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-
-  @Override
-  public DataBrokerService listQueueSubscribers(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
-
-    if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = listQueueSubscribersCommon(request);
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-        }
-        if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
-        }
-      });
-    }
-    return null;
-  }
-
-  @Override
-  public DataBrokerService publishFromAdaptor(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
-    JsonObject json = new JsonObject();
-    if (request != null && !request.isEmpty()) {
-      json.put("body", request.toString());
-      String resourceGroupId = request.getString("id");
-      String routingKey = resourceGroupId;
-      if (resourceGroupId != null && !resourceGroupId.isBlank()) {
-        resourceGroupId = resourceGroupId.substring(0, resourceGroupId.lastIndexOf("/"));
-
-        client.basicPublish(resourceGroupId, routingKey, json, resultHandler -> {
-          if (resultHandler.succeeded()) {
-            finalResponse.put("status", HttpStatus.SC_OK);
-            handler.handle(Future.succeededFuture(finalResponse));
-            logger.info("Message published to queue");
-          } else {
-            logger.error("Message publishing failed");
-            resultHandler.cause().printStackTrace();
-          }
-        });
-      }
-    }
-    return null;
-  }
-
-  /**
-   * The createExchangeCommon implements the create exchange.
+   * The createExchange implements the create exchange.
    * 
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    **/
 
-  Future<JsonObject> createExchangeCommon(JsonObject request) {
+  Future<JsonObject> createExchange(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
 
@@ -584,12 +279,45 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   }
 
   /**
-   * The deleteExchangeCommon implements the delete exchange operation.
+   * {@inheritDoc}
+   */
+
+  @Override
+  public DataBrokerService updateExchange(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler) {
+
+    return null;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+
+  @Override
+  public DataBrokerService deleteExchange(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler) {
+    if (request != null && !request.isEmpty()) {
+      Future<JsonObject> result = deleteExchange(request);
+      result.onComplete(resultHandler -> {
+        if (resultHandler.succeeded()) {
+
+          handler.handle(Future.succeededFuture(resultHandler.result()));
+        }
+        if (resultHandler.failed()) {
+          logger.error("failed ::" + resultHandler.cause());
+        }
+      });
+    }
+    return null;
+  }
+
+  /**
+   * The deleteExchange implements the delete exchange operation.
    * 
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
-  private Future<JsonObject> deleteExchangeCommon(JsonObject request) {
+  private Future<JsonObject> deleteExchange(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
 
@@ -622,12 +350,34 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   }
 
   /**
-   * The listExchangeSubscribersCommon implements the list of bindings for an exchange (source).
+   * {@inheritDoc}
+   */
+
+  @Override
+  public DataBrokerService listExchangeSubscribers(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler) {
+    if (request != null && !request.isEmpty()) {
+      Future<JsonObject> result = listExchangeSubscribers(request);
+      result.onComplete(resultHandler -> {
+        if (resultHandler.succeeded()) {
+
+          handler.handle(Future.succeededFuture(resultHandler.result()));
+        }
+        if (resultHandler.failed()) {
+          logger.error("failed ::" + resultHandler.cause());
+        }
+      });
+    }
+    return null;
+  }
+
+  /**
+   * The listExchangeSubscribers implements the list of bindings for an exchange (source).
    * 
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
-  private Future<JsonObject> listExchangeSubscribersCommon(JsonObject request) {
+  private Future<JsonObject> listExchangeSubscribers(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
 
@@ -682,15 +432,37 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
+
+  @Override
+  public DataBrokerService createQueue(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler) {
+    if (request != null && !request.isEmpty()) {
+      Future<JsonObject> result = createQueue(request);
+      result.onComplete(resultHandler -> {
+        if (resultHandler.succeeded()) {
+
+          handler.handle(Future.succeededFuture(resultHandler.result()));
+        }
+        if (resultHandler.failed()) {
+          logger.error("failed ::" + resultHandler.cause());
+        }
+      });
+    }
+    return null;
+  }
 
   /**
-   * The createQueueCommon implements the create queue operation.
+   * The createQueue implements the create queue operation.
    * 
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
-  private Future<JsonObject> createQueueCommon(JsonObject request) {
+  private Future<JsonObject> createQueue(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
+    finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
 
       String queueName = request.getString("queueName");
@@ -731,14 +503,46 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
   }
 
+  /**
+   * {@inheritDoc}
+   */
+
+  @Override
+  public DataBrokerService updateQueue(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler) {
+
+    return null;
+  }
 
   /**
-   * The deleteQueueCommon implements the delete queue operation.
+   * {@inheritDoc}
+   */
+
+  @Override
+  public DataBrokerService deleteQueue(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler) {
+    if (request != null && !request.isEmpty()) {
+      Future<JsonObject> result = deleteQueue(request);
+      result.onComplete(resultHandler -> {
+        if (resultHandler.succeeded()) {
+
+          handler.handle(Future.succeededFuture(resultHandler.result()));
+        }
+        if (resultHandler.failed()) {
+          logger.error("failed ::" + resultHandler.cause());
+        }
+      });
+    }
+    return null;
+  }
+
+  /**
+   * The deleteQueue implements the delete queue operation.
    * 
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
-  private Future<JsonObject> deleteQueueCommon(JsonObject request) {
+  private Future<JsonObject> deleteQueue(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
 
@@ -771,14 +575,422 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     return promise.future();
   }
 
+  /**
+   * {@inheritDoc}
+   */
+
+  @Override
+  public DataBrokerService bindQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+    if (request != null && !request.isEmpty()) {
+
+      Future<JsonObject> result = bindQueue(request);
+
+      result.onComplete(resultHandler -> {
+        if (resultHandler.succeeded()) {
+
+          handler.handle(Future.succeededFuture(resultHandler.result()));
+        }
+        if (resultHandler.failed()) {
+          logger.error("failed ::" + resultHandler.cause());
+        }
+      });
+    }
+
+    return null;
+  }
 
   /**
-   * The listQueueSubscribersCommon implements the list of bindings for a queue.
+   * The bindQueue implements the bind queue to exchange by routing key.
    * 
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
-  private Future<JsonObject> listQueueSubscribersCommon(JsonObject request) {
+  private Future<JsonObject> bindQueue(JsonObject request) {
+
+    Promise<JsonObject> promise = Promise.promise();
+    if (request != null && !request.isEmpty()) {
+
+      String exchangeName = request.getString("exchangeName");
+      String queueName = request.getString("queueName");
+      JsonArray entities = request.getJsonArray("entities");
+      int arrayPos = entities.size() - 1;
+      url = "/api/bindings/" + vhost + "/e/" + exchangeName + "/q/" + queueName;
+
+      for (Object rkey : entities) {
+        requestBody.put("routing_key", rkey.toString());
+        HttpRequest<Buffer> webRequest = webClient.post(url).basicAuthentication(user, password);
+        webRequest.sendJsonObject(requestBody, ar -> {
+          if (ar.succeeded()) {
+            HttpResponse<Buffer> response = ar.result();
+            if (response != null && !response.equals(" ")) {
+              int status = response.statusCode();
+
+              if (status == HttpStatus.SC_CREATED) {
+                finalResponse.put("exchange", exchangeName);
+                finalResponse.put("queue", queueName);
+                finalResponse.put("entities", entities);
+              } else if (status == HttpStatus.SC_NOT_FOUND) {
+                finalResponse.put("status", status);
+                finalResponse.put("title", "Failure");
+                finalResponse.put("detail", "Queue/Exchange does not exist");
+              }
+            }
+            if (rkey == entities.getValue(arrayPos)) {
+              promise.complete(finalResponse);
+            }
+          } else {
+            logger.error("Binding of Queue failed" + ar.cause());
+          }
+        });
+      }
+
+    }
+    return promise.future();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+
+  @Override
+  public DataBrokerService unbindQueue(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler) {
+
+    if (request != null && !request.isEmpty()) {
+
+
+      Future<JsonObject> result = unbindQueue(request);
+
+
+      result.onComplete(resultHandler -> {
+        if (resultHandler.succeeded()) {
+
+          handler.handle(Future.succeededFuture(resultHandler.result()));
+        }
+        if (resultHandler.failed()) {
+          logger.error("failed ::" + resultHandler.cause());
+        }
+      });
+
+    }
+
+    return null;
+  }
+
+  /**
+   * The unbindQueue implements the unbind queue to exchange by routing key.
+   * 
+   * @param request which is a Json object
+   * @return response which is a Future object of promise of Json type
+   */
+  private Future<JsonObject> unbindQueue(JsonObject request) {
+
+    Promise<JsonObject> promise = Promise.promise();
+    if (request != null && !request.isEmpty()) {
+
+      String exchangeName = request.getString("exchangeName");
+      String queueName = request.getString("queueName");
+      JsonArray entities = request.getJsonArray("entities");
+      int arrayPos = entities.size() - 1;
+      for (Object rkey : entities) {
+
+        finalResponse = new JsonObject();
+        url = "/api/bindings/" + vhost + "/e/" + exchangeName + "/q/" + queueName + "/" + rkey;
+        HttpRequest<Buffer> webRequest = webClient.delete(url).basicAuthentication(user, password);
+        webRequest.send(ar -> {
+
+          if (ar.succeeded()) {
+            HttpResponse<Buffer> response = ar.result();
+            if (response != null && !response.equals(" ")) {
+              int status = response.statusCode();
+
+              if (status == HttpStatus.SC_NO_CONTENT) {
+                finalResponse.put("exchange", exchangeName);
+                finalResponse.put("queue", queueName);
+                finalResponse.put("entities", entities);
+              } else if (status == HttpStatus.SC_NOT_FOUND) {
+                finalResponse.put("status", status);
+                finalResponse.put("title", "Failure");
+                finalResponse.put("detail", "Queue/Exchange/Routing Key does not exist");
+              }
+            }
+
+            if (rkey == entities.getValue(arrayPos)) {
+
+              promise.complete(finalResponse);
+            }
+            /*
+             * else { responseArray.add(reponse); }
+             */
+          } else {
+            logger.error("Unbinding of Queue failed" + ar.cause());
+            promise.fail(ar.cause().toString());
+          }
+        });
+      }
+    }
+
+    return promise.future();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+
+  @Override
+  public DataBrokerService createvHost(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler) {
+    if (request != null && !request.isEmpty()) {
+
+      Future<JsonObject> result = createvHost(request);
+
+      result.onComplete(resultHandler -> {
+        if (resultHandler.succeeded()) {
+
+          handler.handle(Future.succeededFuture(resultHandler.result()));
+        }
+        if (resultHandler.failed()) {
+          logger.error("failed ::" + resultHandler.cause());
+        }
+      });
+    }
+
+    return null;
+  }
+
+  /**
+   * The createvHost implements the create virtual host operation.
+   * 
+   * @param request which is a Json object
+   * @return response which is a Future object of promise of Json type
+   */
+  private Future<JsonObject> createvHost(JsonObject request) {
+
+    Promise<JsonObject> promise = Promise.promise();
+    if (request != null && !request.isEmpty()) {
+
+      String vhost = request.getString("vHost");
+      url = "/api/vhosts/" + vhost;
+
+      HttpRequest<Buffer> webRequest = webClient.put(url).basicAuthentication(user, password);
+      webRequest.send(ar -> {
+        if (ar.succeeded()) {
+          HttpResponse<Buffer> response = ar.result();
+          if (response != null && !response.equals(" ")) {
+            int status = response.statusCode();
+            if (status == HttpStatus.SC_CREATED) {
+              finalResponse.put("vHost", vhost);
+            } else if (status == HttpStatus.SC_NO_CONTENT) {
+              finalResponse.put("status", status);
+              finalResponse.put("title", "Failure");
+              finalResponse.put("detail", "vHost already exists");
+            }
+          }
+          promise.complete(finalResponse);
+          logger.info(finalResponse);
+        } else {
+          logger.error("Creation of vHost failed" + ar.cause());
+        }
+      });
+    }
+    return promise.future();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+
+  @Override
+  public DataBrokerService updatevHost(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler) {
+
+    return null;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+
+  @Override
+  public DataBrokerService deletevHost(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler) {
+    if (request != null && !request.isEmpty()) {
+
+      Future<JsonObject> result = deletevHost(request);
+
+      result.onComplete(resultHandler -> {
+        if (resultHandler.succeeded()) {
+
+          handler.handle(Future.succeededFuture(resultHandler.result()));
+        }
+        if (resultHandler.failed()) {
+          logger.error("failed ::" + resultHandler.cause());
+        }
+      });
+    }
+
+    return null;
+  }
+
+  /**
+   * The deletevHost implements the delete virtual host operation.
+   * 
+   * @param request which is a Json object
+   * @return response which is a Future object of promise of Json type
+   */
+  private Future<JsonObject> deletevHost(JsonObject request) {
+
+    Promise<JsonObject> promise = Promise.promise();
+    if (request != null && !request.isEmpty()) {
+
+      String vhost = request.getString("vHost");
+      url = "/api/vhosts/" + vhost;
+      HttpRequest<Buffer> webRequest = webClient.delete(url).basicAuthentication(user, password);
+      webRequest.send(ar -> {
+
+        if (ar.succeeded()) {
+          HttpResponse<Buffer> response = ar.result();
+          if (response != null && !response.equals(" ")) {
+            int status = response.statusCode();
+
+            if (status == HttpStatus.SC_NO_CONTENT) {
+              finalResponse.put("vHost", vhost);
+            } else if (status == HttpStatus.SC_NOT_FOUND) {
+              finalResponse.put("status", status);
+              finalResponse.put("title", "Failure");
+              finalResponse.put("detail", "Queue does not exist");
+            }
+          }
+          promise.complete(finalResponse);
+          logger.info(finalResponse);
+        } else {
+          logger.error("Deletion of Queue failed" + ar.cause());
+          promise.fail(ar.cause().toString());
+        }
+      });
+    }
+
+    return promise.future();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+
+  @Override
+  public DataBrokerService listvHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+    if (request != null && !request.isEmpty()) {
+      Future<JsonObject> result = listvHost(request);
+      result.onComplete(resultHandler -> {
+        if (resultHandler.succeeded()) {
+
+          handler.handle(Future.succeededFuture(resultHandler.result()));
+        }
+        if (resultHandler.failed()) {
+          logger.error("failed ::" + resultHandler.cause());
+        }
+      });
+    }
+    return null;
+  }
+
+  /**
+   * The listvHost implements the list of virtual hosts .
+   * 
+   * @param request which is a Json object
+   * @return response which is a Future object of promise of Json type
+   */
+  private Future<JsonObject> listvHost(JsonObject request) {
+
+    Promise<JsonObject> promise = Promise.promise();
+    if (request != null && !request.isEmpty()) {
+
+      JsonObject output = new JsonObject();
+      JsonArray vhostList = new JsonArray();
+      url = "/api/vhosts";
+      HttpRequest<Buffer> webRequest = webClient.get(url).basicAuthentication(user, password);
+      webRequest.send(ar -> {
+        if (ar.succeeded()) {
+          HttpResponse<Buffer> response = ar.result();
+          if (response != null && !response.equals(" ")) {
+            int status = response.statusCode();
+
+            if (status == HttpStatus.SC_OK) {
+              Buffer body = response.body();
+
+              if (body != null) {
+                JsonArray jsonBody = new JsonArray(body.toString());
+                jsonBody.forEach(current -> {
+                  JsonObject currentJson = new JsonObject(current.toString());
+                  String vhostName = currentJson.getString("name");
+
+                  vhostList.add(vhostName);
+
+                });
+                if (vhostList != null && !vhostList.isEmpty()) {
+                  output.put("vHost", vhostList);
+                }
+              }
+            } else if (status == HttpStatus.SC_NOT_FOUND) {
+              output.put("status", status);
+              output.put("title", "Failure");
+              output.put("detail", "No vhosts found");
+            }
+          }
+          promise.complete(output);
+          logger.info(finalResponse);
+        } else {
+          logger.error("Listing of Queue failed" + ar.cause());
+          promise.fail(ar.cause());
+        }
+      });
+    }
+    return promise.future();
+  }
+
+  /**
+   * The queryDecoder implements the query decoder module.
+   * 
+   * @param request which is a JsonObject
+   * @return JsonObject which is a JsonObject
+   */
+
+  public JsonObject queryDecoder(JsonObject request) {
+    JsonObject dataBrokerQuery = new JsonObject();
+    return dataBrokerQuery;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+
+  @Override
+  public DataBrokerService listQueueSubscribers(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler) {
+
+    if (request != null && !request.isEmpty()) {
+      Future<JsonObject> result = listQueueSubscribers(request);
+      result.onComplete(resultHandler -> {
+        if (resultHandler.succeeded()) {
+
+          handler.handle(Future.succeededFuture(resultHandler.result()));
+        }
+        if (resultHandler.failed()) {
+          logger.error("failed ::" + resultHandler.cause());
+        }
+      });
+    }
+    return null;
+  }
+
+
+  /**
+   * The listQueueSubscribers implements the list of bindings for a queue.
+   * 
+   * @param request which is a Json object
+   * @return response which is a Future object of promise of Json type
+   */
+  private Future<JsonObject> listQueueSubscribers(JsonObject request) {
 
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
@@ -829,245 +1041,33 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     return promise.future();
   }
 
-
   /**
-   * The bindQueueCommon implements the bind queue to exchange by routing key.
-   * 
-   * @param request which is a Json object
-   * @return response which is a Future object of promise of Json type
+   * {@inheritDoc}
    */
-  private Future<JsonObject> bindQueueCommon(JsonObject request) {
 
-    Promise<JsonObject> promise = Promise.promise();
+  @Override
+  public DataBrokerService publishFromAdaptor(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler) {
+    JsonObject json = new JsonObject();
     if (request != null && !request.isEmpty()) {
+      json.put("body", request.toString());
+      String resourceGroupId = request.getString("id");
+      String routingKey = resourceGroupId;
+      if (resourceGroupId != null && !resourceGroupId.isBlank()) {
+        resourceGroupId = resourceGroupId.substring(0, resourceGroupId.lastIndexOf("/"));
 
-      String exchangeName = request.getString("exchangeName");
-      String queueName = request.getString("queueName");
-      JsonArray entities = request.getJsonArray("entities");
-      int arrayPos = entities.size() - 1;
-      url = "/api/bindings/" + vhost + "/e/" + exchangeName + "/q/" + queueName;
-
-      for (Object rkey : entities) {
-        requestBody.put("routing_key", rkey.toString());
-        HttpRequest<Buffer> webRequest = webClient.post(url).basicAuthentication(user, password);
-        webRequest.sendJsonObject(requestBody, ar -> {
-          if (ar.succeeded()) {
-            HttpResponse<Buffer> response = ar.result();
-            if (response != null && !response.equals(" ")) {
-              int status = response.statusCode();
-
-              if (status == HttpStatus.SC_CREATED) {
-                finalResponse.put("exchange", exchangeName);
-                finalResponse.put("queue", queueName);
-                finalResponse.put("entities", entities);
-              } else if (status == HttpStatus.SC_NOT_FOUND) {
-                finalResponse.put("status", status);
-                finalResponse.put("title", "Failure");
-                finalResponse.put("detail", "Queue/Exchange does not exist");
-              }
-            }
-            if (rkey == entities.getValue(arrayPos)) {
-              promise.complete(finalResponse);
-            }
+        client.basicPublish(resourceGroupId, routingKey, json, resultHandler -> {
+          if (resultHandler.succeeded()) {
+            finalResponse.put("status", HttpStatus.SC_OK);
+            handler.handle(Future.succeededFuture(finalResponse));
+            logger.info("Message published to queue");
           } else {
-            logger.error("Binding of Queue failed" + ar.cause());
-          }
-        });
-      }
-
-    }
-    return promise.future();
-  }
-
-
-  /**
-   * The unbindQueueCommon implements the unbind queue to exchange by routing key.
-   * 
-   * @param request which is a Json object
-   * @return response which is a Future object of promise of Json type
-   */
-  private Future<JsonObject> unbindQueueCommon(JsonObject request) {
-
-    Promise<JsonObject> promise = Promise.promise();
-    if (request != null && !request.isEmpty()) {
-
-      String exchangeName = request.getString("exchangeName");
-      String queueName = request.getString("queueName");
-      JsonArray entities = request.getJsonArray("entities");
-      int arrayPos = entities.size() - 1;
-      for (Object rkey : entities) {
-
-        finalResponse = new JsonObject();
-        url = "/api/bindings/" + vhost + "/e/" + exchangeName + "/q/" + queueName + "/" + rkey;
-        HttpRequest<Buffer> webRequest = webClient.delete(url).basicAuthentication(user, password);
-        webRequest.send(ar -> {
-
-          if (ar.succeeded()) {
-            HttpResponse<Buffer> response = ar.result();
-            if (response != null && !response.equals(" ")) {
-              int status = response.statusCode();
-
-              if (status == HttpStatus.SC_NO_CONTENT) {
-                finalResponse.put("exchange", exchangeName);
-                finalResponse.put("queue", queueName);
-                finalResponse.put("entities", entities);
-              } else if (status == HttpStatus.SC_NOT_FOUND) {
-                finalResponse.put("status", status);
-                finalResponse.put("title", "Failure");
-                finalResponse.put("detail", "Queue/Exchange/Routing Key does not exist");
-              }
-            }
-
-            if (rkey == entities.getValue(arrayPos)) {
-
-              promise.complete(finalResponse);
-            }
-            /*
-             * else { responseArray.add(reponse); }
-             */
-          } else {
-            logger.error("Unbinding of Queue failed" + ar.cause());
-            promise.fail(ar.cause().toString());
+            logger.error("Message publishing failed");
+            resultHandler.cause().printStackTrace();
           }
         });
       }
     }
-
-    return promise.future();
-  }
-
-
-  /**
-   * The createvHostCommon implements the create virtual host operation.
-   * 
-   * @param request which is a Json object
-   * @return response which is a Future object of promise of Json type
-   */
-  private Future<JsonObject> createvHostCommon(JsonObject request) {
-
-    Promise<JsonObject> promise = Promise.promise();
-    if (request != null && !request.isEmpty()) {
-
-      String vhost = request.getString("vHost");
-      url = "/api/vhosts/" + vhost;
-
-      HttpRequest<Buffer> webRequest = webClient.put(url).basicAuthentication(user, password);
-      webRequest.send(ar -> {
-        if (ar.succeeded()) {
-          HttpResponse<Buffer> response = ar.result();
-          if (response != null && !response.equals(" ")) {
-            int status = response.statusCode();
-            if (status == HttpStatus.SC_CREATED) {
-              finalResponse.put("vHost", vhost);
-            } else if (status == HttpStatus.SC_NO_CONTENT) {
-              finalResponse.put("status", status);
-              finalResponse.put("title", "Failure");
-              finalResponse.put("detail", "vHost already exists");
-            }
-          }
-          promise.complete(finalResponse);
-          logger.info(finalResponse);
-        } else {
-          logger.error("Creation of vHost failed" + ar.cause());
-        }
-      });
-    }
-    return promise.future();
-  }
-
-
-  /**
-   * The deletevHostCommon implements the delete virtual host operation.
-   * 
-   * @param request which is a Json object
-   * @return response which is a Future object of promise of Json type
-   */
-  private Future<JsonObject> deletevHostCommon(JsonObject request) {
-
-    Promise<JsonObject> promise = Promise.promise();
-    if (request != null && !request.isEmpty()) {
-
-      String vhost = request.getString("vHost");
-      url = "/api/vhosts/" + vhost;
-      HttpRequest<Buffer> webRequest = webClient.delete(url).basicAuthentication(user, password);
-      webRequest.send(ar -> {
-
-        if (ar.succeeded()) {
-          HttpResponse<Buffer> response = ar.result();
-          if (response != null && !response.equals(" ")) {
-            int status = response.statusCode();
-
-            if (status == HttpStatus.SC_NO_CONTENT) {
-              finalResponse.put("vHost", vhost);
-            } else if (status == HttpStatus.SC_NOT_FOUND) {
-              finalResponse.put("status", status);
-              finalResponse.put("title", "Failure");
-              finalResponse.put("detail", "Queue does not exist");
-            }
-          }
-          promise.complete(finalResponse);
-          logger.info(finalResponse);
-        } else {
-          logger.error("Deletion of Queue failed" + ar.cause());
-          promise.fail(ar.cause().toString());
-        }
-      });
-    }
-
-    return promise.future();
-  }
-
-  /**
-   * The listvHostCommon implements the list of virtual hosts .
-   * 
-   * @param request which is a Json object
-   * @return response which is a Future object of promise of Json type
-   */
-  private Future<JsonObject> listvHostCommon(JsonObject request) {
-
-    Promise<JsonObject> promise = Promise.promise();
-    if (request != null && !request.isEmpty()) {
-
-      JsonObject output = new JsonObject();
-      JsonArray vhostList = new JsonArray();
-      url = "/api/vhosts";
-      HttpRequest<Buffer> webRequest = webClient.get(url).basicAuthentication(user, password);
-      webRequest.send(ar -> {
-        if (ar.succeeded()) {
-          HttpResponse<Buffer> response = ar.result();
-          if (response != null && !response.equals(" ")) {
-            int status = response.statusCode();
-
-            if (status == HttpStatus.SC_OK) {
-              Buffer body = response.body();
-
-              if (body != null) {
-                JsonArray jsonBody = new JsonArray(body.toString());
-                jsonBody.forEach(current -> {
-                  JsonObject currentJson = new JsonObject(current.toString());
-                  String vhostName = currentJson.getString("name");
-
-                  vhostList.add(vhostName);
-
-                });
-                if (vhostList != null && !vhostList.isEmpty()) {
-                  output.put("vHost", vhostList);
-                }
-              }
-            } else if (status == HttpStatus.SC_NOT_FOUND) {
-              output.put("status", status);
-              output.put("title", "Failure");
-              output.put("detail", "No vhosts found");
-            }
-          }
-          promise.complete(output);
-          logger.info(finalResponse);
-        } else {
-          logger.error("Listing of Queue failed" + ar.cause());
-          promise.fail(ar.cause());
-        }
-      });
-    }
-    return promise.future();
+    return null;
   }
 }
