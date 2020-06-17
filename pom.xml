@@ -69,9 +69,8 @@
 			<artifactId>vertx-web-client</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>3.3.3</version>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-unit</artifactId>
 			<scope>test</scope>
 		</dependency>
 
