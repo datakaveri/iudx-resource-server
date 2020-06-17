@@ -13,6 +13,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.servicediscovery.Record;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.types.EventBusService;
@@ -68,9 +69,16 @@ public class DatabaseVerticle extends AbstractVerticle {
         vertx = res.result();
 
         Router router = Router.router(vertx);
+	router.route().handler(BodyHandler.create());
         router.post("/search").handler(this::sendDataToService);
         vertx.createHttpServer()
-                .requestHandler(router::accept).listen(54000);
+                .requestHandler(router::accept).listen(54000,res1->{
+			if(res1.succeeded()){
+			  logger.info("Server has started successfully.");
+			}else{
+			  logger.info("Server failed to start. Error: "+res1.cause().getMessage());
+			}
+		});
 
         database = new DatabaseServiceImpl(client);
 
@@ -105,16 +113,29 @@ public class DatabaseVerticle extends AbstractVerticle {
 
   private void sendDataToService(RoutingContext context) {
     HttpServerResponse httpResponse = context.response();
-    database.searchQuery(context.getBodyAsJson(),res->{
-      if(res.succeeded()){
-        JsonArray response = res.result();
-        logger.info("Successful: "+response.toString());
-        httpResponse.setStatusCode(200).end(response.toString());
-      }else{
-        logger.info("Error: "+ res.cause().getMessage());
-        httpResponse.setStatusCode(400).end(res.cause().getMessage());
-      }
-    });
+    JsonObject jsonBody=new JsonObject();
+    try{
+	jsonBody = context.getBodyAsJson();
+    	if(jsonBody != null){
+	  logger.info("Database Verticle: " + jsonBody.toString());
+    	  database.searchQuery(jsonBody,res->{
+    	    if(res.succeeded()){
+    	      JsonArray response = res.result();
+    	      logger.info("Successful: "+response.toString());
+    	      httpResponse.setStatusCode(200).end(response.toString());
+    	    }else{
+              logger.info("Error: "+ res.cause().getMessage());
+              httpResponse.setStatusCode(400).end(res.cause().getMessage());
+      	    }
+	  });
+	}else{
+	  logger.info("jsonBody is null.");
+	  httpResponse.setStatusCode(400).end("jsonBody is null");
+	}
+    }catch(Exception e){
+    	e.printStackTrace();
+	httpResponse.setStatusCode(400).end(e.getLocalizedMessage());
+    }
   }
 
   private void getDatabaseService() {

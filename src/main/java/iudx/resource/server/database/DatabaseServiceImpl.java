@@ -46,6 +46,7 @@ public class DatabaseServiceImpl implements DatabaseService {
   @Override
   public DatabaseService searchQuery(JsonObject request, Handler<AsyncResult<JsonArray>> handler) {
     Request elasticRequest;
+    logger.info("JRequest @ Service: "+request.toString());
     try{
       if(!request.containsKey("id")){
         handler.handle(Future.failedFuture("No id found"));
@@ -59,7 +60,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         handler.handle(Future.failedFuture("No search-type found"));
         return null;
       }
-      String resourceGroup = request.getJsonArray("id").getString(0).split("/")[3];
+      String resourceGroup = "";// request.getJsonArray("id").getString(0).split("/")[3];
       if(request.getBoolean("isTest")){
         elasticRequest = new Request("GET",VARANASI_TEST_SEARCH_INDEX);
       }else if("varanasi-swm-vehicles".equalsIgnoreCase(resourceGroup)){
@@ -78,6 +79,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         @Override
         public void onSuccess(Response response) {
           logger.info("Successful DB request");
+	  JsonArray dbresponse = new JsonArray();
           try {
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200 && statusCode != 204){
@@ -85,9 +87,14 @@ public class DatabaseServiceImpl implements DatabaseService {
             }
             JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
             JsonArray responseHits = responseJson.getJsonObject("hits").getJsonArray("hits");
-            handler.handle(Future.succeededFuture(responseHits));
+	    for(Object json : responseHits){
+	      JsonObject jsonTemp = (JsonObject) json;
+	      dbresponse.add(jsonTemp.getJsonObject("_source"));
+	    }
+            handler.handle(Future.succeededFuture(dbresponse));
           } catch (IOException e) {
             e.printStackTrace();
+	    handler.handle(Future.failedFuture(e.getMessage()));
           }
         }
         @Override
@@ -98,6 +105,7 @@ public class DatabaseServiceImpl implements DatabaseService {
       });
     }catch (Exception e){
       logger.info("Database Service<searchQuery>-- "+e.getMessage());
+      handler.handle(Future.failedFuture(e.getMessage()));
     }
     return this;
   }
@@ -127,7 +135,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     JsonArray filterQuery = new JsonArray();
 
     JsonObject termQuery = new JsonObject().put("terms",
-            new JsonObject().put(RESOURCE_ID_KEY,id));
+            new JsonObject().put(RESOURCE_ID_KEY+".keyword",id));
 
     filterQuery.add(termQuery);
 
@@ -145,8 +153,8 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .put(TYPE_KEY,GEO_CIRCLE)
                 .put(COORDINATES_KEY, new JsonArray()
                         .add(lon)
-                        .add(lat)))
-                .put(GEO_RADIUS,radius+"m")
+                        .add(lat))
+                .put(GEO_RADIUS,radius+"m"))
           .put(GEO_RELATION_KEY,"within");
       }
       else if (request.containsKey("geometry")
@@ -176,6 +184,8 @@ public class DatabaseServiceImpl implements DatabaseService {
                 .put(COORDINATES_KEY,coordinates))
           .put(GEO_RELATION_KEY,relation);
 
+      }else{
+        return null;
       }
       geoSearch.put(GEO_SHAPE_KEY, new JsonObject()
         .put(GEO_KEY,shapeJson));
