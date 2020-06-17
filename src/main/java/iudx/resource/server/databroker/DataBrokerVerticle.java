@@ -47,6 +47,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
   private InputStream inputstream;
   private String dataBrokerIP;
   private int dataBrokerPort;
+  private int dataBrokerManagementPort;
   private String dataBrokerVhost;
   private String dataBrokerUserName;
   private String dataBrokerPassword;
@@ -89,6 +90,8 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
           dataBrokerIP = properties.getProperty("dataBrokerIP");
           dataBrokerPort = Integer.parseInt(properties.getProperty("dataBrokerPort"));
+          dataBrokerManagementPort =
+              Integer.parseInt(properties.getProperty("dataBrokerManagementPort"));
           dataBrokerVhost = properties.getProperty("dataBrokerVhost");
           dataBrokerUserName = properties.getProperty("dataBrokerUserName");
           dataBrokerPassword = properties.getProperty("dataBrokerPassword");
@@ -119,28 +122,28 @@ public class DataBrokerVerticle extends AbstractVerticle {
         config.setRequestedChannelMax(requestedChannelMax);
         config.setNetworkRecoveryInterval(networkRecoveryInterval);
         config.setAutomaticRecoveryEnabled(true);
-        
-        
+
+
         webConfig = new WebClientOptions();
         webConfig.setKeepAlive(true);
         webConfig.setConnectTimeout(86400000);
-        webConfig.setDefaultHost(dataBrokerIP); 
-        webConfig.setDefaultPort(15672);
+        webConfig.setDefaultHost(dataBrokerIP);
+        webConfig.setDefaultPort(dataBrokerManagementPort);
         webConfig.setKeepAliveTimeout(86400000);
-        
+
 
         /* Create a RabbitMQ Clinet with the configuration and vertx cluster instance. */
 
         client = RabbitMQClient.create(vertx, config);
-       
+
         /* Create a Vertx Web Client with the configuration and vertx cluster instance. */
 
         webClient = WebClient.create(vertx, webConfig);
-        
-        /* Create a Json Object for properties*/
-        
+
+        /* Create a Json Object for properties */
+
         JsonObject propObj = new JsonObject();
-        
+
         propObj.put("userName", dataBrokerUserName);
         propObj.put("password", dataBrokerPassword);
         propObj.put("vHost", dataBrokerVhost);
