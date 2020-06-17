@@ -1,11 +1,17 @@
 package iudx.resource.server.databroker;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Properties;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.servicediscovery.Record;
@@ -13,9 +19,6 @@ import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Properties;
 
 /**
  * The Data Broker Verticle.
@@ -52,6 +55,8 @@ public class DataBrokerVerticle extends AbstractVerticle {
   private int handshakeTimeout;
   private int requestedChannelMax;
   private int networkRecoveryInterval;
+  private WebClient webClient;
+  private WebClientOptions webConfig;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
@@ -115,13 +120,33 @@ public class DataBrokerVerticle extends AbstractVerticle {
         config.setNetworkRecoveryInterval(networkRecoveryInterval);
         config.setAutomaticRecoveryEnabled(true);
 
-        /* Create a RabbitMQ Clinet with the configuration and vertx cluster instance. */
+        webConfig = new WebClientOptions();
+        webConfig.setKeepAlive(true);
+        webConfig.setConnectTimeout(86400000);
+        webConfig.setDefaultHost("68.183.80.248");
+        webConfig.setDefaultPort(15672);
+        webConfig.setKeepAliveTimeout(86400000);
+
+        /*
+         * Create a RabbitMQ Clinet with the configuration and vertx cluster instance.
+         */
 
         client = RabbitMQClient.create(vertx, config);
 
+        /*
+         * Create a Vertx Web Client with the configuration and vertx cluster instance.
+         */
+
+        webClient = WebClient.create(vertx, webConfig);
+
         /* Call the databroker constructor with the RabbitMQ client. */
 
-        databroker = new DataBrokerServiceImpl(client);
+        JsonObject propObj = new JsonObject();
+        propObj.put("userName", dataBrokerUserName);
+        propObj.put("password", dataBrokerPassword);
+        propObj.put("vHost", dataBrokerVhost);
+
+        databroker = new DataBrokerServiceImpl(client, webClient, propObj);
 
         /* Publish the Data Broker service with the Event Bus against an address. */
 
@@ -148,6 +173,8 @@ public class DataBrokerVerticle extends AbstractVerticle {
       }
 
     });
+
+    System.out.println("DataBrokerVerticle started");
 
   }
 

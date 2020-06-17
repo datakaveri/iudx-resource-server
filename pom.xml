@@ -60,7 +60,16 @@
 			<artifactId>vertx-rabbitmq-client</artifactId>
 			<version>3.9.1</version>
 		</dependency>
-
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-web-client</artifactId>
+			<version>3.9.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.8.1</version>
+		</dependency>
 	</dependencies>
 
 	<build>
