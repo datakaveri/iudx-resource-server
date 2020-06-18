@@ -332,6 +332,31 @@ public interface DataBrokerService {
 
   @Fluent
   DataBrokerService listvHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  
+  
+  /**
+   * The listExchangeSubscribers implements the listing of all bindings of a queue
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+  @Fluent
+  DataBrokerService listQueueSubscribers(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
+  
+  /**
+   * The publishFromAdaptor implements the publish from adaptor
+   * operation with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   **/
+  @Fluent
+  DataBrokerService publishFromAdaptor(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
 
   @GenIgnore
   static DataBrokerService createProxy(Vertx vertx, String address) {
