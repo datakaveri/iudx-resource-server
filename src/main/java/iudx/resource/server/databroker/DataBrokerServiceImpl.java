@@ -16,7 +16,6 @@ import io.vertx.rabbitmq.RabbitMQClient;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import org.apache.http.HttpStatus;
-
 /**
  * The Data Broker Service Implementation.
  * <h1>Data Broker Service Implementation</h1>
@@ -73,7 +72,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     webClient = webClientInstance;
 
   }
-
   /**
    * {@inheritDoc}
    */
