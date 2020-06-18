@@ -64,11 +64,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     });
 
     if (propObj != null && !propObj.isEmpty()) {
+
       user = propObj.getString("userName");
       password = propObj.getString("password");
       vhost = URLEncoder.encode(propObj.getString("vHost"));
-    }
 
+    }
     webClient = webClientInstance;
 
   }
@@ -238,6 +239,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
   Future<JsonObject> createExchange(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
+    finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
 
       String exchangeName = request.getString("exchangeName");
@@ -253,13 +255,13 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           if (response != null && !response.equals(" ")) {
             int status = response.statusCode();
             if (status == HttpStatus.SC_CREATED) {
-              finalResponse.put("Exchange", exchangeName);
+              finalResponse.put("exchange", exchangeName);
             } else if (status == HttpStatus.SC_NO_CONTENT) {
-              finalResponse.put("status", status);
+              finalResponse.put("type", status);
               finalResponse.put("title", "Failure");
               finalResponse.put("detail", "Exchange already exists");
             } else if (status == HttpStatus.SC_BAD_REQUEST) {
-              finalResponse.put("status", status);
+              finalResponse.put("type", status);
               finalResponse.put("title", "Failure");
               finalResponse.put("detail", "Exchange already exists with different properties");
             }
@@ -319,6 +321,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
   private Future<JsonObject> deleteExchange(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
+    finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
 
       String exchangeName = request.getString("exchangeName");
@@ -332,7 +335,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             if (status == HttpStatus.SC_NO_CONTENT) {
               finalResponse.put("exchange", exchangeName);
             } else if (status == HttpStatus.SC_NOT_FOUND) {
-              finalResponse.put("status", status);
+              finalResponse.put("type", status);
               finalResponse.put("title", "Failure");
               finalResponse.put("detail", "Exchange does not exist");
             }
@@ -379,10 +382,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
   private Future<JsonObject> listExchangeSubscribers(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
+    finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
 
       String exchangeName = request.getString("exchangeName");
-      JsonObject output = new JsonObject();
+
       url = "/api/exchanges/" + vhost + "/" + exchangeName + "/bindings/source";
       HttpRequest<Buffer> webRequest = webClient.get(url).basicAuthentication(user, password);
       webRequest.send(ar -> {
@@ -397,29 +401,29 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                 jsonBody.forEach(current -> {
                   JsonObject currentJson = new JsonObject(current.toString());
                   String okey = currentJson.getString("destination");
-                  if (output.containsKey(okey)) {
-                    JsonArray obj = (JsonArray) output.getValue(okey);
+                  if (finalResponse.containsKey(okey)) {
+                    JsonArray obj = (JsonArray) finalResponse.getValue(okey);
                     obj.add(currentJson.getString("routing_key"));
-                    output.put(okey, obj);
+                    finalResponse.put(okey, obj);
                   } else {
                     ArrayList<String> temp = new ArrayList<String>();
                     temp.add(currentJson.getString("routing_key"));
-                    output.put(okey, temp);
+                    finalResponse.put(okey, temp);
                   }
                 });
-                if (output.isEmpty()) {
-                  output.put("status", HttpStatus.SC_NOT_FOUND);
-                  output.put("title", "Failure");
-                  output.put("detail", "Exchange does not exist");
+                if (finalResponse.isEmpty()) {
+                  finalResponse.put("type", HttpStatus.SC_NOT_FOUND);
+                  finalResponse.put("title", "Failure");
+                  finalResponse.put("detail", "Exchange does not exist");
                 }
               }
             } else if (status == HttpStatus.SC_NOT_FOUND) {
-              output.put("status", status);
-              output.put("title", "Failure");
-              output.put("detail", "Exchange does not exist");
+              finalResponse.put("type", status);
+              finalResponse.put("title", "Failure");
+              finalResponse.put("detail", "Exchange does not exist");
             }
           }
-          promise.complete(output);
+          promise.complete(finalResponse);
           logger.info(finalResponse);
         } else {
           logger.error("Listing of Exchange failed" + ar.cause());
@@ -481,11 +485,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             if (status == HttpStatus.SC_CREATED) {
               finalResponse.put("queue", queueName);
             } else if (status == HttpStatus.SC_NO_CONTENT) {
-              finalResponse.put("status", status);
+              finalResponse.put("type", status);
               finalResponse.put("title", "Failure");
               finalResponse.put("detail", "Queue already exists");
             } else if (status == HttpStatus.SC_BAD_REQUEST) {
-              finalResponse.put("status", status);
+              finalResponse.put("type", status);
               finalResponse.put("title", "Failure");
               finalResponse.put("detail", "Queue already exists with different properties");
             }
@@ -544,6 +548,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
   private Future<JsonObject> deleteQueue(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
+    finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
 
       String queueName = request.getString("queueName");
@@ -559,7 +564,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             if (status == HttpStatus.SC_NO_CONTENT) {
               finalResponse.put("queue", queueName);
             } else if (status == HttpStatus.SC_NOT_FOUND) {
-              finalResponse.put("status", status);
+              finalResponse.put("type", status);
               finalResponse.put("title", "Failure");
               finalResponse.put("detail", "Queue does not exist");
             }
@@ -606,7 +611,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @return response which is a Future object of promise of Json type
    */
   private Future<JsonObject> bindQueue(JsonObject request) {
-
+    finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
 
@@ -630,7 +635,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                 finalResponse.put("queue", queueName);
                 finalResponse.put("entities", entities);
               } else if (status == HttpStatus.SC_NOT_FOUND) {
-                finalResponse.put("status", status);
+                finalResponse.put("type", status);
                 finalResponse.put("title", "Failure");
                 finalResponse.put("detail", "Queue/Exchange does not exist");
               }
@@ -684,7 +689,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @return response which is a Future object of promise of Json type
    */
   private Future<JsonObject> unbindQueue(JsonObject request) {
-
+    finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
 
@@ -709,7 +714,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                 finalResponse.put("queue", queueName);
                 finalResponse.put("entities", entities);
               } else if (status == HttpStatus.SC_NOT_FOUND) {
-                finalResponse.put("status", status);
+                finalResponse.put("type", status);
                 finalResponse.put("title", "Failure");
                 finalResponse.put("detail", "Queue/Exchange/Routing Key does not exist");
               }
@@ -765,7 +770,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @return response which is a Future object of promise of Json type
    */
   private Future<JsonObject> createvHost(JsonObject request) {
-
+    finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
 
@@ -781,7 +786,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             if (status == HttpStatus.SC_CREATED) {
               finalResponse.put("vHost", vhost);
             } else if (status == HttpStatus.SC_NO_CONTENT) {
-              finalResponse.put("status", status);
+              finalResponse.put("type", status);
               finalResponse.put("title", "Failure");
               finalResponse.put("detail", "vHost already exists");
             }
@@ -839,7 +844,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @return response which is a Future object of promise of Json type
    */
   private Future<JsonObject> deletevHost(JsonObject request) {
-
+    finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
 
@@ -856,7 +861,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             if (status == HttpStatus.SC_NO_CONTENT) {
               finalResponse.put("vHost", vhost);
             } else if (status == HttpStatus.SC_NOT_FOUND) {
-              finalResponse.put("status", status);
+              finalResponse.put("type", status);
               finalResponse.put("title", "Failure");
               finalResponse.put("detail", "Queue does not exist");
             }
@@ -879,7 +884,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
   @Override
   public DataBrokerService listvHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-    if (request != null && !request.isEmpty()) {
+    if (request != null) {
       Future<JsonObject> result = listvHost(request);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
@@ -901,13 +906,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @return response which is a Future object of promise of Json type
    */
   private Future<JsonObject> listvHost(JsonObject request) {
-
+    finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
-    if (request != null && !request.isEmpty()) {
-
-      JsonObject output = new JsonObject();
+    if (request != null) {
       JsonArray vhostList = new JsonArray();
       url = "/api/vhosts";
+
       HttpRequest<Buffer> webRequest = webClient.get(url).basicAuthentication(user, password);
       webRequest.send(ar -> {
         if (ar.succeeded()) {
@@ -928,16 +932,16 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
                 });
                 if (vhostList != null && !vhostList.isEmpty()) {
-                  output.put("vHost", vhostList);
+                  finalResponse.put("vHost", vhostList);
                 }
               }
             } else if (status == HttpStatus.SC_NOT_FOUND) {
-              output.put("status", status);
-              output.put("title", "Failure");
-              output.put("detail", "No vhosts found");
+              finalResponse.put("type", status);
+              finalResponse.put("title", "Failure");
+              finalResponse.put("detail", "No vhosts found");
             }
           }
-          promise.complete(output);
+          promise.complete(finalResponse);
           logger.info(finalResponse);
         } else {
           logger.error("Listing of Queue failed" + ar.cause());
@@ -946,6 +950,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       });
     }
     return promise.future();
+
   }
 
   /**
@@ -991,12 +996,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @return response which is a Future object of promise of Json type
    */
   private Future<JsonObject> listQueueSubscribers(JsonObject request) {
-
+    finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
 
       String queueName = request.getString("queueName");
-      JsonObject output = new JsonObject();
       JsonArray oroutingKeys = new JsonArray();
       url = "/api/queues/" + vhost + "/" + queueName + "/bindings";
       HttpRequest<Buffer> webRequest = webClient.get(url).basicAuthentication(user, password);
@@ -1017,20 +1021,20 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                   }
                 });
                 if (oroutingKeys != null && !oroutingKeys.isEmpty()) {
-                  output.put("entities", oroutingKeys);
+                  finalResponse.put("entities", oroutingKeys);
                 } else {
-                  output.put("status", HttpStatus.SC_NOT_FOUND);
-                  output.put("title", "Failure");
-                  output.put("detail", "Queue does not exist");
+                  finalResponse.put("type", HttpStatus.SC_NOT_FOUND);
+                  finalResponse.put("title", "Failure");
+                  finalResponse.put("detail", "Queue does not exist");
                 }
               }
             } else if (status == HttpStatus.SC_NOT_FOUND) {
-              output.put("status", status);
-              output.put("title", "Failure");
-              output.put("detail", "Queue does not exist");
+              finalResponse.put("type", status);
+              finalResponse.put("title", "Failure");
+              finalResponse.put("detail", "Queue does not exist");
             }
           }
-          promise.complete(output);
+          promise.complete(finalResponse);
           logger.info(finalResponse);
         } else {
           logger.error("Listing of Queue failed" + ar.cause());
@@ -1048,6 +1052,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService publishFromAdaptor(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
+    finalResponse = new JsonObject();
     JsonObject json = new JsonObject();
     if (request != null && !request.isEmpty()) {
       json.put("body", request.toString());
@@ -1062,6 +1067,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             handler.handle(Future.succeededFuture(finalResponse));
             logger.info("Message published to queue");
           } else {
+            finalResponse.put("type", HttpStatus.SC_BAD_REQUEST);
             logger.error("Message publishing failed");
             resultHandler.cause().printStackTrace();
           }
