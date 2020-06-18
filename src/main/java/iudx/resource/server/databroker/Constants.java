@@ -7,4 +7,5 @@ public class Constants {
   public static final int X_MAXLENGTH = 100;
   public static final String X_QUEQUE_MODE = "lazy";
   /* queue additional parameters end*/
+
 }
