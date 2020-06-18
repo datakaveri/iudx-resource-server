@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpStatus;
-
 /**
  * The Data Broker Service Implementation.
  *
@@ -74,7 +73,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     }
     webClient = webClientInstance;
   }
-
   /**
    * {@inheritDoc}
    */
