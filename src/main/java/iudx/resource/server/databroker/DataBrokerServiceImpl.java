@@ -93,7 +93,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       jsonResponse = new JsonObject();
       String userName = request.getString("consumer");
       if (userName != null && !userName.isBlank() && !userName.isEmpty()) {
-        createUserIfNotExist(userName);
+        Future<JsonObject> userCreationResult = createUserIfNotExist(userName);
+
       } else {
         logger.error("user not provided in adaptor registration");
       }
@@ -138,7 +139,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
 
             } else {
-              logger.error("Adaptor registration failed" + ar.cause().getLocalizedMessage());
+              logger.error(
+                  "Adaptor registration failed: cause : " + ar.cause().getLocalizedMessage());
               status.append("AdaptorID : " + "Failure");
             }
 
@@ -156,7 +158,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
   }
 
-  private void createUserIfNotExist(String userName) {
+  private Future<JsonObject> createUserIfNotExist(String userName) {
+    Promise<JsonObject> promise = Promise.promise();
     url = "/api/users/" + userName;
     HttpRequest<Buffer> isUserExistsRequest =
         webClient.get(url).basicAuthentication(user, password);
@@ -253,12 +256,14 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
         String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
         jsonResponse.put("username", domain + "/" + getSHA(userName));
+        promise.complete(jsonResponse);
 
       } else {
         logger.info("Something went wrong while finding user :" + result.cause());
       }
     });
 
+    return promise.future();
   }
 
   private String encode_vhost(String vhost) {

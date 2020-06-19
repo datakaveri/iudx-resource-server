@@ -69,6 +69,15 @@
 		</dependency>
 		
 		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-web-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.8.1</version>
+		</dependency>
+		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
 			<version>5.5.2</version>
@@ -142,43 +151,50 @@
 					<execution>
 						<id>resource-server-api-service</id>
 						<configuration>
-							<mainClass>iudx.resource.server.deploy.helper.ApiServerDeployer</mainClass>
+							<mainClass>iudx.resource.server.deploy.helper.ApiServerDeployer
+							</mainClass>
 						</configuration>
 					</execution>
 					<execution>
 						<id>resource-server-database-service</id>
 						<configuration>
-							<mainClass>iudx.resource.server.deploy.helper.DatabaseServiceDeployer</mainClass>
+							<mainClass>iudx.resource.server.deploy.helper.DatabaseServiceDeployer
+							</mainClass>
 						</configuration>
 					</execution>
 					<execution>
 						<id>resource-server-authentication-service</id>
 						<configuration>
-							<mainClass>iudx.resource.server.deploy.helper.AuthenticationServiceDeployer</mainClass>
+							<mainClass>iudx.resource.server.deploy.helper.AuthenticationServiceDeployer
+							</mainClass>
 						</configuration>
 					</execution>
 					<execution>
 						<id>resource-server-data-broker-service</id>
 						<configuration>
-							<mainClass>iudx.resource.server.deploy.helper.DataBrokerServiceDeployer</mainClass>
+							<mainClass>iudx.resource.server.deploy.helper.DataBrokerServiceDeployer
+							</mainClass>
 						</configuration>
 					</execution>
 					<execution>
 						<id>resource-server-file-service</id>
 						<configuration>
-							<mainClass>iudx.resource.server.deploy.helper.FileDownloadServiceDeployer</mainClass>
+							<mainClass>iudx.resource.server.deploy.helper.FileDownloadServiceDeployer
+							</mainClass>
 						</configuration>
 					</execution>
 					<execution>
 						<id>resource-server-media-service</id>
 						<configuration>
-							<mainClass>iudx.resource.server.deploy.helper.MediaServiceDeployer</mainClass>
+							<mainClass>iudx.resource.server.deploy.helper.MediaServiceDeployer
+							</mainClass>
 						</configuration>
 					</execution>
 					<execution>
 						<id>resource-server</id>
 						<configuration>
-							<mainClass>iudx.resource.server.deploy.helper.ResourceServerDeployer</mainClass>
+							<mainClass>iudx.resource.server.deploy.helper.ResourceServerDeployer
+							</mainClass>
 						</configuration>
 					</execution>
 				</executions>
