@@ -30,8 +30,8 @@ public class DatabaseServiceImpl implements DatabaseService {
   @Override
   public DatabaseService searchQuery(JsonObject request, Handler<AsyncResult<JsonArray>> handler) {
 //      added for testing.
-//      JsonArray jsonArray = new JsonArray();
-//      handler.handle(Future.succeededFuture(jsonArray));
+//    JsonArray jsonArray = new JsonArray();
+//    handler.handle(Future.succeededFuture(jsonArray));
     return this;
   }
 
