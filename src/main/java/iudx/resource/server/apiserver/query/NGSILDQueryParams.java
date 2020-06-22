@@ -1,5 +1,9 @@
 package iudx.resource.server.apiserver.query;
 
+import io.vertx.core.MultiMap;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import iudx.resource.server.apiserver.util.Constants;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
@@ -10,11 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-
-import io.vertx.core.MultiMap;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import iudx.resource.server.apiserver.util.Constants;
 
 /**
  * NGSILDQueryParams Class to parse query parameters from HTTP request.

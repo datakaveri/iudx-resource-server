@@ -1,14 +1,13 @@
 package iudx.resource.server.apiserver;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerResponse;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.response.RestResponse;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * This class is used to validate NGSI-LD request and request parameters.
