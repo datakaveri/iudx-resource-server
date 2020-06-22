@@ -1,6 +1,7 @@
 package iudx.resource.server.authenticator;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -31,7 +32,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Override
   public AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
       Handler<AsyncResult<JsonArray>> handler) {
-    
+    // added for testing.
+    JsonArray jsonArray = new JsonArray();
+    handler.handle(Future.succeededFuture(jsonArray));
+
     return null;
   }
 
