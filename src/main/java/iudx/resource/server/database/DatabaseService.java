@@ -42,9 +42,11 @@ public interface DatabaseService {
   String FILTER_KEY = "filter";
   String BOOL_KEY = "bool";
   String RESOURCE_ID_KEY = "resource-id";
-  String VARANASI_SWM_VEHICLES_SEARCH_INDEX = "varanasi-swm-vehicles/_search";
+  String VARANASI_SWM_SEARCH_INDEX = "varanasi-swm-vehicles/_search";
+  String FILTER_PATH = "?filter_path=took,hits.hits._source";
   String VARANASI_OTHER_SEARCH_INDEX = "varanasi-other/_search";
-  String VARANASI_TEST_SEARCH_INDEX = "varanasi/_search";
+  String VARANASI_TEST_SEARCH_INDEX = "varanasi/_search?filter_path=took,hits.hits._source";
+  String SOURCE_FILTER_KEY = "_source";
 
   /**
    * The searchQuery implements the search operation with the database.
@@ -69,17 +71,22 @@ public interface DatabaseService {
   DatabaseService countQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The createProxy helps the code generation blocks to generate proxy code.
-   * 
-   * @param vertx   which is the vertx instance
-   * @param address which is the proxy address
-   * @return DatabaseServiceVertxEBProxy which is a service proxy
+   * The create implements the count operation with the database.
+   * @param client RestClient to perform ES queries.
+   * @return DatabaseService object.
    */
 
   @GenIgnore
-  static DatabaseService create(RestClient client){
+  static DatabaseService create(RestClient client) {
     return new DatabaseServiceImpl(client);
   }
+
+  /**
+   * The createProxy helps the code generation blocks to generate proxy code.
+   * @param vertx which is the vertx instance
+   * @param address which is the proxy address
+   * @return DatabaseServiceVertxEBProxy which is a service proxy 
+   */
 
   @GenIgnore
   static DatabaseService createProxy(Vertx vertx, String address) {
