@@ -2,10 +2,10 @@ package iudx.resource.server.apiserver.response;
 
 public enum ResponseType {
   Ok(200, "Ok"), Created(201, "created"), InvalidRequest(400, "Invalid request"),
-  BadRequestData(400, "Bad Request Data"), TooComplexQuery(403, "Too complex query"),
-  TooManyResults(403, "Too many results"), NotFound(404, "Not Found"),
-  ResourceNotFound(404, "Resource not found"), MethodNotAllowed(405, "Method not allowed"),
-  AlreadyExists(409, "Already exists"),
+  AuthenticationFailure(401, "Authentication failure"), BadRequestData(400, "Bad Request Data"),
+  TooComplexQuery(403, "Too complex query"), TooManyResults(403, "Too many results"),
+  NotFound(404, "Not Found"), ResourceNotFound(404, "Resource not found"),
+  MethodNotAllowed(405, "Method not allowed"), AlreadyExists(409, "Already exists"),
   LenghtRequired(411,
       "HTTP request provided by a client does not define the Content-Length HTTP header"),
   RequestEntityTooLarge(413, "HTTP input data stream is too large too many bytes"),

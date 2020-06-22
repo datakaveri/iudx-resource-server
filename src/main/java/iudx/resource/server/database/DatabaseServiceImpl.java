@@ -11,8 +11,8 @@ import io.vertx.core.logging.LoggerFactory;
  * The Database Service Implementation.
  * <h1>Database Service Implementation</h1>
  * <p>
- * The Database Service implementation in the IUDX Resource Server implements the definitions of the
- * {@link iudx.resource.server.database.DatabaseService}.
+ * The Database Service implementation in the IUDX Resource Server implements
+ * the definitions of the {@link iudx.resource.server.database.DatabaseService}.
  * </p>
  * 
  * @version 1.0
@@ -29,8 +29,10 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   @Override
   public DatabaseService searchQuery(JsonObject request, Handler<AsyncResult<JsonArray>> handler) {
-
-    return null;
+//      added for testing.
+//      JsonArray jsonArray = new JsonArray();
+//      handler.handle(Future.succeededFuture(jsonArray));
+    return this;
   }
 
   /**

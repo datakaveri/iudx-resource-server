@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import io.vertx.core.MultiMap;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import iudx.resource.server.apiserver.util.Constants;
 
 /**
  * NGSILDQueryParams Class to parse query parameters from HTTP request.
@@ -55,20 +56,20 @@ public class NGSILDQueryParams {
 
     for (final Entry<String, String> entry : entries) {
       switch (entry.getKey()) {
-        case "id": {
+        case Constants.NGSILDQUERY_ID: {
           this.id = new ArrayList<URI>();
           String[] ids = entry.getValue().split(",");
           List<URI> uris = Arrays.stream(ids).map(e -> toUri(e)).collect(Collectors.toList());
           this.id.addAll(uris);
           break;
         }
-        case "attrs": {
+        case Constants.NGSILDQUERY_ATTRIBUTE: {
           this.attrs = new ArrayList<String>();
           this.attrs.addAll(Arrays.stream(entry.getValue().split(","))
               .collect(Collectors.toList()));
           break;
         }
-        case "georel": {
+        case Constants.NGSILDQUERY_GEOREL: {
           String georel = entry.getValue();
           String[] values = georel.split(";");
           this.geoRel.setRelation(values[0]);
@@ -82,27 +83,27 @@ public class NGSILDQueryParams {
           }
           break;
         }
-        case "geometry": {
+        case Constants.NGSILDQUERY_GEOMETRY: {
           this.geometry = entry.getValue();
           break;
         }
-        case "coordinates": {
+        case Constants.NGSILDQUERY_COORDINATES: {
           this.coordinates = entry.getValue();
           break;
         }
-        case "timerel": {
+        case Constants.NGSILDQUERY_TIMEREL: {
           this.temporalRelation.setTemprel(entry.getValue());
           break;
         }
-        case "time": {
+        case Constants.NGSILDQUERY_TIME: {
           this.temporalRelation.setTime(LocalDateTime.parse(entry.getValue(), formatter));
           break;
         }
-        case "endtime": {
+        case Constants.NGSILDQUERY_ENDTIME: {
           this.temporalRelation.setEndTime(LocalDateTime.parse(entry.getValue(), formatter));
           break;
         }
-        case "q": {
+        case Constants.NGSILDQUERY_Q: {
           this.q = entry.getValue();
           break;
         }

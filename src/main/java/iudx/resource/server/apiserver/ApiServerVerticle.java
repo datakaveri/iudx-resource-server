@@ -2,10 +2,12 @@ package iudx.resource.server.apiserver;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
@@ -13,9 +15,11 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -23,6 +27,8 @@ import io.vertx.core.net.JksOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.types.EventBusService;
@@ -31,6 +37,7 @@ import iudx.resource.server.apiserver.query.NGSILDQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.response.RestResponse;
+import iudx.resource.server.apiserver.util.Constants;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
@@ -77,8 +84,6 @@ public class ApiServerVerticle extends AbstractVerticle {
   private String keystore;
   private String keystorePassword;
 
-  private final String ngsildBasePath = "/ngsi-ld/v1";
-
   /**
    * This method is used to start the Verticle. It deploys a verticle in a
    * cluster, reads the configuration, obtains a proxy for the Event bus services
@@ -89,6 +94,24 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   @Override
   public void start() throws Exception {
+
+    Set<String> allowedHeaders = new HashSet<>();
+    allowedHeaders.add("Accept");
+    allowedHeaders.add("token");
+    allowedHeaders.add("Content-Length");
+    allowedHeaders.add("Content-Type");
+    allowedHeaders.add("Host");
+    allowedHeaders.add("Origin");
+    allowedHeaders.add("Referer");
+    allowedHeaders.add("Access-Control-Allow-Origin");
+
+    Set<HttpMethod> allowedMethods = new HashSet<>();
+    allowedMethods.add(HttpMethod.GET);
+    allowedMethods.add(HttpMethod.POST);
+    allowedMethods.add(HttpMethod.OPTIONS);
+    allowedMethods.add(HttpMethod.DELETE);
+    allowedMethods.add(HttpMethod.PATCH);
+    allowedMethods.add(HttpMethod.PUT);
 
     /* Create a reference to HazelcastClusterManager. */
 
@@ -108,12 +131,15 @@ public class ApiServerVerticle extends AbstractVerticle {
         /* Define the APIs, methods, endpoints and associated methods. */
 
         router = Router.router(vertx);
+        router.route().handler(
+            CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
         router.route("/apis/*").handler(StaticHandler.create());
+        router.route().handler(BodyHandler.create());
 
         /* NGSI-LD api endpoints */
-        router.get(ngsildBasePath + "/entities").handler(this::handleEntitiesQuery);
-        router.get(ngsildBasePath + "/temporal/entities").handler(this::handleTemporalQuery);
-        router.get(ngsildBasePath + "/hello").handler(this::hello);
+        router.get(Constants.NGSILD_ENTITIES_URL).handler(this::handleEntitiesQuery);
+        router.get(Constants.NGSILD_TEMPORAL_URL).handler(this::handleTemporalQuery);
+        router.post(Constants.NGSILD_SUBSCRIPTION_URL).handler(this::handleSubscriptions);
 
         /* Read the configuration and set the HTTPs server properties. */
 
@@ -133,7 +159,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
         /* Setup the HTTPs server properties, APIs and port. */
 
-        server = vertx.createHttpServer(new HttpServerOptions().setSsl(true)
+        server = vertx.createHttpServer(new HttpServerOptions().setSsl(false)
             .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword)));
 
         server.requestHandler(router).listen(port);
@@ -219,12 +245,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     });
   }
 
-  private void hello(RoutingContext routingContext) {
-    routingContext.response().putHeader("content-type", "application/json")
-        .setStatusCode(ResponseType.Ok.getCode())
-        .end(new JsonObject().put("messgae", "hello").toString());
-  }
-
   /**
    * This method is used to handle all NGSI-LD queries for endpoint
    * /ngsi-ld/v1/entities/**.
@@ -289,6 +309,51 @@ public class ApiServerVerticle extends AbstractVerticle {
         response.putHeader("content-type", "application/json")
             .setStatusCode(ResponseType.InternalError.getCode())
             .end(new RestResponse.Builder().withError(ResponseType.InternalError)
+                .withMessage("Internal server error").build().toJsonString());
+      }
+    });
+  }
+
+  /**
+   * Method used to handle all subscription requests in NGSI-LD.
+   * 
+   * @param routingContext routingContext
+   */
+  // TODO : incomplete need to complete after management api completion
+  private void handleSubscriptions(RoutingContext routingContext) {
+    LOGGER.info("handleSubscription method started");
+    JsonObject requestJsonObject = routingContext.getBodyAsJson();
+    HttpServerResponse response = routingContext.response();
+    authenticator.tokenInterospect(requestJsonObject, requestJsonObject, authHandler -> {
+      if (authHandler.succeeded()) {
+        JsonArray authJson = authHandler.result();
+
+        JsonObject jsonObj = new JsonObject();
+        jsonObj.put("type", "streaming");
+        jsonObj.put("name", authJson.getString(0));
+        jsonObj.put("consumer", authJson.getString(1));
+
+        JsonArray idsJsonArray = new JsonArray();
+
+        jsonObj.put("entities", requestJsonObject.getJsonArray("entities"));
+
+        databroker.registerStreamingSubscription(jsonObj, subsHandler -> {
+          if (subsHandler.succeeded()) {
+            response.putHeader("content-type", "application/json")
+                .setStatusCode(ResponseType.Created.getCode())
+                .end(new RestResponse.Builder().withError(ResponseType.Created)
+                    .withMessage(subsHandler.result().toString()).build().toJsonString());
+          } else {
+            response.putHeader("content-type", "application/json")
+                .setStatusCode(ResponseType.InternalError.getCode())
+                .end(new RestResponse.Builder().withError(ResponseType.InternalError)
+                    .withMessage(subsHandler.cause().toString()).build().toJsonString());
+          }
+        });
+      } else {
+        response.putHeader("content-type", "application/json")
+            .setStatusCode(ResponseType.AuthenticationFailure.getCode())
+            .end(new RestResponse.Builder().withError(ResponseType.AuthenticationFailure)
                 .withMessage("Internal server error").build().toJsonString());
       }
     });
