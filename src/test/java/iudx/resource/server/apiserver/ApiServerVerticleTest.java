@@ -2,14 +2,13 @@ package iudx.resource.server.apiserver;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
-
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
 import io.vertx.core.json.JsonObject;
@@ -21,7 +20,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.util.Constants;
-import iudx.resource.server.deploy.helper.ResourceServerDeployer;
+import iudx.resource.server.starter.ResourceServerStarter;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -32,28 +31,30 @@ public class ApiServerVerticleTest {
 
   private static WebClient client;
 
-  ApiServerVerticleTest() {
-  }
+  ApiServerVerticleTest() {}
 
   @BeforeAll
   public static void setup(Vertx vertx, VertxTestContext testContext) {
-    WebClientOptions clientOptions = new WebClientOptions().setSsl(false).setVerifyHost(false);
+    WebClientOptions clientOptions =
+        new WebClientOptions().setSsl(true).setVerifyHost(false).setTrustAll(true);
     client = WebClient.create(vertx, clientOptions);
 
-    new Thread(() -> {
-      ResourceServerDeployer.main(new String[] {});
-    }).start();
+    ResourceServerStarter starter = new ResourceServerStarter();
+    Future<JsonObject> result = starter.startServer();
 
-    vertx.setTimer(20000, id -> {
-      testContext.completeNow();
+    result.onComplete(resultHandler -> {
+      if (resultHandler.succeeded()) {
+        testContext.completeNow();
+      }
     });
-
   }
 
   @Test
   @Order(1)
   @Description("calling /entities endpoint")
-  public void testHandleEntitiesQuery(Vertx vertx, VertxTestContext testContext) {
+  public void testHandleEntitiesQuery(Vertx vertx, VertxTestContext testContext)
+      throws InterruptedException {
+    Thread.sleep(30000);
     String apiURL = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiURL + "?id=id1,id2").send(ar -> {
       if (ar.succeeded()) {
