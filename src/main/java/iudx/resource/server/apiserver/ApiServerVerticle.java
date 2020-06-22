@@ -1,14 +1,5 @@
 package iudx.resource.server.apiserver;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
@@ -18,6 +9,7 @@ import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -43,14 +35,22 @@ import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.filedownload.FileDownloadService;
 import iudx.resource.server.media.MediaService;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
 
 /**
  * The Resource Server API Verticle.
  * <h1>Resource Server API Verticle</h1>
  * <p>
- * The API Server verticle implements the IUDX Resource Server APIs. It handles
- * the API requests from the clients and interacts with the associated Service
- * to respond.
+ * The API Server verticle implements the IUDX Resource Server APIs. It handles the API requests
+ * from the clients and interacts with the associated Service to respond.
  * </p>
  * 
  * @see io.vertx.core.Vertx
@@ -85,9 +85,9 @@ public class ApiServerVerticle extends AbstractVerticle {
   private String keystorePassword;
 
   /**
-   * This method is used to start the Verticle. It deploys a verticle in a
-   * cluster, reads the configuration, obtains a proxy for the Event bus services
-   * exposed through service discovery, start an HTTPs server at port 8443.
+   * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
+   * configuration, obtains a proxy for the Event bus services exposed through service discovery,
+   * start an HTTPs server at port 8443.
    * 
    * @throws Exception which is a startup exception
    */
@@ -159,7 +159,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
         /* Setup the HTTPs server properties, APIs and port. */
 
-        server = vertx.createHttpServer(new HttpServerOptions().setSsl(false)
+        server = vertx.createHttpServer(new HttpServerOptions().setSsl(true)
             .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword)));
 
         server.requestHandler(router).listen(port);
@@ -246,14 +246,28 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * This method is used to handle all NGSI-LD queries for endpoint
-   * /ngsi-ld/v1/entities/**.
+   * This method is used to handle all NGSI-LD queries for endpoint /ngsi-ld/v1/entities/**.
    * 
    * @param routingContext RoutingContext Object
    */
   private void handleEntitiesQuery(RoutingContext routingContext) {
     LOGGER.info("handleEntitiesQuery method started.");
+
+    /* Handles HTTP request from client */
+    HttpServerRequest request = routingContext.request();
+
+    /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
+
+    /* JsonObject of authentication related information */
+    JsonObject authenticationInfo = new JsonObject();
+
+    /* HTTP request body as Json */
+    JsonObject requestBody = routingContext.getBodyAsJson();
+
+    /* HTTP request instance/host details */
+    String instanceID = request.getHeader("Host");
+
     // get query paramaters
     MultiMap params = getQueryParams(routingContext, response).get();
     // validate request parameters
@@ -263,19 +277,42 @@ public class ApiServerVerticle extends AbstractVerticle {
     QueryMapper queryMapper = new QueryMapper();
     // create json
     JsonObject json = queryMapper.toJson(ngsildquery, false);
+    json.put("instanceID", instanceID);
     LOGGER.info("IUDX query json : " + json);
-    // call database vertical for seaarch
-    database.searchQuery(json, handler -> {
-      if (handler.succeeded()) {
+
+    /* checking authentication info in requests */
+    if (request.headers().contains("token")) {
+      authenticationInfo.put("token", request.getHeader("token"));
+    } else {
+      authenticationInfo.put("token", "public");
+    }
+
+    /* Authenticating the request */
+    authenticator.tokenInterospect(requestBody, authenticationInfo, authHandler -> {
+      if (authHandler.succeeded()) {
+        LOGGER
+            .info("Authenticating entity search request ".concat(authHandler.result().toString()));
+
+        // call database vertical for seaarch
+        database.searchQuery(json, handler -> {
+          if (handler.succeeded()) {
+            response.putHeader("content-type", "application/json")
+                .setStatusCode(ResponseType.Ok.getCode()).end(handler.result().toString());
+          } else if (handler.failed()) {
+            // handler.cause().getMessage();
+            // TODO: get cause from handler message and return appropriate error message.
+            response.putHeader("content-type", "application/json")
+                .setStatusCode(ResponseType.InternalError.getCode())
+                .end(new RestResponse.Builder().withError(ResponseType.InternalError)
+                    .withMessage("Internal server error").build().toJsonString());
+          }
+        });
+      } else if (authHandler.failed()) {
+        LOGGER.error("Unathorized request".concat(authHandler.cause().toString()));
         response.putHeader("content-type", "application/json")
-            .setStatusCode(ResponseType.Ok.getCode()).end(handler.result().toString());
-      } else if (handler.failed()) {
-        // handler.cause().getMessage();
-        // TODO: get cause from handler message and return appropriate error message.
-        response.putHeader("content-type", "application/json")
-            .setStatusCode(ResponseType.InternalError.getCode())
-            .end(new RestResponse.Builder().withError(ResponseType.InternalError)
-                .withMessage("Internal server error").build().toJsonString());
+            .setStatusCode(ResponseType.AuthenticationFailure.getCode())
+            .end(new RestResponse.Builder().withError(ResponseType.AuthenticationFailure)
+                .withMessage("Unauthorised").build().toJsonString());
       }
     });
   }
@@ -289,7 +326,22 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   private void handleTemporalQuery(RoutingContext routingContext) {
     LOGGER.info("handleTemporalQuery method started.");
+
+    /* Handles HTTP request from client */
+    HttpServerRequest request = routingContext.request();
+
+    /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
+
+    /* JsonObject of authentication related information */
+    JsonObject authenticationInfo = new JsonObject();
+
+    /* HTTP request body as Json */
+    JsonObject requestBody = routingContext.getBodyAsJson();
+
+    /* HTTP request instance/host details */
+    String instanceID = request.getHeader("Host");
+
     // get query parameters
     MultiMap params = getQueryParams(routingContext, response).get();
     // validate request params
@@ -299,17 +351,40 @@ public class ApiServerVerticle extends AbstractVerticle {
     QueryMapper queryMapper = new QueryMapper();
     // create json
     JsonObject json = queryMapper.toJson(ngsildquery, true);
+    json.put("instanceID", instanceID);
     LOGGER.info("IUDX temporal json query : " + json);
-    System.out.println(json);
-    database.searchQuery(json, handler -> {
-      if (handler.succeeded()) {
+
+    /* checking authentication info in requests */
+    if (request.headers().contains("token")) {
+      authenticationInfo.put("token", request.getHeader("token"));
+    } else {
+      authenticationInfo.put("token", "public");
+    }
+
+    /* Authenticating the request */
+    authenticator.tokenInterospect(requestBody, authenticationInfo, authHandler -> {
+      if (authHandler.succeeded()) {
+        LOGGER.info("Authenticating entity temporal search request "
+            .concat(authHandler.result().toString()));
+
+        // call database vertical for seaarch
+        database.searchQuery(json, handler -> {
+          if (handler.succeeded()) {
+            response.putHeader("content-type", "application/json")
+                .setStatusCode(ResponseType.Ok.getCode()).end(handler.result().toString());
+          } else if (handler.failed()) {
+            response.putHeader("content-type", "application/json")
+                .setStatusCode(ResponseType.InternalError.getCode())
+                .end(new RestResponse.Builder().withError(ResponseType.InternalError)
+                    .withMessage("Internal server error").build().toJsonString());
+          }
+        });
+      } else if (authHandler.failed()) {
+        LOGGER.error("Unathorized request".concat(authHandler.cause().toString()));
         response.putHeader("content-type", "application/json")
-            .setStatusCode(ResponseType.Ok.getCode()).end(handler.result().toString());
-      } else if (handler.failed()) {
-        response.putHeader("content-type", "application/json")
-            .setStatusCode(ResponseType.InternalError.getCode())
-            .end(new RestResponse.Builder().withError(ResponseType.InternalError)
-                .withMessage("Internal server error").build().toJsonString());
+            .setStatusCode(ResponseType.AuthenticationFailure.getCode())
+            .end(new RestResponse.Builder().withError(ResponseType.AuthenticationFailure)
+                .withMessage("Unauthorised").build().toJsonString());
       }
     });
   }
@@ -322,49 +397,77 @@ public class ApiServerVerticle extends AbstractVerticle {
   // TODO : incomplete need to complete after management api completion
   private void handleSubscriptions(RoutingContext routingContext) {
     LOGGER.info("handleSubscription method started");
-    JsonObject requestJsonObject = routingContext.getBodyAsJson();
+
+    /* Handles HTTP request from client */
+    HttpServerRequest request = routingContext.request();
+
+    /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
-    authenticator.tokenInterospect(requestJsonObject, requestJsonObject, authHandler -> {
-      if (authHandler.succeeded()) {
-        JsonArray authJson = authHandler.result();
 
-        JsonObject jsonObj = new JsonObject();
-        jsonObj.put("type", "streaming");
-        jsonObj.put("name", authJson.getString(0));
-        jsonObj.put("consumer", authJson.getString(1));
+    /* JsonObject of authentication related information */
+    JsonObject authenticationInfo = new JsonObject();
 
-        JsonArray idsJsonArray = new JsonArray();
+    /* HTTP request body as Json */
+    JsonObject requestBody = routingContext.getBodyAsJson();
 
-        jsonObj.put("entities", requestJsonObject.getJsonArray("entities"));
+    /* HTTP request instance/host details */
+    String instanceID = request.getHeader("Host");
 
-        databroker.registerStreamingSubscription(jsonObj, subsHandler -> {
-          if (subsHandler.succeeded()) {
-            response.putHeader("content-type", "application/json")
-                .setStatusCode(ResponseType.Created.getCode())
-                .end(new RestResponse.Builder().withError(ResponseType.Created)
-                    .withMessage(subsHandler.result().toString()).build().toJsonString());
-          } else {
-            response.putHeader("content-type", "application/json")
-                .setStatusCode(ResponseType.InternalError.getCode())
-                .end(new RestResponse.Builder().withError(ResponseType.InternalError)
-                    .withMessage(subsHandler.cause().toString()).build().toJsonString());
-          }
-        });
-      } else {
-        response.putHeader("content-type", "application/json")
-            .setStatusCode(ResponseType.AuthenticationFailure.getCode())
-            .end(new RestResponse.Builder().withError(ResponseType.AuthenticationFailure)
-                .withMessage("Internal server error").build().toJsonString());
-      }
-    });
+    JsonObject requestJsonObject = routingContext.getBodyAsJson();
+
+    /* checking authentication info in requests */
+    if (request.headers().contains("token")) {
+      authenticationInfo.put("token", request.getHeader("token"));
+
+      authenticator.tokenInterospect(requestJsonObject, authenticationInfo, authHandler -> {
+        if (authHandler.succeeded()) {
+          JsonArray authJson = authHandler.result();
+
+          JsonObject jsonObj = new JsonObject();
+          jsonObj.put("type", "streaming");
+          jsonObj.put("name", authJson.getString(0));
+          jsonObj.put("consumer", authJson.getString(1));
+          jsonObj.put("instanceID", instanceID);
+
+          JsonArray idsJsonArray = new JsonArray();
+
+          jsonObj.put("entities", requestJsonObject.getJsonArray("entities"));
+
+          databroker.registerStreamingSubscription(jsonObj, subsHandler -> {
+            if (subsHandler.succeeded()) {
+              response.putHeader("content-type", "application/json")
+                  .setStatusCode(ResponseType.Created.getCode())
+                  .end(new RestResponse.Builder().withError(ResponseType.Created)
+                      .withMessage(subsHandler.result().toString()).build().toJsonString());
+            } else {
+              response.putHeader("content-type", "application/json")
+                  .setStatusCode(ResponseType.InternalError.getCode())
+                  .end(new RestResponse.Builder().withError(ResponseType.InternalError)
+                      .withMessage(subsHandler.cause().toString()).build().toJsonString());
+            }
+          });
+        } else if (authHandler.failed()) {
+          response.putHeader("content-type", "application/json")
+              .setStatusCode(ResponseType.AuthenticationFailure.getCode())
+              .end(new RestResponse.Builder().withError(ResponseType.AuthenticationFailure)
+                  .withMessage("Unauthorised").build().toJsonString());
+        }
+      });
+    } else {
+      response.putHeader("content-type", "application/json")
+          .setStatusCode(ResponseType.AuthenticationFailure.getCode())
+          .end(new RestResponse.Builder().withError(ResponseType.AuthenticationFailure)
+              .withMessage("Unauthorised").build().toJsonString());
+
+    }
   }
 
   /**
-   * Get the request query parameters delimited by <b>&</b>,
-   * <i><b>;</b>(semicolon) is considered as part of the parameter</i>.
+   * Get the request query parameters delimited by <b>&</b>, <i><b>;</b>(semicolon) is considered as
+   * part of the parameter</i>.
    * 
    * @param routingContext RoutingContext Object
-   * @param response       HttpServerResponse
+   * @param response HttpServerResponse
    * @return Optional Optional of Map
    */
   private Optional<MultiMap> getQueryParams(RoutingContext routingContext,
@@ -372,9 +475,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     MultiMap queryParams = null;
     try {
       queryParams = MultiMap.caseInsensitiveMultiMap();
-      Map<String, List<String>> decodedParams = new QueryStringDecoder(
-          routingContext.request().uri(), HttpConstants.DEFAULT_CHARSET, true, 1024, true)
-              .parameters();
+      Map<String, List<String>> decodedParams =
+          new QueryStringDecoder(routingContext.request().uri(), HttpConstants.DEFAULT_CHARSET,
+              true, 1024, true).parameters();
       for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
         queryParams.add(entry.getKey(), entry.getValue());
         System.out.println(entry.getKey() + " : " + entry.getValue());
