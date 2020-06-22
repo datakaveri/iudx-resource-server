@@ -73,6 +73,7 @@
 			<version>5.5.2</version>
 		</dependency>
 		<dependency>
+
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-junit5</artifactId>
 		</dependency>
