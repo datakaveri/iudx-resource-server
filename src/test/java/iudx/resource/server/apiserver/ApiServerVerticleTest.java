@@ -57,7 +57,7 @@ public class ApiServerVerticleTest {
     String apiURL = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiURL + "?id=id1,id2").send(ar -> {
       if (ar.succeeded()) {
-        assertEquals(ar.result().statusCode(), ResponseType.Ok.getCode());
+        assertEquals(ResponseType.Ok.getCode(), ar.result().statusCode());
         testContext.completeNow();
       } else if (ar.failed()) {
         testContext.failed();
@@ -72,7 +72,7 @@ public class ApiServerVerticleTest {
     String apiURL = Constants.NGSILD_TEMPORAL_URL;
     client.get(PORT, BASE_URL, apiURL + "?id=id1,id2").send(ar -> {
       if (ar.succeeded()) {
-        assertEquals(ar.result().statusCode(), ResponseType.Ok.getCode());
+        assertEquals(ResponseType.Ok.getCode(), ar.result().statusCode());
         testContext.completeNow();
       } else if (ar.failed()) {
         testContext.failed();
@@ -89,7 +89,7 @@ public class ApiServerVerticleTest {
     client.get(PORT, BASE_URL, apiURL + "?id2=id1,id2").send(ar -> {
       if (ar.succeeded()) {
         JsonObject res = ar.result().bodyAsJsonObject();
-        assertEquals(ar.result().statusCode(), ResponseType.BadRequestData.getCode());
+        assertEquals(ResponseType.Ok.getCode(), ar.result().statusCode());
         assertTrue(res.containsKey("type"));
         assertTrue(res.containsKey("title"));
         assertTrue(res.containsKey("details"));

@@ -1,10 +1,11 @@
 package iudx.resource.server.database;
 
-import java.util.logging.Handler;
-
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
@@ -30,9 +31,9 @@ public class DatabaseServiceImpl implements DatabaseService {
   @Override
   public DatabaseService searchQuery(JsonObject request, Handler<AsyncResult<JsonArray>> handler) {
 //      added for testing.
-//      JsonArray jsonArray = new JsonArray();
-//      handler.handle(Future.succeededFuture(jsonArray));
-    return this;
+    JsonArray jsonArray = new JsonArray();
+    handler.handle(Future.succeededFuture(jsonArray));
+    return null;
   }
 
   /**
