@@ -162,9 +162,7 @@ public class DataBrokerServiceTest {
     /* Call the databroker constructor with the RabbitMQ client. */
 
     databroker = new DataBrokerServiceImpl(client, webClient, propObj);
-
-    vertx.deployVerticle(new DataBrokerVerticle(),
-        testContext.succeeding(id -> testContext.completeNow()));
+    testContext.completeNow();
   }
 
 
