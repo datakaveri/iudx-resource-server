@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpStatus;
+
 /**
  * The Data Broker Service Implementation.
  *
@@ -73,6 +74,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     }
     webClient = webClientInstance;
   }
+
   /**
    * {@inheritDoc}
    */
@@ -197,6 +199,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                         });
                   });
 
+
               if (resultHandlerqueue.result().containsKey("type")) {
                 registerStreamingSubscriptionResponse.put(
                     "subscriptionID", resultHandlerqueue.result().getString("detail"));
@@ -207,6 +210,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                 registerStreamingSubscriptionResponse.put("streamingURL", streamingUrl);
                 handler.handle(Future.succeededFuture(registerStreamingSubscriptionResponse));
               }
+
             }
             if (resultHandlerqueue.failed()) {
               logger.error("failed ::" + resultHandlerqueue.cause());
@@ -298,12 +302,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       String queueNameencode = request.getString("subscriptionID");
       String queueName = encoder.encodeToString(queueNameencode.getBytes());
       JsonObject requestBody = new JsonObject();
-      requestBody.put("queueName", queueName);      
+      requestBody.put("queueName", queueName);
       Future<JsonObject> result = listQueueSubscribers(requestBody);
       result.onComplete(
           resultHandler -> {
             if (resultHandler.succeeded()) {
-              handler.handle(Future.succeededFuture(resultHandler.result()));              
+              handler.handle(Future.succeededFuture(resultHandler.result()));
             }
             if (resultHandler.failed()) {
               logger.error("failed ::" + resultHandler.cause());

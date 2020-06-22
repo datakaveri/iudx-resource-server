@@ -82,7 +82,6 @@ public class DataBrokerServiceTest {
 
     exchangeName = sb.toString();
     queueName = sb.toString();
-    entities = new JsonArray("[\"id1\", \"id2\"]");
     vHost = "IUDX";
     statusOk = 200;
     statusNotFound = 404;
@@ -159,7 +158,9 @@ public class DataBrokerServiceTest {
     propObj.put("userName", dataBrokerUserName);
     propObj.put("password", dataBrokerPassword);
     propObj.put("vHost", dataBrokerVhost);
+
     propObj.put("ip", dataBrokerIP);
+
     propObj.put("port", dataBrokerPort);
 
     /* Call the databroker constructor with the RabbitMQ client. */
@@ -170,7 +171,6 @@ public class DataBrokerServiceTest {
         new DataBrokerVerticle(), testContext.succeeding(id -> testContext.completeNow()));
   }
 
-  @Test
   @DisplayName("Testing Create Exchange")
   @Order(1)
   void successCreateExchange(VertxTestContext testContext) {
@@ -590,6 +590,7 @@ public class DataBrokerServiceTest {
     request.put("name", "alias-pawan");
     request.put("consumer", "pawan@google.org");
     request.put("type", "streaming");
+
     JsonArray entities = new JsonArray();
     entities.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/EM_01_0103_01");
@@ -652,6 +653,7 @@ public class DataBrokerServiceTest {
     expected.put("subscriptionID", queueName);
     JsonObject request = new JsonObject();
     request.put("subscriptionID", "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+
     databroker.deleteStreamingSubscription(
         request,
         handler -> {
