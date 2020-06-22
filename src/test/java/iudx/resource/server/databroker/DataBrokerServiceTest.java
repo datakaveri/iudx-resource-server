@@ -3,6 +3,7 @@ package iudx.resource.server.databroker;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Base64;
 import java.util.Properties;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -28,21 +29,21 @@ import io.vertx.rabbitmq.RabbitMQOptions;
 public class DataBrokerServiceTest {
 
   static DataBrokerService databroker;
-  static private Properties properties;
-  static private InputStream inputstream;
-  static private String dataBrokerIP;
-  static private int dataBrokerPort;
-  static private int dataBrokerManagementPort;
-  static private String dataBrokerVhost;
-  static private String dataBrokerUserName;
-  static private String dataBrokerPassword;
-  static private int connectionTimeout;
-  static private int requestedHeartbeat;
-  static private int handshakeTimeout;
-  static private int requestedChannelMax;
-  static private int networkRecoveryInterval;
-  static private WebClient webClient;
-  static private WebClientOptions webConfig;
+  private static Properties properties;
+  private static InputStream inputstream;
+  private static String dataBrokerIP;
+  private static int dataBrokerPort;
+  private static int dataBrokerManagementPort;
+  private static String dataBrokerVhost;
+  private static String dataBrokerUserName;
+  private static String dataBrokerPassword;
+  private static int connectionTimeout;
+  private static int requestedHeartbeat;
+  private static int handshakeTimeout;
+  private static int requestedChannelMax;
+  private static int networkRecoveryInterval;
+  private static WebClient webClient;
+  private static WebClientOptions webConfig;
   private static RabbitMQOptions config;
   private static RabbitMQClient client;
   private static String exchangeName;
@@ -81,12 +82,10 @@ public class DataBrokerServiceTest {
 
     exchangeName = sb.toString();
     queueName = sb.toString();
-    entities = new JsonArray("[\"id1\", \"id2\"]");
     vHost = "IUDX";
     statusOk = 200;
     statusNotFound = 404;
     statusNoContent = 204;
-
 
     logger.info("Exchange Name is " + exchangeName);
     logger.info("Queue Name is " + queueName);
@@ -116,7 +115,6 @@ public class DataBrokerServiceTest {
     } catch (Exception ex) {
 
       logger.info(ex.toString());
-
     }
 
     /* Configure the RabbitMQ Data Broker client with input from config files. */
@@ -134,7 +132,6 @@ public class DataBrokerServiceTest {
     config.setNetworkRecoveryInterval(networkRecoveryInterval);
     config.setAutomaticRecoveryEnabled(true);
 
-
     webConfig = new WebClientOptions();
     webConfig.setKeepAlive(true);
     webConfig.setConnectTimeout(86400000);
@@ -142,12 +139,15 @@ public class DataBrokerServiceTest {
     webConfig.setDefaultPort(dataBrokerManagementPort);
     webConfig.setKeepAliveTimeout(86400000);
 
-
-    /* Create a RabbitMQ Clinet with the configuration and vertx cluster instance. */
+    /*
+     * Create a RabbitMQ Clinet with the configuration and vertx cluster instance.
+     */
 
     client = RabbitMQClient.create(vertx, config);
 
-    /* Create a Vertx Web Client with the configuration and vertx cluster instance. */
+    /*
+     * Create a Vertx Web Client with the configuration and vertx cluster instance.
+     */
 
     webClient = WebClient.create(vertx, webConfig);
 
@@ -158,13 +158,14 @@ public class DataBrokerServiceTest {
     propObj.put("userName", dataBrokerUserName);
     propObj.put("password", dataBrokerPassword);
     propObj.put("vHost", dataBrokerVhost);
+    propObj.put("IP", dataBrokerIP);
+    propObj.put("port", dataBrokerPort);
 
     /* Call the databroker constructor with the RabbitMQ client. */
 
     databroker = new DataBrokerServiceImpl(client, webClient, propObj);
     testContext.completeNow();
   }
-
 
   @Test
   @DisplayName("Testing Create Exchange")
@@ -229,7 +230,6 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
-
   }
 
   @Test
@@ -299,10 +299,7 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
-
   }
-
-
 
   @Test
   @DisplayName("Listing all bindings of queue")
@@ -323,7 +320,6 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
-
   }
 
   @Test
@@ -349,7 +345,6 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
-
   }
 
   @Test
@@ -371,7 +366,6 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
-
   }
 
   @Test
@@ -395,7 +389,6 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
-
   }
 
   @Test
@@ -417,7 +410,6 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
-
   }
 
   @Test
@@ -441,7 +433,6 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
-
   }
 
   @Test
@@ -463,7 +454,6 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
-
   }
 
   @Test
@@ -485,7 +475,6 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
-
   }
 
   @Test
@@ -506,7 +495,6 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
-
   }
 
   @Test
@@ -538,7 +526,6 @@ public class DataBrokerServiceTest {
     request.put("O2", 19.66);
     request.put("NO2", 50.62);
 
-
     databroker.publishFromAdaptor(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -547,10 +534,89 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
-
   }
 
+  @Test
+  @DisplayName("Testing register streaming subscription")
+  @Order(17)
+  void successregisterStreamingSubscription(VertxTestContext testContext) {
 
+    Base64.Encoder encoder = Base64.getEncoder();
+    String queueNameencode = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan";
+    String queueName = encoder.encodeToString(queueNameencode.getBytes());
+    JsonObject expected = new JsonObject();
+    expected.put("subscriptionID", queueName);
+
+    expected.put("streamingURL",
+        "amqp://pawan@google.org:1234@68.183.80.248:5672/iudx/google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+
+    JsonObject request = new JsonObject();
+    request.put("name", "alias-pawan");
+    request.put("consumer", "pawan@google.org");
+    request.put("type", "streaming");
+    JsonArray array = new JsonArray();
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/EM_01_0103_01");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_03");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm2/EM_01_0103_04");
+    request.put("entities", array);
+
+    databroker.registerStreamingSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Register subscription response is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing get streaming subscription")
+  @Order(18)
+  void successlistStreamingSubscription(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    entities = new JsonArray("[\r\n"
+        + "     \"[\\\"rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02\\\",\\\"rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_03\\\"]\",\r\n"
+        + "     \"[\\\"rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/EM_01_0103_01\\\"]\",\r\n"
+        + "     \"[\\\"rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm2/EM_01_0103_04\\\"]\"\r\n"
+        + " ]");
+
+    expected.put("entities", entities);
+    JsonObject request = new JsonObject();
+    request.put("subscriptionID", "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+    databroker.listStreamingSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Register subscription response is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing delete streaming subscription")
+  @Order(19)
+  void successdeleteStreamingSubscription(VertxTestContext testContext) {
+    Base64.Encoder encoder = Base64.getEncoder();
+    String queueNameencode = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan";
+    String queueName = encoder.encodeToString(queueNameencode.getBytes());
+    JsonObject expected = new JsonObject();
+    expected.put("subscriptionID", queueName);
+    JsonObject request = new JsonObject();
+    request.put("subscriptionID", "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+    databroker.deleteStreamingSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Register subscription response is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
 }
-
-
