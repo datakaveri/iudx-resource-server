@@ -72,6 +72,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       ip = propObj.getString("ip");
       port = propObj.getInteger("port");
     }
+    webClient = webClientInstance;
   }
 
   /**
@@ -98,7 +99,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService deleteAdaptor(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -109,7 +110,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService listAdaptor(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -120,7 +121,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService registerStreamingSubscription(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -198,9 +199,16 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                         });
                   });
 
-              registerStreamingSubscriptionResponse.put("subscriptionID", queueName);
-              registerStreamingSubscriptionResponse.put("streamingURL", streamingUrl);
-              handler.handle(Future.succeededFuture(registerStreamingSubscriptionResponse));
+              if (resultHandlerqueue.result().containsKey("type")) {
+                registerStreamingSubscriptionResponse.put(
+                    "subscriptionID", resultHandlerqueue.result().getString("detail"));
+                handler.handle(Future.succeededFuture(registerStreamingSubscriptionResponse));
+
+              } else {
+                registerStreamingSubscriptionResponse.put("subscriptionID", queueName);
+                registerStreamingSubscriptionResponse.put("streamingURL", streamingUrl);
+                handler.handle(Future.succeededFuture(registerStreamingSubscriptionResponse));
+              }
             }
             if (resultHandlerqueue.failed()) {
               logger.error("failed ::" + resultHandlerqueue.cause());
@@ -242,7 +250,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService updateStreamingSubscription(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -253,7 +261,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService deleteStreamingSubscription(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -283,7 +291,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService listStreamingSubscription(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -292,13 +300,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       String queueNameencode = request.getString("subscriptionID");
       String queueName = encoder.encodeToString(queueNameencode.getBytes());
       JsonObject requestBody = new JsonObject();
-      requestBody.put("queueName", queueName);
+      requestBody.put("queueName", queueName);      
       Future<JsonObject> result = listQueueSubscribers(requestBody);
       result.onComplete(
           resultHandler -> {
             if (resultHandler.succeeded()) {
-
-              handler.handle(Future.succeededFuture(resultHandler.result()));
+              handler.handle(Future.succeededFuture(resultHandler.result()));              
             }
             if (resultHandler.failed()) {
               logger.error("failed ::" + resultHandler.cause());
@@ -311,7 +318,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService registerCallbackSubscription(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -322,7 +329,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService updateCallbackSubscription(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -333,7 +340,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService deleteCallbackSubscription(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -344,7 +351,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService listCallbackSubscription(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -355,7 +362,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService createExchange(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -428,7 +435,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService updateExchange(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -439,7 +446,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService deleteExchange(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -501,7 +508,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService listExchangeSubscribers(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -587,7 +594,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService createQueue(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -659,7 +666,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService updateQueue(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -670,7 +677,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService deleteQueue(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -734,7 +741,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService bindQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
@@ -809,7 +816,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService unbindQueue(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -892,7 +899,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService createvHost(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -957,7 +964,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService updatevHost(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -968,7 +975,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService deletevHost(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -1035,7 +1042,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService listvHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     if (request != null) {
@@ -1122,7 +1129,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService listQueueSubscribers(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -1204,7 +1211,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService publishFromAdaptor(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
