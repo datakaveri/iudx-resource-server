@@ -14,8 +14,8 @@ import io.vertx.core.json.JsonObject;
  * The Database Service.
  * <h1>Database Service</h1>
  * <p>
- * The Database Service in the IUDX Resource Server defines the operations to be performed
- * with the IUDX Database server.
+ * The Database Service in the IUDX Resource Server defines the operations to be
+ * performed with the IUDX Database server.
  * </p>
  * 
  * @see io.vertx.codegen.annotations.ProxyGen
@@ -30,16 +30,18 @@ public interface DatabaseService {
 
   /**
    * The searchQuery implements the search operation with the database.
+   * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
    * @return DatabaseService which is a Service
    */
-  
+
   @Fluent
   DatabaseService searchQuery(JsonObject request, Handler<AsyncResult<JsonArray>> handler);
 
   /**
    * The countQuery implements the count operation with the database.
+   * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
    * @return DatabaseService which is a Service
@@ -50,9 +52,10 @@ public interface DatabaseService {
 
   /**
    * The createProxy helps the code generation blocks to generate proxy code.
-   * @param vertx which is the vertx instance
+   * 
+   * @param vertx   which is the vertx instance
    * @param address which is the proxy address
-   * @return DatabaseServiceVertxEBProxy which is a service proxy 
+   * @return DatabaseServiceVertxEBProxy which is a service proxy
    */
 
   @GenIgnore
