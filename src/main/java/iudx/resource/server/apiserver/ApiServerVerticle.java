@@ -1,8 +1,18 @@
 package iudx.resource.server.apiserver;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -25,6 +35,8 @@ import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
+import iudx.resource.server.apiserver.management.ManagementApi;
+import iudx.resource.server.apiserver.management.ManagementApiImpl;
 import iudx.resource.server.apiserver.query.NGSILDQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
@@ -35,22 +47,14 @@ import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.filedownload.FileDownloadService;
 import iudx.resource.server.media.MediaService;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
 
 /**
  * The Resource Server API Verticle.
  * <h1>Resource Server API Verticle</h1>
  * <p>
- * The API Server verticle implements the IUDX Resource Server APIs. It handles the API requests
- * from the clients and interacts with the associated Service to respond.
+ * The API Server verticle implements the IUDX Resource Server APIs. It handles
+ * the API requests from the clients and interacts with the associated Service
+ * to respond.
  * </p>
  * 
  * @see io.vertx.core.Vertx
@@ -83,11 +87,12 @@ public class ApiServerVerticle extends AbstractVerticle {
   private final int port = 8443;
   private String keystore;
   private String keystorePassword;
+  private ManagementApi managementApi;
 
   /**
-   * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
-   * configuration, obtains a proxy for the Event bus services exposed through service discovery,
-   * start an HTTPs server at port 8443.
+   * This method is used to start the Verticle. It deploys a verticle in a
+   * cluster, reads the configuration, obtains a proxy for the Event bus services
+   * exposed through service discovery, start an HTTPs server at port 8443.
    * 
    * @throws Exception which is a startup exception
    */
@@ -122,7 +127,6 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     Vertx.clusteredVertx(options, res -> {
       if (res.succeeded()) {
-
         vertx = res.result();
         router = Router.router(vertx);
         properties = new Properties();
@@ -141,6 +145,18 @@ public class ApiServerVerticle extends AbstractVerticle {
         router.get(Constants.NGSILD_TEMPORAL_URL).handler(this::handleTemporalQuery);
         router.post(Constants.NGSILD_SUBSCRIPTION_URL).handler(this::handleSubscriptions);
 
+        /* Management Api endpoints */
+        // Exchange
+        router.post(Constants.IUDX_MANAGEMENT_EXCHANGE_URL).handler(this::createExchange);
+        router.delete(Constants.IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId")
+            .handler(this::deleteExchange);
+        router.get(Constants.IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId")
+            .handler(this::getExchangeDetails);
+        // Queue
+        router.post(Constants.IUDX_MANAGEMENT_QUEUE_URL).handler(this::createQueue);
+        router.delete(Constants.IUDX_MANAGEMENT_QUEUE_URL + "/:queueId").handler(this::deleteQueue);
+        router.get(Constants.IUDX_MANAGEMENT_QUEUE_URL + "/:queueId")
+            .handler(this::getQueueDetails);
         /* Read the configuration and set the HTTPs server properties. */
 
         try {
@@ -188,6 +204,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             databrokerServiceDiscoveryHandler -> {
               if (databrokerServiceDiscoveryHandler.succeeded()) {
                 databroker = databrokerServiceDiscoveryHandler.result();
+
                 LOGGER.info(
                     "\n +++++++ Service Discovery  Success. +++++++ \n +++++++ Service name is : "
                         + databroker.getClass().getName() + " +++++++ ");
@@ -240,13 +257,13 @@ public class ApiServerVerticle extends AbstractVerticle {
             LOGGER.info("\n +++++++ Service Discovery Failed. +++++++ ");
           }
         });
-
       }
     });
   }
 
   /**
-   * This method is used to handle all NGSI-LD queries for endpoint /ngsi-ld/v1/entities/**.
+   * This method is used to handle all NGSI-LD queries for endpoint
+   * /ngsi-ld/v1/entities/**.
    * 
    * @param routingContext RoutingContext Object
    */
@@ -464,12 +481,164 @@ public class ApiServerVerticle extends AbstractVerticle {
     }
   }
 
+  private void createExchange(RoutingContext routingContext) {
+    LOGGER.info("createExchange method started");
+    JsonObject requestJson = routingContext.getBodyAsJson();
+    HttpServerResponse response = routingContext.response();
+    System.out.println(databroker);
+    managementApi = new ManagementApiImpl(databroker);
+    authenticator.tokenInterospect(requestJson, requestJson, handler -> {
+      if (handler.succeeded()) {
+        Future<JsonObject> brokerResult = managementApi.createExchange(requestJson);
+        brokerResult.onComplete(brokerResultHandler -> {
+          if (brokerResultHandler.succeeded()) {
+            handleResponse(response, ResponseType.Created, brokerResultHandler.result().toString(),
+                false);
+          } else {
+            handleResponse(response, ResponseType.BadRequestData,
+                brokerResultHandler.cause().getMessage(), false);
+          }
+        });
+      } else {
+        handleResponse(response, ResponseType.InternalError, "Internal Server Error", true);
+      }
+    });
+
+  }
+
+  private void deleteExchange(RoutingContext routingContext) {
+    LOGGER.info("deleteExchange method started");
+    JsonObject requestJson = routingContext.getBodyAsJson();
+    HttpServerResponse response = routingContext.response();
+    String exchangeId = routingContext.request().getParam("exId");
+    authenticator.tokenInterospect(requestJson, requestJson, handler -> {
+      if (handler.succeeded()) {
+        Future<JsonObject> brokerResult = managementApi.deleteExchange(exchangeId);
+        brokerResult.onComplete(brokerResultHandler -> {
+          if (brokerResultHandler.succeeded()) {
+            handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
+                false);
+          } else {
+            handleResponse(response, ResponseType.BadRequestData,
+                brokerResultHandler.cause().getMessage(), false);
+          }
+        });
+      } else {
+        handleResponse(response, ResponseType.InternalError, "Internal Server Error", true);
+      }
+    });
+  }
+
+  private void getExchangeDetails(RoutingContext routingContext) {
+    LOGGER.info("getExchange method started");
+    JsonObject requestJson = routingContext.getBodyAsJson();
+    HttpServerResponse response = routingContext.response();
+    String exchangeId = routingContext.request().getParam("exId");
+    authenticator.tokenInterospect(requestJson, requestJson, handler -> {
+      if (handler.succeeded()) {
+        Future<JsonObject> brokerResult = managementApi.getExchangeDetails(exchangeId);
+        brokerResult.onComplete(brokerResultHandler -> {
+          if (brokerResultHandler.succeeded()) {
+            handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
+                false);
+          } else {
+            handleResponse(response, ResponseType.BadRequestData,
+                brokerResultHandler.cause().getMessage(), false);
+          }
+        });
+      } else {
+        handleResponse(response, ResponseType.InternalError, "Internal Server Error", true);
+      }
+    });
+  }
+
+  private void createQueue(RoutingContext routingContext) {
+    LOGGER.info("createQueue method started");
+    JsonObject requestJson = routingContext.getBodyAsJson();
+    HttpServerResponse response = routingContext.response();
+    authenticator.tokenInterospect(requestJson, requestJson, handler -> {
+      if (handler.succeeded()) {
+        Future<JsonObject> brokerResult = managementApi.createQueue(requestJson);
+        brokerResult.onComplete(brokerResultHandler -> {
+          if (brokerResultHandler.succeeded()) {
+            handleResponse(response, ResponseType.Created, brokerResultHandler.result().toString(),
+                false);
+          } else {
+            handleResponse(response, ResponseType.BadRequestData,
+                brokerResultHandler.cause().getMessage(), false);
+          }
+        });
+      } else {
+        handleResponse(response, ResponseType.InternalError, "Internal Server Error", true);
+      }
+    });
+  }
+
+  private void deleteQueue(RoutingContext routingContext) {
+    LOGGER.info("deleteQueue method started");
+    JsonObject requestJson = routingContext.getBodyAsJson();
+    HttpServerResponse response = routingContext.response();
+    String queueId = routingContext.request().getParam("queueId");
+    authenticator.tokenInterospect(requestJson, requestJson, handler -> {
+      if (handler.succeeded()) {
+        Future<JsonObject> brokerResult = managementApi.deleteQueue(queueId);
+        brokerResult.onComplete(brokerResultHandler -> {
+          if (brokerResultHandler.succeeded()) {
+            handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
+                false);
+          } else {
+            handleResponse(response, ResponseType.BadRequestData,
+                brokerResultHandler.cause().getMessage(), false);
+          }
+        });
+      } else {
+        handleResponse(response, ResponseType.InternalError, "Internal Server Error", true);
+      }
+    });
+  }
+
+  private void getQueueDetails(RoutingContext routingContext) {
+    LOGGER.info("deleteQueue method started");
+    JsonObject requestJson = routingContext.getBodyAsJson();
+    HttpServerResponse response = routingContext.response();
+    String queueId = routingContext.request().getParam("queueId");
+    authenticator.tokenInterospect(requestJson, requestJson, handler -> {
+      if (handler.succeeded()) {
+        Future<JsonObject> brokerResult = managementApi.getQueueDetails(queueId);
+        brokerResult.onComplete(brokerResultHandler -> {
+          if (brokerResultHandler.succeeded()) {
+            handleResponse(response, ResponseType.Created, brokerResultHandler.result().toString(),
+                false);
+          } else {
+            handleResponse(response, ResponseType.BadRequestData,
+                brokerResultHandler.cause().getMessage(), false);
+          }
+        });
+      } else {
+        handleResponse(response, ResponseType.InternalError, "Internal Server Error", true);
+      }
+    });
+  }
+
+  private void handleResponse(HttpServerResponse response, ResponseType responseType, String reply,
+      boolean isBodyRequired) {
+    if (isBodyRequired) {
+      response.putHeader("content-type", "application/json").setStatusCode(responseType.getCode())
+          .end(new RestResponse.Builder().withError(responseType).withMessage(reply).build()
+              .toJsonString());
+    } else {
+      response.putHeader("content-type", "application/json").setStatusCode(responseType.getCode())
+          .end(reply);
+
+    }
+  }
+
   /**
-   * Get the request query parameters delimited by <b>&</b>, <i><b>;</b>(semicolon) is considered as
-   * part of the parameter</i>.
+   * Get the request query parameters delimited by <b>&</b>,
+   * <i><b>;</b>(semicolon) is considered as part of the parameter</i>.
    * 
    * @param routingContext RoutingContext Object
-   * @param response HttpServerResponse
+   * @param response       HttpServerResponse
    * @return Optional Optional of Map
    */
   private Optional<MultiMap> getQueryParams(RoutingContext routingContext,
@@ -477,9 +646,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     MultiMap queryParams = null;
     try {
       queryParams = MultiMap.caseInsensitiveMultiMap();
-      Map<String, List<String>> decodedParams =
-          new QueryStringDecoder(routingContext.request().uri(), HttpConstants.DEFAULT_CHARSET,
-              true, 1024, true).parameters();
+      Map<String, List<String>> decodedParams = new QueryStringDecoder(
+          routingContext.request().uri(), HttpConstants.DEFAULT_CHARSET, true, 1024, true)
+              .parameters();
       for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
         queryParams.add(entry.getKey(), entry.getValue());
         System.out.println(entry.getKey() + " : " + entry.getValue());

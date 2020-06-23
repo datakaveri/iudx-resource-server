@@ -8,13 +8,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-
 /**
  * The Authentication Service Implementation.
  * <h1>Authentication Service Implementation</h1>
  * <p>
- * The Authentication Service implementation in the IUDX Resource Server implements the
- * definitions of the {@link iudx.resource.server.authenticator.AuthenticationService}.
+ * The Authentication Service implementation in the IUDX Resource Server
+ * implements the definitions of the
+ * {@link iudx.resource.server.authenticator.AuthenticationService}.
  * </p>
  * 
  * @version 1.0
@@ -24,7 +24,7 @@ import io.vertx.core.logging.LoggerFactory;
 public class AuthenticationServiceImpl implements AuthenticationService {
 
   private static final Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
-  
+
   /**
    * {@inheritDoc}
    */
@@ -35,7 +35,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     // added for testing.
     JsonArray jsonArray = new JsonArray();
     handler.handle(Future.succeededFuture(jsonArray));
-
     return null;
   }
 
