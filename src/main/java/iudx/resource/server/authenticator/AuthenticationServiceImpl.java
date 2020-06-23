@@ -35,7 +35,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     // added for testing.
     JsonArray jsonArray = new JsonArray();
     handler.handle(Future.succeededFuture(jsonArray));
-    return null;
+    return this;
   }
 
 }

@@ -10,14 +10,9 @@ import iudx.resource.server.databroker.DataBrokerService;
 public class ManagementApiImpl implements ManagementApi {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ManagementApiImpl.class);
-  private DataBrokerService databroker;
-
-  public ManagementApiImpl(DataBrokerService databroker) {
-    this.databroker = databroker;
-  }
 
   @Override
-  public Future<JsonObject> createExchange(JsonObject json) {
+  public Future<JsonObject> createExchange(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     System.out.println("data broker ::: " + databroker);
     databroker.createExchange(json, handler -> {
@@ -36,7 +31,7 @@ public class ManagementApiImpl implements ManagementApi {
   }
 
   @Override
-  public Future<JsonObject> deleteExchange(String exchangeid) {
+  public Future<JsonObject> deleteExchange(String exchangeid, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
     json.put("exchangeName", exchangeid);
@@ -56,7 +51,7 @@ public class ManagementApiImpl implements ManagementApi {
   }
 
   @Override
-  public Future<JsonObject> getExchangeDetails(String exchangeid) {
+  public Future<JsonObject> getExchangeDetails(String exchangeid, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
     json.put("exchangeName", exchangeid);
@@ -76,7 +71,7 @@ public class ManagementApiImpl implements ManagementApi {
   }
 
   @Override
-  public Future<JsonObject> createQueue(JsonObject json) {
+  public Future<JsonObject> createQueue(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     databroker.createQueue(json, handler -> {
       if (handler.succeeded()) {
@@ -94,7 +89,7 @@ public class ManagementApiImpl implements ManagementApi {
   }
 
   @Override
-  public Future<JsonObject> deleteQueue(String queueId) {
+  public Future<JsonObject> deleteQueue(String queueId, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
     json.put("queueName", queueId);
@@ -114,7 +109,7 @@ public class ManagementApiImpl implements ManagementApi {
   }
 
   @Override
-  public Future<JsonObject> getQueueDetails(String queueId) {
+  public Future<JsonObject> getQueueDetails(String queueId, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
     json.put("queueName", queueId);

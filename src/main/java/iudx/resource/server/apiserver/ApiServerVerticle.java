@@ -36,7 +36,6 @@ import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import iudx.resource.server.apiserver.management.ManagementApi;
-import iudx.resource.server.apiserver.management.ManagementApiImpl;
 import iudx.resource.server.apiserver.query.NGSILDQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
@@ -204,7 +203,6 @@ public class ApiServerVerticle extends AbstractVerticle {
             databrokerServiceDiscoveryHandler -> {
               if (databrokerServiceDiscoveryHandler.succeeded()) {
                 databroker = databrokerServiceDiscoveryHandler.result();
-
                 LOGGER.info(
                     "\n +++++++ Service Discovery  Success. +++++++ \n +++++++ Service name is : "
                         + databroker.getClass().getName() + " +++++++ ");
@@ -484,22 +482,39 @@ public class ApiServerVerticle extends AbstractVerticle {
   private void createExchange(RoutingContext routingContext) {
     LOGGER.info("createExchange method started");
     JsonObject requestJson = routingContext.getBodyAsJson();
+    LOGGER.info("request ::: " + requestJson);
+    HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    System.out.println(databroker);
-    managementApi = new ManagementApiImpl(databroker);
-    authenticator.tokenInterospect(requestJson, requestJson, handler -> {
-      if (handler.succeeded()) {
-        Future<JsonObject> brokerResult = managementApi.createExchange(requestJson);
-        brokerResult.onComplete(brokerResultHandler -> {
-          if (brokerResultHandler.succeeded()) {
-            handleResponse(response, ResponseType.Created, brokerResultHandler.result().toString(),
-                false);
-          } else {
+    String instanceID = request.getHeader("Host");
+    JsonObject authenticationInfo = new JsonObject();
+    if (request.headers().contains("token")) {
+      authenticationInfo.put("token", request.getHeader("token"));
+    } else {
+      authenticationInfo.put("token", "public");
+    }
+    requestJson.put("instanceID", instanceID);
+    authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
+      if (authHandler.succeeded()) {
+        LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
+        LOGGER.info("databroker :: " + databroker);
+        databroker.createExchange(requestJson, dataBrokerHandler -> {
+          if (dataBrokerHandler.succeeded()) {
+            JsonObject result = dataBrokerHandler.result();
+            if (!result.isEmpty() && !result.containsKey("type")) {
+              handleResponse(response, ResponseType.Created, dataBrokerHandler.result().toString(),
+                  false);
+            } else {
+              handleResponse(response, ResponseType.BadRequestData,
+                  dataBrokerHandler.result().toString(), false);
+            }
+          } else if (dataBrokerHandler.failed()) {
+            LOGGER.error(dataBrokerHandler.cause());
             handleResponse(response, ResponseType.BadRequestData,
-                brokerResultHandler.cause().getMessage(), false);
+                dataBrokerHandler.cause().getMessage(), false);
           }
         });
-      } else {
+      } else if (authHandler.failed()) {
+        LOGGER.error(authHandler.cause());
         handleResponse(response, ResponseType.InternalError, "Internal Server Error", true);
       }
     });
@@ -508,22 +523,40 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   private void deleteExchange(RoutingContext routingContext) {
     LOGGER.info("deleteExchange method started");
-    JsonObject requestJson = routingContext.getBodyAsJson();
+    JsonObject requestJson = new JsonObject();
+    HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String exchangeId = routingContext.request().getParam("exId");
-    authenticator.tokenInterospect(requestJson, requestJson, handler -> {
-      if (handler.succeeded()) {
-        Future<JsonObject> brokerResult = managementApi.deleteExchange(exchangeId);
-        brokerResult.onComplete(brokerResultHandler -> {
-          if (brokerResultHandler.succeeded()) {
-            handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
-                false);
-          } else {
+    String instanceID = request.getHeader("Host");
+    JsonObject authenticationInfo = new JsonObject();
+    if (request.headers().contains("token")) {
+      authenticationInfo.put("token", request.getHeader("token"));
+    } else {
+      authenticationInfo.put("token", "public");
+    }
+    String exchangeId = request.getParam("exId");
+    requestJson.put("instanceID", instanceID);
+    authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
+      if (authHandler.succeeded()) {
+        JsonObject brokerJson = new JsonObject();
+        brokerJson.put("exchangeName", exchangeId);
+        databroker.deleteExchange(brokerJson, dataBrokerHandler -> {
+          if (dataBrokerHandler.succeeded()) {
+            JsonObject result = dataBrokerHandler.result();
+            if (!result.isEmpty() && !result.containsKey("type")) {
+              handleResponse(response, ResponseType.Ok, dataBrokerHandler.result().toString(),
+                  false);
+            } else {
+              handleResponse(response, ResponseType.BadRequestData,
+                  dataBrokerHandler.result().toString(), false);
+            }
+          } else if (dataBrokerHandler.failed()) {
+            LOGGER.error(dataBrokerHandler.cause());
             handleResponse(response, ResponseType.BadRequestData,
-                brokerResultHandler.cause().getMessage(), false);
+                dataBrokerHandler.cause().getMessage(), false);
           }
         });
-      } else {
+      } else if (authHandler.failed()) {
+        LOGGER.error(authHandler.cause());
         handleResponse(response, ResponseType.InternalError, "Internal Server Error", true);
       }
     });
@@ -531,22 +564,42 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   private void getExchangeDetails(RoutingContext routingContext) {
     LOGGER.info("getExchange method started");
-    JsonObject requestJson = routingContext.getBodyAsJson();
+    JsonObject requestJson = new JsonObject();
+    HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String exchangeId = routingContext.request().getParam("exId");
-    authenticator.tokenInterospect(requestJson, requestJson, handler -> {
-      if (handler.succeeded()) {
-        Future<JsonObject> brokerResult = managementApi.getExchangeDetails(exchangeId);
-        brokerResult.onComplete(brokerResultHandler -> {
-          if (brokerResultHandler.succeeded()) {
-            handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
-                false);
-          } else {
+    String instanceID = request.getHeader("Host");
+    JsonObject authenticationInfo = new JsonObject();
+    LOGGER.info("request :: " + request);
+    LOGGER.info("request json :: " + requestJson);
+    if (request.headers().contains("token")) {
+      authenticationInfo.put("token", request.getHeader("token"));
+    } else {
+      authenticationInfo.put("token", "public");
+    }
+    String exchangeId = request.getParam("exId");
+    requestJson.put("instanceID", instanceID);
+    authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
+      if (authHandler.succeeded()) {
+        JsonObject brokerJson = new JsonObject();
+        brokerJson.put("exchangeName", exchangeId);
+        databroker.listExchangeSubscribers(brokerJson, dataBrokerHandler -> {
+          if (dataBrokerHandler.succeeded()) {
+            JsonObject result = dataBrokerHandler.result();
+            if (!result.isEmpty() && !result.containsKey("type")) {
+              handleResponse(response, ResponseType.Ok, dataBrokerHandler.result().toString(),
+                  false);
+            } else {
+              handleResponse(response, ResponseType.BadRequestData,
+                  dataBrokerHandler.result().toString(), false);
+            }
+          } else if (dataBrokerHandler.failed()) {
+            LOGGER.error(dataBrokerHandler.cause());
             handleResponse(response, ResponseType.BadRequestData,
-                brokerResultHandler.cause().getMessage(), false);
+                dataBrokerHandler.cause().getMessage(), false);
           }
         });
-      } else {
+      } else if (authHandler.failed()) {
+        LOGGER.error(authHandler.cause());
         handleResponse(response, ResponseType.InternalError, "Internal Server Error", true);
       }
     });
@@ -558,7 +611,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     authenticator.tokenInterospect(requestJson, requestJson, handler -> {
       if (handler.succeeded()) {
-        Future<JsonObject> brokerResult = managementApi.createQueue(requestJson);
+        Future<JsonObject> brokerResult = managementApi.createQueue(requestJson, databroker);
         brokerResult.onComplete(brokerResultHandler -> {
           if (brokerResultHandler.succeeded()) {
             handleResponse(response, ResponseType.Created, brokerResultHandler.result().toString(),
@@ -581,7 +634,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String queueId = routingContext.request().getParam("queueId");
     authenticator.tokenInterospect(requestJson, requestJson, handler -> {
       if (handler.succeeded()) {
-        Future<JsonObject> brokerResult = managementApi.deleteQueue(queueId);
+        Future<JsonObject> brokerResult = managementApi.deleteQueue(queueId, databroker);
         brokerResult.onComplete(brokerResultHandler -> {
           if (brokerResultHandler.succeeded()) {
             handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
@@ -604,7 +657,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String queueId = routingContext.request().getParam("queueId");
     authenticator.tokenInterospect(requestJson, requestJson, handler -> {
       if (handler.succeeded()) {
-        Future<JsonObject> brokerResult = managementApi.getQueueDetails(queueId);
+        Future<JsonObject> brokerResult = managementApi.getQueueDetails(queueId, databroker);
         brokerResult.onComplete(brokerResultHandler -> {
           if (brokerResultHandler.succeeded()) {
             handleResponse(response, ResponseType.Created, brokerResultHandler.result().toString(),
