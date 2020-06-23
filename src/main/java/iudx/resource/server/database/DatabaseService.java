@@ -9,6 +9,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.elasticsearch.client.RestClient;
 
 /**
  * The Database Service.
@@ -27,6 +28,25 @@ import io.vertx.core.json.JsonObject;
 @VertxGen
 @ProxyGen
 public interface DatabaseService {
+
+  String GEO_KEY = "geoJsonLocation";
+  String GEO_CIRCLE = "circle";
+  String GEO_BBOX = "envelope";
+  String COORDINATES_KEY = "coordinates";
+  String GEO_RELATION_KEY = "relation";
+  String TYPE_KEY = "type";
+  String GEO_SHAPE_KEY = "geo_shape";
+  String GEO_RADIUS = "radius";
+  String SHAPE_KEY = "shape";
+  String QUERY_KEY = "query";
+  String FILTER_KEY = "filter";
+  String BOOL_KEY = "bool";
+  String RESOURCE_ID_KEY = "resource-id";
+  String VARANASI_SWM_SEARCH_INDEX = "varanasi-swm-vehicles/_search";
+  String FILTER_PATH = "?filter_path=took,hits.hits._source";
+  String VARANASI_OTHER_SEARCH_INDEX = "varanasi-other/_search";
+  String VARANASI_TEST_SEARCH_INDEX = "varanasi/_search?filter_path=took,hits.hits._source";
+  String SOURCE_FILTER_KEY = "_source";
 
   /**
    * The searchQuery implements the search operation with the database.
@@ -51,11 +71,21 @@ public interface DatabaseService {
   DatabaseService countQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
+   * The create implements the count operation with the database.
+   * @param client RestClient to perform ES queries.
+   * @return DatabaseService object.
+   */
+
+  @GenIgnore
+  static DatabaseService create(RestClient client) {
+    return new DatabaseServiceImpl(client);
+  }
+
+  /**
    * The createProxy helps the code generation blocks to generate proxy code.
-   * 
-   * @param vertx   which is the vertx instance
+   * @param vertx which is the vertx instance
    * @param address which is the proxy address
-   * @return DatabaseServiceVertxEBProxy which is a service proxy
+   * @return DatabaseServiceVertxEBProxy which is a service proxy 
    */
 
   @GenIgnore
