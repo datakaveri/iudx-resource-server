@@ -1,5 +1,13 @@
 package iudx.resource.server.database;
 
+import java.io.IOException;
+
+import org.apache.http.util.EntityUtils;
+import org.elasticsearch.client.Request;
+import org.elasticsearch.client.Response;
+import org.elasticsearch.client.ResponseListener;
+import org.elasticsearch.client.RestClient;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -7,20 +15,13 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import java.io.IOException;
-import org.apache.http.util.EntityUtils;
-import org.elasticsearch.client.Request;
-import org.elasticsearch.client.Response;
-import org.elasticsearch.client.ResponseListener;
-import org.elasticsearch.client.RestClient;
-
 
 /**
  * The Database Service Implementation.
  * <h1>Database Service Implementation</h1>
  * <p>
- * The Database Service implementation in the IUDX Resource Server implements the definitions of the
- * {@link iudx.resource.server.database.DatabaseService}.
+ * The Database Service implementation in the IUDX Resource Server implements
+ * the definitions of the {@link iudx.resource.server.database.DatabaseService}.
  * </p>
  * 
  * @version 1.0
@@ -41,8 +42,8 @@ public class DatabaseServiceImpl implements DatabaseService {
    * Performs a ElasticSearch search query using the low level REST client.
    * 
    * @param request Json object received from the ApiServerVerticle
-   * @param handler Handler to return database response in case of success and appropriate error
-   *        message in case of failure
+   * @param handler Handler to return database response in case of success and
+   *                appropriate error message in case of failure
    */
 
   @Override
@@ -65,7 +66,8 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
     // TODO: Need to automate the Index flow using the instanceID field.
     // Need to populate a HashMap containing the instanceID and the indexName
-    // We need to discuss if we need to have a single index or an index per group to avoid any
+    // We need to discuss if we need to have a single index or an index per group to
+    // avoid any
     // dependency
     String resourceGroup = ""; // request.getJsonArray("id").getString(0).split("/")[3];
     logger.info("Resource Group is " + resourceGroup);
@@ -131,8 +133,8 @@ public class DatabaseServiceImpl implements DatabaseService {
    * Performs a ElasticSearch count query using the low level REST client.
    * 
    * @param request Json object received from the ApiServerVerticle
-   * @param handler Handler to return database response in case of success and appropriate error
-   *        message in case of failure
+   * @param handler Handler to return database response in case of success and
+   *                appropriate error message in case of failure
    */
   @Override
   public DatabaseService countQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -179,8 +181,8 @@ public class DatabaseServiceImpl implements DatabaseService {
             return;
           }
           JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
-          handler.handle(Future.succeededFuture(new JsonObject()
-              .put("Count", responseJson.getInteger("count"))));
+          handler.handle(Future
+              .succeededFuture(new JsonObject().put("Count", responseJson.getInteger("count"))));
         } catch (IOException e) {
           logger.error("DB ERROR:\n");
           e.printStackTrace();
@@ -200,8 +202,8 @@ public class DatabaseServiceImpl implements DatabaseService {
   }
 
   /**
-   * Decodes and constructs ElasticSearch Search/Count query based on the parameters passed in the
-   * request.
+   * Decodes and constructs ElasticSearch Search/Count query based on the
+   * parameters passed in the request.
    * 
    * @param request Json object containing various fields related to query-type.
    * @return JsonObject which contains fully formed ElasticSearch query.
@@ -212,8 +214,8 @@ public class DatabaseServiceImpl implements DatabaseService {
     JsonObject elasticQuery = new JsonObject();
     JsonArray id = request.getJsonArray("id");
     JsonArray filterQuery = new JsonArray();
-    JsonObject termQuery =
-        new JsonObject().put("terms", new JsonObject().put(RESOURCE_ID_KEY + ".keyword", id));
+    JsonObject termQuery = new JsonObject().put("terms",
+        new JsonObject().put(RESOURCE_ID_KEY + ".keyword", id));
 
     filterQuery.add(termQuery);
     if (request.containsKey("search") && request.getBoolean("search")) {
@@ -242,8 +244,9 @@ public class DatabaseServiceImpl implements DatabaseService {
         relation = request.getString("georel");
         coordinates = request.getJsonArray("coordinates");
         int length = coordinates.getJsonArray(0).size();
-        if (geometry.equalsIgnoreCase("polygon") && !coordinates.getJsonArray(0).getJsonArray(0)
-            .getDouble(0).equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(0))
+        if (geometry.equalsIgnoreCase("polygon")
+            && !coordinates.getJsonArray(0).getJsonArray(0).getDouble(0)
+                .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(0))
             && !coordinates.getJsonArray(0).getJsonArray(0).getDouble(1)
                 .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(1))) {
           return new JsonObject().put("Error", "Coordinate mismatch (Polygon)");

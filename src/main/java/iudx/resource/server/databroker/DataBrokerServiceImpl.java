@@ -1,5 +1,14 @@
 package iudx.resource.server.databroker;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Map;
+
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.http.HttpStatus;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -13,20 +22,14 @@ import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.rabbitmq.RabbitMQClient;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Map;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.http.HttpStatus;
 
 /**
  * The Data Broker Service Implementation.
  * <h1>Data Broker Service Implementation</h1>
  * <p>
- * The Data Broker Service implementation in the IUDX Resource Server implements the definitions of
- * the {@link iudx.resource.server.databroker.DataBrokerService}.
+ * The Data Broker Service implementation in the IUDX Resource Server implements
+ * the definitions of the
+ * {@link iudx.resource.server.databroker.DataBrokerService}.
  * </p>
  * 
  * @version 1.0
@@ -46,10 +49,10 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   private String vhost;
 
   /**
-   * This is a constructor which is used by the DataBroker Verticle to instantiate a RabbitMQ
-   * client.
+   * This is a constructor which is used by the DataBroker Verticle to instantiate
+   * a RabbitMQ client.
    * 
-   * @param clientInstance which is a RabbitMQ client
+   * @param clientInstance    which is a RabbitMQ client
    * @param webClientInstance which is a Vertx Web client
    */
 
@@ -152,8 +155,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                             logger.info("Write permission set on topic for exchange "
                                 + obj.getString("exchange"));
                             /* Bind the exchange with the database and adaptorLogs queue */
-                            Future<JsonObject> queueBindFuture =
-                                queueBinding(domain + "/" + userNameSha + "/" + id);
+                            Future<JsonObject> queueBindFuture = queueBinding(
+                                domain + "/" + userNameSha + "/" + id);
                             queueBindFuture.onComplete(res -> {
                               if (res.succeeded()) {
                                 logger.info("Queue_Database, Queue_adaptorLogs binding done with "
@@ -174,7 +177,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                                 logger.info("registerResponse : " + registerResponse);
                                 handler.handle(Future.succeededFuture(registerResponse));
 
-
                               } else {
                                 /* Handle Queue Error */
                                 logger.error(
@@ -184,7 +186,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
                               }
                             });
-
 
                           } else {
                             /* Handle Topic Permission Error */
@@ -342,7 +343,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * The createUserIfNotExist implements the create user if does not exist.
    * 
    * @param userName which is a String
-   * @param vhost which is a String
+   * @param vhost    which is a String
    * @return response which is a Future object of promise of Json type
    **/
   Future<JsonObject> createUserIfNotExist(String userName, String vhost) {
@@ -375,10 +376,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   }
 
   /**
-   * createUserIfNotExist helper method which check user existence. Create user if not present
+   * createUserIfNotExist helper method which check user existence. Create user if
+   * not present
    * 
    * @param userName which is a String
-   * @param vhost which is a String
+   * @param vhost    which is a String
    * @return response which is a Future object of promise of Json type
    **/
   Future<JsonObject> createUserIfNotPresent(String userName, String vhost) {
@@ -386,7 +388,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     /* Get domain, shaUsername from userName */
     String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
     String shaUsername = domain + encodedValue("/") + getSha(userName);
-    // This API requires user name in path parameter. Encode the username as it contains a "/"
+    // This API requires user name in path parameter. Encode the username as it
+    // contains a "/"
     String url = "/api/users/" + shaUsername;
     /* Check if user exists */
     HttpRequest<Buffer> request = webClient.get(url).basicAuthentication(user, password);
@@ -444,7 +447,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * CreateUserIfNotPresent's helper method which creates user if not present.
    * 
    * @param userName which is a String
-   * @param vhost which is a String
+   * @param vhost    which is a String
    * @return response which is a Future object of promise of Json type
    **/
   Future<JsonObject> createUser(String shaUsername, String vhost, String url) {
@@ -503,8 +506,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /**
    * set topic permissions.
    * 
-   * @param vhost which is a String
-   * @param adaptorID which is a String
+   * @param vhost       which is a String
+   * @param adaptorID   which is a String
    * @param shaUsername which is a String
    * @return response which is a Future object of promise of Json type
    **/
@@ -553,7 +556,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * set vhost permissions for given userName.
    * 
    * @param shaUsername which is a String
-   * @param vhost which is a String
+   * @param vhost       which is a String
    * @return response which is a Future object of promise of Json type
    **/
   private Future<JsonObject> setVhostPermissions(String shaUsername, String vhost) {
@@ -562,15 +565,16 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     String url = "/api/permissions/" + vhost + "/" + shaUsername;
     JsonObject vhostPermissions = new JsonObject();
 
-    // all keys are mandatory. empty strings used for configure,read as not permitted.
+    // all keys are mandatory. empty strings used for configure,read as not
+    // permitted.
     vhostPermissions.put(Constants.CONFIGURE, Constants.DENY);
     vhostPermissions.put(Constants.WRITE, Constants.ALLOW);
     vhostPermissions.put(Constants.READ, Constants.DENY);
 
     Promise<JsonObject> promise = Promise.promise();
     // now set all mandatory permissions for given vhost for newly created user
-    HttpRequest<Buffer> vhostPermissionRequest =
-        webClient.put(url).basicAuthentication(user, password);
+    HttpRequest<Buffer> vhostPermissionRequest = webClient.put(url).basicAuthentication(user,
+        password);
     /* Construct a response object */
     JsonObject vhostPermissionResponse = new JsonObject();
 
@@ -621,7 +625,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   }
 
   /**
-   * This method is as simple as but it can have more sophisticated encryption logic.
+   * This method is as simple as but it can have more sophisticated encryption
+   * logic.
    * 
    * @param plainUserName which is a String
    * @return encodedValue which is a String
@@ -647,7 +652,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   }
 
   /**
-   * TODO This method checks the if for special characters other than hyphen, A-Z, a-z and 0-9.
+   * TODO This method checks the if for special characters other than hyphen, A-Z,
+   * a-z and 0-9.
    **/
 
   private boolean validateID(String id) {
@@ -802,8 +808,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   }
 
   /**
-   * The listAdaptor implements the list of bindings for an exchange (source). This method has
-   * similar functionality as listExchangeSubscribers(JsonObject) method
+   * The listAdaptor implements the list of bindings for an exchange (source).
+   * This method has similar functionality as listExchangeSubscribers(JsonObject)
+   * method
    * 
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
@@ -942,9 +949,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
       });
     }
-    return null;
+    return this;
   }
-
 
   /**
    * The createExchange implements the create exchange.
@@ -1097,7 +1103,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   }
 
   /**
-   * The listExchangeSubscribers implements the list of bindings for an exchange (source).
+   * The listExchangeSubscribers implements the list of bindings for an exchange
+   * (source).
    * 
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
@@ -1397,9 +1404,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
     if (request != null && !request.isEmpty()) {
 
-
       Future<JsonObject> result = unbindQueue(request);
-
 
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
@@ -1731,7 +1736,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     return null;
   }
 
-
   /**
    * The listQueueSubscribers implements the list of bindings for a queue.
    * 
@@ -1886,7 +1890,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
               }
 
             });
-
 
           } else {
             logger.error("Either adaptor does not exist or some other error to publish message");

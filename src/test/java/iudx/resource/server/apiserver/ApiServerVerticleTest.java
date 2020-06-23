@@ -2,12 +2,14 @@ package iudx.resource.server.apiserver;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
@@ -31,12 +33,13 @@ public class ApiServerVerticleTest {
 
   private static WebClient client;
 
-  ApiServerVerticleTest() {}
+  ApiServerVerticleTest() {
+  }
 
   @BeforeAll
   public static void setup(Vertx vertx, VertxTestContext testContext) {
-    WebClientOptions clientOptions =
-        new WebClientOptions().setSsl(true).setVerifyHost(false).setTrustAll(true);
+    WebClientOptions clientOptions = new WebClientOptions().setSsl(true).setVerifyHost(false)
+        .setTrustAll(true);
     client = WebClient.create(vertx, clientOptions);
 
     ResourceServerStarter starter = new ResourceServerStarter();
@@ -98,6 +101,25 @@ public class ApiServerVerticleTest {
         assertTrue(res.containsKey("details"));
 
         assertEquals(res.getInteger("type"), 400);
+        testContext.completeNow();
+      } else if (ar.failed()) {
+        testContext.failed();
+      }
+    });
+  }
+
+  @Test
+  @Order(3)
+  @Description("testing management api '/exchange' to create a exchange")
+  public void testCreateExchange(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.IUDX_MANAGEMENT_EXCHANGE_URL;
+    JsonObject request = new JsonObject();
+    request.put("exchangeName", "abcdfef");
+    client.post(PORT, BASE_URL, apiUrl).sendJsonObject(request, ar -> {
+      if (ar.succeeded()) {
+        JsonObject res = ar.result().bodyAsJsonObject();
+        assertEquals(ResponseType.Created.getCode(), ar.result().statusCode());
+        assertEquals(res.getString("exchange"), request.getString("exchangeName"));
         testContext.completeNow();
       } else if (ar.failed()) {
         testContext.failed();
