@@ -178,8 +178,10 @@ public class DatabaseServiceImpl implements DatabaseService {
         coordinates = request.getJsonArray("coordinates");
         int length = coordinates.getJsonArray(0).size();
         if (geometry.equalsIgnoreCase("polygon")
-            && (coordinates.getJsonArray(0).getJsonArray(0)
-              != coordinates.getJsonArray(0).getJsonArray(length - 1))) {
+            && ((!coordinates.getJsonArray(0).getJsonArray(0).getDouble(0)
+            .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(0)))
+            || !coordinates.getJsonArray(0).getJsonArray(0).getDouble(1)
+            .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(1)))) {
           return new JsonObject().put("Error", "Coordinate mismatch (Polygon)");
         }
         shapeJson.put(SHAPE_KEY, new JsonObject()

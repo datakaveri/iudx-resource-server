@@ -25,7 +25,7 @@ public class DatabaseServiceTest {
   private static DatabaseService dbService;
   private static Vertx vertxObj;
   private static RestClient client;
-  private static final String DB_IP_ADDRESS = "";
+  private static final String DB_IP_ADDRESS = "1";
   private static final int DB_PORT = 0;
 
   @BeforeAll
