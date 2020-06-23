@@ -178,14 +178,16 @@ public class DataBrokerServiceTest {
     JsonObject request = new JsonObject();
     request.put("exchangeName", exchangeName);
 
-    databroker.createExchange(request, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        logger.info("Create Exchange response is : " + response);
-        assertEquals(expected, response);
-      }
-      testContext.completeNow();
-    });
+    databroker.createExchange(
+        request,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result();
+            logger.info("Create Exchange response is : " + response);
+            assertEquals(expected, response);
+          }
+          testContext.completeNow();
+        });
   }
 
   @Test
@@ -201,14 +203,16 @@ public class DataBrokerServiceTest {
     JsonObject request = new JsonObject();
     request.put("exchangeName", exchangeName);
 
-    databroker.createExchange(request, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        logger.info("Create Exchange response is : " + response);
-        assertEquals(expected, response);
-      }
-      testContext.completeNow();
-    });
+    databroker.createExchange(
+        request,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result();
+            logger.info("Create Exchange response is : " + response);
+            assertEquals(expected, response);
+          }
+          testContext.completeNow();
+        });
   }
 
   @Test
@@ -245,14 +249,16 @@ public class DataBrokerServiceTest {
     JsonObject request = new JsonObject();
     request.put("queueName", queueName);
 
-    databroker.createQueue(request, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        logger.info("Create Exchange response is : " + response);
-        assertEquals(expected, response);
-      }
-      testContext.completeNow();
-    });
+    databroker.createQueue(
+        request,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result();
+            logger.info("Create Exchange response is : " + response);
+            assertEquals(expected, response);
+          }
+          testContext.completeNow();
+        });
   }
 
   @Test
@@ -270,14 +276,16 @@ public class DataBrokerServiceTest {
     request.put("exchangeName", exchangeName);
     request.put("entities", entities);
 
-    databroker.bindQueue(request, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        logger.info("Bind Queue response is : " + response);
-        assertEquals(expected, response);
-      }
-      testContext.completeNow();
-    });
+    databroker.bindQueue(
+        request,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result();
+            logger.info("Bind Queue response is : " + response);
+            assertEquals(expected, response);
+          }
+          testContext.completeNow();
+        });
   }
 
   @Test
@@ -291,14 +299,16 @@ public class DataBrokerServiceTest {
     JsonObject request = new JsonObject();
     request.put("exchangeName", exchangeName);
 
-    databroker.listExchangeSubscribers(request, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        logger.info("List exchnage bindings response is : " + response);
-        assertEquals(expected, response);
-      }
-      testContext.completeNow();
-    });
+    databroker.listExchangeSubscribers(
+        request,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result();
+            logger.info("List exchnage bindings response is : " + response);
+            assertEquals(expected, response);
+          }
+          testContext.completeNow();
+        });
   }
 
   @Test
@@ -610,6 +620,7 @@ public class DataBrokerServiceTest {
     expected.put("subscriptionID", queueName);
     JsonObject request = new JsonObject();
     request.put("subscriptionID", "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+
     databroker.deleteStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
