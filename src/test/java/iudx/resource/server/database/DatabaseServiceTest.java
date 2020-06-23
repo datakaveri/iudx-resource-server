@@ -56,6 +56,7 @@ public class DatabaseServiceTest {
 
     }
 
+    // TODO : Need to enable TLS using xpack security
     client = RestClient.builder(new HttpHost(databaseIP, databasePort, "http")).build();
     vertx.deployVerticle(new DatabaseVerticle(), testContext.succeeding(id -> {
       logger.info("Successfully deployed Verticle for Test");
