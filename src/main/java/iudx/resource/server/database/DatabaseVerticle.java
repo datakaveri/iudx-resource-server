@@ -12,14 +12,18 @@ import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Properties;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
+
 /**
  * The Database Verticle.
  * <h1>Database Verticle</h1>
  * <p>
- * The Database Verticle implementation in the the IUDX Resource Server exposes the {@link
- * iudx.resource.server.database.DatabaseService} over the Vert.x Event Bus.
+ * The Database Verticle implementation in the the IUDX Resource Server exposes the
+ * {@link iudx.resource.server.database.DatabaseService} over the Vert.x Event Bus.
  * </p>
  *
  * @version 1.0
@@ -36,9 +40,11 @@ public class DatabaseVerticle extends AbstractVerticle {
   private Record record;
   private DatabaseService database;
   private RestClient client;
+  private Properties properties;
+  private InputStream inputstream;
+  private String databaseIP;
+  private int databasePort;
   private static final String DATABASE_SERVICE_ADDRESS = "iudx.rs.database.service";
-  private static final String DB_IP_ADDRESS = "";
-  private static final int DB_PORT = 0;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
@@ -51,11 +57,30 @@ public class DatabaseVerticle extends AbstractVerticle {
   @Override
   public void start(Promise<Void> startPromise) throws Exception {
 
+
+    /* Read the configuration and set the rabbitMQ server properties. */
+    properties = new Properties();
+    inputstream = null;
+
+    try {
+
+      inputstream = new FileInputStream("config.properties");
+      properties.load(inputstream);
+
+      databaseIP = properties.getProperty("databaseIP");
+      databasePort = Integer.parseInt(properties.getProperty("databasePort"));
+
+    } catch (Exception ex) {
+
+      logger.info(ex.toString());
+
+    }
+
     /* Create a reference to HazelcastClusterManager. */
 
     mgr = new HazelcastClusterManager();
     options = new VertxOptions().setClusterManager(mgr);
-    client = RestClient.builder(new HttpHost(DB_IP_ADDRESS, DB_PORT, "http")).build();
+    client = RestClient.builder(new HttpHost(databaseIP, databasePort, "http")).build();
 
     /* Create or Join a Vert.x Cluster. */
 

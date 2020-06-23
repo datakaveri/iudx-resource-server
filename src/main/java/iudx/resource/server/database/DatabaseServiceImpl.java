@@ -19,8 +19,8 @@ import org.elasticsearch.client.RestClient;
  * The Database Service Implementation.
  * <h1>Database Service Implementation</h1>
  * <p>
- * The Database Service implementation in the IUDX Resource Server implements
- * the definitions of the {@link iudx.resource.server.database.DatabaseService}.
+ * The Database Service implementation in the IUDX Resource Server implements the definitions of the
+ * {@link iudx.resource.server.database.DatabaseService}.
  * </p>
  * 
  * @version 1.0
@@ -39,10 +39,10 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   /**
    * Performs a ElasticSearch search query using the low level REST client.
+   * 
    * @param request Json object received from the ApiServerVerticle
-   * @param handler Handler to return database response
-   *                in case of success and appropriate error message
-   *                in case of failure
+   * @param handler Handler to return database response in case of success and appropriate error
+   *        message in case of failure
    */
 
   @Override
@@ -58,11 +58,18 @@ public class DatabaseServiceImpl implements DatabaseService {
       handler.handle(Future.failedFuture("resource-id is empty"));
       return null;
     }
-    if (!request.containsKey("search-type")) {
-      handler.handle(Future.failedFuture("No search-type found"));
+    if (!request.containsKey("searchType")) {
+      handler.handle(Future.failedFuture("No searchType found"));
       return null;
     }
+    // TODO: Need to automate the Index flow using the instanceID field.
+    // Need to populate a HashMap containing the instanceID and the indexName
+    // We need to discuss if we need to have a single index or an index per group to avoid any
+    // dependency
     String resourceGroup = ""; // request.getJsonArray("id").getString(0).split("/")[3];
+    logger.info("Resource Group is " + resourceGroup);
+    String resourceServer = request.getJsonArray("id").getString(0).split("/")[0];
+    logger.info("Resource Server instanceID is " + resourceServer);
     if (request.getBoolean("isTest")) {
       elasticRequest = new Request("GET", VARANASI_TEST_SEARCH_INDEX + FILTER_PATH);
     } else if ("varanasi-swm-vehicles".equalsIgnoreCase(resourceGroup)) {
@@ -99,11 +106,11 @@ public class DatabaseServiceImpl implements DatabaseService {
             JsonObject jsonTemp = (JsonObject) json;
             dbResponse.add(jsonTemp.getJsonObject("_source"));
           }
-            handler.handle(Future.succeededFuture(dbResponse));
-          } catch (IOException e) {
-              logger.info("DB ERROR: " + e.getCause().getMessage());
-              handler.handle(Future.failedFuture("DB ERROR"));
-          }
+          handler.handle(Future.succeededFuture(dbResponse));
+        } catch (IOException e) {
+          logger.info("DB ERROR: " + e.getCause().getMessage());
+          handler.handle(Future.failedFuture("DB ERROR"));
+        }
       }
 
       @Override
@@ -117,10 +124,10 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   /**
    * Performs a ElasticSearch count query using the low level REST client.
+   * 
    * @param request Json object received from the ApiServerVerticle
-   * @param handler Handler to return database response
-   *                in case of success and appropriate error message
-   *                in case of failure
+   * @param handler Handler to return database response in case of success and appropriate error
+   *        message in case of failure
    */
   @Override
   public DatabaseService countQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
@@ -129,22 +136,22 @@ public class DatabaseServiceImpl implements DatabaseService {
   }
 
   /**
-   * Decodes and constructs ElasticSearch Search/Count query based on the parameters
-   * passed in the request.
+   * Decodes and constructs ElasticSearch Search/Count query based on the parameters passed in the
+   * request.
    * 
    * @param request Json object containing various fields related to query-type.
    * @return JsonObject which contains fully formed ElasticSearch query.
    */
 
   public JsonObject queryDecoder(JsonObject request) {
-    String searchType = request.getString("search-type");
+    String searchType = request.getString("searchType");
     JsonObject elasticQuery = new JsonObject();
     elasticQuery.put("size", 10);
     JsonArray id = request.getJsonArray("id");
     JsonArray filterQuery = new JsonArray();
 
-    JsonObject termQuery = new JsonObject().put("terms",
-            new JsonObject().put(RESOURCE_ID_KEY + ".keyword", id));
+    JsonObject termQuery =
+        new JsonObject().put("terms", new JsonObject().put(RESOURCE_ID_KEY + ".keyword", id));
 
     filterQuery.add(termQuery);
 
@@ -154,58 +161,48 @@ public class DatabaseServiceImpl implements DatabaseService {
       JsonObject geoSearch = new JsonObject();
       String relation;
       JsonArray coordinates;
-      if (request.containsKey("lon")
-              && request.containsKey("lat")
-              && request.containsKey("radius")) {
+      if (request.containsKey("lon") && request.containsKey("lat")
+          && request.containsKey("radius")) {
         double lat = request.getDouble("lat");
         double lon = request.getDouble("lon");
         String radius = request.getString("radius");
-        shapeJson.put(SHAPE_KEY, new JsonObject()
-                .put(TYPE_KEY, GEO_CIRCLE)
-                .put(COORDINATES_KEY, new JsonArray()
-                        .add(lon)
-                        .add(lat))
-                .put(GEO_RADIUS, radius + "m"))
+        shapeJson.put(SHAPE_KEY, new JsonObject().put(TYPE_KEY, GEO_CIRCLE)
+            .put(COORDINATES_KEY, new JsonArray().add(lon).add(lat)).put(GEO_RADIUS, radius + "m"))
             .put(GEO_RELATION_KEY, "within");
       } else if (request.containsKey("geometry")
-              && (request.getString("geometry").equalsIgnoreCase("polygon")
+          && (request.getString("geometry").equalsIgnoreCase("polygon")
               || request.getString("geometry").equalsIgnoreCase("linestring"))
-              && request.containsKey("georel")
-              && request.containsKey("coordinates")
-              && request.containsKey("geoproperty")) {
+          && request.containsKey("georel") && request.containsKey("coordinates")
+          && request.containsKey("geoproperty")) {
         String geometry = request.getString("geometry");
         relation = request.getString("georel");
         coordinates = request.getJsonArray("coordinates");
         int length = coordinates.getJsonArray(0).size();
-        if (geometry.equalsIgnoreCase("polygon")
-            && ((!coordinates.getJsonArray(0).getJsonArray(0).getDouble(0)
-            .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(0)))
+        if (geometry.equalsIgnoreCase("polygon") && ((!coordinates.getJsonArray(0).getJsonArray(0)
+            .getDouble(0).equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(0)))
             || !coordinates.getJsonArray(0).getJsonArray(0).getDouble(1)
-            .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(1)))) {
+                .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(1)))) {
           return new JsonObject().put("Error", "Coordinate mismatch (Polygon)");
         }
-        shapeJson.put(SHAPE_KEY, new JsonObject()
-            .put(TYPE_KEY, geometry)
-            .put(COORDINATES_KEY, coordinates))
+        shapeJson
+            .put(SHAPE_KEY,
+                new JsonObject().put(TYPE_KEY, geometry).put(COORDINATES_KEY, coordinates))
             .put(GEO_RELATION_KEY, relation);
       } else if (request.containsKey("geometry")
-              && request.getString("geometry").equalsIgnoreCase("bbox")
-              && request.containsKey("georel")
-              && request.containsKey("coordinates")
-              && request.containsKey("geoproperty")) {
+          && request.getString("geometry").equalsIgnoreCase("bbox") && request.containsKey("georel")
+          && request.containsKey("coordinates") && request.containsKey("geoproperty")) {
         relation = request.getString("georel");
         coordinates = request.getJsonArray("coordinates");
         shapeJson = new JsonObject();
-        shapeJson.put(SHAPE_KEY, new JsonObject()
-                .put(TYPE_KEY, GEO_BBOX)
-                .put(COORDINATES_KEY, coordinates))
+        shapeJson
+            .put(SHAPE_KEY,
+                new JsonObject().put(TYPE_KEY, GEO_BBOX).put(COORDINATES_KEY, coordinates))
             .put(GEO_RELATION_KEY, relation);
 
       } else {
         return new JsonObject().put("Error", "Missing/Invalid geo parameters");
       }
-      geoSearch.put(GEO_SHAPE_KEY, new JsonObject()
-          .put(GEO_KEY, shapeJson));
+      geoSearch.put(GEO_SHAPE_KEY, new JsonObject().put(GEO_KEY, shapeJson));
       filterQuery.add(geoSearch);
     }
     if (searchType.matches("(.*)responseFilter(.*)")) {
@@ -218,9 +215,8 @@ public class DatabaseServiceImpl implements DatabaseService {
       }
     }
 
-    elasticQuery.put(QUERY_KEY, new JsonObject()
-            .put(BOOL_KEY, new JsonObject()
-                    .put(FILTER_KEY, filterQuery)));
+    elasticQuery.put(QUERY_KEY,
+        new JsonObject().put(BOOL_KEY, new JsonObject().put(FILTER_KEY, filterQuery)));
 
     return elasticQuery;
   }
