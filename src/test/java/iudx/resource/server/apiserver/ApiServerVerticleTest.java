@@ -56,6 +56,7 @@ public class ApiServerVerticleTest {
       throws InterruptedException {
     Thread.sleep(30000);
     String apiURL = Constants.NGSILD_ENTITIES_URL;
+    // TODO : Need to update the ID to check with the actual database response.
     client.get(PORT, BASE_URL, apiURL + "?id=id1,id2").send(ar -> {
       if (ar.succeeded()) {
         assertEquals(ResponseType.Ok.getCode(), ar.result().statusCode());
@@ -71,6 +72,7 @@ public class ApiServerVerticleTest {
   @Description("calling /temporal/entities endpoint")
   public void testHandleTemporalQuery(Vertx vertx, VertxTestContext testContext) {
     String apiURL = Constants.NGSILD_TEMPORAL_URL;
+    // TODO : Need to update the ID to check with the actual database response.
     client.get(PORT, BASE_URL, apiURL + "?id=id1,id2").send(ar -> {
       if (ar.succeeded()) {
         assertEquals(ResponseType.Ok.getCode(), ar.result().statusCode());
