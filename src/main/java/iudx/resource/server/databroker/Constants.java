@@ -15,6 +15,6 @@ public class Constants {
   public static final String QUEUE_DATA = "database";
   public static final String QUEUE_ADAPTOR_LOGS = "adaptorLogs";
 
-  public static final int PASSWORD_LENGTH = 10;
+  public static final int PASSWORD_LENGTH = 16;
 
 }

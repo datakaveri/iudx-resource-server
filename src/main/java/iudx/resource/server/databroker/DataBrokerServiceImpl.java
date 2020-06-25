@@ -45,7 +45,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   private String user;
   private String password;
   private String vhost;
-  private JsonObject jsonResponse;
 
   /**
    * This is a constructor which is used by the DataBroker Verticle to instantiate a RabbitMQ
@@ -69,6 +68,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       } else {
         logger.info("RabbitMQ Client Not Connected");
       }
+
     });
 
     if (propObj != null && !propObj.isEmpty()) {
@@ -83,190 +83,394 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   }
 
   /**
-  *
-  */
+   * This method creates user, declares exchange and bind with predefined queues
+   * 
+   * @param request which is a Json object
+   * @return response which is a Future object of promise of Json type
+   */
   @Override
   public DataBrokerService registerAdaptor(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
 
+    JsonObject registerResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      jsonResponse = new JsonObject();
+      // user creation if user does not exist
       String userName = request.getString("consumer");
+      if (vhost.equalsIgnoreCase("/")) {
+        vhost = encodedValue(vhost);
+      }
+
       if (userName != null && !userName.isBlank() && !userName.isEmpty()) {
-        Future<JsonObject> userCreationResult = createUserIfNotExist(userName);
+        Future<JsonObject> userCreationFuture = createUserIfNotExist(userName, vhost);
+
+        userCreationFuture.onComplete(rh -> {
+          if (rh.succeeded()) {
+            // createUserIfNotExist_onComplete result set to registerResponse
+            JsonObject result = rh.result();
+            registerResponse.put("username", result.getString("shaUsername"));
+            registerResponse.put("apiKey", result.getString("apiKey"));
+            registerResponse.put("type", result.getString("type"));
+            registerResponse.put("title", result.getString("title"));
+            registerResponse.put("detail", result.getString("detail"));
+            registerResponse.put("vhostPermissions", result.getString("vhostPermissions"));
+
+            String uname = rh.result().getString("shaUsername");
+            // now declare exchange and bind it with queues
+            String adaptorID = request.getString("id");
+            if (adaptorID != null && !adaptorID.isBlank() && !adaptorID.isEmpty()) {
+              JsonObject json = new JsonObject();
+              json.put("exchangeName", adaptorID);
+
+              Future<JsonObject> exchangeDeclareFuture = createExchange(json);
+              exchangeDeclareFuture.onComplete(ar -> {
+                if (ar.succeeded()) {
+                  // ar.result() set to registerResponse after
+                  // exchangeDeclareFuture_onComplete
+                  JsonObject obj = ar.result();
+                  registerResponse.put("id", obj.getString("exchange"));
+                  registerResponse.put("exchangename", obj.getString("exchange"));
+                  registerResponse.put("vHost", vhost);
+                  // if exchange just registered then set topic permission and bind with queues
+                  if (obj.getString("exchange") != null && !obj.getString("exchange").isEmpty()) {
+                    Future<JsonObject> topicPermissionFuture =
+                        setTopicPermissions(vhost, obj.getString("exchange"), uname);
+                    topicPermissionFuture.onComplete(topicHandler -> {
+                      if (topicHandler.succeeded()) {
+                        logger.info("Write permission set on topic for exchange "
+                            + obj.getString("exchange"));
+                        registerResponse.put("topic_permissions",
+                            topicHandler.result().getString("topic_permissions"));
+                      } else {
+                        logger.info(
+                            "topic permissions not set for exchange " + obj.getString("exchange")
+                                + " - cause : " + topicHandler.cause().getMessage());
+                      }
+                    });
+
+                    Future<JsonObject> queueBindFuture = queueBinding(obj.getString("exchange"));
+                    queueBindFuture.onComplete(res -> {
+                      if (res.succeeded()) {
+                        logger.info("Queue_Database, Queue_adaptorLogs binding done with "
+                            + obj.getString("exchange"));
+                        registerResponse.put("Queue_Database",
+                            "Queue_Database" + " bound with " + obj.getString("exchange"));
+                        registerResponse.put("Queue_adaptorLogs",
+                            "Queue_adaptorLogs" + " bound with " + obj.getString("exchange"));
+                      } else {
+                        logger
+                            .error("error in queue binding with adaptor - cause : " + res.cause());
+                      }
+                    });
+
+                  } else if (obj.getString("detail") != null && !obj.getString("detail").isEmpty()
+                      && obj.getString("detail").equalsIgnoreCase("Exchange already exists")) {
+                    registerResponse.put("exchange_detail", "Exchange already exists");
+                    registerResponse.put("id", adaptorID);
+                    registerResponse.put("exchangename", adaptorID);
+                  }
+
+                  logger.info("registerResponse : " + registerResponse);
+
+                } else {
+                  handler.handle(Future
+                      .failedFuture("something wrong in exchange declaration : " + ar.cause()));
+                  logger.error("something wrong in exchange declaration : " + ar.cause());
+                }
+
+              });
+
+            } else {
+              handler.handle(Future.failedFuture("AdaptorID / Exchange not provided in request"));
+              logger.error("AdaptorID / Exchange not provided in request");
+            }
+
+          } else if (rh.failed()) {
+            handler
+                .handle(Future.failedFuture("Something went wrong in user creation " + rh.cause()));
+            logger.error("Something went wrong in user creation. " + rh.cause());
+          } else {
+            handler.handle(Future.failedFuture("User creation failed. " + rh.cause()));
+            logger.error("User creation failed. " + rh.cause());
+          }
+
+        });
 
       } else {
+        handler.handle(Future.failedFuture("userName not provided in adaptor registration"));
         logger.error("user not provided in adaptor registration");
       }
 
-      String adaptorID = request.getString("id");
-      // stage 1.1) and 1.2 implementation. stage 1.3 is already handled in APIServerVerticle.
-      client.exchangeDeclare(adaptorID, Constants.EXCHANGE_TYPE, Constants.EXCHANGE_DURABLE_TRUE,
-          Constants.EXCHANGE_AUTODELETE_FALSE, ar -> {
-            StringBuilder status = new StringBuilder();
-            if (ar.succeeded()) {
-              logger.info(adaptorID + " adaptor declared successfully");
-              jsonResponse.put("id", adaptorID);
-              jsonResponse.put("vHost", vhost);
-              status.append("AdaptorID : " + adaptorID);
-              // stage 2.Now bind newly created adaptor with queues i.e. adaptorLogs,database
-              client.queueBind(Constants.QUEUE_DATA, adaptorID, adaptorID, result -> {
-                if (result.succeeded()) {
-                  logger.info(Constants.QUEUE_DATA + " queue bound to " + adaptorID);
-                  status.append(", " + Constants.QUEUE_DATA + " queue bound to " + adaptorID);
-                } else {
-                  logger.error(Constants.QUEUE_DATA + " queue not bound to " + adaptorID);
-                  status.append(", " + Constants.QUEUE_DATA + " queue not bound to " + adaptorID);
-                }
-              });
-
-              for (String routingKey : getRoutingKeys()) {
-                String rk = adaptorID + routingKey;
-                client.queueBind(Constants.QUEUE_ADAPTOR_LOGS, adaptorID, rk, result -> {
-                  if (result.succeeded()) {
-                    logger.info(Constants.QUEUE_ADAPTOR_LOGS + " queue bound to " + adaptorID
-                        + " with key " + rk);
-                    status.append(", " + Constants.QUEUE_ADAPTOR_LOGS + " queue bound to "
-                        + adaptorID + " with key " + rk);
-                  } else {
-                    logger.error(Constants.QUEUE_ADAPTOR_LOGS + " queue not bound to " + adaptorID
-                        + " with key " + rk);
-                    status.append(", " + Constants.QUEUE_ADAPTOR_LOGS + " queue not bound to "
-                        + adaptorID + " with key " + rk);
-                  }
-                });
-              }
-
-
-            } else {
-              logger.error(
-                  "Adaptor registration failed: cause : " + ar.cause().getLocalizedMessage());
-              status.append("AdaptorID : " + "Failure");
-            }
-
-            jsonResponse.put("status", status);
-            logger.info("Status at end of registerAdaptor method : " + status);
-            handler.handle(Future.succeededFuture(jsonResponse));
-          });
-
     } else {
-      jsonResponse.put("status", "Bad request : insufficient data to register adaptor");
-      handler.handle(Future.failedFuture("Bad request : insufficient data to register adaptor"));
+      registerResponse.put("status", "Bad request : insufficient request data to register adaptor");
+      handler.handle(
+          Future.failedFuture("Bad request : insufficient request data to register adaptor"));
     }
+
+    handler.handle(Future.succeededFuture(registerResponse));
 
     return null;
 
   }
 
-  private Future<JsonObject> createUserIfNotExist(String userName) {
+  /*
+   * helper method which bind registered exchange with predefined queues
+   * 
+   * @param adaptorID which is a String object
+   * 
+   * @return response which is a Future object of promise of Json type
+   */
+  Future<JsonObject> queueBinding(String adaptorID) {
     Promise<JsonObject> promise = Promise.promise();
-    url = "/api/users/" + userName;
-    HttpRequest<Buffer> isUserExistsRequest =
-        webClient.get(url).basicAuthentication(user, password);
-    isUserExistsRequest.send(result -> {
+    JsonObject response = new JsonObject();
+    // Now bind newly created adaptor with queues i.e. adaptorLogs,database
+    client.queueBind(Constants.QUEUE_DATA, adaptorID, adaptorID, result -> {
       if (result.succeeded()) {
-        if (result.result().statusCode() == HttpStatus.SC_NOT_FOUND) {
+        response.put("Queue_Database", Constants.QUEUE_DATA + " queue bound to " + adaptorID);
+      } else {
+        logger.error(" Queue_Database binding error : " + result.cause());
+      }
+    });
+
+    for (String routingKey : getRoutingKeys()) {
+      String rk = adaptorID + routingKey;
+      client.queueBind(Constants.QUEUE_ADAPTOR_LOGS, adaptorID, rk, result -> {
+        if (result.succeeded()) {
+          response.put("Queue_adaptorLogs", " queue bound to " + adaptorID + " with key " + rk);
+        } else {
+          logger.error(" Queue_adaptorLogs binding error : " + result.cause());
+        }
+      });
+    }
+
+    promise.complete(response);
+    return promise.future();
+  }
+
+  /**
+   * The createUserIfNotExist implements the create user if does not exist.
+   * 
+   * @param userName which is a String
+   * @param vhost which is a String
+   * @return response which is a Future object of promise of Json type
+   **/
+  Future<JsonObject> createUserIfNotExist(String userName, String vhost) {
+    Promise<JsonObject> promise = Promise.promise();
+    JsonObject response = new JsonObject();
+    Future<JsonObject> future = CreateUserIfNotPresent(userName, vhost);
+    future.onComplete(handler -> {
+      if (handler.succeeded()) {
+        JsonObject result = handler.result();
+        response.put("shaUsername", result.getString("shaUsername"));
+        response.put("apiKey", result.getString("apiKey"));
+        response.put("type", "" + result.getString("type"));
+        response.put("title", result.getString("title"));
+        response.put("detail", result.getString("detail"));
+        response.put("vhostPermissions", result.getString("vhostPermissions"));
+        promise.complete(response);
+      } else {
+        logger.info("Something went wrong - Cause: " + handler.cause());
+        promise.fail(handler.cause().toString());
+      }
+
+    });
+
+    return promise.future();
+
+  }
+
+  /**
+   * createUserIfNotExist helper method which check user existence. Create user if not present
+   * 
+   * @param userName which is a String
+   * @param vhost which is a String
+   * @return response which is a Future object of promise of Json type
+   **/
+  Future<JsonObject> CreateUserIfNotPresent(String userName, String vhost) {
+    Promise<JsonObject> promise = Promise.promise();
+    String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
+    String shaUsername = domain + encodedValue("/") + getSHA(userName);
+    url = "/api/users/" + shaUsername;
+    HttpRequest<Buffer> request = webClient.get(url).basicAuthentication(user, password);
+    JsonObject response = new JsonObject();
+    request.send(reply -> {
+      if (reply.succeeded()) {
+        if (reply.result().statusCode() == HttpStatus.SC_NOT_FOUND) {
           logger.info("createUserIfNotExist method : User not found. So creating user .........");
-          // now creating user using same url with method put
-          HttpRequest<Buffer> createUserRequest =
-              webClient.put(url).basicAuthentication(user, password);
-          JsonObject requestBody = new JsonObject();
-          requestBody.put("password", generateRandomPassword());
-          requestBody.put("tags", "None");
-
-          createUserRequest.sendJsonObject(requestBody, ar -> {
-            if (ar.succeeded()) {
-              if (ar.result().statusCode() == HttpStatus.SC_CREATED) {
-                jsonResponse.put("apiKey", requestBody.getString("password"));
-                jsonResponse.put("type", "UserCreated");
-                jsonResponse.put("title", "success");
-                logger.info("createUserIfNotExist method : given user created successfully");
-                // set permissions for this user
-                if (vhost.equalsIgnoreCase("/")) {
-                  url = "/api/permissions/" + encode_vhost(vhost) + "/" + userName;
-                } else {
-                  url = "/api/permissions/" + vhost + "/" + userName;
-                }
-                // now set all mandatory permissions for given vhost for newly created user
-                HttpRequest<Buffer> vhostPermissionRequest =
-                    webClient.put(url).basicAuthentication(user, password);
-                JsonObject vhostPermissions = new JsonObject();
-                // all keys are mandatory. empty strings used for configure,read as not permitted.
-                vhostPermissions.put("configure", "");
-                vhostPermissions.put("write", ".*");
-                vhostPermissions.put("read", "");
-                vhostPermissionRequest.sendJsonObject(vhostPermissions, handler -> {
-                  if (handler.succeeded()) {
-                    if (handler.result().statusCode() == HttpStatus.SC_CREATED) {
-                      logger
-                          .info("permission set for newly created user in vHost [ " + vhost + "]");
-                    } else {
-                      logger.error("Error in permission set for newly created user in vHost ["
-                          + vhost + "]");
-                    }
-                  } else {
-                    logger.error("Error in setting permission handler: " + handler.cause());
-                  }
-                });
-
-
-                // now set write permission to user for this adaptor(exchange)
-                if (vhost.equalsIgnoreCase("/")) {
-                  url = "/api/topic-permissions/" + encode_vhost(vhost) + "/" + userName;
-                } else {
-                  url = "/api/topic-permissions/" + vhost + "/" + userName;
-                }
-                HttpRequest<Buffer> exchangePermissionRequest =
-                    webClient.put(url).basicAuthentication(user, password);
-                JsonObject obj = new JsonObject();
-                if (jsonResponse.getString("id") != null
-                    && !jsonResponse.getString("id").isEmpty()) {
-                  // set all mandatory fields
-                  obj.put("exchange", jsonResponse.getString("id"));
-                  obj.put("write", ".*");
-                  obj.put("read", "");
-                  exchangePermissionRequest.sendJsonObject(obj, result1 -> {
-                    if (result1.result().statusCode() == HttpStatus.SC_CREATED) {
-                      logger.info("permissions set for newly created exchange,user :"
-                          + jsonResponse.getString("id"));
-                    } else {
-                      logger.error("Error in setting permissions for newly created exchange,user :"
-                          + jsonResponse.getString("id"));
-                    }
-                  });
-                }
-
-
-              } else {
-                logger.info("Some error in user creation");
-              }
+          Future<JsonObject> userCreated = createUser(shaUsername, vhost);
+          userCreated.onComplete(handler -> {
+            if (handler.succeeded()) {
+              JsonObject result = handler.result();
+              response.put("shaUsername", result.getString("shaUsername"));
+              response.put("apiKey", result.getString("password"));
+              response.put("type", "" + result.getString("type"));
+              response.put("title", result.getString("title"));
+              response.put("detail", result.getString("detail"));
+              response.put("vhostPermissions", result.getString("vhostPermissions"));
+              promise.complete(response);
             } else {
-              logger.info("Something went wrong while finding user :" + ar.cause());
+              logger.error("createUser method onComplete() - Error in user creation. Cause : "
+                  + handler.cause());
             }
           });
 
-        } else if (result.result().statusCode() == HttpStatus.SC_OK) {
+        } else if (reply.result().statusCode() == HttpStatus.SC_OK) {
           // user exists , So something useful can be done here
-          jsonResponse.put("type", "UserExists");
-          jsonResponse.put("title", "success");
-          jsonResponse.put("detail", "User already exists");
-          logger.info(
-              "user is already exists with properties : [type : UserExists, title : success, detail : User already exists ]");
+          response.put("shaUsername", shaUsername);
+          response.put("type", "UserExists");
+          response.put("title", "success");
+          response.put("detail", "User already exists");
+          promise.complete(response);
         }
 
-        String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
-        jsonResponse.put("username", domain + "/" + getSHA(userName));
-        promise.complete(jsonResponse);
-
       } else {
-        logger.info("Something went wrong while finding user :" + result.cause());
+        logger.info("Something went wrong while finding user using mgmt API: " + reply.cause());
+        promise.fail(reply.cause().toString());
+      }
+
+    });
+
+    return promise.future();
+
+  }
+
+  /**
+   * CreateUserIfNotPresent's helper method which creates user if not present
+   * 
+   * @param userName which is a String
+   * @param vhost which is a String
+   * @return response which is a Future object of promise of Json type
+   **/
+  Future<JsonObject> createUser(String shaUsername, String vhost) {
+
+    Promise<JsonObject> promise = Promise.promise();
+    // now creating user using same url with method put
+    HttpRequest<Buffer> createUserRequest = webClient.put(url).basicAuthentication(user, password);
+    JsonObject response = new JsonObject();
+    JsonObject arg = new JsonObject();
+    arg.put("password", generateRandomPassword());
+    arg.put("tags", "None");
+
+    createUserRequest.sendJsonObject(arg, ar -> {
+      if (ar.succeeded()) {
+        if (ar.result().statusCode() == HttpStatus.SC_CREATED) {
+          response.put("shaUsername", shaUsername);
+          response.put("password", arg.getString("password"));
+          response.put("title", "success");
+          response.put("type", "" + ar.result().statusCode());
+          response.put("detail", "UserCreated");
+          logger.info("createUser method : given user created successfully");
+          // set permissions to vhost for newly created user
+          Future<JsonObject> vhostPermission = setVhostPermissions(shaUsername, vhost);
+          vhostPermission.onComplete(handler -> {
+            if (handler.succeeded()) {
+              response.put("vhostPermissions", handler.result().getString("vhostPermissions"));
+              promise.complete(response);
+            } else {
+              logger.error("Error in setting vhostPermissions. Cause : " + handler.cause());
+            }
+          });
+
+        } else {
+          promise.fail(ar.cause().toString());
+          logger.info("createUser method - cause  : " + ar.cause().toString());
+        }
+      } else {
+        promise.fail(ar.cause().toString());
+        logger.info("Something went wrong while creating user using mgmt API :" + ar.cause());
       }
     });
 
     return promise.future();
   }
 
-  private String encode_vhost(String vhost) {
+  /**
+   * set topic permissions
+   * 
+   * @param vhost which is a String
+   * @param adaptorID which is a String
+   * @param shaUsername which is a String
+   * @return response which is a Future object of promise of Json type
+   **/
+  private Future<JsonObject> setTopicPermissions(String vhost, String adaptorID,
+      String shaUsername) {
+    Promise<JsonObject> promise = Promise.promise();
+    // now set write permission to user for this adaptor(exchange)
+    url = "/api/topic-permissions/" + vhost + "/" + shaUsername;
+    HttpRequest<Buffer> request = webClient.put(url).basicAuthentication(user, password);
+    JsonObject response = new JsonObject();
+    JsonObject param = new JsonObject();
+    // set all mandatory fields
+    param.put("exchange", adaptorID);
+    param.put("write", ".*");
+    param.put("read", "");
+    request.sendJsonObject(param, result -> {
+      if (result.succeeded()) {
+        if (result.result().statusCode() == HttpStatus.SC_CREATED) {
+          response.put("topic_permissions", "topic permission set");
+          promise.complete(response);
+        } else if (result.result().statusCode() == HttpStatus.SC_NO_CONTENT) {
+          response.put("topic_permissions", "already set");
+        } else {
+          logger.error("Error in setting Topic permissions" + result.result().statusMessage());
+          promise.fail(result.result().statusMessage());
+        }
+      } else {
+        logger.error("Error in setting topic permission : " + result.cause());
+        promise.fail(result.result().statusMessage());
+      }
+    });
+
+    return promise.future();
+  }
+
+  /**
+   * set vhost permissions for given userName
+   * 
+   * @param shaUsername which is a String
+   * @param vhost which is a String
+   * @return response which is a Future object of promise of Json type
+   **/
+  private Future<JsonObject> setVhostPermissions(String shaUsername, String vhost) {
+    // set permissions for this user
+    Promise<JsonObject> promise = Promise.promise();
+    JsonObject vhostPermissionResponse = new JsonObject();
+    url = "/api/permissions/" + vhost + "/" + shaUsername;
+    // now set all mandatory permissions for given vhost for newly created user
+    HttpRequest<Buffer> vhostPermissionRequest =
+        webClient.put(url).basicAuthentication(user, password);
+    JsonObject vhostPermissions = new JsonObject();
+    // all keys are mandatory. empty strings used for configure,read as not permitted.
+    vhostPermissions.put("configure", "");
+    vhostPermissions.put("write", ".*");
+    vhostPermissions.put("read", "");
+    vhostPermissionRequest.sendJsonObject(vhostPermissions, handler -> {
+      if (handler.succeeded()) {
+        if (handler.result().statusCode() == HttpStatus.SC_CREATED) {
+          vhostPermissionResponse.put("vhostPermissions", "write permission set");
+          logger.info(
+              "write permission set for user [ " + shaUsername + " ] in vHost [ " + vhost + "]");
+          promise.complete(vhostPermissionResponse);
+        } else {
+          promise.fail(handler.cause().toString());
+          logger.error("Error in write permission set for user [ " + shaUsername + " ] in vHost [ "
+              + vhost + " ]");
+        }
+      } else {
+        promise.fail(handler.cause().toString());
+        logger.error("Error in setting permission to vhost : " + handler.cause());
+      }
+    });
+
+    return promise.future();
+  }
+
+  /**
+   * encode string using URLEncoder's encode method
+   * 
+   * @param vhost which is a String
+   * @return encoded_vhost which is a String
+   **/
+  private String encodedValue(String vhost) {
     String encoded_vhost = null;
     try {
       encoded_vhost = URLEncoder.encode(vhost, StandardCharsets.UTF_8.toString());
@@ -276,9 +480,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     return encoded_vhost;
   }
 
-  /*
+  /**
    * This method is as simple as but it can have more sophisticated encryption logic.
-   */
+   * 
+   * @param plainUserName which is a String
+   * @return encodedValue which is a String
+   **/
   private String getSHA(String plainUserName) {
 
     String encodedValue = null;
@@ -291,11 +498,19 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     return encodedValue;
   }
 
+  /**
+   * This method generate random alphanumeric password of given PASSWORD_LENGTH
+   **/
   private String generateRandomPassword() {
     // It is simple one. here we may more strong algorith for password generation.
     return org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric(Constants.PASSWORD_LENGTH);
   }
 
+  /**
+   * read routingKeys values from properties file
+   * 
+   * @return arrayList of routingKeys
+   **/
   private ArrayList<String> getRoutingKeys() {
     ArrayList<String> arrayList = new ArrayList<String>();
     // get routingKeys from properties file
@@ -326,18 +541,20 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   }
 
   /**
-   * {@inheritDoc}
+   * The deleteAdaptor implements deletion feature for an adaptor(exchange).
+   * 
+   * @param request which is a Json object
+   * @return response which is a Future object of promise of Json type
    */
-
   @Override
   public DataBrokerService deleteAdaptor(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
-    jsonResponse = new JsonObject();
+    JsonObject deleteResponse = new JsonObject();
     if (request != null && !request.isEmpty() && request.getString("id") != null
         && !request.getString("id").isEmpty() && !request.getString("id").isBlank()) {
       String adaptorID = request.getString("id");
       if (vhost.equalsIgnoreCase("/")) {
-        url = "/api/exchanges/" + encode_vhost(vhost) + "/" + adaptorID;
+        url = "/api/exchanges/" + encodedValue(vhost) + "/" + adaptorID;
       } else {
         url = "/api/exchanges/" + vhost + "/" + adaptorID;
       }
@@ -347,54 +564,81 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       isAdaptorExistRequest.send(result -> {
         if (result.succeeded()) {
           if (result.result().statusCode() == HttpStatus.SC_NOT_FOUND) {
-            jsonResponse.put("type", "status");
-            jsonResponse.put("title", "Failure");
-            jsonResponse.put("detail", "Adaptor does not exists");
+            deleteResponse.put("type", result.result().statusCode());
+            deleteResponse.put("title", "Failure");
+            deleteResponse.put("detail", "Adaptor does not exists");
           } else if (result.result().statusCode() == HttpStatus.SC_OK) {
             logger.info(adaptorID + " found for deletion. Now deleting ....");
             client.exchangeDelete(adaptorID, rh -> {
+              logger.info("client.exchangeDelete_handler  result : " + rh.result());
               if (rh.succeeded()) {
                 logger.info(adaptorID + " adaptor deleted successfully");
-                jsonResponse.put("id", adaptorID);
-                jsonResponse.put("type", "status");
-                jsonResponse.put("title", "success");
-                jsonResponse.put("detail", "adaptor deleted");
+                deleteResponse.put("id", adaptorID);
+                deleteResponse.put("type", result.result().statusCode());
+                deleteResponse.put("title", "success");
+                deleteResponse.put("detail", "adaptor deleted");
               } else if (rh.failed()) {
                 logger.info("adaptor deletion failed. Cause :" + rh.cause());
-                jsonResponse.put("type", "status");
-                jsonResponse.put("title", "error");
-                jsonResponse.put("detail", "Error in adaptor deletion");
+                deleteResponse.put("type", result.result().statusCode());
+                deleteResponse.put("title", "error");
+                deleteResponse.put("detail", "Error in adaptor deletion");
               } else {
-                System.out.println("Something else in deleting adaptor");
+                logger.error("Something wrong in deleting adaptor" + rh.cause());
+                handler.handle(Future.failedFuture("Bad request : nothing to delete"));
               }
+
             });
+
           } else {
-            System.out.println("Something fatal in finding adaptor");
+            logger.error("Something fatal in finding adaptor for deletion");
+            handler.handle(Future.failedFuture("Bad request : nothing to delete"));
           }
+
+          // now logging deleteResponse and handle it
+          logger.info("deleteAdaptor method's final response : " + deleteResponse);
+          handler.handle(Future.succeededFuture(deleteResponse));
+
         } else {
-          System.out.println("Something wrong in finding adaptor" + result.cause());
+          logger.error("Something wrong in finding adaptor" + result.cause());
+          handler.handle(Future.failedFuture("Bad request : nothing to delete"));
         }
-        logger
-            .info("deleteAdaptor method final response : [ " + jsonResponse.getString("type") + ", "
-                + jsonResponse.getString("title") + ", " + jsonResponse.getString("detail") + " ]");
+
       });
+
     } else {
-      jsonResponse.put("status", "Bad request : nothing to delete");
+      deleteResponse.put("status", "Bad request : nothing to delete");
       handler.handle(Future.failedFuture("Bad request : nothing to delete"));
     }
 
-    handler.handle(Future.succeededFuture(jsonResponse));
-
     return null;
+
   }
 
   /**
-   * {@inheritDoc}
+   * The listAdaptor implements the list of bindings for an exchange (source). This method has
+   * similar functionality as listExchangeSubscribers(JsonObject) method
+   * 
+   * @param request which is a Json object
+   * @return response which is a Future object of promise of Json type
    */
-
   @Override
   public DataBrokerService listAdaptor(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
+    if (request != null && !request.isEmpty()) {
+      Future<JsonObject> result = listExchangeSubscribers(request);
+
+      result.onComplete(resultHandler -> {
+        if (resultHandler.succeeded()) {
+          handler.handle(Future.succeededFuture(resultHandler.result()));
+        }
+        if (resultHandler.failed()) {
+          logger.error("listAdaptor - resultHandler failed : " + resultHandler.cause());
+        }
+      });
+
+    } else {
+      handler.handle(Future.failedFuture("listAdaptor - Exchange not provided in request"));
+    }
 
     return null;
   }
@@ -679,6 +923,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
               Buffer body = response.body();
               if (body != null) {
                 JsonArray jsonBody = new JsonArray(body.toString());
+
                 jsonBody.forEach(current -> {
                   JsonObject currentJson = new JsonObject(current.toString());
                   String okey = currentJson.getString("destination");
