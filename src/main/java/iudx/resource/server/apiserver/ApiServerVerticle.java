@@ -259,12 +259,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
 
-    /* JsonObject of authentication related information */
-    JsonObject authenticationInfo = new JsonObject();
-
-    /* HTTP request body as Json */
-    JsonObject requestBody = routingContext.getBodyAsJson();
-
     /* HTTP request instance/host details */
     String instanceID = request.getHeader("Host");
 
@@ -275,10 +269,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     // parse query params
     NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
     QueryMapper queryMapper = new QueryMapper();
-    // create json
-    JsonObject json = queryMapper.toJson(ngsildquery, false);
-    json.put("instanceID", instanceID);
-    LOGGER.info("IUDX query json : " + json);
+
+    /* JsonObject of authentication related information */
+    JsonObject authenticationInfo = new JsonObject();
 
     /* checking authentication info in requests */
     if (request.headers().contains("token")) {
@@ -286,6 +279,14 @@ public class ApiServerVerticle extends AbstractVerticle {
     } else {
       authenticationInfo.put("token", "public");
     }
+
+    /* HTTP request body as Json */
+    JsonObject requestBody = routingContext.getBodyAsJson();
+
+    // create json
+    JsonObject json = queryMapper.toJson(ngsildquery, false);
+    json.put("instanceID", instanceID);
+    LOGGER.info("IUDX query json : " + json);
 
     /* Authenticating the request */
     authenticator.tokenInterospect(requestBody, authenticationInfo, authHandler -> {
@@ -333,12 +334,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
 
-    /* JsonObject of authentication related information */
-    JsonObject authenticationInfo = new JsonObject();
-
-    /* HTTP request body as Json */
-    JsonObject requestBody = routingContext.getBodyAsJson();
-
     /* HTTP request instance/host details */
     String instanceID = request.getHeader("Host");
 
@@ -349,10 +344,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     // parse query params
     NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
     QueryMapper queryMapper = new QueryMapper();
-    // create json
-    JsonObject json = queryMapper.toJson(ngsildquery, true);
-    json.put("instanceID", instanceID);
-    LOGGER.info("IUDX temporal json query : " + json);
+    /* JsonObject of authentication related information */
+    JsonObject authenticationInfo = new JsonObject();
 
     /* checking authentication info in requests */
     if (request.headers().contains("token")) {
@@ -360,6 +353,15 @@ public class ApiServerVerticle extends AbstractVerticle {
     } else {
       authenticationInfo.put("token", "public");
     }
+
+    /* HTTP request body as Json */
+    JsonObject requestBody = routingContext.getBodyAsJson();
+
+
+    // create json
+    JsonObject json = queryMapper.toJson(ngsildquery, true);
+    json.put("instanceID", instanceID);
+    LOGGER.info("IUDX temporal json query : " + json);
 
     /* Authenticating the request */
     authenticator.tokenInterospect(requestBody, authenticationInfo, authHandler -> {

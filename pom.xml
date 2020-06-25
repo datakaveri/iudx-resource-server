@@ -67,6 +67,7 @@
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-rabbitmq-client</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
@@ -77,13 +78,18 @@
 			<artifactId>vertx-junit5</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-web-client</artifactId>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.8.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.elasticsearch.client</groupId>
+			<artifactId>elasticsearch-rest-client</artifactId>
+			<version>7.7.1</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
-			<artifactId>vertx-unit</artifactId>
-			<scope>test</scope>
+			<artifactId>vertx-junit5</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>

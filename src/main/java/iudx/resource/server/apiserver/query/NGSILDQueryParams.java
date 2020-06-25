@@ -25,7 +25,7 @@ public class NGSILDQueryParams {
   private List<String> type;
   private List<String> attrs;
   private String idPattern;
-  private String q;
+  private String textQuery;
   private GeoRelation geoRel;
   private String geometry;
   private String coordinates;
@@ -103,7 +103,7 @@ public class NGSILDQueryParams {
           break;
         }
         case Constants.NGSILDQUERY_Q: {
-          this.q = entry.getValue();
+          this.textQuery = entry.getValue();
           break;
         }
         default: {
@@ -157,11 +157,11 @@ public class NGSILDQueryParams {
   }
 
   public String getQ() {
-    return q;
+    return textQuery;
   }
 
-  public void setQ(String q) {
-    this.q = q;
+  public void setQ(String textQuery) {
+    this.textQuery = textQuery;
   }
 
   public GeoRelation getGeoRel() {
