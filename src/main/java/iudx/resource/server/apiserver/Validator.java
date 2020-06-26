@@ -1,13 +1,13 @@
 package iudx.resource.server.apiserver;
 
-import io.vertx.core.MultiMap;
-import io.vertx.core.http.HttpServerResponse;
-import iudx.resource.server.apiserver.response.ResponseType;
-import iudx.resource.server.apiserver.response.RestResponse;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import io.vertx.core.Future;
+import io.vertx.core.MultiMap;
+import io.vertx.core.Promise;
 
 /**
  * This class is used to validate NGSI-LD request and request parameters.
@@ -41,17 +41,32 @@ public class Validator {
    * @param parameterMap parameters map of request query
    * @param response     HttpServerResponse object
    */
-  public static void validate(MultiMap parameterMap, HttpServerResponse response) {
+  private static boolean validateParams(MultiMap parameterMap) {
     final List<Entry<String, String>> entries = parameterMap.entries();
     for (final Entry<String, String> entry : entries) {
       if (!validParams.contains(entry.getKey())) {
-        response.putHeader("content-type", "application/json")
-            .setStatusCode(ResponseType.BadRequestData.getCode())
-            .end(new RestResponse.Builder().withError(ResponseType.BadRequestData)
-                .withMessage(entry.getKey() + " is not valid parameter.").build().toJsonString());
+        /*
+         * response.putHeader("content-type", "application/json")
+         * .setStatusCode(ResponseType.BadRequestData.getCode()) .end(new
+         * RestResponse.Builder().withError(ResponseType.BadRequestData)
+         * .withMessage(entry.getKey() +
+         * " is not valid parameter.").build().toJsonString());
+         *
+         */
+        return false;
       }
     }
+    return true;
+  }
 
+  public static Future<Boolean> validate(MultiMap paramsMap) {
+    Promise<Boolean> promise = Promise.promise();
+    if (validateParams(paramsMap)) {
+      promise.complete(true);
+    } else {
+      promise.fail("invalid parameter");
+    }
+    return promise.future();
   }
 
 }
