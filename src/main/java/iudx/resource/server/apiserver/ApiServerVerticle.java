@@ -36,6 +36,7 @@ import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import iudx.resource.server.apiserver.management.ManagementApi;
+import iudx.resource.server.apiserver.management.ManagementApiImpl;
 import iudx.resource.server.apiserver.query.NGSILDQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
@@ -143,6 +144,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         router.get(Constants.NGSILD_ENTITIES_URL).handler(this::handleEntitiesQuery);
         router.get(Constants.NGSILD_TEMPORAL_URL).handler(this::handleTemporalQuery);
         router.post(Constants.NGSILD_SUBSCRIPTION_URL).handler(this::handleSubscriptions);
+        router.get(Constants.NGSILD_SUBSCRIPTION_URL + "/:subsId").handler(this::getSubscription);
 
         /* Management Api endpoints */
         // Exchange
@@ -156,6 +158,13 @@ public class ApiServerVerticle extends AbstractVerticle {
         router.delete(Constants.IUDX_MANAGEMENT_QUEUE_URL + "/:queueId").handler(this::deleteQueue);
         router.get(Constants.IUDX_MANAGEMENT_QUEUE_URL + "/:queueId")
             .handler(this::getQueueDetails);
+        // bind
+        router.post(Constants.IUDX_MANAGEMENT_BIND_URL).handler(this::bindQueue2Exchange);
+        // unbind
+        router.post(Constants.IUDX_MANAGEMENT_UNBIND_URL).handler(this::unbindQueue2Exchange);
+        // vHost
+        router.post(Constants.IUDX_MANAGEMENT_VHOST_URL).handler(this::createVHost);
+        router.delete(Constants.IUDX_MANAGEMENT_VHOST_URL + "/:vhostId").handler(this::deleteVHost);
         /* Read the configuration and set the HTTPs server properties. */
 
         try {
@@ -255,6 +264,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             LOGGER.info("\n +++++++ Service Discovery Failed. +++++++ ");
           }
         });
+        managementApi = new ManagementApiImpl();
       }
     });
   }
@@ -267,26 +277,27 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   private void handleEntitiesQuery(RoutingContext routingContext) {
     LOGGER.info("handleEntitiesQuery method started.");
-
     /* Handles HTTP request from client */
     HttpServerRequest request = routingContext.request();
-
     /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
-
+    /* JsonObject of authentication related information */
+    JsonObject authenticationInfo = new JsonObject();
+    /* HTTP request body as Json */
+    JsonObject requestBody = routingContext.getBodyAsJson();
     /* HTTP request instance/host details */
     String instanceID = request.getHeader("Host");
-
     // get query paramaters
     MultiMap params = getQueryParams(routingContext, response).get();
     // validate request parameters
-    Validator.validate(params, response);
+    Future<Boolean> validationResult = Validator.validate(params);
     // parse query params
     NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
     QueryMapper queryMapper = new QueryMapper();
-
-    /* JsonObject of authentication related information */
-    JsonObject authenticationInfo = new JsonObject();
+    // create json
+    JsonObject json = queryMapper.toJson(ngsildquery, false);
+    json.put("instanceID", instanceID);
+    LOGGER.info("IUDX query json : " + json);
 
     /* checking authentication info in requests */
     if (request.headers().contains("token")) {
@@ -294,41 +305,29 @@ public class ApiServerVerticle extends AbstractVerticle {
     } else {
       authenticationInfo.put("token", "public");
     }
-
-    /* HTTP request body as Json */
-    JsonObject requestBody = routingContext.getBodyAsJson();
-
-    // create json
-    JsonObject json = queryMapper.toJson(ngsildquery, false);
-    json.put("instanceID", instanceID);
-    LOGGER.info("IUDX query json : " + json);
-
     /* Authenticating the request */
-    authenticator.tokenInterospect(requestBody, authenticationInfo, authHandler -> {
-      if (authHandler.succeeded()) {
-        LOGGER
-            .info("Authenticating entity search request ".concat(authHandler.result().toString()));
-
-        // call database vertical for seaarch
-        database.searchQuery(json, handler -> {
-          if (handler.succeeded()) {
-            response.putHeader("content-type", "application/json")
-                .setStatusCode(ResponseType.Ok.getCode()).end(handler.result().toString());
-          } else if (handler.failed()) {
-            // handler.cause().getMessage();
-            // TODO: get cause from handler message and return appropriate error message.
-            response.putHeader("content-type", "application/json")
-                .setStatusCode(ResponseType.InternalError.getCode())
-                .end(new RestResponse.Builder().withError(ResponseType.InternalError)
-                    .withMessage("Internal server error").build().toJsonString());
+    validationResult.onComplete(validationHandler -> {
+      if (validationHandler.succeeded()) {
+        authenticator.tokenInterospect(requestBody, authenticationInfo, authHandler -> {
+          if (authHandler.succeeded()) {
+            LOGGER.info(
+                "Authenticating entity search request ".concat(authHandler.result().toString()));
+            // call database vertical for seaarch
+            database.searchQuery(json, handler -> {
+              if (handler.succeeded()) {
+                handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
+              } else if (handler.failed()) {
+                handleResponse(response, ResponseType.BadRequestData, handler.cause().getMessage(),
+                    true);
+              }
+            });
+          } else if (authHandler.failed()) {
+            LOGGER.error("Unathorized request".concat(authHandler.cause().toString()));
+            handleResponse(response, ResponseType.AuthenticationFailure, true);
           }
         });
-      } else if (authHandler.failed()) {
-        LOGGER.error("Unathorized request".concat(authHandler.cause().toString()));
-        response.putHeader("content-type", "application/json")
-            .setStatusCode(ResponseType.AuthenticationFailure.getCode())
-            .end(new RestResponse.Builder().withError(ResponseType.AuthenticationFailure)
-                .withMessage("Unauthorised").build().toJsonString());
+      } else if (validationHandler.failed()) {
+        handleResponse(response, ResponseType.BadRequestData, "Invalid parameter in request", true);
       }
     });
   }
@@ -342,66 +341,56 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   private void handleTemporalQuery(RoutingContext routingContext) {
     LOGGER.info("handleTemporalQuery method started.");
-
     /* Handles HTTP request from client */
     HttpServerRequest request = routingContext.request();
-
     /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
-
     /* HTTP request instance/host details */
     String instanceID = request.getHeader("Host");
-
     // get query parameters
     MultiMap params = getQueryParams(routingContext, response).get();
     // validate request params
-    Validator.validate(params, response);
+    Future<Boolean> validationResult = Validator.validate(params);
     // parse query params
     NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
     QueryMapper queryMapper = new QueryMapper();
     /* JsonObject of authentication related information */
     JsonObject authenticationInfo = new JsonObject();
-
+    // create json
+    JsonObject json = queryMapper.toJson(ngsildquery, true);
+    json.put("instanceID", instanceID);
+    LOGGER.info("IUDX temporal json query : " + json);
     /* checking authentication info in requests */
     if (request.headers().contains("token")) {
       authenticationInfo.put("token", request.getHeader("token"));
     } else {
       authenticationInfo.put("token", "public");
     }
-
     /* HTTP request body as Json */
     JsonObject requestBody = routingContext.getBodyAsJson();
-
-
-    // create json
-    JsonObject json = queryMapper.toJson(ngsildquery, true);
-    json.put("instanceID", instanceID);
-    LOGGER.info("IUDX temporal json query : " + json);
-
     /* Authenticating the request */
-    authenticator.tokenInterospect(requestBody, authenticationInfo, authHandler -> {
-      if (authHandler.succeeded()) {
-        LOGGER.info("Authenticating entity temporal search request "
-            .concat(authHandler.result().toString()));
-
-        // call database vertical for seaarch
-        database.searchQuery(json, handler -> {
-          if (handler.succeeded()) {
-            response.putHeader("content-type", "application/json")
-                .setStatusCode(ResponseType.Ok.getCode()).end(handler.result().toString());
-          } else if (handler.failed()) {
-            response.putHeader("content-type", "application/json")
-                .setStatusCode(ResponseType.InternalError.getCode())
-                .end(new RestResponse.Builder().withError(ResponseType.InternalError)
-                    .withMessage("Internal server error").build().toJsonString());
+    validationResult.onComplete(validationHandler -> {
+      if (validationHandler.succeeded()) {
+        authenticator.tokenInterospect(requestBody, authenticationInfo, authHandler -> {
+          if (authHandler.succeeded()) {
+            LOGGER.info("Authenticating entity temporal search request "
+                .concat(authHandler.result().toString()));
+            // call database vertical for seaarch
+            database.searchQuery(json, handler -> {
+              if (handler.succeeded()) {
+                handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
+              } else if (handler.failed()) {
+                handleResponse(response, ResponseType.BadRequestData, handler.cause().getMessage(),
+                    true);
+              }
+            });
+          } else if (authHandler.failed()) {
+            LOGGER.error("Unathorized request".concat(authHandler.cause().toString()));
+            handleResponse(response, ResponseType.AuthenticationFailure, true);
           }
         });
-      } else if (authHandler.failed()) {
-        LOGGER.error("Unathorized request".concat(authHandler.cause().toString()));
-        response.putHeader("content-type", "application/json")
-            .setStatusCode(ResponseType.AuthenticationFailure.getCode())
-            .end(new RestResponse.Builder().withError(ResponseType.AuthenticationFailure)
-                .withMessage("Unauthorised").build().toJsonString());
+      } else if (validationHandler.failed()) {
+        handleResponse(response, ResponseType.BadRequestData, "Invalid parameter in request", true);
       }
     });
   }
@@ -411,72 +400,75 @@ public class ApiServerVerticle extends AbstractVerticle {
    * 
    * @param routingContext routingContext
    */
-  // TODO : incomplete need to complete after management api completion
   private void handleSubscriptions(RoutingContext routingContext) {
     LOGGER.info("handleSubscription method started");
-
     /* Handles HTTP request from client */
     HttpServerRequest request = routingContext.request();
-
     /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
-
     /* JsonObject of authentication related information */
     JsonObject authenticationInfo = new JsonObject();
-
     /* HTTP request body as Json */
     JsonObject requestBody = routingContext.getBodyAsJson();
-
     /* HTTP request instance/host details */
     String instanceID = request.getHeader("Host");
-
     JsonObject requestJsonObject = routingContext.getBodyAsJson();
-
     /* checking authentication info in requests */
     if (request.headers().contains("token")) {
       authenticationInfo.put("token", request.getHeader("token"));
-
       authenticator.tokenInterospect(requestJsonObject, authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           JsonArray authJson = authHandler.result();
-
           JsonObject jsonObj = new JsonObject();
           jsonObj.put("type", "streaming");
           jsonObj.put("name", authJson.getString(0));
           jsonObj.put("consumer", authJson.getString(1));
           jsonObj.put("instanceID", instanceID);
-
-          JsonArray idsJsonArray = new JsonArray();
-
+          // JsonArray idsJsonArray = new JsonArray();
           jsonObj.put("entities", requestJsonObject.getJsonArray("entities"));
-
           databroker.registerStreamingSubscription(jsonObj, subsHandler -> {
             if (subsHandler.succeeded()) {
-              response.putHeader("content-type", "application/json")
-                  .setStatusCode(ResponseType.Created.getCode())
-                  .end(new RestResponse.Builder().withError(ResponseType.Created)
-                      .withMessage(subsHandler.result().toString()).build().toJsonString());
-            } else {
-              response.putHeader("content-type", "application/json")
-                  .setStatusCode(ResponseType.InternalError.getCode())
-                  .end(new RestResponse.Builder().withError(ResponseType.InternalError)
-                      .withMessage(subsHandler.cause().toString()).build().toJsonString());
+              handleResponse(response, ResponseType.Created, subsHandler.result().toString(),
+                  false);
+            } else if (subsHandler.failed()) {
+              handleResponse(response, ResponseType.BadRequestData, subsHandler.result().toString(),
+                  false);
             }
           });
         } else if (authHandler.failed()) {
-          response.putHeader("content-type", "application/json")
-              .setStatusCode(ResponseType.AuthenticationFailure.getCode())
-              .end(new RestResponse.Builder().withError(ResponseType.AuthenticationFailure)
-                  .withMessage("Unauthorised").build().toJsonString());
+          handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
       });
     } else {
-      response.putHeader("content-type", "application/json")
-          .setStatusCode(ResponseType.AuthenticationFailure.getCode())
-          .end(new RestResponse.Builder().withError(ResponseType.AuthenticationFailure)
-              .withMessage("Unauthorised").build().toJsonString());
-
+      handleResponse(response, ResponseType.AuthenticationFailure, true);
     }
+  }
+
+  private void getSubscription(RoutingContext routingContext) {
+    LOGGER.info("getSubscription method started");
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+    JsonObject authenticationInfo = new JsonObject();
+    String instanceID = request.getHeader("Host");
+    String subsId = request.getParam("subsId");
+    JsonObject requestJson = new JsonObject();
+    requestJson.put("subscriptionID", subsId);
+    requestJson.put("instanceID", instanceID);
+    authenticator.tokenInterospect(new JsonObject(), authenticationInfo, authHandler -> {
+      if (authHandler.succeeded()) {
+        LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
+        databroker.registerStreamingSubscription(requestJson, subsHandler -> {
+          if (subsHandler.succeeded()) {
+            handleResponse(response, ResponseType.Ok, subsHandler.result().toString(), false);
+          } else if (subsHandler.failed()) {
+            handleResponse(response, ResponseType.BadRequestData, true);
+          }
+        });
+      } else if (authHandler.failed()) {
+        handleResponse(response, ResponseType.AuthenticationFailure, true);
+      }
+    });
+
   }
 
   private void createExchange(RoutingContext routingContext) {
@@ -510,12 +502,12 @@ public class ApiServerVerticle extends AbstractVerticle {
           } else if (dataBrokerHandler.failed()) {
             LOGGER.error(dataBrokerHandler.cause());
             handleResponse(response, ResponseType.BadRequestData,
-                dataBrokerHandler.cause().getMessage(), false);
+                dataBrokerHandler.cause().getMessage(), true);
           }
         });
       } else if (authHandler.failed()) {
         LOGGER.error(authHandler.cause());
-        handleResponse(response, ResponseType.InternalError, "Internal Server Error", true);
+        handleResponse(response, ResponseType.AuthenticationFailure, true);
       }
     });
 
@@ -552,12 +544,12 @@ public class ApiServerVerticle extends AbstractVerticle {
           } else if (dataBrokerHandler.failed()) {
             LOGGER.error(dataBrokerHandler.cause());
             handleResponse(response, ResponseType.BadRequestData,
-                dataBrokerHandler.cause().getMessage(), false);
+                dataBrokerHandler.cause().getMessage(), true);
           }
         });
       } else if (authHandler.failed()) {
         LOGGER.error(authHandler.cause());
-        handleResponse(response, ResponseType.InternalError, "Internal Server Error", true);
+        handleResponse(response, ResponseType.AuthenticationFailure, true);
       }
     });
   }
@@ -595,12 +587,12 @@ public class ApiServerVerticle extends AbstractVerticle {
           } else if (dataBrokerHandler.failed()) {
             LOGGER.error(dataBrokerHandler.cause());
             handleResponse(response, ResponseType.BadRequestData,
-                dataBrokerHandler.cause().getMessage(), false);
+                dataBrokerHandler.cause().getMessage(), true);
           }
         });
       } else if (authHandler.failed()) {
         LOGGER.error(authHandler.cause());
-        handleResponse(response, ResponseType.InternalError, "Internal Server Error", true);
+        handleResponse(response, ResponseType.AuthenticationFailure, true);
       }
     });
   }
@@ -608,69 +600,243 @@ public class ApiServerVerticle extends AbstractVerticle {
   private void createQueue(RoutingContext routingContext) {
     LOGGER.info("createQueue method started");
     JsonObject requestJson = routingContext.getBodyAsJson();
+    HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    authenticator.tokenInterospect(requestJson, requestJson, handler -> {
-      if (handler.succeeded()) {
+    String instanceID = request.getHeader("Host");
+    JsonObject authenticationInfo = new JsonObject();
+    if (request.headers().contains("token")) {
+      authenticationInfo.put("token", request.getHeader("token"));
+    } else {
+      authenticationInfo.put("token", "public");
+    }
+    requestJson.put("instanceID", instanceID);
+    authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
+      LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
+      if (authHandler.succeeded()) {
         Future<JsonObject> brokerResult = managementApi.createQueue(requestJson, databroker);
         brokerResult.onComplete(brokerResultHandler -> {
           if (brokerResultHandler.succeeded()) {
             handleResponse(response, ResponseType.Created, brokerResultHandler.result().toString(),
                 false);
-          } else {
+          } else if (brokerResultHandler.failed()) {
+            LOGGER.error(brokerResultHandler.cause());
             handleResponse(response, ResponseType.BadRequestData,
                 brokerResultHandler.cause().getMessage(), false);
           }
         });
-      } else {
-        handleResponse(response, ResponseType.InternalError, "Internal Server Error", true);
+      } else if (authHandler.failed()) {
+        handleResponse(response, ResponseType.AuthenticationFailure, true);
       }
     });
   }
 
   private void deleteQueue(RoutingContext routingContext) {
     LOGGER.info("deleteQueue method started");
-    JsonObject requestJson = routingContext.getBodyAsJson();
+    JsonObject requestJson = new JsonObject();
+    HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
+    String instanceID = request.getHeader("Host");
+    JsonObject authenticationInfo = new JsonObject();
+    if (request.headers().contains("token")) {
+      authenticationInfo.put("token", request.getHeader("token"));
+    } else {
+      authenticationInfo.put("token", "public");
+    }
+    requestJson.put("instanceID", instanceID);
     String queueId = routingContext.request().getParam("queueId");
-    authenticator.tokenInterospect(requestJson, requestJson, handler -> {
-      if (handler.succeeded()) {
+    authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
+      LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
+      if (authHandler.succeeded()) {
         Future<JsonObject> brokerResult = managementApi.deleteQueue(queueId, databroker);
         brokerResult.onComplete(brokerResultHandler -> {
           if (brokerResultHandler.succeeded()) {
             handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
                 false);
-          } else {
+          } else if (brokerResultHandler.failed()) {
+            LOGGER.error(brokerResultHandler.cause());
             handleResponse(response, ResponseType.BadRequestData,
                 brokerResultHandler.cause().getMessage(), false);
           }
         });
-      } else {
-        handleResponse(response, ResponseType.InternalError, "Internal Server Error", true);
+      } else if (authHandler.failed()) {
+        LOGGER.error(authHandler.cause());
+        handleResponse(response, ResponseType.AuthenticationFailure, true);
       }
     });
   }
 
   private void getQueueDetails(RoutingContext routingContext) {
-    LOGGER.info("deleteQueue method started");
-    JsonObject requestJson = routingContext.getBodyAsJson();
+    LOGGER.info("getQueueDetails method started");
+    JsonObject requestJson = new JsonObject();
+    HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
+    String instanceID = request.getHeader("Host");
+    JsonObject authenticationInfo = new JsonObject();
+    if (request.headers().contains("token")) {
+      authenticationInfo.put("token", request.getHeader("token"));
+    } else {
+      authenticationInfo.put("token", "public");
+    }
+    requestJson.put("instanceID", instanceID);
     String queueId = routingContext.request().getParam("queueId");
-    authenticator.tokenInterospect(requestJson, requestJson, handler -> {
-      if (handler.succeeded()) {
+    authenticator.tokenInterospect(requestJson, requestJson, authHandler -> {
+      LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
+      if (authHandler.succeeded()) {
         Future<JsonObject> brokerResult = managementApi.getQueueDetails(queueId, databroker);
         brokerResult.onComplete(brokerResultHandler -> {
           if (brokerResultHandler.succeeded()) {
-            handleResponse(response, ResponseType.Created, brokerResultHandler.result().toString(),
+            handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
                 false);
-          } else {
+          } else if (brokerResultHandler.failed()) {
+            LOGGER.error(brokerResultHandler.cause());
             handleResponse(response, ResponseType.BadRequestData,
                 brokerResultHandler.cause().getMessage(), false);
           }
         });
       } else {
-        handleResponse(response, ResponseType.InternalError, "Internal Server Error", true);
+        LOGGER.error(authHandler.cause());
+        handleResponse(response, ResponseType.AuthenticationFailure, true);
       }
     });
+  }
+
+  private void bindQueue2Exchange(RoutingContext routingContext) {
+    LOGGER.info("bindQueue2Exchange method started");
+    JsonObject requestJson = routingContext.getBodyAsJson();
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+    String instanceID = request.getHeader("Host");
+    JsonObject authenticationInfo = new JsonObject();
+    if (request.headers().contains("token")) {
+      authenticationInfo.put("token", request.getHeader("token"));
+    } else {
+      authenticationInfo.put("token", "public");
+    }
+    requestJson.put("instanceID", instanceID);
+    authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
+      if (authHandler.succeeded()) {
+        Future<JsonObject> brokerResult = managementApi.bindQueue2Exchange(requestJson, databroker);
+        brokerResult.onComplete(brokerResultHandler -> {
+          if (brokerResultHandler.succeeded()) {
+            handleResponse(response, ResponseType.Created, brokerResultHandler.result().toString(),
+                false);
+          } else if (brokerResultHandler.failed()) {
+            LOGGER.error(brokerResultHandler.cause());
+            handleResponse(response, ResponseType.BadRequestData,
+                brokerResultHandler.cause().getMessage(), false);
+          }
+
+        });
+      } else if (authHandler.failed()) {
+        handleResponse(response, ResponseType.AuthenticationFailure, true);
+      }
+    });
+  }
+
+  private void unbindQueue2Exchange(RoutingContext routingContext) {
+    LOGGER.info("unbindQueue2Exchange method started");
+    JsonObject requestJson = routingContext.getBodyAsJson();
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+    String instanceID = request.getHeader("Host");
+    JsonObject authenticationInfo = new JsonObject();
+    if (request.headers().contains("token")) {
+      authenticationInfo.put("token", request.getHeader("token"));
+    } else {
+      authenticationInfo.put("token", "public");
+    }
+    requestJson.put("instanceID", instanceID);
+    authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
+      if (authHandler.succeeded()) {
+        Future<JsonObject> brokerResult = managementApi.unbindQueue2Exchange(requestJson,
+            databroker);
+        brokerResult.onComplete(brokerResultHandler -> {
+          if (brokerResultHandler.succeeded()) {
+            handleResponse(response, ResponseType.Created, brokerResultHandler.result().toString(),
+                false);
+          } else if (brokerResultHandler.failed()) {
+            LOGGER.error(brokerResultHandler.cause());
+            handleResponse(response, ResponseType.BadRequestData,
+                brokerResultHandler.cause().getMessage(), false);
+          }
+        });
+      } else if (authHandler.failed()) {
+        LOGGER.error(authHandler.cause());
+        handleResponse(response, ResponseType.AuthenticationFailure, true);
+      }
+    });
+  }
+
+  private void createVHost(RoutingContext routingContext) {
+    LOGGER.info("createVHost method started");
+    JsonObject requestJson = routingContext.getBodyAsJson();
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+    String instanceID = request.getHeader("Host");
+    JsonObject authenticationInfo = new JsonObject();
+    if (request.headers().contains("token")) {
+      authenticationInfo.put("token", request.getHeader("token"));
+    } else {
+      authenticationInfo.put("token", "public");
+    }
+    requestJson.put("instanceID", instanceID);
+    authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
+      if (authHandler.succeeded()) {
+        Future<JsonObject> brokerResult = managementApi.createVHost(requestJson, databroker);
+        brokerResult.onComplete(brokerResultHandler -> {
+          if (brokerResultHandler.succeeded()) {
+            handleResponse(response, ResponseType.Created, brokerResultHandler.result().toString(),
+                false);
+          } else if (brokerResultHandler.failed()) {
+            LOGGER.error(brokerResultHandler.cause());
+            handleResponse(response, ResponseType.BadRequestData,
+                brokerResultHandler.cause().getMessage(), false);
+          }
+        });
+      } else if (authHandler.failed()) {
+        LOGGER.error(authHandler.cause());
+        handleResponse(response, ResponseType.AuthenticationFailure, true);
+      }
+    });
+  }
+
+  private void deleteVHost(RoutingContext routingContext) {
+    LOGGER.info("deleteVHost method started");
+    JsonObject requestJson = new JsonObject();
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+    String instanceID = request.getHeader("Host");
+    JsonObject authenticationInfo = new JsonObject();
+    if (request.headers().contains("token")) {
+      authenticationInfo.put("token", request.getHeader("token"));
+    } else {
+      authenticationInfo.put("token", "public");
+    }
+    requestJson.put("instanceID", instanceID);
+    String vhostId = routingContext.request().getParam("vhostId");
+    authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
+      if (authHandler.succeeded()) {
+        Future<JsonObject> brokerResult = managementApi.deleteVHost(vhostId, databroker);
+        brokerResult.onComplete(brokerResultHandler -> {
+          if (brokerResultHandler.succeeded()) {
+            handleResponse(response, ResponseType.Created, brokerResultHandler.result().toString(),
+                false);
+          } else if (brokerResultHandler.failed()) {
+            LOGGER.error(brokerResultHandler.cause());
+            handleResponse(response, ResponseType.BadRequestData,
+                brokerResultHandler.cause().getMessage(), false);
+          }
+        });
+      } else if (authHandler.failed()) {
+        LOGGER.error(authHandler.cause());
+        handleResponse(response, ResponseType.AuthenticationFailure, true);
+      }
+    });
+  }
+
+  private void handleResponse(HttpServerResponse response, ResponseType responseType,
+      boolean isBodyRequired) {
+    handleResponse(response, responseType, responseType.getMessage(), isBodyRequired);
   }
 
   private void handleResponse(HttpServerResponse response, ResponseType responseType, String reply,
