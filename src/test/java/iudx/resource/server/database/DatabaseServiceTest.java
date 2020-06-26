@@ -367,4 +367,90 @@ public class DatabaseServiceTest {
       });
     }));
   }
+
+  @Test
+  @DisplayName("Testing Count Geo-Circle query")
+  void countGeoCircle(VertxTestContext testContext) {
+    JsonObject request = new JsonObject()
+        .put("id",new JsonArray()
+            .add("rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+        .put("searchType","geoSearch_").put("lon",82.987988).put("lat",25.319768)
+        .put("radius","100").put("isTest",true);
+
+    dbService.countQuery(request, testContext.succeeding(response-> testContext.verify(()->{
+      assertEquals(3146,response.getInteger("Count"));
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing Count Geo-Polygon query")
+  void countGeoPolygon(VertxTestContext testContext) {
+    JsonObject request = new JsonObject()
+        .put("id", new JsonArray()
+            .add("rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+        .put("geometry","polygon").put("georel","within")
+        .put("coordinates",new JsonArray()
+            .add(new JsonArray().add(new JsonArray().add(82.9735).add(25.3703)).add(new JsonArray()
+                .add(83.0053).add(25.3567)).add(new JsonArray().add(82.9766).add(25.3372))
+                .add(new JsonArray().add(82.95).add(25.3519)).add(new JsonArray().add(82.936)
+                    .add(25.3722)).add(new JsonArray().add(82.9735).add(25.3703))))
+        .put("geoproperty","geoJsonLocation").put("searchType","geoSearch_").put("isTest",true);
+
+    dbService.countQuery(request, testContext.succeeding(response-> testContext.verify(()->{
+      assertEquals(91870,response.getInteger("Count"));
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing Count Geo-Linestring query")
+  void countGeoLineString(VertxTestContext testContext) {
+    JsonObject request = new JsonObject()
+        .put("id", new JsonArray()
+            .add("rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+        .put("geometry","linestring").put("georel","intersects")
+        .put("coordinates",new JsonArray()
+            .add(new JsonArray().add(82.9735).add(25.3352)).add(new JsonArray().add(82.9894)
+                .add(25.3452)).add(new JsonArray().add(82.99).add(25.34)))
+        .put("geoproperty","geoJsonLocation").put("isTest",true).put("searchType","geoSearch_");
+
+    dbService.countQuery(request, testContext.succeeding(response-> testContext.verify(()->{
+      assertEquals(207,response.getInteger("Count"));
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing Count Geo-Bbox query")
+  void countGeoBbox(VertxTestContext testContext) {
+    JsonObject request = new JsonObject()
+        .put("id", new JsonArray()
+            .add("rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+        .put("geometry","bbox").put("georel","within")
+        .put("coordinates",new JsonArray().add(new JsonArray().add(82.95).add(25.3567))
+            .add(new JsonArray().add(83.0053).add(25)))
+        .put("geoproperty","geoJsonLocation").put("isTest",true).put("searchType","geoSearch_");
+
+    dbService.countQuery(request, testContext.succeeding(response-> testContext.verify(()->{
+      assertEquals(2194856,response.getInteger("Count"));
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing response filter with count")
+  void countResponseFilter(VertxTestContext testContext) {
+    JsonObject request = new JsonObject().put("id", new JsonArray()
+        .add("rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+        .put("searchType","responseFilter_").put("attrs", new JsonArray().add("resource-id")
+            .add("latitude").add("longitude"))
+        .put("isTest",true);
+
+    dbService.countQuery(request, testContext.failing(response-> testContext.verify(()->{
+      assertEquals("Count is not supported with filtering", response.getMessage());
+      testContext.completeNow();
+    })));
+  }
 }
+

@@ -43,9 +43,11 @@ public interface DatabaseService {
   String BOOL_KEY = "bool";
   String RESOURCE_ID_KEY = "resource-id";
   String VARANASI_SWM_SEARCH_INDEX = "varanasi-swm-vehicles/_search";
-  String FILTER_PATH = "?filter_path=took,hits.hits._source";
   String VARANASI_OTHER_SEARCH_INDEX = "varanasi-other/_search";
-  String VARANASI_TEST_SEARCH_INDEX = "varanasi/_search?filter_path=took,hits.hits._source";
+  String VARANASI_TEST_SEARCH_INDEX = "varanasi/_search";
+  String VARANASI_OTHER_COUNT_INDEX = "varanasi-other/_count";
+  String VARANASI_TEST_COUNT_INDEX = "varanasi/_count";
+  String VARANASI_SWM_COUNT_INDEX = "varanasi-swm/_count";
   String SOURCE_FILTER_KEY = "_source";
 
   /**
