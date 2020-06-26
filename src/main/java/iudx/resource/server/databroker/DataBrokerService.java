@@ -86,21 +86,21 @@ public interface DataBrokerService {
 
 
   /**
-   * The updateStreamingSubscription implements the updation of streaming subscription
-   * operation with the data broker.
+   * The updateStreamingSubscription implements the updation of streaming subscription operation
+   * with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
    * @return DataBrokerService which is a Service
    */
-  
+
   @Fluent
   DataBrokerService updateStreamingSubscription(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The deleteStreamingSubscription implements the deletion of streaming subscription
-   * operation with the data broker.
+   * The deleteStreamingSubscription implements the deletion of streaming subscription operation
+   * with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -112,8 +112,8 @@ public interface DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The listStreamingSubscription implements the listing of streaming subscription
-   * operation with the data broker.
+   * The listStreamingSubscription implements the listing of streaming subscription operation with
+   * the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -125,8 +125,8 @@ public interface DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The registerCallbackSubscription implements the registration of callback subscription
-   * operation with the data broker.
+   * The registerCallbackSubscription implements the registration of callback subscription operation
+   * with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -138,8 +138,8 @@ public interface DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The updateCallbackSubscription implements the updation of callback subscription
-   * operation with the data broker.
+   * The updateCallbackSubscription implements the updation of callback subscription operation with
+   * the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -151,8 +151,8 @@ public interface DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The deleteCallbackSubscription implements the deletion of callback subscription
-   * operation with the data broker.
+   * The deleteCallbackSubscription implements the deletion of callback subscription operation with
+   * the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -164,8 +164,8 @@ public interface DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The listCallbackSubscription implements the listing of callback subscription
-   * operation with the data broker.
+   * The listCallbackSubscription implements the listing of callback subscription operation with the
+   * data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -177,8 +177,7 @@ public interface DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The createExchange implements the creation of exchange
-   * operation with the data broker.
+   * The createExchange implements the creation of exchange operation with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -189,8 +188,7 @@ public interface DataBrokerService {
   DataBrokerService createExchange(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The updateExchange implements the updation of exchange
-   * operation with the data broker.
+   * The updateExchange implements the updation of exchange operation with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -201,8 +199,7 @@ public interface DataBrokerService {
   DataBrokerService updateExchange(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The deleteExchange implements the deletion of exchange
-   * operation with the data broker.
+   * The deleteExchange implements the deletion of exchange operation with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -213,8 +210,7 @@ public interface DataBrokerService {
   DataBrokerService deleteExchange(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The listExchange implements the listing of exchange
-   * operation with the data broker.
+   * The listExchange implements the listing of exchange operation with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -226,8 +222,7 @@ public interface DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The createQueue implements the creation of queue
-   * operation with the data broker.
+   * The createQueue implements the creation of queue operation with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -238,8 +233,7 @@ public interface DataBrokerService {
   DataBrokerService createQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The updateQueue implements the updation of queue
-   * operation with the data broker.
+   * The updateQueue implements the updation of queue operation with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -250,8 +244,7 @@ public interface DataBrokerService {
   DataBrokerService updateQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The deleteQueue implements the deletion of queue
-   * operation with the data broker.
+   * The deleteQueue implements the deletion of queue operation with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -262,8 +255,7 @@ public interface DataBrokerService {
   DataBrokerService deleteQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The bindQueue implements the binding of queue
-   * operation with the data broker.
+   * The bindQueue implements the binding of queue operation with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -274,8 +266,7 @@ public interface DataBrokerService {
   DataBrokerService bindQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The unbindQueue implements the unbinding of queue
-   * operation with the data broker.
+   * The unbindQueue implements the unbinding of queue operation with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -286,8 +277,7 @@ public interface DataBrokerService {
   DataBrokerService unbindQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The createvHost implements the creation of vHost
-   * operation with the data broker.
+   * The createvHost implements the creation of vHost operation with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -298,8 +288,7 @@ public interface DataBrokerService {
   DataBrokerService createvHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The updatevHost implements the updation of vHost
-   * operation with the data broker.
+   * The updatevHost implements the updation of vHost operation with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -310,8 +299,7 @@ public interface DataBrokerService {
   DataBrokerService updatevHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The deletevHost implements the deletion of vHost
-   * operation with the data broker.
+   * The deletevHost implements the deletion of vHost operation with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -322,8 +310,7 @@ public interface DataBrokerService {
   DataBrokerService deletevHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The listvHost implements the listing of vHost
-   * operation with the data broker.
+   * The listvHost implements the listing of vHost operation with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -332,11 +319,11 @@ public interface DataBrokerService {
 
   @Fluent
   DataBrokerService listvHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
-  
-  
+
+
   /**
-   * The listExchangeSubscribers implements the listing of all bindings of a queue
-   * operation with the data broker.
+   * The listExchangeSubscribers implements the listing of all bindings of a queue operation with
+   * the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -345,10 +332,9 @@ public interface DataBrokerService {
   @Fluent
   DataBrokerService listQueueSubscribers(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler);
-  
+
   /**
-   * The publishFromAdaptor implements the publish from adaptor
-   * operation with the data broker.
+   * The publishFromAdaptor implements the publish from adaptor operation with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -362,4 +348,8 @@ public interface DataBrokerService {
   static DataBrokerService createProxy(Vertx vertx, String address) {
     return new DataBrokerServiceVertxEBProxy(vertx, address);
   }
+
+  @Fluent
+  public DataBrokerService getExchange(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
 }

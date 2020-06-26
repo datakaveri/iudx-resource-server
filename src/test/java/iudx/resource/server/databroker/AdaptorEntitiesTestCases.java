@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,9 +46,6 @@ public class AdaptorEntitiesTestCases {
   private static RabbitMQOptions config;
   private static RabbitMQClient client;
   private static String exchangeName;
-  private static String queueName;
-  private static JsonArray entities;
-  private static JsonObject expected;
   static JsonObject propObj;
 
   private static final Logger logger = LoggerFactory.getLogger(AdaptorEntitiesTestCases.class);
@@ -120,57 +117,105 @@ public class AdaptorEntitiesTestCases {
     /* Call the databroker constructor with the RabbitMQ client Vertx web client. */
 
     databroker = new DataBrokerServiceImpl(client, webClient, propObj);
-    vertx.deployVerticle(new DataBrokerVerticle(), testContext.succeeding(id -> {
-      try {
-        testContext.awaitCompletion(2, TimeUnit.SECONDS);
-      } catch (Exception e) {
-        System.out.println("exception in awaitCompletion");
-      }
-      testContext.completeNow();
-
-    }));
+    testContext.completeNow();
 
   }
 
   @Test
   @DisplayName("Testing registerAdaptor")
-
+  @Order(1)
   void successRegisterAdaptor(VertxTestContext testContext) {
-    System.out.println("inside test method");
     JsonObject request = new JsonObject();
     request.put("id", "umesh_adaptor");
     request.put("consumer", "umesh.pacholi@trigyn.com");
 
     JsonObject expected = new JsonObject();
+    expected.put("username", "trigyn.com%2F3e6c80469f94feb3bba9ea8d46219d5c");
+    expected.put("apiKey", "123456");
     expected.put("id", "umesh_adaptor");
-    expected.put("vHost", "/");
-    expected.put("status", "AdaptorID : umesh_adaptor");
+    expected.put("vHost", "%2F");
+
     databroker.registerAdaptor(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("RegisteAdaptor response is : " + response);
+        logger.info("inside  successRegisterAdaptor - RegisteAdaptor response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
     });
   }
 
-  /*
-   * @Test
-   * 
-   * @DisplayName("Testing deleteAdaptor")
-   * 
-   * @Order(2) void successDeleteAdaptor(VertxTestContext testContext) { JsonObject expected = new
-   * JsonObject(); expected.put("Exchange", exchangeName);
-   * 
-   * JsonObject request = new JsonObject(); request.put("exchangeName",
-   * "umesh_Test_DeleteAdaptor"+exchangeName);
-   * 
-   * databroker.deleteAdaptor(request, handler -> { if (handler.succeeded()) { JsonObject response =
-   * handler.result(); logger.info("DeleteAdaptor response is : " + response);
-   * assertEquals(expected, response); } testContext.completeNow(); }); }
-   * 
-   */
+  @Test
+  @DisplayName("Testing getExchange")
+  @Order(2)
+  void successGetExchange(VertxTestContext testContext) {
+    JsonObject request = new JsonObject();
+    request.put("id", "umesh_adaptor");
+    JsonObject expected = new JsonObject();
+    expected.put("type", 200);
+    expected.put("title", "success");
+    expected.put("detail", "Exchange found");
+
+    databroker.getExchange(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("inside  successGetExchange - getExchange response : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing listAdaptor")
+  @Order(3)
+  void successListAdaptor(VertxTestContext testContext) {
+    JsonObject request = new JsonObject();
+    request.put("exchangeName", "umesh_adaptor");
+
+    JsonObject expected = new JsonObject();
+    JsonArray adaptorLogs_entities = new JsonArray();
+    JsonArray database_entities = new JsonArray();
+    adaptorLogs_entities.add("umesh_adaptor.dataIssue");
+    adaptorLogs_entities.add("umesh_adaptor.downstreamIssue");
+    adaptorLogs_entities.add("umesh_adaptor.heartbeat");
+    database_entities.add("umesh_adaptor");
+    expected.put("adaptorLogs", adaptorLogs_entities);
+    expected.put("database", database_entities);
+
+    databroker.listAdaptor(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("inside test - listAdaptor response is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing deleteAdaptor")
+  @Order(4)
+  void successDeleteAdaptor(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put("id", "umesh_adaptor");
+    expected.put("type", "adaptor deletion");
+    expected.put("title", "success");
+    expected.put("detail", "adaptor deleted");
+
+    JsonObject request = new JsonObject();
+    request.put("id", "umesh_adaptor");
+
+    databroker.deleteAdaptor(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("inside test - DeleteAdaptor response is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
 
 }
 

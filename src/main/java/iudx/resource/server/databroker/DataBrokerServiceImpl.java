@@ -108,11 +108,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             // createUserIfNotExist_onComplete result set to registerResponse
             JsonObject result = rh.result();
             registerResponse.put("username", result.getString("shaUsername"));
-            registerResponse.put("apiKey", result.getString("apiKey"));
-            registerResponse.put("type", result.getString("type"));
-            registerResponse.put("title", result.getString("title"));
-            registerResponse.put("detail", result.getString("detail"));
-            registerResponse.put("vhostPermissions", result.getString("vhostPermissions"));
+            registerResponse.put("apiKey", "123456");
+            // registerResponse.put("apiKey", result.getString("apiKey"));
+            // registerResponse.put("type", result.getString("type"));
+            // registerResponse.put("title", result.getString("title"));
+            // registerResponse.put("detail", result.getString("detail"));
+            // registerResponse.put("vhostPermissions", result.getString("vhostPermissions"));
 
             String uname = rh.result().getString("shaUsername");
             // now declare exchange and bind it with queues
@@ -128,7 +129,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                   // exchangeDeclareFuture_onComplete
                   JsonObject obj = ar.result();
                   registerResponse.put("id", obj.getString("exchange"));
-                  registerResponse.put("exchangename", obj.getString("exchange"));
+                  // registerResponse.put("exchangename", obj.getString("exchange"));
                   registerResponse.put("vHost", vhost);
                   // if exchange just registered then set topic permission and bind with queues
                   if (obj.getString("exchange") != null && !obj.getString("exchange").isEmpty()) {
@@ -138,8 +139,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                       if (topicHandler.succeeded()) {
                         logger.info("Write permission set on topic for exchange "
                             + obj.getString("exchange"));
-                        registerResponse.put("topic_permissions",
-                            topicHandler.result().getString("topic_permissions"));
+
+                        /*
+                         * registerResponse.put("topic_permissions",
+                         * topicHandler.result().getString("topic_permissions"));
+                         */
+
                       } else {
                         logger.info(
                             "topic permissions not set for exchange " + obj.getString("exchange")
@@ -152,10 +157,13 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                       if (res.succeeded()) {
                         logger.info("Queue_Database, Queue_adaptorLogs binding done with "
                             + obj.getString("exchange"));
-                        registerResponse.put("Queue_Database",
-                            "Queue_Database" + " bound with " + obj.getString("exchange"));
-                        registerResponse.put("Queue_adaptorLogs",
-                            "Queue_adaptorLogs" + " bound with " + obj.getString("exchange"));
+
+                        /*
+                         * registerResponse.put("Queue_Database", "Queue_Database" + " bound with "
+                         * + obj.getString("exchange")); registerResponse.put("Queue_adaptorLogs",
+                         * "Queue_adaptorLogs" + " bound with " + obj.getString("exchange"));
+                         */
+
                       } else {
                         logger
                             .error("error in queue binding with adaptor - cause : " + res.cause());
@@ -164,12 +172,13 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
                   } else if (obj.getString("detail") != null && !obj.getString("detail").isEmpty()
                       && obj.getString("detail").equalsIgnoreCase("Exchange already exists")) {
-                    registerResponse.put("exchange_detail", "Exchange already exists");
+                    // registerResponse.put("exchange_detail", "Exchange already exists");
                     registerResponse.put("id", adaptorID);
-                    registerResponse.put("exchangename", adaptorID);
+                    // registerResponse.put("exchangename", adaptorID);
                   }
 
                   logger.info("registerResponse : " + registerResponse);
+                  handler.handle(Future.succeededFuture(registerResponse));
 
                 } else {
                   handler.handle(Future
@@ -205,8 +214,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       handler.handle(
           Future.failedFuture("Bad request : insufficient request data to register adaptor"));
     }
-
-    handler.handle(Future.succeededFuture(registerResponse));
 
     return null;
 
@@ -371,8 +378,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           });
 
         } else {
-          promise.fail(ar.cause().toString());
-          logger.info("createUser method - cause  : " + ar.cause().toString());
+          promise.fail("createUser method - Some newtork error. cause" + ar.cause());
+          logger.error("createUser method - Some newtork error. cause" + ar.cause());
         }
       } else {
         promise.fail(ar.cause().toString());
@@ -416,7 +423,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
       } else {
         logger.error("Error in setting topic permission : " + result.cause());
-        promise.fail(result.result().statusMessage());
+        promise.fail("Error in setting topic permission. cause : " + result.cause());
       }
     });
 
@@ -540,6 +547,75 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     return null;
   }
 
+  /*
+   * It retrieves exchange is exist
+   * 
+   * @param request which is of type JsonObject
+   * 
+   * @return response which is a Future object of promise of Json type
+   */
+  @Override
+  public DataBrokerService getExchange(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler) {
+    if (request != null && !request.isEmpty()) {
+      Future<JsonObject> result = getExchange(request);
+      result.onComplete(resultHandler -> {
+        if (resultHandler.succeeded()) {
+          handler.handle(Future.succeededFuture(resultHandler.result()));
+        }
+        if (resultHandler.failed()) {
+          logger.error("getExchange resultHandler failed : " + resultHandler.cause());
+        }
+      });
+    }
+    return null;
+  }
+
+  /*
+   * overridden method
+   */
+  Future<JsonObject> getExchange(JsonObject request) {
+    JsonObject response = new JsonObject();
+    Promise<JsonObject> promise = Promise.promise();
+    if (request != null && !request.isEmpty()) {
+      String exchangeName = request.getString("id");
+      if (vhost.contains("/")) {
+        url = "/api/exchanges/" + encodedValue(vhost) + "/" + exchangeName;
+      } else {
+        url = "/api/exchanges/" + vhost + "/" + exchangeName;
+      }
+
+      HttpRequest<Buffer> isExchangeExist = webClient.get(url).basicAuthentication(user, password);
+      isExchangeExist.send(result -> {
+        if (result.succeeded()) {
+          int status = result.result().statusCode();
+          response.put("type", status);
+          if (status == HttpStatus.SC_OK) {
+            response.put("title", "success");
+            response.put("detail", "Exchange found");
+          } else if (status == HttpStatus.SC_NOT_FOUND) {
+            response.put("title", "Failure");
+            response.put("detail", "Exchange not found");
+          } else {
+            response.put("getExchange_status", status);
+            promise.fail("getExchange_status" + result.cause());
+          }
+        } else {
+          response.put("getExchange_error", result.cause());
+          promise.fail("getExchange_error" + result.cause());
+        }
+        logger.info("getExchange method response : " + response);
+        promise.complete(response);
+      });
+
+    } else {
+      promise.fail("exchangeName not provided");
+    }
+
+    return promise.future();
+
+  }
+
   /**
    * The deleteAdaptor implements deletion feature for an adaptor(exchange).
    * 
@@ -549,66 +625,50 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService deleteAdaptor(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
+
     JsonObject deleteResponse = new JsonObject();
-    if (request != null && !request.isEmpty() && request.getString("id") != null
-        && !request.getString("id").isEmpty() && !request.getString("id").isBlank()) {
-      String adaptorID = request.getString("id");
-      if (vhost.equalsIgnoreCase("/")) {
-        url = "/api/exchanges/" + encodedValue(vhost) + "/" + adaptorID;
-      } else {
-        url = "/api/exchanges/" + vhost + "/" + adaptorID;
-      }
 
-      HttpRequest<Buffer> isAdaptorExistRequest =
-          webClient.get(url).basicAuthentication(user, password);
-      isAdaptorExistRequest.send(result -> {
-        if (result.succeeded()) {
-          if (result.result().statusCode() == HttpStatus.SC_NOT_FOUND) {
-            deleteResponse.put("type", result.result().statusCode());
-            deleteResponse.put("title", "Failure");
-            deleteResponse.put("detail", "Adaptor does not exists");
-          } else if (result.result().statusCode() == HttpStatus.SC_OK) {
-            logger.info(adaptorID + " found for deletion. Now deleting ....");
-            client.exchangeDelete(adaptorID, rh -> {
-              logger.info("client.exchangeDelete_handler  result : " + rh.result());
-              if (rh.succeeded()) {
-                logger.info(adaptorID + " adaptor deleted successfully");
-                deleteResponse.put("id", adaptorID);
-                deleteResponse.put("type", result.result().statusCode());
-                deleteResponse.put("title", "success");
-                deleteResponse.put("detail", "adaptor deleted");
-              } else if (rh.failed()) {
-                logger.info("adaptor deletion failed. Cause :" + rh.cause());
-                deleteResponse.put("type", result.result().statusCode());
-                deleteResponse.put("title", "error");
-                deleteResponse.put("detail", "Error in adaptor deletion");
-              } else {
-                logger.error("Something wrong in deleting adaptor" + rh.cause());
-                handler.handle(Future.failedFuture("Bad request : nothing to delete"));
-              }
+    Future<JsonObject> result = getExchange(request);
+    result.onComplete(resultHandler -> {
+      if (resultHandler.succeeded()) {
+        int status = resultHandler.result().getInteger("type");
+        if (status == 200) {// exchange found
+          String exchangeID = request.getString("id");
+          client.exchangeDelete(exchangeID, rh -> {
+            if (rh.succeeded()) {
+              logger.info(exchangeID + " adaptor deleted successfully");
+              deleteResponse.put("id", exchangeID);
+              deleteResponse.put("type", "adaptor deletion");
+              deleteResponse.put("title", "success");
+              deleteResponse.put("detail", "adaptor deleted");
+            } else if (rh.failed()) {
+              deleteResponse.put("type", "adaptor delete");
+              deleteResponse.put("title", "Error in adaptor deletion");
+              deleteResponse.put("detail", rh.cause());
+              handler.handle(Future.failedFuture("Bad request : nothing to delete"));
+            } else {
+              logger.error("Something wrong in deleting adaptor" + rh.cause());
+              handler.handle(Future.failedFuture("Bad request : nothing to delete"));
+            }
+            handler.handle(Future.succeededFuture(deleteResponse));
+          });
 
-            });
-
-          } else {
-            logger.error("Something fatal in finding adaptor for deletion");
-            handler.handle(Future.failedFuture("Bad request : nothing to delete"));
-          }
-
-          // now logging deleteResponse and handle it
-          logger.info("deleteAdaptor method's final response : " + deleteResponse);
-          handler.handle(Future.succeededFuture(deleteResponse));
-
-        } else {
-          logger.error("Something wrong in finding adaptor" + result.cause());
+        } else if (status == 404) { // exchange not found
+          deleteResponse.put("type", status);
+          deleteResponse.put("title", resultHandler.result().getString("title"));
+          deleteResponse.put("detail", resultHandler.result().getString("detail"));
+        } else { // some other issue
           handler.handle(Future.failedFuture("Bad request : nothing to delete"));
         }
 
-      });
+      }
 
-    } else {
-      deleteResponse.put("status", "Bad request : nothing to delete");
-      handler.handle(Future.failedFuture("Bad request : nothing to delete"));
-    }
+      if (resultHandler.failed()) {
+        logger.error("deleteAdaptor - resultHandler failed : " + resultHandler.cause());
+        handler.handle(Future.failedFuture("Bad request : nothing to delete"));
+      }
+
+    });
 
     return null;
 
