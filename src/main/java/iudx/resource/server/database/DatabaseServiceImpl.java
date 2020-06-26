@@ -49,6 +49,7 @@ public class DatabaseServiceImpl implements DatabaseService {
   public DatabaseService searchQuery(JsonObject request, Handler<AsyncResult<JsonArray>> handler) {
     Request elasticRequest;
     logger.info("Inside searchQuery<DatabaseService> block-------- " + request.toString());
+    request.put("search", true);
 
     if (!request.containsKey("id")) {
       handler.handle(Future.failedFuture("No id found"));
@@ -71,15 +72,17 @@ public class DatabaseServiceImpl implements DatabaseService {
     String resourceServer = request.getJsonArray("id").getString(0).split("/")[0];
     logger.info("Resource Server instanceID is " + resourceServer);
     if (request.getBoolean("isTest")) {
-      elasticRequest = new Request("GET", VARANASI_TEST_SEARCH_INDEX + FILTER_PATH);
+      elasticRequest = new Request("GET", VARANASI_TEST_SEARCH_INDEX);
     } else if ("varanasi-swm-vehicles".equalsIgnoreCase(resourceGroup)) {
-      elasticRequest = new Request("GET", VARANASI_SWM_SEARCH_INDEX + FILTER_PATH);
+      elasticRequest = new Request("GET", VARANASI_SWM_SEARCH_INDEX);
     } else {
-      elasticRequest = new Request("GET", VARANASI_OTHER_SEARCH_INDEX + FILTER_PATH);
+      elasticRequest = new Request("GET", VARANASI_OTHER_SEARCH_INDEX);
     }
+
+    elasticRequest.addParameter("filter_path", "took,hits.hits._source");
     query = queryDecoder(request);
     if (query.containsKey("Error")) {
-      logger.info("Query returned with an error");
+      logger.error("Query returned with an error");
       handler.handle(Future.failedFuture(query.getString("Error")));
       return null;
     }
@@ -108,14 +111,16 @@ public class DatabaseServiceImpl implements DatabaseService {
           }
           handler.handle(Future.succeededFuture(dbResponse));
         } catch (IOException e) {
-          logger.info("DB ERROR: " + e.getCause().getMessage());
+          logger.error("DB ERROR:\n");
+          e.printStackTrace();
           handler.handle(Future.failedFuture("DB ERROR"));
         }
       }
 
       @Override
       public void onFailure(Exception e) {
-        logger.info("DB request has failed. ERROR: " + e.getCause().getMessage());
+        logger.error("DB request has failed. ERROR: \n");
+        e.printStackTrace();
         handler.handle(Future.failedFuture("DB ERROR"));
       }
     });
@@ -131,8 +136,67 @@ public class DatabaseServiceImpl implements DatabaseService {
    */
   @Override
   public DatabaseService countQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+    Request elasticRequest;
+    logger.info("Inside countQuery<DatabaseService> block-------- " + request.toString());
+    request.put("search", false);
 
-    return null;
+    if (!request.containsKey("id")) {
+      handler.handle(Future.failedFuture("No id found"));
+      return null;
+    }
+    if (request.getJsonArray("id").isEmpty()) {
+      handler.handle(Future.failedFuture("resource-id is empty"));
+      return null;
+    }
+    if (!request.containsKey("searchType")) {
+      handler.handle(Future.failedFuture("No searchType found"));
+      return null;
+    }
+    String resourceGroup = ""; // request.getJsonArray("id").getString(0).split("/")[3];
+    if (request.getBoolean("isTest")) {
+      elasticRequest = new Request("GET", VARANASI_TEST_COUNT_INDEX);
+    } else if ("varanasi-swm-vehicles".equalsIgnoreCase(resourceGroup)) {
+      elasticRequest = new Request("GET", VARANASI_SWM_COUNT_INDEX);
+    } else {
+      elasticRequest = new Request("GET", VARANASI_OTHER_COUNT_INDEX);
+    }
+    query = queryDecoder(request);
+    if (query.containsKey("Error")) {
+      logger.error("Query returned with an error");
+      handler.handle(Future.failedFuture(query.getString("Error")));
+      return null;
+    }
+    logger.info("Query constructed: " + query.toString());
+    elasticRequest.setJsonEntity(query.toString());
+    client.performRequestAsync(elasticRequest, new ResponseListener() {
+      @Override
+      public void onSuccess(Response response) {
+        logger.info("Successful DB request");
+        try {
+          int statusCode = response.getStatusLine().getStatusCode();
+          if (statusCode != 200 && statusCode != 204) {
+            handler.handle(Future.failedFuture("Status code is not 2xx"));
+            return;
+          }
+          JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
+          handler.handle(Future.succeededFuture(new JsonObject()
+              .put("Count", responseJson.getInteger("count"))));
+        } catch (IOException e) {
+          logger.error("DB ERROR:\n");
+          e.printStackTrace();
+          handler.handle(Future.failedFuture("DB ERROR"));
+        }
+      }
+
+      @Override
+      public void onFailure(Exception e) {
+        logger.error("DB request has failed. ERROR:\n");
+        e.printStackTrace();
+        handler.handle(Future.failedFuture("DB ERROR"));
+      }
+    });
+    return this;
+
   }
 
   /**
@@ -146,15 +210,15 @@ public class DatabaseServiceImpl implements DatabaseService {
   public JsonObject queryDecoder(JsonObject request) {
     String searchType = request.getString("searchType");
     JsonObject elasticQuery = new JsonObject();
-    elasticQuery.put("size", 10);
     JsonArray id = request.getJsonArray("id");
     JsonArray filterQuery = new JsonArray();
-
     JsonObject termQuery =
         new JsonObject().put("terms", new JsonObject().put(RESOURCE_ID_KEY + ".keyword", id));
 
     filterQuery.add(termQuery);
-
+    if (request.containsKey("search") && request.getBoolean("search")) {
+      elasticQuery.put("size", 10);
+    }
     if (searchType.matches("(.*)geoSearch(.*)")) {
       logger.info("In geoSearch block---------");
       JsonObject shapeJson = new JsonObject();
@@ -178,10 +242,10 @@ public class DatabaseServiceImpl implements DatabaseService {
         relation = request.getString("georel");
         coordinates = request.getJsonArray("coordinates");
         int length = coordinates.getJsonArray(0).size();
-        if (geometry.equalsIgnoreCase("polygon") && ((!coordinates.getJsonArray(0).getJsonArray(0)
-            .getDouble(0).equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(0)))
-            || !coordinates.getJsonArray(0).getJsonArray(0).getDouble(1)
-                .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(1)))) {
+        if (geometry.equalsIgnoreCase("polygon") && !coordinates.getJsonArray(0).getJsonArray(0)
+            .getDouble(0).equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(0))
+            && !coordinates.getJsonArray(0).getJsonArray(0).getDouble(1)
+                .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(1))) {
           return new JsonObject().put("Error", "Coordinate mismatch (Polygon)");
         }
         shapeJson
@@ -207,6 +271,9 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
     if (searchType.matches("(.*)responseFilter(.*)")) {
       logger.info("In responseFilter block---------");
+      if (!request.getBoolean("search")) {
+        return new JsonObject().put("Error", "Count is not supported with filtering");
+      }
       if (request.containsKey("attrs")) {
         JsonArray sourceFilter = request.getJsonArray("attrs");
         elasticQuery.put(SOURCE_FILTER_KEY, sourceFilter);
