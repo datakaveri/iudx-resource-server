@@ -8,6 +8,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 import org.apache.http.util.EntityUtils;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
@@ -280,6 +285,42 @@ public class DatabaseServiceImpl implements DatabaseService {
       } else {
         return new JsonObject().put("Error", "Missing/Invalid responseFilter parameters");
       }
+    }
+    if (searchType.matches("(.*)temporalSearch(.*)") && request.containsKey("timerel")
+        && request.containsKey("time")) {
+      logger.info("In temporalSearch block---------");
+      String timeRelation = request.getString("timerel");
+      String time = request.getString("time");
+      try {
+        DateFormat formatTimeUtc = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        DateFormat formatTimeIst = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        formatTimeUtc.setTimeZone(TimeZone.getTimeZone("UTC"));
+        formatTimeIst.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        Date parsedDateTimeUtc = formatTimeUtc.parse(time);
+        Date parsedDateTimeIst = formatTimeIst.parse(time);
+        logger.info("Requested date: #UTC- " + formatTimeUtc.format(parsedDateTimeUtc) + "\n#IST- "
+            + formatTimeIst.format(parsedDateTimeIst));
+      } catch (ParseException e) {
+        e.printStackTrace();
+        return new JsonObject().put("Error", "Invalid date format");
+      }
+      JsonObject rangeTimeQuery = new JsonObject();
+      if ("during".equalsIgnoreCase(timeRelation)) {
+        String endTime = request.getString("endtime");
+        rangeTimeQuery.put(RANGE_KEY, new JsonObject().put(TIME_KEY, new JsonObject()
+            .put("gte", time).put("lte", endTime)));
+      } else if ("before".equalsIgnoreCase(timeRelation)) {
+        rangeTimeQuery.put(RANGE_KEY, new JsonObject().put(TIME_KEY, new JsonObject()
+            .put("lt", time)));
+      } else if ("after".equalsIgnoreCase(timeRelation)) {
+        rangeTimeQuery.put(RANGE_KEY, new JsonObject().put(TIME_KEY, new JsonObject()
+            .put("gt", time)));
+      } else if ("tequals".equalsIgnoreCase(timeRelation)) {
+        rangeTimeQuery.put("term", new JsonObject().put(TIME_KEY, time));
+      } else {
+        return new JsonObject().put("Error", "Missing/Invalid temporal parameters");
+      }
+      filterQuery.add(rangeTimeQuery);
     }
 
     elasticQuery.put(QUERY_KEY,
