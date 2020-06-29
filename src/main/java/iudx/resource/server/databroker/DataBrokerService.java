@@ -352,4 +352,9 @@ public interface DataBrokerService {
   @Fluent
   public DataBrokerService getExchange(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler);
+
+  @Fluent
+  public DataBrokerService publishHeartbeat(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
+
 }

@@ -194,8 +194,34 @@ public class AdaptorEntitiesTestCases {
   }
 
   @Test
-  @DisplayName("Testing deleteAdaptor")
+  @DisplayName("Testing publishHeartbeat")
   @Order(4)
+  void successPublishHeartbeat(VertxTestContext testContext) {
+    JsonObject request = new JsonObject();
+    request.put("id", "umesh_adaptor");
+    request.put("status", "heartbeat");
+
+    JsonObject expected = new JsonObject();
+    expected.put("type", "success");
+    expected.put("queueName", "adaptorLogs");
+    expected.put("routingKey", "umesh_adaptor.heartbeat");
+    expected.put("detail", "routingKey matched");
+
+
+    databroker.publishHeartbeat(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("inside test - publishHeartbeat response is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+
+  @Test
+  @DisplayName("Testing deleteAdaptor")
+  @Order(5)
   void successDeleteAdaptor(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
     expected.put("id", "umesh_adaptor");

@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Properties;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpStatus;
@@ -1662,4 +1663,93 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     }
     return null;
   }
+
+  @Override
+  public DataBrokerService publishHeartbeat(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler) {
+    JsonObject response = new JsonObject();
+    if (request != null && !request.isEmpty()) {
+      String adaptor = request.getString("id");
+      String routingKey = request.getString("status");
+      if (adaptor != null && !adaptor.isEmpty() && routingKey != null && !routingKey.isEmpty()) {
+        JsonObject json = new JsonObject();
+        Future<JsonObject> future1 = getExchange(json.put("id", adaptor));
+        future1.onComplete(ar -> {
+          if (ar.result().getInteger("type") == HttpStatus.SC_OK) {
+            json.put("exchangeName", adaptor);
+            // exchange found, now get list of all queues which are bound with this exchange
+            Future<JsonObject> future2 = listExchangeSubscribers(json);
+            future2.onComplete(rh -> {
+              JsonObject queueList = rh.result();
+              if (queueList != null && queueList.size() > 0) {
+                // now find queues which are bound with given routingKey and publish message
+                queueList.forEach(queue -> {
+                  // JsonObject obj = new JsonObject();
+                  Map.Entry<String, Object> map = queue;
+                  String queueName = map.getKey();
+                  JsonArray array = (JsonArray) map.getValue();
+                  array.forEach(rk -> {
+                    if ((rk.toString()).contains(routingKey)) {
+                      // routingKey matched. now publish message
+                      JsonObject message = new JsonObject();
+                      message.put("body", request.toString());
+                      client.basicPublish(adaptor, routingKey, message, resultHandler -> {
+                        if (resultHandler.succeeded()) {
+                          logger.info("publishHeartbeat - message published to queue [ " + queueName
+                              + " ] for routingKey [ " + routingKey + " ]");
+                          response.put("type", "success");
+                          response.put("queueName", queueName);
+                          response.put("routingKey", rk.toString());
+                          response.put("detail", "routingKey matched");
+                        } else {
+                          logger.error(
+                              "publishHeartbeat - some error in publishing message to queue [ "
+                                  + queueName + " ]. cause : " + resultHandler.cause());
+                          response.put("messagePublished", "failed");
+                          response.put("type", "error");
+                          response.put("detail", "routingKey not matched");
+                        }
+                        handler.handle(Future.succeededFuture(response));
+                      });
+                    } else {
+                      logger.error(
+                          "publishHeartbeat - routingKey [ " + routingKey + " ] not matched with [ "
+                              + rk.toString() + " ] for queue [ " + queueName + " ]");
+                    }
+                  });
+
+                });
+
+              } else {
+                logger.error(
+                    "publishHeartbeat method - Oops !! None queue bound with given exchange");
+                handler.handle(Future.failedFuture(
+                    "publishHeartbeat method - Oops !! None queue bound with given exchange"));
+              }
+
+            });
+
+
+          } else {
+            logger.error("Either adaptor does not exist or some other error to publish message");
+            handler.handle(Future.failedFuture(
+                "Either adaptor does not exist or some other error to publish message"));
+          }
+
+        });
+      } else {
+        logger.error("publishHeartbeat - adaptor and routingKey not provided to publish message");
+        handler.handle(Future.failedFuture(
+            "publishHeartbeat - adaptor and routingKey not provided to publish message"));
+      }
+
+    } else {
+      logger.error("publishHeartbeat - request is null to publish message");
+      handler.handle(Future.failedFuture("publishHeartbeat - request is null to publish message"));
+    }
+
+    return null;
+
+  }
+
 }
