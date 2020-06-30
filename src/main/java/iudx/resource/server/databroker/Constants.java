@@ -9,13 +9,18 @@ public class Constants {
       "AdaptorID / Exchange not provided in request";
   public static final String AUTO_DELETE = "auto_delete";
   public static final String ALL_NOT_FOUND = "Queue/Exchange/Routing Key does not exist";
+  public static final String APIKEY_TEST_EXAMPLE = "123456";
+  public static final String ALLOW_ROUTING_KEY = "/.*";
 
+  
   public static final String BAD_REQUEST =
       "Bad request : insufficient request data to register adaptor";
 
   public static final String CHECK_CREDENTIALS =
       "Something went wrong while creating user using mgmt API. Check credentials";
   public static final String CONFIGURE = "configure";
+  public static final String CONSUMER = "consumer";
+  public static final String CONSUMER_TEST_EXAMPLE = "vasanth.rajaraman@rbccps.org";
 
   public static final String DETAILS = "details";
   public static final String DATA_ISSUE = ".dataIssue";
@@ -48,6 +53,14 @@ public class Constants {
   public static final String ID = "id";
   public static final String ID_NOT_PROVIDED = "id not provided in adaptor registration";
   public static final String INVALID_ID = "Invalid id field";
+  public static final String ID_ALIAS_TEST_EXAMPLE_2 = "flood-sensor";
+  public static final String ID_ALIAS_TEST_EXAMPLE_1 = "aqm-bosch-climo";
+  public static final String ID_TEST_EXAMPLE_1 =
+      "rbccps.org/e73ed7f5b7950f8b3b42f4bd14eade5c/aqm-bosch-climo";
+  public static final String ID_TEST_EXAMPLE_2 =
+      "rbccps.org/e73ed7f5b7950f8b3b42f4bd14eade5c/flood-sensor";
+  public static final String ID_TEST_EXAMPLE =
+      "rbccps.org/e73ed7f5b7950f8b3b42f4bd14eade5c/aqm-bosch-climo";
 
   public static final String NETWORK_ISSUE = "Network Issue";
   public static final String NONE = "None";
@@ -70,6 +83,7 @@ public class Constants {
   public static final String QUEUE_NAME = "queueName";
 
   public static final String READ = "read";
+  public static final String ROUTING_KEY = "routingKey";
 
   public static final String STATUS = "status";
   public static final String SUCCESS = "success";
@@ -90,6 +104,7 @@ public class Constants {
   public static final String USER_NAME_NOT_PROVIDED =
       "userName not provided in adaptor registration";
   public static final String USER_CREATION_ERROR = "User creation failed";
+  public static final String USER_NAME_TEST_EXAMPLE = "rbccps.org/e73ed7f5b7950f8b3b42f4bd14eade5c";
 
   public static final String VHOST = "vHost";
   public static final String VHOST_IUDX = "IUDX";
@@ -111,4 +126,5 @@ public class Constants {
   public static final long X_MESSAGE_TTL_VALUE = 86400000; // 24hours
   public static final int X_MAXLENGTH_VALUE = 100;
   public static final String X_QUEUE_MODE_VALUE = "lazy";
+  
 }
