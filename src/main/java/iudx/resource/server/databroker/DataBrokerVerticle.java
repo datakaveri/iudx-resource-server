@@ -1,8 +1,5 @@
 package iudx.resource.server.databroker;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Properties;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -19,6 +16,9 @@ import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.Properties;
 
 /**
  * The Data Broker Verticle.
