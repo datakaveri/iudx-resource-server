@@ -123,7 +123,6 @@ public class DataBrokerVerticle extends AbstractVerticle {
         config.setNetworkRecoveryInterval(networkRecoveryInterval);
         config.setAutomaticRecoveryEnabled(true);
 
-
         webConfig = new WebClientOptions();
         webConfig.setKeepAlive(true);
         webConfig.setConnectTimeout(86400000);
@@ -177,6 +176,8 @@ public class DataBrokerVerticle extends AbstractVerticle {
       }
 
     });
+
+    System.out.println("DataBrokerVerticle started");
 
   }
 
