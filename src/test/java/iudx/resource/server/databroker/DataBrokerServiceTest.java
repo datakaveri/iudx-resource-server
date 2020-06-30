@@ -82,7 +82,7 @@ public class DataBrokerServiceTest {
     exchangeName = sb.toString();
     queueName = sb.toString();
     entities = new JsonArray("[\"id1\", \"id2\"]");
-    vHost = "IUDX";
+    vHost = "IUDX-Test";
     statusOk = 200;
     statusNotFound = 404;
     statusNoContent = 204;
@@ -156,8 +156,8 @@ public class DataBrokerServiceTest {
     propObj = new JsonObject();
 
     propObj.put("userName", dataBrokerUserName);
-    propObj.put("password", dataBrokerPassword);
-    propObj.put("vHost", dataBrokerVhost);
+    propObj.put(Constants.PASSWORD, dataBrokerPassword);
+    propObj.put(Constants.VHOST, dataBrokerVhost);
 
     /* Call the databroker constructor with the RabbitMQ client. */
 
@@ -172,10 +172,10 @@ public class DataBrokerServiceTest {
   void successCreateExchange(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put("exchange", exchangeName);
+    expected.put(Constants.EXCHANGE, exchangeName);
 
     JsonObject request = new JsonObject();
-    request.put("exchangeName", exchangeName);
+    request.put(Constants.EXCHANGE_NAME, exchangeName);
 
     databroker.createExchange(request, handler -> {
       if (handler.succeeded()) {
@@ -193,12 +193,12 @@ public class DataBrokerServiceTest {
   void failCreateExchange(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put("type", statusNoContent);
-    expected.put("title", "Failure");
-    expected.put("detail", "Exchange already exists");
+    expected.put(Constants.TYPE, statusNoContent);
+    expected.put(Constants.TITLE, Constants.FAILURE);
+    expected.put(Constants.DETAIL, Constants.EXCHANGE_EXISTS);
 
     JsonObject request = new JsonObject();
-    request.put("exchangeName", exchangeName);
+    request.put(Constants.EXCHANGE_NAME, exchangeName);
 
     databroker.createExchange(request, handler -> {
       if (handler.succeeded()) {
@@ -216,10 +216,10 @@ public class DataBrokerServiceTest {
   void successCreateQueue(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put("queue", queueName);
+    expected.put(Constants.QUEUE, queueName);
 
     JsonObject request = new JsonObject();
-    request.put("queueName", queueName);
+    request.put(Constants.QUEUE_NAME, queueName);
 
     databroker.createQueue(request, handler -> {
       if (handler.succeeded()) {
@@ -238,12 +238,12 @@ public class DataBrokerServiceTest {
   void failCreateQueue(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put("type", statusNoContent);
-    expected.put("title", "Failure");
-    expected.put("detail", "Queue already exists");
+    expected.put(Constants.TYPE, statusNoContent);
+    expected.put(Constants.TITLE, Constants.FAILURE);
+    expected.put(Constants.DETAIL, Constants.QUEUE_ALREADY_EXISTS);
 
     JsonObject request = new JsonObject();
-    request.put("queueName", queueName);
+    request.put(Constants.QUEUE_NAME, queueName);
 
     databroker.createQueue(request, handler -> {
       if (handler.succeeded()) {
@@ -261,14 +261,14 @@ public class DataBrokerServiceTest {
   void successBindQueue(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put("queue", queueName);
-    expected.put("exchange", exchangeName);
-    expected.put("entities", entities);
+    expected.put(Constants.QUEUE, queueName);
+    expected.put(Constants.EXCHANGE, exchangeName);
+    expected.put(Constants.ENTITIES, entities);
 
     JsonObject request = new JsonObject();
-    request.put("queueName", queueName);
-    request.put("exchangeName", exchangeName);
-    request.put("entities", entities);
+    request.put(Constants.QUEUE_NAME, queueName);
+    request.put(Constants.EXCHANGE_NAME, exchangeName);
+    request.put(Constants.ENTITIES, entities);
 
     databroker.bindQueue(request, handler -> {
       if (handler.succeeded()) {
@@ -289,7 +289,7 @@ public class DataBrokerServiceTest {
     expected.put(queueName, entities);
 
     JsonObject request = new JsonObject();
-    request.put("exchangeName", exchangeName);
+    request.put(Constants.EXCHANGE_NAME, exchangeName);
 
     databroker.listExchangeSubscribers(request, handler -> {
       if (handler.succeeded()) {
@@ -310,10 +310,10 @@ public class DataBrokerServiceTest {
   void successListQueueBindings(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put("entities", entities);
+    expected.put(Constants.ENTITIES, entities);
 
     JsonObject request = new JsonObject();
-    request.put("queueName", queueName);
+    request.put(Constants.QUEUE_NAME, queueName);
 
     databroker.listQueueSubscribers(request, handler -> {
       if (handler.succeeded()) {
@@ -332,14 +332,14 @@ public class DataBrokerServiceTest {
   void successUnbindQueue(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put("queue", queueName);
-    expected.put("exchange", exchangeName);
-    expected.put("entities", entities);
+    expected.put(Constants.QUEUE, queueName);
+    expected.put(Constants.EXCHANGE, exchangeName);
+    expected.put(Constants.ENTITIES, entities);
 
     JsonObject request = new JsonObject();
-    request.put("queueName", queueName);
-    request.put("exchangeName", exchangeName);
-    request.put("entities", entities);
+    request.put(Constants.QUEUE_NAME, queueName);
+    request.put(Constants.EXCHANGE_NAME, exchangeName);
+    request.put(Constants.ENTITIES, entities);
 
     databroker.unbindQueue(request, handler -> {
       if (handler.succeeded()) {
@@ -358,10 +358,10 @@ public class DataBrokerServiceTest {
   void successDeleteQueue(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put("queue", queueName);
+    expected.put(Constants.QUEUE, queueName);
 
     JsonObject request = new JsonObject();
-    request.put("queueName", queueName);
+    request.put(Constants.QUEUE_NAME, queueName);
 
     databroker.deleteQueue(request, handler -> {
       if (handler.succeeded()) {
@@ -380,12 +380,12 @@ public class DataBrokerServiceTest {
   void failDeleteQueue(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put("type", statusNotFound);
-    expected.put("title", "Failure");
-    expected.put("detail", "Queue does not exist");
+    expected.put(Constants.TYPE, statusNotFound);
+    expected.put(Constants.TITLE, Constants.FAILURE);
+    expected.put(Constants.DETAIL, Constants.QUEUE_DOES_NOT_EXISTS);
 
     JsonObject request = new JsonObject();
-    request.put("queueName", queueName);
+    request.put(Constants.QUEUE_NAME, queueName);
 
     databroker.deleteQueue(request, handler -> {
       if (handler.succeeded()) {
@@ -404,10 +404,10 @@ public class DataBrokerServiceTest {
   void successDeleteExchange(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put("exchange", exchangeName);
+    expected.put(Constants.EXCHANGE, exchangeName);
 
     JsonObject request = new JsonObject();
-    request.put("exchangeName", exchangeName);
+    request.put(Constants.EXCHANGE_NAME, exchangeName);
 
     databroker.deleteExchange(request, handler -> {
       if (handler.succeeded()) {
@@ -426,12 +426,12 @@ public class DataBrokerServiceTest {
   void failDeleteExchange(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put("type", statusNotFound);
-    expected.put("title", "Failure");
-    expected.put("detail", "Exchange does not exist");
+    expected.put(Constants.TYPE, statusNotFound);
+    expected.put(Constants.TITLE, Constants.FAILURE);
+    expected.put(Constants.DETAIL, Constants.EXCHANGE_NOT_FOUND);
 
     JsonObject request = new JsonObject();
-    request.put("exchangeName", exchangeName);
+    request.put(Constants.EXCHANGE_NAME, exchangeName);
 
     databroker.deleteExchange(request, handler -> {
       if (handler.succeeded()) {
@@ -450,10 +450,10 @@ public class DataBrokerServiceTest {
   void successCreateVhost(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put("vHost", vHost);
+    expected.put(Constants.VHOST, vHost);
 
     JsonObject request = new JsonObject();
-    request.put("vHost", vHost);
+    request.put(Constants.VHOST, vHost);
 
     databroker.createvHost(request, handler -> {
       if (handler.succeeded()) {
@@ -472,10 +472,10 @@ public class DataBrokerServiceTest {
   void successDeleteVhost(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put("vHost", vHost);
+    expected.put(Constants.VHOST, vHost);
 
     JsonObject request = new JsonObject();
-    request.put("vHost", vHost);
+    request.put(Constants.VHOST, vHost);
 
     databroker.deletevHost(request, handler -> {
       if (handler.succeeded()) {
@@ -494,7 +494,7 @@ public class DataBrokerServiceTest {
   void successListVhosts(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put("vHost", new JsonArray("[\"/\",\"test\"]"));
+    expected.put(Constants.VHOST, new JsonArray("[\"/\",\"IUDX\",\"test\"]"));
 
     JsonObject request = new JsonObject();
 
@@ -549,8 +549,6 @@ public class DataBrokerServiceTest {
     });
 
   }
-
-
 }
 
 
