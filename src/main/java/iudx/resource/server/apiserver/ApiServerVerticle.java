@@ -145,6 +145,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         router.get(Constants.NGSILD_TEMPORAL_URL).handler(this::handleTemporalQuery);
         router.post(Constants.NGSILD_SUBSCRIPTION_URL).handler(this::handleSubscriptions);
         router.get(Constants.NGSILD_SUBSCRIPTION_URL + "/:subsId").handler(this::getSubscription);
+        router.delete(Constants.NGSILD_SUBSCRIPTION_URL + "/:subsId")
+            .handler(this::deleteSubscription);
 
         /* Management Api endpoints */
         // Exchange
@@ -396,7 +398,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * Method used to handle all subscription requests in NGSI-LD.
+   * Method used to handle all streaming subscription requests.
    * 
    * @param routingContext routingContext
    */
@@ -444,6 +446,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     }
   }
 
+  /**
+   * get a streaming subscription by id.
+   * 
+   * @param routingContext routingContext
+   */
   private void getSubscription(RoutingContext routingContext) {
     LOGGER.info("getSubscription method started");
     HttpServerRequest request = routingContext.request();
@@ -454,10 +461,17 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = new JsonObject();
     requestJson.put("subscriptionID", subsId);
     requestJson.put("instanceID", instanceID);
-    authenticator.tokenInterospect(new JsonObject(), authenticationInfo, authHandler -> {
+    authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
       if (authHandler.succeeded()) {
+        JsonArray authResult = authHandler.result();
+        JsonObject jsonObj = new JsonObject();
+        jsonObj.put("type", "streaming");
+        jsonObj.put("name", authResult.getString(0));
+        jsonObj.put("consumer", authResult.getString(1));
+        jsonObj.put("instanceID", instanceID);
+        jsonObj.put("subscriptionID", subsId);
         LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
-        databroker.registerStreamingSubscription(requestJson, subsHandler -> {
+        databroker.listStreamingSubscription(requestJson, subsHandler -> {
           if (subsHandler.succeeded()) {
             handleResponse(response, ResponseType.Ok, subsHandler.result().toString(), false);
           } else if (subsHandler.failed()) {
@@ -468,9 +482,51 @@ public class ApiServerVerticle extends AbstractVerticle {
         handleResponse(response, ResponseType.AuthenticationFailure, true);
       }
     });
-
   }
 
+  /**
+   * delete a streaming subscription by id.
+   * 
+   * @param routingContext routingContext
+   */
+  private void deleteSubscription(RoutingContext routingContext) {
+    LOGGER.info("getSubscription method started");
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+    JsonObject authenticationInfo = new JsonObject();
+    String instanceID = request.getHeader("Host");
+    String subsId = request.getParam("subsId");
+    JsonObject requestJson = new JsonObject();
+    requestJson.put("subscriptionID", subsId);
+    requestJson.put("instanceID", instanceID);
+    authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
+      if (authHandler.succeeded()) {
+        JsonArray authResult = authHandler.result();
+        JsonObject jsonObj = new JsonObject();
+        jsonObj.put("type", "streaming");
+        jsonObj.put("name", authResult.getString(0));
+        jsonObj.put("consumer", authResult.getString(1));
+        jsonObj.put("instanceID", instanceID);
+        jsonObj.put("subscriptionID", subsId);
+        LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
+        databroker.deleteStreamingSubscription(requestJson, subsHandler -> {
+          if (subsHandler.succeeded()) {
+            handleResponse(response, ResponseType.Ok, subsHandler.result().toString(), false);
+          } else if (subsHandler.failed()) {
+            handleResponse(response, ResponseType.BadRequestData, true);
+          }
+        });
+      } else if (authHandler.failed()) {
+        handleResponse(response, ResponseType.AuthenticationFailure, true);
+      }
+    });
+  }
+
+  /**
+   * Create a exchange in rabbit MQ.
+   * 
+   * @param routingContext routingContext
+   */
   private void createExchange(RoutingContext routingContext) {
     LOGGER.info("createExchange method started");
     JsonObject requestJson = routingContext.getBodyAsJson();
@@ -513,6 +569,11 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   }
 
+  /**
+   * delete an exchange in rabbit MQ.
+   * 
+   * @param routingContext routingContext
+   */
   private void deleteExchange(RoutingContext routingContext) {
     LOGGER.info("deleteExchange method started");
     JsonObject requestJson = new JsonObject();
@@ -554,6 +615,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     });
   }
 
+  /**
+   * get exchange details from rabbit MQ.
+   * 
+   * @param routingContext routingContext
+   */
   private void getExchangeDetails(RoutingContext routingContext) {
     LOGGER.info("getExchange method started");
     JsonObject requestJson = new JsonObject();
@@ -597,6 +663,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     });
   }
 
+  /**
+   * create a queue in rabbit MQ.
+   * 
+   * @param routingContext routingContext
+   */
   private void createQueue(RoutingContext routingContext) {
     LOGGER.info("createQueue method started");
     JsonObject requestJson = routingContext.getBodyAsJson();
@@ -630,6 +701,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     });
   }
 
+  /**
+   * delete a queue in rabbit MQ.
+   * 
+   * @param routingContext routingContext.
+   */
   private void deleteQueue(RoutingContext routingContext) {
     LOGGER.info("deleteQueue method started");
     JsonObject requestJson = new JsonObject();
@@ -665,6 +741,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     });
   }
 
+  /**
+   * get queue details from rabbit MQ.
+   * 
+   * @param routingContext
+   */
   private void getQueueDetails(RoutingContext routingContext) {
     LOGGER.info("getQueueDetails method started");
     JsonObject requestJson = new JsonObject();
@@ -700,6 +781,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     });
   }
 
+  /**
+   * bind queue to exchange in rabbit MQ.
+   * 
+   * @param routingContext routingContext
+   */
   private void bindQueue2Exchange(RoutingContext routingContext) {
     LOGGER.info("bindQueue2Exchange method started");
     JsonObject requestJson = routingContext.getBodyAsJson();
@@ -733,6 +819,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     });
   }
 
+  /**
+   * unbind a queue from an exchange in rabbit MQ.
+   * 
+   * @param routingContext routingContext
+   */
   private void unbindQueue2Exchange(RoutingContext routingContext) {
     LOGGER.info("unbindQueue2Exchange method started");
     JsonObject requestJson = routingContext.getBodyAsJson();
@@ -767,6 +858,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     });
   }
 
+  /**
+   * create a vhost in rabbit MQ.
+   * 
+   * @param routingContext routingContext
+   */
   private void createVHost(RoutingContext routingContext) {
     LOGGER.info("createVHost method started");
     JsonObject requestJson = routingContext.getBodyAsJson();
@@ -800,6 +896,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     });
   }
 
+  /**
+   * delete vhost from rabbit MQ.
+   * 
+   * @param routingContext routingContext
+   */
   private void deleteVHost(RoutingContext routingContext) {
     LOGGER.info("deleteVHost method started");
     JsonObject requestJson = new JsonObject();
@@ -834,11 +935,26 @@ public class ApiServerVerticle extends AbstractVerticle {
     });
   }
 
+  /**
+   * handle HTTP response.
+   * 
+   * @param response       response object
+   * @param responseType   Http status for response
+   * @param isBodyRequired body is required or not for response
+   */
   private void handleResponse(HttpServerResponse response, ResponseType responseType,
       boolean isBodyRequired) {
     handleResponse(response, responseType, responseType.getMessage(), isBodyRequired);
   }
 
+  /**
+   * handle HTTP response.
+   * 
+   * @param response       response object
+   * @param responseType   Http status for response
+   * @param reply          json response body
+   * @param isBodyRequired body is required or not for response
+   */
   private void handleResponse(HttpServerResponse response, ResponseType responseType, String reply,
       boolean isBodyRequired) {
     if (isBodyRequired) {
