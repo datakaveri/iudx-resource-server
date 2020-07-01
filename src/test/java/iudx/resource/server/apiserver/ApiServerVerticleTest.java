@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
 import io.vertx.core.json.JsonArray;
@@ -26,7 +25,6 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.util.Constants;
-import iudx.resource.server.starter.ResourceServerStarter;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -50,14 +48,13 @@ public class ApiServerVerticleTest {
         .setTrustAll(true);
     client = WebClient.create(vertx, clientOptions);
 
-    ResourceServerStarter starter = new ResourceServerStarter();
-    Future<JsonObject> result = starter.startServer();
+    // ResourceServerStarter starter = new ResourceServerStarter();
+    // Future<JsonObject> result = starter.startServer();
 
-    result.onComplete(resultHandler -> {
-      if (resultHandler.succeeded()) {
-        testContext.completeNow();
-      }
-    });
+    /*
+     * result.onComplete(resultHandler -> { if (resultHandler.succeeded()) {
+     * testContext.completeNow(); } });
+     */
 
     exchangeName = UUID.randomUUID().toString().replaceAll("-", "");
     queueName = UUID.randomUUID().toString().replaceAll("-", "");
@@ -66,7 +63,7 @@ public class ApiServerVerticleTest {
 
   }
 
-  @Test
+  // @Test
   @Order(1)
   @Description("calling /entities endpoint")
   public void testHandleEntitiesQuery(Vertx vertx, VertxTestContext testContext)
@@ -84,7 +81,7 @@ public class ApiServerVerticleTest {
     });
   }
 
-  @Test
+  // @Test
   @Order(2)
   @Description("calling /temporal/entities endpoint")
   public void testHandleTemporalQuery(Vertx vertx, VertxTestContext testContext) {
@@ -118,6 +115,107 @@ public class ApiServerVerticleTest {
         testContext.failed();
       }
     });
+  }
+
+  @Test
+  @Order(20)
+  @Description("calling /entities endpoint for a circle geometry")
+  public void testEntities4CircleGeom(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.post(PORT, BASE_URL, apiUrl)
+        .addQueryParam("id",
+            "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
+        .addQueryParam("georel", "within")
+        .addQueryParam("coordinates", "%5B82.987988%2C25.319768%5D").send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(21)
+  @Description("calling /entities endpoint for polygon geometry")
+  public void testEntities4PolygonGeom(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.post(PORT, BASE_URL, apiUrl)
+        .addQueryParam("id",
+            "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
+        .addQueryParam("georel", "within").addQueryParam("geometry", "polygon")
+        .addQueryParam("coordinates",
+            "%5B%5B114.78515624999999%2C66.26685631430843%5D%2C%5B114.78544056415559%2C66.26677642907407%5D%5D")
+        .send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(22)
+  @Description("calling /entities endpoint for linestring geometry")
+  public void testEntities4LineStringGeom(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.post(PORT, BASE_URL, apiUrl)
+        .addQueryParam("id",
+            "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
+        .addQueryParam("georel", "intersect").addQueryParam("geometry", "linestring")
+        .addQueryParam("coordinates",
+            "%5B%5B82.9735%2C25.3352%5D%5B82.9894%2C25.3452%5D%5B82.99%2C25.34%5D%5D")
+        .send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(23)
+  @Description("calling /entities endpoint for response filter query")
+  public void testResponseFilterQuery(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.post(PORT, BASE_URL, apiUrl)
+        .addQueryParam("id",
+            "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
+        .addQueryParam("georel", "within").addQueryParam("geometry", "polygon")
+        .addQueryParam("coordinates",
+            "%5B%5B114.78515624999999%2C66.26685631430843%5D%2C%5B114.78544056415559%2C66.26677642907407%5D%5D")
+        .addQueryParam("attr", "temprature,speed").send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(22)
+  @Description("calling /entities endpoint for bbox geometry")
+  public void testEntities4BoundingBoxGeom(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.post(PORT, BASE_URL, apiUrl)
+        .addQueryParam("id",
+            "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
+        .addQueryParam("georel", "within").addQueryParam("geometry", "bbox")
+        .addQueryParam("coordinates", "").send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   @Test
