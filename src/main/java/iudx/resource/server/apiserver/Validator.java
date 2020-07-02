@@ -59,6 +59,12 @@ public class Validator {
     return true;
   }
 
+  /**
+   * validate request parameters.
+   * 
+   * @param paramsMap map of request parameters
+   * @return Future future JsonObject
+   */
   public static Future<Boolean> validate(MultiMap paramsMap) {
     Promise<Boolean> promise = Promise.promise();
     if (validateParams(paramsMap)) {

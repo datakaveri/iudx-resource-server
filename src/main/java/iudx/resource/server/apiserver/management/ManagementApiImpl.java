@@ -8,7 +8,7 @@ import io.vertx.core.logging.LoggerFactory;
 import iudx.resource.server.databroker.DataBrokerService;
 
 /**
- * This class handles all DataBrokerService related interactions of API server
+ * This class handles all DataBrokerService related interactions of API server.
  *
  */
 public class ManagementApiImpl implements ManagementApi {
@@ -123,6 +123,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.deleteQueue(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
+        LOGGER.info("Result from databroker verticle :: " + result);
         if (!result.containsKey("type")) {
           promise.complete(result);
         } else {
@@ -249,6 +250,155 @@ public class ManagementApiImpl implements ManagementApi {
         }
       } else {
         LOGGER.error(handler.cause());
+        promise.fail(handler.cause().toString());
+      }
+    });
+    return promise.future();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<JsonObject> registerAdapter(JsonObject json, DataBrokerService databroker) {
+    Promise<JsonObject> promise = Promise.promise();
+    databroker.registerAdaptor(json, handler -> {
+      if (handler.succeeded()) {
+        JsonObject result = handler.result();
+        LOGGER.info("Result from databroker verticle :: " + result);
+        if (!result.containsKey("type")) {
+          promise.complete(result);
+        } else {
+          promise.fail(result.toString());
+        }
+      } else {
+        promise.fail(handler.cause().toString());
+      }
+    });
+    return promise.future();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<JsonObject> deleteAdapter(String adapterId, DataBrokerService databroker) {
+    Promise<JsonObject> promise = Promise.promise();
+    JsonObject json = new JsonObject();
+    json.put("id", adapterId);
+    databroker.deleteAdaptor(json, handler -> {
+      if (handler.succeeded()) {
+        JsonObject result = handler.result();
+        LOGGER.info("Result from databroker verticle :: " + result);
+        if (!result.containsKey("type")) {
+          promise.complete(result);
+        } else {
+          promise.fail(result.toString());
+        }
+      } else {
+        promise.fail(handler.cause().toString());
+      }
+    });
+    return promise.future();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Future<JsonObject> getAdapterDetails(String adapterId, DataBrokerService databroker) {
+    Promise<JsonObject> promise = Promise.promise();
+    JsonObject json = new JsonObject();
+    json.put("id", adapterId);
+    databroker.listAdaptor(json, handler -> {
+      if (handler.succeeded()) {
+        JsonObject result = handler.result();
+        LOGGER.info("Result from databroker verticle :: " + result);
+        if (!result.containsKey("type")) {
+          promise.complete(result);
+        } else {
+          promise.fail(result.toString());
+        }
+      } else {
+        promise.fail(handler.cause().toString());
+      }
+    });
+    return promise.future();
+  }
+
+  @Override
+  public Future<JsonObject> publishHeartbeat(JsonObject json, DataBrokerService databroker) {
+    Promise<JsonObject> promise = Promise.promise();
+    databroker.publishHeartbeat(json, handler -> {
+      if (handler.succeeded()) {
+        JsonObject result = new JsonObject();
+        LOGGER.info("Result from databroker verticle :: " + result);
+        if (result.getString("type").equalsIgnoreCase("success")) {
+          promise.complete(result);
+        } else {
+          promise.fail(result.toString());
+        }
+      } else {
+        promise.fail(handler.cause().toString());
+      }
+
+    });
+    return promise.future();
+  }
+
+  @Override
+  public Future<JsonObject> publishDownstreamIssues(JsonObject json, DataBrokerService databroker) {
+    Promise<JsonObject> promise = Promise.promise();
+    databroker.publishHeartbeat(json, handler -> {
+      if (handler.succeeded()) {
+        JsonObject result = new JsonObject();
+        LOGGER.info("Result from databroker verticle :: " + result);
+        if (result.getString("type").equalsIgnoreCase("success")) {
+          promise.complete(result);
+        } else {
+          promise.fail(result.toString());
+        }
+      } else {
+        promise.fail(handler.cause().toString());
+      }
+
+    });
+    return promise.future();
+  }
+
+  @Override
+  public Future<JsonObject> publishDataIssue(JsonObject json, DataBrokerService databroker) {
+    Promise<JsonObject> promise = Promise.promise();
+    databroker.publishHeartbeat(json, handler -> {
+      if (handler.succeeded()) {
+        JsonObject result = new JsonObject();
+        LOGGER.info("Result from databroker verticle :: " + result);
+        if (result.getString("type").equalsIgnoreCase("success")) {
+          promise.complete(result);
+        } else {
+          promise.fail(result.toString());
+        }
+      } else {
+        promise.fail(handler.cause().toString());
+      }
+
+    });
+    return promise.future();
+  }
+
+  @Override
+  public Future<JsonObject> publishDataFromAdapter(JsonObject json, DataBrokerService databroker) {
+    Promise<JsonObject> promise = Promise.promise();
+    databroker.publishFromAdaptor(json, handler -> {
+      if (handler.succeeded()) {
+        JsonObject result = new JsonObject();
+        LOGGER.info("Result from databroker verticle :: " + result);
+        if (!result.containsKey("type")) {
+          promise.complete(result);
+        } else {
+          promise.fail(result.toString());
+        }
+      } else {
         promise.fail(handler.cause().toString());
       }
     });

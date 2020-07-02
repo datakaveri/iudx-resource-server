@@ -96,4 +96,18 @@ public interface ManagementApi {
    */
   public Future<JsonObject> deleteVHost(String vhostID, DataBrokerService databroker);
 
+  public Future<JsonObject> registerAdapter(JsonObject json, DataBrokerService databroker);
+
+  public Future<JsonObject> deleteAdapter(String adapterId, DataBrokerService databroker);
+
+  public Future<JsonObject> getAdapterDetails(String adapterId, DataBrokerService databroker);
+
+  public Future<JsonObject> publishHeartbeat(JsonObject json, DataBrokerService databroker);
+
+  public Future<JsonObject> publishDownstreamIssues(JsonObject json, DataBrokerService databroker);
+
+  public Future<JsonObject> publishDataIssue(JsonObject json, DataBrokerService databroker);
+
+  public Future<JsonObject> publishDataFromAdapter(JsonObject json, DataBrokerService databroker);
+
 }

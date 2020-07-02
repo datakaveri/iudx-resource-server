@@ -1,9 +1,10 @@
 package iudx.resource.server.apiserver.query;
 
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import java.util.Arrays;
 import java.util.List;
+
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 /**
  * QueryMapper class to convert NGSILD query into json object for the purpose of
@@ -11,6 +12,9 @@ import java.util.List;
  *
  */
 public class QueryMapper {
+  private boolean isTemporal = false;
+  private boolean isGeoSearch = false;
+  private boolean isResponseFilter = false;
 
   /**
    * This method is used to create a json object from NGSILDQueryParams.
@@ -20,6 +24,7 @@ public class QueryMapper {
    * @return JsonObject result.
    */
   public JsonObject toJson(NGSILDQueryParams params, boolean isTemporal) {
+    this.isTemporal = isTemporal;
     JsonObject json = new JsonObject();
 
     if (params.getId() != null) {
@@ -28,6 +33,7 @@ public class QueryMapper {
       json.put("id", jsonArray);
     }
     if (params.getAttrs() != null) {
+      isResponseFilter = true;
       JsonArray jsonArray = new JsonArray();
       params.getAttrs().forEach(attribute -> jsonArray.add(attribute));
       json.put("attribute-filter", jsonArray);
@@ -35,6 +41,7 @@ public class QueryMapper {
     // TODO : geometry/georel validations according to specifications
     if (params.getGeoRel() != null
         && (params.getCoordinates() != null || params.getGeometry() != null)) {
+      isGeoSearch = true;
       if (params.getGeometry().equalsIgnoreCase("point")
           && params.getGeoRel().getRelation().equals("near")
           && params.getGeoRel().getMaxDistance() != null) {
@@ -56,6 +63,7 @@ public class QueryMapper {
     // TODO: timerel validations according to specifications.
     if (isTemporal && params.getTemporalRelation().getTemprel() != null
         && params.getTemporalRelation().getTime() != null) {
+      isTemporal = true;
       if (params.getTemporalRelation().getTemprel().equalsIgnoreCase("between")) {
         json.put("time", params.getTemporalRelation().getTime().toString());
         json.put("endtime", params.getTemporalRelation().getEndTime().toString());
@@ -74,11 +82,27 @@ public class QueryMapper {
       }
       json.put("attr-query", query);
     }
+
+    json.put("searchType", getSearchType());
     return json;
   }
 
   private <T> T getOrDefault(T value, T def) {
     return (value == null) ? def : value;
+  }
+
+  private String getSearchType() {
+    StringBuilder searchType = new StringBuilder();
+    if (isTemporal) {
+      searchType.append("temporalSearch_");
+    }
+    if (isGeoSearch) {
+      searchType.append("geoSearch_");
+    }
+    if (isResponseFilter) {
+      searchType.append("responseFilter_");
+    }
+    return searchType.toString();
   }
 
   JsonObject getQueryTerms(String queryTerms) {

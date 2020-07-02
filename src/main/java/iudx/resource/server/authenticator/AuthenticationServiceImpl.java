@@ -34,6 +34,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       Handler<AsyncResult<JsonArray>> handler) {
     // added for testing.
     JsonArray jsonArray = new JsonArray();
+    jsonArray.add("test-name");
+    jsonArray.add("test-consumer");
     handler.handle(Future.succeededFuture(jsonArray));
     return this;
   }
