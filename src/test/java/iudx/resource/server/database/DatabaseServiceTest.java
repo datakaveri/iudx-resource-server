@@ -9,6 +9,10 @@ import io.vertx.core.logging.Logger;
 import io.vertx.junit5.VertxTestContext;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.text.ParseException;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -32,7 +36,8 @@ public class DatabaseServiceTest {
   private static InputStream inputstream;
   private static String databaseIP;
   private static int databasePort;
-
+  
+  /* TODO Need to update params to use contants */
   @BeforeAll
   @DisplayName("Deploying Verticle")
   static void startVertx(Vertx vertx, VertxTestContext testContext) {
@@ -382,6 +387,82 @@ public class DatabaseServiceTest {
   }
 
   @Test
+  @DisplayName("Testing Temporal Queries (During)")
+  void searchDuringTemporal(VertxTestContext testContext) throws ParseException {
+    JsonObject request =
+        new JsonObject()
+            .put("id",
+                new JsonArray().add(
+                    "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+            .put("searchType", "temporalSearch_").put("isTest", true).put("timerel", "during")
+            .put("time","2020-06-01T14:20:00Z").put("endtime","2020-06-03T15:00:00Z");
+
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
+    OffsetDateTime start = OffsetDateTime.parse("2020-06-01T14:20:00Z", dateTimeFormatter);
+    OffsetDateTime end = OffsetDateTime.parse("2020-06-03T15:00:00Z", dateTimeFormatter);
+    logger.info("### start date: " + start);
+
+    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
+      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(5)
+          .getString("time"), dateTimeFormatter);
+      OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
+      logger.info("#### response Date " + resDateUtc);
+      assertTrue(!(resDateUtc.isBefore(start) || resDateUtc.isAfter(end)));
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing Temporal Queries (Before)")
+  void searchBeforeTemporal(VertxTestContext testContext) throws ParseException {
+    JsonObject request =
+        new JsonObject()
+            .put("id",
+                new JsonArray().add(
+                    "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+            .put("searchType", "temporalSearch_").put("isTest", true).put("timerel", "before")
+            .put("time","2020-06-01T14:20:00Z");
+
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
+    OffsetDateTime start = OffsetDateTime.parse("2020-06-01T14:20:00Z",dateTimeFormatter);
+    logger.info("### start date: " + start);
+
+    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
+      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(6)
+          .getString("time"), dateTimeFormatter);
+      OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
+      logger.info("#### response Date " + resDateUtc);
+      assertTrue(resDateUtc.isBefore(start));
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing Temporal Queries (After)")
+  void searchAfterTemporal(VertxTestContext testContext) throws ParseException {
+    JsonObject request =
+        new JsonObject()
+            .put("id",
+                new JsonArray().add(
+                    "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+            .put("searchType", "temporalSearch_").put("isTest", true).put("timerel", "after")
+            .put("time","2020-06-01T14:20:00Z");
+
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
+    OffsetDateTime start = OffsetDateTime.parse("2020-06-01T14:20:00Z",dateTimeFormatter);
+    logger.info("### start date: " + start);
+
+    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
+      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(3)
+          .getString("time"), dateTimeFormatter);
+      OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
+      logger.info("#### response Date " + resDateUtc);
+      assertTrue(resDateUtc.isAfter(start));
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
   @DisplayName("Testing Count Geo-Polygon query")
   void countGeoPolygon(VertxTestContext testContext) {
     JsonObject request = new JsonObject()
@@ -400,6 +481,30 @@ public class DatabaseServiceTest {
       testContext.completeNow();
     })));
   }
+  @Test
+  @DisplayName("Testing Temporal Queries (TEquals)")
+  void searchTequalsTemporal(VertxTestContext testContext) throws ParseException {
+    JsonObject request =
+        new JsonObject()
+            .put("id",
+                new JsonArray().add(
+                    "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+            .put("searchType", "temporalSearch_").put("isTest", true).put("timerel", "tequals")
+            .put("time","2020-06-01T14:20:00Z");
+
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
+    OffsetDateTime start = OffsetDateTime.parse("2020-06-01T14:20:00Z",dateTimeFormatter);
+    logger.info("### start date: " + start);
+
+    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
+      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(0)
+          .getString("time"), dateTimeFormatter);
+      OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
+      logger.info("#### response Date " + resDateUtc);
+      assertTrue(resDateUtc.isEqual(start));
+      testContext.completeNow();
+    })));
+  }
 
   @Test
   @DisplayName("Testing Count Geo-Linestring query")
@@ -415,6 +520,22 @@ public class DatabaseServiceTest {
 
     dbService.countQuery(request, testContext.succeeding(response-> testContext.verify(()->{
       assertEquals(207,response.getInteger("Count"));
+      testContext.completeNow();
+    })));
+  }
+  @Test
+  @DisplayName("Testing Temporal Exceptions (invalid date)")
+  void searchTemporalInvalidDate(VertxTestContext testContext){
+    JsonObject request =
+        new JsonObject()
+            .put("id",
+                new JsonArray().add(
+                    "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+            .put("searchType", "temporalSearch_").put("isTest", true).put("timerel", "tequals")
+            .put("time","Invalid date");
+
+    dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
+      assertEquals("Invalid date format", response.getMessage());
       testContext.completeNow();
     })));
   }
@@ -437,6 +558,36 @@ public class DatabaseServiceTest {
   }
 
   @Test
+  @DisplayName("Testing Complex Queries (Geo + Temporal + Response Filter)")
+  void searchComplexPart2(VertxTestContext testContext){
+    JsonObject request =
+        new JsonObject()
+            .put("id",
+                new JsonArray().add(
+                    "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+            .put("searchType", "temporalSearch_geoSearch_responseFilter_").put("isTest", true)
+            .put("timerel", "before").put("time","2020-06-01T14:20:00Z").put("lon", 82.987988)
+            .put("lat", 25.319768).put("radius", "100").put("attrs", new JsonArray()
+            .add("resource-id").add("longitude").add("time"));
+    Set<String> attrs = new HashSet<>();
+    attrs.add("resource-id");
+    attrs.add("time");
+    attrs.add("longitude");
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
+    OffsetDateTime start = OffsetDateTime.parse("2020-06-01T14:20:00Z",dateTimeFormatter);
+
+    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
+      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(3)
+          .getString("time"), dateTimeFormatter);
+      OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
+      assertEquals(82.98797, response.getJsonObject(0).getDouble("longitude"));
+      assertTrue(resDateUtc.isBefore(start));
+      assertEquals(attrs,response.getJsonObject(2).fieldNames());
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
   @DisplayName("Testing response filter with count")
   void countResponseFilter(VertxTestContext testContext) {
     JsonObject request = new JsonObject().put("id", new JsonArray()
@@ -447,6 +598,31 @@ public class DatabaseServiceTest {
 
     dbService.countQuery(request, testContext.failing(response-> testContext.verify(()->{
       assertEquals("Count is not supported with filtering", response.getMessage());
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing Partial Complex Queries (Geo + Temporal + invalid-Response Filter)")
+  void searchPartialComplex(VertxTestContext testContext){
+    JsonObject request =
+        new JsonObject()
+            .put("id",
+                new JsonArray().add(
+                    "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+            .put("searchType", "temporalSearch_geoSearch_response@KSf_").put("isTest", true)
+            .put("timerel", "before").put("time","2020-06-01T14:20:00Z").put("lon", 82.987988)
+            .put("lat", 25.319768).put("radius", "100").put("attrs", new JsonArray()
+            .add("resource-id").add("longitude").add("time"));
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
+    OffsetDateTime start = OffsetDateTime.parse("2020-06-01T14:20:00Z",dateTimeFormatter);
+
+    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
+      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(3)
+          .getString("time"), dateTimeFormatter);
+      OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
+      assertEquals(82.98797, response.getJsonObject(0).getDouble("longitude"));
+      assertTrue(resDateUtc.isBefore(start));
       testContext.completeNow();
     })));
   }

@@ -49,6 +49,8 @@ public interface DatabaseService {
   String VARANASI_TEST_COUNT_INDEX = "varanasi/_count";
   String VARANASI_SWM_COUNT_INDEX = "varanasi-swm/_count";
   String SOURCE_FILTER_KEY = "_source";
+  String RANGE_KEY = "range";
+  String TIME_KEY = "time";
 
   /**
    * The searchQuery implements the search operation with the database.
