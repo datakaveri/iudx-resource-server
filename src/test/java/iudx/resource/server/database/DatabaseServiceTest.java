@@ -36,7 +36,8 @@ public class DatabaseServiceTest {
   private static InputStream inputstream;
   private static String databaseIP;
   private static int databasePort;
-
+  
+  /* TODO Need to update params to use contants */
   @BeforeAll
   @DisplayName("Deploying Verticle")
   static void startVertx(Vertx vertx, VertxTestContext testContext) {

@@ -52,6 +52,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   @Override
   public DatabaseService searchQuery(JsonObject request, Handler<AsyncResult<JsonArray>> handler) {
+    /* TODO Need to update params to use contants */
     Request elasticRequest;
     logger.info("Inside searchQuery<DatabaseService> block-------- " + request.toString());
     request.put("search", true);
