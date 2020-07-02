@@ -326,6 +326,9 @@ public class ManagementApiImpl implements ManagementApi {
     return promise.future();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Future<JsonObject> publishHeartbeat(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
@@ -346,6 +349,9 @@ public class ManagementApiImpl implements ManagementApi {
     return promise.future();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Future<JsonObject> publishDownstreamIssues(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
@@ -366,6 +372,9 @@ public class ManagementApiImpl implements ManagementApi {
     return promise.future();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Future<JsonObject> publishDataIssue(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
@@ -386,6 +395,9 @@ public class ManagementApiImpl implements ManagementApi {
     return promise.future();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Future<JsonObject> publishDataFromAdapter(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
