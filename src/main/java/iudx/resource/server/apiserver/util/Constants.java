@@ -15,6 +15,7 @@ public class Constants {
   public static final String IUDX_MANAGEMENT_BIND_URL = IUDX_MANAGEMENT_URL + "/bind";
   public static final String IUDX_MANAGEMENT_UNBIND_URL = IUDX_MANAGEMENT_URL + "/unbind";
   public static final String IUDX_MANAGEMENT_VHOST_URL = IUDX_MANAGEMENT_URL + "/vhost";
+  public static final String IUDX_MANAGEMENT_ADAPTER_URL = IUDX_MANAGEMENT_URL + "/adapter";
 
   // ngsi-ld query paramaters
   public static final String NGSILDQUERY_ID = "id";

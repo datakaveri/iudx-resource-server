@@ -847,8 +847,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService registerStreamingSubscription(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
-
-    return null;
+    handler.handle(Future.succeededFuture(new JsonObject()));
+    return this;
   }
 
   /**
@@ -869,8 +869,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService deleteStreamingSubscription(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
-
-    return null;
+    handler.handle(Future.succeededFuture(new JsonObject()));
+    return this;
   }
 
   /**
@@ -880,8 +880,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService listStreamingSubscription(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
-
-    return null;
+    handler.handle(Future.succeededFuture(new JsonObject()));
+    return this;
   }
 
   /**
