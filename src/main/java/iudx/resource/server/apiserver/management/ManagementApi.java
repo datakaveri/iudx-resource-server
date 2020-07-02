@@ -96,18 +96,67 @@ public interface ManagementApi {
    */
   public Future<JsonObject> deleteVHost(String vhostID, DataBrokerService databroker);
 
+  /**
+   * register a adapter.
+   * 
+   * @param json       request json
+   * @param databroker DataBrokerService object
+   * @return Future
+   */
   public Future<JsonObject> registerAdapter(JsonObject json, DataBrokerService databroker);
 
+  /**
+   * delete a adapter.
+   * 
+   * @param adapterId  adapter id to be deleted
+   * @param databroker DataBrokerService object
+   * @return Future
+   */
   public Future<JsonObject> deleteAdapter(String adapterId, DataBrokerService databroker);
 
+  /**
+   * get adapter details.
+   * 
+   * @param adapterId  adapter id to get details
+   * @param databroker DataBrokerService object
+   * @return Future
+   */
   public Future<JsonObject> getAdapterDetails(String adapterId, DataBrokerService databroker);
 
+  /**
+   * publish heartbeat data.
+   * 
+   * @param json       request json
+   * @param databroker DataBrokerService object
+   * @return Future
+   */
   public Future<JsonObject> publishHeartbeat(JsonObject json, DataBrokerService databroker);
 
+  /**
+   * publish downstream issues.
+   * 
+   * @param json       request json
+   * @param databroker DataBrokerService object
+   * @return Future
+   */
   public Future<JsonObject> publishDownstreamIssues(JsonObject json, DataBrokerService databroker);
 
+  /**
+   * publish data issue.
+   * 
+   * @param json       request json
+   * @param databroker DataBrokerService object
+   * @return Future
+   */
   public Future<JsonObject> publishDataIssue(JsonObject json, DataBrokerService databroker);
 
+  /**
+   * publish data from adapter.
+   * 
+   * @param json       request json
+   * @param databroker DataBrokerService object
+   * @return Future
+   */
   public Future<JsonObject> publishDataFromAdapter(JsonObject json, DataBrokerService databroker);
 
 }
