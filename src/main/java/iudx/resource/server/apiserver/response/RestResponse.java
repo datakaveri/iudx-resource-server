@@ -5,20 +5,20 @@ import io.vertx.core.json.JsonObject;
 public class RestResponse {
   private int type;
   private String title;
-  private String details;
+  private String detail;
 
   private RestResponse(ResponseType error, String message) {
     super();
     this.type = error.getCode();
     this.title = error.getMessage();
-    this.details = message;
+    this.detail = message;
   }
 
   private JsonObject toJson() {
     JsonObject json = new JsonObject();
     json.put("type", this.type);
     json.put("title", this.title);
-    json.put("details", this.details);
+    json.put("detail", this.detail);
     return json;
   }
 
@@ -30,8 +30,7 @@ public class RestResponse {
     private ResponseType error;
     private String message;
 
-    public Builder() {
-    }
+    public Builder() {}
 
     public Builder withError(ResponseType error) {
       this.error = error;

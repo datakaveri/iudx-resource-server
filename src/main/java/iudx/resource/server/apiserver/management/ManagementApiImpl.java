@@ -191,6 +191,7 @@ public class ManagementApiImpl implements ManagementApi {
   @Override
   public Future<JsonObject> unbindQueue2Exchange(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
+    LOGGER.info("unbind request :: " + json);
     databroker.unbindQueue(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
@@ -290,7 +291,7 @@ public class ManagementApiImpl implements ManagementApi {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.info("Result from databroker verticle :: " + result);
-        if (!result.containsKey("type")) {
+        if (result.containsKey("id")) {
           promise.complete(result);
         } else {
           promise.fail(result.toString());
@@ -336,7 +337,7 @@ public class ManagementApiImpl implements ManagementApi {
       if (handler.succeeded()) {
         JsonObject result = new JsonObject();
         LOGGER.info("Result from databroker verticle :: " + result);
-        if (result.getString("type").equalsIgnoreCase("success")) {
+        if (result.containsKey("type") && result.getString("type").equalsIgnoreCase("success")) {
           promise.complete(result);
         } else {
           promise.fail(result.toString());
@@ -367,7 +368,6 @@ public class ManagementApiImpl implements ManagementApi {
       } else {
         promise.fail(handler.cause().toString());
       }
-
     });
     return promise.future();
   }
@@ -390,7 +390,6 @@ public class ManagementApiImpl implements ManagementApi {
       } else {
         promise.fail(handler.cause().toString());
       }
-
     });
     return promise.future();
   }
