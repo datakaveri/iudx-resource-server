@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -26,7 +25,6 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.util.Constants;
-import iudx.resource.server.starter.ResourceServerStarter;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -49,18 +47,17 @@ public class ApiServerVerticleTest {
 
   @BeforeAll
   public static void setup(Vertx vertx, VertxTestContext testContext) {
-    WebClientOptions clientOptions = new WebClientOptions().setSsl(false).setVerifyHost(false)
+    WebClientOptions clientOptions = new WebClientOptions().setSsl(true).setVerifyHost(false)
         .setTrustAll(true);
     client = WebClient.create(vertx, clientOptions);
 
-    ResourceServerStarter starter = new ResourceServerStarter();
-    Future<JsonObject> result = starter.startServer();
-
-    result.onComplete(resultHandler -> {
-      if (resultHandler.succeeded()) {
-        testContext.completeNow();
-      }
-    });
+    /*
+     * ResourceServerStarter starter = new ResourceServerStarter();
+     * Future<JsonObject> result = starter.startServer();
+     * 
+     * result.onComplete(resultHandler -> { if (resultHandler.succeeded()) {
+     * testContext.completeNow(); } });
+     */
 
     exchangeName = UUID.randomUUID().toString().replaceAll("-", "");
     queueName = UUID.randomUUID().toString().replaceAll("-", "");
@@ -69,6 +66,7 @@ public class ApiServerVerticleTest {
         .add("rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live").add("id2");
     fakeToken = UUID.randomUUID().toString();
     adapterId = UUID.randomUUID().toString();
+    testContext.completeNow();
   }
 
   @Test
