@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
@@ -52,9 +51,8 @@ import iudx.resource.server.media.MediaService;
  * The Resource Server API Verticle.
  * <h1>Resource Server API Verticle</h1>
  * <p>
- * The API Server verticle implements the IUDX Resource Server APIs. It handles
- * the API requests from the clients and interacts with the associated Service
- * to respond.
+ * The API Server verticle implements the IUDX Resource Server APIs. It handles the API requests
+ * from the clients and interacts with the associated Service to respond.
  * </p>
  * 
  * @see io.vertx.core.Vertx
@@ -90,9 +88,9 @@ public class ApiServerVerticle extends AbstractVerticle {
   private ManagementApi managementApi;
 
   /**
-   * This method is used to start the Verticle. It deploys a verticle in a
-   * cluster, reads the configuration, obtains a proxy for the Event bus services
-   * exposed through service discovery, start an HTTPs server at port 8443.
+   * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
+   * configuration, obtains a proxy for the Event bus services exposed through service discovery,
+   * start an HTTPs server at port 8443.
    * 
    * @throws Exception which is a startup exception
    */
@@ -170,9 +168,9 @@ public class ApiServerVerticle extends AbstractVerticle {
         // adapter
         router.post(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register")
             .handler(this::registerAdapter);
-        router.delete(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/:adapterId")
+        router.delete(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSHA/:alias")
             .handler(this::deleteAdapter);
-        router.get(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/:adapterId")
+        router.get(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSHA/:alias")
             .handler(this::getAdapterDetails);
         router.post(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat")
             .handler(this::publishHeartbeat);
@@ -287,8 +285,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * This method is used to handle all NGSI-LD queries for endpoint
-   * /ngsi-ld/v1/entities/**.
+   * This method is used to handle all NGSI-LD queries for endpoint /ngsi-ld/v1/entities/**.
    * 
    * @param routingContext RoutingContext Object
    */
@@ -824,8 +821,8 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticationInfo.put("token", request.getHeader("token"));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult = managementApi.bindQueue2Exchange(requestJson,
-              databroker);
+          Future<JsonObject> brokerResult =
+              managementApi.bindQueue2Exchange(requestJson, databroker);
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               handleResponse(response, ResponseType.Created,
@@ -863,8 +860,8 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticationInfo.put("token", request.getHeader("token"));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult = managementApi.unbindQueue2Exchange(requestJson,
-              databroker);
+          Future<JsonObject> brokerResult =
+              managementApi.unbindQueue2Exchange(requestJson, databroker);
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               handleResponse(response, ResponseType.Created,
@@ -1018,7 +1015,10 @@ public class ApiServerVerticle extends AbstractVerticle {
     String instanceID = request.getHeader("Host");
     JsonObject authenticationInfo = new JsonObject();
     requestJson.put("instanceId", instanceID);
-    String adapterId = request.getParam("adapterId");
+    String domain = request.getParam("domain");
+    String usersha = request.getParam("userSHA");
+    String alias = request.getParam("alias");
+    String adapterId = domain + "/" + usersha + "/" + alias;
     requestJson.put("id", adapterId);
     if (request.headers().contains("token")) {
       authenticationInfo.put("token", request.getHeader("token"));
@@ -1059,7 +1059,10 @@ public class ApiServerVerticle extends AbstractVerticle {
     String instanceID = request.getHeader("Host");
     JsonObject authenticationInfo = new JsonObject();
     requestJson.put("instanceId", instanceID);
-    String adapterId = request.getParam("adapterId");
+    String domain = request.getParam("domain");
+    String usersha = request.getParam("userSHA");
+    String alias = request.getParam("alias");
+    String adapterId = domain + "/" + usersha + "/" + alias;
     requestJson.put("id", adapterId);
     if (request.headers().contains("token")) {
       authenticationInfo.put("token", request.getHeader("token"));
@@ -1141,8 +1144,8 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticationInfo.put("token", request.getHeader("token"));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult = managementApi.publishDownstreamIssues(requestJson,
-              databroker);
+          Future<JsonObject> brokerResult =
+              managementApi.publishDownstreamIssues(requestJson, databroker);
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
@@ -1216,8 +1219,8 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticationInfo.put("token", request.getHeader("token"));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult = managementApi.publishDataFromAdapter(requestJson,
-              databroker);
+          Future<JsonObject> brokerResult =
+              managementApi.publishDataFromAdapter(requestJson, databroker);
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
@@ -1240,8 +1243,8 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * handle HTTP response.
    * 
-   * @param response       response object
-   * @param responseType   Http status for response
+   * @param response response object
+   * @param responseType Http status for response
    * @param isBodyRequired body is required or not for response
    */
   private void handleResponse(HttpServerResponse response, ResponseType responseType,
@@ -1252,9 +1255,9 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * handle HTTP response.
    * 
-   * @param response       response object
-   * @param responseType   Http status for response
-   * @param reply          json response body
+   * @param response response object
+   * @param responseType Http status for response
+   * @param reply json response body
    * @param isBodyRequired body is required or not for response
    */
   private void handleResponse(HttpServerResponse response, ResponseType responseType, String reply,
@@ -1271,11 +1274,11 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * Get the request query parameters delimited by <b>&</b>,
-   * <i><b>;</b>(semicolon) is considered as part of the parameter</i>.
+   * Get the request query parameters delimited by <b>&</b>, <i><b>;</b>(semicolon) is considered as
+   * part of the parameter</i>.
    * 
    * @param routingContext RoutingContext Object
-   * @param response       HttpServerResponse
+   * @param response HttpServerResponse
    * @return Optional Optional of Map
    */
   private Optional<MultiMap> getQueryParams(RoutingContext routingContext,
@@ -1283,9 +1286,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     MultiMap queryParams = null;
     try {
       queryParams = MultiMap.caseInsensitiveMultiMap();
-      Map<String, List<String>> decodedParams = new QueryStringDecoder(
-          routingContext.request().uri(), HttpConstants.DEFAULT_CHARSET, true, 1024, true)
-              .parameters();
+      Map<String, List<String>> decodedParams =
+          new QueryStringDecoder(routingContext.request().uri(), HttpConstants.DEFAULT_CHARSET,
+              true, 1024, true).parameters();
       for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
         queryParams.add(entry.getKey(), entry.getValue());
         System.out.println(entry.getKey() + " : " + entry.getValue());
