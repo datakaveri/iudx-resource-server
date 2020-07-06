@@ -77,13 +77,13 @@ public class DatabaseServiceImpl implements DatabaseService {
     logger.info("Resource Group is " + resourceGroup);
     String resourceServer = request.getJsonArray("id").getString(0).split("/")[0];
     logger.info("Resource Server instanceID is " + resourceServer);
-    if (request.getBoolean("isTest")) {
-      elasticRequest = new Request("GET", VARANASI_TEST_SEARCH_INDEX);
-    } else if ("varanasi-swm-vehicles".equalsIgnoreCase(resourceGroup)) {
-      elasticRequest = new Request("GET", VARANASI_SWM_SEARCH_INDEX);
-    } else {
-      elasticRequest = new Request("GET", VARANASI_OTHER_SEARCH_INDEX);
-    }
+    //if (request.getBoolean("isTest")) {
+    elasticRequest = new Request("GET", VARANASI_TEST_SEARCH_INDEX);
+    //} else if ("varanasi-swm-vehicles".equalsIgnoreCase(resourceGroup)) {
+    //  elasticRequest = new Request("GET", VARANASI_SWM_SEARCH_INDEX);
+    //} else {
+    //  elasticRequest = new Request("GET", VARANASI_OTHER_SEARCH_INDEX);
+    //}
 
     elasticRequest.addParameter("filter_path", "took,hits.hits._source");
     query = queryDecoder(request);
@@ -159,13 +159,13 @@ public class DatabaseServiceImpl implements DatabaseService {
       return null;
     }
     String resourceGroup = ""; // request.getJsonArray("id").getString(0).split("/")[3];
-    if (request.getBoolean("isTest")) {
-      elasticRequest = new Request("GET", VARANASI_TEST_COUNT_INDEX);
-    } else if ("varanasi-swm-vehicles".equalsIgnoreCase(resourceGroup)) {
-      elasticRequest = new Request("GET", VARANASI_SWM_COUNT_INDEX);
-    } else {
-      elasticRequest = new Request("GET", VARANASI_OTHER_COUNT_INDEX);
-    }
+    //if (request.getBoolean("isTest")) {
+    elasticRequest = new Request("GET", VARANASI_TEST_COUNT_INDEX);
+    //} else if ("varanasi-swm-vehicles".equalsIgnoreCase(resourceGroup)) {
+    //  elasticRequest = new Request("GET", VARANASI_SWM_COUNT_INDEX);
+    //} else {
+    //  elasticRequest = new Request("GET", VARANASI_OTHER_COUNT_INDEX);
+    //}
     query = queryDecoder(request);
     if (query.containsKey("Error")) {
       logger.error("Query returned with an error");
@@ -215,6 +215,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   public JsonObject queryDecoder(JsonObject request) {
     String searchType = request.getString("searchType");
+    Boolean match = false;
     JsonObject elasticQuery = new JsonObject();
     JsonArray id = request.getJsonArray("id");
     JsonArray filterQuery = new JsonArray();
@@ -226,6 +227,7 @@ public class DatabaseServiceImpl implements DatabaseService {
       elasticQuery.put("size", 10);
     }
     if (searchType.matches("(.*)geoSearch(.*)")) {
+      match = true;
       logger.info("In geoSearch block---------");
       JsonObject shapeJson = new JsonObject();
       JsonObject geoSearch = new JsonObject();
@@ -235,7 +237,7 @@ public class DatabaseServiceImpl implements DatabaseService {
           && request.containsKey("radius")) {
         double lat = request.getDouble("lat");
         double lon = request.getDouble("lon");
-        String radius = request.getString("radius");
+        double radius = request.getDouble("radius");
         shapeJson.put(SHAPE_KEY, new JsonObject().put(TYPE_KEY, GEO_CIRCLE)
             .put(COORDINATES_KEY, new JsonArray().add(lon).add(lat)).put(GEO_RADIUS, radius + "m"))
             .put(GEO_RELATION_KEY, "within");
@@ -276,6 +278,7 @@ public class DatabaseServiceImpl implements DatabaseService {
       filterQuery.add(geoSearch);
     }
     if (searchType.matches("(.*)responseFilter(.*)")) {
+      match = true;
       logger.info("In responseFilter block---------");
       if (!request.getBoolean("search")) {
         return new JsonObject().put("Error", "Count is not supported with filtering");
@@ -323,11 +326,66 @@ public class DatabaseServiceImpl implements DatabaseService {
       }
       filterQuery.add(rangeTimeQuery);
     }
+    if (searchType.matches("(.*)attributeSearch(.*)")){
+      match = true;
+      JsonArray attrQuery;
+      logger.info("In attributeFilter block---------");
+      if(request.containsKey("attr-query")) {
+        attrQuery = request.getJsonArray("attr-query");
+        for (Object obj : attrQuery) {
+          JsonObject attrObj = (JsonObject) obj;
+          JsonObject attrElasticQuery = new JsonObject();
+          try{
+            String attribute = attrObj.getString("attribute");
+            String operator = attrObj.getString("operator");
+            if (">".equalsIgnoreCase(operator)) {
+              Double value = Double.valueOf(attrObj.getString("value"));
+              attrElasticQuery.put(RANGE_KEY, new JsonObject().put(attribute,
+                  new JsonObject().put("gt", value)));
+            } else if ("<".equalsIgnoreCase(operator)) {
+              Double value = Double.valueOf(attrObj.getString("value"));
+              attrElasticQuery.put(RANGE_KEY, new JsonObject().put(attribute,
+                  new JsonObject().put("lt", value)));
+            } else if (">=".equalsIgnoreCase(operator)) {
+              Double value = Double.valueOf(attrObj.getString("value"));
+              attrElasticQuery.put(RANGE_KEY, new JsonObject().put(attribute,
+                  new JsonObject().put("gte", value)));
+            } else if ("<=".equalsIgnoreCase(operator)) {
+              Double value = Double.valueOf(attrObj.getString("value"));
+              attrElasticQuery.put(RANGE_KEY, new JsonObject().put(attribute,
+                  new JsonObject().put("lte", value)));
+            } else if ("==".equalsIgnoreCase(operator)) {
+              Double value = Double.valueOf(attrObj.getString("value"));
+              attrElasticQuery.put(TERM_KEY, new JsonObject().put(attribute, value));
+            } else if ("<==>".equalsIgnoreCase(operator)) {
+              Double valueLower = Double.valueOf(attrObj.getString("valueLower"));
+              Double valueUpper = Double.valueOf(attrObj.getString("valueUpper"));
+              attrElasticQuery.put(RANGE_KEY, new JsonObject().put(attribute,
+                  new JsonObject().put("gte", valueLower).put("lte",valueUpper)));
+            }
+            // TODO: Need to understand operator parameter of JsonObject from the APIServer would
+            //  look like.
+            // else if ("like".equalsIgnoreCase(operator)) {
 
-    elasticQuery.put(QUERY_KEY,
-        new JsonObject().put(BOOL_KEY, new JsonObject().put(FILTER_KEY, filterQuery)));
+            //}
+             else {
+              return new JsonObject().put("Error", "Invalid operator");
+            }
+          } catch (NullPointerException e) {
+            e.printStackTrace();
+            return new JsonObject().put("Error","Missing attr-query fields");
+          }
+          filterQuery.add(attrElasticQuery);
+        }
+      }
+    }
 
-    return elasticQuery;
+    if(!match){
+     return new JsonObject().put("Error", "Invalid search request");
+    }else {
+      return elasticQuery.put(QUERY_KEY,
+          new JsonObject().put(BOOL_KEY, new JsonObject().put(FILTER_KEY, filterQuery)));
+    }
   }
 
 }

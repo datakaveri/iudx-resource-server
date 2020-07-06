@@ -83,7 +83,7 @@ public class DatabaseServiceTest {
                 new JsonArray().add(
                     "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
             .put("searchType", "geoSearch_").put("lon", 82.987988).put("lat", 25.319768)
-            .put("radius", "100").put("isTest", true);
+            .put("radius", 100).put("isTest", true);
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
       assertEquals(82.98797, response.getJsonObject(0).getDouble("longitude"));
@@ -349,7 +349,7 @@ public class DatabaseServiceTest {
                     "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
             .put("searchType", "responseFilter_geoSearch_")
             .put("attrs", new JsonArray().add("resource-id").add("latitude").add("longitude"))
-            .put("isTest", true).put("lon", 82.987988).put("lat", 25.319768).put("radius", "100");
+            .put("isTest", true).put("lon", 82.987988).put("lat", 25.319768).put("radius", 100);
     Set<String> attrs = new HashSet<>();
     attrs.add("resource-id");
     attrs.add("latitude");
@@ -378,7 +378,7 @@ public class DatabaseServiceTest {
         .put("id",new JsonArray()
             .add("rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
         .put("searchType","geoSearch_").put("lon",82.987988).put("lat",25.319768)
-        .put("radius","100").put("isTest",true);
+        .put("radius",100).put("isTest",true);
 
     dbService.countQuery(request, testContext.succeeding(response-> testContext.verify(()->{
       assertEquals(3146,response.getInteger("Count"));
@@ -623,6 +623,124 @@ public class DatabaseServiceTest {
       OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
       assertEquals(82.98797, response.getJsonObject(0).getDouble("longitude"));
       assertTrue(resDateUtc.isBefore(start));
+    })));
+  }
+
+
+  @Test
+  @DisplayName("Testing invalid Search request")
+  void searchInvalidType(VertxTestContext testContext){
+    JsonObject request = new JsonObject().put("id", new JsonArray()
+        .add("rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+        .put("searchType","response!@$_geoS241");
+
+    dbService.searchQuery(request, testContext.failing(response -> testContext.verify(()->{
+      assertEquals("Invalid search request", response.getMessage());
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing Attribute Search (property is greater than)")
+  void searchAttributeGt(VertxTestContext testContext){
+    JsonObject request = new JsonObject().put("id", new JsonArray()
+        .add("rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_01")).put("searchType",
+        "attributeSearch_").put("attr-query", new JsonArray().add(new JsonObject().put(
+            "attribute", "CO2").put("operator", ">").put("value", "500")));
+    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(()->{
+      assertTrue(response.getJsonObject(4).getDouble("CO2") > 500);
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing Attribute Search (property is lesser than)")
+  void searchAttributeLt(VertxTestContext testContext){
+    JsonObject request = new JsonObject().put("id", new JsonArray()
+        .add("rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_01")).put("searchType",
+        "attributeSearch_").put("attr-query", new JsonArray().add(new JsonObject().put(
+        "attribute", "CO2").put("operator", "<").put("value", "500")));
+    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(()->{
+      assertTrue(response.getJsonObject(2).getDouble("CO2") < 500);
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing Attribute Search (property is greater than equal)")
+  void searchAttributeGte(VertxTestContext testContext){
+    JsonObject request = new JsonObject().put("id", new JsonArray()
+        .add("rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_01")).put("searchType",
+        "attributeSearch_").put("attr-query", new JsonArray().add(new JsonObject().put(
+        "attribute", "CO2").put("operator", ">=").put("value", "500")));
+    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(()->{
+      assertTrue(response.getJsonObject(3).getDouble("CO2") >= 500);
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing Attribute Search (property is lesser than equal)")
+  void searchAttributeLte(VertxTestContext testContext){
+    JsonObject request = new JsonObject().put("id", new JsonArray()
+        .add("rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_01")).put("searchType",
+        "attributeSearch_").put("attr-query", new JsonArray().add(new JsonObject().put(
+        "attribute", "CO2").put("operator", "<=").put("value", "500")));
+    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(()->{
+      assertTrue(response.getJsonObject(7).getDouble("CO2") <= 500);
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing Attribute Search (property is between)")
+  void searchAttributeBetween(VertxTestContext testContext){
+    JsonObject request = new JsonObject().put("id", new JsonArray()
+        .add("rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_01")).put("searchType",
+        "attributeSearch_").put("attr-query", new JsonArray().add(new JsonObject().put(
+        "attribute", "CO2").put("operator", "<==>").put("valueLower", "500").put("valueUpper",
+        "1000")));
+    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(()->{
+      assertTrue(response.getJsonObject(9).getDouble("CO2") > 500);
+      testContext.completeNow();
+    })));
+  }
+
+  //  @Test
+  //  @DisplayName("Testing Attribute Search (property is like)")
+  //  void searchAttributeLike(VertxTestContext testContext){
+  //    JsonObject request = new JsonObject().put("id", new JsonArray()
+  //        .add("rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_01")).put("searchType",
+  //        "attributeSearch_").put("attr-query", new JsonArray().add(new JsonObject().put(
+  //        "attribute", "CO2").put("operator", "like").put("value", "500")));
+  //    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(()->{
+  //      assertTrue(response.getJsonObject(4).getDouble("CO2") > 500);
+  //      testContext.completeNow();
+  //    })));
+  //  }
+
+  @Test
+  @DisplayName("Testing Attribute Search (property is equal)")
+  void searchAttributeEqual(VertxTestContext testContext){
+    JsonObject request = new JsonObject().put("id", new JsonArray()
+        .add("rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_01")).put("searchType",
+        "attributeSearch_").put("attr-query", new JsonArray().add(new JsonObject().put(
+        "attribute", "CO2").put("operator", "==").put("value", "501.11")));
+    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(()->{
+      assertEquals(response.getJsonObject(0).getDouble("CO2"), 501.11);
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing Attribute Search (property is not equal)")
+  void searchAttributeNe(VertxTestContext testContext){
+    JsonObject request = new JsonObject().put("id", new JsonArray()
+        .add("rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_01")).put("searchType",
+        "attributeSearch_").put("attr-query", new JsonArray().add(new JsonObject().put(
+        "attribute", "CO2").put("operator", ">").put("value", "500")));
+    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(()->{
+      assertTrue(response.getJsonObject(4).getDouble("CO2") != 500);
       testContext.completeNow();
     })));
   }

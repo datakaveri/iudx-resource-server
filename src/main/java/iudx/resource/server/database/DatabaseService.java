@@ -51,6 +51,7 @@ public interface DatabaseService {
   String SOURCE_FILTER_KEY = "_source";
   String RANGE_KEY = "range";
   String TIME_KEY = "time";
+  String TERM_KEY = "term";
 
   /**
    * The searchQuery implements the search operation with the database.
