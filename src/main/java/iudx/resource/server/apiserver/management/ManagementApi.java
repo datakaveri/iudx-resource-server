@@ -13,7 +13,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> createExchange(JsonObject json, DataBrokerService databroker);
+  Future<JsonObject> createExchange(JsonObject json, DataBrokerService databroker);
 
   /**
    * delete a exchange in rabbit MQ through DataBrokerService.
@@ -22,7 +22,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> deleteExchange(String exchangeid, DataBrokerService databroker);
+  Future<JsonObject> deleteExchange(String exchangeid, DataBrokerService databroker);
 
   /**
    * get exchange detail for exchange id passed.
@@ -31,7 +31,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> getExchangeDetails(String exchangeid, DataBrokerService databroker);
+  Future<JsonObject> getExchangeDetails(String exchangeid, DataBrokerService databroker);
 
   /**
    * create a queue in rabbit MQ through DataBrokerService.
@@ -40,7 +40,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> createQueue(JsonObject jsonObject, DataBrokerService databroker);
+  Future<JsonObject> createQueue(JsonObject jsonObject, DataBrokerService databroker);
 
   /**
    * delete a queue in rabbit MQ through databroker service.
@@ -49,7 +49,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> deleteQueue(String queueId, DataBrokerService databroker);
+  Future<JsonObject> deleteQueue(String queueId, DataBrokerService databroker);
 
   /**
    * get queue details for queue id passes.
@@ -58,7 +58,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> getQueueDetails(String queueId, DataBrokerService databroker);
+  Future<JsonObject> getQueueDetails(String queueId, DataBrokerService databroker);
 
   /**
    * bind a queue to exchange with passed entities as routing queue.
@@ -67,7 +67,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> bindQueue2Exchange(JsonObject json, DataBrokerService databroker);
+  Future<JsonObject> bindQueue2Exchange(JsonObject json, DataBrokerService databroker);
 
   /**
    * unbind a queue from exchange with passed entities as routing key.
@@ -76,7 +76,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> unbindQueue2Exchange(JsonObject json, DataBrokerService databroker);
+  Future<JsonObject> unbindQueue2Exchange(JsonObject json, DataBrokerService databroker);
 
   /**
    * create a vHost in rabbit MQ.
@@ -85,7 +85,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> createVHost(JsonObject json, DataBrokerService databroker);
+  Future<JsonObject> createVHost(JsonObject json, DataBrokerService databroker);
 
   /**
    * delete a vhost.
@@ -94,7 +94,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> deleteVHost(String vhostID, DataBrokerService databroker);
+  Future<JsonObject> deleteVHost(String vhostID, DataBrokerService databroker);
 
   /**
    * register a adapter.
@@ -103,7 +103,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> registerAdapter(JsonObject json, DataBrokerService databroker);
+  Future<JsonObject> registerAdapter(JsonObject json, DataBrokerService databroker);
 
   /**
    * delete a adapter.
@@ -112,7 +112,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> deleteAdapter(String adapterId, DataBrokerService databroker);
+  Future<JsonObject> deleteAdapter(String adapterId, DataBrokerService databroker);
 
   /**
    * get adapter details.
@@ -121,7 +121,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> getAdapterDetails(String adapterId, DataBrokerService databroker);
+  Future<JsonObject> getAdapterDetails(String adapterId, DataBrokerService databroker);
 
   /**
    * publish heartbeat data.
@@ -130,7 +130,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> publishHeartbeat(JsonObject json, DataBrokerService databroker);
+  Future<JsonObject> publishHeartbeat(JsonObject json, DataBrokerService databroker);
 
   /**
    * publish downstream issues.
@@ -139,7 +139,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> publishDownstreamIssues(JsonObject json, DataBrokerService databroker);
+  Future<JsonObject> publishDownstreamIssues(JsonObject json, DataBrokerService databroker);
 
   /**
    * publish data issue.
@@ -148,7 +148,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> publishDataIssue(JsonObject json, DataBrokerService databroker);
+  Future<JsonObject> publishDataIssue(JsonObject json, DataBrokerService databroker);
 
   /**
    * publish data from adapter.
@@ -157,6 +157,6 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  public Future<JsonObject> publishDataFromAdapter(JsonObject json, DataBrokerService databroker);
+  Future<JsonObject> publishDataFromAdapter(JsonObject json, DataBrokerService databroker);
 
 }

@@ -66,8 +66,8 @@ public class NGSILDQueryParams {
         }
         case Constants.NGSILDQUERY_ATTRIBUTE: {
           this.attrs = new ArrayList<String>();
-          this.attrs.addAll(Arrays.stream(entry.getValue().split(","))
-              .collect(Collectors.toList()));
+          this.attrs.addAll(Arrays.stream(entry.getValue().split(",")).collect(Collectors.toList()));
+  
           break;
         }
         case Constants.NGSILDQUERY_GEOREL: {
