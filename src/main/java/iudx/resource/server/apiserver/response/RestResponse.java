@@ -1,6 +1,7 @@
 package iudx.resource.server.apiserver.response;
 
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.apiserver.util.Constants;
 
 public class RestResponse {
   private int type;
@@ -16,9 +17,9 @@ public class RestResponse {
 
   private JsonObject toJson() {
     JsonObject json = new JsonObject();
-    json.put("type", this.type);
-    json.put("title", this.title);
-    json.put("detail", this.detail);
+    json.put(Constants.JSON_TYPE, this.type);
+    json.put(Constants.JSON_TITLE, this.title);
+    json.put(Constants.JSON_DETAIL, this.detail);
     return json;
   }
 
@@ -30,7 +31,8 @@ public class RestResponse {
     private ResponseType error;
     private String message;
 
-    public Builder() {}
+    public Builder() {
+    }
 
     public Builder withError(ResponseType error) {
       this.error = error;

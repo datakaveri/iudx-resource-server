@@ -51,6 +51,8 @@ public class DatabaseServiceImpl implements DatabaseService {
     Request elasticRequest;
     logger.info("Inside searchQuery<DatabaseService> block-------- " + request.toString());
     request.put("search", true);
+    // TODO : only for testing comment after testing.
+    request.put("isTest", true);
 
     if (!request.containsKey("id")) {
       handler.handle(Future.failedFuture("No id found"));

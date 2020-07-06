@@ -5,6 +5,9 @@ import java.util.List;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import iudx.resource.server.apiserver.util.Constants;
 
 /**
  * QueryMapper class to convert NGSILD query into json object for the purpose of
@@ -12,6 +15,8 @@ import io.vertx.core.json.JsonObject;
  *
  */
 public class QueryMapper {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(QueryMapper.class);
   private boolean isTemporal = false;
   private boolean isGeoSearch = false;
   private boolean isResponseFilter = false;
@@ -30,33 +35,34 @@ public class QueryMapper {
     if (params.getId() != null) {
       JsonArray jsonArray = new JsonArray();
       params.getId().forEach(s -> jsonArray.add(s.toString()));
-      json.put("id", jsonArray);
+      json.put(Constants.JSON_ID, jsonArray);
     }
     if (params.getAttrs() != null) {
       isResponseFilter = true;
       JsonArray jsonArray = new JsonArray();
       params.getAttrs().forEach(attribute -> jsonArray.add(attribute));
-      json.put("attribute-filter", jsonArray);
+      json.put(Constants.JSON_ATTRIBUTE_FILTER, jsonArray);
     }
     // TODO : geometry/georel validations according to specifications
     if (params.getGeoRel() != null
         && (params.getCoordinates() != null || params.getGeometry() != null)) {
       isGeoSearch = true;
-      if (params.getGeometry().equalsIgnoreCase("point")
-          && params.getGeoRel().getRelation().equals("near")
+      if (params.getGeometry().equalsIgnoreCase(Constants.GEOM_POINT)
+          && params.getGeoRel().getRelation().equals(Constants.JSON_NEAR)
           && params.getGeoRel().getMaxDistance() != null) {
         String[] coords = params.getCoordinates().replaceAll("\\[|\\]", "").split(",");
-        json.put("lat", Double.parseDouble(coords[0]));
-        json.put("lon", Double.parseDouble(coords[1]));
-        json.put("radius", params.getGeoRel().getMaxDistance());
+        json.put(Constants.JSON_LAT, Double.parseDouble(coords[0]));
+        json.put(Constants.JSON_LON, Double.parseDouble(coords[1]));
+        json.put(Constants.JSON_RADIUS, params.getGeoRel().getMaxDistance());
       } else {
-        json.put("geometry", params.getGeometry());
-        json.put("coordinates", params.getCoordinates());
-        json.put("georel", getOrDefault(params.getGeoRel().getRelation(), "within"));
+        json.put(Constants.JSON_GEOMETRY, params.getGeometry());
+        json.put(Constants.JSON_COORDINATES, params.getCoordinates());
+        json.put(Constants.JSON_GEOREL,
+            getOrDefault(params.getGeoRel().getRelation(), Constants.JSON_WITHIN));
         if (params.getGeoRel().getMaxDistance() != null) {
-          json.put("maxdistance", params.getGeoRel().getMaxDistance());
+          json.put(Constants.JSON_MAXDISTANCE, params.getGeoRel().getMaxDistance());
         } else if (params.getGeoRel().getMinDistance() != null) {
-          json.put("mindistance", params.getGeoRel().getMinDistance());
+          json.put(Constants.JSON_MINDISTANCE, params.getGeoRel().getMinDistance());
         }
       }
     }
@@ -64,13 +70,13 @@ public class QueryMapper {
     if (isTemporal && params.getTemporalRelation().getTemprel() != null
         && params.getTemporalRelation().getTime() != null) {
       isTemporal = true;
-      if (params.getTemporalRelation().getTemprel().equalsIgnoreCase("between")) {
-        json.put("time", params.getTemporalRelation().getTime().toString());
-        json.put("endtime", params.getTemporalRelation().getEndTime().toString());
-        json.put("timerel", params.getTemporalRelation().getTemprel());
+      if (params.getTemporalRelation().getTemprel().equalsIgnoreCase(Constants.JSON_BETWEEN)) {
+        json.put(Constants.JSON_TIME, params.getTemporalRelation().getTime().toString());
+        json.put(Constants.JSON_ENDTIME, params.getTemporalRelation().getEndTime().toString());
+        json.put(Constants.JSON_TIMEREL, params.getTemporalRelation().getTemprel());
       } else {
-        json.put("time", params.getTemporalRelation().getTime().toString());
-        json.put("timerel", params.getTemporalRelation().getTemprel());
+        json.put(Constants.JSON_TIME, params.getTemporalRelation().getTime().toString());
+        json.put(Constants.JSON_TIMEREL, params.getTemporalRelation().getTemprel());
       }
 
     }
@@ -80,10 +86,13 @@ public class QueryMapper {
       for (String term : qterms) {
         query.add(getQueryTerms(term));
       }
-      json.put("attr-query", query);
+      json.put(Constants.JSON_ATTR_QUERY, query);
+    }
+    if (params.getGeoProperty() != null) {
+      json.put(Constants.JSON_GEOPROPERTY, params.getGeoProperty());
     }
 
-    json.put("searchType", getSearchType());
+    json.put(Constants.JSON_SEARCH_TYPE, getSearchType());
     return json;
   }
 
@@ -94,13 +103,13 @@ public class QueryMapper {
   private String getSearchType() {
     StringBuilder searchType = new StringBuilder();
     if (isTemporal) {
-      searchType.append("temporalSearch_");
+      searchType.append(Constants.JSON_TEMPORAL_SEARCH);
     }
     if (isGeoSearch) {
-      searchType.append("geoSearch_");
+      searchType.append(Constants.JSON_GEO_SEARCH);
     }
     if (isResponseFilter) {
-      searchType.append("responseFilter_");
+      searchType.append(Constants.JSON_RESPONSE_FILTER_SEARCH);
     }
     return searchType.toString();
   }
@@ -115,16 +124,16 @@ public class QueryMapper {
       Character c = queryTerms.charAt(i);
       if (!(Character.isLetter(c) || Character.isDigit(c)) && !specialCharFound) {
         if (allowedSpecialCharacter.contains(c)) {
-          json.put("attribute", queryTerms.substring(startIndex, i));
+          json.put(Constants.JSON_ATTRIBUTE, queryTerms.substring(startIndex, i));
           startIndex = i;
           specialCharFound = true;
         } else {
-          System.out.println("Ignore " + c.toString());
+          LOGGER.info("Ignore " + c.toString());
         }
       } else {
         if (specialCharFound && (Character.isLetter(c) || Character.isDigit(c))) {
-          json.put("operator", queryTerms.substring(startIndex, i));
-          json.put("value", queryTerms.substring(i));
+          json.put(Constants.JSON_OPERATOR, queryTerms.substring(startIndex, i));
+          json.put(Constants.JSON_VALUE, queryTerms.substring(i));
           break;
         }
       }
