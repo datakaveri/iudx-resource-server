@@ -75,58 +75,18 @@ public class ApiServerVerticleTest {
     testContext.completeNow();
   }
 
-  // @Test
+  @Test
   @Order(1)
-  @DisplayName("test /entities endpoint")
-  public void testHandleEntitiesQuery(Vertx vertx, VertxTestContext testContext)
-      throws InterruptedException {
-    // Thread.sleep(30000);
-    String apiURL = Constants.NGSILD_ENTITIES_URL;
-    // TODO : Need to update the ID to check with the actual database response.
-    client
-        .get(PORT, BASE_URL,
-            apiURL + "?id=rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
-        .send(ar -> {
-          if (ar.succeeded()) {
-            assertEquals(ResponseType.Ok.getCode(), ar.result().statusCode());
-            testContext.completeNow();
-          } else if (ar.failed()) {
-            testContext.failed();
-          }
-        });
-  }
-
-  // @Test
-  @Order(2)
-  @DisplayName("test /temporal/entities endpoint")
-  public void testHandleTemporalQuery(Vertx vertx, VertxTestContext testContext) {
-    String apiURL = Constants.NGSILD_TEMPORAL_URL;
-    // TODO : Need to update the ID to check with the actual database response.
-    client
-        .get(PORT, BASE_URL,
-            apiURL + "?id=rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
-        .send(ar -> {
-          if (ar.succeeded()) {
-            assertEquals(ResponseType.Ok.getCode(), ar.result().statusCode());
-            testContext.completeNow();
-          } else if (ar.failed()) {
-            testContext.failed();
-          }
-        });
-  }
-
-  // @Test
-  @Order(3)
   @DisplayName("test /entities endpoint with invalid parameters")
   public void testEntitiesBadRequestParam(Vertx vertx, VertxTestContext testContext) {
     String apiURL = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiURL + "?id2=id1,id2").send(ar -> {
       if (ar.succeeded()) {
         JsonObject res = ar.result().bodyAsJsonObject();
-        assertEquals(ResponseType.Ok.getCode(), ar.result().statusCode());
+        assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
         assertTrue(res.containsKey("type"));
         assertTrue(res.containsKey("title"));
-        assertTrue(res.containsKey("details"));
+        assertTrue(res.containsKey("detail"));
         assertEquals(res.getInteger("type"), 400);
         testContext.completeNow();
       } else if (ar.failed()) {
@@ -135,12 +95,12 @@ public class ApiServerVerticleTest {
     });
   }
 
-  // @Test
-  @Order(4)
+  @Test
+  @Order(2)
   @DisplayName("test /entities endpoint for a circle geometry")
   public void testEntities4CircleGeom(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
-    client.post(PORT, BASE_URL, apiUrl)
+    client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam("id",
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
         .addQueryParam("georel", "within")
@@ -154,12 +114,12 @@ public class ApiServerVerticleTest {
         });
   }
 
-  // @Test
-  @Order(5)
+  @Test
+  @Order(3)
   @DisplayName("test /entities endpoint for polygon geometry")
   public void testEntities4PolygonGeom(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
-    client.post(PORT, BASE_URL, apiUrl)
+    client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam("id",
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
         .addQueryParam("georel", "within").addQueryParam("geometry", "polygon")
@@ -175,12 +135,12 @@ public class ApiServerVerticleTest {
         });
   }
 
-  // @Test
-  @Order(6)
+  @Test
+  @Order(4)
   @DisplayName("test /entities endpoint for linestring geometry")
   public void testEntities4LineStringGeom(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
-    client.post(PORT, BASE_URL, apiUrl)
+    client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam("id",
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
         .addQueryParam("georel", "intersect").addQueryParam("geometry", "linestring")
@@ -196,12 +156,12 @@ public class ApiServerVerticleTest {
         });
   }
 
-  // @Test
-  @Order(7)
+  @Test
+  @Order(5)
   @DisplayName("test /entities endpoint for response filter query")
   public void testResponseFilterQuery(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
-    client.post(PORT, BASE_URL, apiUrl)
+    client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam("id",
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
         .addQueryParam("georel", "within").addQueryParam("geometry", "polygon")
@@ -215,12 +175,12 @@ public class ApiServerVerticleTest {
         });
   }
 
-  // @Test
-  @Order(8)
+  @Test
+  @Order(6)
   @DisplayName("test /entities endpoint for bbox geometry")
   public void testEntities4BoundingBoxGeom(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
-    client.post(PORT, BASE_URL, apiUrl)
+    client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam("id",
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
         .addQueryParam("georel", "within").addQueryParam("geometry", "bbox")
@@ -235,12 +195,12 @@ public class ApiServerVerticleTest {
         });
   }
 
-  // @Test
-  @Order(9)
+  @Test
+  @Order(7)
   @DisplayName("test /entities for geo + responseFilter(attrs) ")
   public void testGeo_ResponseFilter(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
-    client.post(PORT, BASE_URL, apiUrl)
+    client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam("id",
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
         .addQueryParam("attrs", "latitude,longitude,resource-id").addQueryParam("georel", "within")
@@ -257,12 +217,12 @@ public class ApiServerVerticleTest {
         });
   }
 
-  // @Test
-  @Order(10)
+  @Test
+  @Order(8)
   @DisplayName("test /entities for empty id")
   public void testBadRequestForEntities(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
-    client.post(PORT, BASE_URL, apiUrl).send(handler -> {
+    client.get(PORT, BASE_URL, apiUrl).send(handler -> {
       if (handler.succeeded()) {
         assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
         testContext.completeNow();

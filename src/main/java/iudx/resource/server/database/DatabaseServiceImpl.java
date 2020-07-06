@@ -56,6 +56,8 @@ public class DatabaseServiceImpl implements DatabaseService {
     /* TODO Need to update params to use contants */
     logger.info("Inside searchQuery<DatabaseService> block-------- " + request.toString());
     request.put("search", true);
+    // TODO : only for testing comment after testing.
+    request.put("isTest", true);
 
     if (!request.containsKey("id")) {
       logger.info("No id found");
