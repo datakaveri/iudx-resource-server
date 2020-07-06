@@ -1,15 +1,5 @@
 package iudx.resource.server.apiserver;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Pattern;
-
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
@@ -48,6 +38,15 @@ import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.filedownload.FileDownloadService;
 import iudx.resource.server.media.MediaService;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * The Resource Server API Verticle.
@@ -513,7 +512,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param routingContext routingContext
    */
   private void deleteSubscription(RoutingContext routingContext) {
-    LOGGER.info("getSubscription method started");
+    LOGGER.info("deleteSubscription method started");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     JsonObject authenticationInfo = new JsonObject();
@@ -1290,21 +1289,6 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * validate if name passes the regex test for IUDX queue,exchage name.
-   * 
-   * @param name name(queue,exchange)
-   * @return Future true if name matches the regex else false
-   */
-  public Future<Boolean> isValidName(String name) {
-    Promise<Boolean> promise = Promise.promise();
-    if (Pattern.compile(Constants.APP_NAME_REGEX).matcher(name).matches())
-      promise.complete(true);
-    else
-      promise.fail(Constants.MSG_INVALID_NAME);
-    return promise.future();
-  }
-
-  /**
    * handle HTTP response.
    * 
    * @param response       response object
@@ -1323,6 +1307,22 @@ public class ApiServerVerticle extends AbstractVerticle {
           .setStatusCode(responseType.getCode()).end(reply);
 
     }
+  }
+
+  /**
+   * validate if name passes the regex test for IUDX queue,exchage name.
+   * 
+   * @param name name(queue,exchange)
+   * @return Future true if name matches the regex else false
+   */
+  public Future<Boolean> isValidName(String name) {
+    Promise<Boolean> promise = Promise.promise();
+    if (Pattern.compile(Constants.APP_NAME_REGEX).matcher(name).matches()) {
+      promise.complete(true);
+    } else {
+      promise.fail(Constants.MSG_INVALID_NAME);
+    }
+    return promise.future();
   }
 
   /**

@@ -1,13 +1,12 @@
 package iudx.resource.server.apiserver.query;
 
-import java.util.Arrays;
-import java.util.List;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import iudx.resource.server.apiserver.util.Constants;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * QueryMapper class to convert NGSILD query into json object for the purpose of
