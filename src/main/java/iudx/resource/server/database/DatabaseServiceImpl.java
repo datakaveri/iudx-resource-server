@@ -155,7 +155,6 @@ public class DatabaseServiceImpl implements DatabaseService {
       return null;
     }
     //String resourceGroup = ""; // request.getJsonArray("id").getString(0).split("/")[3];
-    Request elasticRequest = new Request("GET", Constants.VARANASI_TEST_COUNT_INDEX);
     query = queryDecoder(request);
     if (query.containsKey("Error")) {
       logger.error("Query returned with an error " + query.getString("Error"));
@@ -163,6 +162,7 @@ public class DatabaseServiceImpl implements DatabaseService {
       return null;
     }
     logger.info("Query constructed: " + query.toString());
+    Request elasticRequest = new Request("GET", Constants.VARANASI_TEST_COUNT_INDEX);
     elasticRequest.setJsonEntity(query.toString());
     client.performRequestAsync(elasticRequest, new ResponseListener() {
       @Override
@@ -324,9 +324,8 @@ public class DatabaseServiceImpl implements DatabaseService {
       } else if (Constants.AFTER.equalsIgnoreCase(timeRelation)) {
         rangeTimeQuery.put(Constants.RANGE_KEY, new JsonObject().put(Constants.TIME_KEY,
             new JsonObject().put(Constants.GREATER_THAN, time)));
-      //  } else if ("tequals".equalsIgnoreCase(timeRelation)) {
-      //     rangeTimeQuery.put(Constants.TERM_KEY, new JsonObject().put(Constants.TIME_KEY, time));
-      //  }
+      } else if ("tequals".equalsIgnoreCase(timeRelation)) {
+        rangeTimeQuery.put(Constants.TERM_KEY, new JsonObject().put(Constants.TIME_KEY, time));
       } else {
         return new JsonObject().put("Error", Constants.MISSING_TEMPORAL_FIELDS);
       }

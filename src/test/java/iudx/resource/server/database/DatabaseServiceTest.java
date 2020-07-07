@@ -462,30 +462,31 @@ public class DatabaseServiceTest {
       testContext.completeNow();
     })));
   }
-  //  @Test
-  //  @DisplayName("Testing Temporal Queries (TEquals)")
-  //  void searchTequalsTemporal(VertxTestContext testContext) throws ParseException {
-  //    JsonObject request =
-  //        new JsonObject()
-  //            .put("id",
-  //                new JsonArray().add(
-  //                    "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
-  //            .put("searchType", "temporalSearch_").put("timerel", "tequals")
-  //            .put("time","2020-06-01T14:20:00Z");
-  //
-  //    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
-  //    OffsetDateTime start = OffsetDateTime.parse("2020-06-01T14:20:00Z",dateTimeFormatter);
-  //    logger.info("### start date: " + start);
-  //
-  //    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-  //      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(0)
-  //          .getString("time"), dateTimeFormatter);
-  //      OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
-  //      logger.info("#### response Date " + resDateUtc);
-  //      assertTrue(resDateUtc.isEqual(start));
-  //      testContext.completeNow();
-  //    })));
-  //  }
+  
+    @Test
+    @DisplayName("Testing Temporal Queries (TEquals)")
+    void searchTequalsTemporal(VertxTestContext testContext) throws ParseException {
+      JsonObject request =
+          new JsonObject()
+              .put("id",
+                  new JsonArray().add(
+                      "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+              .put("searchType", "temporalSearch_").put("timerel", "tequals")
+              .put("time","2020-06-01T14:20:00Z");
+  
+      DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
+      OffsetDateTime start = OffsetDateTime.parse("2020-06-01T14:20:00Z",dateTimeFormatter);
+      logger.info("### start date: " + start);
+  
+      dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
+        OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(0)
+            .getString("time"), dateTimeFormatter);
+        OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
+        logger.info("#### response Date " + resDateUtc);
+        assertTrue(resDateUtc.isEqual(start));
+        testContext.completeNow();
+      })));
+    }
 
   @Test
   @DisplayName("Testing Count Geo-Linestring query")
@@ -684,6 +685,9 @@ public class DatabaseServiceTest {
       testContext.completeNow();
     })));
   }
+
+  /* TODO: Need to understand operator parameter of JsonObject from the APIServer would
+  look like. */
 
   //  @Test
   //  @DisplayName("Testing Attribute Search (property is like)")
