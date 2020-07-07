@@ -32,7 +32,7 @@ public class NGSILDQueryParams {
   private String coordinates;
   private String geoProperty;
   private TemporalRelation temporalRelation;
-  private DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.APP_DATE_TIME_FORMAT)
+  private DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME
       .withZone(ZoneId.systemDefault());
 
   /**
@@ -57,64 +57,64 @@ public class NGSILDQueryParams {
 
     for (final Entry<String, String> entry : entries) {
       switch (entry.getKey()) {
-      case Constants.NGSILDQUERY_ID: {
-        this.id = new ArrayList<URI>();
-        String[] ids = entry.getValue().split(",");
-        List<URI> uris = Arrays.stream(ids).map(e -> toUri(e)).collect(Collectors.toList());
-        this.id.addAll(uris);
-        break;
-      }
-      case Constants.NGSILDQUERY_ATTRIBUTE: {
-        this.attrs = new ArrayList<String>();
-        this.attrs.addAll(Arrays.stream(entry.getValue().split(",")).collect(Collectors.toList()));
-        break;
-      }
-      case Constants.NGSILDQUERY_GEOREL: {
-        String georel = entry.getValue();
-        String[] values = georel.split(";");
-        this.geoRel.setRelation(values[0]);
-        if (values.length == 2) {
-          String[] distance = values[1].split("=");
-          if (distance[0].equalsIgnoreCase(Constants.NGSILDQUERY_MAXDISTANCE)) {
-            this.geoRel.setMaxDistance(Double.parseDouble(distance[1]));
-          } else if (distance[0].equalsIgnoreCase(Constants.NGSILDQUERY_MINDISTANCE)) {
-            this.geoRel.setMinDistance(Double.parseDouble(distance[1]));
-          }
+        case Constants.NGSILDQUERY_ID: {
+          this.id = new ArrayList<URI>();
+          String[] ids = entry.getValue().split(",");
+          List<URI> uris = Arrays.stream(ids).map(e -> toUri(e)).collect(Collectors.toList());
+          this.id.addAll(uris);
+          break;
         }
-        break;
-      }
-      case Constants.NGSILDQUERY_GEOMETRY: {
-        this.geometry = entry.getValue();
-        break;
-      }
-      case Constants.NGSILDQUERY_COORDINATES: {
-        this.coordinates = entry.getValue();
-        break;
-      }
-      case Constants.NGSILDQUERY_TIMEREL: {
-        this.temporalRelation.setTemprel(entry.getValue());
-        break;
-      }
-      case Constants.NGSILDQUERY_TIME: {
-        this.temporalRelation.setTime(LocalDateTime.parse(entry.getValue(), formatter));
-        break;
-      }
-      case Constants.NGSILDQUERY_ENDTIME: {
-        this.temporalRelation.setEndTime(LocalDateTime.parse(entry.getValue(), formatter));
-        break;
-      }
-      case Constants.NGSILDQUERY_Q: {
-        this.textQuery = entry.getValue();
-        break;
-      }
-      case Constants.NGSILDQUERY_GEOPROPERTY: {
-        this.geoProperty = entry.getValue();
-        break;
-      }
-      default: {
-        LOGGER.warn(Constants.MSG_INVALID_PARAM + ":" + entry.getKey());
-      }
-
+        case Constants.NGSILDQUERY_ATTRIBUTE: {
+          this.attrs = new ArrayList<String>();
+          this.attrs.addAll(Arrays.stream(entry.getValue().split(","))
+              .collect(Collectors.toList()));
+          break;
+        }
+        case Constants.NGSILDQUERY_GEOREL: {
+          String georel = entry.getValue();
+          String[] values = georel.split(";");
+          this.geoRel.setRelation(values[0]);
+          if (values.length == 2) {
+            String[] distance = values[1].split("=");
+            if (distance[0].equalsIgnoreCase(Constants.NGSILDQUERY_MAXDISTANCE)) {
+              this.geoRel.setMaxDistance(Double.parseDouble(distance[1]));
+            } else if (distance[0].equalsIgnoreCase(Constants.NGSILDQUERY_MINDISTANCE)) {
+              this.geoRel.setMinDistance(Double.parseDouble(distance[1]));
+            }
+          }
+          break;
+        }
+        case Constants.NGSILDQUERY_GEOMETRY: {
+          this.geometry = entry.getValue();
+          break;
+        }
+        case Constants.NGSILDQUERY_COORDINATES: {
+          this.coordinates = entry.getValue();
+          break;
+        }
+        case Constants.NGSILDQUERY_TIMEREL: {
+          this.temporalRelation.setTemprel(entry.getValue());
+          break;
+        }
+        case Constants.NGSILDQUERY_TIME: {
+          this.temporalRelation.setTime(LocalDateTime.parse(entry.getValue(), formatter));
+          break;
+        }
+        case Constants.NGSILDQUERY_ENDTIME: {
+          this.temporalRelation.setEndTime(LocalDateTime.parse(entry.getValue(), formatter));
+          break;
+        }
+        case Constants.NGSILDQUERY_Q: {
+          this.textQuery = entry.getValue();
+          break;
+        }
+        case Constants.NGSILDQUERY_GEOPROPERTY: {
+          this.geoProperty = entry.getValue();
+          break;
+        }
+        default: {
+          LOGGER.warn(Constants.MSG_INVALID_PARAM + ":" + entry.getKey());
+        }
       }
     }
   }

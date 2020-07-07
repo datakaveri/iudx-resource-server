@@ -102,8 +102,9 @@ public class ApiServerVerticleTest {
     client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam("id",
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
-        .addQueryParam("georel", "within")
-        .addQueryParam("coordinates", "%5B82.987988%2C25.319768%5D").send(handler -> {
+        .addQueryParam("georel", "near;maxDistance=1000")
+        .addQueryParam("geoproperty", "geoJsonLocation")
+        .addQueryParam("coordinates", "[82.987988,25.319768]").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -122,8 +123,9 @@ public class ApiServerVerticleTest {
         .addQueryParam("id",
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
         .addQueryParam("georel", "within").addQueryParam("geometry", "polygon")
+        .addQueryParam("geoproperty", "geoJsonLocation")
         .addQueryParam("coordinates",
-            "%5B%5B114.78515624999999%2C66.26685631430843%5D%2C%5B114.78544056415559%2C66.26677642907407%5D%5D")
+            "[[[82.9738998413086,25.330372970610558],[82.97201156616211,25.28428253090838],[83.02436828613281,25.285524253944203],[83.02007675170898,25.32866622999033],[82.9738998413086,25.330372970610558]]]")
         .send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
@@ -143,8 +145,9 @@ public class ApiServerVerticleTest {
         .addQueryParam("id",
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
         .addQueryParam("georel", "intersect").addQueryParam("geometry", "linestring")
+        .addQueryParam("geolocation", "geoJsonLocation")
         .addQueryParam("coordinates",
-            "%5B%5B82.9735%2C25.3352%5D%5B82.9894%2C25.3452%5D%5B82.99%2C25.34%5D%5D")
+            "[[82.97527313232422,25.292043091311733],[82.99467086791992,25.30678678767568],[83.00085067749023,25.323545863751555]]")
         .send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
@@ -164,6 +167,7 @@ public class ApiServerVerticleTest {
         .addQueryParam("id",
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
         .addQueryParam("georel", "within").addQueryParam("geometry", "polygon")
+        .addQueryParam("geolocation", "geoJsonLocation")
         .addQueryParam("attr", "latitude,longitude,resource-id").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
@@ -183,7 +187,9 @@ public class ApiServerVerticleTest {
         .addQueryParam("id",
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
         .addQueryParam("georel", "within").addQueryParam("geometry", "bbox")
-        .addQueryParam("coordinates", "%5B%5B82%2C25.33%5D%5B82.01%2C25.317%5D%5D")
+        .addQueryParam("geolocation", "geoJsonLocation")
+        .addQueryParam("coordinates",
+            "[[82.97698974609375,25.321994194865383],[83.00411224365234,25.291267057619464]]")
         .send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
@@ -203,9 +209,9 @@ public class ApiServerVerticleTest {
         .addQueryParam("id",
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
         .addQueryParam("attrs", "latitude,longitude,resource-id").addQueryParam("georel", "within")
-        .addQueryParam("geometry", "polygon")
+        .addQueryParam("geometry", "polygon").addQueryParam("geolocation", "geoJsonLocation")
         .addQueryParam("coordinates",
-            "%5B%5B114.78515624999999%2C66.26685631430843%5D%2C%5B114.78544056415559%2C66.26677642907407%5D%5D")
+            "[[[82.9738998413086,25.330372970610558],[82.97201156616211,25.28428253090838],[83.02436828613281,25.285524253944203],[83.02007675170898,25.32866622999033],[82.9738998413086,25.330372970610558]]]")
         .send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
@@ -229,6 +235,66 @@ public class ApiServerVerticleTest {
         testContext.failNow(handler.cause());
       }
     });
+  }
+
+  @Test
+  @Order(9)
+  @DisplayName("test /temporal/entities for before relation")
+  public void testTemporalEntitiesBefore(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_TEMPORAL_URL;
+    client.get(PORT, BASE_URL, apiUrl)
+        .addQueryParam("id",
+            "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
+        .addQueryParam("timerel", "before").addQueryParam("time", "2020-06-01T14:20:00Z")
+        .send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+
+  }
+
+  @Test
+  @Order(10)
+  @DisplayName("test /temporal/entities for after relation")
+  public void testTemporalEntitiesAfter(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_TEMPORAL_URL;
+    client.get(PORT, BASE_URL, apiUrl)
+        .addQueryParam("id",
+            "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
+        .addQueryParam("timerel", "after").addQueryParam("time", "2020-06-01T14:20:00Z")
+        .send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+
+  }
+
+  @Test
+  @Order(11)
+  @DisplayName("test /temporal/entities for between relation")
+  public void testTemporalEntitiesBetween(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_TEMPORAL_URL;
+    client.get(PORT, BASE_URL, apiUrl)
+        .addQueryParam("id",
+            "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
+        .addQueryParam("timerel", "between").addQueryParam("time", "2020-06-01T14:20:00Z")
+        .addQueryParam("endtime", "2020-06-03T14:40:00Z").send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+
   }
 
   /** Subscription API test **/

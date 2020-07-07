@@ -1290,21 +1290,6 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * validate if name passes the regex test for IUDX queue,exchage name.
-   * 
-   * @param name name(queue,exchange)
-   * @return Future true if name matches the regex else false
-   */
-  public Future<Boolean> isValidName(String name) {
-    Promise<Boolean> promise = Promise.promise();
-    if (Pattern.compile(Constants.APP_NAME_REGEX).matcher(name).matches())
-      promise.complete(true);
-    else
-      promise.fail(Constants.MSG_INVALID_NAME);
-    return promise.future();
-  }
-
-  /**
    * handle HTTP response.
    * 
    * @param response       response object
@@ -1326,6 +1311,23 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   /**
+   * validate if name passes the regex test for IUDX queue,exchage name.
+   * 
+   * @param name name(queue,exchange)
+   * @return Future true if name matches the regex else false
+   */
+  public Future<Boolean> isValidName(String name) {
+    Promise<Boolean> promise = Promise.promise();
+    if (Pattern.compile(Constants.APP_NAME_REGEX).matcher(name).matches()) {
+      promise.complete(true);
+    } else {
+      LOGGER.error(Constants.MSG_INVALID_NAME + name);
+      promise.fail(Constants.MSG_INVALID_NAME);
+    }
+    return promise.future();
+  }
+
+  /**
    * Get the request query parameters delimited by <b>&</b>,
    * <i><b>;</b>(semicolon) is considered as part of the parameter</i>.
    * 
@@ -1343,7 +1345,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               .parameters();
       for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
         queryParams.add(entry.getKey(), entry.getValue());
-        System.out.println(entry.getKey() + " : " + entry.getValue());
+        LOGGER.info(entry.getKey() + " : " + entry.getValue());
       }
     } catch (IllegalArgumentException ex) {
       response.putHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON)
