@@ -513,7 +513,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param routingContext routingContext
    */
   private void deleteSubscription(RoutingContext routingContext) {
-    LOGGER.info("getSubscription method started");
+    LOGGER.info("deleteSubscription method started");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     JsonObject authenticationInfo = new JsonObject();

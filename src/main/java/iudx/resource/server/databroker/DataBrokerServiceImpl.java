@@ -1,14 +1,5 @@
 package iudx.resource.server.databroker;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Map;
-
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.http.HttpStatus;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -22,6 +13,13 @@ import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.rabbitmq.RabbitMQClient;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Map;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.http.HttpStatus;
 
 /**
  * The Data Broker Service Implementation.
