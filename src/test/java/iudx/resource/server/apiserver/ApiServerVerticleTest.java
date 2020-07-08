@@ -57,8 +57,9 @@ public class ApiServerVerticleTest {
      * Future<JsonObject> result = starter.startServer();
      * 
      * result.onComplete(resultHandler -> { if (resultHandler.succeeded()) {
-     * testContext.completeNow(); } });
+     * testContext.completeNow(); } }); <<<<<<< HEAD
      * 
+     * ======= >>>>>>> 7917b4209f984d10cf740174f86959fd256b8273
      */
 
     /*
@@ -359,6 +360,7 @@ public class ApiServerVerticleTest {
             testContext.failNow(handler.cause());
           }
         });
+
   }
 
   // @Test
@@ -504,7 +506,7 @@ public class ApiServerVerticleTest {
             testContext.failNow(handler.cause());
           }
         });
-  }
+
 
   // TODO : correct according to type
   @Test
@@ -620,6 +622,7 @@ public class ApiServerVerticleTest {
         testContext.completeNow();
       } else if (ar.failed()) {
         testContext.failNow(ar.cause());
+
       }
     });
   }
