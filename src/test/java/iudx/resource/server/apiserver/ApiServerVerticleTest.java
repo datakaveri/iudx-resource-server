@@ -84,10 +84,10 @@ public class ApiServerVerticleTest {
       if (ar.succeeded()) {
         JsonObject res = ar.result().bodyAsJsonObject();
         assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
-        assertTrue(res.containsKey("type"));
-        assertTrue(res.containsKey("title"));
-        assertTrue(res.containsKey("detail"));
-        assertEquals(res.getInteger("type"), 400);
+        assertTrue(res.containsKey(Constants.JSON_TYPE));
+        assertTrue(res.containsKey(Constants.JSON_TITLE));
+        assertTrue(res.containsKey(Constants.JSON_DETAIL));
+        assertEquals(res.getInteger(Constants.JSON_TYPE), 400);
         testContext.completeNow();
       } else if (ar.failed()) {
         testContext.failed();
@@ -101,11 +101,11 @@ public class ApiServerVerticleTest {
   public void testEntities4CircleGeom(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
-        .addQueryParam("id",
+        .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
-        .addQueryParam("georel", "near;maxDistance=1000")
-        .addQueryParam("geoproperty", "geoJsonLocation")
-        .addQueryParam("coordinates", "[82.987988,25.319768]").send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "near;maxDistance=1000")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, "[82.987988,25.319768]").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -121,11 +121,12 @@ public class ApiServerVerticleTest {
   public void testEntities4PolygonGeom(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
-        .addQueryParam("id",
+        .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
-        .addQueryParam("georel", "within").addQueryParam("geometry", "polygon")
-        .addQueryParam("geoproperty", "geoJsonLocation")
-        .addQueryParam("coordinates",
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "polygon")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES,
             "[[[82.9738998413086,25.330372970610558],[82.97201156616211,25.28428253090838],[83.02436828613281,25.285524253944203],[83.02007675170898,25.32866622999033],[82.9738998413086,25.330372970610558]]]")
         .send(handler -> {
           if (handler.succeeded()) {
@@ -143,11 +144,12 @@ public class ApiServerVerticleTest {
   public void testEntities4LineStringGeom(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
-        .addQueryParam("id",
+        .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
-        .addQueryParam("georel", "intersect").addQueryParam("geometry", "linestring")
-        .addQueryParam("geolocation", "geoJsonLocation")
-        .addQueryParam("coordinates",
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "intersect")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "linestring")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES,
             "[[82.97527313232422,25.292043091311733],[82.99467086791992,25.30678678767568],[83.00085067749023,25.323545863751555]]")
         .send(handler -> {
           if (handler.succeeded()) {
@@ -165,11 +167,10 @@ public class ApiServerVerticleTest {
   public void testResponseFilterQuery(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
-        .addQueryParam("id",
+        .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
-        .addQueryParam("georel", "within").addQueryParam("geometry", "polygon")
-        .addQueryParam("geolocation", "geoJsonLocation")
-        .addQueryParam("attr", "latitude,longitude,resource-id").send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_ATTRIBUTE, "latitude,longitude,resource-id")
+        .send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -185,11 +186,12 @@ public class ApiServerVerticleTest {
   public void testEntities4BoundingBoxGeom(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
-        .addQueryParam("id",
+        .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
-        .addQueryParam("georel", "within").addQueryParam("geometry", "bbox")
-        .addQueryParam("geolocation", "geoJsonLocation")
-        .addQueryParam("coordinates",
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "bbox")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES,
             "[[82.97698974609375,25.321994194865383],[83.00411224365234,25.291267057619464]]")
         .send(handler -> {
           if (handler.succeeded()) {
@@ -207,11 +209,13 @@ public class ApiServerVerticleTest {
   public void testGeo_ResponseFilter(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
-        .addQueryParam("id",
+        .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
-        .addQueryParam("attrs", "latitude,longitude,resource-id").addQueryParam("georel", "within")
-        .addQueryParam("geometry", "polygon").addQueryParam("geolocation", "geoJsonLocation")
-        .addQueryParam("coordinates",
+        .addQueryParam(Constants.NGSILDQUERY_ATTRIBUTE, "latitude,longitude,resource-id")
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "polygon")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES,
             "[[[82.9738998413086,25.330372970610558],[82.97201156616211,25.28428253090838],[83.02436828613281,25.285524253944203],[83.02007675170898,25.32866622999033],[82.9738998413086,25.330372970610558]]]")
         .send(handler -> {
           if (handler.succeeded()) {
@@ -244,10 +248,10 @@ public class ApiServerVerticleTest {
   public void testTemporalEntitiesBefore(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_TEMPORAL_URL;
     client.get(PORT, BASE_URL, apiUrl)
-        .addQueryParam("id",
+        .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
-        .addQueryParam("timerel", "before").addQueryParam("time", "2020-06-01T14:20:00Z")
-        .send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_TIMEREL, "before")
+        .addQueryParam(Constants.NGSILDQUERY_TIME, "2020-06-01T14:20:00Z").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -264,10 +268,10 @@ public class ApiServerVerticleTest {
   public void testTemporalEntitiesAfter(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_TEMPORAL_URL;
     client.get(PORT, BASE_URL, apiUrl)
-        .addQueryParam("id",
+        .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
-        .addQueryParam("timerel", "after").addQueryParam("time", "2020-06-01T14:20:00Z")
-        .send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_TIMEREL, "after")
+        .addQueryParam(Constants.NGSILDQUERY_TIME, "2020-06-01T14:20:00Z").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -284,10 +288,11 @@ public class ApiServerVerticleTest {
   public void testTemporalEntitiesBetween(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_TEMPORAL_URL;
     client.get(PORT, BASE_URL, apiUrl)
-        .addQueryParam("id",
+        .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
-        .addQueryParam("timerel", "between").addQueryParam("time", "2020-06-01T14:20:00Z")
-        .addQueryParam("endtime", "2020-06-03T14:40:00Z").send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_TIMEREL, "between")
+        .addQueryParam(Constants.NGSILDQUERY_TIME, "2020-06-01T14:20:00Z")
+        .addQueryParam(Constants.NGSILDQUERY_ENDTIME, "2020-06-03T14:40:00Z").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -306,11 +311,11 @@ public class ApiServerVerticleTest {
   public void testCreateStreamingSubscription(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL;
     JsonObject json = new JsonObject();
-    json.put("name", "test-streaming-name");
-    json.put("type", "streaming");
-    json.put("entities", entities);
-    client.post(PORT, BASE_URL, apiUrl).putHeader("token", "testing-token").sendJsonObject(json,
-        handler -> {
+    json.put(Constants.JSON_NAME, "test-streaming-name");
+    json.put(Constants.JSON_TYPE, "streaming");
+    json.put(Constants.JSON_ENTITIES, entities);
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, "testing-token")
+        .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
             subscriptionId = handler.result().bodyAsJsonObject().getString("subscriptionID");
@@ -327,9 +332,9 @@ public class ApiServerVerticleTest {
   public void testCreateStreaming401(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL;
     JsonObject json = new JsonObject();
-    json.put("name", "test-streaming-name");
-    json.put("type", "streaming");
-    json.put("entities", entities);
+    json.put(Constants.JSON_NAME, "test-streaming-name");
+    json.put(Constants.JSON_TYPE, "streaming");
+    json.put(Constants.JSON_ENTITIES, entities);
     client.post(PORT, BASE_URL, apiUrl).sendJsonObject(json, handler -> {
       if (handler.succeeded()) {
         assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
@@ -345,14 +350,15 @@ public class ApiServerVerticleTest {
   @DisplayName("test /subscription endpoint to get a subscription")
   public void testGetSubscription(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
-    client.get(PORT, BASE_URL, apiUrl).putHeader("token", "testing-token").send(handler -> {
-      if (handler.succeeded()) {
-        assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, "testing-token")
+        .send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   // @Test
@@ -360,14 +366,15 @@ public class ApiServerVerticleTest {
   @DisplayName("test /subscription endpoint to delete a subscription")
   public void testDeleteSubs(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
-    client.delete(PORT, BASE_URL, apiUrl).putHeader("token", "testing-token").send(handler -> {
-      if (handler.succeeded()) {
-        assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, "testing-token")
+        .send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   /** Management API test cases **/
@@ -378,9 +385,9 @@ public class ApiServerVerticleTest {
   public void testCreateExchange(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_EXCHANGE_URL;
     JsonObject request = new JsonObject();
-    request.put("exchangeName", exchangeName);
-    client.post(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).sendJsonObject(request,
-        ar -> {
+    request.put(Constants.JSON_EXCHANGE_NAME, exchangeName);
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(request, ar -> {
           if (ar.succeeded()) {
             JsonObject res = ar.result().bodyAsJsonObject();
             assertEquals(ResponseType.Created.getCode(), ar.result().statusCode());
@@ -398,9 +405,9 @@ public class ApiServerVerticleTest {
   public void testCreateExchange400(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_EXCHANGE_URL;
     JsonObject request = new JsonObject();
-    request.put("exchange", exchangeName);
-    client.post(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).sendJsonObject(request,
-        ar -> {
+    request.put(Constants.JSON_EXCHANGE_NAME, exchangeName);
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(request, ar -> {
           if (ar.succeeded()) {
             JsonObject res = ar.result().bodyAsJsonObject();
             assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
@@ -420,9 +427,9 @@ public class ApiServerVerticleTest {
   public void testCreateQueue(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_QUEUE_URL;
     JsonObject request = new JsonObject();
-    request.put("queueName", queueName);
-    client.post(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).sendJsonObject(request,
-        ar -> {
+    request.put(Constants.JSON_QUEUE_NAME, queueName);
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(request, ar -> {
           if (ar.succeeded()) {
             JsonObject res = ar.result().bodyAsJsonObject();
             assertEquals(ResponseType.Created.getCode(), ar.result().statusCode());
@@ -440,9 +447,9 @@ public class ApiServerVerticleTest {
   public void testCreateQueue400(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_QUEUE_URL;
     JsonObject request = new JsonObject();
-    request.put("queueName", queueName);
-    client.post(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).sendJsonObject(request,
-        ar -> {
+    request.put(Constants.JSON_QUEUE_NAME, queueName);
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(request, ar -> {
           if (ar.succeeded()) {
             JsonObject res = ar.result().bodyAsJsonObject();
             assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
@@ -463,11 +470,11 @@ public class ApiServerVerticleTest {
     String apiUrl = Constants.IUDX_MANAGEMENT_BIND_URL;
 
     JsonObject request = new JsonObject();
-    request.put("exchangeName", exchangeName);
-    request.put("queueName", queueName);
-    request.put("entities", entities);
-    client.post(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).sendJsonObject(request,
-        handler -> {
+    request.put(Constants.JSON_EXCHANGE_NAME, exchangeName);
+    request.put(Constants.JSON_QUEUE_NAME, queueName);
+    request.put(Constants.JSON_ENTITIES, entities);
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(request, handler -> {
           if (handler.succeeded()) {
             JsonObject res = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
@@ -486,16 +493,17 @@ public class ApiServerVerticleTest {
   @DisplayName(" management api /exchange to get exchange details")
   public void testGetExchangeDetails(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_EXCHANGE_URL + "/" + exchangeName;
-    client.get(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).send(handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result().bodyAsJsonObject();
-        assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
-        assertEquals(entities, response.getJsonArray(queueName));
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            assertEquals(entities, response.getJsonArray(queueName));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   // TODO : correct according to type
@@ -504,15 +512,16 @@ public class ApiServerVerticleTest {
   @DisplayName(" management api /queue to get queue details")
   public void testGetQueueDetails(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_QUEUE_URL + "/" + queueName;
-    client.get(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).send(handler -> {
-      if (handler.succeeded()) {
-        JsonObject res = handler.result().bodyAsJsonObject();
-        assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject res = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   @Test
@@ -521,12 +530,12 @@ public class ApiServerVerticleTest {
   public void testUnbindQueue2Exchange(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_UNBIND_URL;
     JsonObject request = new JsonObject();
-    request.put("exchangeName", exchangeName);
-    request.put("queueName", queueName);
-    request.put("entities", entities);
+    request.put(Constants.JSON_EXCHANGE_NAME, exchangeName);
+    request.put(Constants.JSON_QUEUE_NAME, queueName);
+    request.put(Constants.JSON_ENTITIES, entities);
     LOGGER.info(request);
-    client.post(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).sendJsonObject(request,
-        handler -> {
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(request, handler -> {
           if (handler.succeeded()) {
             JsonObject res = handler.result().bodyAsJsonObject();
             LOGGER.info(res);
@@ -548,7 +557,7 @@ public class ApiServerVerticleTest {
   @DisplayName(" management api /queue to delete a queue")
   public void testDeleteQueue(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_QUEUE_URL + "/" + queueName;
-    client.delete(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).send(ar -> {
+    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken).send(ar -> {
       if (ar.succeeded()) {
         JsonObject res = ar.result().bodyAsJsonObject();
         assertEquals(ResponseType.Ok.getCode(), ar.result().statusCode());
@@ -565,7 +574,7 @@ public class ApiServerVerticleTest {
   @DisplayName(" management api /queue to delete a queue when no queue exist")
   public void testDeleteQueue404(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_QUEUE_URL + "/" + queueName;
-    client.delete(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).send(ar -> {
+    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken).send(ar -> {
       if (ar.succeeded()) {
         JsonObject res = ar.result().bodyAsJsonObject();
         assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
@@ -584,7 +593,7 @@ public class ApiServerVerticleTest {
   @DisplayName(" management api /exchange to delete a exchange")
   public void testDeleteExchange(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_EXCHANGE_URL + "/" + exchangeName;
-    client.delete(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).send(ar -> {
+    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken).send(ar -> {
       if (ar.succeeded()) {
         JsonObject res = ar.result().bodyAsJsonObject();
         assertEquals(ResponseType.Ok.getCode(), ar.result().statusCode());
@@ -601,7 +610,7 @@ public class ApiServerVerticleTest {
   @DisplayName(" management api /exchange to delete a exchange when no exchange exist")
   public void testDeleteExchange404(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_EXCHANGE_URL + "/" + exchangeName;
-    client.delete(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).send(ar -> {
+    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken).send(ar -> {
       if (ar.succeeded()) {
         JsonObject res = ar.result().bodyAsJsonObject();
         assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
@@ -621,9 +630,9 @@ public class ApiServerVerticleTest {
   public void testCreateVhost(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_VHOST_URL;
     JsonObject request = new JsonObject();
-    request.put("vHost", vhost);
-    client.post(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).sendJsonObject(request,
-        handler -> {
+    request.put(Constants.JSON_VHOST, vhost);
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(request, handler -> {
           if (handler.succeeded()) {
             JsonObject res = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
@@ -641,9 +650,9 @@ public class ApiServerVerticleTest {
   public void testCreateVhost400(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_VHOST_URL;
     JsonObject request = new JsonObject();
-    request.put("vHost", vhost);
-    client.post(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).sendJsonObject(request,
-        handler -> {
+    request.put(Constants.JSON_VHOST, vhost);
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(request, handler -> {
           if (handler.succeeded()) {
             JsonObject res = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
@@ -662,16 +671,17 @@ public class ApiServerVerticleTest {
   @DisplayName(" management api /vhost to delete a vhost")
   public void testDeleteVhost(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_VHOST_URL + "/" + vhost;
-    client.delete(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).send(handler -> {
-      if (handler.succeeded()) {
-        JsonObject res = handler.result().bodyAsJsonObject();
-        assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
-        assertEquals(res.getString("vHost"), vhost);
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject res = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            assertEquals(res.getString("vHost"), vhost);
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   @Test
@@ -679,18 +689,19 @@ public class ApiServerVerticleTest {
   @DisplayName(" management api /vhost to delete a vhost when no vhost exist ")
   public void testDeleteVhost400(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_VHOST_URL + "/" + vhost;
-    client.delete(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).send(handler -> {
-      if (handler.succeeded()) {
-        JsonObject res = handler.result().bodyAsJsonObject();
-        assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
-        assertEquals(res.getInteger("type"), HttpStatus.SC_NOT_FOUND);
-        assertEquals(res.getString("title"), "failure");
-        assertEquals(res.getString("detail"), "No vhosts found");
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject res = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertEquals(res.getInteger("type"), HttpStatus.SC_NOT_FOUND);
+            assertEquals(res.getString("title"), "failure");
+            assertEquals(res.getString("detail"), "No vhosts found");
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   @Test
@@ -699,7 +710,7 @@ public class ApiServerVerticleTest {
   public void testAdapterRegistrationWithoutToken(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register";
     JsonObject requestJson = new JsonObject();
-    requestJson.put("id", adapterId);
+    requestJson.put(Constants.JSON_ID, adapterId);
     client.post(PORT, BASE_URL, apiUrl).sendJsonObject(requestJson, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result().bodyAsJsonObject();
@@ -720,9 +731,9 @@ public class ApiServerVerticleTest {
   public void testRegisterAdapter(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register";
     JsonObject requestJson = new JsonObject();
-    requestJson.put("id", adapterId);
-    client.post(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).putHeader("token", fakeToken)
-        .sendJsonObject(requestJson, handler -> {
+    requestJson.put(Constants.JSON_ID, adapterId);
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .putHeader(Constants.HEADER_TOKEN, fakeToken).sendJsonObject(requestJson, handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
@@ -744,9 +755,9 @@ public class ApiServerVerticleTest {
   public void testRegisterAdapter400(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register";
     JsonObject requestJson = new JsonObject();
-    requestJson.put("id", adapterId);
-    client.post(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).putHeader("token", fakeToken)
-        .sendJsonObject(requestJson, handler -> {
+    requestJson.put(Constants.JSON_ID, adapterId);
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .putHeader(Constants.HEADER_TOKEN, fakeToken).sendJsonObject(requestJson, handler -> {
           if (handler.succeeded()) {
             // JsonObject result = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
@@ -766,15 +777,16 @@ public class ApiServerVerticleTest {
   @DisplayName("management api /adapter to get adapter details")
   public void testGetAdapterDetails(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/" + adapterId;
-    client.get(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).send(handler -> {
-      if (handler.succeeded()) {
-        // JsonObject result = handler.result().bodyAsJsonObject();
-        assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .send(handler -> {
+          if (handler.succeeded()) {
+            // JsonObject result = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   @Test
@@ -809,8 +821,8 @@ public class ApiServerVerticleTest {
     json.put("id", adapterId);
     json.put("time", LocalDateTime.now().toString());
     json.put("status", "heartbeat");
-    client.post(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).sendJsonObject(json,
-        handler -> {
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
@@ -853,8 +865,8 @@ public class ApiServerVerticleTest {
     json.put("id", adapterId);
     json.put("time", LocalDateTime.now().toString());
     json.put("status", "server issue");
-    client.post(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).sendJsonObject(json,
-        handler -> {
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
@@ -897,15 +909,16 @@ public class ApiServerVerticleTest {
     json.put("id", adapterId);
     json.put("time", LocalDateTime.now().toString());
     json.put("status", "data issue");
-    client.post(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).send(handler -> {
-      if (handler.succeeded()) {
-        JsonObject result = handler.result().bodyAsJsonObject();
-        assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject result = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   @Test
@@ -913,16 +926,17 @@ public class ApiServerVerticleTest {
   @DisplayName("management api /adapter to delete a adapter")
   public void testDeleteAdapter(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/" + adapterId;
-    client.delete(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).send(handler -> {
-      if (handler.succeeded()) {
-        JsonObject result = handler.result().bodyAsJsonObject();
-        assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
-        assertTrue(result.containsKey("id"));
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject result = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            assertTrue(result.containsKey(Constants.JSON_ID));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   @Test
@@ -930,18 +944,19 @@ public class ApiServerVerticleTest {
   @DisplayName("management api /adapter to delete already deleted adapter")
   public void testDeleteAdapter400(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/" + adapterId;
-    client.delete(PORT, BASE_URL, apiUrl).putHeader("token", fakeToken).send(handler -> {
-      if (handler.succeeded()) {
-        JsonObject result = handler.result().bodyAsJsonObject();
-        assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
-        // assertTrue(result.containsKey("status"));
-        // assertTrue(result.containsKey("title"));
-        // assertTrue(result.containsKey("details"));
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject result = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            // assertTrue(result.containsKey("status"));
+            // assertTrue(result.containsKey("title"));
+            // assertTrue(result.containsKey("details"));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
 }
