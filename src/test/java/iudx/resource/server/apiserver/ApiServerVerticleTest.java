@@ -105,8 +105,9 @@ public class ApiServerVerticleTest {
         .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
         .addQueryParam(Constants.NGSILDQUERY_GEOREL, "near;maxDistance=1000")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "point")
         .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
-        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, "[82.987988,25.319768]").send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, "[25.319768,82.987988]").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -147,7 +148,7 @@ public class ApiServerVerticleTest {
     client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
-        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "intersect")
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "intersects")
         .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "linestring")
         .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
         .addQueryParam(Constants.NGSILDQUERY_COORDINATES,
@@ -252,7 +253,7 @@ public class ApiServerVerticleTest {
         .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
         .addQueryParam(Constants.NGSILDQUERY_TIMEREL, "before")
-        .addQueryParam(Constants.NGSILDQUERY_TIME, "2020-06-01T14:20:00Z").send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_TIME, "2020-06-01T14:20:01Z").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -272,7 +273,7 @@ public class ApiServerVerticleTest {
         .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
         .addQueryParam(Constants.NGSILDQUERY_TIMEREL, "after")
-        .addQueryParam(Constants.NGSILDQUERY_TIME, "2020-06-01T14:20:00Z").send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_TIME, "2020-06-01T14:20:01Z").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -291,9 +292,9 @@ public class ApiServerVerticleTest {
     client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
-        .addQueryParam(Constants.NGSILDQUERY_TIMEREL, "between")
-        .addQueryParam(Constants.NGSILDQUERY_TIME, "2020-06-01T14:20:00Z")
-        .addQueryParam(Constants.NGSILDQUERY_ENDTIME, "2020-06-03T14:40:00Z").send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_TIMEREL, "during")
+        .addQueryParam(Constants.NGSILDQUERY_TIME, "2020-06-01T14:20:01Z")
+        .addQueryParam(Constants.NGSILDQUERY_ENDTIME, "2020-06-03T14:40:01Z").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -506,6 +507,7 @@ public class ApiServerVerticleTest {
             testContext.failNow(handler.cause());
           }
         });
+  }
 
 
   // TODO : correct according to type
@@ -728,7 +730,7 @@ public class ApiServerVerticleTest {
     });
   }
 
-  @Test
+  //@Test
   @Order(218)
   @DisplayName(" management api /adapter/register to register a adapter")
   public void testRegisterAdapter(Vertx vertx, VertxTestContext testContext) {
@@ -752,7 +754,7 @@ public class ApiServerVerticleTest {
         });
   }
 
-  @Test
+  //@Test
   @Order(219)
   @DisplayName(" management api /adapter/register to register already existing adapter")
   public void testRegisterAdapter400(Vertx vertx, VertxTestContext testContext) {
@@ -775,7 +777,7 @@ public class ApiServerVerticleTest {
         });
   }
 
-  @Test
+  //@Test
   @Order(220)
   @DisplayName("management api /adapter to get adapter details")
   public void testGetAdapterDetails(Vertx vertx, VertxTestContext testContext) {
@@ -815,7 +817,7 @@ public class ApiServerVerticleTest {
     });
   }
 
-  @Test
+  //@Test
   @Order(222)
   @DisplayName("management api /adapter/heartbeat to publish data")
   public void testPublishHeartBeat(Vertx vertx, VertxTestContext testContext) {
@@ -859,7 +861,7 @@ public class ApiServerVerticleTest {
     });
   }
 
-  @Test
+  //@Test
   @Order(224)
   @DisplayName("management api /adapter/downstreamissue to publish data")
   public void testPublishDownstreamissue(Vertx vertx, VertxTestContext testContext) {
@@ -903,7 +905,7 @@ public class ApiServerVerticleTest {
     });
   }
 
-  @Test
+  //@Test
   @Order(226)
   @DisplayName("management api /adapter/dataissue to publish data")
   public void testPublishDataissue(Vertx vertx, VertxTestContext testContext) {
@@ -924,7 +926,7 @@ public class ApiServerVerticleTest {
         });
   }
 
-  @Test
+  //@Test
   @Order(227)
   @DisplayName("management api /adapter to delete a adapter")
   public void testDeleteAdapter(Vertx vertx, VertxTestContext testContext) {
@@ -942,7 +944,7 @@ public class ApiServerVerticleTest {
         });
   }
 
-  @Test
+  //@Test
   @Order(228)
   @DisplayName("management api /adapter to delete already deleted adapter")
   public void testDeleteAdapter400(Vertx vertx, VertxTestContext testContext) {

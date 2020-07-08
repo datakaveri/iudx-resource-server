@@ -13,7 +13,6 @@ import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseListener;
 import org.elasticsearch.client.RestClient;
 
-<<<<<<< HEAD
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -22,8 +21,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-=======
->>>>>>> 7917b4209f984d10cf740174f86959fd256b8273
+
 /**
  * The Database Service Implementation.
  * <h1>Database Service Implementation</h1>
@@ -219,14 +217,8 @@ public class DatabaseServiceImpl implements DatabaseService {
     JsonObject boolObject = new JsonObject().put(Constants.BOOL_KEY, new JsonObject());
     JsonArray id = request.getJsonArray(Constants.ID);
     JsonArray filterQuery = new JsonArray();
-<<<<<<< HEAD
-
     JsonObject termQuery = new JsonObject().put(Constants.TERMS_KEY,
         new JsonObject().put(Constants.RESOURCE_ID_KEY + ".keyword", id));
-=======
-    JsonObject termQuery = new JsonObject().put("terms",
-        new JsonObject().put(RESOURCE_ID_KEY + ".keyword", id));
->>>>>>> 7917b4209f984d10cf740174f86959fd256b8273
 
     filterQuery.add(termQuery);
     /* TODO: Pagination for large result set */
@@ -263,11 +255,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         relation = request.getString(Constants.GEOREL);
         coordinates = new JsonArray(request.getString(Constants.COORDINATES_KEY));
         int length = coordinates.getJsonArray(0).size();
-<<<<<<< HEAD
         if (geometry.equalsIgnoreCase(Constants.POLYGON)
-=======
-        if (geometry.equalsIgnoreCase("polygon")
->>>>>>> 7917b4209f984d10cf740174f86959fd256b8273
             && !coordinates.getJsonArray(0).getJsonArray(0).getDouble(0)
                 .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(0))
             && !coordinates.getJsonArray(0).getJsonArray(0).getDouble(1)

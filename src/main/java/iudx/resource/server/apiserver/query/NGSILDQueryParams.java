@@ -66,7 +66,8 @@ public class NGSILDQueryParams {
         }
         case Constants.NGSILDQUERY_ATTRIBUTE: {
           this.attrs = new ArrayList<String>();
-          this.attrs.addAll(Arrays.stream(entry.getValue().split(",")).collect(Collectors.toList()));
+          this.attrs.addAll(Arrays.stream(entry.getValue().split(","))
+              .collect(Collectors.toList()));
           break;
         }
         case Constants.NGSILDQUERY_GEOREL: {
@@ -96,11 +97,11 @@ public class NGSILDQueryParams {
           break;
         }
         case Constants.NGSILDQUERY_TIME: {
-          this.temporalRelation.setTime(LocalDateTime.parse(entry.getValue(), formatter));
+          this.temporalRelation.setTime(entry.getValue());
           break;
         }
         case Constants.NGSILDQUERY_ENDTIME: {
-          this.temporalRelation.setEndTime(LocalDateTime.parse(entry.getValue(), formatter));
+          this.temporalRelation.setEndTime(entry.getValue());
           break;
         }
         case Constants.NGSILDQUERY_Q: {

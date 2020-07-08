@@ -66,7 +66,7 @@ public class Constants {
   public static final String JSON_NAME = "name";
   public static final String JSON_ENTITIES = "entities";
   public static final String JSON_ID = "id";
-  public static final String JSON_ATTRIBUTE_FILTER = "attribute-filter";
+  public static final String JSON_ATTRIBUTE_FILTER = "attrs";
   public static final String JSON_NEAR = "near";
   public static final String JSON_LAT = "lat";
   public static final String JSON_LON = "lon";

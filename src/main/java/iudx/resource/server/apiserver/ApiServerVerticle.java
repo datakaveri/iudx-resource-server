@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import io.netty.handler.codec.http.HttpConstants;
@@ -571,10 +572,11 @@ public class ApiServerVerticle extends AbstractVerticle {
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
           LOGGER.info("databroker :: " + databroker);
           Future<Boolean> isValidNameResult = isValidName(
-              requestJson.getString(Constants.JSON_EXCHANGE_NAME));
+              requestJson.copy().getString(Constants.JSON_EXCHANGE_NAME));
           isValidNameResult.onComplete(validNameHandler -> {
-            if (isValidNameResult.succeeded()) {
-              databroker.createExchange(requestJson, dataBrokerHandler -> {
+            if (validNameHandler.succeeded()) {
+              LOGGER.info("name is valid");
+              databroker.createExchange(requestJson.copy(), dataBrokerHandler -> {
                 if (dataBrokerHandler.succeeded()) {
                   JsonObject result = dataBrokerHandler.result();
                   if (!result.isEmpty() && !result.containsKey(Constants.JSON_TYPE)) {
@@ -721,9 +723,9 @@ public class ApiServerVerticle extends AbstractVerticle {
         LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
         if (authHandler.succeeded()) {
           Future<Boolean> validNameResult = isValidName(
-              requestJson.getString(Constants.JSON_QUEUE_NAME));
-          validNameResult.onComplete(validdNameHandler -> {
-            if (validNameResult.succeeded()) {
+              requestJson.copy().getString(Constants.JSON_QUEUE_NAME));
+          validNameResult.onComplete(validNameHandler -> {
+            if (validNameHandler.succeeded()) {
               Future<JsonObject> brokerResult = managementApi.createQueue(requestJson, databroker);
               brokerResult.onComplete(brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
@@ -927,9 +929,9 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           Future<Boolean> validNameResult = isValidName(
-              requestJson.getString(Constants.JSON_VHOST_NAME));
+              requestJson.copy().getString(Constants.JSON_VHOST));
           validNameResult.onComplete(validNameHandler -> {
-            if (validNameResult.succeeded()) {
+            if (validNameHandler.succeeded()) {
               Future<JsonObject> brokerResult = managementApi.createVHost(requestJson, databroker);
               brokerResult.onComplete(brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
