@@ -313,14 +313,14 @@ public class ApiServerVerticleTest {
   public void testCreateStreamingSubscription(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL;
     JsonObject json = new JsonObject();
-    json.put(Constants.JSON_NAME, "test-streaming-name");
-    json.put(Constants.JSON_TYPE, "streaming");
+    json.put(Constants.JSON_NAME, Constants.JSON_STREAMING_NAME);
+    json.put(Constants.JSON_TYPE, Constants.JSON_STREAMING_TYPE);
     json.put(Constants.JSON_ENTITIES, entities);
-    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, "testing-token")
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
-            subscriptionId = handler.result().bodyAsJsonObject().getString("subscriptionID");
+            subscriptionId = handler.result().bodyAsJsonObject().getString(Constants.JSON_SUBS_ID);
             testContext.completeNow();
           } else if (handler.failed()) {
             testContext.failNow(handler.cause());
@@ -334,8 +334,8 @@ public class ApiServerVerticleTest {
   public void testCreateStreaming401(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL;
     JsonObject json = new JsonObject();
-    json.put(Constants.JSON_NAME, "test-streaming-name");
-    json.put(Constants.JSON_TYPE, "streaming");
+    json.put(Constants.JSON_NAME, Constants.JSON_STREAMING_NAME);
+    json.put(Constants.JSON_TYPE, Constants.JSON_STREAMING_TYPE);
     json.put(Constants.JSON_ENTITIES, entities);
     client.post(PORT, BASE_URL, apiUrl).sendJsonObject(json, handler -> {
       if (handler.succeeded()) {
@@ -352,7 +352,7 @@ public class ApiServerVerticleTest {
   @DisplayName("test /subscription endpoint to get a subscription")
   public void testGetSubscription(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
-    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, "testing-token")
+    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
@@ -369,7 +369,7 @@ public class ApiServerVerticleTest {
   @DisplayName("test /subscription endpoint to delete a subscription")
   public void testDeleteSubs(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
-    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, "testing-token")
+    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
@@ -394,7 +394,7 @@ public class ApiServerVerticleTest {
           if (ar.succeeded()) {
             JsonObject res = ar.result().bodyAsJsonObject();
             assertEquals(ResponseType.Created.getCode(), ar.result().statusCode());
-            assertEquals(res.getString("exchange"), exchangeName);
+            assertEquals(res.getString(Constants.JSON_EXCHANGE), exchangeName);
             testContext.completeNow();
           } else if (ar.failed()) {
             testContext.failNow(ar.cause());
@@ -414,9 +414,9 @@ public class ApiServerVerticleTest {
           if (ar.succeeded()) {
             JsonObject res = ar.result().bodyAsJsonObject();
             assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
-            assertEquals(res.getInteger("type"), HttpStatus.SC_NO_CONTENT);
-            assertEquals(res.getString("title"), "failure");
-            assertEquals(res.getString("detail"), "Exchange already exists");
+            assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NO_CONTENT);
+            assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
+            assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_EXCHANGE_EXIST);
             testContext.completeNow();
           } else if (ar.failed()) {
             testContext.failNow(ar.cause());
@@ -436,7 +436,7 @@ public class ApiServerVerticleTest {
           if (ar.succeeded()) {
             JsonObject res = ar.result().bodyAsJsonObject();
             assertEquals(ResponseType.Created.getCode(), ar.result().statusCode());
-            assertEquals(res.getString("queue"), queueName);
+            assertEquals(res.getString(Constants.JSON_QUEUE), queueName);
             testContext.completeNow();
           } else if (ar.failed()) {
             testContext.failNow(ar.cause());
@@ -456,9 +456,9 @@ public class ApiServerVerticleTest {
           if (ar.succeeded()) {
             JsonObject res = ar.result().bodyAsJsonObject();
             assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
-            assertEquals(res.getInteger("type"), HttpStatus.SC_NO_CONTENT);
-            assertEquals(res.getString("title"), "failure");
-            assertEquals(res.getString("detail"), "Queue already exists");
+            assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NO_CONTENT);
+            assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
+            assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_FAILURE_QUEUE_EXIST);
             testContext.completeNow();
           } else if (ar.failed()) {
             testContext.failNow(ar.cause());
@@ -481,9 +481,9 @@ public class ApiServerVerticleTest {
           if (handler.succeeded()) {
             JsonObject res = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
-            assertEquals(exchangeName, res.getString("exchange"));
-            assertEquals(queueName, res.getString("queue"));
-            assertEquals(entities, res.getJsonArray("entities"));
+            assertEquals(exchangeName, res.getString(Constants.JSON_EXCHANGE));
+            assertEquals(queueName, res.getString(Constants.JSON_QUEUE));
+            assertEquals(entities, res.getJsonArray(Constants.JSON_ENTITIES));
             testContext.completeNow();
           } else if (handler.failed()) {
             testContext.failNow(handler.cause());
@@ -565,7 +565,7 @@ public class ApiServerVerticleTest {
       if (ar.succeeded()) {
         JsonObject res = ar.result().bodyAsJsonObject();
         assertEquals(ResponseType.Ok.getCode(), ar.result().statusCode());
-        assertEquals(res.getString("queue"), queueName);
+        assertEquals(res.getString(Constants.JSON_QUEUE), queueName);
         testContext.completeNow();
       } else if (ar.failed()) {
         testContext.failNow(ar.cause());
@@ -582,9 +582,9 @@ public class ApiServerVerticleTest {
       if (ar.succeeded()) {
         JsonObject res = ar.result().bodyAsJsonObject();
         assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
-        assertEquals(res.getInteger("type"), HttpStatus.SC_NOT_FOUND);
-        assertEquals(res.getString("title"), "failure");
-        assertEquals(res.getString("detail"), "Queue does not exist");
+        assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NOT_FOUND);
+        assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
+        assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_FAILURE_QUEUE_NOT_EXIST);
         testContext.completeNow();
       } else if (ar.failed()) {
         testContext.failNow(ar.cause());
@@ -601,7 +601,7 @@ public class ApiServerVerticleTest {
       if (ar.succeeded()) {
         JsonObject res = ar.result().bodyAsJsonObject();
         assertEquals(ResponseType.Ok.getCode(), ar.result().statusCode());
-        assertEquals(res.getString("exchange"), exchangeName);
+        assertEquals(res.getString(Constants.JSON_EXCHANGE), exchangeName);
         testContext.completeNow();
       } else if (ar.failed()) {
         testContext.failNow(ar.cause());
@@ -618,9 +618,9 @@ public class ApiServerVerticleTest {
       if (ar.succeeded()) {
         JsonObject res = ar.result().bodyAsJsonObject();
         assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
-        assertEquals(res.getInteger("type"), HttpStatus.SC_NOT_FOUND);
-        assertEquals(res.getString("title"), "failure");
-        assertEquals(res.getString("detail"), "Exchange not found");
+        assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NOT_FOUND);
+        assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
+        assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_FAILURE_EXCHANGE_NOT_FOUND);
         testContext.completeNow();
       } else if (ar.failed()) {
         testContext.failNow(ar.cause());
@@ -641,7 +641,7 @@ public class ApiServerVerticleTest {
           if (handler.succeeded()) {
             JsonObject res = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
-            assertEquals(res.getString("vHost"), vhost);
+            assertEquals(res.getString(Constants.JSON_VHOST), vhost);
             testContext.completeNow();
           } else if (handler.failed()) {
             testContext.failNow(handler.cause());
@@ -661,9 +661,9 @@ public class ApiServerVerticleTest {
           if (handler.succeeded()) {
             JsonObject res = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
-            assertEquals(res.getInteger("type"), HttpStatus.SC_NO_CONTENT);
-            assertEquals(res.getString("title"), "failure");
-            assertEquals(res.getString("detail"), "vHost already exists");
+            assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NO_CONTENT);
+            assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
+            assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_FAILURE_VHOST_EXIST);
             testContext.completeNow();
           } else if (handler.failed()) {
             testContext.failNow(handler.cause());
@@ -681,7 +681,7 @@ public class ApiServerVerticleTest {
           if (handler.succeeded()) {
             JsonObject res = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
-            assertEquals(res.getString("vHost"), vhost);
+            assertEquals(res.getString(Constants.JSON_VHOST), vhost);
             testContext.completeNow();
           } else if (handler.failed()) {
             testContext.failNow(handler.cause());
@@ -699,9 +699,9 @@ public class ApiServerVerticleTest {
           if (handler.succeeded()) {
             JsonObject res = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
-            assertEquals(res.getInteger("type"), HttpStatus.SC_NOT_FOUND);
-            assertEquals(res.getString("title"), "failure");
-            assertEquals(res.getString("detail"), "No vhosts found");
+            assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NOT_FOUND);
+            assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
+            assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_FAILURE_NO_VHOST);
             testContext.completeNow();
           } else if (handler.failed()) {
             testContext.failNow(handler.cause());
@@ -720,9 +720,9 @@ public class ApiServerVerticleTest {
       if (handler.succeeded()) {
         JsonObject result = handler.result().bodyAsJsonObject();
         assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
-        assertTrue(result.containsKey("type"));
-        assertTrue(result.containsKey("title"));
-        assertTrue(result.containsKey("detail"));
+        assertTrue(result.containsKey(Constants.JSON_TYPE));
+        assertTrue(result.containsKey(Constants.JSON_TITLE));
+        assertTrue(result.containsKey(Constants.JSON_DETAIL));
         testContext.completeNow();
       } else if (handler.failed()) {
         testContext.failNow(handler.cause());
@@ -742,11 +742,11 @@ public class ApiServerVerticleTest {
           if (handler.succeeded()) {
             JsonObject result = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
-            assertTrue(result.containsKey("id"));
-            assertTrue(result.containsKey("vHost"));
-            assertTrue(result.containsKey("username"));
-            assertTrue(result.containsKey("apiKey"));
-            adapterId = result.getString("id");
+            assertTrue(result.containsKey(Constants.JSON_ID));
+            assertTrue(result.containsKey(Constants.JSON_VHOST));
+            assertTrue(result.containsKey(Constants.JSON_USERNAME));
+            assertTrue(result.containsKey(Constants.JSON_APIKEY));
+            adapterId = result.getString(Constants.JSON_ID);
             testContext.completeNow();
           } else if (handler.failed()) {
             testContext.failNow(handler.cause());
@@ -800,9 +800,9 @@ public class ApiServerVerticleTest {
   public void testPublishHeartBeat401(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat";
     JsonObject json = new JsonObject();
-    json.put("id", adapterId);
-    json.put("time", LocalDateTime.now().toString());
-    json.put("status", "heartbeat");
+    json.put(Constants.JSON_ID, adapterId);
+    json.put(Constants.JSON_TIME, LocalDateTime.now().toString());
+    json.put(Constants.JSON_STATUS, Constants.JSON_STATUS_HEARTBEAT);
     client.post(PORT, BASE_URL, apiUrl).sendJsonObject(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result().bodyAsJsonObject();
@@ -823,9 +823,9 @@ public class ApiServerVerticleTest {
   public void testPublishHeartBeat(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat";
     JsonObject json = new JsonObject();
-    json.put("id", adapterId);
-    json.put("time", LocalDateTime.now().toString());
-    json.put("status", "heartbeat");
+    json.put(Constants.JSON_ID, adapterId);
+    json.put(Constants.JSON_TIME, LocalDateTime.now().toString());
+    json.put(Constants.JSON_STATUS, Constants.JSON_STATUS_HEARTBEAT);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
@@ -844,9 +844,9 @@ public class ApiServerVerticleTest {
   public void testPublishDownstreamissue401(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/downstreamissue";
     JsonObject json = new JsonObject();
-    json.put("id", adapterId);
-    json.put("time", LocalDateTime.now().toString());
-    json.put("status", "server issue");
+    json.put(Constants.JSON_ID, adapterId);
+    json.put(Constants.JSON_TIME, LocalDateTime.now().toString());
+    json.put(Constants.JSON_STATUS, Constants.JSON_STATUS_SERVERISSUE);
     client.post(PORT, BASE_URL, apiUrl).sendJsonObject(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result().bodyAsJsonObject();
@@ -867,9 +867,9 @@ public class ApiServerVerticleTest {
   public void testPublishDownstreamissue(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/downstreamissue";
     JsonObject json = new JsonObject();
-    json.put("id", adapterId);
-    json.put("time", LocalDateTime.now().toString());
-    json.put("status", "server issue");
+    json.put(Constants.JSON_ID, adapterId);
+    json.put(Constants.JSON_TIME, LocalDateTime.now().toString());
+    json.put(Constants.JSON_STATUS,Constants.JSON_STATUS_SERVERISSUE);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
@@ -888,9 +888,9 @@ public class ApiServerVerticleTest {
   public void testPublishDataissue401(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/dataissue";
     JsonObject json = new JsonObject();
-    json.put("id", adapterId);
-    json.put("time", LocalDateTime.now().toString());
-    json.put("status", "data issue");
+    json.put(Constants.JSON_ID, adapterId);
+    json.put(Constants.JSON_TIME, LocalDateTime.now().toString());
+    json.put(Constants.JSON_STATUS, Constants.JSON_STATUS_DATAISSUE);
     client.post(PORT, BASE_URL, apiUrl).sendJsonObject(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result().bodyAsJsonObject();
@@ -911,9 +911,9 @@ public class ApiServerVerticleTest {
   public void testPublishDataissue(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/dataissue";
     JsonObject json = new JsonObject();
-    json.put("id", adapterId);
-    json.put("time", LocalDateTime.now().toString());
-    json.put("status", "data issue");
+    json.put(Constants.JSON_ID, adapterId);
+    json.put(Constants.JSON_TIME, LocalDateTime.now().toString());
+    json.put(Constants.JSON_STATUS, Constants.JSON_STATUS_DATAISSUE);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .send(handler -> {
           if (handler.succeeded()) {

@@ -1,20 +1,18 @@
 package iudx.resource.server.apiserver.query;
 
+import io.vertx.core.MultiMap;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import iudx.resource.server.apiserver.util.Constants;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import io.vertx.core.MultiMap;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import iudx.resource.server.apiserver.util.Constants;
+
 
 /**
  * NGSILDQueryParams Class to parse query parameters from HTTP request.
@@ -32,8 +30,7 @@ public class NGSILDQueryParams {
   private String coordinates;
   private String geoProperty;
   private TemporalRelation temporalRelation;
-  private DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME
-      .withZone(ZoneId.systemDefault());
+ 
 
   /**
    * constructor a NGSILDParams passing query parameters map.

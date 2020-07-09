@@ -97,6 +97,16 @@ public class Constants {
   public static final String JSON_USERSHA = "userSHA";
   public static final String JSON_ALIAS = "alias";
   public static final String JSON_STREAMING_TYPE = "streaming";
+  public static final String JSON_EXCHANGE = "exchange";
+  public static final String JSON_QUEUE = "queue";
+  public static final String JSON_USERNAME = "username";
+  public static final String JSON_APIKEY = "apiKey";
+  public static final String JSON_STATUS = "status";
+  public static final String JSON_STATUS_HEARTBEAT = "heartbeat";
+  public static final String JSON_STATUS_SERVERISSUE = "Server Issue";
+  public static final String JSON_STATUS_DATAISSUE = "Server Issue";
+  public static final String JSON_STREAMING_NAME = "test-streaming-name";
+  public static final String JSON_SUBS_ID = "subscriptionID";
 
   // searchtype
   public static final String JSON_SEARCH_TYPE = "searchType";
@@ -116,6 +126,13 @@ public class Constants {
   public static final String MSG_INVALID_QUEUE_NAME = "Invalid queue name";
   public static final String MSG_INVALID_VHOST_NAME = "Invalid vhost name";
   public static final String MSG_INVALID_NAME = "Invalid name.";
+  public static final String MSG_FAILURE = "failure";
+  public static final String MSG_FAILURE_NO_VHOST = "No vhosts found";
+  public static final String MSG_FAILURE_VHOST_EXIST = "vHost already exists";
+  public static final String MSG_FAILURE_EXCHANGE_NOT_FOUND = "Exchange not found";
+  public static final String MSG_FAILURE_QUEUE_NOT_EXIST = "Queue does not exist";
+  public static final String MSG_FAILURE_QUEUE_EXIST = "Queue already exists";
+  public static final String MSG_EXCHANGE_EXIST = "Exchange already exists";
 
   // results
   public static final String SUCCCESS = "success";
