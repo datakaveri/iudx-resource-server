@@ -1,18 +1,16 @@
 package iudx.resource.server.apiserver.query;
 
-import java.time.LocalDateTime;
-
 public class TemporalRelation {
 
-  private LocalDateTime endTime;
+  private String endTime;
   private String temprel;
-  private LocalDateTime time;
+  private String time;
 
-  public LocalDateTime getEndTime() {
+  public String getEndTime() {
     return endTime;
   }
 
-  public void setEndTime(LocalDateTime endTime) {
+  public void setEndTime(String endTime) {
     this.endTime = endTime;
   }
 
@@ -24,11 +22,11 @@ public class TemporalRelation {
     this.temprel = temprel;
   }
 
-  public LocalDateTime getTime() {
+  public String getTime() {
     return time;
   }
 
-  public void setTime(LocalDateTime time) {
+  public void setTime(String time) {
     this.time = time;
   }
 

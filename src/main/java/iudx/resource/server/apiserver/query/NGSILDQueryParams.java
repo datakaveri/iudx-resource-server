@@ -6,14 +6,13 @@ import io.vertx.core.logging.LoggerFactory;
 import iudx.resource.server.apiserver.util.Constants;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+
+
 
 /**
  * NGSILDQueryParams Class to parse query parameters from HTTP request.
@@ -31,11 +30,11 @@ public class NGSILDQueryParams {
   private String coordinates;
   private String geoProperty;
   private TemporalRelation temporalRelation;
-  private DateTimeFormatter formatter = DateTimeFormatter
-      .ofPattern("yyyy-MM-dd'T'HH:mm:ss[.SSSSSS]'Z'").withZone(ZoneId.systemDefault());
+ 
 
   /**
-   * constructor a NGSILDParams passing query parameters map. 
+   * constructor a NGSILDParams passing query parameters map.
+   * 
    * @param paramsMap query paramater's map.
    */
   public NGSILDQueryParams(MultiMap paramsMap) {
@@ -74,9 +73,9 @@ public class NGSILDQueryParams {
           this.geoRel.setRelation(values[0]);
           if (values.length == 2) {
             String[] distance = values[1].split("=");
-            if (distance[0].equalsIgnoreCase("maxdistance")) {
+            if (distance[0].equalsIgnoreCase(Constants.NGSILDQUERY_MAXDISTANCE)) {
               this.geoRel.setMaxDistance(Double.parseDouble(distance[1]));
-            } else if (distance[0].equalsIgnoreCase("mindistance")) {
+            } else if (distance[0].equalsIgnoreCase(Constants.NGSILDQUERY_MINDISTANCE)) {
               this.geoRel.setMinDistance(Double.parseDouble(distance[1]));
             }
           }
@@ -95,21 +94,24 @@ public class NGSILDQueryParams {
           break;
         }
         case Constants.NGSILDQUERY_TIME: {
-          this.temporalRelation.setTime(LocalDateTime.parse(entry.getValue(), formatter));
+          this.temporalRelation.setTime(entry.getValue());
           break;
         }
         case Constants.NGSILDQUERY_ENDTIME: {
-          this.temporalRelation.setEndTime(LocalDateTime.parse(entry.getValue(), formatter));
+          this.temporalRelation.setEndTime(entry.getValue());
           break;
         }
         case Constants.NGSILDQUERY_Q: {
           this.textQuery = entry.getValue();
           break;
         }
-        default: {
-          LOGGER.warn(entry.getKey() + " not a valid param");
+        case Constants.NGSILDQUERY_GEOPROPERTY: {
+          this.geoProperty = entry.getValue();
+          break;
         }
-
+        default: {
+          LOGGER.warn(Constants.MSG_INVALID_PARAM + ":" + entry.getKey());
+        }
       }
     }
   }
