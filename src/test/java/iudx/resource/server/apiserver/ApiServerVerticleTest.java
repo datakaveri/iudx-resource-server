@@ -27,6 +27,7 @@ import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.util.Constants;
 
+/* TODO : Need to update End to End Adaptor testing */
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ApiServerVerticleTest {
@@ -55,17 +56,10 @@ public class ApiServerVerticleTest {
     /*
      * ResourceServerStarter starter = new ResourceServerStarter();
      * Future<JsonObject> result = starter.startServer();
-     * 
-     * result.onComplete(resultHandler -> { if (resultHandler.succeeded()) {
-     * testContext.completeNow(); } }); <<<<<<< HEAD
-     * 
-     * ======= >>>>>>> 7917b4209f984d10cf740174f86959fd256b8273
-     */
-
-    /*
      * result.onComplete(resultHandler -> { if (resultHandler.succeeded()) {
      * testContext.completeNow(); } });
      */
+
     exchangeName = UUID.randomUUID().toString().replaceAll("-", "");
     queueName = UUID.randomUUID().toString().replaceAll("-", "");
     vhost = UUID.randomUUID().toString().replaceAll("-", "");
