@@ -299,6 +299,101 @@ public class ApiServerVerticleTest {
 
   }
 
+  @Test
+  @Order(12)
+  @DisplayName("test /entities endpoint for a circle geometry count")
+  public void testCountEntities4CircleGeom(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_OPTIONS, Constants.COUNT_HEADER)
+        .addQueryParam(Constants.NGSILDQUERY_ID,
+            "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "near;maxDistance=100")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "point")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, "[25.319768,82.987988]").send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject result = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            assertEquals(result.getInteger(Constants.COUNT_HEADER), 3146);
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(13)
+  @DisplayName("test /entities endpoint for polygon geometrycount")
+  public void testCountEntities4PolygonGeom(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_OPTIONS, Constants.COUNT_HEADER)
+        .addQueryParam(Constants.NGSILDQUERY_ID,
+            "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "polygon")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES,
+            "[[[82.9735,25.3703],[83.0053,25.3567],[82.9766,25.3372],[82.95,25.3519],[82.936,25.3722],[82.9735,25.3703]]]")
+        .send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject result = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            assertEquals(91870, result.getInteger(Constants.COUNT_HEADER));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(14)
+  @DisplayName("test /entities endpoint for linestring geometry count")
+  public void testCountEntities4LineStringGeom(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_OPTIONS, Constants.COUNT_HEADER)
+        .addQueryParam(Constants.NGSILDQUERY_ID,
+            "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "intersects")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "linestring")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES,
+            "[[82.9735,25.3352],[82.9894,25.3452],[82.99,25.34]]")
+        .send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject result = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            assertEquals(207, result.getInteger(Constants.COUNT_HEADER));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(15)
+  @DisplayName("test /entities endpoint for bbox geometry count")
+  public void testCountEntities4BoundingBoxGeom(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_OPTIONS, Constants.COUNT_HEADER)
+        .addQueryParam(Constants.NGSILDQUERY_ID,
+            "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "bbox")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, "[[82.95,25.3567],[83.0053,25]]")
+        .send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
   /** Subscription API test **/
 
   // @Test
@@ -503,7 +598,6 @@ public class ApiServerVerticleTest {
         });
   }
 
-
   // TODO : correct according to type
   @Test
   @Order(207)
@@ -614,7 +708,8 @@ public class ApiServerVerticleTest {
         assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
         assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NOT_FOUND);
         assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
-        assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_FAILURE_EXCHANGE_NOT_FOUND);
+        assertEquals(res.getString(Constants.JSON_DETAIL),
+            Constants.MSG_FAILURE_EXCHANGE_NOT_FOUND);
         testContext.completeNow();
       } else if (ar.failed()) {
         testContext.failNow(ar.cause());
@@ -724,7 +819,7 @@ public class ApiServerVerticleTest {
     });
   }
 
-  //@Test
+  // @Test
   @Order(218)
   @DisplayName(" management api /adapter/register to register a adapter")
   public void testRegisterAdapter(Vertx vertx, VertxTestContext testContext) {
@@ -748,7 +843,7 @@ public class ApiServerVerticleTest {
         });
   }
 
-  //@Test
+  // @Test
   @Order(219)
   @DisplayName(" management api /adapter/register to register already existing adapter")
   public void testRegisterAdapter400(Vertx vertx, VertxTestContext testContext) {
@@ -771,7 +866,7 @@ public class ApiServerVerticleTest {
         });
   }
 
-  //@Test
+  // @Test
   @Order(220)
   @DisplayName("management api /adapter to get adapter details")
   public void testGetAdapterDetails(Vertx vertx, VertxTestContext testContext) {
@@ -811,7 +906,7 @@ public class ApiServerVerticleTest {
     });
   }
 
-  //@Test
+  // @Test
   @Order(222)
   @DisplayName("management api /adapter/heartbeat to publish data")
   public void testPublishHeartBeat(Vertx vertx, VertxTestContext testContext) {
@@ -855,7 +950,7 @@ public class ApiServerVerticleTest {
     });
   }
 
-  //@Test
+  // @Test
   @Order(224)
   @DisplayName("management api /adapter/downstreamissue to publish data")
   public void testPublishDownstreamissue(Vertx vertx, VertxTestContext testContext) {
@@ -863,7 +958,7 @@ public class ApiServerVerticleTest {
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_ID, adapterId);
     json.put(Constants.JSON_TIME, LocalDateTime.now().toString());
-    json.put(Constants.JSON_STATUS,Constants.JSON_STATUS_SERVERISSUE);
+    json.put(Constants.JSON_STATUS, Constants.JSON_STATUS_SERVERISSUE);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
@@ -899,7 +994,7 @@ public class ApiServerVerticleTest {
     });
   }
 
-  //@Test
+  // @Test
   @Order(226)
   @DisplayName("management api /adapter/dataissue to publish data")
   public void testPublishDataissue(Vertx vertx, VertxTestContext testContext) {
@@ -920,7 +1015,7 @@ public class ApiServerVerticleTest {
         });
   }
 
-  //@Test
+  // @Test
   @Order(227)
   @DisplayName("management api /adapter to delete a adapter")
   public void testDeleteAdapter(Vertx vertx, VertxTestContext testContext) {
@@ -938,7 +1033,7 @@ public class ApiServerVerticleTest {
         });
   }
 
-  //@Test
+  // @Test
   @Order(228)
   @DisplayName("management api /adapter to delete already deleted adapter")
   public void testDeleteAdapter400(Vertx vertx, VertxTestContext testContext) {

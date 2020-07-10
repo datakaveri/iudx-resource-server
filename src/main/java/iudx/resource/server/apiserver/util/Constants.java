@@ -50,7 +50,9 @@ public class Constants {
   public static final String HEADER_ORIGIN = "Origin";
   public static final String HEADER_REFERER = "Referer";
   public static final String HEADER_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+  public static final String HEADER_OPTIONS = "options";
 
+  public static final String COUNT_HEADER = "Count";
   public static final String PUBLIC_TOKEN = "public";
 
   // request/response params
