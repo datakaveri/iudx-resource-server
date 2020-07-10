@@ -24,7 +24,7 @@ public class Constants {
   public static final String IUDX_MANAGEMENT_VHOST_URL = IUDX_MANAGEMENT_URL + "/vhost";
   public static final String IUDX_MANAGEMENT_ADAPTER_URL = IUDX_MANAGEMENT_URL + "/adapter";
 
-  // ngsi-ld query paramaters
+  // ngsi-ld/IUDX query paramaters
   public static final String NGSILDQUERY_ID = "id";
   public static final String NGSILDQUERY_IDPATTERN = "idpattern";
   public static final String NGSILDQUERY_TYPE = "type";
@@ -40,6 +40,7 @@ public class Constants {
   public static final String NGSILDQUERY_TIMEPROPERTY = "timeproperty";
   public static final String NGSILDQUERY_MAXDISTANCE = "maxdistance";
   public static final String NGSILDQUERY_MINDISTANCE = "mindistance";
+  public static final String IUDXQUERY_OPTIONS = "options";
 
   // Header params
   public static final String HEADER_TOKEN = "token";
@@ -109,12 +110,14 @@ public class Constants {
   public static final String JSON_STATUS_DATAISSUE = "Server Issue";
   public static final String JSON_STREAMING_NAME = "test-streaming-name";
   public static final String JSON_SUBS_ID = "subscriptionID";
+  public static final String JSON_COUNT = "Count";
 
   // searchtype
   public static final String JSON_SEARCH_TYPE = "searchType";
   public static final String JSON_TEMPORAL_SEARCH = "temporalSearch_";
   public static final String JSON_GEO_SEARCH = "geoSearch_";
   public static final String JSON_RESPONSE_FILTER_SEARCH = "responseFilter_";
+  public static final String JSON_ATTRIBUTE_SEARCH = "attributeSearch_";
 
   // Geometry
   public static final String GEOM_POINT = "point";
