@@ -97,6 +97,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * exposed through service discovery, start an HTTPs server at port 8443.
    * 
    * @throws Exception which is a startup exception
+   * TODO Need to add documentation for all the methods.
    */
 
   @Override
@@ -331,15 +332,27 @@ public class ApiServerVerticle extends AbstractVerticle {
           if (authHandler.succeeded()) {
             LOGGER.info(
                 "Authenticating entity search request ".concat(authHandler.result().toString()));
-            // call database vertical for seaarch
-            database.searchQuery(json, handler -> {
-              if (handler.succeeded()) {
-                handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
-              } else if (handler.failed()) {
-                handleResponse(response, ResponseType.BadRequestData, handler.cause().getMessage(),
-                    true);
-              }
-            });
+            if (json.containsKey(Constants.IUDXQUERY_OPTIONS) && Constants.JSON_COUNT
+                .equalsIgnoreCase(json.getString(Constants.IUDXQUERY_OPTIONS))) {
+              database.countQuery(json, handler -> {
+                if (handler.succeeded()) {
+                  handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
+                } else if (handler.failed()) {
+                  handleResponse(response, ResponseType.BadRequestData,
+                      handler.cause().getMessage(), true);
+                }
+              });
+            } else {
+              // call database vertical for seaarch
+              database.searchQuery(json, handler -> {
+                if (handler.succeeded()) {
+                  handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
+                } else if (handler.failed()) {
+                  handleResponse(response, ResponseType.BadRequestData,
+                      handler.cause().getMessage(), true);
+                }
+              });
+            }
           } else if (authHandler.failed()) {
             LOGGER.error("Unathorized request".concat(authHandler.cause().toString()));
             handleResponse(response, ResponseType.AuthenticationFailure, true);
@@ -394,15 +407,27 @@ public class ApiServerVerticle extends AbstractVerticle {
           if (authHandler.succeeded()) {
             LOGGER.info("Authenticating entity temporal search request "
                 .concat(authHandler.result().toString()));
-            // call database vertical for seaarch
-            database.searchQuery(json, handler -> {
-              if (handler.succeeded()) {
-                handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
-              } else if (handler.failed()) {
-                handleResponse(response, ResponseType.BadRequestData, handler.cause().getMessage(),
-                    true);
-              }
-            });
+            if (json.containsKey(Constants.IUDXQUERY_OPTIONS) && Constants.JSON_COUNT
+                .equalsIgnoreCase(json.getString(Constants.IUDXQUERY_OPTIONS))) {
+              database.countQuery(json, handler -> {
+                if (handler.succeeded()) {
+                  handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
+                } else if (handler.failed()) {
+                  handleResponse(response, ResponseType.BadRequestData,
+                      handler.cause().getMessage(), true);
+                }
+              });
+            } else {
+              // call database vertical for normal seaarch
+              database.searchQuery(json, handler -> {
+                if (handler.succeeded()) {
+                  handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
+                } else if (handler.failed()) {
+                  handleResponse(response, ResponseType.BadRequestData,
+                      handler.cause().getMessage(), true);
+                }
+              });
+            }
           } else if (authHandler.failed()) {
             LOGGER.error("Unathorized request".concat(authHandler.cause().toString()));
             handleResponse(response, ResponseType.AuthenticationFailure, true);
@@ -412,6 +437,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         handleResponse(response, ResponseType.BadRequestData, Constants.MSG_INVALID_PARAM, true);
       }
     });
+
   }
 
   /**

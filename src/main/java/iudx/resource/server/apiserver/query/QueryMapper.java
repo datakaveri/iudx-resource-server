@@ -9,9 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * QueryMapper class to convert NGSILD query into json object for the purpose of
- * information exchange among different verticals.
- *
+ * QueryMapper class to convert NGSILD query into json object for the purpose of information
+ * exchange among different verticals.
+ * TODO Need to add documentation.
  */
 public class QueryMapper {
 
@@ -19,11 +19,12 @@ public class QueryMapper {
   private boolean isTemporal = false;
   private boolean isGeoSearch = false;
   private boolean isResponseFilter = false;
+  private boolean isAttributeSearch = false;
 
   /**
    * This method is used to create a json object from NGSILDQueryParams.
    * 
-   * @param params     A map of query parameters passed.
+   * @param params A map of query parameters passed.
    * @param isTemporal flag indicating whether temporal or not.
    * @return JsonObject result.
    */
@@ -80,6 +81,7 @@ public class QueryMapper {
 
     }
     if (params.getQ() != null) {
+      isAttributeSearch = true;
       JsonArray query = new JsonArray();
       String[] qterms = params.getQ().split(";");
       for (String term : qterms) {
@@ -89,6 +91,9 @@ public class QueryMapper {
     }
     if (params.getGeoProperty() != null) {
       json.put(Constants.JSON_GEOPROPERTY, params.getGeoProperty());
+    }
+    if (params.getOptions() != null) {
+      json.put(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT);
     }
 
     json.put(Constants.JSON_SEARCH_TYPE, getSearchType());
@@ -109,6 +114,9 @@ public class QueryMapper {
     }
     if (isResponseFilter) {
       searchType.append(Constants.JSON_RESPONSE_FILTER_SEARCH);
+    }
+    if (isAttributeSearch) {
+      searchType.append(Constants.JSON_ATTRIBUTE_SEARCH);
     }
     return searchType.toString();
   }

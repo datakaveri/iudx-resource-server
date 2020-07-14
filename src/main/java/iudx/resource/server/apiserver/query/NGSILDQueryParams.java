@@ -30,7 +30,8 @@ public class NGSILDQueryParams {
   private String coordinates;
   private String geoProperty;
   private TemporalRelation temporalRelation;
- 
+  private String options;
+
 
   /**
    * constructor a NGSILDParams passing query parameters map.
@@ -44,8 +45,7 @@ public class NGSILDQueryParams {
   }
 
   /**
-   * This method is used to initialize a NGSILDQueryParams object from multimap of
-   * query parameters.
+   * This method is used to initialize a NGSILDQueryParams object from multimap of query parameters.
    * 
    * @param paramsMap query paramater's map.
    */
@@ -63,8 +63,8 @@ public class NGSILDQueryParams {
         }
         case Constants.NGSILDQUERY_ATTRIBUTE: {
           this.attrs = new ArrayList<String>();
-          this.attrs.addAll(Arrays.stream(entry.getValue().split(","))
-              .collect(Collectors.toList()));
+          this.attrs
+              .addAll(Arrays.stream(entry.getValue().split(",")).collect(Collectors.toList()));
           break;
         }
         case Constants.NGSILDQUERY_GEOREL: {
@@ -107,6 +107,10 @@ public class NGSILDQueryParams {
         }
         case Constants.NGSILDQUERY_GEOPROPERTY: {
           this.geoProperty = entry.getValue();
+          break;
+        }
+        case Constants.IUDXQUERY_OPTIONS: {
+          this.options = entry.getValue();
           break;
         }
         default: {
@@ -204,6 +208,14 @@ public class NGSILDQueryParams {
 
   public void setTemporalRelation(TemporalRelation temporalRelation) {
     this.temporalRelation = temporalRelation;
+  }
+
+  public String getOptions() {
+    return options;
+  }
+
+  public void setOptions(String options) {
+    this.options = options;
   }
 
 }

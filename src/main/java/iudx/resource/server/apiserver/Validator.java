@@ -32,7 +32,8 @@ public class Validator {
     validParams.add(Constants.NGSILDQUERY_TIMEREL);
     validParams.add(Constants.NGSILDQUERY_TIME);
     validParams.add(Constants.NGSILDQUERY_ENDTIME);
-    // validParams.add("");
+    //for IUDX count query
+    validParams.add(Constants.IUDXQUERY_OPTIONS);
   }
 
   /**
