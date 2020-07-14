@@ -2,7 +2,7 @@ package iudx.resource.server.apiserver.response;
 
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.apiserver.util.Constants;
-
+/* TODO Need to add documentation. */
 public class RestResponse {
   private int type;
   private String title;

@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * QueryMapper class to convert NGSILD query into json object for the purpose of information
  * exchange among different verticals.
- *
+ * TODO Need to add documentation.
  */
 public class QueryMapper {
 
