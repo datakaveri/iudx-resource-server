@@ -97,6 +97,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * exposed through service discovery, start an HTTPs server at port 8443.
    * 
    * @throws Exception which is a startup exception
+   * TODO Need to add documentation for all the methods.
    */
 
   @Override
