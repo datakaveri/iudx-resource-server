@@ -179,6 +179,13 @@
 							</mainClass>
 						</configuration>
 					</execution>
+					<execution>
+						<id>callback-server</id>
+						<configuration>
+							<mainClass>iudx.resource.server.deploy.helper.CallbackServerDeployer
+							</mainClass>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
