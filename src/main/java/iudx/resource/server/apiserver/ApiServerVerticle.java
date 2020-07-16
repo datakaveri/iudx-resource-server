@@ -1,5 +1,15 @@
 package iudx.resource.server.apiserver;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
@@ -32,23 +42,13 @@ import iudx.resource.server.apiserver.query.NGSILDQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.response.RestResponse;
+import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.util.Constants;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.filedownload.FileDownloadService;
 import iudx.resource.server.media.MediaService;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-
 
 /**
  * The Resource Server API Verticle.
@@ -90,14 +90,15 @@ public class ApiServerVerticle extends AbstractVerticle {
   private String keystore;
   private String keystorePassword;
   private ManagementApi managementApi;
+  private SubscriptionService subsService;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a
    * cluster, reads the configuration, obtains a proxy for the Event bus services
    * exposed through service discovery, start an HTTPs server at port 8443.
    * 
-   * @throws Exception which is a startup exception
-   * TODO Need to add documentation for all the methods.
+   * @throws Exception which is a startup exception TODO Need to add documentation
+   *                   for all the methods.
    */
 
   @Override
@@ -286,6 +287,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           }
         });
         managementApi = new ManagementApiImpl();
+        subsService = new SubscriptionService();
       }
     });
   }
@@ -461,27 +463,29 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* checking authentication info in requests */
     if (request.headers().contains(Constants.HEADER_TOKEN)) {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJsonObject, authenticationInfo, authHandler -> {
+      authenticator.tokenInterospect(requestJsonObject.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          JsonObject authJson = authHandler.result();
-          JsonObject jsonObj = new JsonObject();
-          jsonObj.put(Constants.JSON_TYPE, Constants.JSON_STREAMING_TYPE);
-          jsonObj.put(Constants.JSON_NAME, authJson.getString(Constants.JSON_NAME));
-          jsonObj.put(Constants.JSON_CONSUMER, authJson.getString(Constants.JSON_CONSUMER));
-          jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
-          // JsonArray idsJsonArray = new JsonArray();
-          jsonObj.put(Constants.JSON_ENTITIES,
-              requestJsonObject.getJsonArray(Constants.JSON_ENTITIES));
-          LOGGER.info("json for subs :: " + jsonObj);
-          databroker.registerStreamingSubscription(jsonObj, subsHandler -> {
-            if (subsHandler.succeeded()) {
-              handleResponse(response, ResponseType.Created, subsHandler.result().toString(),
-                  false);
-            } else if (subsHandler.failed()) {
-              handleResponse(response, ResponseType.BadRequestData, subsHandler.result().toString(),
-                  false);
-            }
-          });
+          if (requestJsonObject.containsKey(Constants.JSON_TYPE)) {
+            JsonObject authJson = authHandler.result();
+            JsonObject jsonObj = requestJsonObject.copy();
+            jsonObj.put(Constants.JSON_NAME, authJson.getString(Constants.JSON_NAME));
+            jsonObj.put(Constants.JSON_CONSUMER, authJson.getString(Constants.JSON_CONSUMER));
+            jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
+            LOGGER.info("json for subs :: " + jsonObj);
+            Future<JsonObject> subsReq = subsService.createSubscription(jsonObj, databroker,
+                database);
+            subsReq.onComplete(subHandler -> {
+              if (subHandler.succeeded()) {
+                handleResponse(response, ResponseType.Created, subHandler.result().toString(),
+                    false);
+              } else {
+                handleResponse(response, ResponseType.BadRequestData,
+                    subHandler.result().toString(), false);
+              }
+            });
+          } else {
+            handleResponse(response, ResponseType.BadRequestData, true);
+          }
         } else if (authHandler.failed()) {
           handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
@@ -503,26 +507,27 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject authenticationInfo = new JsonObject();
     String instanceID = request.getHeader(Constants.HEADER_HOST);
     String subsId = request.getParam(Constants.SUBSCRIPTION_ID);
-    JsonObject requestJson = new JsonObject();
+    JsonObject requestJson = routingContext.getBodyAsJson();
     requestJson.put(Constants.SUBSCRIPTION_ID, subsId);
     requestJson.put(Constants.JSON_INSTANCEID, instanceID);
     if (request.headers().contains(Constants.HEADER_TOKEN)) {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
+      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          JsonObject authResult = authHandler.result();
+          JsonObject authResult = requestJson.copy();
           JsonObject jsonObj = new JsonObject();
-          jsonObj.put(Constants.JSON_TYPE, Constants.JSON_STREAMING_TYPE);
           jsonObj.put(Constants.JSON_NAME, authResult.getString(Constants.JSON_NAME));
           jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
           jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
           jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
-          databroker.listStreamingSubscription(jsonObj, subsHandler -> {
-            if (subsHandler.succeeded()) {
-              handleResponse(response, ResponseType.Ok, subsHandler.result().toString(), false);
-            } else if (subsHandler.failed()) {
-              handleResponse(response, ResponseType.BadRequestData, true);
+          Future<JsonObject> subsReq = subsService.getSubscription(jsonObj, databroker, database);
+          subsReq.onComplete(subHandler -> {
+            if (subHandler.succeeded()) {
+              handleResponse(response, ResponseType.Ok, subHandler.result().toString(), false);
+            } else {
+              handleResponse(response, ResponseType.BadRequestData, subHandler.result().toString(),
+                  false);
             }
           });
         } else if (authHandler.failed()) {
@@ -546,26 +551,28 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject authenticationInfo = new JsonObject();
     String instanceID = request.getHeader(Constants.HEADER_HOST);
     String subsId = request.getParam(Constants.SUBSCRIPTION_ID);
-    JsonObject requestJson = new JsonObject();
+    JsonObject requestJson = routingContext.getBodyAsJson();
     requestJson.put(Constants.SUBSCRIPTION_ID, subsId);
     requestJson.put(Constants.JSON_INSTANCEID, instanceID);
     if (request.headers().contains(Constants.HEADER_TOKEN)) {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
+      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           JsonObject authResult = authHandler.result();
-          JsonObject jsonObj = new JsonObject();
-          jsonObj.put(Constants.JSON_TYPE, Constants.JSON_STREAMING_TYPE);
+          JsonObject jsonObj = requestJson.copy();
           jsonObj.put(Constants.JSON_NAME, authResult.getString(Constants.JSON_NAME));
           jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
           jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
           jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
-          databroker.deleteStreamingSubscription(jsonObj, subsHandler -> {
-            if (subsHandler.succeeded()) {
-              handleResponse(response, ResponseType.Ok, subsHandler.result().toString(), false);
-            } else if (subsHandler.failed()) {
-              handleResponse(response, ResponseType.BadRequestData, true);
+          Future<JsonObject> subsReq = subsService.deleteSubscription(jsonObj, databroker,
+              database);
+          subsReq.onComplete(subHandler -> {
+            if (subHandler.succeeded()) {
+              handleResponse(response, ResponseType.Ok, subHandler.result().toString(), false);
+            } else {
+              handleResponse(response, ResponseType.BadRequestData, subHandler.result().toString(),
+                  false);
             }
           });
         } else if (authHandler.failed()) {
