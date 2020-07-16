@@ -97,7 +97,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
     /* Get the ID and userName from the request */
     String id = request.getString("id");
-    String userName = request.getString("consumer");
+    String userName = request.getString(Constants.CONSUMER);
 
     logger.info("Alias ID given by user is : " + id);
     logger.info("User Name is : " + userName);
@@ -570,7 +570,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     // permitted.
     vhostPermissions.put(Constants.CONFIGURE, Constants.DENY);
     vhostPermissions.put(Constants.WRITE, Constants.ALLOW);
-    vhostPermissions.put(Constants.READ, Constants.DENY);
+    vhostPermissions.put(Constants.READ, Constants.ALLOW);
 
     Promise<JsonObject> promise = Promise.promise();
     // now set all mandatory permissions for given vhost for newly created user
@@ -852,126 +852,133 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     JsonObject registerStreamingSubscriptionResponse = new JsonObject();
     JsonObject requestjson = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      String userName = request.getString("consumer");
+      String userName = request.getString(Constants.CONSUMER);
       String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
       String queueName = domain + "/" + getSha(userName) + "/" + request.getString("name");
 
-      // For testing use password = 1234
-      String streamingUrl = "amqp://" + userName + ":" + "1234" // generateRandomPassword()
-          + "@" + Constants.BROKER_IP + ":" + Constants.BROKER_PORT + "/" + Constants.VHOST_IUDX
-          + "/" + queueName;
-      logger.info("Streaming URL is : " + streamingUrl);
-      JsonArray entitites = request.getJsonArray("entities");
-      logger.info("Request Access for " + entitites);
-      logger.info("No of bindings to do : " + entitites.size());
+      Future<JsonObject> resultCreateUser = createUserIfNotExist(userName, Constants.VHOST_IUDX);
+      resultCreateUser.onComplete(resultCreateUserhandler -> {
+        if (resultCreateUserhandler.succeeded()) {
 
-      totalBindCount = entitites.size();
-      totalBindSuccess = 0;
+          // For testing instead of generateRandomPassword() use password = 1234
+          String streamingUrl = "amqp://" + userName + ":" + "1234" // generateRandomPassword()
+              + "@" + Constants.BROKER_IP + ":" + Constants.BROKER_PORT + "/" + Constants.VHOST_IUDX
+              + "/" + queueName;
+          logger.info("Streaming URL is : " + streamingUrl);
+          JsonArray entitites = request.getJsonArray(Constants.ENTITIES);
+          logger.info("Request Access for " + entitites);
+          logger.info("No of bindings to do : " + entitites.size());
 
-      requestjson.put("queueName", queueName);
+          totalBindCount = entitites.size();
+          totalBindSuccess = 0;
 
-      Future<JsonObject> resultqueue = createQueue(requestjson);
-      resultqueue.onComplete(resultHandlerqueue -> {
-        if (resultHandlerqueue.succeeded()) {
+          requestjson.put(Constants.QUEUE_NAME, queueName);
 
-          logger.info("sucess :: Create Queue " + resultHandlerqueue.result());
-          JsonObject createQueueResponse = (JsonObject) resultHandlerqueue.result();
+          Future<JsonObject> resultqueue = createQueue(requestjson);
+          resultqueue.onComplete(resultHandlerqueue -> {
+            if (resultHandlerqueue.succeeded()) {
 
-          if (createQueueResponse.containsKey("title")
-              && createQueueResponse.getString("title").equalsIgnoreCase("failure")) {
-            logger.error("failed ::" + resultHandlerqueue.cause());
-            handler.handle(Future
-                .failedFuture(new JsonObject().put("Error", "Queue Creation Failed").toString()));
-          } else {
+              logger.info("sucess :: Create Queue " + resultHandlerqueue.result());
+              JsonObject createQueueResponse = (JsonObject) resultHandlerqueue.result();
 
-            logger.info("Success Queue Created");
+              if (createQueueResponse.containsKey(Constants.TITLE) && createQueueResponse
+                  .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+                logger.error("failed ::" + resultHandlerqueue.cause());
+                handler.handle(Future.failedFuture(
+                    new JsonObject().put(Constants.ERROR, "Queue Creation Failed").toString()));
+              } else {
 
-            for (Object currentEntity : entitites) {
-              String routingKey = (String) currentEntity;
-              System.out.println(routingKey);
-              if (routingKey != null) {
-                if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
-                    || routingKey.split("/").length != 5) {
-                  logger.error("failed :: Invalid (or) NULL routingKey");
+                logger.info("Success Queue Created");
 
-                  Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
-                  resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-                    if (resultHandlerDeletequeue.succeeded()) {
+                for (Object currentEntity : entitites) {
+                  String routingKey = (String) currentEntity;
+                  logger.info("routingKey is " + routingKey);
+                  if (routingKey != null) {
+                    if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
+                        || routingKey.split("/").length != 5) {
+                      logger.error("failed :: Invalid (or) NULL routingKey");
 
-                      handler.handle(Future.failedFuture(
-                          new JsonObject().put("Error", "Invalid routingKey").toString()));
-
-                    }
-                  });
-                } else {
-
-                  String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
-                  JsonArray array = new JsonArray();
-                  array.add(currentEntity);
-                  JsonObject json = new JsonObject();
-                  json.put("exchangeName", exchangeName);
-                  json.put("queueName", queueName);
-                  json.put("entities", array);
-
-                  Future<JsonObject> resultbind = bindQueue(json);
-                  resultbind.onComplete(resultHandlerbind -> {
-                    if (resultHandlerbind.succeeded()) {
-                      // count++
-                      totalBindSuccess += 1;
-                      logger.info("sucess :: totalBindSuccess " + totalBindSuccess
-                          + resultHandlerbind.result());
-
-                      JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
-                      if (bindResponse.containsKey("title")
-                          && bindResponse.getString("title").equalsIgnoreCase("failure")) {
-                        logger.error("failed ::" + resultHandlerbind.cause());
-                        Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
-                        resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-                          if (resultHandlerDeletequeue.succeeded()) {
-                            handler.handle(Future.failedFuture(
-                                new JsonObject().put("Error", "Binding Failed").toString()));
-                          }
-                        });
-                      } else if (totalBindSuccess == totalBindCount) {
-                        registerStreamingSubscriptionResponse.put("subscriptionID", queueName);
-                        registerStreamingSubscriptionResponse.put("streamingURL", streamingUrl);
-                        handler
-                            .handle(Future.succeededFuture(registerStreamingSubscriptionResponse));
-                      }
-                    } else if (resultHandlerbind.failed()) {
-                      logger.error("failed ::" + resultHandlerbind.cause());
                       Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
                       resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                         if (resultHandlerDeletequeue.succeeded()) {
-                          handler.handle(Future.failedFuture(
-                              new JsonObject().put("Error", "Binding Failed").toString()));
+
+                          handler.handle(Future.failedFuture(new JsonObject()
+                              .put(Constants.ERROR, "Invalid routingKey").toString()));
+
+                        }
+                      });
+                    } else {
+
+                      String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
+                      JsonArray array = new JsonArray();
+                      array.add(currentEntity);
+                      JsonObject json = new JsonObject();
+                      json.put(Constants.EXCHANGE_NAME, exchangeName);
+                      json.put(Constants.QUEUE_NAME, queueName);
+                      json.put(Constants.ENTITIES, array);
+
+                      Future<JsonObject> resultbind = bindQueue(json);
+                      resultbind.onComplete(resultHandlerbind -> {
+                        if (resultHandlerbind.succeeded()) {
+                          // count++
+                          totalBindSuccess += 1;
+                          logger.info("sucess :: totalBindSuccess " + totalBindSuccess
+                              + resultHandlerbind.result());
+
+                          JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
+                          if (bindResponse.containsKey(Constants.TITLE) && bindResponse
+                              .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+                            logger.error("failed ::" + resultHandlerbind.cause());
+                            Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
+                            resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
+                              if (resultHandlerDeletequeue.succeeded()) {
+                                handler.handle(Future.failedFuture(new JsonObject()
+                                    .put(Constants.ERROR, "Binding Failed").toString()));
+                              }
+                            });
+                          } else if (totalBindSuccess == totalBindCount) {
+                            registerStreamingSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
+                                queueName);
+                            registerStreamingSubscriptionResponse.put(Constants.STREAMING_URL,
+                                streamingUrl);
+                            handler.handle(
+                                Future.succeededFuture(registerStreamingSubscriptionResponse));
+                          }
+                        } else if (resultHandlerbind.failed()) {
+                          logger.error("failed ::" + resultHandlerbind.cause());
+                          Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
+                          resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
+                            if (resultHandlerDeletequeue.succeeded()) {
+                              handler.handle(Future.failedFuture(new JsonObject()
+                                  .put(Constants.ERROR, "Binding Failed").toString()));
+                            }
+                          });
                         }
                       });
                     }
-                  });
-                }
-              } else {
-                // routingKey.split("/").length < 5
-                logger.error("failed :: Invalid (or) NULL routingKey");
-                Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
-                resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-                  if (resultHandlerDeletequeue.succeeded()) {
-                    handler.handle(Future.failedFuture(
-                        new JsonObject().put("Error", "Invalid routingKey").toString()));
+                  } else {
+                    logger.error("failed :: Invalid (or) NULL routingKey");
+                    Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
+                    resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
+                      if (resultHandlerDeletequeue.succeeded()) {
+                        handler.handle(Future.failedFuture(new JsonObject()
+                            .put(Constants.ERROR, "Invalid routingKey").toString()));
+                      }
+                    });
                   }
-                });
+                }
               }
+            } else if (resultHandlerqueue.failed()) {
+              logger.error("failed ::" + resultHandlerqueue.cause());
+              handler.handle(Future.failedFuture("Queue Creation Failed"));
             }
-          }
-        } else if (resultHandlerqueue.failed()) {
-          logger.error("failed ::" + resultHandlerqueue.cause());
-          handler.handle(Future.failedFuture("Queue Creation Failed"));
+          });
         }
       });
     } else {
       logger.error("Error in payload");
-      handler.handle(
-          Future.failedFuture(new JsonObject().put("Error", "Error in payload").toString()));
+      handler.handle(Future
+          .failedFuture(new JsonObject().put(Constants.ERROR, "Error in payload").toString()));
     }
 
     return this;
@@ -995,7 +1002,35 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService deleteStreamingSubscription(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
-    handler.handle(Future.succeededFuture(new JsonObject()));
+
+    JsonObject deleteStreamingSubscription = new JsonObject();
+    if (request != null && !request.isEmpty()) {
+      String queueName = request.getString(Constants.SUBSCRIPTION_ID);
+      JsonObject requestBody = new JsonObject();
+      requestBody.put(Constants.QUEUE_NAME, queueName);
+      Future<JsonObject> result = deleteQueue(requestBody);
+      result.onComplete(resultHandler -> {
+        if (resultHandler.succeeded()) {
+
+          JsonObject deleteQueueResponse = (JsonObject) resultHandler.result();
+
+          if (deleteQueueResponse.containsKey(Constants.TITLE) && deleteQueueResponse
+              .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+            logger.info("failed :: Response is " + deleteQueueResponse);
+            handler.handle(Future.failedFuture(deleteQueueResponse.toString()));
+          } else {
+            deleteStreamingSubscription.put(Constants.SUBSCRIPTION_ID, queueName);
+            handler.handle(Future.succeededFuture(deleteStreamingSubscription));
+          }
+        }
+        if (resultHandler.failed()) {
+          logger.error("failed ::" + resultHandler.cause());
+          handler.handle(Future.failedFuture(
+              new JsonObject().put(Constants.ERROR, Constants.QUEUE_DELETE_ERROR).toString()));
+        }
+      });
+    }
+
     return this;
   }
 
@@ -1006,7 +1041,35 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService listStreamingSubscription(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
-    handler.handle(Future.succeededFuture(new JsonObject()));
+ 
+    if (request != null && !request.isEmpty()) {
+      String queueName = request.getString(Constants.SUBSCRIPTION_ID);
+      JsonObject requestBody = new JsonObject();
+      requestBody.put(Constants.QUEUE_NAME, queueName);
+      Future<JsonObject> result = listQueueSubscribers(requestBody);
+      result.onComplete(resultHandler -> {
+        if (resultHandler.succeeded()) {
+
+          JsonObject listQueueResponse = (JsonObject) resultHandler.result();
+
+          if (listQueueResponse.containsKey(Constants.TITLE) && listQueueResponse
+              .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+            logger.info("failed :: Response is " + listQueueResponse);
+            handler.handle(Future.failedFuture(listQueueResponse.toString()));
+          } else {
+            logger.info(listQueueResponse);
+            handler.handle(Future.succeededFuture(listQueueResponse));
+          }
+        }
+        if (resultHandler.failed()) {
+          logger.error("failed ::" + resultHandler.cause());
+          handler.handle(Future.failedFuture(
+              new JsonObject().put(Constants.ERROR, Constants.QUEUE_LIST_ERROR).toString()));
+        }
+      });
+    }
+
+    
     return this;
   }
 
