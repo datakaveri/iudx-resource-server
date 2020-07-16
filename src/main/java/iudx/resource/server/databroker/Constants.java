@@ -63,6 +63,7 @@ public class Constants {
   public static final String ID_TEST_EXAMPLE =
       "rbccps.org/e73ed7f5b7950f8b3b42f4bd14eade5c/aqm-bosch-climo";
 
+  public static final String NAME = "name";
   public static final String NETWORK_ISSUE = "Network Issue";
   public static final String NONE = "None";
 
@@ -89,7 +90,9 @@ public class Constants {
   public static final String STATUS = "status";
   public static final String SUCCESS = "success";
   public static final String SHA_USER_NAME = "shaUsername";
-
+  public static final String SUBSCRIPTION_ID = "subscriptionID";
+  public static final String STREAMING_URL = "streamingURL";
+  
   public static final String TOPIC_PERMISSION = "topic_permissions";
   public static final String TOPIC_PERMISSION_SET_SUCCESS = "topic permission set";
   public static final String TOPIC_PERMISSION_ALREADY_SET = "topic permission already set";
