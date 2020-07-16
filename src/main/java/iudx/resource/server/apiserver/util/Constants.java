@@ -124,6 +124,10 @@ public class Constants {
   public static final String GEOM_POLYGON = "polygon";
   public static final String GEOM_LINESTRING = "linestring";
 
+  // subscription type
+  public static final String SUB_STREAMING = "streaming";
+  public static final String SUB_CALLBACK = "callback";
+
   // messages (Error, Exception, messages..)
   public static final String MSG_INVALID_PARAM = "Invalid parameter in request.";
   public static final String MSG_PARAM_DECODE_ERROR = "Error while decoding query params.";
