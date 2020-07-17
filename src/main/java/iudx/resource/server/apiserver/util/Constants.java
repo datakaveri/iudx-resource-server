@@ -142,7 +142,7 @@ public class Constants {
   public static final String MSG_FAILURE_QUEUE_NOT_EXIST = "Queue does not exist";
   public static final String MSG_FAILURE_QUEUE_EXIST = "Queue already exists";
   public static final String MSG_EXCHANGE_EXIST = "Exchange already exists";
-
+  public static final String MSG_SUB_TYPE_NOT_FOUND="Subscription type not present in body";
   // results
   public static final String SUCCCESS = "success";
 }
