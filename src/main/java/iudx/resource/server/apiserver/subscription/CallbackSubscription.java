@@ -3,6 +3,8 @@ package iudx.resource.server.apiserver.subscription;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import iudx.resource.server.apiserver.util.Constants;
 import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
@@ -12,10 +14,12 @@ import iudx.resource.server.databroker.DataBrokerService;
  * 
  *
  */
-public class CallbackSuscription implements Subscription {
+public class CallbackSubscription implements Subscription {
+  
+  private static final Logger LOGGER = LoggerFactory.getLogger(CallbackSubscription.class);
 
+  //TODO : delete when all methods are implemented
   JsonObject json = new JsonObject();
-
   {
     json.put(Constants.JSON_TYPE, "501");
     json.put(Constants.JSON_TITLE, "not implemented yet..");
@@ -24,7 +28,7 @@ public class CallbackSuscription implements Subscription {
   private DataBrokerService databroker;
   private DatabaseService dbService;
 
-  public CallbackSuscription(DataBrokerService databroker, DatabaseService dbService) {
+  public CallbackSubscription(DataBrokerService databroker, DatabaseService dbService) {
     this.databroker = databroker;
     this.dbService = dbService;
   }
@@ -36,6 +40,7 @@ public class CallbackSuscription implements Subscription {
    */
   @Override
   public Future<JsonObject> create(JsonObject subscription) {
+    LOGGER.info("callback create() method started");
     Promise<JsonObject> promise = Promise.promise();
     databroker.registerCallbackSubscription(subscription, handler -> {
       if (handler.succeeded()) {
@@ -54,6 +59,7 @@ public class CallbackSuscription implements Subscription {
    */
   @Override
   public Future<JsonObject> update(JsonObject subscription) {
+    LOGGER.info("callback update() method started");
     Promise<JsonObject> promise = Promise.promise();
     databroker.updateCallbackSubscription(subscription, handler -> {
       if (handler.succeeded()) {
@@ -72,6 +78,7 @@ public class CallbackSuscription implements Subscription {
    */
   @Override
   public Future<JsonObject> append(JsonObject subscription) {
+    LOGGER.info("callback append() method started");
     Promise<JsonObject> promise = Promise.promise();
     promise.complete(json);
     return promise.future();
@@ -85,6 +92,7 @@ public class CallbackSuscription implements Subscription {
    */
   @Override
   public Future<JsonObject> delete(JsonObject subscription) {
+    LOGGER.info("callback delete() method started");
     Promise<JsonObject> promise = Promise.promise();
     databroker.deleteStreamingSubscription(subscription, handler -> {
       if (handler.succeeded()) {
@@ -103,6 +111,7 @@ public class CallbackSuscription implements Subscription {
    */
   @Override
   public Future<JsonObject> get(JsonObject subscription) {
+    LOGGER.info("callback get() method started");
     Promise<JsonObject> promise = Promise.promise();
     databroker.listCallbackSubscription(subscription, handler -> {
       if (handler.succeeded()) {
