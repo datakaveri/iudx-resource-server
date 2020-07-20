@@ -1167,68 +1167,67 @@ public class DataBrokerServiceImpl implements DataBrokerService {
               && listQueueResponse.getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
             handler.handle(Future.failedFuture(
                 new JsonObject().put(Constants.ERROR, "Error in payload").toString()));
-          }
-          else {
-          for (Object currentEntity : entitites) {
-            String routingKey = (String) currentEntity;
-            logger.info("routingKey is " + routingKey);
-            if (routingKey != null) {
-              if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
-                  || routingKey.split("/").length != 5) {
-                logger.error("failed :: Invalid (or) NULL routingKey");
+          } else {
+            for (Object currentEntity : entitites) {
+              String routingKey = (String) currentEntity;
+              logger.info("routingKey is " + routingKey);
+              if (routingKey != null) {
+                if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
+                    || routingKey.split("/").length != 5) {
+                  logger.error("failed :: Invalid (or) NULL routingKey");
 
-                handler.handle(Future.failedFuture(
-                    new JsonObject().put(Constants.ERROR, "Invalid routingKey").toString()));
+                  handler.handle(Future.failedFuture(
+                      new JsonObject().put(Constants.ERROR, "Invalid routingKey").toString()));
 
-              } else {
+                } else {
 
-                String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
-                JsonArray array = new JsonArray();
-                array.add(currentEntity);
-                JsonObject json = new JsonObject();
-                json.put(Constants.EXCHANGE_NAME, exchangeName);
-                json.put(Constants.QUEUE_NAME, queueName);
-                json.put(Constants.ENTITIES, array);
+                  String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
+                  JsonArray array = new JsonArray();
+                  array.add(currentEntity);
+                  JsonObject json = new JsonObject();
+                  json.put(Constants.EXCHANGE_NAME, exchangeName);
+                  json.put(Constants.QUEUE_NAME, queueName);
+                  json.put(Constants.ENTITIES, array);
 
-                Future<JsonObject> resultbind = bindQueue(json);
-                resultbind.onComplete(resultHandlerbind -> {
-                  if (resultHandlerbind.succeeded()) {
-                    // count++
-                    totalBindSuccess += 1;
-                    logger.info("sucess :: totalBindSuccess " + totalBindSuccess
-                        + resultHandlerbind.result());
+                  Future<JsonObject> resultbind = bindQueue(json);
+                  resultbind.onComplete(resultHandlerbind -> {
+                    if (resultHandlerbind.succeeded()) {
+                      // count++
+                      totalBindSuccess += 1;
+                      logger.info("sucess :: totalBindSuccess " + totalBindSuccess
+                          + resultHandlerbind.result());
 
-                    JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
-                    if (bindResponse.containsKey(Constants.TITLE) && bindResponse
-                        .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+                      JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
+                      if (bindResponse.containsKey(Constants.TITLE) && bindResponse
+                          .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+                        logger.error("failed ::" + resultHandlerbind.cause());
+                        handler.handle(Future.failedFuture(
+                            new JsonObject().put(Constants.ERROR, "Binding Failed").toString()));
+                      } else if (totalBindSuccess == totalBindCount) {
+                        appendStreamingSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
+                            queueName);
+                        appendStreamingSubscriptionResponse.put(Constants.ENTITIES, entitites);
+                        handler.handle(Future.succeededFuture(appendStreamingSubscriptionResponse));
+                      }
+                    } else if (resultHandlerbind.failed()) {
                       logger.error("failed ::" + resultHandlerbind.cause());
                       handler.handle(Future.failedFuture(
                           new JsonObject().put(Constants.ERROR, "Binding Failed").toString()));
-                    } else if (totalBindSuccess == totalBindCount) {
-                      appendStreamingSubscriptionResponse.put(Constants.SUBSCRIPTION_ID, queueName);
-                      appendStreamingSubscriptionResponse.put(Constants.ENTITIES,
-                          entitites);
-                      handler.handle(Future.succeededFuture(appendStreamingSubscriptionResponse));
                     }
-                  } else if (resultHandlerbind.failed()) {
-                    logger.error("failed ::" + resultHandlerbind.cause());
+                  });
+                }
+              } else {
+                logger.error("failed :: Invalid (or) NULL routingKey");
+                Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
+                resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
+                  if (resultHandlerDeletequeue.succeeded()) {
                     handler.handle(Future.failedFuture(
-                        new JsonObject().put(Constants.ERROR, "Binding Failed").toString()));
+                        new JsonObject().put(Constants.ERROR, "Invalid routingKey").toString()));
                   }
                 });
               }
-            } else {
-              logger.error("failed :: Invalid (or) NULL routingKey");
-              Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
-              resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-                if (resultHandlerDeletequeue.succeeded()) {
-                  handler.handle(Future.failedFuture(
-                      new JsonObject().put(Constants.ERROR, "Invalid routingKey").toString()));
-                }
-              });
             }
-          } 
-        }
+          }
         } else {
           logger.error("Error in payload");
           handler.handle(Future
