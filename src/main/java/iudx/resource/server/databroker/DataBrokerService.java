@@ -99,6 +99,19 @@ public interface DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
+   * The appendStreamingSubscription implements the updation (adding new) routingkeys to streaming subscription operation
+   * with the data broker.
+   * 
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+
+  @Fluent
+  DataBrokerService appendStreamingSubscription(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
+  
+  /**
    * The deleteStreamingSubscription implements the deletion of streaming subscription operation
    * with the data broker.
    * 
