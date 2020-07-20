@@ -622,7 +622,7 @@ public class DataBrokerServiceTest {
   }
 
   @Test
-  @DisplayName("Testing failure case : Register streaming subscription with routingKey = null")
+  @DisplayName("Testing failure case : Register streaming subscription with routingKey = invalid key")
   @Order(20)
   void failedregisterStreamingSubscriptionInvalidRoutingKey(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
@@ -728,7 +728,7 @@ public class DataBrokerServiceTest {
     databroker.listStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Register subscription response is : " + response);
+        logger.info("List subscription response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -750,7 +750,334 @@ public class DataBrokerServiceTest {
     databroker.deleteStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Register subscription response is : " + response);
+        logger.info("List subscription response is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing success case : Update streaming subscription with valid queue and exchange names")
+  @Order(25)
+  void successupdateStreamingSubscription(VertxTestContext testContext) {
+
+    String queueName = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan";
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.SUBSCRIPTION_ID, queueName);
+
+    expected.put("streamingURL",
+        "amqp://pawan@google.org:1234@68.183.80.248:5672/IUDX/google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    JsonArray array = new JsonArray();
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
+ 
+    request.put(Constants.ENTITIES, array);
+
+    databroker.updateStreamingSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Update subscription response is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+  
+
+  @Test
+  @DisplayName("Testing failure case : Update streaming subscription with empty request")
+  @Order(26)
+  void failedupdateStreamingSubscriptionEmptyRequest(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Error in payload");
+    
+    JsonObject request = new JsonObject();
+    databroker.updateStreamingSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Update subscription response for empty request is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : Update streaming subscription with non-existing (but valid) routingKey")
+  @Order(27)
+  void failedupdateStreamingSubscriptionInvalidExchange(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Binding Failed");
+    
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    JsonArray array = new JsonArray();
+    array.add(
+        "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
+    request.put(Constants.ENTITIES, array);
+    
+    databroker.updateStreamingSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Update subscription response for invalid exchange request is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : Update streaming subscription with routingKey = null")
+  @Order(28)
+  void failedupdateStreamingSubscriptionNullRoutingKey(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Invalid routingKey");
+    
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    JsonArray array = new JsonArray();
+    array.add(
+        "");
+    request.put(Constants.ENTITIES, array);
+    
+    databroker.registerStreamingSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Update subscription response for invalid routingKey request is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : Update streaming subscription with routingKey = invalid key")
+  @Order(29)
+  void failedupdateStreamingSubscriptionInvalidRoutingKey(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Invalid routingKey");
+    
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    JsonArray array = new JsonArray();
+    array.add(
+        "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm");
+    request.put(Constants.ENTITIES, array);
+    
+    databroker.registerStreamingSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Update subscription response for invalid routingKey request is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+  
+  @Test
+  @DisplayName("Testing success case : get streaming subscription of updated subscription")
+  @Order(30)
+  void successlistupdatedStreamingSubscription(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    JsonArray routingKeys = new JsonArray();
+    routingKeys.add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
+    expected.put(Constants.ENTITIES, routingKeys);
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.SUBSCRIPTION_ID, "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+    databroker.listStreamingSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Get subscription response is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing success case : Update (Append) streaming subscription with valid queue and exchange names")
+  @Order(31)
+  void successappendStreamingSubscription(VertxTestContext testContext) {
+
+    String queueName = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan";
+    JsonArray array = new JsonArray();
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
+
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.SUBSCRIPTION_ID, queueName);
+    expected.put(Constants.ENTITIES, array);
+    
+    JsonObject request = new JsonObject();
+    request.put(Constants.SUBSCRIPTION_ID, queueName);
+    request.put(Constants.ENTITIES, array);
+
+    databroker.appendStreamingSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Update (Append) subscription response is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : Update(append) streaming subscription with empty request")
+  @Order(32)
+  void failedappendStreamingSubscriptionEmptyRequest(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Error in payload");
+    
+    JsonObject request = new JsonObject();
+    databroker.appendStreamingSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Update (Append) subscription response for empty request is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : Update (append) streaming subscription with non-existing (but valid) routingKey")
+  @Order(33)
+  void failedappendStreamingSubscriptionInvalidExchange(VertxTestContext testContext) {
+
+    String queueName = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan";
+    JsonArray array = new JsonArray();
+    array.add(
+        "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
+
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Binding Failed");
+    
+    JsonObject request = new JsonObject();
+    request.put(Constants.SUBSCRIPTION_ID, queueName);
+    request.put(Constants.ENTITIES, array);
+    
+    databroker.appendStreamingSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Update (Append) subscription response for invalid exchange request is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : Update (Append) streaming subscription with routingKey = null")
+  @Order(34)
+  void failedappendStreamingSubscriptionNullRoutingKey(VertxTestContext testContext) {
+    
+    String queueName = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan";
+    JsonArray array = new JsonArray();
+    array.add(
+        "");
+
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Invalid routingKey");
+    
+    JsonObject request = new JsonObject();
+    request.put(Constants.SUBSCRIPTION_ID, queueName);
+    request.put(Constants.ENTITIES, array);
+    
+    databroker.appendStreamingSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Update (Append) subscription response for invalid routingKey request is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+
+  @Test
+  @DisplayName("Testing failure case : Update (append)streaming subscription with routingKey = invalid key")
+  @Order(35)
+  void failedappendStreamingSubscriptionInvalidRoutingKey(VertxTestContext testContext) {
+
+    String queueName = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan";
+    JsonArray array = new JsonArray();
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm");
+
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Invalid routingKey");
+    
+    JsonObject request = new JsonObject();
+    request.put(Constants.SUBSCRIPTION_ID, queueName);
+    request.put(Constants.ENTITIES, array);
+        
+    databroker.appendStreamingSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Update (append)subscription response for invalid routingKey request is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing success case : get streaming subscription of updated (append) subscription")
+  @Order(36)
+  void successlistappenddStreamingSubscription(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    JsonArray routingKeys = new JsonArray();
+    routingKeys.add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
+    routingKeys.add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
+    expected.put(Constants.ENTITIES, routingKeys);
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.SUBSCRIPTION_ID, "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+    databroker.listStreamingSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Get subscription (after append) response is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+ 
+  @Test
+  @DisplayName("Testing success case : Update (Append) streaming subscription with invalid valid queue (subscriptionID)")
+  @Order(37)
+  void failureappendStreamingSubscriptionQueueNotPresent(VertxTestContext testContext) {
+
+    String queueName = "non-existing-queue";
+    JsonArray array = new JsonArray();
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
+
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Invalid routingKey");
+    
+    JsonObject request = new JsonObject();
+    request.put(Constants.SUBSCRIPTION_ID, queueName);
+    request.put(Constants.ENTITIES, array);
+
+    databroker.appendStreamingSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Update (Append) with invalid subscriptionID response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -759,7 +1086,7 @@ public class DataBrokerServiceTest {
 
   @Test
   @DisplayName("Testing success case : delete streaming subscription")
-  @Order(25)
+  @Order(38)
   void successdeleteStreamingSubscription(VertxTestContext testContext) {
     String queueName = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan";
     JsonObject expected = new JsonObject();
@@ -770,7 +1097,7 @@ public class DataBrokerServiceTest {
     databroker.deleteStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Register subscription response is : " + response);
+        logger.info("Delete subscription response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -779,7 +1106,7 @@ public class DataBrokerServiceTest {
 
   @Test
   @DisplayName("Testing failure case : delete streaming subscription (ID not available)")
-  @Order(26)
+  @Order(39)
   void faileddeleteStreamingSubscriptionIdNotFound(VertxTestContext testContext) {
     String id = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias";
     JsonObject expected = new JsonObject();
@@ -792,7 +1119,7 @@ public class DataBrokerServiceTest {
     databroker.deleteStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Register subscription response is : " + response);
+        logger.info("Delete subscription response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
