@@ -54,9 +54,8 @@ import iudx.resource.server.media.MediaService;
  * The Resource Server API Verticle.
  * <h1>Resource Server API Verticle</h1>
  * <p>
- * The API Server verticle implements the IUDX Resource Server APIs. It handles
- * the API requests from the clients and interacts with the associated Service
- * to respond.
+ * The API Server verticle implements the IUDX Resource Server APIs. It handles the API requests
+ * from the clients and interacts with the associated Service to respond.
  * </p>
  * 
  * @see io.vertx.core.Vertx
@@ -93,12 +92,12 @@ public class ApiServerVerticle extends AbstractVerticle {
   private SubscriptionService subsService;
 
   /**
-   * This method is used to start the Verticle. It deploys a verticle in a
-   * cluster, reads the configuration, obtains a proxy for the Event bus services
-   * exposed through service discovery, start an HTTPs server at port 8443.
+   * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
+   * configuration, obtains a proxy for the Event bus services exposed through service discovery,
+   * start an HTTPs server at port 8443.
    * 
-   * @throws Exception which is a startup exception TODO Need to add documentation
-   *                   for all the methods.
+   * @throws Exception which is a startup exception TODO Need to add documentation for all the
+   *         methods.
    */
 
   @Override
@@ -148,9 +147,9 @@ public class ApiServerVerticle extends AbstractVerticle {
         router.get(Constants.NGSILD_ENTITIES_URL).handler(this::handleEntitiesQuery);
         router.get(Constants.NGSILD_TEMPORAL_URL).handler(this::handleTemporalQuery);
         router.post(Constants.NGSILD_SUBSCRIPTION_URL).handler(this::handleSubscriptions);
-        router.get(Constants.NGSILD_SUBSCRIPTION_URL + "/:" + Constants.SUBSCRIPTION_ID)
+        router.get(Constants.NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
             .handler(this::getSubscription);
-        router.delete(Constants.NGSILD_SUBSCRIPTION_URL + "/:" + Constants.SUBSCRIPTION_ID)
+        router.delete(Constants.NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
             .handler(this::deleteSubscription);
 
         /* Management Api endpoints */
@@ -293,8 +292,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * This method is used to handle all NGSI-LD queries for endpoint
-   * /ngsi-ld/v1/entities/**.
+   * This method is used to handle all NGSI-LD queries for endpoint /ngsi-ld/v1/entities/**.
    * 
    * @param routingContext RoutingContext Object
    */
@@ -465,10 +463,10 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
       authenticator.tokenInterospect(requestJsonObject.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          if (requestJsonObject.containsKey(Constants.JSON_TYPE)) {
+          if (requestJsonObject.copy().containsKey(Constants.JSON_TYPE)) {
             JsonObject authJson = authHandler.result();
             JsonObject jsonObj = requestJsonObject.copy();
-            jsonObj.put(Constants.JSON_NAME, authJson.getString(Constants.JSON_NAME));
+            // jsonObj.put(Constants.JSON_NAME, authJson.getString(Constants.JSON_NAME));
             jsonObj.put(Constants.JSON_CONSUMER, authJson.getString(Constants.JSON_CONSUMER));
             jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
             LOGGER.info("json for subs :: " + jsonObj);
@@ -480,7 +478,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                     false);
               } else {
                 handleResponse(response, ResponseType.BadRequestData,
-                    subHandler.result().toString(), false);
+                    subHandler.cause().getMessage(), false);
               }
             });
           } else {
@@ -505,34 +503,37 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.info("getSubscription method started");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
+    String domain = request.getParam(Constants.JSON_DOMAIN);
+    String usersha = request.getParam(Constants.JSON_USERSHA);
+    String alias = request.getParam(Constants.JSON_ALIAS);
+    String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
+    JsonObject requestJson =
+        routingContext.getBodyAsJson() == null ? new JsonObject() : routingContext.getBodyAsJson();
     String instanceID = request.getHeader(Constants.HEADER_HOST);
-    String subsId = request.getParam(Constants.SUBSCRIPTION_ID);
-    JsonObject requestJson = routingContext.getBodyAsJson();
-    requestJson.put(Constants.SUBSCRIPTION_ID, subsId);
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
     if (request.headers().contains(Constants.HEADER_TOKEN)) {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          if (requestJson.containsKey(Constants.JSON_TYPE)) {
-          JsonObject authResult = requestJson.copy();
-          JsonObject jsonObj = new JsonObject();
-          jsonObj.put(Constants.JSON_NAME, authResult.getString(Constants.JSON_NAME));
-          jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
-          jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
-          jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
-          Future<JsonObject> subsReq = subsService.getSubscription(jsonObj, databroker, database);
-          subsReq.onComplete(subHandler -> {
-            if (subHandler.succeeded()) {
-              handleResponse(response, ResponseType.Ok, subHandler.result().toString(), false);
-            } else {
-              handleResponse(response, ResponseType.BadRequestData, subHandler.result().toString(),
-                  false);
-            }
-          });
-          }else {
+          if (requestJson != null && requestJson.containsKey(Constants.JSON_TYPE)) {
+            JsonObject authResult = authHandler.result();
+            JsonObject jsonObj = requestJson.copy();
+            jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
+            jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
+            // jsonObj.put(Constants.JSON_NAME, authResult.getString(Constants.JSON_NAME));
+            jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
+            jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
+            Future<JsonObject> subsReq = subsService.getSubscription(jsonObj, databroker, database);
+            subsReq.onComplete(subHandler -> {
+              if (subHandler.succeeded()) {
+                handleResponse(response, ResponseType.Ok, subHandler.result().toString(), false);
+              } else {
+                handleResponse(response, ResponseType.BadRequestData,
+                    subHandler.result().toString(), false);
+              }
+            });
+          } else {
             handleResponse(response, ResponseType.BadRequestData, Constants.MSG_SUB_TYPE_NOT_FOUND,
                 true);
           }
@@ -556,8 +557,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     JsonObject authenticationInfo = new JsonObject();
     String instanceID = request.getHeader(Constants.HEADER_HOST);
-    String subsId = request.getParam(Constants.SUBSCRIPTION_ID);
     JsonObject requestJson = routingContext.getBodyAsJson();
+    String domain = request.getParam(Constants.JSON_DOMAIN);
+    String usersha = request.getParam(Constants.JSON_USERSHA);
+    String alias = request.getParam(Constants.JSON_ALIAS);
+    String subsId = domain + "/" + usersha + "/" + alias;
     requestJson.put(Constants.SUBSCRIPTION_ID, subsId);
     requestJson.put(Constants.JSON_INSTANCEID, instanceID);
     if (request.headers().contains(Constants.HEADER_TOKEN)) {
@@ -567,10 +571,10 @@ public class ApiServerVerticle extends AbstractVerticle {
           if (requestJson.containsKey(Constants.JSON_TYPE)) {
             JsonObject authResult = authHandler.result();
             JsonObject jsonObj = requestJson.copy();
-            jsonObj.put(Constants.JSON_NAME, authResult.getString(Constants.JSON_NAME));
+            // jsonObj.put(Constants.JSON_NAME, authResult.getString(Constants.JSON_NAME));
             jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
             jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
-            jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
+            // jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
             LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
             Future<JsonObject> subsReq =
                 subsService.deleteSubscription(jsonObj, databroker, database);
@@ -615,11 +619,12 @@ public class ApiServerVerticle extends AbstractVerticle {
         if (authHandler.succeeded()) {
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
           LOGGER.info("databroker :: " + databroker);
-          Future<Boolean> isValidNameResult = isValidName(
-              requestJson.copy().getString(Constants.JSON_EXCHANGE_NAME));
+          Future<Boolean> isValidNameResult =
+              isValidName(requestJson.copy().getString(Constants.JSON_EXCHANGE_NAME));
           isValidNameResult.onComplete(validNameHandler -> {
             if (validNameHandler.succeeded()) {
-              Future<JsonObject> brokerResult = managementApi.createExchange(requestJson, databroker);
+              Future<JsonObject> brokerResult =
+                  managementApi.createExchange(requestJson, databroker);
               brokerResult.onComplete(brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                   handleResponse(response, ResponseType.Created,
@@ -707,7 +712,8 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult = managementApi.getExchangeDetails(exchangeId, databroker);
+          Future<JsonObject> brokerResult =
+              managementApi.getExchangeDetails(exchangeId, databroker);
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
@@ -746,8 +752,8 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
         if (authHandler.succeeded()) {
-          Future<Boolean> validNameResult = isValidName(
-              requestJson.copy().getString(Constants.JSON_QUEUE_NAME));
+          Future<Boolean> validNameResult =
+              isValidName(requestJson.copy().getString(Constants.JSON_QUEUE_NAME));
           validNameResult.onComplete(validNameHandler -> {
             if (validNameHandler.succeeded()) {
               Future<JsonObject> brokerResult = managementApi.createQueue(requestJson, databroker);
@@ -874,8 +880,8 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult = managementApi.bindQueue2Exchange(requestJson,
-              databroker);
+          Future<JsonObject> brokerResult =
+              managementApi.bindQueue2Exchange(requestJson, databroker);
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               handleResponse(response, ResponseType.Created,
@@ -913,8 +919,8 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult = managementApi.unbindQueue2Exchange(requestJson,
-              databroker);
+          Future<JsonObject> brokerResult =
+              managementApi.unbindQueue2Exchange(requestJson, databroker);
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               handleResponse(response, ResponseType.Created,
@@ -952,8 +958,8 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          Future<Boolean> validNameResult = isValidName(
-              requestJson.copy().getString(Constants.JSON_VHOST));
+          Future<Boolean> validNameResult =
+              isValidName(requestJson.copy().getString(Constants.JSON_VHOST));
           validNameResult.onComplete(validNameHandler -> {
             if (validNameHandler.succeeded()) {
               Future<JsonObject> brokerResult = managementApi.createVHost(requestJson, databroker);
@@ -1207,8 +1213,8 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult = managementApi.publishDownstreamIssues(requestJson,
-              databroker);
+          Future<JsonObject> brokerResult =
+              managementApi.publishDownstreamIssues(requestJson, databroker);
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
@@ -1282,8 +1288,8 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult = managementApi.publishDataFromAdapter(requestJson,
-              databroker);
+          Future<JsonObject> brokerResult =
+              managementApi.publishDataFromAdapter(requestJson, databroker);
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
@@ -1306,8 +1312,8 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * handle HTTP response.
    * 
-   * @param response       response object
-   * @param responseType   Http status for response
+   * @param response response object
+   * @param responseType Http status for response
    * @param isBodyRequired body is required or not for response
    */
   private void handleResponse(HttpServerResponse response, ResponseType responseType,
@@ -1318,9 +1324,9 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * handle HTTP response.
    * 
-   * @param response       response object
-   * @param responseType   Http status for response
-   * @param reply          json response body
+   * @param response response object
+   * @param responseType Http status for response
+   * @param reply json response body
    * @param isBodyRequired body is required or not for response
    */
   private void handleResponse(HttpServerResponse response, ResponseType responseType, String reply,
@@ -1354,11 +1360,11 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * Get the request query parameters delimited by <b>&</b>,
-   * <i><b>;</b>(semicolon) is considered as part of the parameter</i>.
+   * Get the request query parameters delimited by <b>&</b>, <i><b>;</b>(semicolon) is considered as
+   * part of the parameter</i>.
    * 
    * @param routingContext RoutingContext Object
-   * @param response       HttpServerResponse
+   * @param response HttpServerResponse
    * @return Optional Optional of Map
    */
   private Optional<MultiMap> getQueryParams(RoutingContext routingContext,
@@ -1366,9 +1372,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     MultiMap queryParams = null;
     try {
       queryParams = MultiMap.caseInsensitiveMultiMap();
-      Map<String, List<String>> decodedParams = new QueryStringDecoder(
-          routingContext.request().uri(), HttpConstants.DEFAULT_CHARSET, true, 1024, true)
-              .parameters();
+      Map<String, List<String>> decodedParams =
+          new QueryStringDecoder(routingContext.request().uri(), HttpConstants.DEFAULT_CHARSET,
+              true, 1024, true).parameters();
       for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
         queryParams.add(entry.getKey(), entry.getValue());
         LOGGER.info(entry.getKey() + " : " + entry.getValue());

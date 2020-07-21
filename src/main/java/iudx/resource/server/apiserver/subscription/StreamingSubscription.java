@@ -112,6 +112,7 @@ public class StreamingSubscription implements Subscription {
   public Future<JsonObject> get(JsonObject subscription) {
     LOGGER.info("streaming get() method started");
     Promise<JsonObject> promise = Promise.promise();
+    LOGGER.info("sub id :: "+subscription.getString(Constants.SUBSCRIPTION_ID));
     databroker.listStreamingSubscription(subscription, handler -> {
       if (handler.succeeded()) {
         promise.complete(handler.result());

@@ -1,5 +1,6 @@
 package iudx.resource.server.authenticator;
 
+import java.util.UUID;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -24,6 +25,8 @@ import iudx.resource.server.apiserver.util.Constants;
 public class AuthenticationServiceImpl implements AuthenticationService {
 
   private static final Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
+  private static final String ALIAS_NAME=UUID.randomUUID().toString();
+  private static final String CONSUMER=UUID.randomUUID().toString()+"@iudx.org";
 
   /**
    * {@inheritDoc}
@@ -34,8 +37,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       Handler<AsyncResult<JsonObject>> handler) {
     // added for testing.
     JsonObject json = new JsonObject();
-    json.put(Constants.JSON_NAME, Constants.APP_TEST_NAME);
-    json.put(Constants.JSON_CONSUMER, Constants.APP_TEST_CONSUMER);
+    json.put(Constants.JSON_NAME, ALIAS_NAME);
+    json.put(Constants.JSON_CONSUMER, CONSUMER);
     handler.handle(Future.succeededFuture(json));
     return this;
   }

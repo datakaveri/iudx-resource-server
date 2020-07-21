@@ -59,7 +59,7 @@ public class Constants {
   // request/response params
   public static final String CONTENT_TYPE = "content-type";
   public static final String APPLICATION_JSON = "application/json";
-  public static final String SUBSCRIPTION_ID = "subscriptionId";
+  public static final String SUBSCRIPTION_ID = "subscriptionID";
   public static final String EXCHANGE_ID = "exId";
 
   // json fields
