@@ -443,7 +443,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * Method used to handle all streaming subscription requests.
+   * Method used to handle all subscription requests.
    * 
    * @param routingContext routingContext
    */
@@ -497,7 +497,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * get a streaming subscription by id.
+   * get a subscription by id.
    * 
    * @param routingContext routingContext
    */
@@ -546,7 +546,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * delete a streaming subscription by id.
+   * delete a subscription by id.
    * 
    * @param routingContext routingContext
    */
@@ -619,21 +619,15 @@ public class ApiServerVerticle extends AbstractVerticle {
               requestJson.copy().getString(Constants.JSON_EXCHANGE_NAME));
           isValidNameResult.onComplete(validNameHandler -> {
             if (validNameHandler.succeeded()) {
-              LOGGER.info("name is valid");
-              databroker.createExchange(requestJson.copy(), dataBrokerHandler -> {
-                if (dataBrokerHandler.succeeded()) {
-                  JsonObject result = dataBrokerHandler.result();
-                  if (!result.isEmpty() && !result.containsKey(Constants.JSON_TYPE)) {
-                    handleResponse(response, ResponseType.Created,
-                        dataBrokerHandler.result().toString(), false);
-                  } else {
-                    handleResponse(response, ResponseType.BadRequestData,
-                        dataBrokerHandler.result().toString(), false);
-                  }
-                } else if (dataBrokerHandler.failed()) {
-                  LOGGER.error(dataBrokerHandler.cause());
+              Future<JsonObject> brokerResult = managementApi.createExchange(requestJson, databroker);
+              brokerResult.onComplete(brokerResultHandler -> {
+                if (brokerResultHandler.succeeded()) {
+                  handleResponse(response, ResponseType.Created,
+                      brokerResultHandler.result().toString(), false);
+                } else if (brokerResultHandler.failed()) {
+                  LOGGER.error(brokerResultHandler.cause());
                   handleResponse(response, ResponseType.BadRequestData,
-                      dataBrokerHandler.cause().getMessage(), true);
+                      brokerResultHandler.cause().getMessage(), false);
                 }
               });
             } else {
@@ -671,22 +665,15 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          JsonObject brokerJson = new JsonObject();
-          brokerJson.put(Constants.JSON_EXCHANGE_NAME, exchangeId);
-          databroker.deleteExchange(brokerJson, dataBrokerHandler -> {
-            if (dataBrokerHandler.succeeded()) {
-              JsonObject result = dataBrokerHandler.result();
-              if (!result.isEmpty() && !result.containsKey(Constants.JSON_TYPE)) {
-                handleResponse(response, ResponseType.Ok, dataBrokerHandler.result().toString(),
-                    false);
-              } else {
-                handleResponse(response, ResponseType.BadRequestData,
-                    dataBrokerHandler.result().toString(), false);
-              }
-            } else if (dataBrokerHandler.failed()) {
-              LOGGER.error(dataBrokerHandler.cause());
+          Future<JsonObject> brokerResult = managementApi.deleteExchange(exchangeId, databroker);
+          brokerResult.onComplete(brokerResultHandler -> {
+            if (brokerResultHandler.succeeded()) {
+              handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
+                  false);
+            } else if (brokerResultHandler.failed()) {
+              LOGGER.error(brokerResultHandler.cause());
               handleResponse(response, ResponseType.BadRequestData,
-                  dataBrokerHandler.cause().getMessage(), true);
+                  brokerResultHandler.cause().getMessage(), false);
             }
           });
         } else if (authHandler.failed()) {
@@ -720,22 +707,15 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          JsonObject brokerJson = new JsonObject();
-          brokerJson.put(Constants.JSON_EXCHANGE_NAME, exchangeId);
-          databroker.listExchangeSubscribers(brokerJson, dataBrokerHandler -> {
-            if (dataBrokerHandler.succeeded()) {
-              JsonObject result = dataBrokerHandler.result();
-              if (!result.isEmpty() && !result.containsKey(Constants.JSON_TYPE)) {
-                handleResponse(response, ResponseType.Ok, dataBrokerHandler.result().toString(),
-                    false);
-              } else {
-                handleResponse(response, ResponseType.BadRequestData,
-                    dataBrokerHandler.result().toString(), false);
-              }
-            } else if (dataBrokerHandler.failed()) {
-              LOGGER.error(dataBrokerHandler.cause());
+          Future<JsonObject> brokerResult = managementApi.getExchangeDetails(exchangeId, databroker);
+          brokerResult.onComplete(brokerResultHandler -> {
+            if (brokerResultHandler.succeeded()) {
+              handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
+                  false);
+            } else if (brokerResultHandler.failed()) {
+              LOGGER.error(brokerResultHandler.cause());
               handleResponse(response, ResponseType.BadRequestData,
-                  dataBrokerHandler.cause().getMessage(), true);
+                  brokerResultHandler.cause().getMessage(), false);
             }
           });
         } else if (authHandler.failed()) {
