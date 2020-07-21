@@ -2,10 +2,8 @@ package iudx.resource.server.apiserver;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
-
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +12,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
-
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -26,6 +24,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.util.Constants;
+import iudx.resource.server.starter.ResourceServerStarter;
 
 /* TODO : Need to update End to End Adaptor testing */
 @ExtendWith(VertxExtension.class)
@@ -44,21 +43,23 @@ public class ApiServerVerticleTest {
 
   private static WebClient client;
 
-  ApiServerVerticleTest() {
-  }
+  ApiServerVerticleTest() {}
 
   @BeforeAll
   public static void setup(Vertx vertx, VertxTestContext testContext) {
-    WebClientOptions clientOptions = new WebClientOptions().setSsl(true).setVerifyHost(false)
-        .setTrustAll(true);
+    WebClientOptions clientOptions =
+        new WebClientOptions().setSsl(true).setVerifyHost(false).setTrustAll(true);
     client = WebClient.create(vertx, clientOptions);
 
-    /*
-     * ResourceServerStarter starter = new ResourceServerStarter();
-     * Future<JsonObject> result = starter.startServer();
-     * result.onComplete(resultHandler -> { if (resultHandler.succeeded()) {
-     * testContext.completeNow(); } });
-     */
+
+    ResourceServerStarter starter = new ResourceServerStarter();
+    Future<JsonObject> result = starter.startServer();
+    result.onComplete(resultHandler -> {
+      if (resultHandler.succeeded()) {
+        testContext.completeNow();
+      }
+    });
+
 
     exchangeName = UUID.randomUUID().toString().replaceAll("-", "");
     queueName = UUID.randomUUID().toString().replaceAll("-", "");
@@ -73,7 +74,8 @@ public class ApiServerVerticleTest {
   @Test
   @Order(1)
   @DisplayName("test /entities endpoint with invalid parameters")
-  public void testEntitiesBadRequestParam(Vertx vertx, VertxTestContext testContext) {
+  public void testEntitiesBadRequestParam(Vertx vertx, VertxTestContext testContext) throws InterruptedException {
+    Thread.sleep(50000);
     String apiURL = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiURL + "?id2=id1,id2").send(ar -> {
       if (ar.succeeded()) {
@@ -222,7 +224,7 @@ public class ApiServerVerticleTest {
           }
         });
   }
-  
+
   @Test
   @Order(8)
   @DisplayName("test /entities for attribute query (property >)")
@@ -231,8 +233,7 @@ public class ApiServerVerticleTest {
     client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_01")
-        .addQueryParam(Constants.NGSILDQUERY_Q, "CO2>500")
-        .send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_Q, "CO2>500").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -241,7 +242,7 @@ public class ApiServerVerticleTest {
           }
         });
   }
-  
+
   @Test
   @Order(9)
   @DisplayName("test /entities for attribute query (property <)")
@@ -250,8 +251,7 @@ public class ApiServerVerticleTest {
     client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_01")
-        .addQueryParam(Constants.NGSILDQUERY_Q, "CO2<500")
-        .send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_Q, "CO2<500").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -260,7 +260,7 @@ public class ApiServerVerticleTest {
           }
         });
   }
-  
+
   @Test
   @Order(10)
   @DisplayName("test /entities for attribute query (property >=)")
@@ -269,8 +269,7 @@ public class ApiServerVerticleTest {
     client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_01")
-        .addQueryParam(Constants.NGSILDQUERY_Q, "CO2>=500")
-        .send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_Q, "CO2>=500").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -279,7 +278,7 @@ public class ApiServerVerticleTest {
           }
         });
   }
-  
+
   @Test
   @Order(11)
   @DisplayName("test /entities for attribute query (property <=)")
@@ -288,8 +287,7 @@ public class ApiServerVerticleTest {
     client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_01")
-        .addQueryParam(Constants.NGSILDQUERY_Q, "CO2<=500")
-        .send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_Q, "CO2<=500").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -374,7 +372,7 @@ public class ApiServerVerticleTest {
         });
 
   }
-  
+
   @Test
   @Order(16)
   @DisplayName("test /temporal/entities complex query (geo + temporal + response filter)")
@@ -412,8 +410,7 @@ public class ApiServerVerticleTest {
         .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "point")
         .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
         .addQueryParam(Constants.NGSILDQUERY_COORDINATES, "[25.319768,82.987988]")
-        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT)
-        .send(handler -> {
+        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
@@ -464,8 +461,7 @@ public class ApiServerVerticleTest {
         .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
         .addQueryParam(Constants.NGSILDQUERY_COORDINATES,
             "[[82.9735,25.3352],[82.9894,25.3452],[82.99,25.34]]")
-        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT)
-        .send(handler -> {
+        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
@@ -489,8 +485,7 @@ public class ApiServerVerticleTest {
         .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "bbox")
         .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
         .addQueryParam(Constants.NGSILDQUERY_COORDINATES, "[[82.95,25.3567],[83.0053,25]]")
-        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT)
-        .send(handler -> {
+        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -499,6 +494,7 @@ public class ApiServerVerticleTest {
           }
         });
   }
+ 
 
   /** Subscription API test **/
 
@@ -738,9 +734,8 @@ public class ApiServerVerticleTest {
             LOGGER.info(res);
             assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
             /*
-             * assertEquals(exchangeName, res.getString("exchange"));
-             * assertEquals(queueName, res.getString("queue")); assertEquals(entities,
-             * res.getJsonArray("entities"));
+             * assertEquals(exchangeName, res.getString("exchange")); assertEquals(queueName,
+             * res.getString("queue")); assertEquals(entities, res.getJsonArray("entities"));
              */
             testContext.completeNow();
           } else if (handler.failed()) {
