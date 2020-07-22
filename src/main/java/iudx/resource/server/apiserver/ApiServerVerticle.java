@@ -30,7 +30,6 @@ import io.vertx.core.net.JksOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.AuthHandler;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
@@ -676,11 +675,14 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.info("deleteSubscription method started");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
+    String domain = request.getParam(Constants.JSON_DOMAIN);
+    String usersha = request.getParam(Constants.JSON_USERSHA);
+    String alias = request.getParam(Constants.JSON_ALIAS);
+    String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
-    String subsId = request.getParam(Constants.SUBSCRIPTION_ID);
     JsonObject requestJson =
         routingContext.getBodyAsJson() == null ? new JsonObject() : routingContext.getBodyAsJson();
+    String instanceID = request.getHeader(Constants.HEADER_HOST);
     requestJson.put(Constants.SUBSCRIPTION_ID, subsId);
     requestJson.put(Constants.JSON_INSTANCEID, instanceID);
     if (request.headers().contains(Constants.HEADER_TOKEN)) {

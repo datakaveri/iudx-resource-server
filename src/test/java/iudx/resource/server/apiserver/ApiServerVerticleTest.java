@@ -623,7 +623,6 @@ public class ApiServerVerticleTest {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_NAME, subscriptionAliasName);
-    // json.put(Constants.JSON_TYPE, SubsType.STREAMING);
     JsonArray appendEntities = new JsonArray();
     appendEntities.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
@@ -830,7 +829,7 @@ public class ApiServerVerticleTest {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
     System.out.println("subs  ID :" + subscriptionId);
     JsonObject request = new JsonObject();
-    request.put(Constants.JSON_TYPE, Constants.SUB_STREAMING);
+    request.put(Constants.JSON_TYPE, SubsType.STREAMING);
     client.delete(PORT, BASE_URL, apiUrl).sendJsonObject(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result().bodyAsJsonObject();
@@ -854,7 +853,7 @@ public class ApiServerVerticleTest {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
     System.out.println("subs  ID :" + subscriptionId);
     JsonObject request = new JsonObject();
-    request.put(Constants.JSON_TYPE, Constants.SUB_STREAMING);
+    request.put(Constants.JSON_TYPE, SubsType.STREAMING);
     client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(request, handler -> {
           if (handler.succeeded()) {
