@@ -53,12 +53,12 @@ public class ApiServerVerticleTest {
         new WebClientOptions().setSsl(true).setVerifyHost(false).setTrustAll(true);
     client = WebClient.create(vertx, clientOptions);
 
-
     /*
      * ResourceServerStarter starter = new ResourceServerStarter(); Future<JsonObject> result =
      * starter.startServer(); result.onComplete(resultHandler -> { if (resultHandler.succeeded()) {
      * testContext.completeNow(); } });
      */
+
 
 
     exchangeName = UUID.randomUUID().toString().replaceAll("-", "");
@@ -74,10 +74,8 @@ public class ApiServerVerticleTest {
 
   @Test
   @Order(1)
-  @DisplayName("/entities endpoint with invalid parameters")
-  public void testEntitiesBadRequestParam(Vertx vertx, VertxTestContext testContext)
-      throws InterruptedException {
-    // Thread.sleep(50000);
+  @DisplayName("test /entities endpoint with invalid parameters")
+  public void testEntitiesBadRequestParam(Vertx vertx, VertxTestContext testContext) throws InterruptedException {
     String apiURL = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiURL + "?id2=id1,id2").send(ar -> {
       if (ar.succeeded()) {
@@ -496,6 +494,7 @@ public class ApiServerVerticleTest {
           }
         });
   }
+ 
 
 
   /** Subscription API test **/

@@ -73,6 +73,7 @@ public class CallbackSubscription implements Subscription {
   public Future<JsonObject> append(JsonObject subscription) {
     LOGGER.info("callback append() method started");
     Promise<JsonObject> promise = Promise.promise();
+
     databroker.updateCallbackSubscription(subscription, handler->{
       if(handler.succeeded()) {
         promise.complete(handler.result());

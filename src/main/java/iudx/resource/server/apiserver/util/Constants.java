@@ -129,6 +129,7 @@ public class Constants {
   public static final String SUB_CALLBACK = "callback";
   public static final String SUB_STREAMING_URL="streamingURL";
 
+
   // messages (Error, Exception, messages..)
   public static final String MSG_INVALID_PARAM = "Invalid parameter in request.";
   public static final String MSG_PARAM_DECODE_ERROR = "Error while decoding query params.";
@@ -145,6 +146,7 @@ public class Constants {
   public static final String MSG_EXCHANGE_EXIST = "Exchange already exists";
   public static final String MSG_SUB_TYPE_NOT_FOUND="Subscription type not present in body";
   public static final String MSG_SUB_INVALID_TOKEN = "Invalid/no token found in header";
+
   // results
   public static final String SUCCCESS = "success";
 }

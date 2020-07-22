@@ -97,8 +97,13 @@ public class ApiServerVerticle extends AbstractVerticle {
    * configuration, obtains a proxy for the Event bus services exposed through service discovery,
    * start an HTTPs server at port 8443.
    * 
+<<<<<<< HEAD
    * @throws Exception which is a startup exception TODO Need to add documentation for all the
    *         methods.
+=======
+   * @throws Exception which is a startup exception TODO Need to add documentation
+   *                   for all the methods.
+>>>>>>> b662314be9fcf72f4472ebea95b7d1ace1c0d4a5
    */
 
   @Override
@@ -472,10 +477,10 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
       authenticator.tokenInterospect(requestJsonObject.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          if (requestJsonObject.copy().containsKey(Constants.JSON_TYPE)) {
+          if (requestJsonObject.containsKey(Constants.JSON_TYPE)) {
             JsonObject authJson = authHandler.result();
             JsonObject jsonObj = requestJsonObject.copy();
-            // jsonObj.put(Constants.JSON_NAME, authJson.getString(Constants.JSON_NAME));
+            jsonObj.put(Constants.JSON_NAME, authJson.getString(Constants.JSON_NAME));
             jsonObj.put(Constants.JSON_CONSUMER, authJson.getString(Constants.JSON_CONSUMER));
             jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
             LOGGER.info("json for subs :: " + jsonObj);
@@ -627,6 +632,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson =
         routingContext.getBodyAsJson() == null ? new JsonObject() : routingContext.getBodyAsJson();
     String instanceID = request.getHeader(Constants.HEADER_HOST);
+    requestJson.put(Constants.SUBSCRIPTION_ID, subsId);
+    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
     if (request.headers().contains(Constants.HEADER_TOKEN)) {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
@@ -671,12 +678,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     JsonObject authenticationInfo = new JsonObject();
     String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String subsId = request.getParam(Constants.SUBSCRIPTION_ID);
     JsonObject requestJson =
         routingContext.getBodyAsJson() == null ? new JsonObject() : routingContext.getBodyAsJson();
-    String domain = request.getParam(Constants.JSON_DOMAIN);
-    String usersha = request.getParam(Constants.JSON_USERSHA);
-    String alias = request.getParam(Constants.JSON_ALIAS);
-    String subsId = domain + "/" + usersha + "/" + alias;
     requestJson.put(Constants.SUBSCRIPTION_ID, subsId);
     requestJson.put(Constants.JSON_INSTANCEID, instanceID);
     if (request.headers().contains(Constants.HEADER_TOKEN)) {
@@ -686,10 +690,10 @@ public class ApiServerVerticle extends AbstractVerticle {
           if (requestJson.containsKey(Constants.JSON_TYPE)) {
             JsonObject authResult = authHandler.result();
             JsonObject jsonObj = requestJson.copy();
-            // jsonObj.put(Constants.JSON_NAME, authResult.getString(Constants.JSON_NAME));
+            jsonObj.put(Constants.JSON_NAME, authResult.getString(Constants.JSON_NAME));
             jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
             jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
-            // jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
+            jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
             LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
             Future<JsonObject> subsReq =
                 subsService.deleteSubscription(jsonObj, databroker, database);
