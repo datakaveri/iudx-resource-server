@@ -64,4 +64,12 @@ public class SubscriptionService {
     return subscription.get(json);
   }
 
+  public Future<JsonObject> appendSubscription(JsonObject json, DataBrokerService databroker,
+      DatabaseService databaseService) {
+    LOGGER.info("appendSubscription() method started");
+    subscription =
+        getSubscriptionContext(json.getString(Constants.JSON_TYPE), databroker, databaseService);
+    assertNotNull(subscription);
+    return subscription.append(json);
+  }
 }

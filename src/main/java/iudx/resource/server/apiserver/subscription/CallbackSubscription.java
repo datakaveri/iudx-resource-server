@@ -18,13 +18,6 @@ public class CallbackSubscription implements Subscription {
   
   private static final Logger LOGGER = LoggerFactory.getLogger(CallbackSubscription.class);
 
-  //TODO : delete when all methods are implemented
-  JsonObject json = new JsonObject();
-  {
-    json.put(Constants.JSON_TYPE, "501");
-    json.put(Constants.JSON_TITLE, "not implemented yet..");
-    json.put(Constants.JSON_DETAIL, "specified endpoint for callback not implemented yet..");
-  }
   private DataBrokerService databroker;
   private DatabaseService dbService;
 
@@ -80,7 +73,13 @@ public class CallbackSubscription implements Subscription {
   public Future<JsonObject> append(JsonObject subscription) {
     LOGGER.info("callback append() method started");
     Promise<JsonObject> promise = Promise.promise();
-    promise.complete(json);
+    databroker.updateCallbackSubscription(subscription, handler->{
+      if(handler.succeeded()) {
+        promise.complete(handler.result());
+      }else {
+        promise.fail(handler.cause());
+      }
+    });
     return promise.future();
   }
 

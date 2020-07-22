@@ -14,16 +14,8 @@ import iudx.resource.server.databroker.DataBrokerService;
  * 
  */
 public class StreamingSubscription implements Subscription {
-  
-  private static final Logger LOGGER = LoggerFactory.getLogger(StreamingSubscription.class);
 
-  //TODO : delete when all methods are implemented
-  JsonObject json = new JsonObject();
-  {
-    json.put(Constants.JSON_TYPE, "501");
-    json.put(Constants.JSON_TITLE, "not implemented yet..");
-    json.put(Constants.JSON_DETAIL, "specified endpoint for streaming sub not implemented yet..");
-  }
+  private static final Logger LOGGER = LoggerFactory.getLogger(StreamingSubscription.class);
 
   private DataBrokerService databroker;
   private DatabaseService dbService;
@@ -80,7 +72,13 @@ public class StreamingSubscription implements Subscription {
   public Future<JsonObject> append(JsonObject subscription) {
     LOGGER.info("streaming append() method started");
     Promise<JsonObject> promise = Promise.promise();
-    promise.complete(json);
+    databroker.appendStreamingSubscription(subscription, handler -> {
+      if (handler.succeeded()) {
+        promise.complete(handler.result());
+      } else {
+        promise.fail(handler.cause());
+      }
+    });
     return promise.future();
   }
 
@@ -112,7 +110,7 @@ public class StreamingSubscription implements Subscription {
   public Future<JsonObject> get(JsonObject subscription) {
     LOGGER.info("streaming get() method started");
     Promise<JsonObject> promise = Promise.promise();
-    LOGGER.info("sub id :: "+subscription.getString(Constants.SUBSCRIPTION_ID));
+    LOGGER.info("sub id :: " + subscription.getString(Constants.SUBSCRIPTION_ID));
     databroker.listStreamingSubscription(subscription, handler -> {
       if (handler.succeeded()) {
         promise.complete(handler.result());

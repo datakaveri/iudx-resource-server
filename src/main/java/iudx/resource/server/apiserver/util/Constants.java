@@ -124,9 +124,10 @@ public class Constants {
   public static final String GEOM_POLYGON = "polygon";
   public static final String GEOM_LINESTRING = "linestring";
 
-  // subscription type
+  // subscription
   public static final String SUB_STREAMING = "streaming";
   public static final String SUB_CALLBACK = "callback";
+  public static final String SUB_STREAMING_URL="streamingURL";
 
   // messages (Error, Exception, messages..)
   public static final String MSG_INVALID_PARAM = "Invalid parameter in request.";
@@ -143,6 +144,7 @@ public class Constants {
   public static final String MSG_FAILURE_QUEUE_EXIST = "Queue already exists";
   public static final String MSG_EXCHANGE_EXIST = "Exchange already exists";
   public static final String MSG_SUB_TYPE_NOT_FOUND="Subscription type not present in body";
+  public static final String MSG_SUB_INVALID_TOKEN = "Invalid/no token found in header";
   // results
   public static final String SUCCCESS = "success";
 }

@@ -30,6 +30,7 @@ import io.vertx.core.net.JksOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.AuthHandler;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
@@ -147,8 +148,16 @@ public class ApiServerVerticle extends AbstractVerticle {
         router.get(Constants.NGSILD_ENTITIES_URL).handler(this::handleEntitiesQuery);
         router.get(Constants.NGSILD_TEMPORAL_URL).handler(this::handleTemporalQuery);
         router.post(Constants.NGSILD_SUBSCRIPTION_URL).handler(this::handleSubscriptions);
+        // append sub
+        router.patch(Constants.NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
+            .handler(this::appendSubscription);
+        // update sub
+        router.put(Constants.NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
+            .handler(this::updateSubscription);
+        // get sub
         router.get(Constants.NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
             .handler(this::getSubscription);
+        // delete sub
         router.delete(Constants.NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
             .handler(this::deleteSubscription);
 
@@ -495,6 +504,113 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   /**
+   * handle append requests for subscription.
+   * 
+   * @param routingContext routingContext
+   */
+  private void appendSubscription(RoutingContext routingContext) {
+    LOGGER.info("appendSubscription method started");
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+    String domain = request.getParam(Constants.JSON_DOMAIN);
+    String usersha = request.getParam(Constants.JSON_USERSHA);
+    String alias = request.getParam(Constants.JSON_ALIAS);
+    String subsId = domain + "/" + usersha + "/" + alias;
+    JsonObject authenticationInfo = new JsonObject();
+    JsonObject requestJson =
+        routingContext.getBodyAsJson() == null ? new JsonObject() : routingContext.getBodyAsJson();
+    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    if (request.headers().contains(Constants.HEADER_TOKEN)) {
+      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
+        if (authHandler.succeeded()) {
+          LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
+          if (requestJson != null && requestJson.containsKey(Constants.JSON_TYPE)) {
+            JsonObject authResult = authHandler.result();
+            JsonObject jsonObj = requestJson.copy();
+            jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
+            jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
+            jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
+            Future<JsonObject> subsReq =
+                subsService.appendSubscription(jsonObj, databroker, database);
+            subsReq.onComplete(subsRequestHandler -> {
+              if (subsRequestHandler.succeeded()) {
+                handleResponse(response, ResponseType.Created,
+                    subsRequestHandler.result().toString(),
+                    false);
+              } else {
+                handleResponse(response, ResponseType.BadRequestData,
+                    subsRequestHandler.result().toString(), false);
+              }
+            });
+          } else {
+            handleResponse(response, ResponseType.BadRequestData, Constants.MSG_SUB_TYPE_NOT_FOUND,
+                true);
+          }
+        } else {
+          handleResponse(response, ResponseType.AuthenticationFailure, true);
+        }
+      });
+    } else {
+      handleResponse(response, ResponseType.AuthenticationFailure, Constants.MSG_SUB_INVALID_TOKEN,
+          true);
+    }
+  }
+
+  /**
+   * handle update subscription requests.
+   * 
+   * @param routingContext routingContext
+   */
+  private void updateSubscription(RoutingContext routingContext) {
+    LOGGER.info("updateSubscription method started");
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+    String domain = request.getParam(Constants.JSON_DOMAIN);
+    String usersha = request.getParam(Constants.JSON_USERSHA);
+    String alias = request.getParam(Constants.JSON_ALIAS);
+    String subsId = domain + "/" + usersha + "/" + alias;
+    JsonObject authenticationInfo = new JsonObject();
+    JsonObject requestJson =
+        routingContext.getBodyAsJson() == null ? new JsonObject() : routingContext.getBodyAsJson();
+    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    if (request.headers().contains(Constants.HEADER_TOKEN)) {
+      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
+        if (authHandler.succeeded()) {
+          LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
+          if (requestJson != null && requestJson.containsKey(Constants.JSON_TYPE)) {
+            JsonObject authResult = authHandler.result();
+            JsonObject jsonObj = requestJson.copy();
+            jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
+            jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
+            jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
+            Future<JsonObject> subsReq =
+                subsService.updateSubscription(jsonObj, databroker, database);
+            subsReq.onComplete(subsRequestHandler -> {
+              if (subsRequestHandler.succeeded()) {
+                handleResponse(response, ResponseType.Created,
+                    subsRequestHandler.result().toString(), false);
+              } else {
+                handleResponse(response, ResponseType.BadRequestData,
+                    subsRequestHandler.result().toString(), false);
+              }
+            });
+          } else {
+            handleResponse(response, ResponseType.BadRequestData, Constants.MSG_SUB_TYPE_NOT_FOUND,
+                true);
+          }
+        } else {
+          handleResponse(response, ResponseType.AuthenticationFailure, true);
+        }
+      });
+    } else {
+      handleResponse(response, ResponseType.AuthenticationFailure, Constants.MSG_SUB_INVALID_TOKEN,
+          true);
+    }
+  }
+
+  /**
    * get a subscription by id.
    * 
    * @param routingContext routingContext
@@ -521,9 +637,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             JsonObject jsonObj = requestJson.copy();
             jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
             jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
-            // jsonObj.put(Constants.JSON_NAME, authResult.getString(Constants.JSON_NAME));
             jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
-            jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
             Future<JsonObject> subsReq = subsService.getSubscription(jsonObj, databroker, database);
             subsReq.onComplete(subHandler -> {
               if (subHandler.succeeded()) {
@@ -557,7 +671,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     JsonObject authenticationInfo = new JsonObject();
     String instanceID = request.getHeader(Constants.HEADER_HOST);
-    JsonObject requestJson = routingContext.getBodyAsJson();
+    JsonObject requestJson =
+        routingContext.getBodyAsJson() == null ? new JsonObject() : routingContext.getBodyAsJson();
     String domain = request.getParam(Constants.JSON_DOMAIN);
     String usersha = request.getParam(Constants.JSON_USERSHA);
     String alias = request.getParam(Constants.JSON_ALIAS);
