@@ -1,14 +1,5 @@
 package iudx.resource.server.apiserver;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
@@ -42,6 +33,7 @@ import iudx.resource.server.apiserver.query.NGSILDQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.response.RestResponse;
+import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.util.Constants;
 import iudx.resource.server.authenticator.AuthenticationService;
@@ -49,6 +41,16 @@ import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.filedownload.FileDownloadService;
 import iudx.resource.server.media.MediaService;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 
 /**
  * The Resource Server API Verticle.
@@ -96,13 +98,8 @@ public class ApiServerVerticle extends AbstractVerticle {
    * configuration, obtains a proxy for the Event bus services exposed through service discovery,
    * start an HTTPs server at port 8443.
    * 
-<<<<<<< HEAD
    * @throws Exception which is a startup exception TODO Need to add documentation for all the
-   *         methods.
-=======
-   * @throws Exception which is a startup exception TODO Need to add documentation
-   *                   for all the methods.
->>>>>>> b662314be9fcf72f4472ebea95b7d1ace1c0d4a5
+   * 
    */
 
   @Override
@@ -150,6 +147,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
         /* NGSI-LD api endpoints */
         router.get(Constants.NGSILD_ENTITIES_URL).handler(this::handleEntitiesQuery);
+        router.post(Constants.NGSILD_POST_QUERY_PATH).handler(this::handlePostEntitiesQuery);
         router.get(Constants.NGSILD_TEMPORAL_URL).handler(this::handleTemporalQuery);
         router.post(Constants.NGSILD_SUBSCRIPTION_URL).handler(this::handleSubscriptions);
         // append sub
@@ -377,6 +375,35 @@ public class ApiServerVerticle extends AbstractVerticle {
     });
   }
 
+  // TODO: complete method
+  /**
+   * this method is used to handle all entities queries from post endpoint.
+   * 
+   * @param routingContext routingContext
+   *
+   */
+  public void handlePostEntitiesQuery(RoutingContext routingContext) {
+    LOGGER.info("handlePostEntitiesQuery method started.");
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+    JsonObject authenticationInfo = new JsonObject();
+    if (request.headers().contains(Constants.HEADER_TOKEN)) {
+      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    } else {
+      authenticationInfo.put(Constants.HEADER_TOKEN, Constants.PUBLIC_TOKEN);
+    }
+    MultiMap params = getQueryParams(routingContext, response).get();
+    Future<Boolean> validationResult = Validator.validate(params);
+    NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
+    QueryMapper queryMapper = new QueryMapper();
+    JsonObject json = queryMapper.toJson(ngsildquery, false);
+    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    json.put(Constants.JSON_INSTANCEID, instanceID);
+    LOGGER.info("IUDX query json : " + json);
+    /* HTTP request body as Json */
+    JsonObject requestBody = routingContext.getBodyAsJson();
+  }
+
   /**
    * This method is used to handler all temporal NGSI-LD queries for endpoint
    * /ngsi-ld/v1/temporal/**.
@@ -470,16 +497,20 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestBody = routingContext.getBodyAsJson();
     /* HTTP request instance/host details */
     String instanceID = request.getHeader(Constants.HEADER_HOST);
-    JsonObject requestJsonObject = routingContext.getBodyAsJson();
+    String subHeader = request.getHeader(Constants.HEADER_OPTIONS);
+    String subscrtiptionType =
+        subHeader != null && subHeader.contains(SubsType.STREAMING.getMessage())
+            ? SubsType.STREAMING.getMessage()
+            : SubsType.CALLBACK.getMessage();
+    requestBody.put(Constants.SUB_TYPE, subscrtiptionType);
     /* checking authentication info in requests */
     if (request.headers().contains(Constants.HEADER_TOKEN)) {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJsonObject.copy(), authenticationInfo, authHandler -> {
+      authenticator.tokenInterospect(requestBody.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          if (requestJsonObject.containsKey(Constants.JSON_TYPE)) {
+          if (requestBody.containsKey(Constants.SUB_TYPE)) {
             JsonObject authJson = authHandler.result();
-            JsonObject jsonObj = requestJsonObject.copy();
-            // jsonObj.put(Constants.JSON_NAME, authJson.getString(Constants.JSON_NAME));
+            JsonObject jsonObj = requestBody.copy();
             jsonObj.put(Constants.JSON_CONSUMER, authJson.getString(Constants.JSON_CONSUMER));
             jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
             LOGGER.info("json for subs :: " + jsonObj);
@@ -521,27 +552,31 @@ public class ApiServerVerticle extends AbstractVerticle {
     String alias = request.getParam(Constants.JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
-    JsonObject requestJson =
-        routingContext.getBodyAsJson() == null ? new JsonObject() : routingContext.getBodyAsJson();
+    JsonObject requestJson = routingContext.getBodyAsJson();
     String instanceID = request.getHeader(Constants.HEADER_HOST);
+    requestJson.put(Constants.SUBSCRIPTION_ID, subsId);
+    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
+    String subHeader = request.getHeader(Constants.HEADER_OPTIONS);
+    String subscrtiptionType =
+        subHeader != null && subHeader.contains(SubsType.STREAMING.getMessage())
+            ? SubsType.STREAMING.getMessage()
+            : SubsType.CALLBACK.getMessage();
+    requestJson.put(Constants.SUB_TYPE, subscrtiptionType);
     if (request.headers().contains(Constants.HEADER_TOKEN)) {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
-          if (requestJson != null && requestJson.containsKey(Constants.JSON_TYPE)) {
+          if (requestJson != null && requestJson.containsKey(Constants.SUB_TYPE)) {
             JsonObject authResult = authHandler.result();
             JsonObject jsonObj = requestJson.copy();
-            jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
-            jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
             jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
             Future<JsonObject> subsReq =
                 subsService.appendSubscription(jsonObj, databroker, database);
             subsReq.onComplete(subsRequestHandler -> {
               if (subsRequestHandler.succeeded()) {
                 handleResponse(response, ResponseType.Created,
-                    subsRequestHandler.result().toString(),
-                    false);
+                    subsRequestHandler.result().toString(), false);
               } else {
                 handleResponse(response, ResponseType.BadRequestData,
                     subsRequestHandler.result().toString(), false);
@@ -575,15 +610,20 @@ public class ApiServerVerticle extends AbstractVerticle {
     String alias = request.getParam(Constants.JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
-    JsonObject requestJson =
-        routingContext.getBodyAsJson() == null ? new JsonObject() : routingContext.getBodyAsJson();
+    JsonObject requestJson = routingContext.getBodyAsJson();
     String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String subHeader = request.getHeader(Constants.HEADER_OPTIONS);
+    String subscrtiptionType =
+        subHeader != null && subHeader.contains(SubsType.STREAMING.getMessage())
+            ? SubsType.STREAMING.getMessage()
+            : SubsType.CALLBACK.getMessage();
+    requestJson.put(Constants.SUB_TYPE, subscrtiptionType);
     if (request.headers().contains(Constants.HEADER_TOKEN)) {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
-          if (requestJson != null && requestJson.containsKey(Constants.JSON_TYPE)) {
+          if (requestJson != null && requestJson.containsKey(Constants.SUB_TYPE)) {
             JsonObject authResult = authHandler.result();
             JsonObject jsonObj = requestJson.copy();
             jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
@@ -628,21 +668,24 @@ public class ApiServerVerticle extends AbstractVerticle {
     String alias = request.getParam(Constants.JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
-    JsonObject requestJson =
-        routingContext.getBodyAsJson() == null ? new JsonObject() : routingContext.getBodyAsJson();
+    JsonObject requestJson = new JsonObject();
     String instanceID = request.getHeader(Constants.HEADER_HOST);
     requestJson.put(Constants.SUBSCRIPTION_ID, subsId);
     requestJson.put(Constants.JSON_INSTANCEID, instanceID);
+    String subHeader = request.getHeader(Constants.HEADER_OPTIONS);
+    String subscrtiptionType =
+        subHeader != null && subHeader.contains(SubsType.STREAMING.getMessage())
+            ? SubsType.STREAMING.getMessage()
+            : SubsType.CALLBACK.getMessage();
+    requestJson.put(Constants.SUB_TYPE, subscrtiptionType);
     if (request.headers().contains(Constants.HEADER_TOKEN)) {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
-          if (requestJson != null && requestJson.containsKey(Constants.JSON_TYPE)) {
+          if (requestJson != null && requestJson.containsKey(Constants.SUB_TYPE)) {
             JsonObject authResult = authHandler.result();
             JsonObject jsonObj = requestJson.copy();
-            // jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
-            jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
             jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
             Future<JsonObject> subsReq = subsService.getSubscription(jsonObj, databroker, database);
             subsReq.onComplete(subHandler -> {
@@ -680,22 +723,24 @@ public class ApiServerVerticle extends AbstractVerticle {
     String alias = request.getParam(Constants.JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
-    JsonObject requestJson =
-        routingContext.getBodyAsJson() == null ? new JsonObject() : routingContext.getBodyAsJson();
+    JsonObject requestJson = new JsonObject();
     String instanceID = request.getHeader(Constants.HEADER_HOST);
     requestJson.put(Constants.SUBSCRIPTION_ID, subsId);
     requestJson.put(Constants.JSON_INSTANCEID, instanceID);
+    String subHeader = request.getHeader(Constants.HEADER_OPTIONS);
+    String subscrtiptionType =
+        subHeader != null && subHeader.contains(SubsType.STREAMING.getMessage())
+            ? SubsType.STREAMING.getMessage()
+            : SubsType.CALLBACK.getMessage();
+    requestJson.put(Constants.SUB_TYPE, subscrtiptionType);
     if (request.headers().contains(Constants.HEADER_TOKEN)) {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          if (requestJson.containsKey(Constants.JSON_TYPE)) {
+          if (requestJson.containsKey(Constants.SUB_TYPE)) {
             JsonObject authResult = authHandler.result();
             JsonObject jsonObj = requestJson.copy();
-            jsonObj.put(Constants.JSON_NAME, authResult.getString(Constants.JSON_NAME));
             jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
-            jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
-            jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
             LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
             Future<JsonObject> subsReq =
                 subsService.deleteSubscription(jsonObj, databroker, database);

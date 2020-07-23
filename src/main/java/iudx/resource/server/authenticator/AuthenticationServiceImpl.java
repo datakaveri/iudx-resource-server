@@ -1,6 +1,5 @@
 package iudx.resource.server.authenticator;
 
-import java.util.UUID;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -8,14 +7,15 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import iudx.resource.server.apiserver.util.Constants;
+import java.util.UUID;
+
 
 /**
  * The Authentication Service Implementation.
  * <h1>Authentication Service Implementation</h1>
  * <p>
- * The Authentication Service implementation in the IUDX Resource Server
- * implements the definitions of the
- * {@link iudx.resource.server.authenticator.AuthenticationService}.
+ * The Authentication Service implementation in the IUDX Resource Server implements the definitions
+ * of the {@link iudx.resource.server.authenticator.AuthenticationService}.
  * </p>
  * 
  * @version 1.0
@@ -25,8 +25,8 @@ import iudx.resource.server.apiserver.util.Constants;
 public class AuthenticationServiceImpl implements AuthenticationService {
 
   private static final Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
-  private static final String ALIAS_NAME=UUID.randomUUID().toString();
-  private static final String CONSUMER=UUID.randomUUID().toString()+"@iudx.org";
+  private static final String ALIAS_NAME = UUID.randomUUID().toString();
+  private static final String CONSUMER = UUID.randomUUID().toString() + "@iudx.org";
 
   /**
    * {@inheritDoc}

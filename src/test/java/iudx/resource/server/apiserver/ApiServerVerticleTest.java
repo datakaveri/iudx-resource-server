@@ -513,9 +513,10 @@ public class ApiServerVerticleTest {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL;
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_NAME, streamingSubscriptionAliasName);
-    json.put(Constants.JSON_TYPE, SubsType.STREAMING);
+    json.put(Constants.JSON_TYPE, Constants.SUBSCRIPTION);
     json.put(Constants.JSON_ENTITIES, entities);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
         .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
@@ -537,9 +538,11 @@ public class ApiServerVerticleTest {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL;
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_NAME, streamingSubscriptionAliasName);
-    json.put(Constants.JSON_TYPE, SubsType.STREAMING);
+    json.put(Constants.JSON_TYPE, Constants.SUBSCRIPTION);
     json.put(Constants.JSON_ENTITIES, entities);
-    client.post(PORT, BASE_URL, apiUrl).sendJsonObject(json, handler -> {
+    client.post(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .sendJsonObject(json, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result().bodyAsJsonObject();
         assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
@@ -554,7 +557,7 @@ public class ApiServerVerticleTest {
     });
   }
 
-  @Test
+  // @Test :: No relevance now for this test case
   @Order(102)
   @DisplayName("/subscription endpoint to create subscription without type in body")
   public void testCreateStreaming400NoType(Vertx vertx, VertxTestContext testContext) {
@@ -583,9 +586,9 @@ public class ApiServerVerticleTest {
   @DisplayName("/subscription endpoint to get a subscription without token in header")
   public void testGetStreamingSubscription401(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
-    JsonObject request = new JsonObject();
-    request.put(Constants.JSON_TYPE, SubsType.STREAMING);
-    client.get(PORT, BASE_URL, apiUrl).sendJsonObject(request, handler -> {
+    client.get(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .send(handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result().bodyAsJsonObject();
         assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
@@ -601,12 +604,14 @@ public class ApiServerVerticleTest {
     });
   }
 
-  @Test
+  // @Test :: No relevance now for this test case
   @Order(104)
   @DisplayName("/subscription endpoint to get subscription without type in body")
   public void testGetStreamingSub400NoType(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
-    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+    client.get(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
         .send(handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
@@ -623,7 +628,7 @@ public class ApiServerVerticleTest {
         });
   }
 
-  @Test
+  // @Test :: No relevance now for this test case
   @Order(105)
   @DisplayName("/subscription endpoint to append a subscription without type in body")
   public void testAppendStreamingSubsctiption400NoType(Vertx vertx, VertxTestContext testContext) {
@@ -634,7 +639,9 @@ public class ApiServerVerticleTest {
     appendEntities.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
     json.put(Constants.JSON_ENTITIES, appendEntities);
-    client.patch(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+    client.patch(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
@@ -658,12 +665,14 @@ public class ApiServerVerticleTest {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_NAME, streamingSubscriptionAliasName);
-    json.put(Constants.JSON_TYPE, SubsType.STREAMING);
+    json.put(Constants.JSON_TYPE, Constants.SUBSCRIPTION);
     JsonArray appendEntities = new JsonArray();
     appendEntities.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
     json.put(Constants.JSON_ENTITIES, appendEntities);
-    client.patch(PORT, BASE_URL, apiUrl).sendJsonObject(json, handler -> {
+    client.patch(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .sendJsonObject(json, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result().bodyAsJsonObject();
         assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
@@ -686,12 +695,14 @@ public class ApiServerVerticleTest {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_NAME, streamingSubscriptionAliasName);
-    json.put(Constants.JSON_TYPE, SubsType.STREAMING);
+    json.put(Constants.JSON_TYPE, Constants.SUBSCRIPTION);
     JsonArray appendEntities = new JsonArray();
     appendEntities.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
     json.put(Constants.JSON_ENTITIES, appendEntities);
-    client.patch(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+    client.patch(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
@@ -712,12 +723,14 @@ public class ApiServerVerticleTest {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_NAME, streamingSubscriptionAliasName);
-    json.put(Constants.JSON_TYPE, SubsType.STREAMING);
+    json.put(Constants.JSON_TYPE, Constants.SUBSCRIPTION);
     JsonArray appendEntities = new JsonArray();
     appendEntities.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/abc.*");
     json.put(Constants.JSON_ENTITIES, appendEntities);
-    client.put(PORT, BASE_URL, apiUrl).sendJsonObject(json, handler -> {
+    client.put(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .sendJsonObject(json, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result().bodyAsJsonObject();
         assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
@@ -733,7 +746,7 @@ public class ApiServerVerticleTest {
     });
   }
 
-  @Test
+  // @Test :: No relevance now for this test case
   @Order(108)
   @DisplayName("/subscription endpoint to update a subscription without  type")
   public void testUpdateStreamingSubscription400NoType(Vertx vertx, VertxTestContext testContext) {
@@ -744,7 +757,9 @@ public class ApiServerVerticleTest {
     appendEntities.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/abc.*");
     json.put(Constants.JSON_ENTITIES, appendEntities);
-    client.put(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+    client.put(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
@@ -768,12 +783,14 @@ public class ApiServerVerticleTest {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_NAME, streamingSubscriptionAliasName);
-    json.put(Constants.JSON_TYPE, SubsType.STREAMING);
+    json.put(Constants.JSON_TYPE, Constants.SUBSCRIPTION);
     JsonArray appendEntities = new JsonArray();
     appendEntities.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/abc.*");
     json.put(Constants.JSON_ENTITIES, appendEntities);
-    client.put(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+    client.put(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
@@ -793,10 +810,10 @@ public class ApiServerVerticleTest {
   public void testGetSubscription(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
     System.out.println("subs  ID :" + subscriptionId);
-    JsonObject request = new JsonObject();
-    request.put(Constants.JSON_TYPE, SubsType.STREAMING);
-    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
-        .sendJsonObject(request, handler -> {
+    client.get(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -806,13 +823,15 @@ public class ApiServerVerticleTest {
         });
   }
 
-  @Test
+  // @Test :: No relevance now for this test case
   @Order(110)
   @DisplayName("/subscription endpoint to delete a subscription without type")
   public void testDeleteSubs400NoType(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
     System.out.println("subs  ID :" + subscriptionId);
-    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+    client.delete(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
         .send(handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
@@ -835,9 +854,9 @@ public class ApiServerVerticleTest {
   public void testDeleteSubs401(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
     System.out.println("subs  ID :" + subscriptionId);
-    JsonObject request = new JsonObject();
-    request.put(Constants.JSON_TYPE, SubsType.STREAMING);
-    client.delete(PORT, BASE_URL, apiUrl).sendJsonObject(request, handler -> {
+    client.delete(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .send(handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result().bodyAsJsonObject();
         assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
@@ -859,10 +878,10 @@ public class ApiServerVerticleTest {
   public void testDeleteSubs(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
     System.out.println("subs  ID :" + subscriptionId);
-    JsonObject request = new JsonObject();
-    request.put(Constants.JSON_TYPE, SubsType.STREAMING);
-    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
-        .sendJsonObject(request, handler -> {
+    client.delete(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -884,9 +903,11 @@ public class ApiServerVerticleTest {
     json.put(Constants.JSON_METHOD, "POST");
     json.put(Constants.JSON_USERNAME, "username");
     json.put(Constants.JSON_PASSWORD, "password");
-    json.put(Constants.JSON_TYPE, SubsType.CALLBACK);
+    json.put(Constants.JSON_TYPE, Constants.SUBSCRIPTION);
     json.put(Constants.JSON_ENTITIES, entities);
-    client.post(PORT, BASE_URL, apiUrl).sendJsonObject(json, handler -> {
+    client.post(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
+        .sendJsonObject(json, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result().bodyAsJsonObject();
         assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
@@ -901,7 +922,7 @@ public class ApiServerVerticleTest {
     });
   }
 
-  @Test
+  // @Test :: No relevance now for this test case
   @Order(114)
   @DisplayName("/subscription endpoint to create a callback subscription without type")
   public void testCreateCallbackSubscription400NoType(Vertx vertx, VertxTestContext testContext) {
@@ -913,7 +934,9 @@ public class ApiServerVerticleTest {
     json.put(Constants.JSON_USERNAME, "username");
     json.put(Constants.JSON_PASSWORD, "password");
     json.put(Constants.JSON_ENTITIES, entities);
-    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+    client.post(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
@@ -943,7 +966,9 @@ public class ApiServerVerticleTest {
     json.put(Constants.JSON_USERNAME, "username");
     json.put(Constants.JSON_PASSWORD, "password");
     json.put(Constants.JSON_ENTITIES, entities);
-    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+    client.post(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
@@ -963,9 +988,9 @@ public class ApiServerVerticleTest {
   @DisplayName("/subscription endpoint to get a callback subscription without token")
   public void testGetCallbackSubscription401(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + callbackSubscriptionId;
-    JsonObject json = new JsonObject();
-    json.put(Constants.JSON_TYPE, SubsType.CALLBACK);
-    client.get(PORT, BASE_URL, apiUrl).sendJsonObject(json, handler -> {
+    client.get(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
+        .send(handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result().bodyAsJsonObject();
         assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
@@ -980,12 +1005,14 @@ public class ApiServerVerticleTest {
   }
 
 
-  @Test
+  // @Test :: No relevance now for this test case
   @Order(117)
   @DisplayName("/subscription endpoint to get a callback subscription without type")
   public void testGetCallbackSubscription400NoType(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + callbackSubscriptionId;
-    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+    client.get(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
         .send(handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
@@ -1007,10 +1034,10 @@ public class ApiServerVerticleTest {
   @DisplayName("/subscription endpoint to get a callback subscription")
   public void testGetCallbackSubscription(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + callbackSubscriptionId;
-    JsonObject json = new JsonObject();
-    json.put(Constants.JSON_TYPE, SubsType.CALLBACK);
-    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
-        .sendJsonObject(json, handler -> {
+    client.get(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .send(handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());

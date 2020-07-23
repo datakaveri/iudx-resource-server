@@ -15,7 +15,7 @@ import iudx.resource.server.databroker.DataBrokerService;
  *
  */
 public class SubscriptionService {
-  
+
   private static final Logger LOGGER = LoggerFactory.getLogger(SubscriptionService.class);
 
   Subscription subscription = null;
@@ -41,7 +41,7 @@ public class SubscriptionService {
   }
 
   /**
-   * create a subscription
+   * create a subscription.
    * 
    * @param json subscription json
    * @param databroker databroker verticle object
@@ -51,14 +51,14 @@ public class SubscriptionService {
   public Future<JsonObject> createSubscription(JsonObject json, DataBrokerService databroker,
       DatabaseService databaseService) {
     LOGGER.info("createSubscription() method started");
-    subscription = getSubscriptionContext(json.getString(Constants.JSON_TYPE), databroker,
-        databaseService);
+    subscription =
+        getSubscriptionContext(json.getString(Constants.SUB_TYPE), databroker, databaseService);
     assertNotNull(subscription);
     return subscription.create(json);
   }
 
   /**
-   * update an existing subscription
+   * update an existing subscription.
    * 
    * @param json subscription json
    * @param databroker databroker verticle object
@@ -68,14 +68,14 @@ public class SubscriptionService {
   public Future<JsonObject> updateSubscription(JsonObject json, DataBrokerService databroker,
       DatabaseService databaseService) {
     LOGGER.info("updateSubscription() method started");
-    subscription = getSubscriptionContext(json.getString(Constants.JSON_TYPE), databroker,
-        databaseService);
+    subscription =
+        getSubscriptionContext(json.getString(Constants.SUB_TYPE), databroker, databaseService);
     assertNotNull(subscription);
     return subscription.update(json);
   }
 
   /**
-   * delete a subscription
+   * delete a subscription.
    * 
    * @param json subscription json
    * @param databroker databroker verticle object
@@ -85,14 +85,14 @@ public class SubscriptionService {
   public Future<JsonObject> deleteSubscription(JsonObject json, DataBrokerService databroker,
       DatabaseService databaseService) {
     LOGGER.info("deleteSubscription() method started");
-    subscription = getSubscriptionContext(json.getString(Constants.JSON_TYPE), databroker,
-        databaseService);
+    subscription =
+        getSubscriptionContext(json.getString(Constants.SUB_TYPE), databroker, databaseService);
     assertNotNull(subscription);
     return subscription.delete(json);
   }
 
   /**
-   * get a subscription
+   * get a subscription.
    * 
    * @param json subscription json
    * @param databroker databroker verticle object
@@ -102,14 +102,14 @@ public class SubscriptionService {
   public Future<JsonObject> getSubscription(JsonObject json, DataBrokerService databroker,
       DatabaseService databaseService) {
     LOGGER.info("getSubscription() method started");
-    subscription = getSubscriptionContext(json.getString(Constants.JSON_TYPE), databroker,
-        databaseService);
+    subscription =
+        getSubscriptionContext(json.getString(Constants.SUB_TYPE), databroker, databaseService);
     assertNotNull(subscription);
     return subscription.get(json);
   }
 
   /**
-   * append an existing subscription
+   * append an existing subscription.
    * 
    * @param json subscription json
    * @param databroker databroker verticle object
@@ -120,7 +120,7 @@ public class SubscriptionService {
       DatabaseService databaseService) {
     LOGGER.info("appendSubscription() method started");
     subscription =
-        getSubscriptionContext(json.getString(Constants.JSON_TYPE), databroker, databaseService);
+        getSubscriptionContext(json.getString(Constants.SUB_TYPE), databroker, databaseService);
     assertNotNull(subscription);
     return subscription.append(json);
   }

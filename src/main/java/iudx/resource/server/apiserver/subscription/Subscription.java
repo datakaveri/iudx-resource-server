@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
  */
 public interface Subscription {
   /**
-   * get a subscription by id
+   * get a subscription by id.
    * 
    * @param json json containing subscription id.
    * @return Future object
@@ -17,7 +17,7 @@ public interface Subscription {
   Future<JsonObject> get(JsonObject json);
 
   /**
-   * create a subscription
+   * create a subscription.
    * 
    * @param subscription subscription json.
    * @return Future object
@@ -25,7 +25,7 @@ public interface Subscription {
   Future<JsonObject> create(JsonObject subscription);
 
   /**
-   * update a subscription
+   * update a subscription.
    * 
    * @param subscription subscription body
    * @return

@@ -14,6 +14,7 @@ public class Constants {
   public static final String NGSILD_ENTITIES_URL = NGSILD_BASE_PATH + "/entities";
   public static final String NGSILD_TEMPORAL_URL = NGSILD_BASE_PATH + "/temporal/entities";
   public static final String NGSILD_SUBSCRIPTION_URL = NGSILD_BASE_PATH + "/subscription";
+  public static final String NGSILD_POST_QUERY_PATH = NGSILD_BASE_PATH + "/entityOperations/query";
 
   // IUDX management endpoints
   public static final String IUDX_MANAGEMENT_URL = "/management";
@@ -128,9 +129,11 @@ public class Constants {
   public static final String GEOM_LINESTRING = "linestring";
 
   // subscription
+  public static final String SUBSCRIPTION = "subscription";
+  public static final String SUB_TYPE = "subscriptionType";
   public static final String SUB_STREAMING = "streaming";
   public static final String SUB_CALLBACK = "callback";
-  public static final String SUB_STREAMING_URL="streamingURL";
+  public static final String SUB_STREAMING_URL = "streamingURL";
 
 
   // messages (Error, Exception, messages..)
@@ -147,7 +150,7 @@ public class Constants {
   public static final String MSG_FAILURE_QUEUE_NOT_EXIST = "Queue does not exist";
   public static final String MSG_FAILURE_QUEUE_EXIST = "Queue already exists";
   public static final String MSG_EXCHANGE_EXIST = "Exchange already exists";
-  public static final String MSG_SUB_TYPE_NOT_FOUND="Subscription type not present in body";
+  public static final String MSG_SUB_TYPE_NOT_FOUND = "Subscription type not present in body";
   public static final String MSG_SUB_INVALID_TOKEN = "Invalid/no token found in header";
 
   // results
