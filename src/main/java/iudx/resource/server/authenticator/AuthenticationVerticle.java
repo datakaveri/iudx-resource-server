@@ -5,12 +5,19 @@ import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.net.JksOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.servicediscovery.Record;
 import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * The Authentication Verticle.
@@ -33,6 +40,28 @@ public class AuthenticationVerticle extends AbstractVerticle {
   private ServiceDiscovery discovery;
   private Record record;
   private AuthenticationService authentication;
+  private final Properties properties = new Properties();
+
+  static WebClient createWebClient(Vertx vertx, Properties properties) {
+    return createWebClient(vertx, properties, false);
+  }
+
+  static WebClient createWebClient(Vertx vertxObj, Properties properties, boolean testing) {
+      try {
+        FileInputStream configFile = new FileInputStream(Constants.CONFIG_FILE);
+        if (properties.isEmpty()) properties.load(configFile);
+      } catch (IOException e) {
+        logger.error("Could not load properties from config file", e);
+      }
+      WebClientOptions webClientOptions = new WebClientOptions();
+      if (testing) webClientOptions.setTrustAll(true).setVerifyHost(false);
+      webClientOptions
+              .setSsl(true)
+              .setKeyStoreOptions(new JksOptions()
+                      .setPath(properties.getProperty(Constants.KEYSTORE_PATH))
+                      .setPassword(properties.getProperty(Constants.KEYSTORE_PASSWORD)));
+      return WebClient.create(vertxObj, webClientOptions);
+    }
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
