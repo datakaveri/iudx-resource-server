@@ -33,85 +33,85 @@ import java.util.Properties;
 
 public class AuthenticationVerticle extends AbstractVerticle {
 
-  private static final Logger logger = LoggerFactory.getLogger(AuthenticationVerticle.class);
-  private Vertx vertx;
-  private ClusterManager mgr;
-  private VertxOptions options;
-  private ServiceDiscovery discovery;
-  private Record record;
-  private AuthenticationService authentication;
-  private final Properties properties = new Properties();
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationVerticle.class);
+    private final Properties properties = new Properties();
+    private Vertx vertx;
+    private ClusterManager mgr;
+    private VertxOptions options;
+    private ServiceDiscovery discovery;
+    private Record record;
+    private AuthenticationService authentication;
 
-  static WebClient createWebClient(Vertx vertx, Properties properties) {
-    return createWebClient(vertx, properties, false);
-  }
-
-  static WebClient createWebClient(Vertx vertxObj, Properties properties, boolean testing) {
-      try {
-        FileInputStream configFile = new FileInputStream(Constants.CONFIG_FILE);
-        if (properties.isEmpty()) properties.load(configFile);
-      } catch (IOException e) {
-        logger.error("Could not load properties from config file", e);
-      }
-      WebClientOptions webClientOptions = new WebClientOptions();
-      if (testing) webClientOptions.setTrustAll(true).setVerifyHost(false);
-      webClientOptions
-              .setSsl(true)
-              .setKeyStoreOptions(new JksOptions()
-                      .setPath(properties.getProperty(Constants.KEYSTORE_PATH))
-                      .setPassword(properties.getProperty(Constants.KEYSTORE_PASSWORD)));
-      return WebClient.create(vertxObj, webClientOptions);
+    static WebClient createWebClient(Vertx vertx, Properties properties) {
+        return createWebClient(vertx, properties, false);
     }
 
-  /**
-   * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
-   * service with the Event bus against an address, publishes the service with the service discovery
-   * interface.
-   *
-   * @throws Exception which is a startup exception
-   */
+    static WebClient createWebClient(Vertx vertxObj, Properties properties, boolean testing) {
+        try {
+            FileInputStream configFile = new FileInputStream(Constants.CONFIG_FILE);
+            if (properties.isEmpty()) properties.load(configFile);
+        } catch (IOException e) {
+            logger.error("Could not load properties from config file", e);
+        }
+        WebClientOptions webClientOptions = new WebClientOptions();
+        if (testing) webClientOptions.setTrustAll(true).setVerifyHost(false);
+        webClientOptions
+                .setSsl(true)
+                .setKeyStoreOptions(new JksOptions()
+                        .setPath(properties.getProperty(Constants.KEYSTORE_PATH))
+                        .setPassword(properties.getProperty(Constants.KEYSTORE_PASSWORD)));
+        return WebClient.create(vertxObj, webClientOptions);
+    }
 
-  @Override
-  public void start() throws Exception {
+    /**
+     * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
+     * service with the Event bus against an address, publishes the service with the service discovery
+     * interface.
+     *
+     * @throws Exception which is a startup exception
+     */
 
-    /* Create a reference to HazelcastClusterManager. */
+    @Override
+    public void start() throws Exception {
 
-    mgr = new HazelcastClusterManager();
-    options = new VertxOptions().setClusterManager(mgr);
+        /* Create a reference to HazelcastClusterManager. */
 
-    /* Create or Join a Vert.x Cluster. */
+        mgr = new HazelcastClusterManager();
+        options = new VertxOptions().setClusterManager(mgr);
 
-    Vertx.clusteredVertx(options, res -> {
-      if (res.succeeded()) {
-        vertx = res.result();
+        /* Create or Join a Vert.x Cluster. */
 
-        authentication = new AuthenticationServiceImpl(createWebClient(vertx, properties));
+        Vertx.clusteredVertx(options, res -> {
+            if (res.succeeded()) {
+                vertx = res.result();
 
-        /* Publish the Authentication service with the Event Bus against an address. */
+                authentication = new AuthenticationServiceImpl(createWebClient(vertx, properties));
 
-        new ServiceBinder(vertx).setAddress("iudx.rs.authentication.service")
-            .register(AuthenticationService.class, authentication);
+                /* Publish the Authentication service with the Event Bus against an address. */
 
-        /* Get a handler for the Service Discovery interface and publish a service record. */
+                new ServiceBinder(vertx).setAddress("iudx.rs.authentication.service")
+                        .register(AuthenticationService.class, authentication);
 
-        discovery = ServiceDiscovery.create(vertx);
-        record = EventBusService.createRecord("iudx.rs.authentication.service", // The service name
-            "iudx.rs.authentication.service", // the service address,
-            AuthenticationService.class // the service interface
-        );
+                /* Get a handler for the Service Discovery interface and publish a service record. */
 
-        discovery.publish(record, publishRecordHandler -> {
-          if (publishRecordHandler.succeeded()) {
-            Record publishedRecord = publishRecordHandler.result();
-            logger.info("Publication succeeded " + publishedRecord.toJson());
-          } else {
-            logger.info("Publication failed " + publishRecordHandler.result());
-          }
+                discovery = ServiceDiscovery.create(vertx);
+                record = EventBusService.createRecord("iudx.rs.authentication.service", // The service name
+                        "iudx.rs.authentication.service", // the service address,
+                        AuthenticationService.class // the service interface
+                );
+
+                discovery.publish(record, publishRecordHandler -> {
+                    if (publishRecordHandler.succeeded()) {
+                        Record publishedRecord = publishRecordHandler.result();
+                        logger.info("Publication succeeded " + publishedRecord.toJson());
+                    } else {
+                        logger.info("Publication failed " + publishRecordHandler.result());
+                    }
+                });
+
+            }
+
         });
 
-      }
-
-    });
-
-  }
+    }
 }

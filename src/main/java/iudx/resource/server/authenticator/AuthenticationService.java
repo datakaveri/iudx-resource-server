@@ -16,10 +16,10 @@ import io.vertx.core.json.JsonObject;
  * The Authentication Service in the IUDX Resource Server defines the operations
  * to be performed with the IUDX Authentication and Authorization server.
  * </p>
- * 
+ *
+ * @version 1.0
  * @see io.vertx.codegen.annotations.ProxyGen
  * @see io.vertx.codegen.annotations.VertxGen
- * @version 1.0
  * @since 2020-05-31
  */
 
@@ -27,30 +27,30 @@ import io.vertx.core.json.JsonObject;
 @ProxyGen
 public interface AuthenticationService {
 
-  /**
-   * The tokenInterospect method implements the authentication and authorization
-   * module using IUDX APIs.
-   * 
-   * @param request            which is a JsonObject
-   * @param authenticationInfo which is a JsonObject
-   * @param handler            which is a request handler
-   * @return AuthenticationService which is a service
-   */
+    /**
+     * The createProxy helps the code generation blocks to generate proxy code.
+     *
+     * @param vertx   which is the vertx instance
+     * @param address which is the proxy address
+     * @return AuthenticationServiceVertxEBProxy which is a service proxy
+     */
 
-  @Fluent
-  AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
-      Handler<AsyncResult<JsonObject>> handler);
+    @GenIgnore
+    static AuthenticationService createProxy(Vertx vertx, String address) {
+        return new AuthenticationServiceVertxEBProxy(vertx, address);
+    }
 
-  /**
-   * The createProxy helps the code generation blocks to generate proxy code.
-   * 
-   * @param vertx   which is the vertx instance
-   * @param address which is the proxy address
-   * @return AuthenticationServiceVertxEBProxy which is a service proxy
-   */
+    /**
+     * The tokenInterospect method implements the authentication and authorization
+     * module using IUDX APIs.
+     *
+     * @param request            which is a JsonObject
+     * @param authenticationInfo which is a JsonObject
+     * @param handler            which is a request handler
+     * @return AuthenticationService which is a service
+     */
 
-  @GenIgnore
-  static AuthenticationService createProxy(Vertx vertx, String address) {
-    return new AuthenticationServiceVertxEBProxy(vertx, address);
-  }
+    @Fluent
+    AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
+                                           Handler<AsyncResult<JsonObject>> handler);
 }
