@@ -111,6 +111,9 @@ public class Constants {
   public static final String JSON_STREAMING_NAME = "test-streaming-name";
   public static final String JSON_SUBS_ID = "subscriptionID";
   public static final String JSON_COUNT = "Count";
+  public static final String JSON_URL = "url";
+  public static final String JSON_METHOD = "method";
+  public static final String JSON_PASSWORD = "password";
 
   // searchtype
   public static final String JSON_SEARCH_TYPE = "searchType";

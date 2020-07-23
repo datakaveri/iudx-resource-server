@@ -479,7 +479,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           if (requestJsonObject.containsKey(Constants.JSON_TYPE)) {
             JsonObject authJson = authHandler.result();
             JsonObject jsonObj = requestJsonObject.copy();
-            jsonObj.put(Constants.JSON_NAME, authJson.getString(Constants.JSON_NAME));
+            // jsonObj.put(Constants.JSON_NAME, authJson.getString(Constants.JSON_NAME));
             jsonObj.put(Constants.JSON_CONSUMER, authJson.getString(Constants.JSON_CONSUMER));
             jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
             LOGGER.info("json for subs :: " + jsonObj);
@@ -641,7 +641,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           if (requestJson != null && requestJson.containsKey(Constants.JSON_TYPE)) {
             JsonObject authResult = authHandler.result();
             JsonObject jsonObj = requestJson.copy();
-            jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
+            // jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
             jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
             jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
             Future<JsonObject> subsReq = subsService.getSubscription(jsonObj, databroker, database);
@@ -1012,7 +1012,6 @@ public class ApiServerVerticle extends AbstractVerticle {
               handleResponse(response, ResponseType.BadRequestData,
                   brokerResultHandler.cause().getMessage(), false);
             }
-
           });
         } else if (authHandler.failed()) {
           handleResponse(response, ResponseType.AuthenticationFailure, true);
