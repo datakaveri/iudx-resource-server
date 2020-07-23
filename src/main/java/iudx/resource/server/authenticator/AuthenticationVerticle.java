@@ -26,7 +26,7 @@ import java.util.Properties;
  * The Authentication Verticle implementation in the the IUDX Resource Server exposes the
  * {@link iudx.resource.server.authenticator.AuthenticationService} over the Vert.x Event Bus.
  * </p>
- * 
+ *
  * @version 1.0
  * @since 2020-05-31
  */
@@ -67,7 +67,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
    * service with the Event bus against an address, publishes the service with the service discovery
    * interface.
-   * 
+   *
    * @throws Exception which is a startup exception
    */
 
@@ -85,7 +85,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
       if (res.succeeded()) {
         vertx = res.result();
 
-        authentication = new AuthenticationServiceImpl();
+        authentication = new AuthenticationServiceImpl(createWebClient(vertx, properties));
 
         /* Publish the Authentication service with the Event Bus against an address. */
 

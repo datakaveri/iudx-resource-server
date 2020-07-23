@@ -6,41 +6,52 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import iudx.resource.server.apiserver.util.Constants;
-import java.util.UUID;
+import io.vertx.ext.web.client.WebClient;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * The Authentication Service Implementation.
  * <h1>Authentication Service Implementation</h1>
  * <p>
- * The Authentication Service implementation in the IUDX Resource Server implements the definitions
- * of the {@link iudx.resource.server.authenticator.AuthenticationService}.
+ * The Authentication Service implementation in the IUDX Resource Server
+ * implements the definitions of the
+ * {@link iudx.resource.server.authenticator.AuthenticationService}.
  * </p>
- * 
+ *
  * @version 1.0
  * @since 2020-05-31
  */
 
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-  private static final Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
-  private static final String ALIAS_NAME = UUID.randomUUID().toString();
-  private static final String CONSUMER = UUID.randomUUID().toString() + "@iudx.org";
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
+    private static final Properties properties = new Properties();
+    private final WebClient webClient;
 
-  /**
-   * {@inheritDoc}
-   */
+    public AuthenticationServiceImpl(WebClient client) {
+        webClient = client;
+        try {
+            FileInputStream configFile = new FileInputStream(Constants.CONFIG_FILE);
+            if (properties.isEmpty()) properties.load(configFile);
+        } catch (IOException e) {
+            logger.error("Could not load properties from config file", e);
+        }
+    }
 
-  @Override
-  public AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
-      Handler<AsyncResult<JsonObject>> handler) {
-    // added for testing.
-    JsonObject json = new JsonObject();
-    json.put(Constants.JSON_NAME, ALIAS_NAME);
-    json.put(Constants.JSON_CONSUMER, CONSUMER);
-    handler.handle(Future.succeededFuture(json));
-    return this;
-  }
+    /**
+     * {@inheritDoc}
+     */
+
+    @Override
+    public AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
+                                                  Handler<AsyncResult<JsonObject>> handler) {
+        // added for testing.
+        JsonObject json = new JsonObject();
+        handler.handle(Future.succeededFuture(json));
+        return this;
+    }
 
 }
