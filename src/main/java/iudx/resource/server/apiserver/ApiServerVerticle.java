@@ -603,6 +603,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         if (authHandler.succeeded()) {
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
           if (requestJson != null && requestJson.containsKey(Constants.SUB_TYPE)) {
+            if (requestJson.getString(Constants.JSON_NAME).equalsIgnoreCase(alias)) {
             JsonObject authResult = authHandler.result();
             JsonObject jsonObj = requestJson.copy();
             jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
@@ -617,6 +618,9 @@ public class ApiServerVerticle extends AbstractVerticle {
                     subsRequestHandler.result().toString(), false);
               }
             });
+            } else {
+              handleResponse(response, ResponseType.BadRequestData, Constants.MSG_INVALID_NAME, true);
+            }
           } else {
             handleResponse(response, ResponseType.BadRequestData, Constants.MSG_SUB_TYPE_NOT_FOUND,
                 true);
@@ -659,6 +663,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         if (authHandler.succeeded()) {
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
           if (requestJson != null && requestJson.containsKey(Constants.SUB_TYPE)) {
+            if (requestJson.getString(Constants.JSON_NAME).equalsIgnoreCase(alias)) {
             JsonObject authResult = authHandler.result();
             JsonObject jsonObj = requestJson.copy();
             jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
@@ -676,6 +681,9 @@ public class ApiServerVerticle extends AbstractVerticle {
               }
             });
           } else {
+            handleResponse(response, ResponseType.BadRequestData, Constants.MSG_INVALID_NAME, true);
+          }
+         } else {
             handleResponse(response, ResponseType.BadRequestData, Constants.MSG_SUB_TYPE_NOT_FOUND,
                 true);
           }

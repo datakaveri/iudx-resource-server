@@ -778,6 +778,36 @@ public class ApiServerVerticleTest {
 
   @Test
   @Order(108)
+  @DisplayName("/subscription endpoint to update a subscription with a non matching name and ID")
+  public void testUpdateStreamingSubscription400NonMatchingNameFields(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
+    JsonObject json = new JsonObject();
+    json.put(Constants.JSON_NAME, callbackSubscriptionAliasName);
+    JsonArray appendEntities = new JsonArray();
+    appendEntities.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/abc.*");
+    json.put(Constants.JSON_ENTITIES, appendEntities);
+    client.put(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(json, handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            assertEquals(ResponseType.BadRequestData.getCode(),
+                response.getInteger(Constants.JSON_TYPE));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(108)
   @DisplayName("/subscription endpoint to update a subscription")
   public void testUpdateStreamingSubscription(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
