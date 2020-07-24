@@ -14,6 +14,7 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -29,8 +30,10 @@ import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import iudx.resource.server.apiserver.management.ManagementApi;
 import iudx.resource.server.apiserver.management.ManagementApiImpl;
+import iudx.resource.server.apiserver.query.GeoRelation;
 import iudx.resource.server.apiserver.query.NGSILDQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
+import iudx.resource.server.apiserver.query.TemporalRelation;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.response.RestResponse;
 import iudx.resource.server.apiserver.subscription.SubsType;
@@ -43,13 +46,17 @@ import iudx.resource.server.filedownload.FileDownloadService;
 import iudx.resource.server.media.MediaService;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 /**
@@ -392,16 +399,44 @@ public class ApiServerVerticle extends AbstractVerticle {
     } else {
       authenticationInfo.put(Constants.HEADER_TOKEN, Constants.PUBLIC_TOKEN);
     }
-    MultiMap params = getQueryParams(routingContext, response).get();
-    Future<Boolean> validationResult = Validator.validate(params);
-    NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
+    JsonObject requestJson = routingContext.getBodyAsJson();
+    LOGGER.info("request Json :: " + requestJson);
+    NGSILDQueryParams ngsildquery = new NGSILDQueryParams(requestJson);
     QueryMapper queryMapper = new QueryMapper();
-    JsonObject json = queryMapper.toJson(ngsildquery, false);
+    JsonObject json = queryMapper.toJson(ngsildquery, requestJson.containsKey("temporalQ"));
     String instanceID = request.getHeader(Constants.HEADER_HOST);
     json.put(Constants.JSON_INSTANCEID, instanceID);
     LOGGER.info("IUDX query json : " + json);
-    /* HTTP request body as Json */
-    JsonObject requestBody = routingContext.getBodyAsJson();
+    authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
+      if (authHandler.succeeded()) {
+        LOGGER
+            .info("Authenticating entity search request ".concat(authHandler.result().toString()));
+        if (json.containsKey(Constants.IUDXQUERY_OPTIONS)
+            && Constants.JSON_COUNT.equalsIgnoreCase(json.getString(Constants.IUDXQUERY_OPTIONS))) {
+          database.countQuery(json, handler -> {
+            if (handler.succeeded()) {
+              handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
+            } else if (handler.failed()) {
+              handleResponse(response, ResponseType.BadRequestData, handler.cause().getMessage(),
+                  true);
+            }
+          });
+        } else {
+          // call database vertical for search
+          database.searchQuery(json, handler -> {
+            if (handler.succeeded()) {
+              handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
+            } else if (handler.failed()) {
+              handleResponse(response, ResponseType.BadRequestData, handler.cause().getMessage(),
+                  true);
+            }
+          });
+        }
+      } else if (authHandler.failed()) {
+        LOGGER.error("Unathorized request".concat(authHandler.cause().toString()));
+        handleResponse(response, ResponseType.AuthenticationFailure, true);
+      }
+    });
   }
 
   /**
