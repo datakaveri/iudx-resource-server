@@ -122,6 +122,7 @@ public class Constants {
   public static final String JSON_GEO_SEARCH = "geoSearch_";
   public static final String JSON_RESPONSE_FILTER_SEARCH = "responseFilter_";
   public static final String JSON_ATTRIBUTE_SEARCH = "attributeSearch_";
+  public static final String JSON_LATEST_SEARCH = "latestSearch_";
 
   // Geometry
   public static final String GEOM_POINT = "point";

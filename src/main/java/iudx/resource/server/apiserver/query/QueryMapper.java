@@ -108,6 +108,8 @@ public class QueryMapper {
     StringBuilder searchType = new StringBuilder();
     if (isTemporal) {
       searchType.append(Constants.JSON_TEMPORAL_SEARCH);
+    } else {
+      searchType.append(Constants.JSON_LATEST_SEARCH);
     }
     if (isGeoSearch) {
       searchType.append(Constants.JSON_GEO_SEARCH);
