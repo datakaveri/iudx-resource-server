@@ -106,4 +106,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return this;
     }
 
+    private boolean isValidEndpoint(String requestEndpoint, JsonArray apis) {
+        for (Object es : apis) {
+            String endpoint = (String) es;
+            if (endpoint.equals("/*") || endpoint.equals(requestEndpoint)) return true;
+        }
+        return false;
+    }
+
+    private JsonObject retrieveTipRequest(String requestID, JsonObject tipResponse) {
+        for (Object r : tipResponse.getJsonArray("request")) {
+            JsonObject tipRequest = (JsonObject) r;
+            if (requestID.equals(tipRequest.getString("id"))) return tipRequest;
+        }
+        return new JsonObject();
+    }
+
 }
