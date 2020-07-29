@@ -122,4 +122,36 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return new JsonObject();
     }
 
+    private Future<JsonObject> retrieveTipResponse(String token) {
+        Promise<JsonObject> promise = Promise.promise();
+        JsonObject body = new JsonObject();
+        body.put("token", token);
+        webClient
+                .post(443, properties.getProperty(Constants.AUTH_SERVER_HOST), Constants.AUTH_TIP_PATH)
+                .expect(ResponsePredicate.JSON)
+                .sendJsonObject(body, httpResponseAsyncResult -> {
+                    if (httpResponseAsyncResult.failed()) {
+                        promise.fail(httpResponseAsyncResult.cause());
+                        return;
+                    }
+                    HttpResponse<Buffer> response = httpResponseAsyncResult.result();
+                    if (response.statusCode() != HttpStatus.SC_OK) {
+                        String errorMessage = response
+                                .bodyAsJsonObject()
+                                .getJsonObject("error")
+                                .getString("message");
+                        promise.fail(new Throwable(errorMessage));
+                        return;
+                    }
+                    JsonObject responseBody = response.bodyAsJsonObject();
+                    promise.complete(responseBody);
+                });
+        return promise.future();
+    }
+
+    private Future<HashMap<String, Boolean>> isOpenResource(JsonArray requestIDs) {
+        Promise<HashMap<String, Boolean>> promise = Promise.promise();
+        return promise.future();
+    }
+
 }
