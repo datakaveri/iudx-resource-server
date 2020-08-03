@@ -85,7 +85,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
             if (res.succeeded()) {
                 vertx = res.result();
 
-                authentication = new AuthenticationServiceImpl(createWebClient(vertx, properties));
+                authentication = new AuthenticationServiceImpl(vertx, createWebClient(vertx, properties));
 
                 /* Publish the Authentication service with the Event Bus against an address. */
 

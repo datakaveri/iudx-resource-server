@@ -43,7 +43,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private static final Properties properties = new Properties();
     private final WebClient webClient;
 
-    public AuthenticationServiceImpl(WebClient client) {
+    public AuthenticationServiceImpl(Vertx vertx, WebClient client) {
         webClient = client;
         try {
             FileInputStream configFile = new FileInputStream(Constants.CONFIG_FILE);
@@ -51,6 +51,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } catch (IOException e) {
             logger.error("Could not load properties from config file", e);
         }
+
+        long oneMinute = 1000 * 60;
+        vertx.setPeriodic(oneMinute * Constants.TIP_CACHE_TIMEOUT_AMOUNT, timerID -> {});
     }
 
     /**

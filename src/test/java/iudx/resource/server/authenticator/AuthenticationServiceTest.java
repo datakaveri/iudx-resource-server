@@ -25,7 +25,7 @@ public class AuthenticationServiceTest {
     static void initialize(Vertx vertx, VertxTestContext testContext) {
         vertxObj = vertx;
         WebClient client = AuthenticationVerticle.createWebClient(vertxObj, properties, true);
-        authenticationService = new AuthenticationServiceImpl(client);
+        authenticationService = new AuthenticationServiceImpl(vertxObj, client);
         logger.info("Auth tests setup complete");
         testContext.completeNow();
     }
