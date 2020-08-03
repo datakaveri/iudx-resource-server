@@ -13,8 +13,13 @@ import org.apache.http.HttpStatus;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +38,8 @@ import java.util.stream.Collectors;
 public class AuthenticationServiceImpl implements AuthenticationService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
+    private static final ConcurrentHashMap<String, JsonObject> tipCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Boolean> catCache = new ConcurrentHashMap<>();
     private static final Properties properties = new Properties();
     private final WebClient webClient;
 
@@ -124,6 +131,36 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private Future<JsonObject> retrieveTipResponse(String token) {
         Promise<JsonObject> promise = Promise.promise();
+
+        JsonObject cacheResponse = tipCache.getOrDefault(token, new JsonObject());
+        if (!cacheResponse.isEmpty()) {
+            try {
+                Instant tokenExpiry = Instant.parse(cacheResponse.getString("expiry"));
+                Instant cacheExpiry = Instant.parse(cacheResponse.getString("cache-expiry"));
+                Instant now = Instant.now(Clock.systemUTC());
+                if (tokenExpiry.isBefore(now)) {
+                    if (!tipCache.remove(token, cacheResponse))
+                        throw new ConcurrentModificationException("TIP cache premature invalidation");
+                    promise.fail(new Throwable("Token has expired"));
+                }
+                if (cacheExpiry.isAfter(now)) {
+                    String extendedCacheExpiry = now
+                            .plus(Constants.TIP_CACHE_TIMEOUT_AMOUNT, Constants.TIP_CACHE_TIMEOUT_UNIT)
+                            .toString();
+                    JsonObject newCacheEntry = cacheResponse.copy();
+                    newCacheEntry.put("cache-expiry", extendedCacheExpiry);
+                    if (!tipCache.replace(token, cacheResponse, newCacheEntry))
+                        throw new ConcurrentModificationException("TIP cache premature invalidation");
+                    promise.complete(newCacheEntry);
+                } else {
+                    if (!tipCache.remove(token, cacheResponse))
+                        throw new ConcurrentModificationException("TIP cache premature invalidation");
+                }
+            } catch (DateTimeParseException | ConcurrentModificationException e) {
+                logger.error(e.getMessage());
+            }
+        }
+
         JsonObject body = new JsonObject();
         body.put("token", token);
         webClient
@@ -144,6 +181,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         return;
                     }
                     JsonObject responseBody = response.bodyAsJsonObject();
+                    String cacheExpiry = Instant
+                            .now(Clock.systemUTC())
+                            .plus(Constants.TIP_CACHE_TIMEOUT_AMOUNT, Constants.TIP_CACHE_TIMEOUT_UNIT)
+                            .toString();
+                    responseBody.put("cache-expiry", cacheExpiry);
+                    tipCache.put(token, responseBody);
                     promise.complete(responseBody);
                 });
         return promise.future();
