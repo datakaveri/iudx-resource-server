@@ -52,8 +52,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             logger.error("Could not load properties from config file", e);
         }
 
-        long oneMinute = 1000 * 60;
-        vertx.setPeriodic(oneMinute * Constants.TIP_CACHE_TIMEOUT_AMOUNT, timerID -> {});
+        long cacheCleanupTime = 1000 * 60 * Constants.TIP_CACHE_TIMEOUT_AMOUNT;
+        vertx.setPeriodic(cacheCleanupTime, timerID -> tipCache.values().removeIf(entry -> {
+            Instant tokenExpiry = Instant.parse(entry.getString("expiry"));
+            Instant cacheExpiry = Instant.parse(entry.getString("cache-expiry"));
+            Instant now = Instant.now(Clock.systemUTC());
+            return (now.isAfter(tokenExpiry) || now.isAfter(cacheExpiry));
+        }));
     }
 
     /**
