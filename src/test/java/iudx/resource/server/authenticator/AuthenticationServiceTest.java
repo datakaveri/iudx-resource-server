@@ -1,6 +1,8 @@
 package iudx.resource.server.authenticator;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.client.WebClient;
@@ -11,6 +13,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Properties;
 
 @ExtendWith(VertxExtension.class)
@@ -28,6 +32,12 @@ public class AuthenticationServiceTest {
         authenticationService = new AuthenticationServiceImpl(vertxObj, client);
         logger.info("Auth tests setup complete");
         testContext.completeNow();
+        try {
+            FileInputStream configFile = new FileInputStream(Constants.CONFIG_FILE);
+            if (properties.isEmpty()) properties.load(configFile);
+        } catch (IOException e) {
+            logger.error("Could not load properties from config file", e);
+        }
     }
 
     @Test
@@ -49,6 +59,148 @@ public class AuthenticationServiceTest {
                 return;
             }
             logger.info("Cert info call to auth server succeeded");
+            testContext.completeNow();
+        });
+    }
+
+    @Test
+    @DisplayName("Test if invalid token fails TIP")
+    public void testInvalidToken(VertxTestContext testContext) {
+        JsonObject request = new JsonObject()
+                .put("ids", new JsonArray().add("testResource"));
+        JsonObject authInfo = new JsonObject().put("token", "invalid")
+                .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(0));
+        authenticationService.tokenInterospect(request, authInfo, asyncResult -> {
+            if (asyncResult.failed()) {
+                logger.error("Unexpected failure");
+                testContext.failNow(asyncResult.cause());
+                return;
+            }
+            JsonObject result = asyncResult.result();
+            if (!result.getString("status").equals("error")) {
+                testContext.failNow(new Throwable("Unexpected result for invalid token"));
+                return;
+            }
+            logger.info("Invalid token TIP failed properly");
+            logger.info(result.getString("message"));
+            testContext.completeNow();
+        });
+    }
+
+    @Test
+    @DisplayName("Test the happy path without any caching")
+    public void testHappyPath(VertxTestContext testContext) {
+        JsonObject request = new JsonObject()
+                .put("ids", new JsonArray()
+                .add("datakaveri.org/1022f4c20542abd5087107c0b6de4cb3130c5b7b/example.com/res1"));
+        JsonObject authInfo = new JsonObject()
+                .put("token", properties.getProperty("testAuthToken"))
+                .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(0));
+        authenticationService.tokenInterospect(request, authInfo, asyncResult -> {
+            if (asyncResult.failed()) {
+                logger.error("Unexpected failure");
+                testContext.failNow(asyncResult.cause());
+                return;
+            }
+            JsonObject result = asyncResult.result();
+            if (result.getString("status").equals("error")) {
+                testContext.failNow(new Throwable("Unexpected result"));
+                return;
+            }
+            logger.info("Happy path test without caching success");
+            testContext.completeNow();
+        });
+    }
+
+    @Test
+    @DisplayName("Test the happy path with TIP caching")
+    public void testHappyPathTipCache(VertxTestContext testContext) {
+        JsonObject request = new JsonObject()
+                .put("ids", new JsonArray()
+                        .add("datakaveri.org/1022f4c20542abd5087107c0b6de4cb3130c5b7b/example.com/res1"));
+        JsonObject authInfo = new JsonObject()
+                .put("token", properties.getProperty("testAuthToken"))
+                .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(0));
+        authenticationService.tokenInterospect(request, authInfo, asyncResult -> {
+            if (asyncResult.failed()) {
+                logger.error("Unexpected failure");
+                testContext.failNow(asyncResult.cause());
+                return;
+            }
+            JsonObject result = asyncResult.result();
+            if (result.getString("status").equals("error")) {
+                testContext.failNow(new Throwable("Unexpected result"));
+                return;
+            }
+
+            JsonObject authInfo2 = new JsonObject()
+                    .put("token", properties.getProperty("testAuthToken"))
+                    .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(1));
+            authenticationService.tokenInterospect(request, authInfo2, asyncResult2 -> {
+                if (asyncResult2.failed()) {
+                    logger.error("Unexpected failure");
+                    testContext.failNow(asyncResult2.cause());
+                    return;
+                }
+                JsonObject result2 = asyncResult2.result();
+                if (result2.getString("status").equals("error")) {
+                    testContext.failNow(new Throwable("Unexpected result"));
+                    return;
+                }
+                logger.info("Happy path test with caching success");
+                testContext.completeNow();
+            });
+        });
+    }
+
+    @Test
+    @DisplayName("Test closed endpoint with public token for expected failure")
+    public void testClosedEndpointPublicToken(VertxTestContext testContext) {
+        JsonObject request = new JsonObject()
+                .put("ids", new JsonArray()
+                        .add("datakaveri.org/1022f4c20542abd5087107c0b6de4cb3130c5b7b/example.com/res1"));
+        JsonObject authInfo = new JsonObject()
+                .put("token", "public")
+                .put("apiEndpoint", "/iudx/v1/adaptor");
+        authenticationService.tokenInterospect(request, authInfo, asyncResult -> {
+            if (asyncResult.failed()) {
+                logger.error("Unexpected failure");
+                testContext.failNow(asyncResult.cause());
+                return;
+            }
+            JsonObject result = asyncResult.result();
+            if (!result.getString("status").equals("error")) {
+                testContext.failNow(new Throwable("Unexpected result for public token and closed endpoint"));
+                return;
+            }
+            logger.info("Public token for closed endpoint TIP failed properly");
+            logger.info(result.getString("message"));
+            testContext.completeNow();
+        });
+    }
+
+    @Test
+    @DisplayName("Test expired token for failure")
+    public void testExpiredToken(VertxTestContext testContext) {
+        JsonObject request = new JsonObject()
+                .put("ids", new JsonArray()
+                        .add("datakaveri.org/1022f4c20542abd5087107c0b6de4cb3130c5b7b/example.com/test-providers"));
+        JsonObject authInfo = new JsonObject()
+                .put("token", properties.getProperty("testExpiredAuthToken"))
+                .put("apiEndpoint", "/iudx/v1/adaptor");
+        authenticationService.tokenInterospect(request, authInfo, asyncResult -> {
+            if (asyncResult.failed()) {
+                logger.error("Unexpected failure");
+                testContext.failNow(asyncResult.cause());
+                return;
+            }
+            JsonObject result = asyncResult.result();
+            if (!result.getString("status").equals("error")) {
+                testContext.failNow(new Throwable("Unexpected success result for expired token"));
+                return;
+            }
+            logger.info("Expired token TIP failed properly");
+            logger.info(result.getString("message"));
             testContext.completeNow();
         });
     }

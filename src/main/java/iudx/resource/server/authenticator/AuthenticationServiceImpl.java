@@ -133,6 +133,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         for (Object r : tipResponse.getJsonArray("request")) {
             JsonObject tipRequest = (JsonObject) r;
             if (requestID.equals(tipRequest.getString("id"))) return tipRequest;
+            // TODO add regex matching for request?
         }
         return new JsonObject();
     }
@@ -202,6 +203,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private Future<HashMap<String, Boolean>> isOpenResource(JsonArray requestIDs) {
         Promise<HashMap<String, Boolean>> promise = Promise.promise();
+        // <Temporary result>
+        HashMap<String, Boolean> result = new HashMap<>();
+        requestIDs.stream().forEach(rID -> result.put((String) rID, false));
+        promise.complete(result);
+        // </Temporary result>
         return promise.future();
     }
 
