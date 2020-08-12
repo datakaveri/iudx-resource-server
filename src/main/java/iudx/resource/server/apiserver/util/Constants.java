@@ -115,7 +115,9 @@ public class Constants {
   public static final String JSON_URL = "url";
   public static final String JSON_METHOD = "method";
   public static final String JSON_PASSWORD = "password";
-
+  public static final String JSON_RESOURCE_SERVER = "resourceServer";
+  public static final String JSON_RESOURCE_GROUP = "resourceGroup";
+  
   // searchtype
   public static final String JSON_SEARCH_TYPE = "searchType";
   public static final String JSON_TEMPORAL_SEARCH = "temporalSearch_";
@@ -156,4 +158,5 @@ public class Constants {
 
   // results
   public static final String SUCCCESS = "success";
+
 }
