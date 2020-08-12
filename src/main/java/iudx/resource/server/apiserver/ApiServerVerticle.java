@@ -192,9 +192,9 @@ public class ApiServerVerticle extends AbstractVerticle {
         // adapter
         router.post(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register")
             .handler(this::registerAdapter);
-        router.delete(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSHA/:alias")
+        router.delete(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSHA/:resourceServer/:resourceGroup")
             .handler(this::deleteAdapter);
-        router.get(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSHA/:alias")
+        router.get(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSHA/:resourceServer/:resourceGroup")
             .handler(this::getAdapterDetails);
         router.post(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat")
             .handler(this::publishHeartbeat);
@@ -1294,8 +1294,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(Constants.JSON_INSTANCEID, instanceID);
     String domain = request.getParam(Constants.JSON_DOMAIN);
     String usersha = request.getParam(Constants.JSON_USERSHA);
-    String alias = request.getParam(Constants.JSON_ALIAS);
-    String adapterId = domain + "/" + usersha + "/" + alias;
+    String resourceGroup = request.getParam(Constants.JSON_RESOURCE_GROUP);
+    String resourceServer = request.getParam(Constants.JSON_RESOURCE_SERVER);
+    String adapterId = domain + "/" + usersha + "/" +  resourceServer + "/" + resourceGroup;
     requestJson.put(Constants.JSON_ID, adapterId);
     if (request.headers().contains(Constants.HEADER_TOKEN)) {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
@@ -1338,8 +1339,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(Constants.JSON_INSTANCEID, instanceID);
     String domain = request.getParam(Constants.JSON_DOMAIN);
     String usersha = request.getParam(Constants.JSON_USERSHA);
-    String alias = request.getParam(Constants.JSON_ALIAS);
-    String adapterId = domain + "/" + usersha + "/" + alias;
+    String resourceGroup = request.getParam(Constants.JSON_RESOURCE_GROUP);
+    String resourceServer = request.getParam(Constants.JSON_RESOURCE_SERVER);
+    String adapterId = domain + "/" + usersha + "/" +  resourceServer + "/" + resourceGroup;
     requestJson.put(Constants.JSON_ID, adapterId);
     if (request.headers().contains(Constants.HEADER_TOKEN)) {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
