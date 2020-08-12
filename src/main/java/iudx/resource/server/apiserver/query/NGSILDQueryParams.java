@@ -53,7 +53,7 @@ public class NGSILDQueryParams {
   /**
    * constructor a NGSILDParams passing json.
    * 
-   * @param paramsMap query paramater's map.
+   * @param json JsonObject of query.
    */
   public NGSILDQueryParams(JsonObject json) {
     this.setGeoRel(new GeoRelation());

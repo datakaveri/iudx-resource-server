@@ -1156,14 +1156,14 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     JsonObject appendStreamingSubscriptionResponse = new JsonObject();
     JsonObject requestjson = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      String queueName = request.getString(Constants.SUBSCRIPTION_ID);
       JsonArray entitites = request.getJsonArray(Constants.ENTITIES);
       logger.info("Request Access for " + entitites);
       logger.info("No of bindings to do : " + entitites.size());
 
       totalBindCount = entitites.size();
       totalBindSuccess = 0;
-      
+
+      String queueName = request.getString(Constants.SUBSCRIPTION_ID);
       requestjson.put(Constants.QUEUE_NAME, queueName);
       Future<JsonObject> result = listQueueSubscribers(requestjson);
       result.onComplete(resultHandlerqueue -> {
