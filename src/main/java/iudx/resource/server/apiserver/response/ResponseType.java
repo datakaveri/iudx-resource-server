@@ -1,8 +1,9 @@
 package iudx.resource.server.apiserver.response;
 
+/* TODO Need to add documentation. */
 public enum ResponseType {
   Ok(200, "Ok"), Created(201, "created"), InvalidRequest(400, "Invalid request"),
-  AuthenticationFailure(401, "Authentication failure"), BadRequestData(400, "Bad Request Data"),
+  AuthenticationFailure(401, "Invalid credentials"), BadRequestData(400, "Bad Request Data"),
   TooComplexQuery(403, "Too complex query"), TooManyResults(403, "Too many results"),
   NotFound(404, "Not Found"), ResourceNotFound(404, "Resource not found"),
   MethodNotAllowed(405, "Method not allowed"), AlreadyExists(409, "Already exists"),

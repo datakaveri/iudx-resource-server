@@ -29,25 +29,6 @@ import org.elasticsearch.client.RestClient;
 @ProxyGen
 public interface DatabaseService {
 
-  String GEO_KEY = "geoJsonLocation";
-  String GEO_CIRCLE = "circle";
-  String GEO_BBOX = "envelope";
-  String COORDINATES_KEY = "coordinates";
-  String GEO_RELATION_KEY = "relation";
-  String TYPE_KEY = "type";
-  String GEO_SHAPE_KEY = "geo_shape";
-  String GEO_RADIUS = "radius";
-  String SHAPE_KEY = "shape";
-  String QUERY_KEY = "query";
-  String FILTER_KEY = "filter";
-  String BOOL_KEY = "bool";
-  String RESOURCE_ID_KEY = "resource-id";
-  String VARANASI_SWM_SEARCH_INDEX = "varanasi-swm-vehicles/_search";
-  String FILTER_PATH = "?filter_path=took,hits.hits._source";
-  String VARANASI_OTHER_SEARCH_INDEX = "varanasi-other/_search";
-  String VARANASI_TEST_SEARCH_INDEX = "varanasi/_search?filter_path=took,hits.hits._source";
-  String SOURCE_FILTER_KEY = "_source";
-
   /**
    * The searchQuery implements the search operation with the database.
    * 

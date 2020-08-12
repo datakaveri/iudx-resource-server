@@ -1,9 +1,9 @@
 package iudx.resource.server.apiserver;
 
+import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
-import io.vertx.core.http.HttpServerResponse;
-import iudx.resource.server.apiserver.response.ResponseType;
-import iudx.resource.server.apiserver.response.RestResponse;
+import io.vertx.core.Promise;
+import iudx.resource.server.apiserver.util.Constants;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -18,21 +18,22 @@ public class Validator {
   private static Set<String> validParams = new HashSet<String>();
 
   static {
-    validParams.add("type");
-    validParams.add("id");
-    validParams.add("idpattern");
-    validParams.add("attrs");
-    validParams.add("q");
-    validParams.add("georel");
-    validParams.add("geometry");
-    validParams.add("coordinates");
-    validParams.add("geoproperty");
-    validParams.add("timeproperty");
-    validParams.add("time");
-    validParams.add("timerel");
-    validParams.add("time");
-    validParams.add("endtime");
-    // validParams.add("");
+    validParams.add(Constants.NGSILDQUERY_TYPE);
+    validParams.add(Constants.NGSILDQUERY_ID);
+    validParams.add(Constants.NGSILDQUERY_IDPATTERN);
+    validParams.add(Constants.NGSILDQUERY_ATTRIBUTE);
+    validParams.add(Constants.NGSILDQUERY_Q);
+    validParams.add(Constants.NGSILDQUERY_GEOREL);
+    validParams.add(Constants.NGSILDQUERY_GEOMETRY);
+    validParams.add(Constants.NGSILDQUERY_COORDINATES);
+    validParams.add(Constants.NGSILDQUERY_GEOPROPERTY);
+    validParams.add(Constants.NGSILDQUERY_TIMEPROPERTY);
+    validParams.add(Constants.NGSILDQUERY_TIME);
+    validParams.add(Constants.NGSILDQUERY_TIMEREL);
+    validParams.add(Constants.NGSILDQUERY_TIME);
+    validParams.add(Constants.NGSILDQUERY_ENDTIME);
+    //for IUDX count query
+    validParams.add(Constants.IUDXQUERY_OPTIONS);
   }
 
   /**
@@ -41,17 +42,30 @@ public class Validator {
    * @param parameterMap parameters map of request query
    * @param response     HttpServerResponse object
    */
-  public static void validate(MultiMap parameterMap, HttpServerResponse response) {
+  private static boolean validateParams(MultiMap parameterMap) {
     final List<Entry<String, String>> entries = parameterMap.entries();
     for (final Entry<String, String> entry : entries) {
       if (!validParams.contains(entry.getKey())) {
-        response.putHeader("content-type", "application/json")
-            .setStatusCode(ResponseType.BadRequestData.getCode())
-            .end(new RestResponse.Builder().withError(ResponseType.BadRequestData)
-                .withMessage(entry.getKey() + " is not valid parameter.").build().toJsonString());
+        return false;
       }
     }
+    return true;
+  }
 
+  /**
+   * validate request parameters.
+   * 
+   * @param paramsMap map of request parameters
+   * @return Future future JsonObject
+   */
+  public static Future<Boolean> validate(MultiMap paramsMap) {
+    Promise<Boolean> promise = Promise.promise();
+    if (validateParams(paramsMap)) {
+      promise.complete(true);
+    } else {
+      promise.fail(Constants.MSG_INVALID_PARAM);
+    }
+    return promise.future();
   }
 
 }
