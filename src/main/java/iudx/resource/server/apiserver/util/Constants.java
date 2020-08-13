@@ -42,7 +42,11 @@ public class Constants {
   public static final String NGSILDQUERY_MAXDISTANCE = "maxdistance";
   public static final String NGSILDQUERY_MINDISTANCE = "mindistance";
   public static final String IUDXQUERY_OPTIONS = "options";
-
+  public static final String NGSILDQUERY_ENTITIES = "entities";
+  public static final String NGSILDQUERY_GEOQ = "geoQ";
+  public static final String NGSILDQUERY_TEMPORALQ = "temporalQ";
+  public static final String NGSILDQUERY_TIME_PROPERTY = "timeProperty";
+  
   // Header params
   public static final String HEADER_TOKEN = "token";
   public static final String HEADER_HOST = "Host";
