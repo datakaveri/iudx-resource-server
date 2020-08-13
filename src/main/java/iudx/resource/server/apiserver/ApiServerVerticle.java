@@ -334,20 +334,20 @@ public class ApiServerVerticle extends AbstractVerticle {
     MultiMap params = getQueryParams(routingContext, response).get();
     // validate request parameters
     Future<Boolean> validationResult = Validator.validate(params);
-    // parse query params
-    NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
-    QueryMapper queryMapper = new QueryMapper();
-    // create json
-    JsonObject json = queryMapper.toJson(ngsildquery, false);
-    /* HTTP request instance/host details */
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
-    json.put(Constants.JSON_INSTANCEID, instanceID);
-    LOGGER.info("IUDX query json : " + json);
-    /* HTTP request body as Json */
-    JsonObject requestBody = routingContext.getBodyAsJson();
-    /* Authenticating the request */
     validationResult.onComplete(validationHandler -> {
       if (validationHandler.succeeded()) {
+        // parse query params
+        NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
+        QueryMapper queryMapper = new QueryMapper();
+        // create json
+        JsonObject json = queryMapper.toJson(ngsildquery, false);
+        /* HTTP request instance/host details */
+        String instanceID = request.getHeader(Constants.HEADER_HOST);
+        json.put(Constants.JSON_INSTANCEID, instanceID);
+        LOGGER.info("IUDX query json : " + json);
+        /* HTTP request body as Json */
+        JsonObject requestBody = routingContext.getBodyAsJson();
+        /* Authenticating the request */
         authenticator.tokenInterospect(requestBody, authenticationInfo, authHandler -> {
           if (authHandler.succeeded()) {
             LOGGER.info(
@@ -402,41 +402,50 @@ public class ApiServerVerticle extends AbstractVerticle {
     }
     JsonObject requestJson = routingContext.getBodyAsJson();
     LOGGER.info("request Json :: " + requestJson);
-    NGSILDQueryParams ngsildquery = new NGSILDQueryParams(requestJson);
-    QueryMapper queryMapper = new QueryMapper();
-    JsonObject json = queryMapper.toJson(ngsildquery, requestJson.containsKey("temporalQ"));
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
-    json.put(Constants.JSON_INSTANCEID, instanceID);
-    LOGGER.info("IUDX query json : " + json);
     HttpServerResponse response = routingContext.response();
-    authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
-      if (authHandler.succeeded()) {
-        LOGGER
-            .info("Authenticating entity search request ".concat(authHandler.result().toString()));
-        if (json.containsKey(Constants.IUDXQUERY_OPTIONS)
-            && Constants.JSON_COUNT.equalsIgnoreCase(json.getString(Constants.IUDXQUERY_OPTIONS))) {
-          database.countQuery(json, handler -> {
-            if (handler.succeeded()) {
-              handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
-            } else if (handler.failed()) {
-              handleResponse(response, ResponseType.BadRequestData, handler.cause().getMessage(),
-                  true);
+    // validate request parameters
+    Future<Boolean> validationResult = Validator.validate(requestJson);
+    validationResult.onComplete(validationHandler -> {
+      if (validationHandler.succeeded()) {
+        // parse query params
+        NGSILDQueryParams ngsildquery = new NGSILDQueryParams(requestJson);
+        QueryMapper queryMapper = new QueryMapper();
+        JsonObject json = queryMapper.toJson(ngsildquery, requestJson.containsKey("temporalQ"));
+        String instanceID = request.getHeader(Constants.HEADER_HOST);
+        json.put(Constants.JSON_INSTANCEID, instanceID);
+        LOGGER.info("IUDX query json : " + json);
+        authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
+          if (authHandler.succeeded()) {
+            LOGGER.info(
+                "Authenticating entity search request ".concat(authHandler.result().toString()));
+            if (json.containsKey(Constants.IUDXQUERY_OPTIONS) && Constants.JSON_COUNT
+                .equalsIgnoreCase(json.getString(Constants.IUDXQUERY_OPTIONS))) {
+              database.countQuery(json, handler -> {
+                if (handler.succeeded()) {
+                  handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
+                } else if (handler.failed()) {
+                  handleResponse(response, ResponseType.BadRequestData,
+                      handler.cause().getMessage(), true);
+                }
+              });
+            } else {
+              // call database vertical for search
+              database.searchQuery(json, handler -> {
+                if (handler.succeeded()) {
+                  handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
+                } else if (handler.failed()) {
+                  handleResponse(response, ResponseType.BadRequestData,
+                      handler.cause().getMessage(), true);
+                }
+              });
             }
-          });
-        } else {
-          // call database vertical for search
-          database.searchQuery(json, handler -> {
-            if (handler.succeeded()) {
-              handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
-            } else if (handler.failed()) {
-              handleResponse(response, ResponseType.BadRequestData, handler.cause().getMessage(),
-                  true);
-            }
-          });
-        }
-      } else if (authHandler.failed()) {
-        LOGGER.error("Unathorized request".concat(authHandler.cause().toString()));
-        handleResponse(response, ResponseType.AuthenticationFailure, true);
+          } else if (authHandler.failed()) {
+            LOGGER.error("Unathorized request".concat(authHandler.cause().toString()));
+            handleResponse(response, ResponseType.AuthenticationFailure, true);
+          }
+        });
+      } else if (validationHandler.failed()) {
+        handleResponse(response, ResponseType.BadRequestData, Constants.MSG_INVALID_PARAM, true);
       }
     });
   }
@@ -468,18 +477,18 @@ public class ApiServerVerticle extends AbstractVerticle {
     MultiMap params = getQueryParams(routingContext, response).get();
     // validate request params
     Future<Boolean> validationResult = Validator.validate(params);
-    // parse query params
-    NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
-    QueryMapper queryMapper = new QueryMapper();
-    // create json
-    JsonObject json = queryMapper.toJson(ngsildquery, true);
-    json.put(Constants.JSON_INSTANCEID, instanceID);
-    LOGGER.info("IUDX temporal json query : " + json);
-    /* HTTP request body as Json */
-    JsonObject requestBody = routingContext.getBodyAsJson();
-    /* Authenticating the request */
     validationResult.onComplete(validationHandler -> {
       if (validationHandler.succeeded()) {
+        // parse query params
+        NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
+        QueryMapper queryMapper = new QueryMapper();
+        // create json
+        JsonObject json = queryMapper.toJson(ngsildquery, true);
+        json.put(Constants.JSON_INSTANCEID, instanceID);
+        LOGGER.info("IUDX temporal json query : " + json);
+        /* HTTP request body as Json */
+        JsonObject requestBody = routingContext.getBodyAsJson();
+        /* Authenticating the request */
         authenticator.tokenInterospect(requestBody, authenticationInfo, authHandler -> {
           if (authHandler.succeeded()) {
             LOGGER.info("Authenticating entity temporal search request "
