@@ -20,6 +20,7 @@ import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -132,8 +133,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private JsonObject retrieveTipRequest(String requestID, JsonObject tipResponse) {
         for (Object r : tipResponse.getJsonArray("request")) {
             JsonObject tipRequest = (JsonObject) r;
-            if (requestID.equals(tipRequest.getString("id"))) return tipRequest;
-            // TODO add regex matching for request?
+            String responseID = tipRequest.getString("id");
+            if (requestID.equals(responseID)) return tipRequest;
+            String escapedResponseID = responseID
+                    .replace("/", "\\/")
+                    .replace(".", "\\.")
+                    .replace("*", ".*");
+            Pattern pattern = Pattern.compile(escapedResponseID);
+            if (pattern.matcher(requestID).matches()) return tipRequest;
         }
         return new JsonObject();
     }
