@@ -46,7 +46,6 @@ public class Constants {
 	public static final String CALLBACK_URL_NOT_FOUND = "Callback Url not found";
 	public static final String CALLBACK_SUCCESS = "Data Send to CallBackUrl Successfully";
 	
-	
 	public static final String CONNECT_TO_CALLBACK_NOTIFICATION_QUEUE = "Connected to callback.notification queue";
 	public static final String CONNECT_TO_CALLBACK_NOTIFICATION_QUEUE_FAIL = "Failed to connect with callback.notification queue";
 	
@@ -86,9 +85,4 @@ public class Constants {
 	public static final String CREATE_CALLBACK_REQUEST_OBJECT_FAIL = "Failed to create request object for sending callback request";
 	public static final String CONNECT_TO_CALLBACK_URL_FAIL  = "Failed to connect callbackUrl";
 	public static final String NO_CALLBACK_URL_FOR_ROUTING_KEY = "No callBackUrl exist for routing key";
-
-	
-	
-	
-
 }
