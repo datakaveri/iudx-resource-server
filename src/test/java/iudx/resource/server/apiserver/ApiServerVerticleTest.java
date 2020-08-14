@@ -43,6 +43,8 @@ public class ApiServerVerticleTest {
   private static String callbackSubscriptionId = "abc/xyz/123";
   private static String fakeToken;
   private static String adapterId;
+  private static String resourceGroup;
+  private static String resourceServer;
   private static String streamingSubscriptionAliasName;
   private static String callbackSubscriptionAliasName;
 
@@ -72,6 +74,8 @@ public class ApiServerVerticleTest {
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_05");
     fakeToken = UUID.randomUUID().toString();
     adapterId = UUID.randomUUID().toString();
+    resourceGroup = UUID.randomUUID().toString();
+    resourceServer = UUID.randomUUID().toString();
     streamingSubscriptionAliasName = "alias-streaming-test";
     callbackSubscriptionAliasName = "alias-callback-test";
     testContext.completeNow();
@@ -1412,7 +1416,8 @@ public class ApiServerVerticleTest {
   public void testAdapterRegistrationWithoutToken(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register";
     JsonObject requestJson = new JsonObject();
-    requestJson.put(Constants.JSON_ID, adapterId);
+    requestJson.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
+    requestJson.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
     client.post(PORT, BASE_URL, apiUrl).sendJsonObject(requestJson, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result().bodyAsJsonObject();
@@ -1433,7 +1438,8 @@ public class ApiServerVerticleTest {
   public void testRegisterAdapter(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register";
     JsonObject requestJson = new JsonObject();
-    requestJson.put(Constants.JSON_ID, adapterId);
+    requestJson.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
+    requestJson.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .putHeader(Constants.HEADER_TOKEN, fakeToken).sendJsonObject(requestJson, handler -> {
           if (handler.succeeded()) {
@@ -1457,7 +1463,8 @@ public class ApiServerVerticleTest {
   public void testRegisterAdapter400(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register";
     JsonObject requestJson = new JsonObject();
-    requestJson.put(Constants.JSON_ID, adapterId);
+    requestJson.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
+    requestJson.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .putHeader(Constants.HEADER_TOKEN, fakeToken).sendJsonObject(requestJson, handler -> {
           if (handler.succeeded()) {
