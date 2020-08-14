@@ -84,6 +84,7 @@ public class CallbackServiceTest {
 					properties.load(inputstream);
 					inputstream = new FileInputStream("config.properties");
 					properties.load(inputstream);
+
 					dataBrokerIP = properties.getProperty("dataBrokerIP");
 					dataBrokerPort = Integer.parseInt(properties.getProperty("dataBrokerPort"));
 					dataBrokerManagementPort = Integer.parseInt(properties.getProperty("dataBrokerManagementPort"));
