@@ -80,10 +80,8 @@ public class CallbackServiceTest {
 				inputstream = null;
 
 				try {
-
 					inputstream = new FileInputStream("config.properties");
 					properties.load(inputstream);
-
 					dataBrokerIP = properties.getProperty("dataBrokerIP");
 					dataBrokerPort = Integer.parseInt(properties.getProperty("dataBrokerPort"));
 					dataBrokerManagementPort = Integer.parseInt(properties.getProperty("dataBrokerManagementPort"));
@@ -209,7 +207,6 @@ public class CallbackServiceTest {
 			testContext.completeNow();
 		});
 	}
-	
 	
 	@Test
 	@Order(3)
