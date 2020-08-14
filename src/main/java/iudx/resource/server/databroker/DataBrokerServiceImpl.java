@@ -98,7 +98,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler) {
     System.out.println(request.toString());
     /* Get the ID and userName from the request */
-    String id = request.getString("groupName");
+    String id = request.getString("resourceGroup");
     String resourceServer = request.getString("resourceServer");
     String userName = request.getString(Constants.CONSUMER);
 
