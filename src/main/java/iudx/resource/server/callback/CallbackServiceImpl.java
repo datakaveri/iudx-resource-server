@@ -27,7 +27,7 @@ import java.util.HashMap;
 import org.apache.http.HttpStatus;
 
 /**
- * <h1>Callback Service Service Implementation.</h1>
+ * <h1>Callback Service Implementation.</h1>
  * <p>
  * The Callback Service implementation in the IUDX Resource Server implements
  * the definitions of the {@link iudx.resource.server.callback.CallbackService}.
@@ -89,21 +89,7 @@ public class CallbackServiceImpl implements CallbackService {
 		}
 
 		webClient = webClientInstance;
-		vertx = vertxInstance;
-		
-		JsonObject request1 = new JsonObject();
-		JsonObject request2 = new JsonObject();
-
-		request1.put("queueName", "callback.notification");
-		request2.put("queueName", "callback.data");
-
-		getMessageFromCallbackNotificationQueue(request1, handler -> {
-			System.out.println("handler result ::" + handler.result());
-		});
-
-		getMessageFromCallbackDataQueue(request2, handler -> {
-			System.out.println("handler result ::" + handler.result());
-		});
+		vertx = vertxInstance;	
 	}
 
 	/**
@@ -191,6 +177,7 @@ public class CallbackServiceImpl implements CallbackService {
 									if (operation != null && !operation.isEmpty() && !operation.isBlank()) {
 										if (operation.equals(Constants.CREATE) || operation.equals(Constants.UPDATE)
 												|| operation.equals(Constants.DELETE)) {
+											
 											/* Create request object for Query DataBase */
 											JsonObject requestObj = new JsonObject();
 											requestObj.put(Constants.TABLE_NAME, "registercallback");
@@ -314,8 +301,9 @@ public class CallbackServiceImpl implements CallbackService {
 									String routingKey = null;
 									JsonObject currentBodyJsonObj = null;
 									JsonObject callBackJsonObj = null;
+									
+									/* Convert body message to JsonObject */
 									try {
-										/* Convert message to JsonObject */
 										currentBodyJsonObj = new JsonObject(body.toString());
 									} catch (Exception e) {
 										logger.error(Constants.ERROR + Constants.COLON + e.getCause());
@@ -635,7 +623,7 @@ public class CallbackServiceImpl implements CallbackService {
 						for (Row row : rows) {
 							/* Getting entities, callBackUrl, userName and password from row */
 							JsonObject callBackDataObj = new JsonObject();
-							String callBackUrl = "http://localhost:9088/getMessage"; // row.getString(1);
+							String callBackUrl = row.getString(1);
 							JsonArray entities = (JsonArray) row.getValue(2);
 							String userName = row.getString(6);
 							String password = row.getString(7);
