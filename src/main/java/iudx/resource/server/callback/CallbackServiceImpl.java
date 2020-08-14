@@ -73,7 +73,6 @@ public class CallbackServiceImpl implements CallbackService {
 		client.start(resultHandler -> {
 			if (resultHandler.succeeded()) {
 				logger.info("RabbitMQ Client Connected");
-
 			} else {
 				logger.info("RabbitMQ Client Not Connected");
 			}
@@ -87,9 +86,8 @@ public class CallbackServiceImpl implements CallbackService {
 			databasePassword = propObj.getString("databasePassword");
 			databasePoolSize = propObj.getInteger("databasePoolSize");
 		}
-
 		webClient = webClientInstance;
-		vertx = vertxInstance;	
+		vertx = vertxInstance;
 	}
 
 	/**
@@ -161,8 +159,9 @@ public class CallbackServiceImpl implements CallbackService {
 								if (body != null) {
 									JsonObject currentBodyJsonObj = null;
 									String operation = null;
+									
+									/* Convert body message to JsonObject */
 									try {
-										/* Convert message body to JsonObject */
 										currentBodyJsonObj = new JsonObject(body.toString());
 									} catch (Exception e) {
 										logger.info(Constants.JSON_PARSE_EXCEPTION + e.getCause());
@@ -177,23 +176,25 @@ public class CallbackServiceImpl implements CallbackService {
 									if (operation != null && !operation.isEmpty() && !operation.isBlank()) {
 										if (operation.equals(Constants.CREATE) || operation.equals(Constants.UPDATE)
 												|| operation.equals(Constants.DELETE)) {
-											
+
 											/* Create request object for Query DataBase */
 											JsonObject requestObj = new JsonObject();
 											requestObj.put(Constants.TABLE_NAME, "registercallback");
-											
+
 											/* Query DataBase */
 											Future<JsonObject> result = queryCallBackDataBase(requestObj);
 											result.onComplete(resultHandler -> {
 												if (resultHandler.succeeded()) {
 													logger.info(
 															Constants.DATABASE_QUERY_RESULT + resultHandler.result());
-													finalResponse.put(Constants.DATABASE_QUERY_RESULT, Constants.CACHE_UPDATE_SUCCESS);
+													finalResponse.put(Constants.DATABASE_QUERY_RESULT,
+															Constants.CACHE_UPDATE_SUCCESS);
 													promise.complete(finalResponse);
 												} else {
 													logger.error(Constants.DATABASE_QUERY_RESULT + Constants.COLON
 															+ resultHandler.cause());
-													finalResponse.put(Constants.DATABASE_QUERY_RESULT, Constants.DATABASE_QUERY_FAIL);
+													finalResponse.put(Constants.DATABASE_QUERY_RESULT,
+															Constants.DATABASE_QUERY_FAIL);
 													promise.fail(finalResponse.toString());
 												}
 											});
@@ -210,7 +211,7 @@ public class CallbackServiceImpl implements CallbackService {
 								}
 							});
 						} else {
-							logger.error(Constants.CONSUME_QUEUE_MESSAGE_FAIL +  Constants.COLON + queueName);
+							logger.error(Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON + queueName);
 							logger.error(Constants.ERROR + rabbitMQConsumerAsyncResult.cause());
 							finalResponse.put(Constants.ERROR,
 									Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON + queueName);
@@ -301,7 +302,7 @@ public class CallbackServiceImpl implements CallbackService {
 									String routingKey = null;
 									JsonObject currentBodyJsonObj = null;
 									JsonObject callBackJsonObj = null;
-									
+
 									/* Convert body message to JsonObject */
 									try {
 										currentBodyJsonObj = new JsonObject(body.toString());
@@ -327,23 +328,26 @@ public class CallbackServiceImpl implements CallbackService {
 										JsonObject requestObj = new JsonObject();
 										requestObj.put(Constants.CALLBACK_JSON_OBJECT, callBackJsonObj);
 										requestObj.put(Constants.CURRENT_MESSAGE_JSON_OBJECT, currentBodyJsonObj);
-										
+
 										/* Send data to callback Url */
 										Future<JsonObject> result = sendDataToCallBackSubscriber(requestObj);
 										result.onComplete(resultHandler -> {
 											if (resultHandler.succeeded()) {
-												logger.info(Constants.CALLBACK_URL_RESPONSE + Constants.COLON + resultHandler.result());
-												finalResponse.put(Constants.SUCCESS, Constants.DATA_SEND_TO_CALLBACK_URL_SUCCESS);
-												promise.complete(finalResponse);
+												logger.info(Constants.CALLBACK_URL_RESPONSE + Constants.COLON
+														+ resultHandler.result());
+												finalResponse.put(Constants.SUCCESS,
+														Constants.DATA_SEND_TO_CALLBACK_URL_SUCCESS);
 											} else {
 												logger.error(Constants.CALLBACK_URL_RESPONSE + resultHandler.cause());
-												finalResponse.put(Constants.ERROR, Constants.DATA_SEND_TO_CALLBACK_URL_FAIL);
+												finalResponse.put(Constants.ERROR,
+														Constants.DATA_SEND_TO_CALLBACK_URL_FAIL);
 												promise.fail(finalResponse.toString());
 											}
 										});
-										//promise.complete(finalResponse);
+										promise.complete(finalResponse);
 									} else {
-										logger.error(Constants.NO_CALLBACK_URL_FOR_ROUTING_KEY + Constants.COLON + routingKey);
+										logger.error(Constants.NO_CALLBACK_URL_FOR_ROUTING_KEY + Constants.COLON
+												+ routingKey);
 										finalResponse.put(Constants.ERROR,
 												Constants.NO_CALLBACK_URL_FOR_ROUTING_KEY + routingKey);
 										promise.fail(finalResponse.toString());
@@ -355,7 +359,8 @@ public class CallbackServiceImpl implements CallbackService {
 								}
 							});
 						} else {
-							logger.error(Constants.ERROR + Constants.GET_QUEUE_MESSAGE_FAIL + Constants.COLON + queueName);
+							logger.error(
+									Constants.ERROR + Constants.GET_QUEUE_MESSAGE_FAIL + Constants.COLON + queueName);
 							finalResponse.put(Constants.ERROR, Constants.GET_QUEUE_MESSAGE_FAIL + queueName);
 							promise.fail(finalResponse.toString());
 						}
@@ -456,8 +461,8 @@ public class CallbackServiceImpl implements CallbackService {
 									if (status == HttpStatus.SC_OK) {
 										/* Callback URL 200 OK Status */
 										String responseBody = result.bodyAsString();
-										logger.info(Constants.RESPONSE_BODY + Constants.COLON + 
-												Constants.NEW_LINE + responseBody);
+										logger.info(Constants.RESPONSE_BODY + Constants.COLON + Constants.NEW_LINE
+												+ responseBody);
 										logger.info(Constants.STATUS + Constants.COLON + status);
 										finalResponse.put(Constants.TYPE, status);
 										finalResponse.put(Constants.TITLE, Constants.SUCCESS);
@@ -602,7 +607,7 @@ public class CallbackServiceImpl implements CallbackService {
 		pgClient = PgPool.pool(vertx, connectOptions, poolOptions);
 
 		logger.info(Constants.EXECUTING_SQL_QUERY + Constants.COLON + tableName);
-		
+
 		if (pgClient != null) {
 			try {
 				/* Execute simple query */
@@ -612,7 +617,7 @@ public class CallbackServiceImpl implements CallbackService {
 						RowSet<Row> rows = action.result();
 						logger.info(Constants.FETCH_DATA_FROM_DATABASE);
 						logger.info(Constants.ROWS + Constants.COLON + rows.size());
-						
+
 						/* Clear Cache Data */
 						if (pgCache != null) {
 							clearCacheData();
@@ -623,7 +628,7 @@ public class CallbackServiceImpl implements CallbackService {
 						for (Row row : rows) {
 							/* Getting entities, callBackUrl, userName and password from row */
 							JsonObject callBackDataObj = new JsonObject();
-							String callBackUrl = row.getString(1);
+							String callBackUrl = "http://localhost:9088/getMessage"; //row.getString(1);
 							JsonArray entities = (JsonArray) row.getValue(2);
 							String userName = row.getString(6);
 							String password = row.getString(7);
@@ -643,7 +648,7 @@ public class CallbackServiceImpl implements CallbackService {
 							}
 						}
 						logger.info(Constants.SUCCESS + Constants.COLON + Constants.CACHE_UPDATE_SUCCESS);
-						logger.info(Constants.CACHE_DATA + Constants.COLON +  pgCache);
+						logger.info(Constants.CACHE_DATA + Constants.COLON + pgCache);
 						finalResponse.put(Constants.SUCCESS, Constants.CACHE_UPDATE_SUCCESS);
 						promise.complete(finalResponse);
 					} else {
@@ -653,7 +658,7 @@ public class CallbackServiceImpl implements CallbackService {
 					}
 				});
 			} catch (Exception e) {
-				logger.info(Constants.CONNECT_DATABASE_FAIL  + e.getCause());
+				logger.info(Constants.CONNECT_DATABASE_FAIL + e.getCause());
 				finalResponse.put(Constants.ERROR, Constants.CONNECT_DATABASE_FAIL);
 				promise.fail(finalResponse.toString());
 			} finally {
