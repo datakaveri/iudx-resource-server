@@ -29,9 +29,8 @@ import org.apache.http.HttpStatus;
 /**
  * <h1>Callback Service Service Implementation.</h1>
  * <p>
- * The Callback Service implementation in the IUDX Resource Server implements the definitions of the
- * {@link iudx.resource.server.callback.CallbackService}. >>>>>>> Code Commiting for Callback
- * subscription (Connect to RabbitMQ queue, Query Database, Send data to callbackurl)
+ * The Callback Service implementation in the IUDX Resource Server implements
+ * the definitions of the {@link iudx.resource.server.callback.CallbackService}.
  * </p>
  * 
  * @version 1.0
