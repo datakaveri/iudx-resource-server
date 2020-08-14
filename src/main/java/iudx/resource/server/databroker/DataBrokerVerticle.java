@@ -9,6 +9,8 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.servicediscovery.Record;
@@ -16,6 +18,8 @@ import io.vertx.servicediscovery.ServiceDiscovery;
 import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
+import io.vertx.sqlclient.PoolOptions;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
@@ -58,6 +62,18 @@ public class DataBrokerVerticle extends AbstractVerticle {
   private int networkRecoveryInterval;
   private WebClient webClient;
   private WebClientOptions webConfig;
+  /* Database Properties */
+  private String databaseIP;
+  private int databasePort;
+  private String databaseName;
+  private String databaseUserName;
+  private String databasePassword;
+  private int poolSize;
+  private int databasePoolSize;
+  private PgPool pgclient;
+  private PoolOptions poolOptions;
+  private PgConnectOptions connectOptions;
+
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
@@ -101,6 +117,12 @@ public class DataBrokerVerticle extends AbstractVerticle {
           requestedChannelMax = Integer.parseInt(properties.getProperty("requestedChannelMax"));
           networkRecoveryInterval =
               Integer.parseInt(properties.getProperty("networkRecoveryInterval"));
+          databaseIP = properties.getProperty("databaseIP");
+          databasePort = Integer.parseInt(properties.getProperty("databasePort"));
+          databaseName = properties.getProperty("databaseName");
+          databaseUserName = properties.getProperty("databaseUserName");
+          databasePassword = properties.getProperty("databasePassword");
+          poolSize = Integer.parseInt(properties.getProperty("poolSize"));
 
         } catch (Exception ex) {
 
@@ -130,33 +152,60 @@ public class DataBrokerVerticle extends AbstractVerticle {
         webConfig.setDefaultPort(dataBrokerManagementPort);
         webConfig.setKeepAliveTimeout(86400000);
 
-
-        /* Create a RabbitMQ Clinet with the configuration and vertx cluster instance. */
+        /*
+         * Create a RabbitMQ Clinet with the configuration and vertx cluster instance.
+         */
 
         client = RabbitMQClient.create(vertx, config);
 
-        /* Create a Vertx Web Client with the configuration and vertx cluster instance. */
+        /*
+         * Create a Vertx Web Client with the configuration and vertx cluster instance.
+         */
 
         webClient = WebClient.create(vertx, webConfig);
 
         /* Create a Json Object for properties */
+
+
+        /* Set Connection Object */
+        if (connectOptions == null) {
+          connectOptions = new PgConnectOptions().setPort(databasePort).setHost(databaseIP)
+              .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
+        }
+
+        /* Pool options */
+        if (poolOptions == null) {
+          poolOptions = new PoolOptions().setMaxSize(poolSize);
+        }
+
+        /* Create the client pool */
+        pgclient = PgPool.pool(vertx, connectOptions, poolOptions);
 
         JsonObject propObj = new JsonObject();
 
         propObj.put("userName", dataBrokerUserName);
         propObj.put("password", dataBrokerPassword);
         propObj.put("vHost", dataBrokerVhost);
+        propObj.put("databaseIP", databaseIP);
+        propObj.put("databasePort", databasePort);
+        propObj.put("databaseName", databaseName);
+        propObj.put("databaseUserName", databaseUserName);
+        propObj.put("databasePassword", databasePassword);
+        propObj.put("databasePoolSize", poolSize);
+
 
         /* Call the databroker constructor with the RabbitMQ client. */
 
-        databroker = new DataBrokerServiceImpl(client, webClient, propObj);
+        databroker = new DataBrokerServiceImpl(client, webClient, propObj, pgclient);
 
         /* Publish the Data Broker service with the Event Bus against an address. */
 
         new ServiceBinder(vertx).setAddress("iudx.rs.databroker.service")
             .register(DataBrokerService.class, databroker);
 
-        /* Get a handler for the Service Discovery interface and publish a service record. */
+        /*
+         * Get a handler for the Service Discovery interface and publish a service record.
+         */
 
         discovery = ServiceDiscovery.create(vertx);
         record = EventBusService.createRecord("iudx.rs.databroker.service", // The service name
@@ -176,8 +225,6 @@ public class DataBrokerVerticle extends AbstractVerticle {
       }
 
     });
-
-    System.out.println("DataBrokerVerticle started");
 
   }
 

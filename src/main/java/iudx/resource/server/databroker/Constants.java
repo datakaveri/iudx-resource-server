@@ -100,6 +100,7 @@ public class Constants {
   public static final String TAGS = "tags";
   public static final String TYPE = "type";
   public static final String TITLE = "title";
+  public static final String CALLBACKURL = "callbackURL";  
 
   public static final String USER_NAME = "username";
   public static final String USER_CREATED = "User created";

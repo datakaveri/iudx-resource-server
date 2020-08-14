@@ -3,7 +3,6 @@ package iudx.resource.server.databroker;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.Base64;
 import java.util.Properties;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -21,8 +20,11 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
+import io.vertx.sqlclient.PoolOptions;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -56,6 +58,18 @@ public class DataBrokerServiceTest {
   private static int statusNotFound;
   private static int statusNoContent;
 
+  /* Database Properties */
+  private static String databaseIP;
+  private static int databasePort;
+  private static String databaseName;
+  private static String databaseUserName;
+  private static String databasePassword;
+  private static int poolSize;
+  private static int databasePoolSize;
+  private static PgConnectOptions connectOptions;
+  private static PoolOptions poolOptions;
+  private static PgPool pgclient;
+
   private static final Logger logger = LoggerFactory.getLogger(DataBrokerServiceTest.class);
 
   @BeforeAll
@@ -88,7 +102,6 @@ public class DataBrokerServiceTest {
     statusNotFound = 404;
     statusNoContent = 204;
 
-
     logger.info("Exchange Name is " + exchangeName);
     logger.info("Queue Name is " + queueName);
 
@@ -113,6 +126,12 @@ public class DataBrokerServiceTest {
       handshakeTimeout = Integer.parseInt(properties.getProperty("handshakeTimeout"));
       requestedChannelMax = Integer.parseInt(properties.getProperty("requestedChannelMax"));
       networkRecoveryInterval = Integer.parseInt(properties.getProperty("networkRecoveryInterval"));
+      databaseIP = properties.getProperty("databaseIP");
+      databasePort = Integer.parseInt(properties.getProperty("databasePort"));
+      databaseName = properties.getProperty("databaseName");
+      databaseUserName = properties.getProperty("databaseUserName");
+      databasePassword = properties.getProperty("databasePassword");
+      poolSize = Integer.parseInt(properties.getProperty("poolSize"));
 
     } catch (Exception ex) {
 
@@ -135,7 +154,6 @@ public class DataBrokerServiceTest {
     config.setNetworkRecoveryInterval(networkRecoveryInterval);
     config.setAutomaticRecoveryEnabled(true);
 
-
     webConfig = new WebClientOptions();
     webConfig.setKeepAlive(true);
     webConfig.setConnectTimeout(86400000);
@@ -143,14 +161,31 @@ public class DataBrokerServiceTest {
     webConfig.setDefaultPort(dataBrokerManagementPort);
     webConfig.setKeepAliveTimeout(86400000);
 
-
-    /* Create a RabbitMQ Clinet with the configuration and vertx cluster instance. */
+    /*
+     * Create a RabbitMQ Clinet with the configuration and vertx cluster instance.
+     */
 
     client = RabbitMQClient.create(vertx, config);
 
-    /* Create a Vertx Web Client with the configuration and vertx cluster instance. */
+    /*
+     * Create a Vertx Web Client with the configuration and vertx cluster instance.
+     */
 
     webClient = WebClient.create(vertx, webConfig);
+
+    /* Set Connection Object */
+    if (connectOptions == null) {
+      connectOptions = new PgConnectOptions().setPort(databasePort).setHost(databaseIP)
+          .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
+    }
+
+    /* Pool options */
+    if (poolOptions == null) {
+      poolOptions = new PoolOptions().setMaxSize(poolSize);
+    }
+
+    /* Create the client pool */
+    pgclient = PgPool.pool(vertx, connectOptions, poolOptions);
 
     /* Create a Json Object for properties */
 
@@ -159,13 +194,19 @@ public class DataBrokerServiceTest {
     propObj.put("userName", dataBrokerUserName);
     propObj.put(Constants.PASSWORD, dataBrokerPassword);
     propObj.put(Constants.VHOST, dataBrokerVhost);
+    propObj.put("databaseIP", databaseIP);
+    propObj.put("databasePort", databasePort);
+    propObj.put("databaseName", databaseName);
+    propObj.put("databaseUserName", databaseUserName);
+    propObj.put("databasePassword", databasePassword);
+    propObj.put("databasePoolSize", poolSize);
 
     /* Call the databroker constructor with the RabbitMQ client. */
 
-    databroker = new DataBrokerServiceImpl(client, webClient, propObj);
+    databroker = new DataBrokerServiceImpl(client, webClient, propObj, pgclient);
+
     testContext.completeNow();
   }
-
 
   @Test
   @DisplayName("Testing Create Exchange")
@@ -302,8 +343,6 @@ public class DataBrokerServiceTest {
     });
 
   }
-
-
 
   @Test
   @DisplayName("Listing all bindings of queue")
@@ -539,7 +578,6 @@ public class DataBrokerServiceTest {
     request.put("O2", 19.66);
     request.put("NO2", 50.62);
 
-
     databroker.publishFromAdaptor(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -557,7 +595,7 @@ public class DataBrokerServiceTest {
   void failedregisterStreamingSubscriptionEmptyRequest(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "Error in payload");
-    
+
     JsonObject request = new JsonObject();
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -575,7 +613,7 @@ public class DataBrokerServiceTest {
   void failedregisterStreamingSubscriptionInvalidExchange(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "Binding Failed");
-    
+
     JsonObject request = new JsonObject();
     request.put(Constants.NAME, "alias-pawan");
     request.put(Constants.CONSUMER, "pawan@google.org");
@@ -584,7 +622,7 @@ public class DataBrokerServiceTest {
     array.add(
         "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
     request.put(Constants.ENTITIES, array);
-    
+
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -601,20 +639,20 @@ public class DataBrokerServiceTest {
   void failedregisterStreamingSubscriptionNullRoutingKey(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "Invalid routingKey");
-    
+
     JsonObject request = new JsonObject();
     request.put(Constants.NAME, "alias-pawan");
     request.put(Constants.CONSUMER, "pawan@google.org");
     request.put(Constants.TYPE, "streaming");
     JsonArray array = new JsonArray();
-    array.add(
-        "");
+    array.add("");
     request.put(Constants.ENTITIES, array);
-    
+
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Register subscription response for invalid routingKey request is : " + response);
+        logger
+            .info("Register subscription response for invalid routingKey request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -622,12 +660,12 @@ public class DataBrokerServiceTest {
   }
 
   @Test
-  @DisplayName("Testing failure case : Register streaming subscription with routingKey = invalid key")
+  @DisplayName("Testing failure case : Register streaming subscription with routingKey = invalid  key")
   @Order(20)
   void failedregisterStreamingSubscriptionInvalidRoutingKey(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "Invalid routingKey");
-    
+
     JsonObject request = new JsonObject();
     request.put(Constants.NAME, "alias-pawan");
     request.put(Constants.CONSUMER, "pawan@google.org");
@@ -636,17 +674,18 @@ public class DataBrokerServiceTest {
     array.add(
         "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm");
     request.put(Constants.ENTITIES, array);
-    
+
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Register subscription response for invalid routingKey request is : " + response);
+        logger
+            .info("Register subscription response for invalid routingKey request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
     });
   }
-  
+
   @Test
   @DisplayName("Testing success case : Register streaming subscription with valid queue and exchange names")
   @Order(21)
@@ -672,7 +711,7 @@ public class DataBrokerServiceTest {
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm2/EM_01_0103_04");
     array.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
- 
+
     request.put(Constants.ENTITIES, array);
 
     databroker.registerStreamingSubscription(request, handler -> {
@@ -691,7 +730,7 @@ public class DataBrokerServiceTest {
   void failedregisterStreamingSubscriptionAlreadyExistingQueue(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "Queue Creation Failed");
-    
+
     JsonObject request = new JsonObject();
     request.put(Constants.NAME, "alias-pawan");
     request.put(Constants.CONSUMER, "pawan@google.org");
@@ -700,11 +739,12 @@ public class DataBrokerServiceTest {
     array.add(
         "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
     request.put(Constants.ENTITIES, array);
-    
+
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Register subscription response for already existing alias-name request is : " + response);
+        logger.info("Register subscription response for already existing alias-name request is : "
+            + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -717,14 +757,19 @@ public class DataBrokerServiceTest {
   void successlistStreamingSubscription(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
     JsonArray routingKeys = new JsonArray();
-    routingKeys.add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
-    routingKeys.add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_03");
-    routingKeys.add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
-    routingKeys.add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm2/EM_01_0103_04");
+    routingKeys.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
+    routingKeys.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_03");
+    routingKeys.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
+    routingKeys.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm2/EM_01_0103_04");
     expected.put(Constants.ENTITIES, routingKeys);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.SUBSCRIPTION_ID, "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+    request.put(Constants.SUBSCRIPTION_ID,
+        "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
     databroker.listStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -776,7 +821,7 @@ public class DataBrokerServiceTest {
     JsonArray array = new JsonArray();
     array.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
- 
+
     request.put(Constants.ENTITIES, array);
 
     databroker.updateStreamingSubscription(request, handler -> {
@@ -788,7 +833,6 @@ public class DataBrokerServiceTest {
       testContext.completeNow();
     });
   }
-  
 
   @Test
   @DisplayName("Testing failure case : Update streaming subscription with empty request")
@@ -796,7 +840,7 @@ public class DataBrokerServiceTest {
   void failedupdateStreamingSubscriptionEmptyRequest(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "Error in payload");
-    
+
     JsonObject request = new JsonObject();
     databroker.updateStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -814,7 +858,7 @@ public class DataBrokerServiceTest {
   void failedupdateStreamingSubscriptionInvalidExchange(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "Binding Failed");
-    
+
     JsonObject request = new JsonObject();
     request.put(Constants.NAME, "alias-pawan");
     request.put(Constants.CONSUMER, "pawan@google.org");
@@ -823,7 +867,7 @@ public class DataBrokerServiceTest {
     array.add(
         "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
     request.put(Constants.ENTITIES, array);
-    
+
     databroker.updateStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -840,16 +884,15 @@ public class DataBrokerServiceTest {
   void failedupdateStreamingSubscriptionNullRoutingKey(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "Invalid routingKey");
-    
+
     JsonObject request = new JsonObject();
     request.put(Constants.NAME, "alias-pawan");
     request.put(Constants.CONSUMER, "pawan@google.org");
     request.put(Constants.TYPE, "streaming");
     JsonArray array = new JsonArray();
-    array.add(
-        "");
+    array.add("");
     request.put(Constants.ENTITIES, array);
-    
+
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -866,7 +909,7 @@ public class DataBrokerServiceTest {
   void failedupdateStreamingSubscriptionInvalidRoutingKey(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "Invalid routingKey");
-    
+
     JsonObject request = new JsonObject();
     request.put(Constants.NAME, "alias-pawan");
     request.put(Constants.CONSUMER, "pawan@google.org");
@@ -875,7 +918,7 @@ public class DataBrokerServiceTest {
     array.add(
         "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm");
     request.put(Constants.ENTITIES, array);
-    
+
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -885,18 +928,20 @@ public class DataBrokerServiceTest {
       testContext.completeNow();
     });
   }
-  
+
   @Test
   @DisplayName("Testing success case : get streaming subscription of updated subscription")
   @Order(30)
   void successlistupdatedStreamingSubscription(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
     JsonArray routingKeys = new JsonArray();
-    routingKeys.add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
+    routingKeys.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
     expected.put(Constants.ENTITIES, routingKeys);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.SUBSCRIPTION_ID, "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+    request.put(Constants.SUBSCRIPTION_ID,
+        "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
     databroker.listStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -920,7 +965,7 @@ public class DataBrokerServiceTest {
     JsonObject expected = new JsonObject();
     expected.put(Constants.SUBSCRIPTION_ID, queueName);
     expected.put(Constants.ENTITIES, array);
-    
+
     JsonObject request = new JsonObject();
     request.put(Constants.SUBSCRIPTION_ID, queueName);
     request.put(Constants.ENTITIES, array);
@@ -941,7 +986,7 @@ public class DataBrokerServiceTest {
   void failedappendStreamingSubscriptionEmptyRequest(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "Error in payload");
-    
+
     JsonObject request = new JsonObject();
     databroker.appendStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -965,15 +1010,16 @@ public class DataBrokerServiceTest {
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "Binding Failed");
-    
+
     JsonObject request = new JsonObject();
     request.put(Constants.SUBSCRIPTION_ID, queueName);
     request.put(Constants.ENTITIES, array);
-    
+
     databroker.appendStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Update (Append) subscription response for invalid exchange request is : " + response);
+        logger.info(
+            "Update (Append) subscription response for invalid exchange request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -981,35 +1027,34 @@ public class DataBrokerServiceTest {
   }
 
   @Test
-  @DisplayName("Testing failure case : Update (Append) streaming subscription with routingKey = null")
+  @DisplayName("Testing failure case : Update (Append) streaming subscription with routingKey =  null")
   @Order(34)
   void failedappendStreamingSubscriptionNullRoutingKey(VertxTestContext testContext) {
-    
+
     String queueName = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan";
     JsonArray array = new JsonArray();
-    array.add(
-        "");
+    array.add("");
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "Invalid routingKey");
-    
+
     JsonObject request = new JsonObject();
     request.put(Constants.SUBSCRIPTION_ID, queueName);
     request.put(Constants.ENTITIES, array);
-    
+
     databroker.appendStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Update (Append) subscription response for invalid routingKey request is : " + response);
+        logger.info("Update (Append) subscription response for invalid routingKey request is : "
+            + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
     });
   }
 
-
   @Test
-  @DisplayName("Testing failure case : Update (append)streaming subscription with routingKey = invalid key")
+  @DisplayName("Testing failure case : Update (append)streaming subscription with routingKey =  invalid key")
   @Order(35)
   void failedappendStreamingSubscriptionInvalidRoutingKey(VertxTestContext testContext) {
 
@@ -1020,15 +1065,16 @@ public class DataBrokerServiceTest {
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "Invalid routingKey");
-    
+
     JsonObject request = new JsonObject();
     request.put(Constants.SUBSCRIPTION_ID, queueName);
     request.put(Constants.ENTITIES, array);
-        
+
     databroker.appendStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Update (append)subscription response for invalid routingKey request is : " + response);
+        logger.info(
+            "Update (append)subscription response for invalid routingKey request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -1036,17 +1082,20 @@ public class DataBrokerServiceTest {
   }
 
   @Test
-  @DisplayName("Testing success case : get streaming subscription of updated (append) subscription")
+  @DisplayName("Testing success case : get streaming subscription of updated (append)  subscription")
   @Order(36)
   void successlistappenddStreamingSubscription(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
     JsonArray routingKeys = new JsonArray();
-    routingKeys.add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
-    routingKeys.add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
+    routingKeys.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
+    routingKeys.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
     expected.put(Constants.ENTITIES, routingKeys);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.SUBSCRIPTION_ID, "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+    request.put(Constants.SUBSCRIPTION_ID,
+        "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
     databroker.listStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -1056,9 +1105,9 @@ public class DataBrokerServiceTest {
       testContext.completeNow();
     });
   }
- 
+
   @Test
-  @DisplayName("Testing success case : Update (Append) streaming subscription with invalid valid queue (subscriptionID)")
+  @DisplayName("Testing success case : Update (Append) streaming subscription with invalid valid  queue (subscriptionID)")
   @Order(37)
   void failureappendStreamingSubscriptionQueueNotPresent(VertxTestContext testContext) {
 
@@ -1069,7 +1118,7 @@ public class DataBrokerServiceTest {
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "Invalid routingKey");
-    
+
     JsonObject request = new JsonObject();
     request.put(Constants.SUBSCRIPTION_ID, queueName);
     request.put(Constants.ENTITIES, array);
@@ -1092,7 +1141,8 @@ public class DataBrokerServiceTest {
     JsonObject expected = new JsonObject();
     expected.put(Constants.SUBSCRIPTION_ID, queueName);
     JsonObject request = new JsonObject();
-    request.put(Constants.SUBSCRIPTION_ID, "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+    request.put(Constants.SUBSCRIPTION_ID,
+        "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
 
     databroker.deleteStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -1126,6 +1176,643 @@ public class DataBrokerServiceTest {
     });
   }
 
+  @Test
+  @DisplayName("Testing failure case : register callback subscription with empty request")
+  @Order(40)
+  void failedregisterCallbackSubscriptionEmptyRequest(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Error in payload");
+
+    JsonObject request = new JsonObject();
+    databroker.registerCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Register subscription response for empty request is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : Register callback subscription with non-existing (but valid) routingKey")
+  @Order(41)
+  void failedregisterCallbackSubscriptionInvalidExchange(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Binding Failed");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add(
+        "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm2/EM_01_0103_02");
+    request.put(Constants.ENTITIES, array);
+
+    databroker.registerCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Register callback subscription response for invalid exchange request is : "
+            + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : Register callback subscription with routingKey = null")
+  @Order(42)
+  void failedregisterCallbackSubscriptionNullRoutingKey(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Invalid routingKey");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add("");
+    request.put(Constants.ENTITIES, array);
+
+    databroker.registerCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info(
+            "Register callback subscription response invalid routingKey request is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : Register callback subscription with routingKey = invalid  key")
+  @Order(43)
+  void failedregisterCallbackSubscriptionInvalidRoutingKey(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Invalid routingKey");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add(
+        "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm");
+    request.put(Constants.ENTITIES, array);
+
+    databroker.registerCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Register callback subscription response for invalid routingKey request is : "
+            + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : Register callback subscription with duplicate subscriptionID")
+  @Order(44)
+  void failedregisterCallbackSubscriptionDuplicateSubscriptionID(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "duplicate key value violates unique constraint");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_03");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm2/EM_01_0103_04");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
+    request.put(Constants.ENTITIES, array);
+    databroker.registerCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info(
+            "Register callback subscription response for duplicate subscriptionID request is :  "
+                + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : Register callback subscription with wrong data in basic  publish")
+  @Order(45)
+  void failedregisterCallbackSubscriptionWrongData(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put("messagePublished", "failed");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_03");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm2/EM_01_0103_04");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
+    request.put(Constants.ENTITIES, array);
+    databroker.registerCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info(
+            "Register callback subscription response with wrong data in basic publish request is : "
+                + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+
+  @Test
+  @DisplayName("Testing success case : register callback subscription with valid data")
+  @Order(46)
+  void successregisterCallbackSubscription(VertxTestContext testContext) {
+    String subscriptionID = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan";
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.SUBSCRIPTION_ID, subscriptionID);
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_03");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm2/EM_01_0103_04");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
+
+    request.put(Constants.ENTITIES, array);
+    databroker.registerCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Delete subscription response is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : update callback subscription with empty request")
+  @Order(47)
+  void failedupdateCallbackSubscriptionEmptyRequest(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Error in payload");
+
+    JsonObject request = new JsonObject();
+    databroker.updateCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("update callback subscription response for empty request is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : Update callback subscription with non-existing (but valid) routingKey")
+  @Order(48)
+  void failedupdateCallbackSubscriptionSubscriptionInvalidExchange(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Binding Failed");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add(
+        "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm2/EM_01_0103_02");
+    request.put(Constants.ENTITIES, array);
+
+    databroker.updateCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info(
+            "update callback subscription response for invalid exchange request is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : Update callback subscription with routingKey = null")
+  @Order(49)
+  void failedupdateCallbackSubscriptionNullRoutingKey(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Invalid routingKey");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add("");
+    request.put(Constants.ENTITIES, array);
+
+    databroker.updateCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info(
+            " Update callback subscription response invalid routingKey request is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : Update callback subscription with routingKey = invalid  key")
+  @Order(50)
+  void failedupdateCallbackSubscriptionInvalidRoutingKey(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Invalid routingKey");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add(
+        "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm");
+    request.put(Constants.ENTITIES, array);
+
+    databroker.updateCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info(" Update callback subscription response for invalid routingKey request is : "
+            + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+
+
+  @Test
+  @DisplayName("Testing failure case :Update callback subscription with wrong data in basic  publish")
+  @Order(51)
+  void failedupdateCallbackSubscriptionWrongData(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put("messagePublished", "failed");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_03");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm2/EM_01_0103_04");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
+    request.put(Constants.ENTITIES, array);
+    databroker.updateCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info(
+            "Update callback subscription response with wrong data in basic publish request is  : "
+                + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing success case : register callback update subscription with valid data")
+  @Order(52)
+  void successupdateCallbackSubscription(VertxTestContext testContext) {
+    String subscriptionID = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan1";
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.SUBSCRIPTION_ID, subscriptionID);
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan1");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_10");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_11");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm2/EM_01_0103_12");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
+
+    request.put(Constants.ENTITIES, array);
+    databroker.updateCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Delete subscription response is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing success case : delete callback subscription with valid data")
+  @Order(53)
+  void successdeleteCallbackSubscription(VertxTestContext testContext) {
+    String subscriptionID = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan";
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.SUBSCRIPTION_ID, subscriptionID);
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_10");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_11");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm2/EM_01_0103_12");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
+
+    request.put(Constants.ENTITIES, array);
+    databroker.deleteCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("Delete subscription response is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : delete callback subscription with non-existing (but valid)  routingKey")
+  @Order(54)
+  void faileddeleteCallbackSubscriptionInvalidExchange(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "UnBinding Failed");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add(
+        "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm3/EM_01_0103_10");
+    request.put(Constants.ENTITIES, array);
+
+    databroker.deleteCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info(
+            "delete callback subscription response for invalid exchange request is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : delete callback subscription with routingKey = null")
+  @Order(55)
+  void faileddeleteCallbackSubscriptionNullRoutingKey(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Invalid routingKey");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add("");
+    request.put(Constants.ENTITIES, array);
+
+    databroker.deleteCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info(
+            " delete callback subscription response invalid routingKey request is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : delete callback subscription with routingKey = invalid  key")
+  @Order(56)
+  void faileddeleteCallbackSubscriptionInvalidRoutingKey(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Invalid routingKey");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add(
+        "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm");
+    request.put(Constants.ENTITIES, array);
+
+    databroker.deleteCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info(" delete callback subscription response for invalid routingKey request is : "
+            + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+
+
+  @Test
+  @DisplayName("Testing failure case :delete callback subscription with wrong data in basic publish")
+  @Order(57)
+  void faileddeleteCallbackSubscriptionWrongData(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put("messagePublished", "failed");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_10");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_11");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm2/EM_01_0103_12");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
+    request.put(Constants.ENTITIES, array);
+    databroker.deleteCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info(
+            "Update callback subscription response with wrong data in basic publish request is  : "
+                + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing success case : list callback subscription with valid data")
+  @Order(58)
+  void successlistCallbackSubscription(VertxTestContext testContext) {
+    String subscriptionID = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan";
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.SUBSCRIPTION_ID, subscriptionID);
+    expected.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    JsonArray array = new JsonArray();
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_03");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm2/EM_01_0103_04");
+    array.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
+
+    expected.put(Constants.ENTITIES, array);
+    expected.put(Constants.USER_NAME, "iudx");
+    expected.put(Constants.PASSWORD, "iudx@123");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+
+    request.put(Constants.QUEUE, "callback.data");
+
+    databroker.listCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info("list subscription response is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : list callback subscription with routingKey = null")
+  @Order(59)
+  void failedlistCallbackSubscriptionNullRoutingKey(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Invalid routingKey");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add("");
+    request.put(Constants.ENTITIES, array);
+
+    databroker.listCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info(
+            " list callback subscription response invalid routingKey request is : " + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing failure case : list callback subscription with not valid subscriptionid")
+  @Order(60)
+  void failedlistCallbackSubscriptionNotvalidSubsciptionId(VertxTestContext testContext) {
+    JsonObject expected = new JsonObject();
+    expected.put(Constants.ERROR, "Invalid routingKey");
+
+    JsonObject request = new JsonObject();
+    request.put(Constants.NAME, "alias-pawan");
+    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(Constants.TYPE, "streaming");
+    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
+    request.put(Constants.QUEUE, "callback.data");
+    JsonArray array = new JsonArray();
+    array.add("");
+    request.put(Constants.ENTITIES, array);
+
+    databroker.listCallbackSubscription(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        logger.info(" list callback subscription response not valid subscriptionid request is : "
+            + response);
+        assertEquals(expected, response);
+      }
+      testContext.completeNow();
+    });
+  }
 }
-
-
