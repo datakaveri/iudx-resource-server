@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
-import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -25,7 +24,6 @@ import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.util.Constants;
-import iudx.resource.server.starter.ResourceServerStarter;
 
 /* TODO : Need to update End to End Adaptor testing */
 @ExtendWith(VertxExtension.class)
@@ -57,6 +55,7 @@ public class ApiServerVerticleTest {
     WebClientOptions clientOptions =
         new WebClientOptions().setSsl(true).setVerifyHost(false).setTrustAll(true);
     client = WebClient.create(vertx, clientOptions);
+
 
 
     /*

@@ -358,6 +358,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 if (handler.succeeded()) {
                   handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
                 } else if (handler.failed()) {
+                  JsonObject j = new JsonObject(handler.cause().getMessage());
                   handleResponse(response, ResponseType.BadRequestData,
                       handler.cause().getMessage(), true);
                 }
