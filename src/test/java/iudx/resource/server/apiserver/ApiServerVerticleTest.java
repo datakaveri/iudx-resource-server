@@ -1113,11 +1113,15 @@ public class ApiServerVerticleTest {
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(request, ar -> {
           if (ar.succeeded()) {
-            JsonObject res = ar.result().bodyAsJsonObject();
-            assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
-            assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NO_CONTENT);
-            assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
-            assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_EXCHANGE_EXIST);
+            assertEquals(ResponseType.AlreadyExist.getCode(), ar.result().statusCode());
+            // TODO : discussion about Already exist code
+            // JsonObject res = ar.result().bodyAsJsonObject();
+            /*
+             * 
+             * assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NO_CONTENT);
+             * assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
+             * assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_EXCHANGE_EXIST);
+             */
             testContext.completeNow();
           } else if (ar.failed()) {
             testContext.failNow(ar.cause());
@@ -1155,11 +1159,14 @@ public class ApiServerVerticleTest {
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(request, ar -> {
           if (ar.succeeded()) {
-            JsonObject res = ar.result().bodyAsJsonObject();
-            assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
-            assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NO_CONTENT);
-            assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
-            assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_FAILURE_QUEUE_EXIST);
+            // JsonObject res = ar.result().bodyAsJsonObject();
+            assertEquals(ResponseType.AlreadyExist.getCode(), ar.result().statusCode());
+            /*
+             * assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NO_CONTENT);
+             * assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
+             * assertEquals(res.getString(Constants.JSON_DETAIL),
+             * Constants.MSG_FAILURE_QUEUE_EXIST);
+             */
             testContext.completeNow();
           } else if (ar.failed()) {
             testContext.failNow(ar.cause());
@@ -1280,7 +1287,7 @@ public class ApiServerVerticleTest {
     client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken).send(ar -> {
       if (ar.succeeded()) {
         JsonObject res = ar.result().bodyAsJsonObject();
-        assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
+        assertEquals(ResponseType.ResourceNotFound.getCode(), ar.result().statusCode());
         assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NOT_FOUND);
         assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
         assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_FAILURE_QUEUE_NOT_EXIST);
@@ -1316,7 +1323,7 @@ public class ApiServerVerticleTest {
     client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken).send(ar -> {
       if (ar.succeeded()) {
         JsonObject res = ar.result().bodyAsJsonObject();
-        assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
+        assertEquals(ResponseType.ResourceNotFound.getCode(), ar.result().statusCode());
         assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NOT_FOUND);
         assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
         assertEquals(res.getString(Constants.JSON_DETAIL),
@@ -1359,11 +1366,14 @@ public class ApiServerVerticleTest {
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(request, handler -> {
           if (handler.succeeded()) {
-            JsonObject res = handler.result().bodyAsJsonObject();
-            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
-            assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NO_CONTENT);
-            assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
-            assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_FAILURE_VHOST_EXIST);
+            // JsonObject res = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.AlreadyExist.getCode(), handler.result().statusCode());
+            /*
+             * assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NO_CONTENT);
+             * assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
+             * assertEquals(res.getString(Constants.JSON_DETAIL),
+             * Constants.MSG_FAILURE_VHOST_EXIST);
+             */
             testContext.completeNow();
           } else if (handler.failed()) {
             testContext.failNow(handler.cause());
@@ -1398,7 +1408,7 @@ public class ApiServerVerticleTest {
         .send(handler -> {
           if (handler.succeeded()) {
             JsonObject res = handler.result().bodyAsJsonObject();
-            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertEquals(ResponseType.ResourceNotFound.getCode(), handler.result().statusCode());
             assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NOT_FOUND);
             assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
             assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_FAILURE_NO_VHOST);
