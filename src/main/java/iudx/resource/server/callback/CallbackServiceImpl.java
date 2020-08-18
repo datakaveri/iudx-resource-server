@@ -79,12 +79,12 @@ public class CallbackServiceImpl implements CallbackService {
 		});
 
 		if (propObj != null && !propObj.isEmpty()) {
-			databaseIP = propObj.getString("databaseIP");
-			databasePort = propObj.getInteger("databasePort");
-			databaseName = propObj.getString("databaseName");
-			databaseUserName = propObj.getString("databaseUserName");
-			databasePassword = propObj.getString("databasePassword");
-			databasePoolSize = propObj.getInteger("databasePoolSize");
+			databaseIP = propObj.getString("callbackDatabaseIP");
+			databasePort = propObj.getInteger("callbackDatabasePort");
+			databaseName = propObj.getString("callbackDatabaseName");
+			databaseUserName = propObj.getString("callbackDatabaseUserName");
+			databasePassword = propObj.getString("callbackDatabasePassword");
+			databasePoolSize = propObj.getInteger("callbackpoolSize");
 		}
 		webClient = webClientInstance;
 		vertx = vertxInstance;
