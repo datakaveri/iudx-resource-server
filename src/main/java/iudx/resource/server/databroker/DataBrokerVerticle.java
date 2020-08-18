@@ -117,12 +117,12 @@ public class DataBrokerVerticle extends AbstractVerticle {
           requestedChannelMax = Integer.parseInt(properties.getProperty("requestedChannelMax"));
           networkRecoveryInterval =
               Integer.parseInt(properties.getProperty("networkRecoveryInterval"));
-          databaseIP = properties.getProperty("databaseIP");
-          databasePort = Integer.parseInt(properties.getProperty("databasePort"));
-          databaseName = properties.getProperty("databaseName");
-          databaseUserName = properties.getProperty("databaseUserName");
-          databasePassword = properties.getProperty("databasePassword");
-          poolSize = Integer.parseInt(properties.getProperty("poolSize"));
+          databaseIP = properties.getProperty("callbackDatabaseIP");
+          databasePort = Integer.parseInt(properties.getProperty("callbackDatabasePort"));
+          databaseName = properties.getProperty("callbackDatabaseName");
+          databaseUserName = properties.getProperty("callbackDatabaseUserName");
+          databasePassword = properties.getProperty("callbackDatabasePassword");
+          poolSize = Integer.parseInt(properties.getProperty("callbackpoolSize"));
 
         } catch (Exception ex) {
 

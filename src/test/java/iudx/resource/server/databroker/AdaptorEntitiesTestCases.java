@@ -22,8 +22,11 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
+import io.vertx.sqlclient.PoolOptions;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -53,6 +56,17 @@ public class AdaptorEntitiesTestCases {
   private static String resourceServer;
   private static String id, anotherid;
 
+  /* Database Properties */
+  private static String databaseIP;
+  private static int databasePort;
+  private static String databaseName;
+  private static String databaseUserName;
+  private static String databasePassword;
+  private static int poolSize;
+  private static PgConnectOptions connectOptions;
+  private static PoolOptions poolOptions;
+  private static PgPool pgclient;
+
   private static final Logger logger = LoggerFactory.getLogger(AdaptorEntitiesTestCases.class);
 
   @BeforeAll
@@ -80,6 +94,13 @@ public class AdaptorEntitiesTestCases {
       handshakeTimeout = Integer.parseInt(properties.getProperty("handshakeTimeout"));
       requestedChannelMax = Integer.parseInt(properties.getProperty("requestedChannelMax"));
       networkRecoveryInterval = Integer.parseInt(properties.getProperty("networkRecoveryInterval"));
+
+      databaseIP = properties.getProperty("callbackDatabaseIP");
+      databasePort = Integer.parseInt(properties.getProperty("callbackDatabasePort"));
+      databaseName = properties.getProperty("callbackDatabaseName");
+      databaseUserName = properties.getProperty("callbackDatabaseUserName");
+      databasePassword = properties.getProperty("callbackDatabasePassword");
+      poolSize = Integer.parseInt(properties.getProperty("callbackpoolSize"));
 
     } catch (Exception ex) {
       logger.info(ex.toString());
@@ -121,7 +142,7 @@ public class AdaptorEntitiesTestCases {
 
     /* Call the databroker constructor with the RabbitMQ client Vertx web client. */
 
-    databroker = new DataBrokerServiceImpl(client, webClient, propObj);
+    databroker = new DataBrokerServiceImpl(client, webClient, propObj, pgclient);
     
     resourceGroup = UUID.randomUUID().toString();
     resourceServer = UUID.randomUUID().toString();

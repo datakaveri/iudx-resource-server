@@ -1346,7 +1346,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler) {
     JsonObject registerCallbackSubscriptionResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
-
+      
       JsonObject requestjson = new JsonObject();
       String userName = request.getString("consumer");
       String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
@@ -1371,17 +1371,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
               || routingKey.split("/").length != 5) {
             logger.error("failed :: Invalid (or) NULL routingKey");
 
-            Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
-            resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-              if (resultHandlerDeletequeue.succeeded()) {
+            registerCallbackSubscriptionResponse.put(Constants.ERROR, "Invalid routingKey");
+            handler.handle(Future.succeededFuture(registerCallbackSubscriptionResponse));
 
-                // handler.handle(Future.failedFuture(
-                // new JsonObject().put(Constants.ERROR, "Invalid routingKey").toString())); --not
-                // working
-                registerCallbackSubscriptionResponse.put(Constants.ERROR, "Invalid routingKey");
-                handler.handle(Future.succeededFuture(registerCallbackSubscriptionResponse));
-              }
-            });
           } else {
 
             String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
@@ -1405,23 +1397,17 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                     .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
 
                   logger.error("failed ::" + resultHandlerbind.cause());
-                  Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
-                  resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-                    if (resultHandlerDeletequeue.succeeded()) {
-                      pgclient
-                          .preparedQuery("Delete from registercallback WHERE subscriptionID = $1 ")
-                          .execute(Tuple.of(subscriptionID), resulhandlerdel -> {
-                            if (resulhandlerdel.succeeded()) {
-                              registerCallbackSubscriptionResponse.put(Constants.ERROR,
-                                  "Binding Failed");
-                              handler.handle(
-                                  Future.succeededFuture(registerCallbackSubscriptionResponse));
-                              // handler.handle(Future.failedFuture(new JsonObject() ---not working
-                              // .put(Constants.ERROR, "Binding Failed").toString()));
-                            }
-                          });
-                    }
-                  });
+                  pgclient.preparedQuery("Delete from registercallback WHERE subscriptionID = $1 ")
+                      .execute(Tuple.of(subscriptionID), resulhandlerdel -> {
+                        if (resulhandlerdel.succeeded()) {
+                          registerCallbackSubscriptionResponse.put(Constants.ERROR,
+                              "Binding Failed");
+                          handler
+                              .handle(Future.succeededFuture(registerCallbackSubscriptionResponse));
+                          // handler.handle(Future.failedFuture(new JsonObject() ---not working
+                          // .put(Constants.ERROR, "Binding Failed").toString()));
+                        }
+                      });
                 } else if (totalBindSuccess == totalBindCount) {
                   pgclient.preparedQuery(
                       "INSERT INTO registercallback (subscriptionID  ,callbackURL ,entities ,start_time , end_time , frequency ) VALUES ($1, $2, $3, $4, $5, $6)")
@@ -1441,21 +1427,14 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                                           subscriptionID);
                                       logger.info("Message published to queue");
                                     } else {
-                                      Future<JsonObject> resultDeletequeue =
-                                          deleteQueue(requestjson);
-                                      resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-                                        if (resultHandlerDeletequeue.succeeded()) {
-                                          pgclient.preparedQuery(
-                                              "Delete from registercallback WHERE subscriptionID = $1 ")
-                                              .execute(Tuple.of(subscriptionID), deletepg -> {
-                                                if (deletepg.succeeded()) {
-                                                  registerCallbackSubscriptionResponse
-                                                      .put("messagePublished", "failed");
-                                                }
-                                              });
-                                        }
-                                      });
-
+                                      pgclient.preparedQuery(
+                                          "Delete from registercallback WHERE subscriptionID = $1 ")
+                                          .execute(Tuple.of(subscriptionID), deletepg -> {
+                                            if (deletepg.succeeded()) {
+                                              registerCallbackSubscriptionResponse
+                                                  .put("messagePublished", "failed");
+                                            }
+                                          });
                                     }
                                     handler.handle(Future
                                         .succeededFuture(registerCallbackSubscriptionResponse));
@@ -1463,75 +1442,57 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
                             } else {
                               logger.error("failed ::" + ar.cause().getMessage());
-                              Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
-                              resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-                                if (resultHandlerDeletequeue.succeeded()) {
-                                  pgclient
-                                      .preparedQuery(
-                                          "Delete from registercallback WHERE subscriptionID = $1 ")
-                                      .execute(Tuple.of(subscriptionID),
-                                          resultHandlerDeletequeuepg -> {
-                                            if (resultHandlerDeletequeuepg.succeeded()) {
-                                              registerCallbackSubscriptionResponse.put(
-                                                  Constants.ERROR,
-                                                  "duplicate key value violates unique constraint");
-                                              handler.handle(Future.succeededFuture(
-                                                  registerCallbackSubscriptionResponse));
-                                              // handler.handle(Future.failedFuture(new JsonObject()
-                                              // --not working
-                                              // .put(Constants.ERROR, ar.cause()).toString()));
-                                            }
-                                          });
-                                }
-                              });
 
+                              pgclient
+                                  .preparedQuery(
+                                      "Delete from registercallback WHERE subscriptionID = $1 ")
+                                  .execute(Tuple.of(subscriptionID), resultHandlerDeletequeuepg -> {
+                                    if (resultHandlerDeletequeuepg.succeeded()) {
+                                      registerCallbackSubscriptionResponse.put(Constants.ERROR,
+                                          "duplicate key value violates unique constraint");
+                                      handler.handle(Future
+                                          .succeededFuture(registerCallbackSubscriptionResponse));
+                                      // handler.handle(Future.failedFuture(new JsonObject()
+                                      // --not working
+                                      // .put(Constants.ERROR, ar.cause()).toString()));
+                                    }
+                                  });
                             }
                             pgclient.close();
                           });
                 }
               } else if (resultHandlerbind.failed()) {
                 logger.error("failed ::" + resultHandlerbind.cause());
-                Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
-                resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-                  if (resultHandlerDeletequeue.succeeded()) {
-                    pgclient
-                        .preparedQuery("Delete from registercallback WHERE subscriptionID = $1 ")
-                        .execute(Tuple.of(subscriptionID), resultDeletequeuepg -> {
-                          if (resultDeletequeuepg.succeeded()) {
 
-                            registerCallbackSubscriptionResponse.put(Constants.ERROR,
-                                "Binding Failed");
-                            handler.handle(
-                                Future.succeededFuture(registerCallbackSubscriptionResponse));
-                            // handler.handle(Future.failedFuture(
-                            // new JsonObject().put(Constants.ERROR, "Binding Failed").toString()));
-                            // --not working
-                          }
-                        });
-                  }
-                });
+                pgclient.preparedQuery("Delete from registercallback WHERE subscriptionID = $1 ")
+                    .execute(Tuple.of(subscriptionID), resultDeletequeuepg -> {
+                      if (resultDeletequeuepg.succeeded()) {
+
+                        registerCallbackSubscriptionResponse.put(Constants.ERROR, "Binding Failed");
+                        handler
+                            .handle(Future.succeededFuture(registerCallbackSubscriptionResponse));
+                        // handler.handle(Future.failedFuture(
+                        // new JsonObject().put(Constants.ERROR, "Binding Failed").toString()));
+                        // --not working
+                      }
+                    });
               }
             });
           }
         } else {
           logger.error("failed :: Invalid (or) NULL routingKey");
-          Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
-          resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-            if (resultHandlerDeletequeue.succeeded()) {
-              pgclient.preparedQuery("Delete from registercallback WHERE subscriptionID = $1 ")
-                  .execute(Tuple.of(subscriptionID), resultHandlerDeletequeuepg -> {
-                    if (resultHandlerDeletequeuepg.succeeded()) {
 
-                      // handler.handle(Future.failedFuture(
-                      // new JsonObject().put(Constants.ERROR, "Invalid routingKey").toString()));
-                      // --not working
-                      registerCallbackSubscriptionResponse.put(Constants.ERROR,
-                          "Invalid routingKey");
-                      handler.handle(Future.succeededFuture(registerCallbackSubscriptionResponse));
-                    }
-                  });
-            }
-          });
+          pgclient.preparedQuery("Delete from registercallback WHERE subscriptionID = $1 ")
+              .execute(Tuple.of(subscriptionID), resultHandlerDeletequeuepg -> {
+                if (resultHandlerDeletequeuepg.succeeded()) {
+
+                  // handler.handle(Future.failedFuture(
+                  // new JsonObject().put(Constants.ERROR, "Invalid routingKey").toString()));
+                  // --not working
+                  registerCallbackSubscriptionResponse.put(Constants.ERROR, "Invalid routingKey");
+                  handler.handle(Future.succeededFuture(registerCallbackSubscriptionResponse));
+                }
+              });
         }
       }
 
