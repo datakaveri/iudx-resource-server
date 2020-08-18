@@ -18,6 +18,8 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpStatus;
 
@@ -94,12 +96,14 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService registerAdaptor(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
-
+    System.out.println(request.toString());
     /* Get the ID and userName from the request */
-    String id = request.getString("id");
+    String id = request.getString("resourceGroup");
+    String resourceServer = request.getString("resourceServer");
     String userName = request.getString(Constants.CONSUMER);
 
-    logger.info("Alias ID given by user is : " + id);
+    logger.info("Resource Group Name given by user is : " + id);
+    logger.info("Resource Server Name by user is : " + resourceServer);
     logger.info("User Name is : " + userName);
 
     /* Construct a response object */
@@ -125,8 +129,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                 /* Construct the domain, userNameSHA, userID and adaptorID */
                 String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
                 String userNameSha = getSha(userName);
-                String userID = domain + encodedValue("/") + userNameSha;
-                String adaptorID = userID + encodedValue("/") + id;
+                String userID = domain + "/" + userNameSha;
+                String adaptorID = userID + "/" + resourceServer + "/" + id;
 
                 logger.info("userID is : " + userID);
                 logger.info("adaptorID is : " + adaptorID);
@@ -150,14 +154,14 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                       if (!obj.containsKey("detail")) {
 
                         Future<JsonObject> topicPermissionFuture = setTopicPermissions(vhost,
-                            domain + "/" + userNameSha + "/" + id, userID);
+                            domain + "/" + userNameSha + "/" + resourceServer + "/" + id, userID);
                         topicPermissionFuture.onComplete(topicHandler -> {
                           if (topicHandler.succeeded()) {
                             logger.info("Write permission set on topic for exchange "
                                 + obj.getString("exchange"));
                             /* Bind the exchange with the database and adaptorLogs queue */
                             Future<JsonObject> queueBindFuture = queueBinding(
-                                domain + "/" + userNameSha + "/" + id);
+                                domain + "/" + userNameSha + "/" + resourceServer + "/" + id);
                             queueBindFuture.onComplete(res -> {
                               if (res.succeeded()) {
                                 logger.info("Queue_Database, Queue_adaptorLogs binding done with "
@@ -172,7 +176,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                                 registerResponse.put(Constants.APIKEY,
                                     Constants.APIKEY_TEST_EXAMPLE);
                                 registerResponse.put(Constants.ID,
-                                    domain + "/" + userNameSha + "/" + id);
+                                    domain + "/" + userNameSha + "/" + resourceServer + "/" + id);
                                 registerResponse.put(Constants.VHOST, Constants.VHOST_IUDX);
 
                                 logger.info("registerResponse : " + registerResponse);
@@ -388,10 +392,10 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     Promise<JsonObject> promise = Promise.promise();
     /* Get domain, shaUsername from userName */
     String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
-    String shaUsername = domain + encodedValue("/") + getSha(userName);
+    String shaUsername = domain + "/" + getSha(userName);
     // This API requires user name in path parameter. Encode the username as it
     // contains a "/"
-    String url = "/api/users/" + shaUsername;
+    String url = "/api/users/" + encodedValue(shaUsername);
     /* Check if user exists */
     HttpRequest<Buffer> request = webClient.get(url).basicAuthentication(user, password);
     JsonObject response = new JsonObject();
@@ -514,7 +518,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    **/
   private Future<JsonObject> setTopicPermissions(String vhost, String adaptorID, String userID) {
     // now set write permission to user for this adaptor(exchange)
-    String url = "/api/topic-permissions/" + vhost + "/" + userID;
+    String url = "/api/topic-permissions/" + vhost + "/" + encodedValue(userID);
 
     JsonObject param = new JsonObject();
     // set all mandatory fields
@@ -563,7 +567,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   private Future<JsonObject> setVhostPermissions(String shaUsername, String vhost) {
     // set permissions for this user
     /* Construct URL to use */
-    String url = "/api/permissions/" + vhost + "/" + shaUsername;
+    String url = "/api/permissions/" + vhost + "/" + encodedValue(shaUsername);
     JsonObject vhostPermissions = new JsonObject();
 
     // all keys are mandatory. empty strings used for configure,read as not
@@ -659,7 +663,10 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
   private boolean validateID(String id) {
     /* Check if id contains any special character */
-    if (id.matches("[^-A-Za-z_0-9]")) {
+    Pattern allowedPattern = Pattern.compile("[^-_.a-z0-9 ]", Pattern.CASE_INSENSITIVE);
+    Matcher isInvalid = allowedPattern.matcher(id);
+    
+    if (isInvalid.find()) {
       logger.info("Invalid ID" + id);
       return false;
     } else {
@@ -760,7 +767,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler) {
 
     JsonObject finalResponse = new JsonObject();
-
+    System.out.println(request.toString());
     Future<JsonObject> result = getExchange(request);
     result.onComplete(resultHandler -> {
       if (resultHandler.succeeded()) {
@@ -1149,14 +1156,14 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     JsonObject appendStreamingSubscriptionResponse = new JsonObject();
     JsonObject requestjson = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      String queueName = request.getString(Constants.SUBSCRIPTION_ID);
       JsonArray entitites = request.getJsonArray(Constants.ENTITIES);
       logger.info("Request Access for " + entitites);
       logger.info("No of bindings to do : " + entitites.size());
 
       totalBindCount = entitites.size();
       totalBindSuccess = 0;
-      
+
+      String queueName = request.getString(Constants.SUBSCRIPTION_ID);
       requestjson.put(Constants.QUEUE_NAME, queueName);
       Future<JsonObject> result = listQueueSubscribers(requestjson);
       result.onComplete(resultHandlerqueue -> {
@@ -1551,8 +1558,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
 
-      String exchangeName = request.getString("exchangeName");
-      exchangeName = exchangeName.replace("/", "%2F");
+      String exchangeName = request.getString("id");
+      // exchangeName = exchangeName.replace("/", "%2F");
 
       url = "/api/exchanges/" + vhost + "/" + encodedValue(exchangeName) + "/bindings/source";
       HttpRequest<Buffer> webRequest = webClient.get(url).basicAuthentication(user, password);

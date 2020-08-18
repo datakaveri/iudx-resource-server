@@ -14,6 +14,7 @@ public class Constants {
   public static final String NGSILD_ENTITIES_URL = NGSILD_BASE_PATH + "/entities";
   public static final String NGSILD_TEMPORAL_URL = NGSILD_BASE_PATH + "/temporal/entities";
   public static final String NGSILD_SUBSCRIPTION_URL = NGSILD_BASE_PATH + "/subscription";
+  public static final String NGSILD_POST_QUERY_PATH = NGSILD_BASE_PATH + "/entityOperations/query";
 
   // IUDX management endpoints
   public static final String IUDX_MANAGEMENT_URL = "/management";
@@ -41,7 +42,11 @@ public class Constants {
   public static final String NGSILDQUERY_MAXDISTANCE = "maxdistance";
   public static final String NGSILDQUERY_MINDISTANCE = "mindistance";
   public static final String IUDXQUERY_OPTIONS = "options";
-
+  public static final String NGSILDQUERY_ENTITIES = "entities";
+  public static final String NGSILDQUERY_GEOQ = "geoQ";
+  public static final String NGSILDQUERY_TEMPORALQ = "temporalQ";
+  public static final String NGSILDQUERY_TIME_PROPERTY = "timeProperty";
+  
   // Header params
   public static final String HEADER_TOKEN = "token";
   public static final String HEADER_HOST = "Host";
@@ -59,7 +64,7 @@ public class Constants {
   // request/response params
   public static final String CONTENT_TYPE = "content-type";
   public static final String APPLICATION_JSON = "application/json";
-  public static final String SUBSCRIPTION_ID = "subscriptionId";
+  public static final String SUBSCRIPTION_ID = "subscriptionID";
   public static final String EXCHANGE_ID = "exId";
 
   // json fields
@@ -111,18 +116,32 @@ public class Constants {
   public static final String JSON_STREAMING_NAME = "test-streaming-name";
   public static final String JSON_SUBS_ID = "subscriptionID";
   public static final String JSON_COUNT = "Count";
-
+  public static final String JSON_URL = "url";
+  public static final String JSON_METHOD = "method";
+  public static final String JSON_PASSWORD = "password";
+  public static final String JSON_RESOURCE_SERVER = "resourceServer";
+  public static final String JSON_RESOURCE_GROUP = "resourceGroup";
+  
   // searchtype
   public static final String JSON_SEARCH_TYPE = "searchType";
   public static final String JSON_TEMPORAL_SEARCH = "temporalSearch_";
   public static final String JSON_GEO_SEARCH = "geoSearch_";
   public static final String JSON_RESPONSE_FILTER_SEARCH = "responseFilter_";
   public static final String JSON_ATTRIBUTE_SEARCH = "attributeSearch_";
+  public static final String JSON_LATEST_SEARCH = "latestSearch_";
 
   // Geometry
   public static final String GEOM_POINT = "point";
   public static final String GEOM_POLYGON = "polygon";
   public static final String GEOM_LINESTRING = "linestring";
+
+  // subscription
+  public static final String SUBSCRIPTION = "subscription";
+  public static final String SUB_TYPE = "subscriptionType";
+  public static final String SUB_STREAMING = "streaming";
+  public static final String SUB_CALLBACK = "callback";
+  public static final String SUB_STREAMING_URL = "streamingURL";
+
 
   // messages (Error, Exception, messages..)
   public static final String MSG_INVALID_PARAM = "Invalid parameter in request.";
@@ -138,7 +157,10 @@ public class Constants {
   public static final String MSG_FAILURE_QUEUE_NOT_EXIST = "Queue does not exist";
   public static final String MSG_FAILURE_QUEUE_EXIST = "Queue already exists";
   public static final String MSG_EXCHANGE_EXIST = "Exchange already exists";
+  public static final String MSG_SUB_TYPE_NOT_FOUND = "Subscription type not present in body";
+  public static final String MSG_SUB_INVALID_TOKEN = "Invalid/no token found in header";
 
   // results
   public static final String SUCCCESS = "success";
+
 }
