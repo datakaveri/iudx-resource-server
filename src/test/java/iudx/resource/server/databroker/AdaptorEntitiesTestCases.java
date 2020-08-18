@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -48,6 +49,9 @@ public class AdaptorEntitiesTestCases {
   private static RabbitMQClient client;
   private static String exchangeName;
   static JsonObject propObj;
+  private static String resourceGroup;
+  private static String resourceServer;
+  private static String id, anotherid;
 
   private static final Logger logger = LoggerFactory.getLogger(AdaptorEntitiesTestCases.class);
 
@@ -118,6 +122,11 @@ public class AdaptorEntitiesTestCases {
     /* Call the databroker constructor with the RabbitMQ client Vertx web client. */
 
     databroker = new DataBrokerServiceImpl(client, webClient, propObj);
+    
+    resourceGroup = UUID.randomUUID().toString();
+    resourceServer = UUID.randomUUID().toString();
+    id = Constants.USER_NAME_TEST_EXAMPLE + "/" + resourceServer + "/" + resourceGroup;
+
     testContext.completeNow();
 
   }
@@ -127,13 +136,14 @@ public class AdaptorEntitiesTestCases {
   @Order(1)
   void successRegisterAdaptor(VertxTestContext testContext) {
     JsonObject request = new JsonObject();
-    request.put(Constants.ID, Constants.ID_ALIAS_TEST_EXAMPLE_1);
     request.put(Constants.CONSUMER, Constants.CONSUMER_TEST_EXAMPLE);
+    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
+    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.USER_NAME, Constants.USER_NAME_TEST_EXAMPLE);
     expected.put(Constants.APIKEY, Constants.APIKEY_TEST_EXAMPLE);
-    expected.put(Constants.ID, Constants.ID_TEST_EXAMPLE);
+    expected.put(Constants.ID, id);
     expected.put(Constants.VHOST, Constants.VHOST_IUDX);
 
     databroker.registerAdaptor(request, handler -> {
@@ -152,7 +162,7 @@ public class AdaptorEntitiesTestCases {
   void successGetExchange(VertxTestContext testContext) throws InterruptedException {
     Thread.sleep(1000);
     JsonObject request = new JsonObject();
-    request.put(Constants.ID, Constants.ID_TEST_EXAMPLE);
+    request.put(Constants.ID, id);
     JsonObject expected = new JsonObject();
     expected.put(Constants.TYPE, 200);
     expected.put(Constants.TITLE, Constants.SUCCESS);
@@ -174,15 +184,15 @@ public class AdaptorEntitiesTestCases {
   void successListAdaptor(VertxTestContext testContext) throws InterruptedException {
     Thread.sleep(1000);
     JsonObject request = new JsonObject();
-    request.put(Constants.EXCHANGE_NAME, Constants.ID_TEST_EXAMPLE);
+    request.put(Constants.ID, id);
 
     JsonObject expected = new JsonObject();
     JsonArray adaptorLogs_entities = new JsonArray();
     JsonArray database_entities = new JsonArray();
-    adaptorLogs_entities.add(Constants.ID_TEST_EXAMPLE + Constants.DATA_ISSUE);
-    adaptorLogs_entities.add(Constants.ID_TEST_EXAMPLE + Constants.DOWNSTREAM_ISSUE);
-    adaptorLogs_entities.add(Constants.ID_TEST_EXAMPLE + Constants.HEARTBEAT);
-    database_entities.add(Constants.ID_TEST_EXAMPLE + Constants.ALLOW_ROUTING_KEY);
+    adaptorLogs_entities.add(id + Constants.DATA_ISSUE);
+    adaptorLogs_entities.add(id + Constants.DOWNSTREAM_ISSUE);
+    adaptorLogs_entities.add(id + Constants.HEARTBEAT);
+    database_entities.add(id + Constants.ALLOW_ROUTING_KEY);
     expected.put(Constants.QUEUE_ADAPTOR_LOGS, adaptorLogs_entities);
     expected.put(Constants.QUEUE_DATA, database_entities);
 
@@ -202,13 +212,13 @@ public class AdaptorEntitiesTestCases {
   void successPublishHeartbeat(VertxTestContext testContext) throws InterruptedException {
     Thread.sleep(1000);
     JsonObject request = new JsonObject();
-    request.put(Constants.ID, "umesh_adaptor");
+    request.put(Constants.ID, id);
     request.put(Constants.STATUS, "heartbeat");
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.TYPE, Constants.SUCCESS);
     expected.put(Constants.QUEUE_NAME, Constants.QUEUE_ADAPTOR_LOGS);
-    expected.put(Constants.ROUTING_KEY, "umesh_adaptor.heartbeat");
+    expected.put(Constants.ROUTING_KEY, id + ".heartbeat");
     expected.put(Constants.DETAIL, "routingKey matched");
 
 
@@ -228,14 +238,19 @@ public class AdaptorEntitiesTestCases {
   void successRegisterAdaptorwithExistingUser(VertxTestContext testContext)
       throws InterruptedException {
     Thread.sleep(1000);
+    resourceGroup = UUID.randomUUID().toString();
+    resourceServer = UUID.randomUUID().toString();
+    anotherid = Constants.USER_NAME_TEST_EXAMPLE + "/" + resourceServer + "/" + resourceGroup;
+
     JsonObject request = new JsonObject();
-    request.put(Constants.ID, Constants.ID_ALIAS_TEST_EXAMPLE_2);
     request.put(Constants.CONSUMER, Constants.CONSUMER_TEST_EXAMPLE);
+    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
+    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.USER_NAME, "rbccps.org/e73ed7f5b7950f8b3b42f4bd14eade5c");
+    expected.put(Constants.USER_NAME, Constants.USER_NAME_TEST_EXAMPLE);
     expected.put(Constants.APIKEY, Constants.APIKEY_TEST_EXAMPLE);
-    expected.put(Constants.ID, Constants.ID_TEST_EXAMPLE_2);
+    expected.put(Constants.ID, anotherid);
     expected.put(Constants.VHOST, Constants.VHOST_IUDX);
 
     databroker.registerAdaptor(request, handler -> {
@@ -256,7 +271,7 @@ public class AdaptorEntitiesTestCases {
   void successGetExchangeExistingUser(VertxTestContext testContext) throws InterruptedException {
     Thread.sleep(1000);
     JsonObject request = new JsonObject();
-    request.put(Constants.ID, Constants.ID_TEST_EXAMPLE_1);
+    request.put(Constants.ID, anotherid);
     JsonObject expected = new JsonObject();
     expected.put(Constants.TYPE, 200);
     expected.put(Constants.TITLE, Constants.SUCCESS);
@@ -278,15 +293,15 @@ public class AdaptorEntitiesTestCases {
   void successListAdaptorExistingUser(VertxTestContext testContext) throws InterruptedException {
     Thread.sleep(1000);
     JsonObject request = new JsonObject();
-    request.put(Constants.EXCHANGE_NAME, Constants.ID_TEST_EXAMPLE_1);
+    request.put(Constants.ID, anotherid);
 
     JsonObject expected = new JsonObject();
     JsonArray adaptorLogs_entities = new JsonArray();
     JsonArray database_entities = new JsonArray();
-    adaptorLogs_entities.add(Constants.ID_TEST_EXAMPLE_1 + Constants.DATA_ISSUE);
-    adaptorLogs_entities.add(Constants.ID_TEST_EXAMPLE_1 + Constants.DOWNSTREAM_ISSUE);
-    adaptorLogs_entities.add(Constants.ID_TEST_EXAMPLE_1 + Constants.HEARTBEAT);
-    database_entities.add(Constants.ID_TEST_EXAMPLE_1 + Constants.ALLOW_ROUTING_KEY);
+    adaptorLogs_entities.add(anotherid + Constants.DATA_ISSUE);
+    adaptorLogs_entities.add(anotherid + Constants.DOWNSTREAM_ISSUE);
+    adaptorLogs_entities.add(anotherid + Constants.HEARTBEAT);
+    database_entities.add(anotherid + Constants.ALLOW_ROUTING_KEY);
     expected.put(Constants.QUEUE_ADAPTOR_LOGS, adaptorLogs_entities);
     expected.put(Constants.QUEUE_DATA, database_entities);
 
@@ -307,7 +322,8 @@ public class AdaptorEntitiesTestCases {
       throws InterruptedException {
     Thread.sleep(1000);
     JsonObject request = new JsonObject();
-    request.put(Constants.ID, Constants.ID_ALIAS_TEST_EXAMPLE_2);
+    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
+    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
     request.put(Constants.CONSUMER, Constants.CONSUMER_TEST_EXAMPLE);
 
     JsonObject expected = new JsonObject();
@@ -330,13 +346,13 @@ public class AdaptorEntitiesTestCases {
   void successDeleteAdaptor(VertxTestContext testContext) throws InterruptedException {
     Thread.sleep(5000);
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ID, Constants.ID_TEST_EXAMPLE);
+    expected.put(Constants.ID, id);
     expected.put(Constants.TYPE, "adaptor deletion");
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, "adaptor deleted");
 
     JsonObject request = new JsonObject();
-    request.put(Constants.ID, Constants.ID_TEST_EXAMPLE);
+    request.put(Constants.ID, id);
 
     databroker.deleteAdaptor(request, handler -> {
       if (handler.succeeded()) {
@@ -354,13 +370,13 @@ public class AdaptorEntitiesTestCases {
   void successDeleteAdaptorExistingUser(VertxTestContext testContext) throws InterruptedException {
     Thread.sleep(5000);
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ID, Constants.ID_TEST_EXAMPLE_2);
+    expected.put(Constants.ID, anotherid);
     expected.put(Constants.TYPE, "adaptor deletion");
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, "adaptor deleted");
 
     JsonObject request = new JsonObject();
-    request.put(Constants.ID, Constants.ID_TEST_EXAMPLE_2);
+    request.put(Constants.ID, anotherid);
 
     databroker.deleteAdaptor(request, handler -> {
       if (handler.succeeded()) {
@@ -375,11 +391,11 @@ public class AdaptorEntitiesTestCases {
   @Test
   @DisplayName("Testing registerAdaptor with invalid ID")
   @Order(11)
-  @Disabled
   void failureRegisterInvalidAdaptorID(VertxTestContext testContext) throws InterruptedException {
     Thread.sleep(1000);
     JsonObject request = new JsonObject();
-    request.put(Constants.ID, Constants.ID_ALIAS_TEST_EXAMPLE_1);
+    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup + "+()*&");
+    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
     request.put(Constants.CONSUMER, Constants.CONSUMER_TEST_EXAMPLE);
 
     JsonObject expected = new JsonObject();

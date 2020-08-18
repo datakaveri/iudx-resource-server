@@ -63,6 +63,9 @@ public class Constants {
   public static final String ID_TEST_EXAMPLE =
       "rbccps.org/e73ed7f5b7950f8b3b42f4bd14eade5c/aqm-bosch-climo";
 
+  public static final String JSON_RESOURCE_SERVER = "resourceServer";
+  public static final String JSON_RESOURCE_GROUP = "resourceGroup";
+
   public static final String NAME = "name";
   public static final String NETWORK_ISSUE = "Network Issue";
   public static final String NONE = "None";

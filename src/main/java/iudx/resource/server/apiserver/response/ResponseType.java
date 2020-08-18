@@ -1,6 +1,10 @@
 package iudx.resource.server.apiserver.response;
 
-/* TODO Need to add documentation. */
+
+/**
+ * enum defines all the possible response codes from API.
+ *
+ */
 public enum ResponseType {
   Ok(200, "Ok"), Created(201, "created"), InvalidRequest(400, "Invalid request"),
   AuthenticationFailure(401, "Invalid credentials"), BadRequestData(400, "Bad Request Data"),
