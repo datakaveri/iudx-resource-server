@@ -97,12 +97,12 @@ public class CallbackServiceTest {
 					requestedChannelMax = Integer.parseInt(properties.getProperty("requestedChannelMax"));
 					networkRecoveryInterval = Integer.parseInt(properties.getProperty("networkRecoveryInterval"));
 
-					databaseIP = properties.getProperty("databaseIP");
-					databasePort = Integer.parseInt(properties.getProperty("databasePort"));
-					databaseName = properties.getProperty("databaseName");
-					databaseUserName = properties.getProperty("databaseUserName");
-					databasePassword = properties.getProperty("databasePassword");
-					poolSize = Integer.parseInt(properties.getProperty("poolSize"));
+		            databaseIP = propObj.getString("callbackDatabaseIP");
+		            databasePort = propObj.getInteger("callbackDatabasePort");
+		            databaseName = propObj.getString("callbackDatabaseName");
+		            databaseUserName = propObj.getString("callbackDatabaseUserName");
+		            databasePassword = propObj.getString("callbackDatabasePassword");
+		            poolSize = propObj.getInteger("callbackpoolSize");
 
 				} catch (Exception ex) {
 					logger.info(ex.toString());
