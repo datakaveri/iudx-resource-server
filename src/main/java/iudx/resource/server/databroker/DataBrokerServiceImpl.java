@@ -1536,17 +1536,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
               || routingKey.split("/").length != 5) {
             logger.error("failed :: Invalid (or) NULL routingKey");
-
-            Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
-            resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-              if (resultHandlerDeletequeue.succeeded()) {
-                // handler.handle(Future.failedFuture(
-                // new JsonObject().put(Constants.ERROR, "Invalid routingKey").toString())); --not
-                // working
-                updateCallbackSubscriptionResponse.put(Constants.ERROR, "Invalid routingKey");
-                handler.handle(Future.succeededFuture(updateCallbackSubscriptionResponse));
-              }
-            });
+            updateCallbackSubscriptionResponse.put(Constants.ERROR, "Invalid routingKey");
+            handler.handle(Future.succeededFuture(updateCallbackSubscriptionResponse));
           } else {
 
             String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
@@ -1567,16 +1558,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                 if (bindResponse.containsKey(Constants.TITLE) && bindResponse
                     .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
                   logger.error("failed ::" + resultHandlerbind.cause());
-                  Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
-                  resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-                    if (resultHandlerDeletequeue.succeeded()) {
-                      updateCallbackSubscriptionResponse.put(Constants.ERROR, "Binding Failed");
-                      handler.handle(Future.succeededFuture(updateCallbackSubscriptionResponse));
-                      // handler.handle(Future.failedFuture(new JsonObject() ---not working
-                      // .put(Constants.ERROR, "Binding Failed").toString()));
 
-                    }
-                  });
+                  updateCallbackSubscriptionResponse.put(Constants.ERROR, "Binding Failed");
+                  handler.handle(Future.succeededFuture(updateCallbackSubscriptionResponse));
                 } else if (totalBindSuccess == totalBindCount) {
                   pgclient
                       .preparedQuery(
@@ -1613,62 +1597,30 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
                         } else {
                           logger.error("failed ::" + ar.cause().getMessage());
-                          Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
-                          resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-                            if (resultHandlerDeletequeue.succeeded()) {
-
-                              updateCallbackSubscriptionResponse.put(Constants.ERROR,
-                                  "duplicate key value violates unique constraint");
-                              handler.handle(
-                                  Future.succeededFuture(updateCallbackSubscriptionResponse));
-                              // handler.handle(Future.failedFuture(new JsonObject() --not
-                              // working
-                              // .put(Constants.ERROR, ar.cause()).toString()));
-
-                            }
-                          });
-
+                          updateCallbackSubscriptionResponse.put(Constants.ERROR,
+                              "duplicate key value violates unique constraint");
+                          handler
+                              .handle(Future.succeededFuture(updateCallbackSubscriptionResponse));
                         }
                         pgclient.close();
                       });
                 }
               } else if (resultHandlerbind.failed()) {
                 logger.error("failed ::" + resultHandlerbind.cause());
-                Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
-                resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-                  if (resultHandlerDeletequeue.succeeded()) {
-                    updateCallbackSubscriptionResponse.put(Constants.ERROR, "Binding Failed");
-                    handler.handle(Future.succeededFuture(updateCallbackSubscriptionResponse));
-                    // handler.handle(Future.failedFuture(
-                    // new JsonObject().put(Constants.ERROR, "Binding Failed").toString())); --not
-                    // working
-
-                  }
-                });
+                updateCallbackSubscriptionResponse.put(Constants.ERROR, "Binding Failed");
+                handler.handle(Future.succeededFuture(updateCallbackSubscriptionResponse));
               }
             });
           }
         } else {
           logger.error("failed :: Invalid (or) NULL routingKey");
-          Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
-          resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-            if (resultHandlerDeletequeue.succeeded()) {
-              // handler.handle(Future.failedFuture(
-              // new JsonObject().put(Constants.ERROR, "Invalid routingKey").toString())); --not
-              // working
-              updateCallbackSubscriptionResponse.put(Constants.ERROR, "Invalid routingKey");
-              handler.handle(Future.succeededFuture(updateCallbackSubscriptionResponse));
-
-            }
-          });
+          updateCallbackSubscriptionResponse.put(Constants.ERROR, "Invalid routingKey");
+          handler.handle(Future.succeededFuture(updateCallbackSubscriptionResponse));
         }
       }
 
     } else {
       logger.error("Error in payload");
-      // handler.handle(
-      // Future.failedFuture(new JsonObject().put(Constants.ERROR, "Error in payload").toString()));
-      // -- not working
       updateCallbackSubscriptionResponse.put(Constants.ERROR, "Error in payload");
       handler.handle(Future.succeededFuture(updateCallbackSubscriptionResponse));
     }
