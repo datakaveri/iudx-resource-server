@@ -42,10 +42,11 @@ public interface AuthenticationService {
 
     /**
      * The tokenInterospect method implements the authentication and authorization
-     * module using IUDX APIs.
+     * module using IUDX APIs. It caches the result of the TIP from the auth server for a duration specified by the
+     * Constants TIP_CACHE_TIMEOUT_AMOUNT and TIP_CACHE_TIMEOUT_UNIT.
      *
-     * @param request            which is a JsonObject
-     * @param authenticationInfo which is a JsonObject
+     * @param request            which is a JsonObject containing ids: [String]
+     * @param authenticationInfo which is a JsonObject containing token: String and apiEndpoint: String
      * @param handler            which is a request handler
      * @return AuthenticationService which is a service
      */
