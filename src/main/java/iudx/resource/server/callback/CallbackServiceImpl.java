@@ -66,7 +66,7 @@ public class CallbackServiceImpl implements CallbackService {
   public CallbackServiceImpl(RabbitMQClient clientInstance, WebClient webClientInstance,
       JsonObject propObj, Vertx vertxInstance) {
 
-    logger.info("Got the RabbitMQ Client instance");
+    logger.info("Got the RabbitMQ Client instance Obj");
     client = clientInstance;
 
     client.start(resultHandler -> {
