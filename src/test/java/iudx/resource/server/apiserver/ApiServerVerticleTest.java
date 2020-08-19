@@ -2,10 +2,8 @@ package iudx.resource.server.apiserver;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
-
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +12,6 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -25,6 +22,7 @@ import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.apiserver.response.ResponseType;
+import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.util.Constants;
 
 /* TODO : Need to update End to End Adaptor testing */
@@ -39,41 +37,55 @@ public class ApiServerVerticleTest {
   private static String vhost;
   private static JsonArray entities;
   private static String subscriptionId;
+  // TODO: remove value after callback creates works.
+  private static String callbackSubscriptionId = "abc/xyz/123";
   private static String fakeToken;
   private static String adapterId;
+  private static String resourceGroup;
+  private static String resourceServer;
+  private static String streamingSubscriptionAliasName;
+  private static String callbackSubscriptionAliasName;
 
   private static WebClient client;
 
-  ApiServerVerticleTest() {
-  }
+  ApiServerVerticleTest() {}
 
   @BeforeAll
   public static void setup(Vertx vertx, VertxTestContext testContext) {
-    WebClientOptions clientOptions = new WebClientOptions().setSsl(true).setVerifyHost(false)
-        .setTrustAll(true);
+    WebClientOptions clientOptions =
+        new WebClientOptions().setSsl(true).setVerifyHost(false).setTrustAll(true);
     client = WebClient.create(vertx, clientOptions);
 
+
+
     /*
-     * ResourceServerStarter starter = new ResourceServerStarter();
-     * Future<JsonObject> result = starter.startServer();
-     * result.onComplete(resultHandler -> { if (resultHandler.succeeded()) {
+     * ResourceServerStarter starter = new ResourceServerStarter(); Future<JsonObject> result =
+     * starter.startServer(); result.onComplete(resultHandler -> { if (resultHandler.succeeded()) {
      * testContext.completeNow(); } });
      */
+
+
 
     exchangeName = UUID.randomUUID().toString().replaceAll("-", "");
     queueName = UUID.randomUUID().toString().replaceAll("-", "");
     vhost = UUID.randomUUID().toString().replaceAll("-", "");
-    entities = new JsonArray()
-        .add("rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live");
+    entities = new JsonArray().add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_05");
     fakeToken = UUID.randomUUID().toString();
     adapterId = UUID.randomUUID().toString();
+    resourceGroup = UUID.randomUUID().toString();
+    resourceServer = UUID.randomUUID().toString();
+    streamingSubscriptionAliasName = "alias-streaming-test";
+    callbackSubscriptionAliasName = "alias-callback-test";
     testContext.completeNow();
   }
 
   @Test
   @Order(1)
   @DisplayName("test /entities endpoint with invalid parameters")
-  public void testEntitiesBadRequestParam(Vertx vertx, VertxTestContext testContext) {
+  public void testEntitiesBadRequestParam(Vertx vertx, VertxTestContext testContext)
+      throws InterruptedException {
+    // Thread.sleep(50000);
     String apiURL = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiURL + "?id2=id1,id2").send(ar -> {
       if (ar.succeeded()) {
@@ -92,7 +104,7 @@ public class ApiServerVerticleTest {
 
   @Test
   @Order(2)
-  @DisplayName("test /entities endpoint for a circle geometry")
+  @DisplayName("/entities endpoint for a circle geometry")
   public void testEntities4CircleGeom(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
@@ -113,7 +125,7 @@ public class ApiServerVerticleTest {
 
   @Test
   @Order(3)
-  @DisplayName("test /entities endpoint for polygon geometry")
+  @DisplayName("/entities endpoint for polygon geometry")
   public void testEntities4PolygonGeom(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
@@ -136,7 +148,7 @@ public class ApiServerVerticleTest {
 
   @Test
   @Order(4)
-  @DisplayName("test /entities endpoint for linestring geometry")
+  @DisplayName("/entities endpoint for linestring geometry")
   public void testEntities4LineStringGeom(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
@@ -159,7 +171,7 @@ public class ApiServerVerticleTest {
 
   @Test
   @Order(5)
-  @DisplayName("test /entities endpoint for response filter query")
+  @DisplayName("/entities endpoint for response filter query")
   public void testResponseFilterQuery(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
@@ -178,7 +190,7 @@ public class ApiServerVerticleTest {
 
   @Test
   @Order(6)
-  @DisplayName("test /entities endpoint for bbox geometry")
+  @DisplayName("/entities endpoint for bbox geometry")
   public void testEntities4BoundingBoxGeom(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
@@ -201,7 +213,7 @@ public class ApiServerVerticleTest {
 
   @Test
   @Order(7)
-  @DisplayName("test /entities for geo + responseFilter(attrs) ")
+  @DisplayName("/entities for geo + responseFilter(attrs) ")
   public void testGeo_ResponseFilter(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
@@ -222,17 +234,16 @@ public class ApiServerVerticleTest {
           }
         });
   }
-  
+
   @Test
   @Order(8)
-  @DisplayName("test /entities for attribute query (property >)")
+  @DisplayName("/entities for attribute query (property >)")
   public void testAttributeQueryGreaterThan(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_01")
-        .addQueryParam(Constants.NGSILDQUERY_Q, "CO2>500")
-        .send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_Q, "CO2>500").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -241,17 +252,16 @@ public class ApiServerVerticleTest {
           }
         });
   }
-  
+
   @Test
   @Order(9)
-  @DisplayName("test /entities for attribute query (property <)")
+  @DisplayName("/entities for attribute query (property <)")
   public void testAttributeQueryLessThan(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_01")
-        .addQueryParam(Constants.NGSILDQUERY_Q, "CO2<500")
-        .send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_Q, "CO2<500").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -260,17 +270,16 @@ public class ApiServerVerticleTest {
           }
         });
   }
-  
+
   @Test
   @Order(10)
-  @DisplayName("test /entities for attribute query (property >=)")
+  @DisplayName("/entities for attribute query (property >=)")
   public void testAttributeQueryGreaterEquals(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_01")
-        .addQueryParam(Constants.NGSILDQUERY_Q, "CO2>=500")
-        .send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_Q, "CO2>=500").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -279,17 +288,16 @@ public class ApiServerVerticleTest {
           }
         });
   }
-  
+
   @Test
   @Order(11)
-  @DisplayName("test /entities for attribute query (property <=)")
+  @DisplayName("/entities for attribute query (property <=)")
   public void testAttributeQueryLessEquals(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
         .addQueryParam(Constants.NGSILDQUERY_ID,
             "rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_01")
-        .addQueryParam(Constants.NGSILDQUERY_Q, "CO2<=500")
-        .send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_Q, "CO2<=500").send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -301,7 +309,7 @@ public class ApiServerVerticleTest {
 
   @Test
   @Order(12)
-  @DisplayName("test /entities for empty id")
+  @DisplayName("/entities for empty id")
   public void testBadRequestForEntities(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl).send(handler -> {
@@ -316,7 +324,7 @@ public class ApiServerVerticleTest {
 
   @Test
   @Order(13)
-  @DisplayName("test /temporal/entities for before relation")
+  @DisplayName("/temporal/entities for before relation")
   public void testTemporalEntitiesBefore(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_TEMPORAL_URL;
     client.get(PORT, BASE_URL, apiUrl)
@@ -336,7 +344,7 @@ public class ApiServerVerticleTest {
 
   @Test
   @Order(14)
-  @DisplayName("test /temporal/entities for after relation")
+  @DisplayName("/temporal/entities for after relation")
   public void testTemporalEntitiesAfter(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_TEMPORAL_URL;
     client.get(PORT, BASE_URL, apiUrl)
@@ -356,7 +364,7 @@ public class ApiServerVerticleTest {
 
   @Test
   @Order(15)
-  @DisplayName("test /temporal/entities for between relation")
+  @DisplayName("/temporal/entities for between relation")
   public void testTemporalEntitiesBetween(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_TEMPORAL_URL;
     client.get(PORT, BASE_URL, apiUrl)
@@ -374,10 +382,10 @@ public class ApiServerVerticleTest {
         });
 
   }
-  
+
   @Test
   @Order(16)
-  @DisplayName("test /temporal/entities complex query (geo + temporal + response filter)")
+  @DisplayName("/temporal/entities complex query (geo + temporal + response filter)")
   public void testComplexQuery(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_TEMPORAL_URL;
     client.get(PORT, BASE_URL, apiUrl)
@@ -402,7 +410,7 @@ public class ApiServerVerticleTest {
 
   @Test
   @Order(17)
-  @DisplayName("test /entities endpoint for a circle geometry count")
+  @DisplayName("/entities endpoint for a circle geometry count")
   public void testCountEntities4CircleGeom(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
@@ -412,8 +420,7 @@ public class ApiServerVerticleTest {
         .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "point")
         .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
         .addQueryParam(Constants.NGSILDQUERY_COORDINATES, "[25.319768,82.987988]")
-        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT)
-        .send(handler -> {
+        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
@@ -427,7 +434,7 @@ public class ApiServerVerticleTest {
 
   @Test
   @Order(18)
-  @DisplayName("test /entities endpoint for polygon geometry count")
+  @DisplayName("/entities endpoint for polygon geometry count")
   public void testCountEntities4PolygonGeom(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
@@ -453,7 +460,7 @@ public class ApiServerVerticleTest {
 
   @Test
   @Order(19)
-  @DisplayName("test /entities endpoint for linestring geometry count")
+  @DisplayName("/entities endpoint for linestring geometry count")
   public void testCountEntities4LineStringGeom(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
@@ -464,8 +471,7 @@ public class ApiServerVerticleTest {
         .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
         .addQueryParam(Constants.NGSILDQUERY_COORDINATES,
             "[[82.9735,25.3352],[82.9894,25.3452],[82.99,25.34]]")
-        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT)
-        .send(handler -> {
+        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
@@ -479,7 +485,7 @@ public class ApiServerVerticleTest {
 
   @Test
   @Order(20)
-  @DisplayName("test /entities endpoint for bbox geometry count")
+  @DisplayName("/entities endpoint for bbox geometry count")
   public void testCountEntities4BoundingBoxGeom(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_ENTITIES_URL;
     client.get(PORT, BASE_URL, apiUrl)
@@ -489,8 +495,7 @@ public class ApiServerVerticleTest {
         .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "bbox")
         .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
         .addQueryParam(Constants.NGSILDQUERY_COORDINATES, "[[82.95,25.3567],[83.0053,25]]")
-        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT)
-        .send(handler -> {
+        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -500,21 +505,27 @@ public class ApiServerVerticleTest {
         });
   }
 
+
+
   /** Subscription API test **/
 
-  // @Test
+  @Test
   @Order(100)
-  @DisplayName("test /subscription endpoint to create a subscription")
+  @DisplayName("/subscription endpoint to create a subscription")
   public void testCreateStreamingSubscription(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL;
     JsonObject json = new JsonObject();
-    json.put(Constants.JSON_NAME, Constants.JSON_STREAMING_NAME);
-    json.put(Constants.JSON_TYPE, Constants.JSON_STREAMING_TYPE);
+    json.put(Constants.JSON_NAME, streamingSubscriptionAliasName);
+    json.put(Constants.JSON_TYPE, Constants.SUBSCRIPTION);
     json.put(Constants.JSON_ENTITIES, entities);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
         .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_SUBS_ID));
+            assertTrue(response.containsKey(Constants.SUB_STREAMING_URL));
             subscriptionId = handler.result().bodyAsJsonObject().getString(Constants.JSON_SUBS_ID);
             testContext.completeNow();
           } else if (handler.failed()) {
@@ -523,18 +534,25 @@ public class ApiServerVerticleTest {
         });
   }
 
-  // @Test
+  @Test
   @Order(101)
-  @DisplayName("test /subscription endpoint to create subscription without token")
+  @DisplayName("/subscription endpoint to create subscription without token")
   public void testCreateStreaming401(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL;
     JsonObject json = new JsonObject();
-    json.put(Constants.JSON_NAME, Constants.JSON_STREAMING_NAME);
-    json.put(Constants.JSON_TYPE, Constants.JSON_STREAMING_TYPE);
+    json.put(Constants.JSON_NAME, streamingSubscriptionAliasName);
+    json.put(Constants.JSON_TYPE, Constants.SUBSCRIPTION);
     json.put(Constants.JSON_ENTITIES, entities);
-    client.post(PORT, BASE_URL, apiUrl).sendJsonObject(json, handler -> {
+    client.post(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .sendJsonObject(json, handler -> {
       if (handler.succeeded()) {
+        JsonObject response = handler.result().bodyAsJsonObject();
         assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
+        assertTrue(response.containsKey(Constants.JSON_TYPE));
+        assertTrue(response.containsKey(Constants.JSON_TITLE));
+        assertTrue(response.containsKey(Constants.JSON_DETAIL));
+        assertEquals(401, response.getInteger(Constants.JSON_TYPE));
         testContext.completeNow();
       } else if (handler.failed()) {
         testContext.failNow(handler.cause());
@@ -542,12 +560,292 @@ public class ApiServerVerticleTest {
     });
   }
 
-  // @Test
+  // @Test :: No relevance now for this test case
+  @Order(102)
+  @DisplayName("/subscription endpoint to create subscription without type in body")
+  public void testCreateStreaming400NoType(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL;
+    JsonObject json = new JsonObject();
+    json.put(Constants.JSON_NAME, streamingSubscriptionAliasName);
+    json.put(Constants.JSON_ENTITIES, entities);
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(json, handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            assertEquals(400, response.getInteger(Constants.JSON_TYPE));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
   @Order(103)
-  @DisplayName("test /subscription endpoint to get a subscription")
+  @DisplayName("/subscription endpoint to get a subscription without token in header")
+  public void testGetStreamingSubscription401(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
+    client.get(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .send(handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result().bodyAsJsonObject();
+        assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
+        assertTrue(response.containsKey(Constants.JSON_TYPE));
+        assertTrue(response.containsKey(Constants.JSON_TITLE));
+        assertTrue(response.containsKey(Constants.JSON_DETAIL));
+        assertEquals(ResponseType.AuthenticationFailure.getCode(),
+            response.getInteger(Constants.JSON_TYPE));
+        testContext.completeNow();
+      } else if (handler.failed()) {
+        testContext.failNow(handler.cause());
+      }
+    });
+  }
+
+  // @Test :: No relevance now for this test case
+  @Order(104)
+  @DisplayName("/subscription endpoint to get subscription without type in body")
+  public void testGetStreamingSub400NoType(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
+    client.get(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            assertEquals(ResponseType.BadRequestData.getCode(),
+                response.getInteger(Constants.JSON_TYPE));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  // @Test :: No relevance now for this test case
+  @Order(105)
+  @DisplayName("/subscription endpoint to append a subscription without type in body")
+  public void testAppendStreamingSubsctiption400NoType(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
+    JsonObject json = new JsonObject();
+    json.put(Constants.JSON_NAME, streamingSubscriptionAliasName);
+    JsonArray appendEntities = new JsonArray();
+    appendEntities.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
+    json.put(Constants.JSON_ENTITIES, appendEntities);
+    client.patch(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(json, handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            assertEquals(ResponseType.BadRequestData.getCode(),
+                response.getInteger(Constants.JSON_TYPE));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(106)
+  @DisplayName("/subscription endpoint to append subscription without token")
+  public void testAppendSubsctiption401(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
+    JsonObject json = new JsonObject();
+    json.put(Constants.JSON_NAME, streamingSubscriptionAliasName);
+    json.put(Constants.JSON_TYPE, Constants.SUBSCRIPTION);
+    JsonArray appendEntities = new JsonArray();
+    appendEntities.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
+    json.put(Constants.JSON_ENTITIES, appendEntities);
+    client.patch(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .sendJsonObject(json, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result().bodyAsJsonObject();
+        assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
+        assertTrue(response.containsKey(Constants.JSON_TYPE));
+        assertTrue(response.containsKey(Constants.JSON_TITLE));
+        assertTrue(response.containsKey(Constants.JSON_DETAIL));
+        assertEquals(ResponseType.AuthenticationFailure.getCode(),
+            response.getInteger(Constants.JSON_TYPE));
+        testContext.completeNow();
+      } else if (handler.failed()) {
+        testContext.failNow(handler.cause());
+      }
+    });
+  }
+
+  @Test
+  @Order(107)
+  @DisplayName("/subscription endpoint to append a subscription ")
+  public void testAppendStreamingSubsctiption(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
+    JsonObject json = new JsonObject();
+    json.put(Constants.JSON_NAME, streamingSubscriptionAliasName);
+    json.put(Constants.JSON_TYPE, Constants.SUBSCRIPTION);
+    JsonArray appendEntities = new JsonArray();
+    appendEntities.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
+    json.put(Constants.JSON_ENTITIES, appendEntities);
+    client.patch(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(json, handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.SUBSCRIPTION_ID));
+            assertTrue(response.containsKey(Constants.JSON_ENTITIES));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(108)
+  @DisplayName("/subscription endpoint to update a subscription without token")
+  public void testUpdateStreamingSubscription401(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
+    JsonObject json = new JsonObject();
+    json.put(Constants.JSON_NAME, streamingSubscriptionAliasName);
+    json.put(Constants.JSON_TYPE, Constants.SUBSCRIPTION);
+    JsonArray appendEntities = new JsonArray();
+    appendEntities.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/abc.*");
+    json.put(Constants.JSON_ENTITIES, appendEntities);
+    client.put(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .sendJsonObject(json, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result().bodyAsJsonObject();
+        assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
+        assertTrue(response.containsKey(Constants.JSON_TYPE));
+        assertTrue(response.containsKey(Constants.JSON_TITLE));
+        assertTrue(response.containsKey(Constants.JSON_DETAIL));
+        assertEquals(ResponseType.AuthenticationFailure.getCode(),
+            response.getInteger(Constants.JSON_TYPE));
+        testContext.completeNow();
+      } else if (handler.failed()) {
+        testContext.failNow(handler.cause());
+      }
+    });
+  }
+
+  // @Test :: No relevance now for this test case
+  @Order(108)
+  @DisplayName("/subscription endpoint to update a subscription without  type")
+  public void testUpdateStreamingSubscription400NoType(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
+    JsonObject json = new JsonObject();
+    json.put(Constants.JSON_NAME, streamingSubscriptionAliasName);
+    JsonArray appendEntities = new JsonArray();
+    appendEntities.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/abc.*");
+    json.put(Constants.JSON_ENTITIES, appendEntities);
+    client.put(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(json, handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            assertEquals(ResponseType.BadRequestData.getCode(),
+                response.getInteger(Constants.JSON_TYPE));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(108)
+  @DisplayName("/subscription endpoint to update a subscription with a non matching name and ID")
+  public void testUpdateStreamingSubscription400NonMatchingNameFields(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
+    JsonObject json = new JsonObject();
+    json.put(Constants.JSON_NAME, callbackSubscriptionAliasName);
+    JsonArray appendEntities = new JsonArray();
+    appendEntities.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/abc.*");
+    json.put(Constants.JSON_ENTITIES, appendEntities);
+    client.put(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(json, handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            assertEquals(ResponseType.BadRequestData.getCode(),
+                response.getInteger(Constants.JSON_TYPE));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(108)
+  @DisplayName("/subscription endpoint to update a subscription")
+  public void testUpdateStreamingSubscription(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
+    JsonObject json = new JsonObject();
+    json.put(Constants.JSON_NAME, streamingSubscriptionAliasName);
+    json.put(Constants.JSON_TYPE, Constants.SUBSCRIPTION);
+    JsonArray appendEntities = new JsonArray();
+    appendEntities.add(
+        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/abc.*");
+    json.put(Constants.JSON_ENTITIES, appendEntities);
+    client.put(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(json, handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_SUBS_ID));
+            assertTrue(response.containsKey(Constants.SUB_STREAMING_URL));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(109)
+  @DisplayName("/subscription endpoint to get a subscription")
   public void testGetSubscription(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
-    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+    System.out.println("subs  ID :" + subscriptionId);
+    client.get(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
         .send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
@@ -558,14 +856,223 @@ public class ApiServerVerticleTest {
         });
   }
 
-  // @Test
-  @Order(104)
-  @DisplayName("test /subscription endpoint to delete a subscription")
-  public void testDeleteSubs(Vertx vertx, VertxTestContext testContext) {
+  // @Test :: No relevance now for this test case
+  @Order(110)
+  @DisplayName("/subscription endpoint to delete a subscription without type")
+  public void testDeleteSubs400NoType(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
-    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
+    System.out.println("subs  ID :" + subscriptionId);
+    client.delete(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
         .send(handler -> {
           if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            assertEquals(ResponseType.BadRequestData.getCode(),
+                response.getInteger(Constants.JSON_TYPE));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(111)
+  @DisplayName("/subscription endpoint to delete a subscription without token")
+  public void testDeleteSubs401(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
+    System.out.println("subs  ID :" + subscriptionId);
+    client.delete(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .send(handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result().bodyAsJsonObject();
+        assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
+        assertTrue(response.containsKey(Constants.JSON_TYPE));
+        assertTrue(response.containsKey(Constants.JSON_TITLE));
+        assertTrue(response.containsKey(Constants.JSON_DETAIL));
+        assertEquals(ResponseType.AuthenticationFailure.getCode(),
+            response.getInteger(Constants.JSON_TYPE));
+        testContext.completeNow();
+      } else if (handler.failed()) {
+        testContext.failNow(handler.cause());
+      }
+    });
+  }
+
+  @Test
+  @Order(112)
+  @DisplayName("/subscription endpoint to delete a subscription")
+  public void testDeleteSubs(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
+    System.out.println("subs  ID :" + subscriptionId);
+    client.delete(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+
+  @Test
+  @Order(113)
+  @DisplayName("/subscription endpoint to create a callback subscription without token")
+  public void testCreateCallbackSubscription401(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL;
+    JsonObject json = new JsonObject();
+    json.put(Constants.JSON_NAME, callbackSubscriptionAliasName);
+    json.put(Constants.JSON_URL, "http://abc.xyz/callback");
+    json.put(Constants.JSON_METHOD, "POST");
+    json.put(Constants.JSON_USERNAME, "username");
+    json.put(Constants.JSON_PASSWORD, "password");
+    json.put(Constants.JSON_TYPE, Constants.SUBSCRIPTION);
+    json.put(Constants.JSON_ENTITIES, entities);
+    client.post(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
+        .sendJsonObject(json, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result().bodyAsJsonObject();
+        assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
+        assertTrue(response.containsKey(Constants.JSON_TYPE));
+        assertTrue(response.containsKey(Constants.JSON_TITLE));
+        assertTrue(response.containsKey(Constants.JSON_DETAIL));
+        assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
+        testContext.completeNow();
+      } else if (handler.failed()) {
+        testContext.failNow(handler.cause());
+      }
+    });
+  }
+
+  // @Test :: No relevance now for this test case
+  @Order(114)
+  @DisplayName("/subscription endpoint to create a callback subscription without type")
+  public void testCreateCallbackSubscription400NoType(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL;
+    JsonObject json = new JsonObject();
+    json.put(Constants.JSON_NAME, callbackSubscriptionAliasName);
+    json.put(Constants.JSON_URL, "http://abc.xyz/callback");
+    json.put(Constants.JSON_METHOD, "POST");
+    json.put(Constants.JSON_USERNAME, "username");
+    json.put(Constants.JSON_PASSWORD, "password");
+    json.put(Constants.JSON_ENTITIES, entities);
+    client.post(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(json, handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  // TODO : uncomment and test, once callback subscription completed in databroker verticle
+  // @Test
+  @Order(115)
+  @DisplayName("/subscription endpoint to create a callback subscription")
+  public void testCreateCallbackSubscription(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL;
+    JsonObject json = new JsonObject();
+    json.put(Constants.JSON_NAME, callbackSubscriptionAliasName);
+    json.put(Constants.JSON_TYPE, SubsType.CALLBACK);
+    json.put(Constants.JSON_URL, "http://abc.xyz/callback");
+    json.put(Constants.JSON_METHOD, "POST");
+    json.put(Constants.JSON_USERNAME, "username");
+    json.put(Constants.JSON_PASSWORD, "password");
+    json.put(Constants.JSON_ENTITIES, entities);
+    client.post(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .sendJsonObject(json, handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.Created.getCode(),
+                handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_SUBS_ID));
+            callbackSubscriptionId = response.getString(Constants.JSON_SUBS_ID);
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(116)
+  @DisplayName("/subscription endpoint to get a callback subscription without token")
+  public void testGetCallbackSubscription401(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + callbackSubscriptionId;
+    client.get(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
+        .send(handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result().bodyAsJsonObject();
+        assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
+        assertTrue(response.containsKey(Constants.JSON_TYPE));
+        assertTrue(response.containsKey(Constants.JSON_TITLE));
+        assertTrue(response.containsKey(Constants.JSON_DETAIL));
+        testContext.completeNow();
+      } else if (handler.failed()) {
+        testContext.failNow(handler.cause());
+      }
+    });
+  }
+
+
+  // @Test :: No relevance now for this test case
+  @Order(117)
+  @DisplayName("/subscription endpoint to get a callback subscription without type")
+  public void testGetCallbackSubscription400NoType(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + callbackSubscriptionId;
+    client.get(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  // TODO : uncomment and test, once callback subscription completed in databroker verticle
+  // @Test
+  @Order(118)
+  @DisplayName("/subscription endpoint to get a callback subscription")
+  public void testGetCallbackSubscription(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + callbackSubscriptionId;
+    client.get(PORT, BASE_URL, apiUrl)
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
+        .putHeader(Constants.HEADER_TOKEN, fakeToken)
+        .send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
           } else if (handler.failed()) {
@@ -606,11 +1113,15 @@ public class ApiServerVerticleTest {
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(request, ar -> {
           if (ar.succeeded()) {
-            JsonObject res = ar.result().bodyAsJsonObject();
-            assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
-            assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NO_CONTENT);
-            assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
-            assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_EXCHANGE_EXIST);
+            assertEquals(ResponseType.AlreadyExist.getCode(), ar.result().statusCode());
+            // TODO : discussion about Already exist code
+            // JsonObject res = ar.result().bodyAsJsonObject();
+            /*
+             * 
+             * assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NO_CONTENT);
+             * assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
+             * assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_EXCHANGE_EXIST);
+             */
             testContext.completeNow();
           } else if (ar.failed()) {
             testContext.failNow(ar.cause());
@@ -648,11 +1159,14 @@ public class ApiServerVerticleTest {
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(request, ar -> {
           if (ar.succeeded()) {
-            JsonObject res = ar.result().bodyAsJsonObject();
-            assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
-            assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NO_CONTENT);
-            assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
-            assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_FAILURE_QUEUE_EXIST);
+            // JsonObject res = ar.result().bodyAsJsonObject();
+            assertEquals(ResponseType.AlreadyExist.getCode(), ar.result().statusCode());
+            /*
+             * assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NO_CONTENT);
+             * assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
+             * assertEquals(res.getString(Constants.JSON_DETAIL),
+             * Constants.MSG_FAILURE_QUEUE_EXIST);
+             */
             testContext.completeNow();
           } else if (ar.failed()) {
             testContext.failNow(ar.cause());
@@ -738,9 +1252,8 @@ public class ApiServerVerticleTest {
             LOGGER.info(res);
             assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
             /*
-             * assertEquals(exchangeName, res.getString("exchange"));
-             * assertEquals(queueName, res.getString("queue")); assertEquals(entities,
-             * res.getJsonArray("entities"));
+             * assertEquals(exchangeName, res.getString("exchange")); assertEquals(queueName,
+             * res.getString("queue")); assertEquals(entities, res.getJsonArray("entities"));
              */
             testContext.completeNow();
           } else if (handler.failed()) {
@@ -774,7 +1287,7 @@ public class ApiServerVerticleTest {
     client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken).send(ar -> {
       if (ar.succeeded()) {
         JsonObject res = ar.result().bodyAsJsonObject();
-        assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
+        assertEquals(ResponseType.ResourceNotFound.getCode(), ar.result().statusCode());
         assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NOT_FOUND);
         assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
         assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_FAILURE_QUEUE_NOT_EXIST);
@@ -810,7 +1323,7 @@ public class ApiServerVerticleTest {
     client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken).send(ar -> {
       if (ar.succeeded()) {
         JsonObject res = ar.result().bodyAsJsonObject();
-        assertEquals(ResponseType.BadRequestData.getCode(), ar.result().statusCode());
+        assertEquals(ResponseType.ResourceNotFound.getCode(), ar.result().statusCode());
         assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NOT_FOUND);
         assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
         assertEquals(res.getString(Constants.JSON_DETAIL),
@@ -853,11 +1366,14 @@ public class ApiServerVerticleTest {
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .sendJsonObject(request, handler -> {
           if (handler.succeeded()) {
-            JsonObject res = handler.result().bodyAsJsonObject();
-            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
-            assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NO_CONTENT);
-            assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
-            assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_FAILURE_VHOST_EXIST);
+            // JsonObject res = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.AlreadyExist.getCode(), handler.result().statusCode());
+            /*
+             * assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NO_CONTENT);
+             * assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
+             * assertEquals(res.getString(Constants.JSON_DETAIL),
+             * Constants.MSG_FAILURE_VHOST_EXIST);
+             */
             testContext.completeNow();
           } else if (handler.failed()) {
             testContext.failNow(handler.cause());
@@ -892,7 +1408,7 @@ public class ApiServerVerticleTest {
         .send(handler -> {
           if (handler.succeeded()) {
             JsonObject res = handler.result().bodyAsJsonObject();
-            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertEquals(ResponseType.ResourceNotFound.getCode(), handler.result().statusCode());
             assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NOT_FOUND);
             assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
             assertEquals(res.getString(Constants.JSON_DETAIL), Constants.MSG_FAILURE_NO_VHOST);
@@ -909,7 +1425,8 @@ public class ApiServerVerticleTest {
   public void testAdapterRegistrationWithoutToken(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register";
     JsonObject requestJson = new JsonObject();
-    requestJson.put(Constants.JSON_ID, adapterId);
+    requestJson.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
+    requestJson.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
     client.post(PORT, BASE_URL, apiUrl).sendJsonObject(requestJson, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result().bodyAsJsonObject();
@@ -930,7 +1447,8 @@ public class ApiServerVerticleTest {
   public void testRegisterAdapter(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register";
     JsonObject requestJson = new JsonObject();
-    requestJson.put(Constants.JSON_ID, adapterId);
+    requestJson.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
+    requestJson.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .putHeader(Constants.HEADER_TOKEN, fakeToken).sendJsonObject(requestJson, handler -> {
           if (handler.succeeded()) {
@@ -954,7 +1472,8 @@ public class ApiServerVerticleTest {
   public void testRegisterAdapter400(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register";
     JsonObject requestJson = new JsonObject();
-    requestJson.put(Constants.JSON_ID, adapterId);
+    requestJson.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
+    requestJson.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, fakeToken)
         .putHeader(Constants.HEADER_TOKEN, fakeToken).sendJsonObject(requestJson, handler -> {
           if (handler.succeeded()) {
