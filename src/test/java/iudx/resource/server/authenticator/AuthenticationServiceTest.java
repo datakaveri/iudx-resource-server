@@ -1,13 +1,18 @@
 package iudx.resource.server.authenticator;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
+import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -92,7 +97,7 @@ public class AuthenticationServiceTest {
     public void testHappyPath(VertxTestContext testContext) {
         JsonObject request = new JsonObject()
                 .put("ids", new JsonArray()
-                .add("datakaveri.org/1022f4c20542abd5087107c0b6de4cb3130c5b7b/example.com/res1"));
+                        .add(properties.getProperty("testResourceID")));
         JsonObject authInfo = new JsonObject()
                 .put("token", properties.getProperty("testAuthToken"))
                 .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(0));
@@ -117,7 +122,7 @@ public class AuthenticationServiceTest {
     public void testHappyPathTipCache(VertxTestContext testContext) {
         JsonObject request = new JsonObject()
                 .put("ids", new JsonArray()
-                        .add("datakaveri.org/1022f4c20542abd5087107c0b6de4cb3130c5b7b/example.com/res1"));
+                        .add(properties.getProperty("testResourceID")));
         JsonObject authInfo = new JsonObject()
                 .put("token", properties.getProperty("testAuthToken"))
                 .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(0));
@@ -201,6 +206,46 @@ public class AuthenticationServiceTest {
             }
             logger.info("Expired token TIP failed properly");
             logger.info(result.getString("message"));
+            testContext.completeNow();
+        });
+    }
+
+    @Test
+    @DisplayName("Test CAT resource group ID API")
+    public void testCatAPI(Vertx vertx, VertxTestContext testContext) {
+        int catPort = Integer.parseInt(properties.getProperty("catServerPort"));
+        String catHost = properties.getProperty("catServerHost");
+        String catPath = Constants.CAT_RSG_PATH;
+        String groupID = "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc/rs.iudx.org.in/aqm-bosch-climo";
+
+        WebClientOptions options = new WebClientOptions();
+        options.setTrustAll(true).setVerifyHost(false).setSsl(true);
+        WebClient client = WebClient.create(vertx, options);
+        client.get(catPort, catHost, catPath)
+                .addQueryParam("property", "[id]")
+                .addQueryParam("value", "[[" + groupID + "]]")
+                .addQueryParam("filter", "[resourceAuthControlLevel]")
+                .expect(ResponsePredicate.JSON).send(httpResponseAsyncResult -> {
+            if (httpResponseAsyncResult.failed()) {
+                testContext.failNow(httpResponseAsyncResult.cause());
+                return;
+            }
+            HttpResponse<Buffer> response = httpResponseAsyncResult.result();
+            if (response.statusCode() != HttpStatus.SC_OK) {
+                testContext.failNow(new Throwable(response.bodyAsString()));
+                return;
+            }
+            JsonObject responseBody = response.bodyAsJsonObject();
+            if (!responseBody.getString("status").equals("success")) {
+                testContext.failNow(new Throwable(response.bodyAsString()));
+                return;
+            }
+            String resourceACL = responseBody.getJsonArray("results")
+                    .getJsonObject(0).getString("resourceAuthControlLevel");
+            if (!resourceACL.equals("OPEN")) {
+                testContext.failNow(new Throwable(response.bodyAsString()));
+                return;
+            }
             testContext.completeNow();
         });
     }

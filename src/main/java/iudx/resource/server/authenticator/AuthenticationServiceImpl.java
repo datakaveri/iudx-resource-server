@@ -8,6 +8,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import org.apache.http.HttpStatus;
 
@@ -16,9 +17,7 @@ import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -40,12 +39,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
     private static final ConcurrentHashMap<String, JsonObject> tipCache = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<String, Boolean> catCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, String> catCache = new ConcurrentHashMap<>();
     private static final Properties properties = new Properties();
     private final WebClient webClient;
+    private final Vertx vertxObj;
 
     public AuthenticationServiceImpl(Vertx vertx, WebClient client) {
         webClient = client;
+        vertxObj = vertx;
         try {
             FileInputStream configFile = new FileInputStream(Constants.CONFIG_FILE);
             if (properties.isEmpty()) properties.load(configFile);
@@ -168,6 +169,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     if (!tipCache.replace(token, cacheResponse, newCacheEntry))
                         throw new ConcurrentModificationException("TIP cache premature invalidation");
                     promise.complete(newCacheEntry);
+                    return promise.future();
                 } else {
                     if (!tipCache.remove(token, cacheResponse))
                         throw new ConcurrentModificationException("TIP cache premature invalidation");
@@ -208,13 +210,75 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return promise.future();
     }
 
+    /**
+     * @param requestIDs A json array of strings which are resource IDs
+     * @return A future of a hashmap with the key as the resource ID and a boolean value indicating open or not
+     * <p>
+     * There is a known problem with the caching mechanism in this function. If an invalid ID is received, the CAT is
+     * called and the result is not cached. The result is cached only if a valid ID exists in the CAT. If every ID is
+     * stored then the cache can balloon in size until a server reload. Also a non existent ID will get cached and later
+     * if the ID entry is done on the CAT, it does not get auto propagated to the RS. However, in the current mechanism,
+     * there is a DDoS attack vector where an attacker can send multiple requests for invalid IDs.
+     */
     private Future<HashMap<String, Boolean>> isOpenResource(JsonArray requestIDs) {
         Promise<HashMap<String, Boolean>> promise = Promise.promise();
-        // <Temporary result>
         HashMap<String, Boolean> result = new HashMap<>();
-        requestIDs.stream().forEach(rID -> result.put((String) rID, false));
-        promise.complete(result);
-        // </Temporary result>
+        List<Future> catResponses = new ArrayList<>();
+        WebClientOptions options = new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
+        WebClient catWebClient = WebClient.create(vertxObj, options);
+        for (Object rID : requestIDs) {
+            String resourceID = (String) rID;
+            String[] idComponents = resourceID.split("/");
+            if (idComponents.length < 4) continue;
+            String groupID = (idComponents.length == 4) ? resourceID :
+                    String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
+            Promise prom = Promise.promise();
+            catResponses.add(prom.future());
+            if (catCache.containsKey(groupID)) {
+                result.put(resourceID, catCache.get(groupID).equals("OPEN"));
+                prom.complete();
+                continue;
+            }
+            String catHost = properties.getProperty("catServerHost");
+            int catPort = Integer.parseInt(properties.getProperty("catServerPort"));
+            String catPath = Constants.CAT_RSG_PATH;
+            catWebClient
+                    .get(catPort, catHost, catPath)
+                    .addQueryParam("property", "[id]")
+                    .addQueryParam("value", "[[" + groupID + "]]")
+                    .addQueryParam("filter", "[resourceAuthControlLevel]")
+                    .expect(ResponsePredicate.JSON).send(httpResponseAsyncResult -> {
+                if (httpResponseAsyncResult.failed()) {
+                    result.put(resourceID, false);
+                    prom.complete();
+                    return;
+                }
+                HttpResponse<Buffer> response = httpResponseAsyncResult.result();
+                if (response.statusCode() != HttpStatus.SC_OK) {
+                    result.put(resourceID, false);
+                    prom.complete();
+                    return;
+                }
+                JsonObject responseBody = response.bodyAsJsonObject();
+                if (!responseBody.getString("status").equals("success")) {
+                    result.put(resourceID, false);
+                    prom.complete();
+                    return;
+                }
+                String resourceACL = "CLOSED";
+                try {
+                    resourceACL = responseBody.getJsonArray("results")
+                            .getJsonObject(0).getString("resourceAuthControlLevel");
+                } catch (IndexOutOfBoundsException ignored) {
+                }
+                result.put(resourceID, resourceACL.equals("OPEN"));
+                catCache.put(groupID, resourceACL);
+                prom.complete();
+            });
+        }
+
+        CompositeFuture.all(catResponses).onSuccess(compositeFuture -> promise.complete(result));
+
         return promise.future();
     }
 
