@@ -2,8 +2,13 @@ package iudx.resource.server.apiserver.response;
 
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.apiserver.util.Constants;
-/* TODO Need to add documentation. */
+
+/**
+ * create a rest response body for API.
+ *
+ */
 public class RestResponse {
+
   private int type;
   private String title;
   private String detail;
@@ -15,6 +20,11 @@ public class RestResponse {
     this.detail = message;
   }
 
+  /**
+   * convert object to json.
+   * 
+   * @return JsonObject json representation for object
+   */
   private JsonObject toJson() {
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_TYPE, this.type);
