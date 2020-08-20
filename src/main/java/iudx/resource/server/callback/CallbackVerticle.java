@@ -76,7 +76,7 @@ public class CallbackVerticle extends AbstractVerticle {
         properties = new Properties();
         inputstream = null;
 
-        try  {
+        try {
 
           inputstream = new FileInputStream("config.properties");
           properties.load(inputstream);
@@ -84,7 +84,7 @@ public class CallbackVerticle extends AbstractVerticle {
           dataBrokerIP = properties.getProperty("dataBrokerIP");
           dataBrokerPort = Integer.parseInt(properties.getProperty("dataBrokerPort"));
           dataBrokerManagementPort =
-                  Integer.parseInt(properties.getProperty("dataBrokerManagementPort"));
+              Integer.parseInt(properties.getProperty("dataBrokerManagementPort"));
           dataBrokerVhost = properties.getProperty("dataBrokerVhost");
           dataBrokerUserName = properties.getProperty("dataBrokerUserName");
           dataBrokerPassword = properties.getProperty("dataBrokerPassword");
@@ -92,14 +92,15 @@ public class CallbackVerticle extends AbstractVerticle {
           requestedHeartbeat = Integer.parseInt(properties.getProperty("requestedHeartbeat"));
           handshakeTimeout = Integer.parseInt(properties.getProperty("handshakeTimeout"));
           requestedChannelMax = Integer.parseInt(properties.getProperty("requestedChannelMax"));
-          networkRecoveryInterval = Integer.parseInt(properties.getProperty("networkRecoveryInterval"));
-          
-		  databaseIP = properties.getProperty("callbackDatabaseIP");
-		  databasePort = Integer.parseInt(properties.getProperty("callbackDatabasePort"));
-		  databaseName = properties.getProperty("callbackDatabaseName");
-		  databaseUserName = properties.getProperty("callbackDatabaseUserName");
-		  databasePassword = properties.getProperty("callbackDatabasePassword");
-		  poolSize = Integer.parseInt(properties.getProperty("callbackpoolSize"));
+          networkRecoveryInterval =
+              Integer.parseInt(properties.getProperty("networkRecoveryInterval"));
+
+          databaseIP = properties.getProperty("callbackDatabaseIP");
+          databasePort = Integer.parseInt(properties.getProperty("callbackDatabasePort"));
+          databaseName = properties.getProperty("callbackDatabaseName");
+          databaseUserName = properties.getProperty("callbackDatabaseUserName");
+          databasePassword = properties.getProperty("callbackDatabasePassword");
+          poolSize = Integer.parseInt(properties.getProperty("callbackpoolSize"));
 
         } catch (Exception ex) {
 
@@ -121,7 +122,7 @@ public class CallbackVerticle extends AbstractVerticle {
         config.setRequestedChannelMax(requestedChannelMax);
         config.setNetworkRecoveryInterval(networkRecoveryInterval);
         config.setAutomaticRecoveryEnabled(true);
-        
+
         webConfig = new WebClientOptions();
         webConfig.setKeepAlive(true);
         webConfig.setConnectTimeout(86400000);
@@ -132,7 +133,7 @@ public class CallbackVerticle extends AbstractVerticle {
         /* Create a RabbitMQ Client with the configuration and vertx cluster instance. */
 
         client = RabbitMQClient.create(vertx, config);
-        
+
         /* Create a Vertx Web Client with the configuration and vertx cluster instance. */
 
         webClient = WebClient.create(vertx, webConfig);
@@ -146,22 +147,21 @@ public class CallbackVerticle extends AbstractVerticle {
         propObj.put("vHost", dataBrokerVhost);
         propObj.put("dataBrokerIP", dataBrokerIP);
         propObj.put("dataBrokerPort", dataBrokerPort);
-        propObj.put("dataBrokerPort", dataBrokerPort);
-        propObj.put("databaseIP", databaseIP);
-        propObj.put("databasePort", databasePort);
-        propObj.put("databaseName", databaseName);
-        propObj.put("databaseUserName", databaseUserName);
-        propObj.put("databasePassword", databasePassword);
-        propObj.put("databasePoolSize", poolSize);
-  
+        propObj.put("callbackDatabaseIP", databaseIP);
+        propObj.put("callbackDatabasePort", databasePort);
+        propObj.put("callbackDatabaseName", databaseName);
+        propObj.put("callbackDatabaseUserName", databaseUserName);
+        propObj.put("callbackDatabasePassword", databasePassword);
+        propObj.put("callbackpoolSize", poolSize);
+
         /* Call the callback constructor with the RabbitMQ client. */
         callback = new CallbackServiceImpl(client, webClient, propObj, vertx);
-        
+
         /* Publish the Callback service with the Event Bus against an address. */
 
         new ServiceBinder(vertx).setAddress("iudx.rs.callback.service")
             .register(CallbackService.class, callback);
-        
+
         /* Get a handler for the Service Discovery interface and publish a service record. */
 
         discovery = ServiceDiscovery.create(vertx);
@@ -169,15 +169,15 @@ public class CallbackVerticle extends AbstractVerticle {
             "iudx.rs.callback.service", // the service address,
             CallbackService.class // the service interface
         );
-        
+
         discovery.publish(record, publishRecordHandler -> {
-            if (publishRecordHandler.succeeded()) {
-              Record publishedRecord = publishRecordHandler.result();
-              logger.info("Publication succeeded " + publishedRecord.toJson());
-            } else {
-              logger.info("Publication failed " + publishRecordHandler.result());
-            }
-          });
+          if (publishRecordHandler.succeeded()) {
+            Record publishedRecord = publishRecordHandler.result();
+            logger.info("Publication succeeded " + publishedRecord.toJson());
+          } else {
+            logger.info("Publication failed " + publishRecordHandler.result());
+          }
+        });
       }
     });
     logger.info("Callback Verticle started");

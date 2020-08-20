@@ -1,8 +1,8 @@
 package iudx.resource.server.callback;
 
-import io.vertx.core.AsyncResult;
+import java.util.HashMap;
+import org.apache.http.HttpStatus;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -21,10 +21,6 @@ import io.vertx.rabbitmq.RabbitMQConsumer;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-
-import java.util.HashMap;
-
-import org.apache.http.HttpStatus;
 
 /**
  * <h1>Callback Service Implementation.</h1>
@@ -66,73 +62,44 @@ public class CallbackServiceImpl implements CallbackService {
   public CallbackServiceImpl(RabbitMQClient clientInstance, WebClient webClientInstance,
       JsonObject propObj, Vertx vertxInstance) {
 
-    logger.info("Got the RabbitMQ Client instance Obj");
+    logger.info("Got the RabbitMQ Client instance");
     client = clientInstance;
 
-    client.start(resultHandler -> {
-      if (resultHandler.succeeded()) {
-        logger.info("RabbitMQ Client Connected");
-      } else {
-        logger.info("RabbitMQ Client Not Connected");
-      }
-    });
+    JsonObject reqNotification = new JsonObject();
+    reqNotification.put(Constants.QUEUE_NAME, "callback.notification");
+    connectToCallbackNotificationQueue(reqNotification);
+
+    JsonObject reqData = new JsonObject();
+    reqData.put(Constants.QUEUE_NAME, "callback.data");
+    connectToCallbackDataQueue(reqData);
 
     if (propObj != null && !propObj.isEmpty()) {
-      databaseIP = propObj.getString("databaseIP");
-      databasePort = propObj.getInteger("databasePort");
-      databaseName = propObj.getString("databaseName");
-      databaseUserName = propObj.getString("databaseUserName");
-      databasePassword = propObj.getString("databasePassword");
-      databasePoolSize = propObj.getInteger("databasePoolSize");
+      databaseIP = propObj.getString("callbackDatabaseIP");
+      databasePort = propObj.getInteger("callbackDatabasePort");
+      databaseName = propObj.getString("callbackDatabaseName");
+      databaseUserName = propObj.getString("callbackDatabaseUserName");
+      databasePassword = propObj.getString("callbackDatabasePassword");
+      databasePoolSize = propObj.getInteger("callbackpoolSize");
     }
+
     webClient = webClientInstance;
     vertx = vertxInstance;
   }
 
   /**
-   * <h1>This method perform</h1>
-   * <li>Call method "connectToCallbackNotificationQueue" and handle success and failure result.
-   * </li>
-   * 
-   * @param request JSON Object
-   * @param handler Handler to return response in case of success and appropriate error message in
-   *        case of failure.
-   */
-  @Override
-  public CallbackService getMessageFromCallbackNotificationQueue(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
-    JsonObject finalResponse = new JsonObject();
-    if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = connectToCallbackNotificationQueue(request);
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-          logger.info(Constants.SUCCESS + resultHandler.result());
-          finalResponse.put(Constants.SUCCESS, Constants.CONNECT_TO_CALLBACK_NOTIFICATION_QUEUE);
-          handler.handle(Future.succeededFuture(finalResponse));
-        }
-        if (resultHandler.failed()) {
-          logger.error(Constants.ERROR + resultHandler.cause());
-          finalResponse.put(Constants.FAILURE,
-              Constants.CONNECT_TO_CALLBACK_NOTIFICATION_QUEUE_FAIL);
-          handler.handle(Future.failedFuture(finalResponse.toString()));
-        }
-      });
-    }
-    return null;
-  }
-
-  /*
-   * <p> <h1> This method execute tasks </h1> <li> Connect to RabbitMQ callback.notification Queue
-   * (callback.notification) </li> <li> Create RabbitMQConsumer for consuming queue messages </li>
-   * <li> Get the database operation value from message </li> <li> Query Database when database
-   * operation is create|update|delete </li> </p>
+   * <p>
+   * <h1>This method execute tasks</h1>
+   * <li>Connect to RabbitMQ callback.notification Queue (callback.notification)</li>
+   * <li>Create RabbitMQConsumer for consuming queue messages</li>
+   * <li>Get the database operation value from message</li>
+   * <li>Query Database when database operation is create|update|delete</li>
+   * </p>
    *
    * @param request which is a JSON object
-   * 
    * @return response which is a Future object of promise of JSON type
    * 
    */
-  private Future<JsonObject> connectToCallbackNotificationQueue(JsonObject request) {
+  public Future<JsonObject> connectToCallbackNotificationQueue(JsonObject request) {
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
 
@@ -151,7 +118,7 @@ public class CallbackServiceImpl implements CallbackService {
               logger.info(Constants.RABBITMQ_CONSUMER_CREATED);
               RabbitMQConsumer mqConsumer = rabbitMQConsumerAsyncResult.result();
               mqConsumer.handler(message -> {
-                /* Message form Queue */
+                /* Message from Queue */
                 Buffer body = message.body();
                 logger.info(Constants.MESSAGE + Constants.COLON + message.body());
                 if (body != null) {
@@ -185,7 +152,6 @@ public class CallbackServiceImpl implements CallbackService {
                           logger.info(Constants.DATABASE_QUERY_RESULT + resultHandler.result());
                           finalResponse.put(Constants.DATABASE_QUERY_RESULT,
                               Constants.CACHE_UPDATE_SUCCESS);
-                          promise.complete(finalResponse);
                         } else {
                           logger.error(Constants.DATABASE_QUERY_RESULT + Constants.COLON
                               + resultHandler.cause());
@@ -206,6 +172,10 @@ public class CallbackServiceImpl implements CallbackService {
                   }
                 }
               });
+              logger.info(Constants.QUEUE_EMPTY);
+              finalResponse.put(Constants.DATABASE_QUERY_RESULT,
+                  Constants.CONNECT_TO_CALLBACK_NOTIFICATION_QUEUE);
+              promise.complete(finalResponse);
             } else {
               logger.error(Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON + queueName);
               logger.error(Constants.ERROR + rabbitMQConsumerAsyncResult.cause());
@@ -228,48 +198,18 @@ public class CallbackServiceImpl implements CallbackService {
   /**
    * <p>
    * <h1>This method execute tasks</h1>
-   * <li>Call method "connectToCallbackDataQueue" and handle success and failure result</li>
+   * <li>Connect to RabbitMQ callback.data Queue (callback.data)</li>
+   * <li>Create RabbitMQConsumer for consuming queue messages</li>
+   * <li>Get the routing key of message</li>
+   * <li>Get callbackUrl JsonObject from cache using routingKey</li>
+   * <li>Send message data to callbackUrl</li>
    * </p>
-   * 
-   * @param request JSON Object
-   * @param handler Handler to return response in case of success and appropriate error message in
-   *        case of failure.
-   */
-  @Override
-  public CallbackService getMessageFromCallbackDataQueue(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
-    JsonObject finalResponse = new JsonObject();
-    if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = connectToCallbackDataQueue(request);
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-          logger.info(Constants.SUCCESS + resultHandler.result());
-          finalResponse.put(Constants.SUCCESS, Constants.CONNECT_TO_CALLBACK_DATA_QUEUE);
-          handler.handle(Future.succeededFuture(finalResponse));
-        }
-
-        if (resultHandler.failed()) {
-          logger.error(Constants.ERROR + resultHandler.cause());
-          finalResponse.put(Constants.FAILURE, Constants.CONNECT_TO_CALLBACK_DATA_QUEUE_FAIL);
-          handler.handle(Future.failedFuture(finalResponse.toString()));
-        }
-      });
-    }
-    return null;
-  }
-
-  /*
-   * <p> <h1> This method execute tasks </h1> <li> Connect to RabbitMQ callback.data Queue
-   * (callback.data) </li> <li> Create RabbitMQConsumer for consuming queue messages </li> <li> Get
-   * the routing key of message </li> <li> Get callbackUrl JsonObject from cache using
-   * routingKey</li> <li> Send message data to interested callbackUrl </li> </p>
    *
    * @param request which is a JSON object
-   * 
    * @return response which is a Future object of promise of JSON type
    * 
    */
-  private Future<JsonObject> connectToCallbackDataQueue(JsonObject request) {
+  public Future<JsonObject> connectToCallbackDataQueue(JsonObject request) {
 
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
@@ -289,7 +229,7 @@ public class CallbackServiceImpl implements CallbackService {
               logger.info(Constants.RABBITMQ_CONSUMER_CREATED);
               RabbitMQConsumer mqConsumer = rabbitMQConsumerAsyncResult.result();
               mqConsumer.handler(message -> {
-                /* Message form Queue */
+                /* Message from Queue */
                 Buffer body = message.body();
                 logger.info(Constants.MESSAGE + Constants.COLON + message.body());
                 if (body != null) {
@@ -338,7 +278,6 @@ public class CallbackServiceImpl implements CallbackService {
                         promise.fail(finalResponse.toString());
                       }
                     });
-                    promise.complete(finalResponse);
                   } else {
                     logger.error(
                         Constants.NO_CALLBACK_URL_FOR_ROUTING_KEY + Constants.COLON + routingKey);
@@ -352,10 +291,14 @@ public class CallbackServiceImpl implements CallbackService {
                   promise.fail(finalResponse.toString());
                 }
               });
+              logger.info(Constants.QUEUE_EMPTY);
+              finalResponse.put(Constants.DATABASE_QUERY_RESULT,
+                  Constants.CONNECT_TO_CALLBACK_DATA_QUEUE);
+              promise.complete(finalResponse);
             } else {
-              logger.error(
-                  Constants.ERROR + Constants.GET_QUEUE_MESSAGE_FAIL + Constants.COLON + queueName);
-              finalResponse.put(Constants.ERROR, Constants.GET_QUEUE_MESSAGE_FAIL + queueName);
+              logger.error(Constants.ERROR + Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON
+                  + queueName);
+              finalResponse.put(Constants.ERROR, Constants.CONSUME_QUEUE_MESSAGE_FAIL + queueName);
               promise.fail(finalResponse.toString());
             }
           });
@@ -369,53 +312,21 @@ public class CallbackServiceImpl implements CallbackService {
     return promise.future();
   }
 
+
   /**
    * <p>
    * <h1>This method execute tasks</h1>
-   * <li>Call method "sendDataToCallBackSubscriber"</li>
-   * <li>Handle success and failure result</li>
+   * <li>Get callBackJsonObj and currentMessageJsonObj from request parameter</li>
+   * <li>Get callBackUrl, userName and password from callBackJsonObj</li>
+   * <li>Create instance of HttpRequest<Buffer> using webClient</li>
+   * <li>Send message data [currentMessageJsonObj] to callbackUrl</li>
    * </p>
-   * 
-   * @param request JSON Object
-   * @param handler Handler to return response in case of success and appropriate error message in
-   *        case of failure.
-   */
-  @Override
-  public CallbackService sendDataToCallBackSubscriber(JsonObject _request,
-      Handler<AsyncResult<JsonObject>> handler) {
-    JsonObject finalResponse = new JsonObject();
-    if (_request != null && !_request.isEmpty()) {
-      Future<JsonObject> result = sendDataToCallBackSubscriber(_request);
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-          logger.info(Constants.SUCCESS + resultHandler.result());
-          finalResponse.put(Constants.SUCCESS, Constants.DATA_SEND_TO_CALLBACK_URL_SUCCESS);
-          handler.handle(Future.succeededFuture(finalResponse));
-        }
-
-        if (resultHandler.failed()) {
-          logger.error(Constants.ERROR + resultHandler.cause());
-          finalResponse.put(Constants.FAILURE, Constants.DATA_SEND_TO_CALLBACK_URL_FAIL);
-          handler.handle(Future.failedFuture(finalResponse.toString()));
-        }
-      });
-    }
-    return null;
-  }
-
-  /*
-   * <p> <h1> This method execute tasks </h1> <li> Get callBackJsonObj and currentMessageJsonObj
-   * from request parameter</li> <li> Get callBackUrl, userName and password from
-   * callBackJsonObj</li> <li> Create instance of HttpRequest<Buffer> using webClient</li> <li> Send
-   * message data [currentMessageJsonObj] to callbackUrl</li> </p>
    *
    * @param request which is a JSON object
-   * 
    * @return response which is a Future object of promise of JSON type
    * 
    */
-  private Future<JsonObject> sendDataToCallBackSubscriber(JsonObject request) {
+  public Future<JsonObject> sendDataToCallBackSubscriber(JsonObject request) {
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
 
@@ -532,55 +443,18 @@ public class CallbackServiceImpl implements CallbackService {
     pgCache.clear();
   }
 
-  /* Delete Entry from cache */
-  @SuppressWarnings("unused")
-  private void deleteEntryFromCache(String _key) {
-    pgCache.remove(_key);
-  }
-
   /**
    * <p>
    * <h1>This method execute tasks</h1>
-   * <li>Call method "connectToCallBackDataBase" and handle success and failure result</li>
+   * <li>Create instance of pgClient and Query callback database</li>
+   * <li>Update Cache for entity and callBackDataObj</li>
    * </p>
    * 
-   * @param request JSON Object
-   * @param handler Handler to return response in case of success and appropriate error message in
-   *        case of failure.
-   */
-  @Override
-  public CallbackService queryCallBackDataBase(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
-    JsonObject finalResponse = new JsonObject();
-    if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = queryCallBackDataBase(request);
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-          logger.info(Constants.SUCCESS + resultHandler.result());
-          finalResponse.put(Constants.SUCCESS, Constants.DATABASE_QUERY_SUCCESS);
-          handler.handle(Future.succeededFuture(finalResponse));
-        }
-        if (resultHandler.failed()) {
-          logger.error(Constants.ERROR + resultHandler.cause());
-          finalResponse.put(Constants.FAILURE, Constants.DATABASE_QUERY_FAIL);
-          handler.handle(Future.failedFuture(finalResponse.toString()));
-        }
-      });
-    }
-    return null;
-  }
-
-  /*
-   * <p> <h1> This method execute tasks </h1> <li> Create instance of pgClient and query
-   * database</li> <li> Update Cache for entity and callBackDataObj</li> </p>
-   * 
    * @param request which is a JSON object
-   * 
    * @return response which is a Future object of promise of JSON type
    * 
    */
-  private Future<JsonObject> queryCallBackDataBase(JsonObject request) {
+  public Future<JsonObject> queryCallBackDataBase(JsonObject request) {
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
 
@@ -601,13 +475,12 @@ public class CallbackServiceImpl implements CallbackService {
     /* Create the client pool */
     pgClient = PgPool.pool(vertx, connectOptions, poolOptions);
 
-    logger.info(Constants.EXECUTING_SQL_QUERY + Constants.COLON + tableName);
-
     if (pgClient != null) {
       try {
         /* Execute simple query */
         pgClient.preparedQuery("SELECT * FROM " + tableName).execute(action -> {
           if (action.succeeded()) {
+            logger.info(Constants.EXECUTING_SQL_QUERY + Constants.COLON + tableName);
             /* Rows in Table */
             RowSet<Row> rows = action.result();
             logger.info(Constants.FETCH_DATA_FROM_DATABASE);
@@ -623,7 +496,7 @@ public class CallbackServiceImpl implements CallbackService {
             for (Row row : rows) {
               /* Getting entities, callBackUrl, userName and password from row */
               JsonObject callBackDataObj = new JsonObject();
-              String callBackUrl = "http://localhost:9088/getMessage"; // row.getString(1);
+              String callBackUrl = row.getString(1);
               JsonArray entities = (JsonArray) row.getValue(2);
               String userName = row.getString(6);
               String password = row.getString(7);
