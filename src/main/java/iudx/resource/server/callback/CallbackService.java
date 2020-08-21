@@ -1,8 +1,5 @@
 package iudx.resource.server.callback;
 
-import io.vertx.codegen.annotations.Fluent;
-import io.vertx.codegen.annotations.ProxyGen;
-import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 
@@ -13,14 +10,10 @@ import io.vertx.core.json.JsonObject;
  * IUDX Callback server.
  * </p>
  * 
- * @see io.vertx.codegen.annotations.ProxyGen
- * @see io.vertx.codegen.annotations.VertxGen
  * @version 1.0
  * @since 2020-05-31
  */
 
-@VertxGen
-@ProxyGen
 public interface CallbackService {
 
   /**
@@ -30,7 +23,6 @@ public interface CallbackService {
    * @param json containing queueName.
    * @return Future object
    */
-  @Fluent
   Future<JsonObject> connectToCallbackNotificationQueue(JsonObject request);
 
   /**
@@ -39,7 +31,6 @@ public interface CallbackService {
    * @param json containing queueName.
    * @return Future object
    */
-  @Fluent
   Future<JsonObject> connectToCallbackDataQueue(JsonObject request);
 
   /**
@@ -48,7 +39,6 @@ public interface CallbackService {
    * @param json containing queueName.
    * @return Future object
    */
-  @Fluent
   Future<JsonObject> queryCallBackDataBase(JsonObject request);
 
   /**
@@ -57,6 +47,5 @@ public interface CallbackService {
    * @param json containing queueName.
    * @return Future object
    */
-  @Fluent
   Future<JsonObject> sendDataToCallBackSubscriber(JsonObject request);
 }
