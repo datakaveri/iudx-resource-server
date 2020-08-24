@@ -23,6 +23,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
+import iudx.resource.server.databroker.util.Constants;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -55,6 +56,8 @@ public class DataBrokerServiceTest {
   private static int statusOk;
   private static int statusNotFound;
   private static int statusNoContent;
+
+  private static RabbitMQClientImpl rabbitMQClientImpl;
 
   private static final Logger logger = LoggerFactory.getLogger(DataBrokerServiceTest.class);
 
@@ -162,7 +165,10 @@ public class DataBrokerServiceTest {
 
     /* Call the databroker constructor with the RabbitMQ client. */
 
-    databroker = new DataBrokerServiceImpl(client, webClient, propObj);
+    // databroker = new DataBrokerServiceImpl(client, webClient, propObj);
+    rabbitMQClientImpl = new RabbitMQClientImpl(vertx, config, webConfig, propObj);
+    databroker = new DataBrokerServiceImpl(rabbitMQClientImpl, propObj);
+
     testContext.completeNow();
   }
 

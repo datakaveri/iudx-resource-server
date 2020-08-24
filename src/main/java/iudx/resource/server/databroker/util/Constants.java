@@ -1,4 +1,4 @@
-package iudx.resource.server.databroker;
+package iudx.resource.server.databroker.util;
 
 public class Constants {
 
@@ -134,4 +134,9 @@ public class Constants {
   public static final int X_MAXLENGTH_VALUE = 100;
   public static final String X_QUEUE_MODE_VALUE = "lazy";
   
+  public static final String REQUEST_GET = "GET";
+  public static final String REQUEST_POST = "POST";
+  public static final String REQUEST_PUT = "PUT";
+  public static final String REQUEST_DELETE = "DELETE";
+
 }
