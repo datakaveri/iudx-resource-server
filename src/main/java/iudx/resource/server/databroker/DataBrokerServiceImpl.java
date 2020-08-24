@@ -1,5 +1,14 @@
 package iudx.resource.server.databroker;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.http.HttpStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -27,6 +36,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpStatus;
+import iudx.resource.server.databroker.util.Constants;
+
 
 
 /**
@@ -60,6 +71,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   private boolean bindingSuccessful;
   private PgPool pgclient;
 
+  private RabbitMQClientImpl rabbitMQClientImpl;
 
   /**
    * This is a constructor which is used by the DataBroker Verticle to instantiate
@@ -68,7 +80,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @param clientInstance    which is a RabbitMQ client
    * @param webClientInstance which is a Vertx Web client
    */
-
+  @Deprecated
   public DataBrokerServiceImpl(RabbitMQClient clientInstance, WebClient webClientInstance,
       JsonObject propObj, PgPool pgclientinstance) {
 
@@ -99,6 +111,14 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
   }
 
+  public DataBrokerServiceImpl(RabbitMQClientImpl rabbitMQClientImpl, JsonObject propObj) {
+    this.rabbitMQClientImpl = rabbitMQClientImpl;
+    if (propObj != null && !propObj.isEmpty()) {
+      user = propObj.getString("userName");
+      password = propObj.getString("password");
+      vhost = propObj.getString("vHost");
+    }
+  }
   /**
    * This method creates user, declares exchange and bind with predefined queues.
    * 
@@ -1751,10 +1771,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
       // calls the common create exchange method
-      Future<JsonObject> result = createExchange(request);
+      Future<JsonObject> result = rabbitMQClientImpl.createExchange(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
-
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
@@ -1772,7 +1791,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    **/
-
+  @Deprecated
   Future<JsonObject> createExchange(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
@@ -1838,7 +1857,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerService deleteExchange(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = deleteExchange(request);
+      Future<JsonObject> result = rabbitMQClientImpl.deleteExchange(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
 
@@ -1859,6 +1878,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
+  @Deprecated
   private Future<JsonObject> deleteExchange(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
@@ -1901,7 +1921,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerService listExchangeSubscribers(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = listExchangeSubscribers(request);
+      Future<JsonObject> result = rabbitMQClientImpl.listExchangeSubscribers(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
 
@@ -1923,6 +1943,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
+  @Deprecated
   private Future<JsonObject> listExchangeSubscribers(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
@@ -1990,7 +2011,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerService createQueue(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = createQueue(request);
+      Future<JsonObject> result = rabbitMQClientImpl.createQueue(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
 
@@ -2011,6 +2032,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
+  @Deprecated
   private Future<JsonObject> createQueue(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
@@ -2076,7 +2098,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerService deleteQueue(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = deleteQueue(request);
+      Future<JsonObject> result = rabbitMQClientImpl.deleteQueue(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
 
@@ -2097,11 +2119,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
+  @Deprecated
   private Future<JsonObject> deleteQueue(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
-
       String queueName = request.getString("queueName");
       url = "/api/queues/" + vhost + "/" + encodedValue(queueName);
 
@@ -2140,7 +2162,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerService bindQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
 
-      Future<JsonObject> result = bindQueue(request);
+      Future<JsonObject> result = rabbitMQClientImpl.bindQueue(request, vhost);
 
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
@@ -2163,6 +2185,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
+  @Deprecated
   private Future<JsonObject> bindQueue(JsonObject request) {
     JsonObject finalResponse = new JsonObject();
     JsonObject requestBody = new JsonObject();
@@ -2220,9 +2243,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler) {
 
     if (request != null && !request.isEmpty()) {
-
-      Future<JsonObject> result = unbindQueue(request);
-
+      Future<JsonObject> result = rabbitMQClientImpl.unbindQueue(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
 
@@ -2245,6 +2266,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
+  @Deprecated
   private Future<JsonObject> unbindQueue(JsonObject request) {
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
@@ -2306,7 +2328,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
 
-      Future<JsonObject> result = createvHost(request);
+      Future<JsonObject> result = rabbitMQClientImpl.createvHost(request);
 
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
@@ -2329,6 +2351,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
+  @Deprecated
   private Future<JsonObject> createvHost(JsonObject request) {
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
@@ -2383,7 +2406,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
 
-      Future<JsonObject> result = deletevHost(request);
+      Future<JsonObject> result = rabbitMQClientImpl.deletevHost(request);
 
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
@@ -2406,6 +2429,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
+  @Deprecated
   private Future<JsonObject> deletevHost(JsonObject request) {
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
@@ -2449,7 +2473,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService listvHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     if (request != null) {
-      Future<JsonObject> result = listvHost(request);
+      Future<JsonObject> result = rabbitMQClientImpl.listvHost(request);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
 
@@ -2470,6 +2494,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
+  @Deprecated
   private Future<JsonObject> listvHost(JsonObject request) {
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();

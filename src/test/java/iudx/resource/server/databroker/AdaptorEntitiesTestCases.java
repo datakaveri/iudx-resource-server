@@ -27,6 +27,7 @@ import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.PoolOptions;
+import iudx.resource.server.databroker.util.Constants;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)

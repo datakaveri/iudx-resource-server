@@ -26,6 +26,7 @@ import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.PoolOptions;
+import iudx.resource.server.databroker.util.Constants;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -69,6 +70,8 @@ public class DataBrokerServiceTest {
   private static PoolOptions poolOptions;
   private static PgPool pgclient;
 
+
+  private static RabbitMQClientImpl rabbitMQClientImpl;
 
   private static final Logger logger = LoggerFactory.getLogger(DataBrokerServiceTest.class);
 
@@ -203,6 +206,10 @@ public class DataBrokerServiceTest {
     /* Call the databroker constructor with the RabbitMQ client. */
 
     databroker = new DataBrokerServiceImpl(client, webClient, propObj, pgclient);
+    // databroker = new DataBrokerServiceImpl(client, webClient, propObj);
+    rabbitMQClientImpl = new RabbitMQClientImpl(vertx, config, webConfig, propObj);
+    databroker = new DataBrokerServiceImpl(rabbitMQClientImpl, propObj);
+
     testContext.completeNow();
   }
 
