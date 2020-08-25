@@ -282,7 +282,7 @@ public class AuthenticationServiceTest {
                 return;
             }
 
-            if (!responseBody.containsKey("resourceAuthControlLevel")) {
+            if (responseBody.containsKey("resourceAuthControlLevel")) {
                 testContext.failNow(new Throwable(response.bodyAsString()));
                 return;
             }
