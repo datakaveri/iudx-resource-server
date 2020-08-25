@@ -270,6 +270,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     resourceACL = responseBody.getJsonArray("results")
                             .getJsonObject(0).getString("resourceAuthControlLevel");
                 } catch (IndexOutOfBoundsException ignored) {
+                  logger.error(ignored.getMessage());
                 }
                 result.put(resourceID, resourceACL.equals("OPEN"));
                 catCache.put(groupID, resourceACL);
