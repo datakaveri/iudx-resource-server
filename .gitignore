@@ -162,6 +162,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Intellij files
+.idea/
+iudx.resource.server.iml
 
 # End of https://www.gitignore.io/api/git,java,maven,eclipse,windows
 1. A butt or mark to shoot at, as for practice, or to test the accuracy of a firearm, or the force of a projectile.
