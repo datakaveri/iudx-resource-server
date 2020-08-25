@@ -249,4 +249,45 @@ public class AuthenticationServiceTest {
             testContext.completeNow();
         });
     }
+
+
+    @Test
+    @DisplayName("Test CAT resource group invalid ID API")
+    public void testCatAPIWithInvalidID(Vertx vertx, VertxTestContext testContext) {
+        int catPort = Integer.parseInt(properties.getProperty("catServerPort"));
+        String catHost = properties.getProperty("catServerHost");
+        String catPath = Constants.CAT_RSG_PATH;
+        String groupID = "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc/rs.iudx.org.in/invalid";
+
+        WebClientOptions options = new WebClientOptions();
+        options.setTrustAll(true).setVerifyHost(false).setSsl(true);
+        WebClient client = WebClient.create(vertx, options);
+        client.get(catPort, catHost, catPath)
+                .addQueryParam("property", "[id]")
+                .addQueryParam("value", "[[" + groupID + "]]")
+                .addQueryParam("filter", "[resourceAuthControlLevel]")
+                .expect(ResponsePredicate.JSON).send(httpResponseAsyncResult -> {
+            if (httpResponseAsyncResult.failed()) {
+                testContext.failNow(httpResponseAsyncResult.cause());
+                return;
+            }
+            HttpResponse<Buffer> response = httpResponseAsyncResult.result();
+            if (response.statusCode() != HttpStatus.SC_OK) {
+                testContext.failNow(new Throwable(response.bodyAsString()));
+                return;
+            }
+            JsonObject responseBody = response.bodyAsJsonObject();
+            if (!responseBody.getString("status").equals("success")) {
+                testContext.failNow(new Throwable(response.bodyAsString()));
+                return;
+            }
+
+            if (!responseBody.containsKey("resourceAuthControlLevel")) {
+                testContext.failNow(new Throwable(response.bodyAsString()));
+                return;
+            }
+            testContext.completeNow();
+        });
+    }
+
 }
