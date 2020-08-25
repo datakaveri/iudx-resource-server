@@ -166,7 +166,7 @@ public class AuthenticationServiceTest {
                         .add("datakaveri.org/1022f4c20542abd5087107c0b6de4cb3130c5b7b/example.com/res1"));
         JsonObject authInfo = new JsonObject()
                 .put("token", "public")
-                .put("apiEndpoint", "/iudx/v1/adaptor");
+                .put("apiEndpoint", Constants.CLOSED_ENDPOINTS.get(0));
         authenticationService.tokenInterospect(request, authInfo, asyncResult -> {
             if (asyncResult.failed()) {
                 logger.error("Unexpected failure");
@@ -192,7 +192,7 @@ public class AuthenticationServiceTest {
                         .add("datakaveri.org/1022f4c20542abd5087107c0b6de4cb3130c5b7b/example.com/test-providers"));
         JsonObject authInfo = new JsonObject()
                 .put("token", properties.getProperty("testExpiredAuthToken"))
-                .put("apiEndpoint", "/iudx/v1/adaptor");
+                .put("apiEndpoint",  Constants.OPEN_ENDPOINTS.get(0));
         authenticationService.tokenInterospect(request, authInfo, asyncResult -> {
             if (asyncResult.failed()) {
                 logger.error("Unexpected failure");
