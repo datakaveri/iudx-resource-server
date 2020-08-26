@@ -8,6 +8,7 @@ import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import iudx.resource.server.apiserver.ApiServerVerticle;
 import iudx.resource.server.authenticator.AuthenticationVerticle;
+import iudx.resource.server.callback.CallbackVerticle;
 import iudx.resource.server.database.DatabaseVerticle;
 import iudx.resource.server.databroker.DataBrokerVerticle;
 import iudx.resource.server.filedownload.FileDownloadVerticle;
@@ -88,22 +89,31 @@ public class ResourceServerDeployer {
                           if (mediaVerticle.succeeded()) {
                             logger.info("The Media Service is ready !");
 
-                            /* Deploy the Api Server Verticle. */
+                            /* Deploy the Media Verticle. */
 
-                            vertx.deployVerticle(new ApiServerVerticle(), apiServerVerticle -> {
-                              if (apiServerVerticle.succeeded()) {
-                                logger.info("The Resource API Server is ready at 8443");
-                                logger.info("Check /apis/ for supported APIs");
+                            vertx.deployVerticle(new CallbackVerticle(), callbackVerticle -> {
+                              if (callbackVerticle.succeeded()) {
+                                logger.info("The Callback Service is ready !");
+
+                                /* Deploy the Api Server Verticle. */
+
+                                vertx.deployVerticle(new ApiServerVerticle(), apiServerVerticle -> {
+                                  if (apiServerVerticle.succeeded()) {
+                                    logger.info("The Resource API Server is ready at 8443");
+                                    logger.info("Check /apis/ for supported APIs");
+                                  } else {
+                                    logger.info("The Resource API Server startup failed !");
+                                  }
+                                });
+
                               } else {
-                                logger.info("The Resource API Server startup failed !");
+                                logger.info("The Callback Service failed !");
                               }
                             });
-
                           } else {
                             logger.info("The Media Service failed !");
                           }
                         });
-
 
                       } else {
                         logger.info("The File Download Service failed !");
