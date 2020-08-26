@@ -66,13 +66,8 @@ public class CallbackServiceTest {
   @DisplayName("Deploy a verticle")
   static void startVertx(Vertx vertx, VertxTestContext testContext) {
 
-    ClusterManager mgr = new HazelcastClusterManager();
-    VertxOptions options = new VertxOptions().setClusterManager(mgr);
-
-    Vertx.clusteredVertx(options, res -> {
-      if (res.succeeded()) {
-        vertxObj = res.result();
-
+        vertxObj = vertx;
+        
         /* Read the configuration and set the rabbitMQ server properties. */
         properties = new Properties();
         inputstream = null;
@@ -142,7 +137,7 @@ public class CallbackServiceTest {
         webClient = WebClient.create(vertxObj, webConfig);
 
         /* Create a Json Object for properties */
-        JsonObject propObj = new JsonObject();
+        propObj = new JsonObject();
 
         propObj.put("userName", dataBrokerUserName);
         propObj.put("password", dataBrokerPassword);
@@ -160,8 +155,6 @@ public class CallbackServiceTest {
         callback = new CallbackServiceImpl(client, webClient, propObj, vertxObj);
         testContext.completeNow();
       }
-    });
-  }
 
   @Test
   @Order(1)
@@ -173,15 +166,14 @@ public class CallbackServiceTest {
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.DATABASE_QUERY_RESULT, Constants.CONNECT_TO_CALLBACK_NOTIFICATION_QUEUE);
-
-    Future<JsonObject> resultNotification = callback.connectToCallbackNotificationQueue(request);
-    resultNotification.onComplete(handler -> {
+    
+    callback.connectToCallbackNotificationQueue(request, handler -> {
       if (handler.succeeded()) {
-        assertEquals(expected, handler.result());
+        JsonObject response = handler.result();
+        assertEquals(expected,response);
       }
       testContext.completeNow();
     });
-
   }
 
   @Test
@@ -194,9 +186,11 @@ public class CallbackServiceTest {
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON
         + "callback.notification_incorrectName");
-    Future<JsonObject> resultNotification = callback.connectToCallbackNotificationQueue(request);
-    resultNotification.onFailure(handler -> {
-      assertEquals(expected.toString(), handler.getMessage());
+    callback.connectToCallbackNotificationQueue(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        assertEquals(expected,response);
+      }
       testContext.completeNow();
     });
   }
@@ -212,10 +206,10 @@ public class CallbackServiceTest {
     JsonObject expected = new JsonObject();
     expected.put(Constants.DATABASE_QUERY_RESULT, Constants.CONNECT_TO_CALLBACK_DATA_QUEUE);
 
-    Future<JsonObject> resultNotification = callback.connectToCallbackDataQueue(request);
-    resultNotification.onComplete(handler -> {
+    callback.connectToCallbackDataQueue(request, handler -> {
       if (handler.succeeded()) {
-        assertEquals(expected, handler.result());
+        JsonObject response = handler.result();
+        assertEquals(expected,response);
       }
       testContext.completeNow();
     });
@@ -231,9 +225,12 @@ public class CallbackServiceTest {
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR,
         Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON + "callback.data_incorrectName");
-    Future<JsonObject> resultNotification = callback.connectToCallbackNotificationQueue(request);
-    resultNotification.onFailure(handler -> {
-      assertEquals(expected.toString(), handler.getMessage());
+    
+    callback.connectToCallbackNotificationQueue(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        assertEquals(expected,response);
+      }
       testContext.completeNow();
     });
   }
@@ -244,16 +241,16 @@ public class CallbackServiceTest {
   @DisplayName("Testing query callback database")
   void successQueryCallBackDataBase(VertxTestContext testContext) {
 
-    JsonObject requestObj = new JsonObject();
-    requestObj.put(Constants.TABLE_NAME, "registercallback");
+    JsonObject request = new JsonObject();
+    request.put(Constants.TABLE_NAME, "registercallback");
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.SUCCESS, Constants.CACHE_UPDATE_SUCCESS);
 
-    Future<JsonObject> result = callback.queryCallBackDataBase(requestObj);
-    result.onComplete(handler -> {
+    callback.queryCallBackDataBase(request, handler -> {
       if (handler.succeeded()) {
-        assertEquals(expected, handler.result());
+        JsonObject response = handler.result();
+        assertEquals(expected,response);
       }
       testContext.completeNow();
     });
@@ -264,75 +261,23 @@ public class CallbackServiceTest {
   @DisplayName("Testing query callback database when table name is incorrect")
   void failQueryCallBackDataBase(VertxTestContext testContext) {
 
-    JsonObject requestObj = new JsonObject();
-    requestObj.put(Constants.TABLE_NAME, "registercallback__test");
+    JsonObject request = new JsonObject();
+    request.put(Constants.TABLE_NAME, "registercallback__test");
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, Constants.EXECUTE_QUERY_FAIL);
 
-    Future<JsonObject> resultNotification = callback.queryCallBackDataBase(requestObj);
-    resultNotification.onFailure(handler -> {
-      assertEquals(expected.toString(), handler.getMessage());
+    callback.queryCallBackDataBase(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        assertEquals(expected,response);
+      }
       testContext.completeNow();
     });
   }
-
+  
   @Test
   @Order(7)
-  @DisplayName("Testing query callback database when database port and IP is incorrect")
-  void failQueryCallBackDataBaseIncorrectPortAndIp(VertxTestContext testContext) {
-    JsonObject propMockObj = new JsonObject();
-    /* Create Mock propObj Obj */
-    propMockObj.put("callbackDatabaseIP", "172.30.64.78");
-    propMockObj.put("callbackDatabasePort", 8089);
-    propMockObj.put("callbackDatabaseName", "mockDataBase");
-    propMockObj.put("callbackDatabaseUserName", "mockDataBase");
-    propMockObj.put("callbackDatabasePassword", "mockPassword");
-    propMockObj.put("callbackpoolSize", poolSize);
-
-    callback = new CallbackServiceImpl(client, webClient, propMockObj, vertxObj);
-    JsonObject requestObj = new JsonObject();
-    requestObj.put(Constants.TABLE_NAME, "registercallback");
-
-    JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, Constants.EXECUTE_QUERY_FAIL);
-
-    Future<JsonObject> resultNotification = callback.queryCallBackDataBase(requestObj);
-    resultNotification.onFailure(handler -> {
-      assertEquals(expected.toString(), handler.getMessage());
-      testContext.completeNow();
-    });
-  }
-
-  @Test
-  @Order(8)
-  @DisplayName("Testing query callback database when pgClient is null")
-  void failQueryCallBackDataBasePgclientNull(VertxTestContext testContext) {
-    JsonObject propMockObj = new JsonObject();
-    /* Create Mock propObj Obj */
-    propMockObj.put("callbackDatabaseIP", "172.30.64.78");
-    propMockObj.put("callbackDatabasePort", 8080);
-    propMockObj.put("callbackDatabaseName", "mockDataBase");
-    propMockObj.put("callbackDatabaseUserName", "mockDataBase");
-    propMockObj.put("callbackDatabasePassword", "mockPassword");
-    propMockObj.put("callbackpoolSize", poolSize);
-
-    callback = new CallbackServiceImpl(client, webClient, propMockObj, vertxObj);
-    JsonObject requestObj = new JsonObject();
-    requestObj.put(Constants.TABLE_NAME, "registercallback");
-
-    JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, Constants.EXECUTE_QUERY_FAIL);
-
-    Future<JsonObject> resultNotification = callback.queryCallBackDataBase(requestObj);
-    resultNotification.onFailure(handler -> {
-      assertEquals(expected.toString(), handler.getMessage());
-      testContext.completeNow();
-    });
-  }
-
-  @Test
-  @Order(9)
   @DisplayName("Testing query send data to callbackurl")
   void successSendDataToCallBackSubscriber(VertxTestContext testContext) {
 
@@ -358,17 +303,17 @@ public class CallbackServiceTest {
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, Constants.CALLBACK_SUCCESS);
 
-    Future<JsonObject> result = callback.sendDataToCallBackSubscriber(request);
-    result.onComplete(handler -> {
+    callback.queryCallBackDataBase(request, handler -> {
       if (handler.succeeded()) {
-        assertEquals(expected, handler.result());
+        JsonObject response = handler.result();
+        assertEquals(expected,response);
       }
       testContext.completeNow();
     });
   }
 
   @Test
-  @Order(10)
+  @Order(8)
   @DisplayName("Testing send data to callbackurl when callBackUrl is Empty")
   void failSendDataToCallBackSubscriber(VertxTestContext testContext) {
 
@@ -391,15 +336,17 @@ public class CallbackServiceTest {
 
     JsonObject expected = new JsonObject().put(Constants.ERROR, Constants.CALLBACK_URL_INVALID);
 
-    Future<JsonObject> resultNotification = callback.sendDataToCallBackSubscriber(request);
-    resultNotification.onFailure(handler -> {
-      assertEquals(expected.toString(), handler.getMessage());
+    callback.sendDataToCallBackSubscriber(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        assertEquals(expected,response);
+      }
       testContext.completeNow();
     });
   }
 
   @Test
-  @Order(11)
+  @Order(9)
   @DisplayName("Testing send data to callbackurl for NULL Username and Password")
   void successSendDataToCallBackSubscriberNullUserNameAndPassword(VertxTestContext testContext) {
 
@@ -416,26 +363,26 @@ public class CallbackServiceTest {
     callBackDataObj.put(Constants.USER_NAME, userName);
     callBackDataObj.put(Constants.PASSWORD, password);
 
-    JsonObject requestObj = new JsonObject();
-    requestObj.put("callBackJsonObj", callBackDataObj);
-    requestObj.put("currentMessageJsonObj", _currentMessageJsonObj);
+    JsonObject request = new JsonObject();
+    request.put("callBackJsonObj", callBackDataObj);
+    request.put("currentMessageJsonObj", _currentMessageJsonObj);
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.TYPE, 200);
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, Constants.CALLBACK_SUCCESS);
 
-    Future<JsonObject> result = callback.sendDataToCallBackSubscriber(requestObj);
-    result.onComplete(handler -> {
+    callback.sendDataToCallBackSubscriber(request, handler -> {
       if (handler.succeeded()) {
-        assertEquals(expected, handler.result());
+        JsonObject response = handler.result();
+        assertEquals(expected,response);
       }
       testContext.completeNow();
     });
   }
 
   @Test
-  @Order(12)
+  @Order(10)
   @DisplayName("Testing send data to incorrect CallbackUrl")
   void failSendDataToCallBackSubscriberForCallbackurlIncorrect(VertxTestContext testContext) {
 
@@ -443,7 +390,7 @@ public class CallbackServiceTest {
     JsonObject _currentMessageJsonObj =
         new JsonObject().put("id", "key_1").put("pressure", 34).put("temprature", 44);
 
-    String callBackUrl = "http://localhost:9088/incorrectUrl";
+    String callBackUrl = "http://localhost:9089/incorrectUrl";
 
     String userName = "iudx";
     String password = "iudx@123";
@@ -459,9 +406,11 @@ public class CallbackServiceTest {
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "Failed to connect callbackUrl");
 
-    Future<JsonObject> resultNotification = callback.sendDataToCallBackSubscriber(request);
-    resultNotification.onFailure(handler -> {
-      assertEquals(expected.toString(), handler.getMessage());
+    callback.sendDataToCallBackSubscriber(request, handler -> {
+      if (handler.succeeded()) {
+        JsonObject response = handler.result();
+        assertEquals(expected,response);
+      }
       testContext.completeNow();
     });
   }
