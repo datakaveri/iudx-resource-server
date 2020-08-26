@@ -15,7 +15,12 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
-
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.elasticsearch.client.RestClient;
 
 /**
  * The Database Verticle.
@@ -42,6 +47,8 @@ public class DatabaseVerticle extends AbstractVerticle {
   private Properties properties;
   private InputStream inputstream;
   private String databaseIP;
+  private String user;
+  private String password;
   private int databasePort;
   private static final String DATABASE_SERVICE_ADDRESS = "iudx.rs.database.service";
 
@@ -68,6 +75,8 @@ public class DatabaseVerticle extends AbstractVerticle {
 
       databaseIP = properties.getProperty("databaseIP");
       databasePort = Integer.parseInt(properties.getProperty("databasePort"));
+      user = properties.getProperty("dbUser");
+      password = properties.getProperty("dbPassword");
 
     } catch (Exception ex) {
 
@@ -80,7 +89,7 @@ public class DatabaseVerticle extends AbstractVerticle {
     mgr = new HazelcastClusterManager();
     options = new VertxOptions().setClusterManager(mgr);
     client = new ElasticClient(databaseIP, databasePort);    
-    
+
     /* Create or Join a Vert.x Cluster. */
 
     Vertx.clusteredVertx(options, res -> {

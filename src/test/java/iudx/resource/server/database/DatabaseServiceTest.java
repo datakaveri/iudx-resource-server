@@ -32,7 +32,7 @@ public class DatabaseServiceTest {
   private static ElasticClient client;
   private static Properties properties;
   private static InputStream inputstream;
-  private static String databaseIP;
+  private static String databaseIP, user, password;
   private static int databasePort;
   
   /* TODO Need to update params to use contants */
@@ -52,6 +52,8 @@ public class DatabaseServiceTest {
 
       databaseIP = properties.getProperty("databaseIP");
       databasePort = Integer.parseInt(properties.getProperty("databasePort"));
+      user = properties.getProperty("dbUser");
+      password = properties.getProperty("dbPassword");
 
     } catch (Exception ex) {
 
@@ -60,6 +62,7 @@ public class DatabaseServiceTest {
     }
 
     // TODO : Need to enable TLS using xpack security
+
     client = new ElasticClient(databaseIP, databasePort);
     dbService = new DatabaseServiceImpl(client);
     testContext.completeNow();
