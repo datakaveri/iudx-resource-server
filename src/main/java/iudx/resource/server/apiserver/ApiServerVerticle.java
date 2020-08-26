@@ -1309,7 +1309,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String usersha = request.getParam(Constants.JSON_USERSHA);
     String resourceGroup = request.getParam(Constants.JSON_RESOURCE_GROUP);
     String resourceServer = request.getParam(Constants.JSON_RESOURCE_SERVER);
-    String adapterId = domain + "/" + usersha + "/" +  resourceServer + "/" + resourceGroup;
+    String adapterId = domain + "/" + usersha + "/" + resourceServer + "/" + resourceGroup;
     requestJson.put(Constants.JSON_ID, adapterId);
     if (request.headers().contains(Constants.HEADER_TOKEN)) {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
@@ -1354,7 +1354,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String usersha = request.getParam(Constants.JSON_USERSHA);
     String resourceGroup = request.getParam(Constants.JSON_RESOURCE_GROUP);
     String resourceServer = request.getParam(Constants.JSON_RESOURCE_SERVER);
-    String adapterId = domain + "/" + usersha + "/" +  resourceServer + "/" + resourceGroup;
+    String adapterId = domain + "/" + usersha + "/" + resourceServer + "/" + resourceGroup;
     requestJson.put(Constants.JSON_ID, adapterId);
     if (request.headers().contains(Constants.HEADER_TOKEN)) {
       authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
@@ -1555,14 +1555,40 @@ public class ApiServerVerticle extends AbstractVerticle {
   private void handleResponse(HttpServerResponse response, ResponseType responseType, String reply,
       boolean isBodyRequired) {
     if (isBodyRequired) {
-      response.putHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON)
-          .setStatusCode(responseType.getCode()).end(new RestResponse.Builder()
-              .withError(responseType).withMessage(reply).build().toJsonString());
+      System.out.println(reply);
+      if (isValidJSON(reply) && new JsonObject(reply).containsKey(Constants.JSON_TYPE)) {
+        JsonObject json = new JsonObject(reply);
+        response.putHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON)
+            .setStatusCode(json.getInteger(Constants.JSON_TYPE)).end(new RestResponse.Builder()
+                .withError(responseType).withMessage(reply).build().toJsonString());
+      } else {
+        response.putHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON)
+            .setStatusCode(responseType.getCode()).end(new RestResponse.Builder()
+                .withError(responseType).withMessage(reply).build().toJsonString());
+      }
     } else {
-      response.putHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON)
-          .setStatusCode(responseType.getCode()).end(reply);
+      if (isValidJSON(reply) && new JsonObject(reply).containsKey(Constants.JSON_TYPE)) {
+        JsonObject json = new JsonObject(reply);
+        response.putHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON)
+            .setStatusCode(json.getInteger(Constants.JSON_TYPE)).end(reply);
+      } else {
+        response.putHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON)
+            .setStatusCode(responseType.getCode()).end(reply);
+      }
+
 
     }
+  }
+
+  private boolean isValidJSON(String jsonString) {
+    boolean result = false;
+    try {
+      new JsonObject(jsonString);
+      result = true;
+    } catch (Exception ex) {
+      result = false;
+    }
+    return result;
   }
 
   /**

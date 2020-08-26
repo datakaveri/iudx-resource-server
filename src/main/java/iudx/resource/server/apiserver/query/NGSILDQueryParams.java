@@ -131,6 +131,7 @@ public class NGSILDQueryParams {
         }
         default: {
           LOGGER.warn(Constants.MSG_INVALID_PARAM + ":" + entry.getKey());
+          break;
         }
       }
     }
