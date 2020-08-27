@@ -9,7 +9,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.elasticsearch.client.RestClient;
 
 /**
  * The Database Service.
@@ -58,7 +57,7 @@ public interface DatabaseService {
    */
 
   @GenIgnore
-  static DatabaseService create(RestClient client) {
+  static DatabaseService create(ElasticClient client) {
     return new DatabaseServiceImpl(client);
   }
 

@@ -32,6 +32,11 @@ public class Constants {
   static final String GREATER_THAN_EQ = "gte";
   static final String LESS_THAN_EQ = "lte";
   static final String MUST_NOT = "must_not";
+  static final String REQUEST_GET = "GET";
+  static final String HITS = "hits";
+  static final String SEARCH_KEY = "search";
+  static final String ERROR = "Error";
+  static final String COUNT = "count";
   /* Request Params */
   /* Temporal */
   static final String REQ_TIMEREL = "timerel";
@@ -76,4 +81,10 @@ public class Constants {
   static final String MISSING_GEO_FIELDS = "Missing/Invalid geo parameters";
   static final String COORDINATE_MISMATCH = "Coordinate mismatch (Polygon)";
   static final String COUNT_UNSUPPORTED = "Count is not supported with filtering";
+  static final String EMPTY_RESPONSE = "Empty response";
+  static final String DB_ERROR = "DB request has failed";
+  static final String DB_ERROR_2XX = "Status code is not 2xx";
+  static final String ID_NOT_FOUND = "No id found";
+  static final String EMPTY_RESOURCE_ID = "resource-id is empty";
+  static final String SEARCHTYPE_NOT_FOUND = "No searchType found";
 }
