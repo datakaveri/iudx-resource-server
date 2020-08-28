@@ -6,7 +6,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import java.io.IOException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.util.EntityUtils;
@@ -22,7 +21,7 @@ public class ElasticClient {
   private final RestClient client;
 
   /**
-   * ElasticClient - Elastic Low level wrapper
+   * ElasticClient - Elastic Low level wrapper.
    * 
    * @param databaseIP IP of the ElasticDB
    * @param databasePort Port of the ElasticDB
@@ -32,7 +31,7 @@ public class ElasticClient {
   }
 
   /**
-   * searchAsync - Wrapper around elasticsearch async search requests
+   * searchAsync - Wrapper around elasticsearch async search requests.
    * 
    * @param index Index to search on
    * @param query Query
@@ -82,7 +81,7 @@ public class ElasticClient {
   }
 
   /**
-   * countAsync - Wrapper around elasticsearch async count requests
+   * countAsync - Wrapper around elasticsearch async count requests.
    * 
    * @param index Index to search on
    * @param query Query
