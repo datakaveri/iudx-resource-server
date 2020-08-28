@@ -22,6 +22,7 @@ public class Constants {
   public static final String CONFIGURE = "configure";
   public static final String CONSUMER = "consumer";
   public static final String CONSUMER_TEST_EXAMPLE = "vasanth.rajaraman@rbccps.org";
+  public static final String CALLBACKURL = "callbackURL";  
 
   public static final String DETAILS = "details";
   public static final String DATA_ISSUE = ".dataIssue";
@@ -69,7 +70,9 @@ public class Constants {
   public static final String NAME = "name";
   public static final String NETWORK_ISSUE = "Network Issue";
   public static final String NONE = "None";
-
+  
+  public static final String OPERATION = "operation";
+  
   public static final String PASSWORD = "password";
   public static final int PASSWORD_LENGTH = 16;
 

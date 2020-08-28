@@ -12,16 +12,22 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpStatus;
+
 
 /**
  * The Data Broker Service Implementation.
@@ -49,7 +55,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   private String vhost;
   private int totalBindCount;
   private int totalBindSuccess;
+  private int totalUnBindCount;
+  private int totalUnBindSuccess;
   private boolean bindingSuccessful;
+  private PgPool pgclient;
+
 
   /**
    * This is a constructor which is used by the DataBroker Verticle to instantiate
@@ -60,10 +70,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
 
   public DataBrokerServiceImpl(RabbitMQClient clientInstance, WebClient webClientInstance,
-      JsonObject propObj) {
+      JsonObject propObj, PgPool pgclientinstance) {
 
     logger.info("Got the RabbitMQ Client instance");
     client = clientInstance;
+    pgclient = pgclientinstance;
+    logger.info("Got the PSQL Client instance");
 
     client.start(resultHandler -> {
 
@@ -1335,17 +1347,280 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService registerCallbackSubscription(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
+    JsonObject registerCallbackSubscriptionResponse = new JsonObject();
+    if (request != null && !request.isEmpty()) {
+      String userName = request.getString(Constants.CONSUMER);
+      String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
+      String subscriptionID =
+          domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
+      JsonObject publishjson = new JsonObject();
+      publishjson.put(Constants.SUBSCRIPTION_ID, subscriptionID);
+      publishjson.put(Constants.OPERATION, "create");
+      JsonObject requestjson = new JsonObject();
 
+      logger.info("Call Back registration ID check starts");
+      pgclient.preparedQuery("Select * FROM registercallback WHERE subscriptionID = $1")
+          .execute(Tuple.of(subscriptionID), resultHandlerSelectID -> {
+            if (resultHandlerSelectID.succeeded()) {
+              RowSet<Row> result = resultHandlerSelectID.result();
+              /* Iterating Rows for getting entity, callbackurl, username and password */
+              String subscriptionIDdb = null;
+              for (Row row : result) {
+                subscriptionIDdb = row.getString(0);
+                logger.info(subscriptionIDdb);
+              }
+
+              if (subscriptionID.equalsIgnoreCase(subscriptionIDdb)) {
+                logger.info("Call Back registration has duplicate ID");
+                registerCallbackSubscriptionResponse.put(Constants.ERROR,
+                    "duplicate key value violates unique constraint");
+                handler
+                    .handle(Future.failedFuture(registerCallbackSubscriptionResponse.toString()));
+              } else {
+
+                OffsetDateTime dateTime = OffsetDateTime.now();
+                String callbackUrl = request.getString(Constants.CALLBACKURL);
+                String queueName = request.getString(Constants.QUEUE);
+                JsonArray entitites = request.getJsonArray(Constants.ENTITIES);
+                totalBindCount = entitites.size();
+                totalBindSuccess = 0;
+                requestjson.put(Constants.QUEUE_NAME, queueName);
+
+                for (Object currentEntity : entitites) {
+                  String routingKey = (String) currentEntity;
+                  logger.info("routingKey is " + routingKey);
+                  if (routingKey != null) {
+                    if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
+                        || routingKey.split("/").length != 5) {
+                      logger.error("failed :: Invalid (or) NULL routingKey");
+                      registerCallbackSubscriptionResponse.put(Constants.ERROR,
+                          "Invalid routingKey");
+                      handler.handle(
+                          Future.failedFuture(registerCallbackSubscriptionResponse.toString()));
+
+                    } else {
+                      logger.info("Valid ID :: Call Back registration starts");
+                      String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
+                      JsonArray array = new JsonArray();
+                      array.add(currentEntity);
+                      JsonObject json = new JsonObject();
+                      json.put(Constants.EXCHANGE_NAME, exchangeName);
+                      json.put(Constants.QUEUE_NAME, queueName);
+                      json.put(Constants.ENTITIES, array);
+
+                      Future<JsonObject> resultbind = bindQueue(json);
+                      resultbind.onComplete(resultHandlerbind -> {
+                        if (resultHandlerbind.succeeded()) {
+                          totalBindSuccess += 1;
+                          logger.info("sucess :: totalBindSuccess " + totalBindSuccess
+                              + resultHandlerbind.result());
+
+                          JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
+                          if (bindResponse.containsKey(Constants.TITLE) && bindResponse
+                              .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+
+                            logger.error("failed ::" + resultHandlerbind.cause());
+                            pgclient
+                                .preparedQuery(
+                                    "Delete from registercallback WHERE subscriptionID = $1")
+                                .execute(Tuple.of(subscriptionID), resulthandlerdel -> {
+                                  if (resulthandlerdel.succeeded()) {
+                                    registerCallbackSubscriptionResponse.put(Constants.ERROR,
+                                        "Binding Failed");
+                                    handler.handle(Future.failedFuture(
+                                        registerCallbackSubscriptionResponse.toString()));
+                                  }
+                                });
+                          } else if (totalBindSuccess == totalBindCount) {
+                            pgclient.preparedQuery(
+                                "INSERT INTO registercallback (subscriptionID  ,callbackURL ,entities ,start_time , end_time , frequency ) VALUES ($1, $2, $3, $4, $5, $6)")
+                                .execute(Tuple.of(subscriptionID, callbackUrl, entitites, dateTime,
+                                    dateTime, dateTime), ar -> {
+                                      if (ar.succeeded()) {
+                                        String exchangename = "callback.notification";
+                                        String routingkey = "create";
+
+                                        JsonObject jsonpg = new JsonObject();
+                                        jsonpg.put("body", publishjson.toString());
+
+                                        client.basicPublish(exchangename, routingkey, jsonpg,
+                                            resultHandler -> {
+                                              if (resultHandler.succeeded()) {
+                                                registerCallbackSubscriptionResponse
+                                                    .put("subscriptionID", subscriptionID);
+                                                logger.info("Message published to queue");
+                                                handler.handle(Future.succeededFuture(
+                                                    registerCallbackSubscriptionResponse));
+                                              } else {
+                                                pgclient.preparedQuery(
+                                                    "Delete from registercallback WHERE subscriptionID = $1")
+                                                    .execute(Tuple.of(subscriptionID), deletepg -> {
+                                                      if (deletepg.succeeded()) {
+                                                        registerCallbackSubscriptionResponse
+                                                            .put("messagePublished", "failed");
+                                                        handler.handle(Future.failedFuture(
+                                                            registerCallbackSubscriptionResponse
+                                                                .toString()));
+                                                      }
+                                                    });
+                                              }
+                                            });
+                                      } else {
+                                        logger.error("failed ::" + ar.cause().getMessage());
+
+                                        pgclient.preparedQuery(
+                                            "Delete from registercallback WHERE subscriptionID = $1 ")
+                                            .execute(Tuple.of(subscriptionID),
+                                                resultHandlerDeletequeuepg -> {
+                                                  if (resultHandlerDeletequeuepg.succeeded()) {
+                                                    registerCallbackSubscriptionResponse.put(
+                                                        Constants.ERROR,
+                                                        "duplicate key value violates unique constraint");
+                                                    handler.handle(Future.failedFuture(
+                                                        registerCallbackSubscriptionResponse
+                                                            .toString()));
+                                                  }
+                                                });
+                                      }
+                                    });
+                          }
+                        } else if (resultHandlerbind.failed()) {
+                          logger.error("failed ::" + resultHandlerbind.cause());
+                          registerCallbackSubscriptionResponse.put(Constants.ERROR,
+                              "Binding Failed");
+                          handler.handle(
+                              Future.failedFuture(registerCallbackSubscriptionResponse.toString()));
+                        }
+                      });
+                    }
+                  } else {
+                    logger.error("failed :: Invalid (or) NULL routingKey");
+                    registerCallbackSubscriptionResponse.put(Constants.ERROR, "Invalid routingKey");
+                    handler.handle(Future.succeededFuture(registerCallbackSubscriptionResponse));
+                  }
+                }
+              }
+            }
+          });
+    } else {
+      logger.error("Error in payload");
+      registerCallbackSubscriptionResponse.put(Constants.ERROR, "Error in payload");
+      handler.handle(Future.failedFuture(registerCallbackSubscriptionResponse.toString()));
+    }
     return null;
   }
 
   /**
    * {@inheritDoc}
    */
-
+  
   @Override
   public DataBrokerService updateCallbackSubscription(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
+    JsonObject updateCallbackSubscriptionResponse = new JsonObject();
+    if (request != null && !request.isEmpty()) {
+      String userName = request.getString("consumer");
+      String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
+      String subscriptionID = domain + "/" + getSha(userName) + "/" + request.getString("name");
+      JsonObject publishjson = new JsonObject();
+      publishjson.put("subscriptionID", subscriptionID);
+      publishjson.put("operation", "update");
+      String queueName = request.getString("queue");
+      JsonArray entitites = request.getJsonArray("entities");
+      totalBindCount = entitites.size();
+      totalBindSuccess = 0;
+      JsonObject requestjson = new JsonObject();
+      requestjson.put(Constants.QUEUE_NAME, queueName);
+
+      for (Object currentEntity : entitites) {
+        String routingKey = (String) currentEntity;
+        logger.info("routingKey is " + routingKey);
+        if (routingKey != null) {
+          if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
+              || routingKey.split("/").length != 5) {
+            logger.error("failed :: Invalid (or) NULL routingKey");
+            updateCallbackSubscriptionResponse.put(Constants.ERROR, "Invalid routingKey");
+            handler.handle(Future.failedFuture(updateCallbackSubscriptionResponse.toString()));
+          } else {
+
+            String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
+            JsonArray array = new JsonArray();
+            array.add(currentEntity);
+            JsonObject json = new JsonObject();
+            json.put(Constants.EXCHANGE_NAME, exchangeName);
+            json.put(Constants.QUEUE_NAME, queueName);
+            json.put(Constants.ENTITIES, array);
+            Future<JsonObject> resultbind = bindQueue(json);
+            resultbind.onComplete(resultHandlerbind -> {
+              if (resultHandlerbind.succeeded()) {
+                // count++
+                totalBindSuccess += 1;
+                logger.info(
+                    "sucess :: totalBindSuccess " + totalBindSuccess + resultHandlerbind.result());
+                JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
+                if (bindResponse.containsKey(Constants.TITLE) && bindResponse
+                    .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+                  logger.error("failed ::" + resultHandlerbind.cause());
+
+                  updateCallbackSubscriptionResponse.put(Constants.ERROR, "Binding Failed");
+                  handler
+                      .handle(Future.failedFuture(updateCallbackSubscriptionResponse.toString()));
+                } else if (totalBindSuccess == totalBindCount) {
+                  pgclient
+                      .preparedQuery(
+                          " UPDATE registercallback SET entities = $1 WHERE subscriptionID = $2")
+                      .execute(Tuple.of(entitites, subscriptionID), ar -> {
+                        if (ar.succeeded()) {
+                          String exchangename = "callback.notification";
+                          String routingkey = "update";
+
+                          JsonObject jsonpg = new JsonObject();
+                          jsonpg.put("body", publishjson.toString());
+
+                          client.basicPublish(exchangename, routingkey, jsonpg, resultHandler -> {
+
+                            if (resultHandler.succeeded()) {
+                              updateCallbackSubscriptionResponse.put("subscriptionID",
+                                  subscriptionID);
+                              logger.info("Message published to queue");
+                              handler.handle(
+                                  Future.succeededFuture(updateCallbackSubscriptionResponse));
+                            } else {
+                              logger.info("Message published failed");
+                              updateCallbackSubscriptionResponse.put("messagePublished", "failed");
+                              handler.handle(Future
+                                  .failedFuture(updateCallbackSubscriptionResponse.toString()));
+                            }
+                          });
+
+                        } else {
+                          logger.error("failed ::" + ar.cause().getMessage());
+                          updateCallbackSubscriptionResponse.put(Constants.ERROR,
+                              "duplicate key value violates unique constraint");
+                          handler.handle(
+                              Future.failedFuture(updateCallbackSubscriptionResponse.toString()));
+                        }
+                      });
+                }
+              } else if (resultHandlerbind.failed()) {
+                logger.error("failed ::" + resultHandlerbind.cause());
+                updateCallbackSubscriptionResponse.put(Constants.ERROR, "Binding Failed");
+                handler.handle(Future.failedFuture(updateCallbackSubscriptionResponse.toString()));
+              }
+            });
+          }
+        } else {
+          logger.error("failed :: Invalid (or) NULL routingKey");
+          updateCallbackSubscriptionResponse.put(Constants.ERROR, "Invalid routingKey");
+          handler.handle(Future.failedFuture(updateCallbackSubscriptionResponse.toString()));
+        }
+      }
+
+    } else {
+      logger.error("Error in payload");
+      updateCallbackSubscriptionResponse.put(Constants.ERROR, "Error in payload");
+      handler.handle(Future.failedFuture(updateCallbackSubscriptionResponse.toString()));
+    }
 
     return null;
   }
@@ -1357,7 +1632,67 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService deleteCallbackSubscription(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
+    JsonObject deleteCallbackSubscriptionResponse = new JsonObject();
+    if (request != null && !request.isEmpty()) {
+      String userName = request.getString(Constants.CONSUMER);
+      String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
+      String subscriptionID =
+          domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
 
+      logger.info("Call Back registration ID check starts");
+      pgclient.preparedQuery("Select * FROM registercallback WHERE subscriptionID = $1")
+          .execute(Tuple.of(subscriptionID), resultHandlerSelectID -> {
+            if (resultHandlerSelectID.succeeded()) {
+              RowSet<Row> result = resultHandlerSelectID.result();
+              /* Iterating Rows for getting entity, callbackurl, username and password */
+              String subscriptionIDdb = null;
+              for (Row row : result) {
+                subscriptionIDdb = row.getString(0);
+                logger.info(subscriptionIDdb);
+              }
+
+              if (!subscriptionID.equalsIgnoreCase(subscriptionIDdb)) {
+                logger.info("Call Back ID not found");
+                deleteCallbackSubscriptionResponse.put(Constants.ERROR, "Call Back ID not found");
+                handler.handle(Future.failedFuture(deleteCallbackSubscriptionResponse.toString()));
+              } else {
+                JsonObject publishjson = new JsonObject();
+                publishjson.put(Constants.SUBSCRIPTION_ID, subscriptionID);
+                publishjson.put(Constants.OPERATION, "delete");
+
+                pgclient.preparedQuery("Delete from registercallback WHERE subscriptionID = $1 ")
+                    .execute(Tuple.of(subscriptionID), ar -> {
+                      if (ar.succeeded()) {
+                        String exchangename = "callback.notification";
+                        String routingkey = "delete";
+                        JsonObject jsonpg = new JsonObject();
+                        jsonpg.put("body", publishjson.toString());
+                        client.basicPublish(exchangename, routingkey, jsonpg, resultHandler -> {
+                          if (resultHandler.succeeded()) {
+                            deleteCallbackSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
+                                subscriptionID);
+                            logger.info("Message published to queue");
+                          } else {
+                            logger.info("Message published failed");
+                            deleteCallbackSubscriptionResponse.put("messagePublished", "failed");
+                          }
+                          handler
+                              .handle(Future.succeededFuture(deleteCallbackSubscriptionResponse));
+                        });
+                      } else {
+                        logger.error("failed ::" + ar.cause().getMessage());
+                        deleteCallbackSubscriptionResponse.put(Constants.ERROR, "delete failed");
+                        handler.handle(Future.succeededFuture(deleteCallbackSubscriptionResponse));
+                      }
+                    });
+              }
+            }
+          });
+    } else {
+      logger.error("Error in payload");
+      deleteCallbackSubscriptionResponse.put(Constants.ERROR, "Error in payload");
+      handler.handle(Future.succeededFuture(deleteCallbackSubscriptionResponse));
+    }
     return null;
   }
 
@@ -1368,7 +1703,42 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService listCallbackSubscription(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
-
+    JsonObject listCallbackSubscriptionResponse = new JsonObject();
+    if (request != null && !request.isEmpty()) {
+      String userName = request.getString(Constants.CONSUMER);
+      String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
+      String subscriptionID =
+          domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
+      pgclient.preparedQuery("SELECT * FROM registercallback WHERE  subscriptionID = $1 ")
+          .execute(Tuple.of(subscriptionID), ar -> {
+            if (ar.succeeded()) {
+              RowSet<Row> result = ar.result();
+              logger.info(ar.result().size() + " rows");
+              /* Iterating Rows for getting entity, callbackurl, username and password */
+              if (ar.result().size() > 0) {
+                for (Row row : result) {
+                  String subscriptionIDdb = row.getString(0);
+                  String callBackUrl = row.getString(1);
+                  JsonArray entities = (JsonArray) row.getValue(2);
+                  listCallbackSubscriptionResponse.put(Constants.SUBSCRIPTION_ID, subscriptionIDdb);
+                  listCallbackSubscriptionResponse.put(Constants.CALLBACKURL, callBackUrl);
+                  listCallbackSubscriptionResponse.put(Constants.ENTITIES, entities);
+                }
+                handler.handle(Future.succeededFuture(listCallbackSubscriptionResponse));
+              } else {
+                listCallbackSubscriptionResponse.put(Constants.ERROR, "Error in payload");
+                handler.handle(Future.failedFuture(listCallbackSubscriptionResponse.toString()));
+              }
+            } else {
+              listCallbackSubscriptionResponse.put(Constants.ERROR, "Error in payload");
+              handler.handle(Future.failedFuture(listCallbackSubscriptionResponse.toString()));
+            }
+          });
+    } else {
+      logger.error("Error in payload");
+      listCallbackSubscriptionResponse.put(Constants.ERROR, "Error in payload");
+      handler.handle(Future.failedFuture(listCallbackSubscriptionResponse.toString()));
+    }
     return null;
   }
 
