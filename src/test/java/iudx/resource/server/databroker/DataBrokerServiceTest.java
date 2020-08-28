@@ -21,8 +21,11 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
+import io.vertx.sqlclient.PoolOptions;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -55,6 +58,17 @@ public class DataBrokerServiceTest {
   private static int statusOk;
   private static int statusNotFound;
   private static int statusNoContent;
+  /* Database Properties */
+  private static String databaseIP;
+  private static int databasePort;
+  private static String databaseName;
+  private static String databaseUserName;
+  private static String databasePassword;
+  private static int poolSize;
+  private static PgConnectOptions connectOptions;
+  private static PoolOptions poolOptions;
+  private static PgPool pgclient;
+
 
   private static final Logger logger = LoggerFactory.getLogger(DataBrokerServiceTest.class);
 
@@ -113,6 +127,12 @@ public class DataBrokerServiceTest {
       handshakeTimeout = Integer.parseInt(properties.getProperty("handshakeTimeout"));
       requestedChannelMax = Integer.parseInt(properties.getProperty("requestedChannelMax"));
       networkRecoveryInterval = Integer.parseInt(properties.getProperty("networkRecoveryInterval"));
+      databaseIP = properties.getProperty("callbackDatabaseIP");
+      databasePort = Integer.parseInt(properties.getProperty("callbackDatabasePort"));
+      databaseName = properties.getProperty("callbackDatabaseName");
+      databaseUserName = properties.getProperty("callbackDatabaseUserName");
+      databasePassword = properties.getProperty("callbackDatabasePassword");
+      poolSize = Integer.parseInt(properties.getProperty("callbackpoolSize"));
 
     } catch (Exception ex) {
 
@@ -152,6 +172,20 @@ public class DataBrokerServiceTest {
 
     webClient = WebClient.create(vertx, webConfig);
 
+    /* Set Connection Object */
+    if (connectOptions == null) {
+      connectOptions = new PgConnectOptions().setPort(databasePort).setHost(databaseIP)
+          .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
+    }
+
+    /* Pool options */
+    if (poolOptions == null) {
+      poolOptions = new PoolOptions().setMaxSize(poolSize);
+    }
+
+    /* Create the client pool */
+    pgclient = PgPool.pool(vertx, connectOptions, poolOptions);
+
     /* Create a Json Object for properties */
 
     propObj = new JsonObject();
@@ -159,10 +193,16 @@ public class DataBrokerServiceTest {
     propObj.put("userName", dataBrokerUserName);
     propObj.put(Constants.PASSWORD, dataBrokerPassword);
     propObj.put(Constants.VHOST, dataBrokerVhost);
+    propObj.put("databaseIP", databaseIP);
+    propObj.put("databasePort", databasePort);
+    propObj.put("databaseName", databaseName);
+    propObj.put("databaseUserName", databaseUserName);
+    propObj.put("databasePassword", databasePassword);
+    propObj.put("databasePoolSize", poolSize);
 
     /* Call the databroker constructor with the RabbitMQ client. */
 
-    databroker = new DataBrokerServiceImpl(client, webClient, propObj);
+    databroker = new DataBrokerServiceImpl(client, webClient, propObj, pgclient);
     testContext.completeNow();
   }
 
