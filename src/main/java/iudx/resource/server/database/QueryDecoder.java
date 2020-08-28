@@ -1,14 +1,14 @@
 package iudx.resource.server.database;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 import static iudx.resource.server.database.Constants.*;
 
@@ -203,7 +203,8 @@ public class QueryDecoder {
             } else if (NOT_EQUAL_OP.equalsIgnoreCase(operator)) {
 
               boolObject.getJsonObject(BOOL_KEY).put(MUST_NOT,
-                  new JsonObject(TERM_QUERY.replace("$1", attribute).replace("$2", attributeValue)));
+                  new JsonObject(TERM_QUERY.replace("$1", attribute)
+                      .replace("$2", attributeValue)));
 
             } else {
               return new JsonObject().put(ERROR, INVALID_OPERATOR);
