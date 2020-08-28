@@ -5,227 +5,246 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import iudx.catalogue.server.database.ElasticClient;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
+import static iudx.resource.server.database.Constants.*;
 
 public class QueryDecoder {
-	
-	private static final Logger LOGGER = LogManager.getLogger(QueryDecoder.class);
 
-	/**
-	 * Decodes and constructs ElasticSearch Search/Count query based on the
-	 * parameters passed in the request.
-	 * 
-	 * @param request Json object containing various fields related to query-type.
-	 * @return JsonObject which contains fully formed ElasticSearch query.
-	 */
-	public JsonObject queryDecoder(JsonObject request) {
-		String searchType = request.getString(Constants.SEARCH_TYPE);
-		Boolean match = false;
-		JsonObject elasticQuery = new JsonObject();
-		JsonObject boolObject = new JsonObject().put(Constants.BOOL_KEY, new JsonObject());
-		JsonArray id = request.getJsonArray(Constants.ID);
-		JsonArray filterQuery = new JsonArray();
-		JsonObject termQuery = new JsonObject().put(Constants.TERMS_KEY,
-				new JsonObject().put(Constants.RESOURCE_ID_KEY + ".keyword", id));
+  private static final Logger LOGGER = LoggerFactory.getLogger(QueryDecoder.class);
 
-		filterQuery.add(termQuery);
-		/* TODO: Pagination for large result set */
-		if (request.containsKey("search") && request.getBoolean("search")) {
-			elasticQuery.put(Constants.SIZE_KEY, 10);
-		}
-		/* Geo-Spatial Search */
-		if (searchType.matches("(.*)geoSearch(.*)")) {
-			match = true;
-			LOGGER.info("In geoSearch block---------");
-			JsonObject shapeJson = new JsonObject();
-			JsonObject geoSearch = new JsonObject();
-			String relation;
-			JsonArray coordinates;
-			if (request.containsKey(Constants.LON) && request.containsKey(Constants.LAT)
-					&& request.containsKey(Constants.GEO_RADIUS)) {
-				double lat = request.getDouble(Constants.LAT);
-				double lon = request.getDouble(Constants.LON);
-				double radius = request.getDouble(Constants.GEO_RADIUS);
-				relation = request.containsKey(Constants.GEOREL) ? request.getString(Constants.GEOREL)
-						: Constants.WITHIN;
-				shapeJson
-						.put(Constants.SHAPE_KEY,
-								new JsonObject().put(Constants.TYPE_KEY, Constants.GEO_CIRCLE)
-										.put(Constants.COORDINATES_KEY, new JsonArray().add(lon).add(lat))
-										.put(Constants.GEO_RADIUS, radius + "m"))
-						.put(Constants.GEO_RELATION_KEY, relation);
-			} else if (request.containsKey(Constants.GEOMETRY)
-					&& (request.getString(Constants.GEOMETRY).equalsIgnoreCase(Constants.POLYGON)
-							|| request.getString(Constants.GEOMETRY).equalsIgnoreCase(Constants.LINESTRING))
-					&& request.containsKey(Constants.GEOREL) && request.containsKey(Constants.COORDINATES_KEY)
-					&& request.containsKey(Constants.GEO_PROPERTY)) {
-				String geometry = request.getString(Constants.GEOMETRY);
-				relation = request.getString(Constants.GEOREL);
-				coordinates = new JsonArray(request.getString(Constants.COORDINATES_KEY));
-				int length = coordinates.getJsonArray(0).size();
-				if (geometry.equalsIgnoreCase(Constants.POLYGON)
-						&& !coordinates.getJsonArray(0).getJsonArray(0).getDouble(0)
-								.equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(0))
-						&& !coordinates.getJsonArray(0).getJsonArray(0).getDouble(1)
-								.equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(1))) {
-					return new JsonObject().put("Error", Constants.COORDINATE_MISMATCH);
+  /**
+   * Decodes and constructs ElasticSearch Search/Count query based on the parameters passed in the
+   * request.
+   * 
+   * @param request Json object containing various fields related to query-type.
+   * @return JsonObject which contains fully formed ElasticSearch query.
+   */
+  public JsonObject queryDecoder(JsonObject request) {
 
-				}
-				shapeJson.put(Constants.SHAPE_KEY,
-						new JsonObject().put(Constants.TYPE_KEY, geometry).put(Constants.COORDINATES_KEY, coordinates))
-						.put(Constants.GEO_RELATION_KEY, relation);
-			} else if (request.containsKey(Constants.GEOMETRY)
-					&& request.getString(Constants.GEOMETRY).equalsIgnoreCase(Constants.BBOX)
-					&& request.containsKey(Constants.GEOREL) && request.containsKey(Constants.COORDINATES_KEY)
-					&& request.containsKey(Constants.GEO_PROPERTY)) {
-				relation = request.getString(Constants.GEOREL);
-				coordinates = new JsonArray(request.getString(Constants.COORDINATES_KEY));
-				shapeJson = new JsonObject();
-				shapeJson
-						.put(Constants.SHAPE_KEY,
-								new JsonObject().put(Constants.TYPE_KEY, Constants.GEO_BBOX)
-										.put(Constants.COORDINATES_KEY, coordinates))
-						.put(Constants.GEO_RELATION_KEY, relation);
+    String searchType = request.getString(SEARCH_TYPE);
+    Boolean match = false;
+    JsonObject elasticQuery = new JsonObject();
+    JsonArray id = request.getJsonArray(ID);
+    JsonArray filterQuery = new JsonArray();
+    String queryGeoShape = null;
 
-			} else {
-				return new JsonObject().put("Error", Constants.MISSING_GEO_FIELDS);
-			}
-			geoSearch.put(Constants.GEO_SHAPE_KEY, new JsonObject().put(Constants.GEO_KEY, shapeJson));
-			filterQuery.add(geoSearch);
-		}
-		/* Response Filtering */
-		if (searchType.matches("(.*)responseFilter(.*)")) {
-			match = true;
-			LOGGER.info("In responseFilter block---------");
-			if (!request.getBoolean("search")) {
-				return new JsonObject().put("Error", Constants.COUNT_UNSUPPORTED);
-			}
-			if (request.containsKey(Constants.RESPONSE_ATTRS)) {
-				JsonArray sourceFilter = request.getJsonArray(Constants.RESPONSE_ATTRS);
-				elasticQuery.put(Constants.SOURCE_FILTER_KEY, sourceFilter);
-			} else {
-				return new JsonObject().put("Error", Constants.MISSING_RESPONSE_FILTER_FIELDS);
-			}
-		}
-		/* Temporal Search */
-		if (searchType.matches("(.*)temporalSearch(.*)") && request.containsKey(Constants.REQ_TIMEREL)
-				&& request.containsKey("time")) {
-			match = true;
-			LOGGER.info("In temporalSearch block---------");
-			String timeRelation = request.getString(Constants.REQ_TIMEREL);
-			String time = request.getString(Constants.TIME_KEY);
-			/* check if the time is valid based on the format. Supports both UTC and IST. */
-			try {
-				DateFormat formatTimeUtc = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-				DateFormat formatTimeIst = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-				formatTimeUtc.setTimeZone(TimeZone.getTimeZone("UTC"));
-				formatTimeIst.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
-				Date parsedDateTimeUtc = formatTimeUtc.parse(time);
-				Date parsedDateTimeIst = formatTimeIst.parse(time);
-				LOGGER.info("Requested date: #UTC- " + formatTimeUtc.format(parsedDateTimeUtc) + "\n#IST- "
-						+ formatTimeIst.format(parsedDateTimeIst));
-			} catch (ParseException e) {
-				e.printStackTrace();
-				return new JsonObject().put("Error", Constants.INVALID_DATE);
-			}
-			JsonObject rangeTimeQuery = new JsonObject();
-			if (Constants.DURING.equalsIgnoreCase(timeRelation)) {
-				String endTime = request.getString(Constants.END_TIME);
-				rangeTimeQuery.put(Constants.RANGE_KEY, new JsonObject().put(Constants.TIME_KEY,
-						new JsonObject().put(Constants.GREATER_THAN_EQ, time).put(Constants.LESS_THAN_EQ, endTime)));
-			} else if (Constants.BEFORE.equalsIgnoreCase(timeRelation)) {
-				rangeTimeQuery.put(Constants.RANGE_KEY,
-						new JsonObject().put(Constants.TIME_KEY, new JsonObject().put(Constants.LESS_THAN, time)));
-			} else if (Constants.AFTER.equalsIgnoreCase(timeRelation)) {
-				rangeTimeQuery.put(Constants.RANGE_KEY,
-						new JsonObject().put(Constants.TIME_KEY, new JsonObject().put(Constants.GREATER_THAN, time)));
-			} else if ("tequals".equalsIgnoreCase(timeRelation)) {
-				rangeTimeQuery.put(Constants.TERM_KEY, new JsonObject().put(Constants.TIME_KEY, time));
-			} else {
-				return new JsonObject().put("Error", Constants.MISSING_TEMPORAL_FIELDS);
-			}
-			filterQuery.add(rangeTimeQuery);
-		}
-		/* Attribute Search */
-		if (searchType.matches("(.*)attributeSearch(.*)")) {
-			match = true;
-			JsonArray attrQuery;
-			LOGGER.info("In attributeFilter block---------");
-			if (request.containsKey(Constants.ATTRIBUTE_QUERY_KEY)) {
-				attrQuery = request.getJsonArray(Constants.ATTRIBUTE_QUERY_KEY);
-				/* Multi-Attribute */
-				for (Object obj : attrQuery) {
-					JsonObject attrObj = (JsonObject) obj;
-					JsonObject attrElasticQuery = new JsonObject();
-					try {
-						String attribute = attrObj.getString(Constants.ATTRIBUTE_KEY);
-						String operator = attrObj.getString(Constants.OPERATOR);
-						if (Constants.GREATER_THAN_OP.equalsIgnoreCase(operator)) {
-							attrElasticQuery.put(Constants.RANGE_KEY, new JsonObject().put(attribute, new JsonObject()
-									.put(Constants.GREATER_THAN, Double.valueOf(attrObj.getString(Constants.VALUE)))));
-							filterQuery.add(attrElasticQuery);
-						} else if (Constants.LESS_THAN_OP.equalsIgnoreCase(operator)) {
-							attrElasticQuery.put(Constants.RANGE_KEY, new JsonObject().put(attribute, new JsonObject()
-									.put(Constants.LESS_THAN, Double.valueOf(attrObj.getString(Constants.VALUE)))));
-							filterQuery.add(attrElasticQuery);
-						} else if (Constants.GREATER_THAN_EQ_OP.equalsIgnoreCase(operator)) {
-							attrElasticQuery.put(Constants.RANGE_KEY,
-									new JsonObject().put(attribute, new JsonObject().put(Constants.GREATER_THAN_EQ,
-											Double.valueOf(attrObj.getString(Constants.VALUE)))));
-							filterQuery.add(attrElasticQuery);
-						} else if (Constants.LESS_THAN_EQ_OP.equalsIgnoreCase(operator)) {
-							attrElasticQuery.put(Constants.RANGE_KEY, new JsonObject().put(attribute, new JsonObject()
-									.put(Constants.LESS_THAN_EQ, Double.valueOf(attrObj.getString(Constants.VALUE)))));
-							filterQuery.add(attrElasticQuery);
-						} else if (Constants.EQUAL_OP.equalsIgnoreCase(operator)) {
-							attrElasticQuery.put(Constants.TERM_KEY, new JsonObject().put(attribute,
-									Double.valueOf(attrObj.getString(Constants.VALUE))));
-							filterQuery.add(attrElasticQuery);
-						} else if (Constants.BETWEEN_OP.equalsIgnoreCase(operator)) {
-							attrElasticQuery
-									.put(Constants.RANGE_KEY,
-											new JsonObject()
-													.put(attribute,
-															new JsonObject()
-																	.put(Constants.GREATER_THAN_EQ,
-																			Double.valueOf(attrObj
-																					.getString(Constants.VALUE_LOWER)))
-																	.put(Constants.LESS_THAN_EQ, Double.valueOf(attrObj
-																			.getString(Constants.VALUE_UPPER)))));
-							filterQuery.add(attrElasticQuery);
-						} else if (Constants.NOT_EQUAL_OP.equalsIgnoreCase(operator)) {
-							attrElasticQuery.put(Constants.TERM_KEY, new JsonObject().put(attribute,
-									Double.valueOf(attrObj.getString(Constants.VALUE))));
-							boolObject.getJsonObject(Constants.BOOL_KEY).put(Constants.MUST_NOT, attrElasticQuery);
+    JsonObject boolObject = new JsonObject().put(BOOL_KEY, new JsonObject());
+    filterQuery.add(new JsonObject(
+        TERMS_QUERY.replace("$1", RESOURCE_ID_KEY + ".keyword").replace("$2", id.encode())));
 
-							/*
-							 * TODO: Need to understand operator parameter of JsonObject from the APIServer
-							 * would look like.
-							 */
-							// else if ("like".equalsIgnoreCase(operator)) {}
-						} else {
-							return new JsonObject().put("Error", Constants.INVALID_OPERATOR);
-						}
-					} catch (NullPointerException e) {
-						e.printStackTrace();
-						return new JsonObject().put("Error", Constants.MISSING_ATTRIBUTE_FIELDS);
-					}
-				}
-			}
-		}
-		/* checks if any valid search requests have matched */
-		if (!match) {
-			return new JsonObject().put("Error", Constants.INVALID_SEARCH);
-		} else {
-			/* return fully formed elastic query */
-			boolObject.getJsonObject(Constants.BOOL_KEY).put(Constants.FILTER_KEY, filterQuery);
-			return elasticQuery.put(Constants.QUERY_KEY, boolObject);
-		}
-	}
+    /* TODO: Pagination for large result set */
+    if (request.containsKey(SEARCH_KEY) && request.getBoolean(SEARCH_KEY)) {
+      elasticQuery.put(SIZE_KEY, 10);
+    }
+
+    /* Geo-Spatial Search */
+    if (searchType.matches(GEOSEARCH_REGEX)) {
+
+      LOGGER.debug("Info: Geo Search block");
+
+      match = true;
+
+      String relation;
+      JsonArray coordinates = null;
+
+      if (request.containsKey(LON) && request.containsKey(LAT) && request.containsKey(GEO_RADIUS)) {
+
+        double lat = request.getDouble(LAT);
+        double lon = request.getDouble(LON);
+        double radius = request.getDouble(GEO_RADIUS);
+        relation = request.containsKey(GEOREL) ? request.getString(GEOREL) : WITHIN;
+
+        coordinates = new JsonArray().add(lon).add(lat);
+        String radiusStr = ",\"radius\": \"$1m\"".replace("$1", Double.toString(radius));
+
+        queryGeoShape = GEO_SHAPE_QUERY.replace("$1", GEO_CIRCLE)
+            .replace("$2", coordinates.toString().concat(radiusStr)).replace("$3", relation)
+            .replace("$4", GEO_KEY);
+
+      } else if (request.containsKey(GEOMETRY)
+          && (request.getString(GEOMETRY).equalsIgnoreCase(POLYGON)
+              || request.getString(GEOMETRY).equalsIgnoreCase(LINESTRING))
+          && request.containsKey(GEOREL) && request.containsKey(COORDINATES_KEY)
+          && request.containsKey(GEO_PROPERTY)) {
+
+        String geometry = request.getString(GEOMETRY);
+        relation = request.getString(GEOREL);
+        coordinates = new JsonArray(request.getString(COORDINATES_KEY));
+        int length = coordinates.getJsonArray(0).size();
+
+        if (geometry.equalsIgnoreCase(POLYGON)
+            && !coordinates.getJsonArray(0).getJsonArray(0).getDouble(0)
+                .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(0))
+            && !coordinates.getJsonArray(0).getJsonArray(0).getDouble(1)
+                .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(1))) {
+          return new JsonObject().put(ERROR, COORDINATE_MISMATCH);
+
+        }
+
+        queryGeoShape = GEO_SHAPE_QUERY.replace("$1", geometry)
+            .replace("$2", coordinates.toString()).replace("$3", relation).replace("$4", GEO_KEY);
+
+      } else if (request.containsKey(GEOMETRY) && request.getString(GEOMETRY).equalsIgnoreCase(BBOX)
+          && request.containsKey(GEOREL) && request.containsKey(COORDINATES_KEY)
+          && request.containsKey(GEO_PROPERTY)) {
+        relation = request.getString(GEOREL);
+        coordinates = new JsonArray(request.getString(COORDINATES_KEY));
+
+        queryGeoShape = GEO_SHAPE_QUERY.replace("$1", GEO_BBOX)
+            .replace("$2", coordinates.toString()).replace("$3", relation).replace("$4", GEO_KEY);
+
+      } else {
+        return new JsonObject().put(ERROR, MISSING_GEO_FIELDS);
+      }
+
+      filterQuery.add(new JsonObject(queryGeoShape));
+    }
+
+    /* Temporal Search */
+    if (searchType.matches(TEMPORAL_SEARCH_REGEX) && request.containsKey(REQ_TIMEREL)
+        && request.containsKey(TIME_KEY)) {
+
+      LOGGER.info("Info: Temporal Search block");
+
+      match = true;
+      String timeRelation = request.getString(REQ_TIMEREL);
+      String time = request.getString(TIME_KEY);
+
+      /* check if the time is valid based on the format. Supports both UTC and IST. */
+      try {
+        DateFormat formatTimeUtc = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        DateFormat formatTimeIst = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        formatTimeUtc.setTimeZone(TimeZone.getTimeZone("UTC"));
+        formatTimeIst.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        Date parsedDateTimeUtc = formatTimeUtc.parse(time);
+        Date parsedDateTimeIst = formatTimeIst.parse(time);
+
+        LOGGER.debug("Info: Requested date: #UTC- " + formatTimeUtc.format(parsedDateTimeUtc)
+            + "\n#IST- " + formatTimeIst.format(parsedDateTimeIst));
+
+      } catch (ParseException e) {
+        LOGGER.error("Fail: " + INVALID_DATE + ";" + e.getMessage());
+        return new JsonObject().put(ERROR, INVALID_DATE);
+      }
+
+      String rangeTimeQuery = "";
+      if (DURING.equalsIgnoreCase(timeRelation)) {
+        String endTime = request.getString(END_TIME);
+        String endTemp = "\",\"lte\":" + endTime;
+        rangeTimeQuery =
+            TIME_QUERY.replace("$1", GREATER_THAN_EQ).replace("$2\"", time.concat(endTemp));
+
+      } else if (BEFORE.equalsIgnoreCase(timeRelation)) {
+        rangeTimeQuery = TIME_QUERY.replace("$1", LESS_THAN).replace("$2", time);
+
+      } else if (AFTER.equalsIgnoreCase(timeRelation)) {
+        rangeTimeQuery = TIME_QUERY.replace("$1", GREATER_THAN).replace("$2", time);
+
+      } else if ("tequals".equalsIgnoreCase(timeRelation)) {
+        rangeTimeQuery = TERM_QUERY.replace("$1", TIME_KEY).replace("$2", time);
+
+      } else {
+        return new JsonObject().put(ERROR, MISSING_TEMPORAL_FIELDS);
+
+      }
+      System.out.println(rangeTimeQuery);
+      filterQuery.add(new JsonObject(rangeTimeQuery));
+    }
+
+    /* Attribute Search */
+    if (searchType.matches(ATTRIBUTE_SEARCH_REGEX)) {
+
+      LOGGER.debug("Info: Attribute Search block");
+
+      match = true;
+      JsonArray attrQuery;
+
+      if (request.containsKey(ATTRIBUTE_QUERY_KEY)) {
+        attrQuery = request.getJsonArray(ATTRIBUTE_QUERY_KEY);
+
+        /* Multi-Attribute */
+        for (Object obj : attrQuery) {
+          JsonObject attrObj = (JsonObject) obj;
+          String attrElasticQuery = "";
+
+          try {
+            String attribute = attrObj.getString(ATTRIBUTE_KEY);
+            String operator = attrObj.getString(OPERATOR);
+            String attributeValue = attrObj.getString(VALUE);
+
+            if (GREATER_THAN_OP.equalsIgnoreCase(operator)) {
+              attrElasticQuery = RANGE_QUERY.replace("$1", attribute).replace("$2", GREATER_THAN)
+                  .replace("$3", attributeValue);
+
+            } else if (LESS_THAN_OP.equalsIgnoreCase(operator)) {
+              attrElasticQuery = RANGE_QUERY.replace("$1", attribute).replace("$2", LESS_THAN)
+                  .replace("$3", attributeValue);
+
+            } else if (GREATER_THAN_EQ_OP.equalsIgnoreCase(operator)) {
+              attrElasticQuery = RANGE_QUERY.replace("$1", attribute).replace("$2", GREATER_THAN_EQ)
+                  .replace("$3", attributeValue);
+
+            } else if (LESS_THAN_EQ_OP.equalsIgnoreCase(operator)) {
+              attrElasticQuery = RANGE_QUERY.replace("$1", attribute).replace("$2", LESS_THAN_EQ)
+                  .replace("$3", attributeValue);
+
+            } else if (EQUAL_OP.equalsIgnoreCase(operator)) {
+              attrElasticQuery = TERM_QUERY.replace("$1", attribute).replace("$2", attributeValue);
+
+            } else if (BETWEEN_OP.equalsIgnoreCase(operator)) {
+              attrElasticQuery = RANGE_QUERY_BW.replace("$1", attribute)
+                  .replace("$2", GREATER_THAN_EQ).replace("$3", attrObj.getString(VALUE_LOWER))
+                  .replace("$4", LESS_THAN_EQ).replace("$5", attrObj.getString(VALUE_UPPER));
+
+            } else if (NOT_EQUAL_OP.equalsIgnoreCase(operator)) {
+
+              boolObject.getJsonObject(BOOL_KEY).put(MUST_NOT,
+                  new JsonObject(TERM_QUERY.replace("$1", attribute).replace("$2", attributeValue)));
+
+            } else {
+              return new JsonObject().put(ERROR, INVALID_OPERATOR);
+            }
+
+            if (!attrElasticQuery.isBlank()) {
+              filterQuery.add(new JsonObject(attrElasticQuery));
+            }
+
+          } catch (NullPointerException e) {
+            LOGGER.error("Fail: " + MISSING_ATTRIBUTE_FIELDS + ";" + e.getMessage());
+            return new JsonObject().put(ERROR, MISSING_ATTRIBUTE_FIELDS);
+          }
+        }
+      }
+    }
+
+    /* Response Filtering */
+    if (searchType.matches(RESPONSE_FILTER_REGEX)) {
+
+      LOGGER.debug("Info: Adding responseFilter");
+
+      match = true;
+      if (!request.getBoolean(SEARCH_KEY)) {
+        return new JsonObject().put(ERROR, COUNT_UNSUPPORTED);
+      }
+      if (request.containsKey(RESPONSE_ATTRS)) {
+        JsonArray sourceFilter = request.getJsonArray(RESPONSE_ATTRS);
+        elasticQuery.put(SOURCE_FILTER_KEY, sourceFilter);
+      } else {
+        return new JsonObject().put(ERROR, MISSING_RESPONSE_FILTER_FIELDS);
+      }
+    }
+
+    /* checks if any valid search requests have matched */
+    if (!match) {
+      return new JsonObject().put(ERROR, INVALID_SEARCH);
+    } else {
+      /* return fully formed elastic query */
+      boolObject.getJsonObject(BOOL_KEY).put(FILTER_KEY, filterQuery);
+      return elasticQuery.put(QUERY_KEY, boolObject);
+    }
+  }
 }
