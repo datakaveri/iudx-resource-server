@@ -1,13 +1,7 @@
 package iudx.resource.server.databroker;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import static iudx.resource.server.databroker.util.Constants.*;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.http.HttpStatus;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -19,18 +13,16 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.client.HttpRequest;
-import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.rabbitmq.RabbitMQClient;
-import iudx.resource.server.databroker.util.Constants;
+import iudx.resource.server.databroker.util.Util;
 
 /**
  * The Data Broker Service Implementation.
  * <h1>Data Broker Service Implementation</h1>
  * <p>
- * The Data Broker Service implementation in the IUDX Resource Server implements
- * the definitions of the
- * {@link iudx.resource.server.databroker.DataBrokerService}.
+ * The Data Broker Service implementation in the IUDX Resource Server implements the definitions of
+ * the {@link iudx.resource.server.databroker.DataBrokerService}.
  * </p>
  * 
  * @version 1.0
@@ -51,52 +43,17 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   private int totalBindCount;
   private int totalBindSuccess;
   private boolean bindingSuccessful;
-  private RabbitMQClientImpl rabbitMQClientImpl;
+  private RabbitMQStreamingClient rabbitMQStreamingClient;
+  private PostgresQLClient pgClient;
 
-  /**
-   * This is a constructor which is used by the DataBroker Verticle to instantiate
-   * a RabbitMQ client.
-   * 
-   * @param clientInstance    which is a RabbitMQ client
-   * @param webClientInstance which is a Vertx Web client
-   */
-  @Deprecated
-  public DataBrokerServiceImpl(RabbitMQClient clientInstance, WebClient webClientInstance,
-      JsonObject propObj) {
 
-    logger.info("Got the RabbitMQ Client instance");
-    client = clientInstance;
-
-    client.start(resultHandler -> {
-
-      if (resultHandler.succeeded()) {
-        logger.info("RabbitMQ Client Connected");
-
-      } else {
-        logger.info("RabbitMQ Client Not Connected");
-      }
-
-    });
-
-    if (propObj != null && !propObj.isEmpty()) {
-
-      user = propObj.getString("userName");
-      password = propObj.getString("password");
-      vhost = propObj.getString("vHost");
-
-    }
-    webClient = webClientInstance;
-
+  public DataBrokerServiceImpl(RabbitMQStreamingClient rabbitMQStreamingClient,
+      PostgresQLClient pgClient, String vhost) {
+    this.rabbitMQStreamingClient = rabbitMQStreamingClient;
+    this.pgClient = pgClient;
+    this.vhost = vhost;
   }
 
-  public DataBrokerServiceImpl(RabbitMQClientImpl rabbitMQClientImpl, JsonObject propObj) {
-    this.rabbitMQClientImpl = rabbitMQClientImpl;
-    if (propObj != null && !propObj.isEmpty()) {
-      user = propObj.getString("userName");
-      password = propObj.getString("password");
-      vhost = propObj.getString("vHost");
-    }
-  }
   /**
    * This method creates user, declares exchange and bind with predefined queues.
    * 
@@ -106,583 +63,18 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService registerAdaptor(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
-    System.out.println(request.toString());
-    /* Get the ID and userName from the request */
-    String id = request.getString("resourceGroup");
-    String resourceServer = request.getString("resourceServer");
-    String userName = request.getString(Constants.CONSUMER);
-
-    logger.info("Resource Group Name given by user is : " + id);
-    logger.info("Resource Server Name by user is : " + resourceServer);
-    logger.info("User Name is : " + userName);
-
-    /* Construct a response object */
-    JsonObject registerResponse = new JsonObject();
-
-    /* Validate the request object */
     if (request != null && !request.isEmpty()) {
-      /* Goto Create user if ID is not empty */
-      if (id != null && !id.isEmpty() && !id.isBlank()) {
-        /* Validate the ID for special characters */
-        if (validateID(id)) {
-          /* Validate the userName */
-          if (userName != null && !userName.isBlank() && !userName.isEmpty()) {
-            /* Create a new user, if it does not exists */
-            Future<JsonObject> userCreationFuture = createUserIfNotExist(userName, vhost);
-            /* On completion of user creation, handle the result */
-            userCreationFuture.onComplete(rh -> {
-              if (rh.succeeded()) {
-                /* Obtain the result of user creation */
-                JsonObject result = rh.result();
-                logger.info("Response of createUserIfNotExist is : " + result);
-
-                /* Construct the domain, userNameSHA, userID and adaptorID */
-                String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
-                String userNameSha = getSha(userName);
-                String userID = domain + "/" + userNameSha;
-                String adaptorID = userID + "/" + resourceServer + "/" + id;
-
-                logger.info("userID is : " + userID);
-                logger.info("adaptorID is : " + adaptorID);
-
-                if (adaptorID != null && !adaptorID.isBlank() && !adaptorID.isEmpty()) {
-                  JsonObject json = new JsonObject();
-                  json.put(Constants.EXCHANGE_NAME, adaptorID);
-                  /* Create an exchange if it does not exists */
-                  Future<JsonObject> exchangeDeclareFuture = createExchange(json);
-                  /* On completion of exchange creation, handle the result */
-                  exchangeDeclareFuture.onComplete(ar -> {
-                    if (ar.succeeded()) {
-                      /* Obtain the result of exchange creation */
-                      JsonObject obj = ar.result();
-
-                      logger.info("Response of createExchange is : " + obj);
-                      logger.info("exchange name provided : " + adaptorID);
-                      logger.info("exchange name received : " + obj.getString("exchange"));
-
-                      // if exchange just registered then set topic permission and bind with queues
-                      if (!obj.containsKey("detail")) {
-
-                        Future<JsonObject> topicPermissionFuture = setTopicPermissions(vhost,
-                            domain + "/" + userNameSha + "/" + resourceServer + "/" + id, userID);
-                        topicPermissionFuture.onComplete(topicHandler -> {
-                          if (topicHandler.succeeded()) {
-                            logger.info("Write permission set on topic for exchange "
-                                + obj.getString("exchange"));
-                            /* Bind the exchange with the database and adaptorLogs queue */
-                            Future<JsonObject> queueBindFuture = queueBinding(
-                                domain + "/" + userNameSha + "/" + resourceServer + "/" + id);
-                            queueBindFuture.onComplete(res -> {
-                              if (res.succeeded()) {
-                                logger.info("Queue_Database, Queue_adaptorLogs binding done with "
-                                    + obj.getString("exchange") + " exchange");
-                                /* Construct the response for registration of adaptor */
-                                registerResponse.put(Constants.USER_NAME,
-                                    domain + "/" + userNameSha);
-                                /*
-                                 * APIKEY should be equal to password generated. For testing use
-                                 * Constants.APIKEY_TEST_EXAMPLE
-                                 */
-                                registerResponse.put(Constants.APIKEY,
-                                    Constants.APIKEY_TEST_EXAMPLE);
-                                registerResponse.put(Constants.ID,
-                                    domain + "/" + userNameSha + "/" + resourceServer + "/" + id);
-                                registerResponse.put(Constants.VHOST, Constants.VHOST_IUDX);
-
-                                logger.info("registerResponse : " + registerResponse);
-                                handler.handle(Future.succeededFuture(registerResponse));
-
-                              } else {
-                                /* Handle Queue Error */
-                                logger.error(
-                                    "error in queue binding with adaptor - cause : " + res.cause());
-                                registerResponse.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
-                                handler.handle(Future.failedFuture(registerResponse.toString()));
-
-                              }
-                            });
-
-                          } else {
-                            /* Handle Topic Permission Error */
-                            logger.info("topic permissions not set for exchange "
-                                + obj.getString("exchange") + " - cause : "
-                                + topicHandler.cause().getMessage());
-
-                            registerResponse.put(Constants.ERROR,
-                                Constants.TOPIC_PERMISSION_SET_ERROR);
-                            handler.handle(Future.failedFuture(registerResponse.toString()));
-
-                          }
-                        });
-
-                      } else if (obj.getString("detail") != null
-                          && !obj.getString("detail").isEmpty()
-                          && obj.getString("detail").equalsIgnoreCase("Exchange already exists")) {
-                        /* Handle Exchange Error */
-                        logger.error("something wrong in exchange declaration : " + ar.cause());
-                        registerResponse.put(Constants.ERROR, Constants.EXCHANGE_EXISTS);
-                        handler.handle(Future.failedFuture(registerResponse.toString()));
-                      }
-
-                    } else {
-                      /* Handle Exchange Error */
-                      logger.error("something wrong in exchange declaration : " + ar.cause());
-                      registerResponse.put(Constants.ERROR, Constants.EXCHANGE_DECLARATION_ERROR);
-                      handler.handle(Future.failedFuture(registerResponse.toString()));
-
-                    }
-
-                  });
-
-                } else {
-                  /* Handle Request Error */
-                  logger.error("AdaptorID / Exchange not provided in request");
-                  registerResponse.put(Constants.ERROR, Constants.ADAPTOR_ID_NOT_PROVIDED);
-                  handler.handle(Future.failedFuture(registerResponse.toString()));
-
-                }
-
-              } else if (rh.failed()) {
-                /* Handle User Creation Error */
-                logger.error("User creation failed. " + rh.cause());
-                registerResponse.put(Constants.ERROR, Constants.USER_CREATION_ERROR);
-                handler.handle(Future.failedFuture(registerResponse.toString()));
-              } else {
-                /* Handle User Creation Error */
-                logger.error("User creation failed. " + rh.cause());
-                registerResponse.put(Constants.ERROR, Constants.USER_CREATION_ERROR);
-                handler.handle(Future.failedFuture(registerResponse.toString()));
-
-              }
-
-            });
-
-          } else {
-            /* Handle Request Error */
-            logger.error("user not provided in adaptor registration");
-            registerResponse.put(Constants.ERROR, Constants.USER_NAME_NOT_PROVIDED);
-            handler.handle(Future.failedFuture(registerResponse.toString()));
-          }
-        } else {
-          /* Handle Invalid ID Error */
-          registerResponse.put(Constants.ERROR, Constants.INVALID_ID);
-          handler
-              .handle(Future.failedFuture(new JsonObject().put("error", "invalid id").toString()));
-          logger.error("id not provided in adaptor registration");
+      Future<JsonObject> result = rabbitMQStreamingClient.registerAdaptor(request, vhost);
+      result.onComplete(resultHandler -> {
+        if (resultHandler.succeeded()) {
+          handler.handle(Future.succeededFuture(resultHandler.result()));
         }
-      } else {
-        /* Handle Request Error */
-        logger.error("id not provided in adaptor registration");
-        registerResponse.put(Constants.ERROR, Constants.ID_NOT_PROVIDED);
-        handler.handle(Future.failedFuture(registerResponse.toString()));
-      }
-    } else {
-      /* Handle Request Error */
-      logger.error("Bad Request");
-      registerResponse.put(Constants.ERROR, Constants.BAD_REQUEST);
-      handler.handle(Future.failedFuture(registerResponse.toString()));
+        if (resultHandler.failed()) {
+          logger.error("registerAdaptor resultHandler failed : " + resultHandler.cause());
+        }
+      });
     }
-
-    return null;
-
-  }
-
-  /*
-   * helper method which bind registered exchange with predefined queues
-   * 
-   * @param adaptorID which is a String object
-   * 
-   * @return response which is a Future object of promise of Json type
-   */
-  Future<JsonObject> queueBinding(String adaptorID) {
-    Promise<JsonObject> promise = Promise.promise();
-    /* Create a response object */
-    JsonObject response = new JsonObject();
-    // Now bind newly created adaptor with queues i.e. adaptorLogs,database
-    String topics = adaptorID + "/.*";
-    /* Bind to database queue */
-    client.queueBind(Constants.QUEUE_DATA, adaptorID, topics, result -> {
-      if (result.succeeded()) {
-        /* On success bind to adaptorLogs queue */
-        response.put("Queue_Database", Constants.QUEUE_DATA + " queue bound to " + adaptorID);
-
-        client.queueBind(Constants.QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + Constants.HEARTBEAT,
-            bindingheartBeatResult -> {
-              if (bindingheartBeatResult.succeeded()) {
-                client.queueBind(Constants.QUEUE_ADAPTOR_LOGS, adaptorID,
-                    adaptorID + Constants.DATA_ISSUE, bindingdataIssueResult -> {
-                      if (bindingdataIssueResult.succeeded()) {
-                        client.queueBind(Constants.QUEUE_ADAPTOR_LOGS, adaptorID,
-                            adaptorID + Constants.DOWNSTREAM_ISSUE,
-                            bindingdownstreamIssueResult -> {
-                              if (bindingdownstreamIssueResult.succeeded()) {
-
-                                promise.complete(response);
-
-                              } else {
-                                /* Handle bind to adaptorLogs queue error */
-                                logger.error(" Queue_adaptorLogs binding error : "
-                                    + bindingdownstreamIssueResult.cause());
-                                response.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
-                                promise.fail(response.toString());
-                              }
-                            });
-                      } else {
-                        /* Handle bind to adaptorLogs queue error */
-                        logger.error(
-                            " Queue_adaptorLogs binding error : " + bindingdataIssueResult.cause());
-                        response.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
-                        promise.fail(response.toString());
-                      }
-                    });
-              } else {
-                /* Handle bind to adaptorLogs queue error */
-                logger
-                    .error(" Queue_adaptorLogs binding error : " + bindingheartBeatResult.cause());
-                response.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
-                promise.fail(response.toString());
-              }
-            });
-      } else {
-        /* Handle bind to database queue error */
-        logger.error(" Queue_Database binding error : " + result.cause());
-        response.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
-        promise.fail(response.toString());
-      }
-    });
-
-    return promise.future();
-  }
-
-  /**
-   * The createUserIfNotExist implements the create user if does not exist.
-   * 
-   * @param userName which is a String
-   * @param vhost    which is a String
-   * @return response which is a Future object of promise of Json type
-   **/
-  Future<JsonObject> createUserIfNotExist(String userName, String vhost) {
-    Promise<JsonObject> promise = Promise.promise();
-    /* Create a response object */
-    JsonObject response = new JsonObject();
-    Future<JsonObject> future = createUserIfNotPresent(userName, vhost);
-    future.onComplete(handler -> {
-      /* On successful response handle the result */
-      if (handler.succeeded()) {
-        /* Respond to the requestor */
-        JsonObject result = handler.result();
-        response.put(Constants.SHA_USER_NAME, result.getString("shaUsername"));
-        response.put(Constants.APIKEY, result.getString("password"));
-        response.put(Constants.TYPE, result.getString("type"));
-        response.put(Constants.TITLE, result.getString("title"));
-        response.put(Constants.DETAILS, result.getString("detail"));
-        response.put(Constants.VHOST_PERMISSIONS, result.getString("vhostPermissions"));
-        promise.complete(response);
-      } else {
-        logger.info("Something went wrong - Cause: " + handler.cause());
-        response.put(Constants.ERROR, Constants.USER_CREATION_ERROR);
-        promise.fail(response.toString());
-      }
-
-    });
-
-    return promise.future();
-
-  }
-
-  /**
-   * createUserIfNotExist helper method which check user existence. Create user if
-   * not present
-   * 
-   * @param userName which is a String
-   * @param vhost    which is a String
-   * @return response which is a Future object of promise of Json type
-   **/
-  Future<JsonObject> createUserIfNotPresent(String userName, String vhost) {
-    Promise<JsonObject> promise = Promise.promise();
-    /* Get domain, shaUsername from userName */
-    String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
-    String shaUsername = domain + "/" + getSha(userName);
-    // This API requires user name in path parameter. Encode the username as it
-    // contains a "/"
-    String url = "/api/users/" + encodedValue(shaUsername);
-    /* Check if user exists */
-    HttpRequest<Buffer> request = webClient.get(url).basicAuthentication(user, password);
-    JsonObject response = new JsonObject();
-    request.send(reply -> {
-      if (reply.succeeded()) {
-        /* Check if user not found */
-        if (reply.result().statusCode() == HttpStatus.SC_NOT_FOUND) {
-          logger.info(
-              "createUserIfNotExist success method : User not found. So creating user .........");
-          /* Create new user */
-          Future<JsonObject> userCreated = createUser(shaUsername, vhost, url);
-          userCreated.onComplete(handler -> {
-            if (handler.succeeded()) {
-              /* Handle the response */
-              JsonObject result = handler.result();
-              response.put(Constants.SHA_USER_NAME, result.getString("shaUsername"));
-              response.put(Constants.APIKEY, result.getString("password"));
-              response.put(Constants.TYPE, result.getString("type"));
-              response.put(Constants.TITLE, result.getString("title"));
-              response.put(Constants.DETAILS, result.getString("detail"));
-              response.put(Constants.VHOST_PERMISSIONS, result.getString("vhostPermissions"));
-              promise.complete(response);
-            } else {
-              logger.error("createUser method onComplete() - Error in user creation. Cause : "
-                  + handler.cause());
-            }
-          });
-
-        } else if (reply.result().statusCode() == HttpStatus.SC_OK) {
-          // user exists , So something useful can be done here
-          // TODO : Need to get the "apiKey"
-          /* Handle the response if a user exists */
-          JsonObject result = reply.result().bodyAsJsonObject();
-          response.put(Constants.SHA_USER_NAME, result.getString("shaUsername"));
-          response.put(Constants.TYPE, Constants.USER_EXISTS);
-          response.put(Constants.TITLE, Constants.SUCCESS);
-          response.put(Constants.DETAILS, Constants.USER_ALREADY_EXISTS);
-          promise.complete(response);
-        }
-
-      } else {
-        /* Handle API error */
-        logger.info("Something went wrong while finding user using mgmt API: " + reply.cause());
-        promise.fail(reply.cause().toString());
-      }
-
-    });
-
-    return promise.future();
-
-  }
-
-  /**
-   * CreateUserIfNotPresent's helper method which creates user if not present.
-   * 
-   * @param userName which is a String
-   * @param vhost    which is a String
-   * @return response which is a Future object of promise of Json type
-   **/
-  Future<JsonObject> createUser(String shaUsername, String vhost, String url) {
-
-    Promise<JsonObject> promise = Promise.promise();
-    // now creating user using same url with method put
-    HttpRequest<Buffer> createUserRequest = webClient.put(url).basicAuthentication(user, password);
-    JsonObject response = new JsonObject();
-    JsonObject arg = new JsonObject();
-    arg.put(Constants.PASSWORD, generateRandomPassword());
-    arg.put(Constants.TAGS, Constants.NONE);
-
-    createUserRequest.sendJsonObject(arg, ar -> {
-      if (ar.succeeded()) {
-        /* Check if user is created */
-        if (ar.result().statusCode() == HttpStatus.SC_CREATED) {
-          logger.info("createUserRequest success");
-          response.put(Constants.SHA_USER_NAME, shaUsername);
-          response.put(Constants.PASSWORD, arg.getString("password"));
-          response.put(Constants.TITLE, Constants.SUCCESS);
-          response.put(Constants.TYPE, "" + ar.result().statusCode());
-          response.put(Constants.DETAILS, Constants.USER_CREATED);
-          logger.info("createUser method : given user created successfully");
-          // set permissions to vhost for newly created user
-          Future<JsonObject> vhostPermission = setVhostPermissions(shaUsername, vhost);
-          vhostPermission.onComplete(handler -> {
-            if (handler.succeeded()) {
-              response.put(Constants.VHOST_PERMISSIONS,
-                  handler.result().getString("vhostPermissions"));
-              promise.complete(response);
-            } else {
-              /* Handle error */
-              logger.error("Error in setting vhostPermissions. Cause : " + handler.cause());
-              response.put(Constants.VHOST_PERMISSIONS, Constants.VHOST_PERMISSIONS_FAILURE);
-              promise.complete(response);
-            }
-          });
-
-        } else {
-          /* Handle error */
-          logger.error("createUser method - Some network error. cause" + ar.cause());
-          response.put(Constants.FAILURE, Constants.NETWORK_ISSUE);
-          promise.fail(response.toString());
-        }
-      } else {
-        /* Handle error */
-        logger.info("Something went wrong while creating user using mgmt API :" + ar.cause());
-        response.put(Constants.FAILURE, Constants.CHECK_CREDENTIALS);
-        promise.fail(response.toString());
-      }
-    });
-
-    return promise.future();
-  }
-
-  /**
-   * set topic permissions.
-   * 
-   * @param vhost       which is a String
-   * @param adaptorID   which is a String
-   * @param shaUsername which is a String
-   * @return response which is a Future object of promise of Json type
-   **/
-  private Future<JsonObject> setTopicPermissions(String vhost, String adaptorID, String userID) {
-    // now set write permission to user for this adaptor(exchange)
-    String url = "/api/topic-permissions/" + vhost + "/" + encodedValue(userID);
-
-    JsonObject param = new JsonObject();
-    // set all mandatory fields
-    param.put(Constants.EXCHANGE, adaptorID);
-    param.put(Constants.WRITE, Constants.ALLOW);
-    param.put(Constants.READ, Constants.DENY);
-    param.put(Constants.CONFIGURE, Constants.DENY);
-
-    Promise<JsonObject> promise = Promise.promise();
-    HttpRequest<Buffer> request = webClient.put(url).basicAuthentication(user, password);
-    JsonObject response = new JsonObject();
-
-    request.sendJsonObject(param, result -> {
-      if (result.succeeded()) {
-        /* Check if request was a success */
-        if (result.result().statusCode() == HttpStatus.SC_CREATED) {
-          response.put(Constants.TOPIC_PERMISSION, Constants.TOPIC_PERMISSION_SET_SUCCESS);
-          logger.info("Topic permission set");
-          promise.complete(response);
-        } else if (result.result()
-            .statusCode() == HttpStatus.SC_NO_CONTENT) { /* Check if request was already served */
-          response.put(Constants.TOPIC_PERMISSION, Constants.TOPIC_PERMISSION_ALREADY_SET);
-          promise.complete(response);
-        } else { /* Check if request has an error */
-          logger.error("Error in setting topic permissions" + result.result().statusMessage());
-          response.put(Constants.TOPIC_PERMISSION, Constants.TOPIC_PERMISSION_SET_ERROR);
-          promise.fail(response.toString());
-        }
-      } else { /* Check if request has an error */
-        logger.error("Error in setting topic permission : " + result.cause());
-        response.put(Constants.TOPIC_PERMISSION, Constants.TOPIC_PERMISSION_SET_ERROR);
-        promise.fail(response.toString());
-      }
-    });
-
-    return promise.future();
-  }
-
-  /**
-   * set vhost permissions for given userName.
-   * 
-   * @param shaUsername which is a String
-   * @param vhost       which is a String
-   * @return response which is a Future object of promise of Json type
-   **/
-  private Future<JsonObject> setVhostPermissions(String shaUsername, String vhost) {
-    // set permissions for this user
-    /* Construct URL to use */
-    String url = "/api/permissions/" + vhost + "/" + encodedValue(shaUsername);
-    JsonObject vhostPermissions = new JsonObject();
-
-    // all keys are mandatory. empty strings used for configure,read as not
-    // permitted.
-    vhostPermissions.put(Constants.CONFIGURE, Constants.DENY);
-    vhostPermissions.put(Constants.WRITE, Constants.ALLOW);
-    vhostPermissions.put(Constants.READ, Constants.ALLOW);
-
-    Promise<JsonObject> promise = Promise.promise();
-    // now set all mandatory permissions for given vhost for newly created user
-    HttpRequest<Buffer> vhostPermissionRequest = webClient.put(url).basicAuthentication(user,
-        password);
-    /* Construct a response object */
-    JsonObject vhostPermissionResponse = new JsonObject();
-
-    vhostPermissionRequest.sendJsonObject(vhostPermissions, handler -> {
-      if (handler.succeeded()) {
-        /* Check if permission was set */
-        if (handler.result().statusCode() == HttpStatus.SC_CREATED) {
-          logger.info("vhostPermissionRequest success");
-          vhostPermissionResponse.put(Constants.VHOST_PERMISSIONS,
-              Constants.VHOST_PERMISSIONS_WRITE);
-          logger.info(
-              "write permission set for user [ " + shaUsername + " ] in vHost [ " + vhost + "]");
-          promise.complete(vhostPermissionResponse);
-        } else {
-          logger.error("Error in write permission set for user [ " + shaUsername + " ] in vHost [ "
-              + vhost + " ]");
-          vhostPermissionResponse.put(Constants.VHOST_PERMISSIONS,
-              Constants.VHOST_PERMISSION_SET_ERROR);
-          promise.fail(vhostPermissions.toString());
-        }
-      } else {
-        /* Check if request has an error */
-        logger.error("Error in write permission set for user [ " + shaUsername + " ] in vHost [ "
-            + vhost + " ]");
-        vhostPermissionResponse.put(Constants.VHOST_PERMISSIONS,
-            Constants.VHOST_PERMISSION_SET_ERROR);
-        promise.fail(vhostPermissions.toString());
-      }
-    });
-
-    return promise.future();
-  }
-
-  /**
-   * encode string using URLEncoder's encode method.
-   * 
-   * @param vhost which is a String
-   * @return encoded_vhost which is a String
-   **/
-  private String encodedValue(String vhost) {
-    String encodedVhost = null;
-    try {
-      encodedVhost = URLEncoder.encode(vhost, StandardCharsets.UTF_8.toString());
-    } catch (UnsupportedEncodingException ex) {
-      logger.error("Error in encode vhost name :" + ex.getCause());
-    }
-    return encodedVhost;
-  }
-
-  /**
-   * This method is as simple as but it can have more sophisticated encryption
-   * logic.
-   * 
-   * @param plainUserName which is a String
-   * @return encodedValue which is a String
-   **/
-  private String getSha(String plainUserName) {
-
-    String encodedValue = null;
-    try {
-      encodedValue = DigestUtils.md5Hex(plainUserName);
-    } catch (Exception e) {
-      // throw new RuntimeException(e);
-      logger.error("Unable to encode username using SHA" + e.getLocalizedMessage());
-    }
-    return encodedValue;
-  }
-
-  /**
-   * This method generate random alphanumeric password of given PASSWORD_LENGTH.
-   **/
-  private String generateRandomPassword() {
-    // It is simple one. here we may have strong algorithm for password generation.
-    return org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric(Constants.PASSWORD_LENGTH);
-  }
-
-  /**
-   * TODO This method checks the if for special characters other than hyphen, A-Z,
-   * a-z and 0-9.
-   **/
-
-  private boolean validateID(String id) {
-    /* Check if id contains any special character */
-    Pattern allowedPattern = Pattern.compile("[^-_.a-z0-9 ]", Pattern.CASE_INSENSITIVE);
-    Matcher isInvalid = allowedPattern.matcher(id);
-    
-    if (isInvalid.find()) {
-      logger.info("Invalid ID" + id);
-      return false;
-    } else {
-      logger.info("Valid ID" + id);
-      return true;
-    }
+    return this;
   }
 
   /**
@@ -707,7 +99,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerService getExchange(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = getExchange(request);
+      Future<JsonObject> result = rabbitMQStreamingClient.getExchange(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));
@@ -723,48 +115,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   /*
    * overridden method
    */
-  Future<JsonObject> getExchange(JsonObject request) {
-    JsonObject response = new JsonObject();
-    Promise<JsonObject> promise = Promise.promise();
-    if (request != null && !request.isEmpty()) {
-      String exchangeName = request.getString("id");
-      exchangeName = exchangeName.replace("/", "%2F");
-      if (vhost.contains("/")) {
-        url = "/api/exchanges/" + encodedValue(vhost) + "/" + exchangeName;
-      } else {
-        url = "/api/exchanges/" + vhost + "/" + exchangeName;
-      }
-
-      HttpRequest<Buffer> isExchangeExist = webClient.get(url).basicAuthentication(user, password);
-      isExchangeExist.send(result -> {
-        if (result.succeeded()) {
-          int status = result.result().statusCode();
-          response.put(Constants.TYPE, status);
-          if (status == HttpStatus.SC_OK) {
-            response.put(Constants.TITLE, Constants.SUCCESS);
-            response.put(Constants.DETAIL, Constants.EXCHANGE_FOUND);
-          } else if (status == HttpStatus.SC_NOT_FOUND) {
-            response.put(Constants.TITLE, Constants.FAILURE);
-            response.put(Constants.DETAIL, Constants.EXCHANGE_NOT_FOUND);
-          } else {
-            response.put("getExchange_status", status);
-            promise.fail("getExchange_status" + result.cause());
-          }
-        } else {
-          response.put("getExchange_error", result.cause());
-          promise.fail("getExchange_error" + result.cause());
-        }
-        logger.info("getExchange method response : " + response);
-        promise.complete(response);
-      });
-
-    } else {
-      promise.fail("exchangeName not provided");
-    }
-
-    return promise.future();
-
-  }
 
   /**
    * The deleteAdaptor implements deletion feature for an adaptor(exchange).
@@ -775,60 +125,24 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService deleteAdaptor(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
-
-    JsonObject finalResponse = new JsonObject();
-    System.out.println(request.toString());
-    Future<JsonObject> result = getExchange(request);
-    result.onComplete(resultHandler -> {
-      if (resultHandler.succeeded()) {
-        int status = resultHandler.result().getInteger("type");
-        // exchange found
-        if (status == 200) {
-          String exchangeID = request.getString("id");
-          client.exchangeDelete(exchangeID, rh -> {
-            if (rh.succeeded()) {
-              logger.info(exchangeID + " adaptor deleted successfully");
-              finalResponse.put("id", exchangeID);
-              finalResponse.put(Constants.TYPE, "adaptor deletion");
-              finalResponse.put(Constants.TITLE, "success");
-              finalResponse.put(Constants.DETAIL, "adaptor deleted");
-            } else if (rh.failed()) {
-              finalResponse.put(Constants.TYPE, "adaptor delete");
-              finalResponse.put(Constants.TITLE, "Error in adaptor deletion");
-              finalResponse.put(Constants.DETAIL, rh.cause());
-              handler.handle(Future.failedFuture("Bad request : nothing to delete"));
-            } else {
-              logger.error("Something wrong in deleting adaptor" + rh.cause());
-              handler.handle(Future.failedFuture("Bad request : nothing to delete"));
-            }
-            handler.handle(Future.succeededFuture(finalResponse));
-          });
-
-        } else if (status == 404) { // exchange not found
-          finalResponse.put(Constants.TYPE, status);
-          finalResponse.put(Constants.TITLE, resultHandler.result().getString("title"));
-          finalResponse.put(Constants.DETAIL, resultHandler.result().getString("detail"));
-        } else { // some other issue
-          handler.handle(Future.failedFuture("Bad request : nothing to delete"));
+    if (request != null && !request.isEmpty()) {
+      Future<JsonObject> result = rabbitMQStreamingClient.getExchange(request, vhost);
+      result.onComplete(resultHandler -> {
+        if (resultHandler.succeeded()) {
+          handler.handle(Future.succeededFuture(resultHandler.result()));
         }
-
-      }
-
-      if (resultHandler.failed()) {
-        logger.error("deleteAdaptor - resultHandler failed : " + resultHandler.cause());
-        handler.handle(Future.failedFuture("Bad request : nothing to delete"));
-      }
-
-    });
-
+        if (resultHandler.failed()) {
+          logger.error("getExchange resultHandler failed : " + resultHandler.cause());
+        }
+      });
+    }
     return this;
 
   }
 
   /**
-   * The listAdaptor implements the list of bindings for an exchange (source).
-   * This method has similar functionality as listExchangeSubscribers(JsonObject)
-   * method
+   * The listAdaptor implements the list of bindings for an exchange (source). This method has
+   * similar functionality as listExchangeSubscribers(JsonObject) method
    * 
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
@@ -838,20 +152,17 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler) {
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = listExchangeSubscribers(request);
-
+      Future<JsonObject> result = rabbitMQStreamingClient.deleteAdapter(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("listAdaptor - resultHandler failed : " + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.result().toString()));
+          logger.error("deleteAdaptor - resultHandler failed : " + resultHandler.cause());
+          handler.handle(Future.failedFuture(resultHandler.cause().toString()));
         }
       });
-
     } else {
-      finalResponse.put(Constants.ERROR, Constants.EXCHANGE_LIST_ERROR);
       handler.handle(Future.failedFuture(finalResponse.toString()));
     }
 
@@ -865,44 +176,43 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService registerStreamingSubscription(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
-
     JsonObject registerStreamingSubscriptionResponse = new JsonObject();
     JsonObject requestjson = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      String userName = request.getString(Constants.CONSUMER);
+      String userName = request.getString(CONSUMER);
       String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
-      String queueName = domain + "/" + getSha(userName) + "/" + request.getString("name");
+      String queueName = domain + "/" + Util.getSha(userName) + "/" + request.getString("name");
 
-      Future<JsonObject> resultCreateUser = createUserIfNotExist(userName, Constants.VHOST_IUDX);
+      Future<JsonObject> resultCreateUser =
+          rabbitMQStreamingClient.createUserIfNotExist(userName, VHOST_IUDX);
       resultCreateUser.onComplete(resultCreateUserhandler -> {
         if (resultCreateUserhandler.succeeded()) {
 
           // For testing instead of generateRandomPassword() use password = 1234
           String streamingUrl = "amqp://" + userName + ":" + "1234" // generateRandomPassword()
-              + "@" + Constants.BROKER_IP + ":" + Constants.BROKER_PORT + "/" + Constants.VHOST_IUDX
-              + "/" + queueName;
+              + "@" + BROKER_IP + ":" + BROKER_PORT + "/" + VHOST_IUDX + "/" + queueName;
           logger.info("Streaming URL is : " + streamingUrl);
-          JsonArray entitites = request.getJsonArray(Constants.ENTITIES);
+          JsonArray entitites = request.getJsonArray(ENTITIES);
           logger.info("Request Access for " + entitites);
           logger.info("No of bindings to do : " + entitites.size());
 
           totalBindCount = entitites.size();
           totalBindSuccess = 0;
 
-          requestjson.put(Constants.QUEUE_NAME, queueName);
+          requestjson.put(QUEUE_NAME, queueName);
 
-          Future<JsonObject> resultqueue = createQueue(requestjson);
+          Future<JsonObject> resultqueue = rabbitMQStreamingClient.createQueue(requestjson, vhost);
           resultqueue.onComplete(resultHandlerqueue -> {
             if (resultHandlerqueue.succeeded()) {
 
               logger.info("sucess :: Create Queue " + resultHandlerqueue.result());
               JsonObject createQueueResponse = (JsonObject) resultHandlerqueue.result();
 
-              if (createQueueResponse.containsKey(Constants.TITLE) && createQueueResponse
-                  .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+              if (createQueueResponse.containsKey(TITLE)
+                  && createQueueResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
                 logger.error("failed ::" + resultHandlerqueue.cause());
-                handler.handle(Future.failedFuture(
-                    new JsonObject().put(Constants.ERROR, "Queue Creation Failed").toString()));
+                handler.handle(Future
+                    .failedFuture(new JsonObject().put(ERROR, "Queue Creation Failed").toString()));
               } else {
 
                 logger.info("Success Queue Created");
@@ -915,12 +225,13 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                         || routingKey.split("/").length != 5) {
                       logger.error("failed :: Invalid (or) NULL routingKey");
 
-                      Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
+                      Future<JsonObject> resultDeletequeue =
+                          rabbitMQStreamingClient.deleteQueue(requestjson, vhost);
                       resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                         if (resultHandlerDeletequeue.succeeded()) {
 
-                          handler.handle(Future.failedFuture(new JsonObject()
-                              .put(Constants.ERROR, "Invalid routingKey").toString()));
+                          handler.handle(Future.failedFuture(
+                              new JsonObject().put(ERROR, "Invalid routingKey").toString()));
 
                         }
                       });
@@ -930,11 +241,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                       JsonArray array = new JsonArray();
                       array.add(currentEntity);
                       JsonObject json = new JsonObject();
-                      json.put(Constants.EXCHANGE_NAME, exchangeName);
-                      json.put(Constants.QUEUE_NAME, queueName);
-                      json.put(Constants.ENTITIES, array);
+                      json.put(EXCHANGE_NAME, exchangeName);
+                      json.put(QUEUE_NAME, queueName);
+                      json.put(ENTITIES, array);
 
-                      Future<JsonObject> resultbind = bindQueue(json);
+                      Future<JsonObject> resultbind =
+                          rabbitMQStreamingClient.bindQueue(json, vhost);
                       resultbind.onComplete(resultHandlerbind -> {
                         if (resultHandlerbind.succeeded()) {
                           // count++
@@ -943,31 +255,31 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                               + resultHandlerbind.result());
 
                           JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
-                          if (bindResponse.containsKey(Constants.TITLE) && bindResponse
-                              .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+                          if (bindResponse.containsKey(TITLE)
+                              && bindResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
                             logger.error("failed ::" + resultHandlerbind.cause());
-                            Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
+                            Future<JsonObject> resultDeletequeue =
+                                rabbitMQStreamingClient.deleteQueue(requestjson, vhost);
                             resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                               if (resultHandlerDeletequeue.succeeded()) {
-                                handler.handle(Future.failedFuture(new JsonObject()
-                                    .put(Constants.ERROR, "Binding Failed").toString()));
+                                handler.handle(Future.failedFuture(
+                                    new JsonObject().put(ERROR, "Binding Failed").toString()));
                               }
                             });
                           } else if (totalBindSuccess == totalBindCount) {
-                            registerStreamingSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
-                                queueName);
-                            registerStreamingSubscriptionResponse.put(Constants.STREAMING_URL,
-                                streamingUrl);
+                            registerStreamingSubscriptionResponse.put(SUBSCRIPTION_ID, queueName);
+                            registerStreamingSubscriptionResponse.put(STREAMING_URL, streamingUrl);
                             handler.handle(
                                 Future.succeededFuture(registerStreamingSubscriptionResponse));
                           }
                         } else if (resultHandlerbind.failed()) {
                           logger.error("failed ::" + resultHandlerbind.cause());
-                          Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
+                          Future<JsonObject> resultDeletequeue =
+                              rabbitMQStreamingClient.deleteQueue(requestjson, vhost);
                           resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                             if (resultHandlerDeletequeue.succeeded()) {
-                              handler.handle(Future.failedFuture(new JsonObject()
-                                  .put(Constants.ERROR, "Binding Failed").toString()));
+                              handler.handle(Future.failedFuture(
+                                  new JsonObject().put(ERROR, "Binding Failed").toString()));
                             }
                           });
                         }
@@ -975,11 +287,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                     }
                   } else {
                     logger.error("failed :: Invalid (or) NULL routingKey");
-                    Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
+                    Future<JsonObject> resultDeletequeue =
+                        rabbitMQStreamingClient.deleteQueue(requestjson, vhost);
                     resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                       if (resultHandlerDeletequeue.succeeded()) {
-                        handler.handle(Future.failedFuture(new JsonObject()
-                            .put(Constants.ERROR, "Invalid routingKey").toString()));
+                        handler.handle(Future.failedFuture(
+                            new JsonObject().put(ERROR, "Invalid routingKey").toString()));
                       }
                     });
                   }
@@ -994,8 +307,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       });
     } else {
       logger.error("Error in payload");
-      handler.handle(Future
-          .failedFuture(new JsonObject().put(Constants.ERROR, "Error in payload").toString()));
+      handler
+          .handle(Future.failedFuture(new JsonObject().put(ERROR, "Error in payload").toString()));
     }
 
     return this;
@@ -1012,45 +325,44 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     JsonObject updateStreamingSubscriptionResponse = new JsonObject();
     JsonObject requestjson = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      String userName = request.getString(Constants.CONSUMER);
+      String userName = request.getString(CONSUMER);
       String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
-      String queueName = domain + "/" + getSha(userName) + "/" + request.getString("name");
-
-      Future<JsonObject> resultCreateUser = createUserIfNotExist(userName, Constants.VHOST_IUDX);
+      String queueName = domain + "/" + Util.getSha(userName) + "/" + request.getString("name");
+      Future<JsonObject> resultCreateUser =
+          rabbitMQStreamingClient.createUserIfNotExist(userName, VHOST_IUDX);
       resultCreateUser.onComplete(resultCreateUserhandler -> {
         if (resultCreateUserhandler.succeeded()) {
-
           // For testing instead of generateRandomPassword() use password = 1234
           String streamingUrl = "amqp://" + userName + ":" + "1234" // generateRandomPassword()
-              + "@" + Constants.BROKER_IP + ":" + Constants.BROKER_PORT + "/" + Constants.VHOST_IUDX
-              + "/" + queueName;
+              + "@" + BROKER_IP + ":" + BROKER_PORT + "/" + VHOST_IUDX + "/" + queueName;
           logger.info("Streaming URL is : " + streamingUrl);
-          JsonArray entitites = request.getJsonArray(Constants.ENTITIES);
+          JsonArray entitites = request.getJsonArray(ENTITIES);
           logger.info("Request Access for " + entitites);
           logger.info("No of bindings to do : " + entitites.size());
 
           totalBindCount = entitites.size();
           totalBindSuccess = 0;
 
-          requestjson.put(Constants.QUEUE_NAME, queueName);
+          requestjson.put(QUEUE_NAME, queueName);
 
-          Future<JsonObject> deleteQueue = deleteQueue(requestjson);
+          Future<JsonObject> deleteQueue = rabbitMQStreamingClient.deleteQueue(requestjson, vhost);
           deleteQueue.onComplete(deleteQueuehandler -> {
             if (deleteQueuehandler.succeeded()) {
               logger.info("sucess :: Deleted Queue " + deleteQueuehandler.result());
 
-              Future<JsonObject> resultqueue = createQueue(requestjson);
+              Future<JsonObject> resultqueue =
+                  rabbitMQStreamingClient.createQueue(requestjson, vhost);
               resultqueue.onComplete(resultHandlerqueue -> {
                 if (resultHandlerqueue.succeeded()) {
 
                   logger.info("sucess :: Create Queue " + resultHandlerqueue.result());
                   JsonObject createQueueResponse = (JsonObject) resultHandlerqueue.result();
 
-                  if (createQueueResponse.containsKey(Constants.TITLE) && createQueueResponse
-                      .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+                  if (createQueueResponse.containsKey(TITLE)
+                      && createQueueResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
                     logger.error("failed ::" + resultHandlerqueue.cause());
                     handler.handle(Future.failedFuture(
-                        new JsonObject().put(Constants.ERROR, "Queue Creation Failed").toString()));
+                        new JsonObject().put(ERROR, "Queue Creation Failed").toString()));
                   } else {
 
                     logger.info("Success Queue Created");
@@ -1063,12 +375,13 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                             || routingKey.split("/").length != 5) {
                           logger.error("failed :: Invalid (or) NULL routingKey");
 
-                          Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
+                          Future<JsonObject> resultDeletequeue =
+                              rabbitMQStreamingClient.deleteQueue(requestjson, vhost);
                           resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                             if (resultHandlerDeletequeue.succeeded()) {
 
-                              handler.handle(Future.failedFuture(new JsonObject()
-                                  .put(Constants.ERROR, "Invalid routingKey").toString()));
+                              handler.handle(Future.failedFuture(
+                                  new JsonObject().put(ERROR, "Invalid routingKey").toString()));
 
                             }
                           });
@@ -1079,11 +392,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                           JsonArray array = new JsonArray();
                           array.add(currentEntity);
                           JsonObject json = new JsonObject();
-                          json.put(Constants.EXCHANGE_NAME, exchangeName);
-                          json.put(Constants.QUEUE_NAME, queueName);
-                          json.put(Constants.ENTITIES, array);
+                          json.put(EXCHANGE_NAME, exchangeName);
+                          json.put(QUEUE_NAME, queueName);
+                          json.put(ENTITIES, array);
 
-                          Future<JsonObject> resultbind = bindQueue(json);
+                          Future<JsonObject> resultbind =
+                              rabbitMQStreamingClient.bindQueue(json, vhost);
                           resultbind.onComplete(resultHandlerbind -> {
                             if (resultHandlerbind.succeeded()) {
                               // count++
@@ -1092,31 +406,32 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                                   + resultHandlerbind.result());
 
                               JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
-                              if (bindResponse.containsKey(Constants.TITLE) && bindResponse
-                                  .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+                              if (bindResponse.containsKey(TITLE)
+                                  && bindResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
                                 logger.error("failed ::" + resultHandlerbind.cause());
-                                Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
+                                Future<JsonObject> resultDeletequeue =
+                                    rabbitMQStreamingClient.deleteQueue(requestjson, vhost);
                                 resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                                   if (resultHandlerDeletequeue.succeeded()) {
-                                    handler.handle(Future.failedFuture(new JsonObject()
-                                        .put(Constants.ERROR, "Binding Failed").toString()));
+                                    handler.handle(Future.failedFuture(
+                                        new JsonObject().put(ERROR, "Binding Failed").toString()));
                                   }
                                 });
                               } else if (totalBindSuccess == totalBindCount) {
-                                updateStreamingSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
-                                    queueName);
-                                updateStreamingSubscriptionResponse.put(Constants.STREAMING_URL,
+                                updateStreamingSubscriptionResponse.put(SUBSCRIPTION_ID, queueName);
+                                updateStreamingSubscriptionResponse.put(STREAMING_URL,
                                     streamingUrl);
                                 handler.handle(
                                     Future.succeededFuture(updateStreamingSubscriptionResponse));
                               }
                             } else if (resultHandlerbind.failed()) {
                               logger.error("failed ::" + resultHandlerbind.cause());
-                              Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
+                              Future<JsonObject> resultDeletequeue =
+                                  rabbitMQStreamingClient.deleteQueue(requestjson, vhost);
                               resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                                 if (resultHandlerDeletequeue.succeeded()) {
-                                  handler.handle(Future.failedFuture(new JsonObject()
-                                      .put(Constants.ERROR, "Binding Failed").toString()));
+                                  handler.handle(Future.failedFuture(
+                                      new JsonObject().put(ERROR, "Binding Failed").toString()));
                                 }
                               });
                             }
@@ -1124,11 +439,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                         }
                       } else {
                         logger.error("failed :: Invalid (or) NULL routingKey");
-                        Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
+                        Future<JsonObject> resultDeletequeue =
+                            rabbitMQStreamingClient.deleteQueue(requestjson, vhost);
                         resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                           if (resultHandlerDeletequeue.succeeded()) {
-                            handler.handle(Future.failedFuture(new JsonObject()
-                                .put(Constants.ERROR, "Invalid routingKey").toString()));
+                            handler.handle(Future.failedFuture(
+                                new JsonObject().put(ERROR, "Invalid routingKey").toString()));
                           }
                         });
                       }
@@ -1148,8 +464,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       });
     } else {
       logger.error("Error in payload");
-      handler.handle(Future
-          .failedFuture(new JsonObject().put(Constants.ERROR, "Error in payload").toString()));
+      handler
+          .handle(Future.failedFuture(new JsonObject().put(ERROR, "Error in payload").toString()));
     }
 
     return this;
@@ -1162,28 +478,27 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService appendStreamingSubscription(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
-
     JsonObject appendStreamingSubscriptionResponse = new JsonObject();
     JsonObject requestjson = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      JsonArray entitites = request.getJsonArray(Constants.ENTITIES);
+      JsonArray entitites = request.getJsonArray(ENTITIES);
       logger.info("Request Access for " + entitites);
       logger.info("No of bindings to do : " + entitites.size());
 
       totalBindCount = entitites.size();
       totalBindSuccess = 0;
 
-      String queueName = request.getString(Constants.SUBSCRIPTION_ID);
-      requestjson.put(Constants.QUEUE_NAME, queueName);
-      Future<JsonObject> result = listQueueSubscribers(requestjson);
+      String queueName = request.getString(SUBSCRIPTION_ID);
+      requestjson.put(QUEUE_NAME, queueName);
+      Future<JsonObject> result = rabbitMQStreamingClient.listQueueSubscribers(requestjson, vhost);
       result.onComplete(resultHandlerqueue -> {
         if (resultHandlerqueue.succeeded()) {
           JsonObject listQueueResponse = (JsonObject) resultHandlerqueue.result();
           logger.info(listQueueResponse);
-          if (listQueueResponse.containsKey(Constants.TITLE)
-              && listQueueResponse.getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
-            handler.handle(Future.failedFuture(
-                new JsonObject().put(Constants.ERROR, "Error in payload").toString()));
+          if (listQueueResponse.containsKey(TITLE)
+              && listQueueResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
+            handler.handle(
+                Future.failedFuture(new JsonObject().put(ERROR, "Error in payload").toString()));
           } else {
             for (Object currentEntity : entitites) {
               String routingKey = (String) currentEntity;
@@ -1193,8 +508,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                     || routingKey.split("/").length != 5) {
                   logger.error("failed :: Invalid (or) NULL routingKey");
 
-                  handler.handle(Future.failedFuture(
-                      new JsonObject().put(Constants.ERROR, "Invalid routingKey").toString()));
+                  handler.handle(Future
+                      .failedFuture(new JsonObject().put(ERROR, "Invalid routingKey").toString()));
 
                 } else {
 
@@ -1202,11 +517,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                   JsonArray array = new JsonArray();
                   array.add(currentEntity);
                   JsonObject json = new JsonObject();
-                  json.put(Constants.EXCHANGE_NAME, exchangeName);
-                  json.put(Constants.QUEUE_NAME, queueName);
-                  json.put(Constants.ENTITIES, array);
+                  json.put(EXCHANGE_NAME, exchangeName);
+                  json.put(QUEUE_NAME, queueName);
+                  json.put(ENTITIES, array);
 
-                  Future<JsonObject> resultbind = bindQueue(json);
+                  Future<JsonObject> resultbind = rabbitMQStreamingClient.bindQueue(json, vhost);
                   resultbind.onComplete(resultHandlerbind -> {
                     if (resultHandlerbind.succeeded()) {
                       // count++
@@ -1215,31 +530,31 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                           + resultHandlerbind.result());
 
                       JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
-                      if (bindResponse.containsKey(Constants.TITLE) && bindResponse
-                          .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+                      if (bindResponse.containsKey(TITLE)
+                          && bindResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
                         logger.error("failed ::" + resultHandlerbind.cause());
                         handler.handle(Future.failedFuture(
-                            new JsonObject().put(Constants.ERROR, "Binding Failed").toString()));
+                            new JsonObject().put(ERROR, "Binding Failed").toString()));
                       } else if (totalBindSuccess == totalBindCount) {
-                        appendStreamingSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
-                            queueName);
-                        appendStreamingSubscriptionResponse.put(Constants.ENTITIES, entitites);
+                        appendStreamingSubscriptionResponse.put(SUBSCRIPTION_ID, queueName);
+                        appendStreamingSubscriptionResponse.put(ENTITIES, entitites);
                         handler.handle(Future.succeededFuture(appendStreamingSubscriptionResponse));
                       }
                     } else if (resultHandlerbind.failed()) {
                       logger.error("failed ::" + resultHandlerbind.cause());
-                      handler.handle(Future.failedFuture(
-                          new JsonObject().put(Constants.ERROR, "Binding Failed").toString()));
+                      handler.handle(Future
+                          .failedFuture(new JsonObject().put(ERROR, "Binding Failed").toString()));
                     }
                   });
                 }
               } else {
                 logger.error("failed :: Invalid (or) NULL routingKey");
-                Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
+                Future<JsonObject> resultDeletequeue =
+                    rabbitMQStreamingClient.deleteQueue(requestjson, vhost);
                 resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                   if (resultHandlerDeletequeue.succeeded()) {
                     handler.handle(Future.failedFuture(
-                        new JsonObject().put(Constants.ERROR, "Invalid routingKey").toString()));
+                        new JsonObject().put(ERROR, "Invalid routingKey").toString()));
                   }
                 });
               }
@@ -1247,19 +562,19 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           }
         } else {
           logger.error("Error in payload");
-          handler.handle(Future
-              .failedFuture(new JsonObject().put(Constants.ERROR, "Error in payload").toString()));
+          handler.handle(
+              Future.failedFuture(new JsonObject().put(ERROR, "Error in payload").toString()));
         }
       });
     } else {
       logger.error("Error in payload");
-      handler.handle(Future
-          .failedFuture(new JsonObject().put(Constants.ERROR, "Error in payload").toString()));
+      handler
+          .handle(Future.failedFuture(new JsonObject().put(ERROR, "Error in payload").toString()));
     }
 
     return this;
   }
-  
+
   /**
    * {@inheritDoc}
    */
@@ -1267,31 +582,30 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService deleteStreamingSubscription(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
-
     JsonObject deleteStreamingSubscription = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      String queueName = request.getString(Constants.SUBSCRIPTION_ID);
+      String queueName = request.getString(SUBSCRIPTION_ID);
       JsonObject requestBody = new JsonObject();
-      requestBody.put(Constants.QUEUE_NAME, queueName);
-      Future<JsonObject> result = deleteQueue(requestBody);
+      requestBody.put(QUEUE_NAME, queueName);
+      Future<JsonObject> result = rabbitMQStreamingClient.deleteQueue(requestBody, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
 
           JsonObject deleteQueueResponse = (JsonObject) resultHandler.result();
 
-          if (deleteQueueResponse.containsKey(Constants.TITLE) && deleteQueueResponse
-              .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+          if (deleteQueueResponse.containsKey(TITLE)
+              && deleteQueueResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
             logger.info("failed :: Response is " + deleteQueueResponse);
             handler.handle(Future.failedFuture(deleteQueueResponse.toString()));
           } else {
-            deleteStreamingSubscription.put(Constants.SUBSCRIPTION_ID, queueName);
+            deleteStreamingSubscription.put(SUBSCRIPTION_ID, queueName);
             handler.handle(Future.succeededFuture(deleteStreamingSubscription));
           }
         }
         if (resultHandler.failed()) {
           logger.error("failed ::" + resultHandler.cause());
-          handler.handle(Future.failedFuture(
-              new JsonObject().put(Constants.ERROR, Constants.QUEUE_DELETE_ERROR).toString()));
+          handler.handle(
+              Future.failedFuture(new JsonObject().put(ERROR, QUEUE_DELETE_ERROR).toString()));
         }
       });
     }
@@ -1306,19 +620,17 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService listStreamingSubscription(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
- 
+
     if (request != null && !request.isEmpty()) {
-      String queueName = request.getString(Constants.SUBSCRIPTION_ID);
+      String queueName = request.getString(SUBSCRIPTION_ID);
       JsonObject requestBody = new JsonObject();
-      requestBody.put(Constants.QUEUE_NAME, queueName);
-      Future<JsonObject> result = listQueueSubscribers(requestBody);
+      requestBody.put(QUEUE_NAME, queueName);
+      Future<JsonObject> result = rabbitMQStreamingClient.listQueueSubscribers(requestBody, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
-
           JsonObject listQueueResponse = (JsonObject) resultHandler.result();
-
-          if (listQueueResponse.containsKey(Constants.TITLE) && listQueueResponse
-              .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+          if (listQueueResponse.containsKey(TITLE)
+              && listQueueResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
             logger.info("failed :: Response is " + listQueueResponse);
             handler.handle(Future.failedFuture(listQueueResponse.toString()));
           } else {
@@ -1328,13 +640,13 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error("failed ::" + resultHandler.cause());
-          handler.handle(Future.failedFuture(
-              new JsonObject().put(Constants.ERROR, Constants.QUEUE_LIST_ERROR).toString()));
+          handler.handle(
+              Future.failedFuture(new JsonObject().put(ERROR, QUEUE_LIST_ERROR).toString()));
         }
       });
     }
 
-    
+
     return this;
   }
 
@@ -1390,8 +702,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerService createExchange(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
-      // calls the common create exchange method
-      Future<JsonObject> result = rabbitMQClientImpl.createExchange(request, vhost);
+      Future<JsonObject> result = rabbitMQStreamingClient.createExchange(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));
@@ -1403,59 +714,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       });
     }
     return this;
-  }
-
-  /**
-   * The createExchange implements the create exchange.
-   * 
-   * @param request which is a Json object
-   * @return response which is a Future object of promise of Json type
-   **/
-  @Deprecated
-  Future<JsonObject> createExchange(JsonObject request) {
-    Promise<JsonObject> promise = Promise.promise();
-    JsonObject finalResponse = new JsonObject();
-    if (request != null && !request.isEmpty()) {
-
-      String exchangeName = request.getString("exchangeName");
-      url = "/api/exchanges/" + vhost + "/" + encodedValue(exchangeName);
-      JsonObject obj = new JsonObject();
-      obj.put(Constants.TYPE, Constants.EXCHANGE_TYPE);
-      obj.put(Constants.AUTO_DELETE, false);
-      obj.put(Constants.DURABLE, true);
-      HttpRequest<Buffer> webRequest = webClient.put(url).basicAuthentication(user, password);
-      webRequest.sendJsonObject(obj, ar -> {
-        if (ar.succeeded()) {
-          HttpResponse<Buffer> response = ar.result();
-          if (response != null && !response.equals(" ")) {
-            int status = response.statusCode();
-            if (status == HttpStatus.SC_CREATED) {
-              finalResponse.put(Constants.EXCHANGE, exchangeName);
-            } else if (status == HttpStatus.SC_NO_CONTENT) {
-              finalResponse.put(Constants.TYPE, status);
-              finalResponse.put(Constants.TITLE, Constants.FAILURE);
-              finalResponse.put(Constants.DETAIL, Constants.EXCHANGE_EXISTS);
-            } else if (status == HttpStatus.SC_BAD_REQUEST) {
-              finalResponse.put(Constants.TYPE, status);
-              finalResponse.put(Constants.TITLE, Constants.FAILURE);
-              finalResponse.put(Constants.DETAIL,
-                  Constants.EXCHANGE_EXISTS_WITH_DIFFERENT_PROPERTIES);
-            }
-
-            promise.complete(finalResponse);
-          }
-
-        } else {
-          logger.error("Creation of Exchange failed" + ar.cause());
-          finalResponse.put(Constants.ERROR, Constants.EXCHANGE_CREATE_ERROR);
-          promise.fail(finalResponse.toString());
-        }
-
-      });
-    }
-
-    return promise.future();
-
   }
 
   /**
@@ -1477,10 +735,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerService deleteExchange(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = rabbitMQClientImpl.deleteExchange(request, vhost);
+      Future<JsonObject> result = rabbitMQStreamingClient.deleteExchange(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
-
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
@@ -1490,47 +747,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       });
     }
     return null;
-  }
-
-  /**
-   * The deleteExchange implements the delete exchange operation.
-   * 
-   * @param request which is a Json object
-   * @return response which is a Future object of promise of Json type
-   */
-  @Deprecated
-  private Future<JsonObject> deleteExchange(JsonObject request) {
-    Promise<JsonObject> promise = Promise.promise();
-    JsonObject finalResponse = new JsonObject();
-    if (request != null && !request.isEmpty()) {
-
-      String exchangeName = request.getString("exchangeName");
-      url = "/api/exchanges/" + vhost + "/" + encodedValue(exchangeName);
-      HttpRequest<Buffer> webRequest = webClient.delete(url).basicAuthentication(user, password);
-      webRequest.send(ar -> {
-        if (ar.succeeded()) {
-          HttpResponse<Buffer> response = ar.result();
-          if (response != null && !response.equals(" ")) {
-            int status = response.statusCode();
-            if (status == HttpStatus.SC_NO_CONTENT) {
-              finalResponse.put(Constants.EXCHANGE, exchangeName);
-            } else if (status == HttpStatus.SC_NOT_FOUND) {
-              finalResponse.put(Constants.TYPE, status);
-              finalResponse.put(Constants.TITLE, Constants.FAILURE);
-              finalResponse.put(Constants.DETAIL, Constants.EXCHANGE_NOT_FOUND);
-            }
-          }
-          promise.complete(finalResponse);
-          logger.info(finalResponse);
-        } else {
-          logger.error("Deletion of Exchange failed" + ar.cause());
-          finalResponse.put(Constants.ERROR, Constants.EXCHANGE_DELETE_ERROR);
-          promise.fail(finalResponse.toString());
-        }
-      });
-    }
-    return promise.future();
-
   }
 
   /**
@@ -1541,10 +757,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerService listExchangeSubscribers(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = rabbitMQClientImpl.listExchangeSubscribers(request, vhost);
+      Future<JsonObject> result = rabbitMQStreamingClient.listExchangeSubscribers(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
-
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
@@ -1554,73 +769,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       });
     }
     return null;
-  }
-
-  /**
-   * The listExchangeSubscribers implements the list of bindings for an exchange
-   * (source).
-   * 
-   * @param request which is a Json object
-   * @return response which is a Future object of promise of Json type
-   */
-  @Deprecated
-  private Future<JsonObject> listExchangeSubscribers(JsonObject request) {
-    Promise<JsonObject> promise = Promise.promise();
-    JsonObject finalResponse = new JsonObject();
-    if (request != null && !request.isEmpty()) {
-
-      String exchangeName = request.getString("id");
-      // exchangeName = exchangeName.replace("/", "%2F");
-
-      url = "/api/exchanges/" + vhost + "/" + encodedValue(exchangeName) + "/bindings/source";
-      HttpRequest<Buffer> webRequest = webClient.get(url).basicAuthentication(user, password);
-      webRequest.send(ar -> {
-        if (ar.succeeded()) {
-          HttpResponse<Buffer> response = ar.result();
-          if (response != null && !response.equals(" ")) {
-            int status = response.statusCode();
-            if (status == HttpStatus.SC_OK) {
-              Buffer body = response.body();
-              if (body != null) {
-                JsonArray jsonBody = new JsonArray(body.toString());
-
-                jsonBody.forEach(current -> {
-                  JsonObject currentJson = new JsonObject(current.toString());
-                  String okey = currentJson.getString("destination");
-                  if (finalResponse.containsKey(okey)) {
-                    JsonArray obj = (JsonArray) finalResponse.getValue(okey);
-                    obj.add(currentJson.getString("routing_key"));
-                    finalResponse.put(okey, obj);
-                  } else {
-                    ArrayList<String> temp = new ArrayList<String>();
-                    temp.add(currentJson.getString("routing_key"));
-                    finalResponse.put(okey, temp);
-                  }
-                });
-                if (finalResponse.isEmpty()) {
-                  finalResponse.put(Constants.TYPE, HttpStatus.SC_NOT_FOUND);
-                  finalResponse.put(Constants.TITLE, Constants.FAILURE);
-                  finalResponse.put(Constants.DETAIL, Constants.EXCHANGE_NOT_FOUND);
-                }
-              }
-            } else if (status == HttpStatus.SC_NOT_FOUND) {
-              finalResponse.put(Constants.TYPE, status);
-              finalResponse.put(Constants.TITLE, Constants.FAILURE);
-              finalResponse.put(Constants.DETAIL, Constants.EXCHANGE_NOT_FOUND);
-            }
-          }
-          promise.complete(finalResponse);
-          logger.info(finalResponse);
-        } else {
-          logger.error("Listing of Exchange failed" + ar.cause());
-          finalResponse.put(Constants.ERROR, Constants.EXCHANGE_LIST_ERROR);
-          promise.fail(finalResponse.toString());
-        }
-      });
-    }
-
-    return promise.future();
-
   }
 
   /**
@@ -1631,10 +779,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerService createQueue(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = rabbitMQClientImpl.createQueue(request, vhost);
+      Future<JsonObject> result = rabbitMQStreamingClient.createQueue(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
-
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
@@ -1646,58 +793,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     return null;
   }
 
-  /**
-   * The createQueue implements the create queue operation.
-   * 
-   * @param request which is a Json object
-   * @return response which is a Future object of promise of Json type
-   */
-  @Deprecated
-  private Future<JsonObject> createQueue(JsonObject request) {
-    Promise<JsonObject> promise = Promise.promise();
-    JsonObject finalResponse = new JsonObject();
-    if (request != null && !request.isEmpty()) {
-
-      String queueName = request.getString("queueName");
-      url = "/api/queues/" + vhost + "/" + encodedValue(queueName);
-      JsonObject configProp = new JsonObject();
-      configProp.put(Constants.X_MESSAGE_TTL_NAME, Constants.X_MESSAGE_TTL_VALUE);
-      configProp.put(Constants.X_MAXLENGTH_NAME, Constants.X_MAXLENGTH_VALUE);
-      configProp.put(Constants.X_QUEUE_MODE_NAME, Constants.X_QUEUE_MODE_VALUE);
-      HttpRequest<Buffer> webRequest = webClient.put(url).basicAuthentication(user, password);
-      webRequest.sendJsonObject(configProp, ar -> {
-        if (ar.succeeded()) {
-          HttpResponse<Buffer> response = ar.result();
-          if (response != null && !response.equals(" ")) {
-
-            int status = response.statusCode();
-            if (status == HttpStatus.SC_CREATED) {
-              finalResponse.put(Constants.QUEUE, queueName);
-            } else if (status == HttpStatus.SC_NO_CONTENT) {
-              finalResponse.put(Constants.TYPE, status);
-              finalResponse.put(Constants.TITLE, Constants.FAILURE);
-              finalResponse.put(Constants.DETAIL, Constants.QUEUE_ALREADY_EXISTS);
-            } else if (status == HttpStatus.SC_BAD_REQUEST) {
-              finalResponse.put(Constants.TYPE, status);
-              finalResponse.put(Constants.TITLE, Constants.FAILURE);
-              finalResponse.put(Constants.DETAIL,
-                  Constants.QUEUE_ALREADY_EXISTS_WITH_DIFFERENT_PROPERTIES);
-            }
-          }
-          promise.complete(finalResponse);
-          logger.info(finalResponse);
-        } else {
-          logger.error("Creation of Queue failed" + ar.cause());
-          finalResponse.put(Constants.ERROR, Constants.QUEUE_CREATE_ERROR);
-          promise.fail(finalResponse.toString());
-        }
-
-      });
-    }
-
-    return promise.future();
-
-  }
 
   /**
    * {@inheritDoc}
@@ -1718,10 +813,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerService deleteQueue(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = rabbitMQClientImpl.deleteQueue(request, vhost);
+      Future<JsonObject> result = rabbitMQStreamingClient.deleteQueue(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
-
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
@@ -1731,47 +825,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       });
     }
     return null;
-  }
-
-  /**
-   * The deleteQueue implements the delete queue operation.
-   * 
-   * @param request which is a Json object
-   * @return response which is a Future object of promise of Json type
-   */
-  @Deprecated
-  private Future<JsonObject> deleteQueue(JsonObject request) {
-    Promise<JsonObject> promise = Promise.promise();
-    JsonObject finalResponse = new JsonObject();
-    if (request != null && !request.isEmpty()) {
-      String queueName = request.getString("queueName");
-      url = "/api/queues/" + vhost + "/" + encodedValue(queueName);
-
-      HttpRequest<Buffer> webRequest = webClient.delete(url).basicAuthentication(user, password);
-      webRequest.send(ar -> {
-        if (ar.succeeded()) {
-          HttpResponse<Buffer> response = ar.result();
-          if (response != null && !response.equals(" ")) {
-            int status = response.statusCode();
-
-            if (status == HttpStatus.SC_NO_CONTENT) {
-              finalResponse.put(Constants.QUEUE, queueName);
-            } else if (status == HttpStatus.SC_NOT_FOUND) {
-              finalResponse.put(Constants.TYPE, status);
-              finalResponse.put(Constants.TITLE, Constants.FAILURE);
-              finalResponse.put(Constants.DETAIL, Constants.QUEUE_DOES_NOT_EXISTS);
-            }
-          }
-          promise.complete(finalResponse);
-          logger.info(finalResponse);
-        } else {
-          logger.error("Deletion of Queue failed" + ar.cause());
-          finalResponse.put(Constants.ERROR, Constants.QUEUE_DELETE_ERROR);
-          promise.fail(finalResponse.toString());
-        }
-      });
-    }
-    return promise.future();
   }
 
   /**
@@ -1781,12 +834,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService bindQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
-
-      Future<JsonObject> result = rabbitMQClientImpl.bindQueue(request, vhost);
-
+      Future<JsonObject> result = rabbitMQStreamingClient.bindQueue(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
-
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
@@ -1797,61 +847,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     }
 
     return null;
-  }
-
-  /**
-   * The bindQueue implements the bind queue to exchange by routing key.
-   * 
-   * @param request which is a Json object
-   * @return response which is a Future object of promise of Json type
-   */
-  @Deprecated
-  private Future<JsonObject> bindQueue(JsonObject request) {
-    JsonObject finalResponse = new JsonObject();
-    JsonObject requestBody = new JsonObject();
-  
-    Promise<JsonObject> promise = Promise.promise();
-    if (request != null && !request.isEmpty()) {
-
-      String exchangeName = request.getString("exchangeName");
-      String queueName = request.getString("queueName");
-      JsonArray entities = request.getJsonArray("entities");
-      int arrayPos = entities.size() - 1;
-      String url = "/api/bindings/" + vhost + "/e/" + encodedValue(exchangeName) + "/q/"
-          + encodedValue(queueName);
-
-      for (Object rkey : entities) {
-        requestBody.put("routing_key", rkey.toString());
-        HttpRequest<Buffer> webRequest = webClient.post(url).basicAuthentication(user, password);
-        webRequest.sendJsonObject(requestBody, ar -> {
-          if (ar.succeeded()) {
-            HttpResponse<Buffer> response = ar.result();
-            if (response != null && !response.equals(" ")) {
-              int status = response.statusCode();
-              logger.info("Binding " + rkey.toString() + "Success. Status is " + status);
-              if (status == HttpStatus.SC_CREATED) {
-                finalResponse.put(Constants.EXCHANGE, exchangeName);
-                finalResponse.put(Constants.QUEUE, queueName);
-                finalResponse.put(Constants.ENTITIES, entities);
-              } else if (status == HttpStatus.SC_NOT_FOUND) {
-                finalResponse.put(Constants.TYPE, status);
-                finalResponse.put(Constants.TITLE, Constants.FAILURE);
-                finalResponse.put(Constants.DETAIL, Constants.QUEUE_EXCHANGE_NOT_FOUND);
-              }
-            }
-            if (rkey == entities.getValue(arrayPos)) {
-              promise.complete(finalResponse);
-            }
-          } else {
-            logger.error("Binding of Queue failed" + ar.cause());
-            finalResponse.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
-            promise.fail(finalResponse.toString());
-          }
-        });
-      }
-
-    }
-    return promise.future();
   }
 
   /**
@@ -1861,9 +856,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService unbindQueue(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
-
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = rabbitMQClientImpl.unbindQueue(request, vhost);
+      Future<JsonObject> result = rabbitMQStreamingClient.unbindQueue(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
 
@@ -1878,65 +872,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     }
 
     return null;
-  }
-
-  /**
-   * The unbindQueue implements the unbind queue to exchange by routing key.
-   * 
-   * @param request which is a Json object
-   * @return response which is a Future object of promise of Json type
-   */
-  @Deprecated
-  private Future<JsonObject> unbindQueue(JsonObject request) {
-    JsonObject finalResponse = new JsonObject();
-    Promise<JsonObject> promise = Promise.promise();
-    if (request != null && !request.isEmpty()) {
-
-      String exchangeName = request.getString("exchangeName");
-      String queueName = request.getString("queueName");
-      JsonArray entities = request.getJsonArray("entities");
-      int arrayPos = entities.size() - 1;
-      for (Object rkey : entities) {
-
-        url = "/api/bindings/" + vhost + "/e/" + encodedValue(exchangeName) + "/q/"
-            + encodedValue(queueName) + "/" + encodedValue((String) rkey);
-        
-        HttpRequest<Buffer> webRequest = webClient.delete(url).basicAuthentication(user, password);
-        webRequest.send(ar -> {
-
-          if (ar.succeeded()) {
-            HttpResponse<Buffer> response = ar.result();
-            if (response != null && !response.equals(" ")) {
-              int status = response.statusCode();
-
-              if (status == HttpStatus.SC_NO_CONTENT) {
-                finalResponse.put(Constants.EXCHANGE, exchangeName);
-                finalResponse.put(Constants.QUEUE, queueName);
-                finalResponse.put(Constants.ENTITIES, entities);
-              } else if (status == HttpStatus.SC_NOT_FOUND) {
-                finalResponse.put(Constants.TYPE, status);
-                finalResponse.put(Constants.TITLE, Constants.FAILURE);
-                finalResponse.put(Constants.DETAIL, Constants.ALL_NOT_FOUND);
-              }
-            }
-
-            if (rkey == entities.getValue(arrayPos)) {
-
-              promise.complete(finalResponse);
-            }
-            /*
-             * else { responseArray.add(reponse); }
-             */
-          } else {
-            logger.error("Unbinding of Queue failed" + ar.cause());
-            finalResponse.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
-            promise.fail(finalResponse.toString());
-          }
-        });
-      }
-    }
-
-    return promise.future();
   }
 
   /**
@@ -1947,12 +882,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerService createvHost(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
-
-      Future<JsonObject> result = rabbitMQClientImpl.createvHost(request);
-
+      Future<JsonObject> result = rabbitMQStreamingClient.createvHost(request);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
-
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
@@ -1963,47 +895,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     }
 
     return null;
-  }
-
-  /**
-   * The createvHost implements the create virtual host operation.
-   * 
-   * @param request which is a Json object
-   * @return response which is a Future object of promise of Json type
-   */
-  @Deprecated
-  private Future<JsonObject> createvHost(JsonObject request) {
-    JsonObject finalResponse = new JsonObject();
-    Promise<JsonObject> promise = Promise.promise();
-    if (request != null && !request.isEmpty()) {
-
-      String vhost = request.getString("vHost");
-      url = "/api/vhosts/" + encodedValue(vhost);
-
-      HttpRequest<Buffer> webRequest = webClient.put(url).basicAuthentication(user, password);
-      webRequest.send(ar -> {
-        if (ar.succeeded()) {
-          HttpResponse<Buffer> response = ar.result();
-          if (response != null && !response.equals(" ")) {
-            int status = response.statusCode();
-            if (status == HttpStatus.SC_CREATED) {
-              finalResponse.put(Constants.VHOST, vhost);
-            } else if (status == HttpStatus.SC_NO_CONTENT) {
-              finalResponse.put(Constants.TYPE, status);
-              finalResponse.put(Constants.TITLE, Constants.FAILURE);
-              finalResponse.put(Constants.DETAIL, Constants.VHOST_ALREADY_EXISTS);
-            }
-          }
-          promise.complete(finalResponse);
-          logger.info(finalResponse);
-        } else {
-          logger.error("Creation of vHost failed" + ar.cause());
-          finalResponse.put(Constants.ERROR, Constants.VHOST_CREATE_ERROR);
-          promise.fail(finalResponse.toString());
-        }
-      });
-    }
-    return promise.future();
   }
 
   /**
@@ -2025,12 +916,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerService deletevHost(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
-
-      Future<JsonObject> result = rabbitMQClientImpl.deletevHost(request);
-
+      Future<JsonObject> result = rabbitMQStreamingClient.deletevHost(request);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
-
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
@@ -2041,49 +929,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     }
 
     return null;
-  }
-
-  /**
-   * The deletevHost implements the delete virtual host operation.
-   * 
-   * @param request which is a Json object
-   * @return response which is a Future object of promise of Json type
-   */
-  @Deprecated
-  private Future<JsonObject> deletevHost(JsonObject request) {
-    JsonObject finalResponse = new JsonObject();
-    Promise<JsonObject> promise = Promise.promise();
-    if (request != null && !request.isEmpty()) {
-
-      String vhost = request.getString("vHost");
-      url = "/api/vhosts/" + encodedValue(vhost);
-      HttpRequest<Buffer> webRequest = webClient.delete(url).basicAuthentication(user, password);
-      webRequest.send(ar -> {
-
-        if (ar.succeeded()) {
-          HttpResponse<Buffer> response = ar.result();
-          if (response != null && !response.equals(" ")) {
-            int status = response.statusCode();
-
-            if (status == HttpStatus.SC_NO_CONTENT) {
-              finalResponse.put(Constants.VHOST, vhost);
-            } else if (status == HttpStatus.SC_NOT_FOUND) {
-              finalResponse.put(Constants.TYPE, status);
-              finalResponse.put(Constants.TITLE, Constants.FAILURE);
-              finalResponse.put(Constants.DETAIL, Constants.VHOST_NOT_FOUND);
-            }
-          }
-          promise.complete(finalResponse);
-          logger.info(finalResponse);
-        } else {
-          logger.error("Deletion of vHost failed" + ar.cause());
-          finalResponse.put(Constants.ERROR, Constants.VHOST_DELETE_ERROR);
-          promise.fail(finalResponse.toString());
-        }
-      });
-    }
-
-    return promise.future();
   }
 
   /**
@@ -2093,10 +938,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService listvHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     if (request != null) {
-      Future<JsonObject> result = rabbitMQClientImpl.listvHost(request);
+      Future<JsonObject> result = rabbitMQStreamingClient.listvHost(request);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
-
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
@@ -2106,62 +950,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       });
     }
     return null;
-  }
-
-  /**
-   * The listvHost implements the list of virtual hosts .
-   * 
-   * @param request which is a Json object
-   * @return response which is a Future object of promise of Json type
-   */
-  @Deprecated
-  private Future<JsonObject> listvHost(JsonObject request) {
-    JsonObject finalResponse = new JsonObject();
-    Promise<JsonObject> promise = Promise.promise();
-    if (request != null) {
-      JsonArray vhostList = new JsonArray();
-      url = "/api/vhosts";
-
-      HttpRequest<Buffer> webRequest = webClient.get(url).basicAuthentication(user, password);
-      webRequest.send(ar -> {
-        if (ar.succeeded()) {
-          HttpResponse<Buffer> response = ar.result();
-          if (response != null && !response.equals(" ")) {
-            int status = response.statusCode();
-
-            if (status == HttpStatus.SC_OK) {
-              Buffer body = response.body();
-
-              if (body != null) {
-                JsonArray jsonBody = new JsonArray(body.toString());
-                jsonBody.forEach(current -> {
-                  JsonObject currentJson = new JsonObject(current.toString());
-                  String vhostName = currentJson.getString("name");
-
-                  vhostList.add(vhostName);
-
-                });
-                if (vhostList != null && !vhostList.isEmpty()) {
-                  finalResponse.put(Constants.VHOST, vhostList);
-                }
-              }
-            } else if (status == HttpStatus.SC_NOT_FOUND) {
-              finalResponse.put(Constants.TYPE, status);
-              finalResponse.put(Constants.TITLE, Constants.FAILURE);
-              finalResponse.put(Constants.DETAIL, Constants.VHOST_NOT_FOUND);
-            }
-          }
-          promise.complete(finalResponse);
-          logger.info(finalResponse);
-        } else {
-          logger.error("Listing of vHost failed" + ar.cause());
-          finalResponse.put(Constants.ERROR, Constants.VHOST_LIST_ERROR);
-          promise.fail(finalResponse.toString());
-        }
-      });
-    }
-    return promise.future();
-
   }
 
   /**
@@ -2183,12 +971,10 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService listQueueSubscribers(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
-
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = listQueueSubscribers(request);
+      Future<JsonObject> result = rabbitMQStreamingClient.listQueueSubscribers(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
-
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
@@ -2200,62 +986,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     return null;
   }
 
-  /**
-   * The listQueueSubscribers implements the list of bindings for a queue.
-   * 
-   * @param request which is a Json object
-   * @return response which is a Future object of promise of Json type
-   */
-  private Future<JsonObject> listQueueSubscribers(JsonObject request) {
-    JsonObject finalResponse = new JsonObject();
-    Promise<JsonObject> promise = Promise.promise();
-    if (request != null && !request.isEmpty()) {
 
-      String queueName = request.getString("queueName");
-      JsonArray oroutingKeys = new JsonArray();
-      url = "/api/queues/" + vhost + "/" + encodedValue(queueName) + "/bindings";
-      HttpRequest<Buffer> webRequest = webClient.get(url).basicAuthentication(user, password);
-      webRequest.send(ar -> {
-        if (ar.succeeded()) {
-          HttpResponse<Buffer> response = ar.result();
-          if (response != null && !response.equals(" ")) {
-            int status = response.statusCode();
-            if (status == HttpStatus.SC_OK) {
-              Buffer body = response.body();
-              if (body != null) {
-                JsonArray jsonBody = new JsonArray(body.toString());
-                jsonBody.forEach(current -> {
-                  JsonObject currentJson = new JsonObject(current.toString());
-                  String rkeys = currentJson.getString("routing_key");
-                  if (rkeys != null && !rkeys.equalsIgnoreCase(queueName)) {
-                    oroutingKeys.add(rkeys);
-                  }
-                });
-                if (oroutingKeys != null && !oroutingKeys.isEmpty()) {
-                  finalResponse.put(Constants.ENTITIES, oroutingKeys);
-                } else {
-                  finalResponse.put(Constants.TYPE, HttpStatus.SC_NOT_FOUND);
-                  finalResponse.put(Constants.TITLE, Constants.FAILURE);
-                  finalResponse.put(Constants.DETAIL, Constants.QUEUE_DOES_NOT_EXISTS);
-                }
-              }
-            } else if (status == HttpStatus.SC_NOT_FOUND) {
-              finalResponse.put(Constants.TYPE, status);
-              finalResponse.put(Constants.TITLE, Constants.FAILURE);
-              finalResponse.put(Constants.DETAIL, Constants.QUEUE_DOES_NOT_EXISTS);
-            }
-          }
-          promise.complete(finalResponse);
-          logger.info(finalResponse);
-        } else {
-          logger.error("Listing of Queue failed" + ar.cause());
-          finalResponse.put(Constants.ERROR, Constants.QUEUE_LIST_ERROR);
-          promise.fail(finalResponse.toString());
-        }
-      });
-    }
-    return promise.future();
-  }
 
   /**
    * {@inheritDoc}
@@ -2272,14 +1003,13 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       String routingKey = resourceGroupId;
       if (resourceGroupId != null && !resourceGroupId.isBlank()) {
         resourceGroupId = resourceGroupId.substring(0, resourceGroupId.lastIndexOf("/"));
-
         client.basicPublish(resourceGroupId, routingKey, json, resultHandler -> {
           if (resultHandler.succeeded()) {
-            finalResponse.put(Constants.STATUS, HttpStatus.SC_OK);
+            finalResponse.put(STATUS, HttpStatus.SC_OK);
             handler.handle(Future.succeededFuture(finalResponse));
             logger.info("Message published to queue");
           } else {
-            finalResponse.put(Constants.TYPE, HttpStatus.SC_BAD_REQUEST);
+            finalResponse.put(TYPE, HttpStatus.SC_BAD_REQUEST);
             logger.error("Message publishing failed");
             resultHandler.cause().printStackTrace();
             handler.handle(Future.failedFuture(resultHandler.result().toString()));
@@ -2299,12 +1029,14 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       String routingKey = request.getString("status");
       if (adaptor != null && !adaptor.isEmpty() && routingKey != null && !routingKey.isEmpty()) {
         JsonObject json = new JsonObject();
-        Future<JsonObject> future1 = getExchange(json.put("id", adaptor));
+        Future<JsonObject> future1 =
+            rabbitMQStreamingClient.getExchange(json.put("id", adaptor), vhost);
         future1.onComplete(ar -> {
           if (ar.result().getInteger("type") == HttpStatus.SC_OK) {
             json.put("exchangeName", adaptor);
             // exchange found, now get list of all queues which are bound with this exchange
-            Future<JsonObject> future2 = listExchangeSubscribers(json);
+            Future<JsonObject> future2 =
+                rabbitMQStreamingClient.listExchangeSubscribers(json, vhost);
             future2.onComplete(rh -> {
               JsonObject queueList = rh.result();
               if (queueList != null && queueList.size() > 0) {

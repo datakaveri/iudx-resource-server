@@ -59,7 +59,9 @@ public class DataBrokerVerticle extends AbstractVerticle {
   private WebClient webClient;
   private WebClientOptions webConfig;
 
-  private RabbitMQClientImpl rabbitMQClientImpl;
+  private RabbitMQStreamingClient rabbitMQStreamingClient;
+  private RabbitMQWebClient rabbitMQWebClient;
+  private PostgresQLClient pgClient;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
@@ -135,11 +137,11 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
         /* Create a RabbitMQ Clinet with the configuration and vertx cluster instance. */
 
-        client = RabbitMQClient.create(vertx, config);
+        // client = RabbitMQClient.create(vertx, config);
 
         /* Create a Vertx Web Client with the configuration and vertx cluster instance. */
 
-        webClient = WebClient.create(vertx, webConfig);
+        // webClient = WebClient.create(vertx, webConfig);
 
         /* Create a Json Object for properties */
 
@@ -153,8 +155,15 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
         // databroker = new DataBrokerServiceImpl(client, webClient, propObj);
 
-        rabbitMQClientImpl = new RabbitMQClientImpl(vertx, config, webConfig, propObj);
-        databroker = new DataBrokerServiceImpl(rabbitMQClientImpl, propObj);
+        // rabbitMQClientImpl = new RabbitMQClientImpl(vertx, config, webConfig, propObj);
+        // databroker = new DataBrokerServiceImpl(rabbitMQClientImpl, propObj);
+
+        rabbitMQWebClient = new RabbitMQWebClient(vertx, webConfig, propObj);
+        rabbitMQStreamingClient =
+            new RabbitMQStreamingClient(vertx, config, rabbitMQWebClient);
+        pgClient = new PostgresQLClient();
+        databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, dataBrokerVhost);
+
 
         /* Publish the Data Broker service with the Event Bus against an address. */
 
