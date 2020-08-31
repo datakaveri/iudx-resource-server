@@ -67,6 +67,10 @@ public class AdaptorEntitiesTestCases {
   private static PoolOptions poolOptions;
   private static PgPool pgclient;
 
+  private static RabbitMQStreamingClient rabbitMQStreamingClient;
+  private static RabbitMQWebClient rabbitMQWebClient;
+  private static PostgresQLClient pgClient;
+
   private static final Logger logger = LoggerFactory.getLogger(AdaptorEntitiesTestCases.class);
 
   @BeforeAll
@@ -163,7 +167,11 @@ public class AdaptorEntitiesTestCases {
     
     /* Call the databroker constructor with the RabbitMQ client Vertx web client. */
 
-    databroker = new DataBrokerServiceImpl(client, webClient, propObj, pgclient);
+
+    rabbitMQWebClient = new RabbitMQWebClient(vertx, webConfig, propObj);
+    rabbitMQStreamingClient = new RabbitMQStreamingClient(vertx, config, rabbitMQWebClient);
+    pgClient = new PostgresQLClient();
+    databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, dataBrokerVhost);
     
     resourceGroup = UUID.randomUUID().toString();
     resourceServer = UUID.randomUUID().toString();
