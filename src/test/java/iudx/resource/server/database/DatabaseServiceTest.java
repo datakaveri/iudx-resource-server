@@ -16,8 +16,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-import org.apache.http.HttpHost;
-import org.elasticsearch.client.RestClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -31,7 +29,7 @@ public class DatabaseServiceTest {
   private static Logger logger = LoggerFactory.getLogger(DatabaseServiceTest.class);
   private static DatabaseService dbService;
   private static Vertx vertxObj;
-  private static RestClient client;
+  private static ElasticClient client;
   private static Properties properties;
   private static InputStream inputstream;
   private static String databaseIP;
@@ -62,7 +60,7 @@ public class DatabaseServiceTest {
     }
 
     // TODO : Need to enable TLS using xpack security
-    client = RestClient.builder(new HttpHost(databaseIP, databasePort, "http")).build();
+    client = new ElasticClient(databaseIP, databasePort);
     dbService = new DatabaseServiceImpl(client);
     testContext.completeNow();
     
