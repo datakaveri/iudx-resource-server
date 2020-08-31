@@ -134,7 +134,7 @@ public class QueryDecoder {
       String rangeTimeQuery = "";
       if (DURING.equalsIgnoreCase(timeRelation)) {
         String endTime = request.getString(END_TIME);
-        String endTemp = "\",\"lte\":" + endTime;
+        String endTemp = "\",\"lte\":" + "\"" + endTime + "\"";
         rangeTimeQuery =
             TIME_QUERY.replace("$1", GREATER_THAN_EQ).replace("$2\"", time.concat(endTemp));
 
