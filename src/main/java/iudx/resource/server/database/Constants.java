@@ -20,12 +20,14 @@ public class Constants {
   static final String BOOL_KEY = "bool";
   static final String VARANASI_TEST_SEARCH_INDEX = "varanasi/_search";
   static final String VARANASI_TEST_COUNT_INDEX = "varanasi/_count";
+  static final String VARANASI_LATEST_RESOURCE_INDEX = "varanasi-latest/_mget";
   static final String SOURCE_FILTER_KEY = "_source";
   static final String RANGE_KEY = "range";
   static final String TERM_KEY = "term";
   static final String TERMS_KEY = "terms";
   static final String FILTER_PATH = "filter_path";
   static final String FILTER_PATH_VAL = "took,hits.hits._source";
+  static final String FILTER_PATH_VAL_LATEST = "docs._source";
   static final String SIZE_KEY = "size";
   static final String GREATER_THAN = "gt";
   static final String LESS_THAN = "lt";
@@ -37,6 +39,8 @@ public class Constants {
   static final String SEARCH_KEY = "search";
   static final String ERROR = "Error";
   static final String COUNT = "count";
+  static final String DOC_ID = "_id";
+  static final String DOCS_KEY = "docs";
   /* Request Params */
   /* Temporal */
   static final String REQ_TIMEREL = "timerel";
@@ -92,6 +96,7 @@ public class Constants {
   static final String RESPONSE_FILTER_REGEX = "(.*)responseFilter(.*)";
   public static final String ATTRIBUTE_SEARCH_REGEX = "(.*)attributeSearch(.*)";
   public static final String TEMPORAL_SEARCH_REGEX = "(.*)temporalSearch(.*)";
+  static final String LATEST_SEARCH = "latestSearch";
   /* Query templates */
   static final String GEO_SHAPE_QUERY =
       "{ \"geo_shape\": { \"$4\": { \"shape\": { \"type\": \"$1\", \"coordinates\": $2 },"

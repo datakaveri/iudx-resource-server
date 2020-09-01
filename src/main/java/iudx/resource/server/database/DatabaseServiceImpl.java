@@ -7,7 +7,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import static iudx.resource.server.database.Constants.*;
 
 /**
@@ -84,17 +83,30 @@ public class DatabaseServiceImpl implements DatabaseService {
       return null;
     }
 
-    LOGGER.debug("Info: Query constructed: " + query.toString());
-
-    client.searchAsync(VARANASI_TEST_SEARCH_INDEX, query.toString(), searchRes -> {
-      if (searchRes.succeeded()) {
-        LOGGER.debug("Success: Successful DB request");
-        handler.handle(Future.succeededFuture(searchRes.result()));
-      } else {
-        LOGGER.error("Fail: DB Request;" + searchRes.cause().getMessage());
-        handler.handle(Future.failedFuture(searchRes.cause().getMessage()));
-      }
-    });
+    LOGGER.info("Info: Query constructed: " + query.toString());
+    if (LATEST_SEARCH.equalsIgnoreCase(request.getString(SEARCH_TYPE))) {
+      client.searchAsync(VARANASI_LATEST_RESOURCE_INDEX, FILTER_PATH_VAL_LATEST, query.toString(),
+          searchRes -> {
+            if (searchRes.succeeded()) {
+              LOGGER.debug("Success: Successful DB request");
+              handler.handle(Future.succeededFuture(searchRes.result()));
+            } else {
+              LOGGER.error("Fail: DB Request;" + searchRes.cause().getMessage());
+              handler.handle(Future.failedFuture(searchRes.cause().getMessage()));
+            }
+          });
+    } else {
+      client.searchAsync(VARANASI_TEST_SEARCH_INDEX, FILTER_PATH_VAL, query.toString(),
+          searchRes -> {
+          if (searchRes.succeeded()) {
+            LOGGER.debug("Success: Successful DB request");
+            handler.handle(Future.succeededFuture(searchRes.result()));
+          } else {
+            LOGGER.error("Fail: DB Request;" + searchRes.cause().getMessage());
+            handler.handle(Future.failedFuture(searchRes.cause().getMessage()));
+          }
+        });
+    }
     return this;
   }
 

@@ -9,12 +9,6 @@ import io.vertx.serviceproxy.ServiceBinder;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.elasticsearch.client.RestClient;
 
 /**
  * The Database Verticle.
@@ -73,7 +67,7 @@ public class DatabaseVerticle extends AbstractVerticle {
 
     }
 
-    client = new ElasticClient(databaseIP, databasePort);    
+    client = new ElasticClient(databaseIP, databasePort, user, password);    
     database = new DatabaseServiceImpl(client);
 
     new ServiceBinder(vertx).setAddress(DATABASE_SERVICE_ADDRESS)

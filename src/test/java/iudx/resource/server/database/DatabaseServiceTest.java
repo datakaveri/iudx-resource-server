@@ -63,7 +63,7 @@ public class DatabaseServiceTest {
 
     // TODO : Need to enable TLS using xpack security
 
-    client = new ElasticClient(databaseIP, databasePort);
+    client = new ElasticClient(databaseIP, databasePort, user, password);
     dbService = new DatabaseServiceImpl(client);
     testContext.completeNow();
     
@@ -286,8 +286,7 @@ public class DatabaseServiceTest {
                 new JsonArray().add(
                     "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
             .put("searchType", "responseFilter_")
-            .put("attrs", new JsonArray().add("resource-id").add("latitude").add("longitude"))
-            ;
+            .put("attrs", new JsonArray().add("resource-id").add("latitude").add("longitude"));
     Set<String> attrs = new HashSet<>();
     attrs.add("resource-id");
     attrs.add("latitude");
@@ -727,6 +726,58 @@ public class DatabaseServiceTest {
       assertTrue(response.getJsonObject(4).getDouble("CO2") != 500);
       testContext.completeNow();
     })));
+  }
+
+  @Test
+  @DisplayName("Testing Latest Search")
+  void latestSearch (VertxTestContext testContext){
+    JsonObject request = new JsonObject().put("id", new JsonArray()
+        .add("rs.varanasi.iudx.org.in/varanasi-swm-bins/783")
+        .add("rs.varanasi.iudx.org.in/varanasi-swm-bins/1286")
+        .add("rs.varanasi.iudx.org.in/varanasi-swm-bins/234")
+        .add("rs.varanasi.iudx.org.in/varanasi-swm-bins/693")).put("searchType","latestSearch");
+    JsonArray id = request.getJsonArray("id");
+    JsonArray idFromResponse = new JsonArray();
+    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
+        for (Object o : response) {
+          JsonObject doc = (JsonObject) o;
+          idFromResponse.add(doc.getString("resource-id"));
+        }
+        assertEquals(id, idFromResponse);
+        testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing Latest Search with Response Filter")
+  void latestSearchFiltered (VertxTestContext testContext) {
+    JsonObject request = new JsonObject().put("id", new JsonArray()
+        .add("rs.varanasi.iudx.org.in/varanasi-swm-bins/783")
+        .add("rs.varanasi.iudx.org.in/varanasi-swm-bins/1286")
+        .add("rs.varanasi.iudx.org.in/varanasi-swm-bins/234")
+        .add("rs.varanasi.iudx.org.in/varanasi-swm-bins/693")).put("searchType","latestSearch")
+        .put("attrs", new JsonArray().add("resource-id").add("time"));
+    Set<String> attrs = new HashSet<>();
+    attrs.add("resource-id");
+    attrs.add("time");
+    JsonArray id = request.getJsonArray("id");
+    JsonArray idFromResponse = new JsonArray();
+    dbService.searchQuery(request, testContext.succeeding(response -> {
+      Set<String> resAttrs = new HashSet<>();
+      for (Object obj : response) {
+        JsonObject jsonObj = (JsonObject) obj;
+        idFromResponse.add(jsonObj.getString("resource-id"));
+        if (resAttrs != attrs) {
+          resAttrs = jsonObj.fieldNames();
+        }
+      }
+      Set<String> finalResAttrs = resAttrs;
+      testContext.verify(() -> {
+        assertEquals(id, idFromResponse);
+        assertEquals(attrs, finalResAttrs);
+        testContext.completeNow();
+      });
+    }));
   }
 }
 
