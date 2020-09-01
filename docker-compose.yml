@@ -1,0 +1,56 @@
+version: '3'
+
+networks:
+  rs-net:
+    driver: bridge
+
+services:
+
+  server:
+    image: iudx/rs-all:latest
+    environment:
+      - HOSTNAME=server
+      - ZOOKEEPER=zookeeper
+      - RS_URL=https://rs.iudx.org.in
+    volumes:
+      - ./config.properties:/usr/share/app/config.properties
+      - ./keystore.jks:/usr/share/app/keystore.jks
+    depends_on:
+      - "zookeeper"
+    ports:
+      - "8443:8443"
+      - "9000:9000"
+    restart: on-failure
+    networks: 
+      - rs-net
+    logging:
+         driver: "json-file"
+         options:
+             max-file: "5"
+             max-size: "100m"
+
+  dev:
+    image: iudx/rs-dev:latest
+    environment:
+      - RS_URL=https://rs.iudx.org.in
+    volumes:
+      - ./config.properties:/usr/share/app/config.properties
+      - ./keystore.jks:/usr/share/app/keystore.jks
+    ports:
+      - "8443:8443"
+      - "9000:9000"
+    restart: on-failure
+    networks: 
+      - rs-net
+    logging:
+         driver: "json-file"
+         options:
+             max-file: "5"
+             max-size: "100m"
+
+  zookeeper:
+    image: zookeeper:latest
+    expose: 
+      - "2181"
+    networks:
+      - rs-net

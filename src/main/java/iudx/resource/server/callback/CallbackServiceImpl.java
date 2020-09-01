@@ -8,8 +8,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
@@ -36,7 +36,7 @@ import org.apache.http.HttpStatus;
  */
 public class CallbackServiceImpl implements CallbackService {
 
-  private static final Logger logger = LoggerFactory.getLogger(CallbackServiceImpl.class);
+  private static final Logger LOGGER = LogManager.getLogger(CallbackServiceImpl.class);
   private RabbitMQClient client;
   private WebClient webClient;
   private Vertx vertx;
@@ -64,7 +64,7 @@ public class CallbackServiceImpl implements CallbackService {
   public CallbackServiceImpl(RabbitMQClient clientInstance, WebClient webClientInstance,
       JsonObject propObj, Vertx vertxInstance) {
 
-    logger.info("Got the RabbitMQ Client instance");
+    LOGGER.info("Got the RabbitMQ Client instance");
     client = clientInstance;
 
     JsonObject reqNotification = new JsonObject();
@@ -98,7 +98,7 @@ public class CallbackServiceImpl implements CallbackService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("connectToCallbackNotificationQueue resultHandler failed : "
+          LOGGER.error("connectToCallbackNotificationQueue resultHandler failed : "
               + resultHandler.cause().getMessage().toString());
           handler.handle(Future.failedFuture(resultHandler.cause().getMessage().toString()));
         }
@@ -137,12 +137,12 @@ public class CallbackServiceImpl implements CallbackService {
           /* Create a stream of messages from a queue */
           client.basicConsumer(queueName, options, rabbitMQConsumerAsyncResult -> {
             if (rabbitMQConsumerAsyncResult.succeeded()) {
-              logger.info(Constants.RABBITMQ_CONSUMER_CREATED);
+              LOGGER.info(Constants.RABBITMQ_CONSUMER_CREATED);
               RabbitMQConsumer mqConsumer = rabbitMQConsumerAsyncResult.result();
               mqConsumer.handler(message -> {
                 /* Message from Queue */
                 Buffer body = message.body();
-                logger.info(Constants.MESSAGE + Constants.COLON + message.body());
+                LOGGER.info(Constants.MESSAGE + Constants.COLON + message.body());
                 if (body != null) {
                   JsonObject currentBodyJsonObj = null;
                   String operation = null;
@@ -150,7 +150,7 @@ public class CallbackServiceImpl implements CallbackService {
                     /* Convert message body to JsonObject */
                     currentBodyJsonObj = new JsonObject(body.toString());
                   } catch (Exception e) {
-                    logger.info(Constants.JSON_PARSE_EXCEPTION + e.getCause());
+                    LOGGER.info(Constants.JSON_PARSE_EXCEPTION + e.getCause());
                     finalResponse.put(Constants.MESSAGE, Constants.JSON_PARSE_EXCEPTION);
                     promise.fail(finalResponse.toString());
                   }
@@ -171,11 +171,11 @@ public class CallbackServiceImpl implements CallbackService {
                       Future<JsonObject> result = queryCallBackDataBase(requestObj);
                       result.onComplete(resultHandler -> {
                         if (resultHandler.succeeded()) {
-                          logger.info(Constants.DATABASE_QUERY_RESULT + resultHandler.result());
+                          LOGGER.info(Constants.DATABASE_QUERY_RESULT + resultHandler.result());
                           finalResponse.put(Constants.DATABASE_QUERY_RESULT,
                               Constants.CACHE_UPDATE_SUCCESS);
                         } else {
-                          logger.error(Constants.DATABASE_QUERY_RESULT + Constants.COLON
+                          LOGGER.error(Constants.DATABASE_QUERY_RESULT + Constants.COLON
                               + resultHandler.cause());
                           finalResponse.put(Constants.DATABASE_QUERY_RESULT,
                               Constants.DATABASE_QUERY_FAIL);
@@ -183,31 +183,31 @@ public class CallbackServiceImpl implements CallbackService {
                         }
                       });
                     } else {
-                      logger.info(Constants.DATABASE_OPERATION_INVALID);
+                      LOGGER.info(Constants.DATABASE_OPERATION_INVALID);
                       finalResponse.put(Constants.ERROR, Constants.DATABASE_OPERATION_INVALID);
                       promise.fail(finalResponse.toString());
                     }
                   } else {
-                    logger.info(Constants.DATABASE_OPERATION_NOT_FOUND);
+                    LOGGER.info(Constants.DATABASE_OPERATION_NOT_FOUND);
                     finalResponse.put(Constants.ERROR, Constants.DATABASE_OPERATION_NOT_FOUND);
                     promise.fail(finalResponse.toString());
                   }
                 }
               });
-              logger.info(Constants.QUEUE_EMPTY);
+              LOGGER.info(Constants.QUEUE_EMPTY);
               finalResponse.put(Constants.DATABASE_QUERY_RESULT,
                   Constants.CONNECT_TO_CALLBACK_NOTIFICATION_QUEUE);
               promise.complete(finalResponse);
             } else {
-              logger.error(Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON + queueName);
-              logger.error(Constants.ERROR + rabbitMQConsumerAsyncResult.cause());
+              LOGGER.error(Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON + queueName);
+              LOGGER.error(Constants.ERROR + rabbitMQConsumerAsyncResult.cause());
               finalResponse.put(Constants.ERROR,
                   Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON + queueName);
               promise.fail(finalResponse.toString());
             }
           });
         } else {
-          logger.error(Constants.QUEUE_CONNECTION_FAIL + Constants.COLON + queueName);
+          LOGGER.error(Constants.QUEUE_CONNECTION_FAIL + Constants.COLON + queueName);
           finalResponse.put(Constants.ERROR,
               Constants.QUEUE_CONNECTION_FAIL + Constants.COLON + queueName);
           promise.fail(finalResponse.toString());
@@ -227,7 +227,7 @@ public class CallbackServiceImpl implements CallbackService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("connectToCallbackDataQueue resultHandler failed : "
+          LOGGER.error("connectToCallbackDataQueue resultHandler failed : "
               + resultHandler.cause().getMessage().toString());
           handler.handle(Future.failedFuture(resultHandler.cause().getMessage().toString()));
         }
@@ -268,12 +268,12 @@ public class CallbackServiceImpl implements CallbackService {
           /* Create a stream of messages from a queue */
           client.basicConsumer(queueName, options, rabbitMQConsumerAsyncResult -> {
             if (rabbitMQConsumerAsyncResult.succeeded()) {
-              logger.info(Constants.RABBITMQ_CONSUMER_CREATED);
+              LOGGER.info(Constants.RABBITMQ_CONSUMER_CREATED);
               RabbitMQConsumer mqConsumer = rabbitMQConsumerAsyncResult.result();
               mqConsumer.handler(message -> {
                 /* Message from Queue */
                 Buffer body = message.body();
-                logger.info(Constants.MESSAGE + Constants.COLON + message.body());
+                LOGGER.info(Constants.MESSAGE + Constants.COLON + message.body());
                 if (body != null) {
                   String routingKey = null;
                   JsonObject currentBodyJsonObj = null;
@@ -282,7 +282,7 @@ public class CallbackServiceImpl implements CallbackService {
                   try {
                     currentBodyJsonObj = new JsonObject(body.toString());
                   } catch (Exception e) {
-                    logger.error(Constants.ERROR + Constants.COLON + e.getCause());
+                    LOGGER.error(Constants.ERROR + Constants.COLON + e.getCause());
                     finalResponse.put(Constants.ERROR, Constants.JSON_PARSE_EXCEPTION);
                     promise.fail(finalResponse.toString());
                   }
@@ -296,9 +296,9 @@ public class CallbackServiceImpl implements CallbackService {
                   /* Get callback Object from Cache */
                   callBackJsonObj = pgCache.get(routingKey);
 
-                  logger.info(
+                  LOGGER.info(
                       Constants.ROUTING_KEY + Constants.COLON + message.envelope().routingKey());
-                  logger.info(Constants.MESSAGE + Constants.COLON + currentBodyJsonObj);
+                  LOGGER.info(Constants.MESSAGE + Constants.COLON + currentBodyJsonObj);
 
                   /* Creating Request Object */
                   if (callBackJsonObj != null && !callBackJsonObj.isEmpty()) {
@@ -310,43 +310,43 @@ public class CallbackServiceImpl implements CallbackService {
                     Future<JsonObject> result = sendDataToCallBackSubscriber(requestObj);
                     result.onComplete(resultHandler -> {
                       if (resultHandler.succeeded()) {
-                        logger.info(Constants.CALLBACK_URL_RESPONSE + Constants.COLON
+                        LOGGER.info(Constants.CALLBACK_URL_RESPONSE + Constants.COLON
                             + resultHandler.result());
                         finalResponse.put(Constants.SUCCESS,
                             Constants.DATA_SEND_TO_CALLBACK_URL_SUCCESS);
                       } else {
-                        logger.error(Constants.CALLBACK_URL_RESPONSE + resultHandler.cause());
+                        LOGGER.error(Constants.CALLBACK_URL_RESPONSE + resultHandler.cause());
                         finalResponse.put(Constants.ERROR,
                             Constants.DATA_SEND_TO_CALLBACK_URL_FAIL);
                         promise.fail(finalResponse.toString());
                       }
                     });
                   } else {
-                    logger.error(
+                    LOGGER.error(
                         Constants.NO_CALLBACK_URL_FOR_ROUTING_KEY + Constants.COLON + routingKey);
                     finalResponse.put(Constants.ERROR,
                         Constants.NO_CALLBACK_URL_FOR_ROUTING_KEY + routingKey);
                     promise.fail(finalResponse.toString());
                   }
                 } else {
-                  logger.error(Constants.ERROR + Constants.COLON + Constants.MESSAGE_BODY_NULL);
+                  LOGGER.error(Constants.ERROR + Constants.COLON + Constants.MESSAGE_BODY_NULL);
                   finalResponse.put(Constants.ERROR, Constants.MESSAGE_BODY_NULL);
                   promise.fail(finalResponse.toString());
                 }
               });
-              logger.info(Constants.QUEUE_EMPTY);
+              LOGGER.info(Constants.QUEUE_EMPTY);
               finalResponse.put(Constants.DATABASE_QUERY_RESULT,
                   Constants.CONNECT_TO_CALLBACK_DATA_QUEUE);
               promise.complete(finalResponse);
             } else {
-              logger.error(Constants.ERROR + Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON
+              LOGGER.error(Constants.ERROR + Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON
                   + queueName);
               finalResponse.put(Constants.ERROR, Constants.CONSUME_QUEUE_MESSAGE_FAIL + queueName);
               promise.fail(finalResponse.toString());
             }
           });
         } else {
-          logger.error(Constants.QUEUE_CONNECTION_FAIL + Constants.COLON + queueName);
+          LOGGER.error(Constants.QUEUE_CONNECTION_FAIL + Constants.COLON + queueName);
           finalResponse.put(Constants.ERROR, Constants.QUEUE_CONNECTION_FAIL + queueName);
           promise.fail(finalResponse.toString());
         }
@@ -365,7 +365,7 @@ public class CallbackServiceImpl implements CallbackService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("sendDataToCallBackSubscriber resultHandler failed : "
+          LOGGER.error("sendDataToCallBackSubscriber resultHandler failed : "
               + resultHandler.cause().getMessage().toString());
           handler.handle(Future.failedFuture(resultHandler.cause().getMessage().toString()));
         }
@@ -430,53 +430,53 @@ public class CallbackServiceImpl implements CallbackService {
                   if (status == HttpStatus.SC_OK) {
                     /* Callback URL 200 OK Status */
                     String responseBody = result.bodyAsString();
-                    logger.info(Constants.RESPONSE_BODY + Constants.COLON + Constants.NEW_LINE
+                    LOGGER.info(Constants.RESPONSE_BODY + Constants.COLON + Constants.NEW_LINE
                         + responseBody);
-                    logger.info(Constants.STATUS + Constants.COLON + status);
+                    LOGGER.info(Constants.STATUS + Constants.COLON + status);
                     finalResponse.put(Constants.TYPE, status);
                     finalResponse.put(Constants.TITLE, Constants.SUCCESS);
                     finalResponse.put(Constants.DETAIL, Constants.CALLBACK_SUCCESS);
-                    logger.info(Constants.CALLBACK_URL_RESPONSE + finalResponse);
+                    LOGGER.info(Constants.CALLBACK_URL_RESPONSE + finalResponse);
                     promise.complete(finalResponse);
                   } else if (status == HttpStatus.SC_NOT_FOUND) {
                     /* Callback URL not found */
                     finalResponse.put(Constants.TYPE, status);
                     finalResponse.put(Constants.TITLE, Constants.FAILURE);
                     finalResponse.put(Constants.DETAIL, Constants.CALLBACK_URL_NOT_FOUND);
-                    logger.info(Constants.CALLBACK_URL_RESPONSE + finalResponse);
+                    LOGGER.info(Constants.CALLBACK_URL_RESPONSE + finalResponse);
                     promise.fail(finalResponse.toString());
                   } else {
                     /* some other issue */
                     finalResponse.put(Constants.TYPE, status);
                     finalResponse.put(Constants.TITLE, Constants.FAILURE);
                     finalResponse.put(Constants.DETAIL, result.statusMessage());
-                    logger.info(Constants.CALLBACK_URL_RESPONSE + finalResponse);
+                    LOGGER.info(Constants.CALLBACK_URL_RESPONSE + finalResponse);
                     promise.fail(finalResponse.toString());
                   }
                 } else {
-                  logger.error(Constants.ERROR + handler.cause().getMessage());
+                  LOGGER.error(Constants.ERROR + handler.cause().getMessage());
                   finalResponse.put(Constants.ERROR, Constants.CALLBACK_URL_RESPONSE_NULL);
                   promise.fail(finalResponse.toString());
                 }
               } else {
-                logger.error(Constants.ERROR + handler.cause().getMessage());
+                LOGGER.error(Constants.ERROR + handler.cause().getMessage());
                 finalResponse.put(Constants.ERROR, Constants.CONNECT_TO_CALLBACK_URL_FAIL);
                 promise.fail(finalResponse.toString());
               }
             });
           } else {
-            logger.error(
+            LOGGER.error(
                 Constants.ERROR + Constants.COLON + Constants.CREATE_CALLBACK_REQUEST_OBJECT_FAIL);
             finalResponse.put(Constants.ERROR, Constants.CREATE_CALLBACK_REQUEST_OBJECT_FAIL);
             promise.fail(finalResponse.toString());
           }
         } else {
-          logger.error(Constants.CALLBACK_URL_INVALID);
+          LOGGER.error(Constants.CALLBACK_URL_INVALID);
           finalResponse.put(Constants.ERROR, Constants.CALLBACK_URL_INVALID);
           promise.fail(finalResponse.toString());
         }
       } catch (Exception e) {
-        logger.error(Constants.DATA_SEND_TO_CALLBACK_URL_FAIL + e.getCause());
+        LOGGER.error(Constants.DATA_SEND_TO_CALLBACK_URL_FAIL + e.getCause());
         finalResponse.put(Constants.ERROR, Constants.DATA_SEND_TO_CALLBACK_URL_FAIL);
         promise.fail(finalResponse.toString());
       }
@@ -515,7 +515,7 @@ public class CallbackServiceImpl implements CallbackService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("queryCallBackDataBase resultHandler failed : "
+          LOGGER.error("queryCallBackDataBase resultHandler failed : "
               + resultHandler.cause().getMessage().toString());
           handler.handle(Future.failedFuture(resultHandler.cause().getMessage().toString()));
         }
@@ -562,16 +562,16 @@ public class CallbackServiceImpl implements CallbackService {
         /* Execute simple query */
         pgClient.preparedQuery("SELECT * FROM " + tableName).execute(action -> {
           if (action.succeeded()) {
-            logger.info(Constants.EXECUTING_SQL_QUERY + Constants.COLON + tableName);
+            LOGGER.info(Constants.EXECUTING_SQL_QUERY + Constants.COLON + tableName);
             /* Rows in Table */
             RowSet<Row> rows = action.result();
-            logger.info(Constants.FETCH_DATA_FROM_DATABASE);
-            logger.info(Constants.ROWS + Constants.COLON + rows.size());
+            LOGGER.info(Constants.FETCH_DATA_FROM_DATABASE);
+            LOGGER.info(Constants.ROWS + Constants.COLON + rows.size());
 
             /* Clear Cache Data */
             if (pgCache != null) {
               clearCacheData();
-              logger.info("Cache Data Clear.....!!!");
+              LOGGER.info("Cache Data Clear.....!!!");
             }
 
             /* Iterating Rows */
@@ -597,25 +597,25 @@ public class CallbackServiceImpl implements CallbackService {
                 });
               }
             }
-            logger.info(Constants.SUCCESS + Constants.COLON + Constants.CACHE_UPDATE_SUCCESS);
-            logger.info(Constants.CACHE_DATA + Constants.COLON + pgCache);
+            LOGGER.info(Constants.SUCCESS + Constants.COLON + Constants.CACHE_UPDATE_SUCCESS);
+            LOGGER.info(Constants.CACHE_DATA + Constants.COLON + pgCache);
             finalResponse.put(Constants.SUCCESS, Constants.CACHE_UPDATE_SUCCESS);
             promise.complete(finalResponse);
           } else {
-            logger.info(Constants.ERROR + action.cause());
+            LOGGER.info(Constants.ERROR + action.cause());
             finalResponse.put(Constants.ERROR, Constants.EXECUTE_QUERY_FAIL);
             promise.fail(finalResponse.toString());
           }
         });
       } catch (Exception e) {
-        logger.info(Constants.CONNECT_DATABASE_FAIL + e.getCause());
+        LOGGER.info(Constants.CONNECT_DATABASE_FAIL + e.getCause());
         finalResponse.put(Constants.ERROR, Constants.CONNECT_DATABASE_FAIL);
         promise.fail(finalResponse.toString());
       } finally {
         pgClient.close();
       }
     } else {
-      logger.info(Constants.ERROR + Constants.COLON + Constants.CREATE_PG_CLIENT_OBJECT_FAIL);
+      LOGGER.info(Constants.ERROR + Constants.COLON + Constants.CREATE_PG_CLIENT_OBJECT_FAIL);
       finalResponse.put(Constants.ERROR, Constants.CREATE_PG_CLIENT_OBJECT_FAIL);
       promise.fail(finalResponse.toString());
     }

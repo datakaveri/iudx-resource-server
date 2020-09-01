@@ -16,8 +16,8 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.web.Router;
@@ -25,9 +25,6 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
-import io.vertx.servicediscovery.ServiceDiscovery;
-import io.vertx.servicediscovery.types.EventBusService;
-import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import iudx.resource.server.apiserver.management.ManagementApi;
 import iudx.resource.server.apiserver.management.ManagementApiImpl;
 import iudx.resource.server.apiserver.query.GeoRelation;
@@ -38,12 +35,10 @@ import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.response.RestResponse;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
-import iudx.resource.server.apiserver.util.Constants;
+import static iudx.resource.server.apiserver.util.Constants.*;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
-import iudx.resource.server.filedownload.FileDownloadService;
-import iudx.resource.server.media.MediaService;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -80,16 +75,17 @@ import java.util.stream.Collectors;
 
 public class ApiServerVerticle extends AbstractVerticle {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ApiServerVerticle.class);
-  private Vertx vertx;
+  
+  private static final Logger LOGGER = LogManager.getLogger(ApiServerVerticle.class);
+
+
+  /** Service addresses */
+  private static final String DATABASE_SERVICE_ADDRESS = "iudx.rs.database.service";
+  private static final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
+  private static final String BROKER_SERVICE_ADDRESS = "iudx.rs.broker.service";
+
   private ClusterManager mgr;
   private VertxOptions options;
-  private ServiceDiscovery discovery;
-  private DatabaseService database;
-  private DataBrokerService databroker;
-  private AuthenticationService authenticator;
-  private FileDownloadService filedownload;
-  private MediaService media;
   private HttpServer server;
   private Router router;
   private Properties properties;
@@ -99,6 +95,10 @@ public class ApiServerVerticle extends AbstractVerticle {
   private String keystorePassword;
   private ManagementApi managementApi;
   private SubscriptionService subsService;
+
+  private DatabaseService database;
+  private DataBrokerService databroker;
+  private AuthenticationService authenticator;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
@@ -113,14 +113,14 @@ public class ApiServerVerticle extends AbstractVerticle {
   public void start() throws Exception {
 
     Set<String> allowedHeaders = new HashSet<>();
-    allowedHeaders.add(Constants.HEADER_ACCEPT);
-    allowedHeaders.add(Constants.HEADER_TOKEN);
-    allowedHeaders.add(Constants.HEADER_CONTENT_LENGTH);
-    allowedHeaders.add(Constants.HEADER_CONTENT_TYPE);
-    allowedHeaders.add(Constants.HEADER_HOST);
-    allowedHeaders.add(Constants.HEADER_ORIGIN);
-    allowedHeaders.add(Constants.HEADER_REFERER);
-    allowedHeaders.add(Constants.HEADER_ALLOW_ORIGIN);
+    allowedHeaders.add(HEADER_ACCEPT);
+    allowedHeaders.add(HEADER_TOKEN);
+    allowedHeaders.add(HEADER_CONTENT_LENGTH);
+    allowedHeaders.add(HEADER_CONTENT_TYPE);
+    allowedHeaders.add(HEADER_HOST);
+    allowedHeaders.add(HEADER_ORIGIN);
+    allowedHeaders.add(HEADER_REFERER);
+    allowedHeaders.add(HEADER_ALLOW_ORIGIN);
 
     Set<HttpMethod> allowedMethods = new HashSet<>();
     allowedMethods.add(HttpMethod.GET);
@@ -132,183 +132,110 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     /* Create a reference to HazelcastClusterManager. */
 
-    mgr = new HazelcastClusterManager();
-    options = new VertxOptions().setClusterManager(mgr);
+    router = Router.router(vertx);
+    properties = new Properties();
+    inputstream = null;
 
-    /* Create or Join a Vert.x Cluster. */
+    /* Define the APIs, methods, endpoints and associated methods. */
 
-    Vertx.clusteredVertx(options, res -> {
-      if (res.succeeded()) {
-        vertx = res.result();
-        router = Router.router(vertx);
-        properties = new Properties();
-        inputstream = null;
+    router = Router.router(vertx);
+    router.route().handler(
+        CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
+    router.route("/apis/*").handler(StaticHandler.create());
+    router.route().handler(BodyHandler.create());
 
-        /* Define the APIs, methods, endpoints and associated methods. */
+    /* NGSI-LD api endpoints */
+    router.get(NGSILD_ENTITIES_URL).handler(this::handleEntitiesQuery);
+    router.post(NGSILD_POST_QUERY_PATH).handler(this::handlePostEntitiesQuery);
+    router.get(NGSILD_TEMPORAL_URL).handler(this::handleTemporalQuery);
+    router.post(NGSILD_SUBSCRIPTION_URL).handler(this::handleSubscriptions);
+    // append sub
+    router.patch(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
+      .handler(this::appendSubscription);
+    // update sub
+    router.put(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
+      .handler(this::updateSubscription);
+    // get sub
+    router.get(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
+      .handler(this::getSubscription);
+    // delete sub
+    router.delete(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
+      .handler(this::deleteSubscription);
 
-        router = Router.router(vertx);
-        router.route().handler(
-            CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
-        router.route("/apis/*").handler(StaticHandler.create());
-        router.route().handler(BodyHandler.create());
+    /* Management Api endpoints */
+    // Exchange
+    router.post(IUDX_MANAGEMENT_EXCHANGE_URL).handler(this::createExchange);
+    router.delete(IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId")
+      .handler(this::deleteExchange);
+    router.get(IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId")
+      .handler(this::getExchangeDetails);
+    // Queue
+    router.post(IUDX_MANAGEMENT_QUEUE_URL).handler(this::createQueue);
+    router.delete(IUDX_MANAGEMENT_QUEUE_URL + "/:queueId").handler(this::deleteQueue);
+    router.get(IUDX_MANAGEMENT_QUEUE_URL + "/:queueId")
+      .handler(this::getQueueDetails);
+    // bind
+    router.post(IUDX_MANAGEMENT_BIND_URL).handler(this::bindQueue2Exchange);
+    // unbind
+    router.post(IUDX_MANAGEMENT_UNBIND_URL).handler(this::unbindQueue2Exchange);
+    // vHost
+    router.post(IUDX_MANAGEMENT_VHOST_URL).handler(this::createVHost);
+    router.delete(IUDX_MANAGEMENT_VHOST_URL + "/:vhostId").handler(this::deleteVHost);
+    // adapter
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/register")
+      .handler(this::registerAdapter);
+    router.delete(IUDX_MANAGEMENT_ADAPTER_URL
+        + "/:domain/:userSHA/:resourceServer/:resourceGroup").handler(this::deleteAdapter);
+    router
+      .get(IUDX_MANAGEMENT_ADAPTER_URL
+          + "/:domain/:userSHA/:resourceServer/:resourceGroup")
+      .handler(this::getAdapterDetails);
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat")
+      .handler(this::publishHeartbeat);
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/downstreamissue")
+      .handler(this::publishDownstreamIssue);
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/dataissue")
+      .handler(this::publishDataIssue);
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/entities")
+      .handler(this::publishDataFromAdapter);
+    /* Read the configuration and set the HTTPs server properties. */
 
-        /* NGSI-LD api endpoints */
-        router.get(Constants.NGSILD_ENTITIES_URL).handler(this::handleEntitiesQuery);
-        router.post(Constants.NGSILD_POST_QUERY_PATH).handler(this::handlePostEntitiesQuery);
-        router.get(Constants.NGSILD_TEMPORAL_URL).handler(this::handleTemporalQuery);
-        router.post(Constants.NGSILD_SUBSCRIPTION_URL).handler(this::handleSubscriptions);
-        // append sub
-        router.patch(Constants.NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
-            .handler(this::appendSubscription);
-        // update sub
-        router.put(Constants.NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
-            .handler(this::updateSubscription);
-        // get sub
-        router.get(Constants.NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
-            .handler(this::getSubscription);
-        // delete sub
-        router.delete(Constants.NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
-            .handler(this::deleteSubscription);
+    try {
 
-        /* Management Api endpoints */
-        // Exchange
-        router.post(Constants.IUDX_MANAGEMENT_EXCHANGE_URL).handler(this::createExchange);
-        router.delete(Constants.IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId")
-            .handler(this::deleteExchange);
-        router.get(Constants.IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId")
-            .handler(this::getExchangeDetails);
-        // Queue
-        router.post(Constants.IUDX_MANAGEMENT_QUEUE_URL).handler(this::createQueue);
-        router.delete(Constants.IUDX_MANAGEMENT_QUEUE_URL + "/:queueId").handler(this::deleteQueue);
-        router.get(Constants.IUDX_MANAGEMENT_QUEUE_URL + "/:queueId")
-            .handler(this::getQueueDetails);
-        // bind
-        router.post(Constants.IUDX_MANAGEMENT_BIND_URL).handler(this::bindQueue2Exchange);
-        // unbind
-        router.post(Constants.IUDX_MANAGEMENT_UNBIND_URL).handler(this::unbindQueue2Exchange);
-        // vHost
-        router.post(Constants.IUDX_MANAGEMENT_VHOST_URL).handler(this::createVHost);
-        router.delete(Constants.IUDX_MANAGEMENT_VHOST_URL + "/:vhostId").handler(this::deleteVHost);
-        // adapter
-        router.post(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register")
-            .handler(this::registerAdapter);
-        router.delete(Constants.IUDX_MANAGEMENT_ADAPTER_URL
-            + "/:domain/:userSHA/:resourceServer/:resourceGroup").handler(this::deleteAdapter);
-        router
-            .get(Constants.IUDX_MANAGEMENT_ADAPTER_URL
-                + "/:domain/:userSHA/:resourceServer/:resourceGroup")
-            .handler(this::getAdapterDetails);
-        router.post(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat")
-            .handler(this::publishHeartbeat);
-        router.post(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/downstreamissue")
-            .handler(this::publishDownstreamIssue);
-        router.post(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/dataissue")
-            .handler(this::publishDataIssue);
-        router.post(Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/entities")
-            .handler(this::publishDataFromAdapter);
-        /* Read the configuration and set the HTTPs server properties. */
+      inputstream = new FileInputStream("config.properties");
+      properties.load(inputstream);
 
-        try {
+      keystore = properties.getProperty("keystore");
+      keystorePassword = properties.getProperty("keystorePassword");
 
-          inputstream = new FileInputStream("config.properties");
-          properties.load(inputstream);
+    } catch (Exception ex) {
 
-          keystore = properties.getProperty("keystore");
-          keystorePassword = properties.getProperty("keystorePassword");
+      LOGGER.info(ex.toString());
 
-        } catch (Exception ex) {
+    }
 
-          LOGGER.info(ex.toString());
+    /* Setup the HTTPs server properties, APIs and port. */
 
-        }
+    server = vertx.createHttpServer(new HttpServerOptions().setSsl(true)
+        .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword)));
 
-        /* Setup the HTTPs server properties, APIs and port. */
+    server.requestHandler(router).listen(port);
 
-        server = vertx.createHttpServer(new HttpServerOptions().setSsl(true)
-            .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword)));
+    /* Get a handler for the Service Discovery interface. */
 
-        server.requestHandler(router).listen(port);
 
-        /* Get a handler for the Service Discovery interface. */
+    database 
+      = DatabaseService.createProxy(vertx, DATABASE_SERVICE_ADDRESS);
 
-        discovery = ServiceDiscovery.create(vertx);
+    authenticator =
+        AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
 
-        /* Get a handler for the DatabaseService from Service Discovery interface. */
+    databroker =
+        DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
 
-        EventBusService.getProxy(discovery, DatabaseService.class,
-            databaseServiceDiscoveryHandler -> {
-              if (databaseServiceDiscoveryHandler.succeeded()) {
-                database = databaseServiceDiscoveryHandler.result();
-                LOGGER.info(
-                    "\n +++++++ Service Discovery  Success. +++++++ \n +++++++ Service name is : "
-                        + database.getClass().getName() + " +++++++ ");
-              } else {
-                LOGGER.info("\n +++++++ Service Discovery Failed. +++++++ ");
-              }
-            });
 
-        /* Get a handler for the DataBrokerService from Service Discovery interface. */
-
-        EventBusService.getProxy(discovery, DataBrokerService.class,
-            databrokerServiceDiscoveryHandler -> {
-              if (databrokerServiceDiscoveryHandler.succeeded()) {
-                databroker = databrokerServiceDiscoveryHandler.result();
-                LOGGER.info(
-                    "\n +++++++ Service Discovery  Success. +++++++ \n +++++++ Service name is : "
-                        + databroker.getClass().getName() + " +++++++ ");
-              } else {
-                LOGGER.info("\n +++++++ Service Discovery Failed. +++++++ ");
-              }
-            });
-
-        /*
-         * Get a handler for the AuthenticationService from Service Discovery interface.
-         */
-
-        EventBusService.getProxy(discovery, AuthenticationService.class,
-            authenticatorServiceDiscoveryHandler -> {
-              if (authenticatorServiceDiscoveryHandler.succeeded()) {
-                authenticator = authenticatorServiceDiscoveryHandler.result();
-                LOGGER.info(
-                    "\n +++++++ Service Discovery  Success. +++++++ \n +++++++ Service name is : "
-                        + authenticator.getClass().getName() + " +++++++ ");
-              } else {
-                LOGGER.info("\n +++++++ Service Discovery Failed. +++++++ ");
-              }
-            });
-
-        /*
-         * Get a handler for the FileDownloadService from Service Discovery interface.
-         */
-
-        EventBusService.getProxy(discovery, FileDownloadService.class,
-            filedownloadServiceDiscoveryHandler -> {
-              if (filedownloadServiceDiscoveryHandler.succeeded()) {
-                filedownload = filedownloadServiceDiscoveryHandler.result();
-                LOGGER.info(
-                    "\n +++++++ Service Discovery  Success. +++++++ \n +++++++ Service name is : "
-                        + filedownload.getClass().getName() + " +++++++ ");
-              } else {
-                LOGGER.info("\n +++++++ Service Discovery Failed. +++++++ ");
-              }
-            });
-
-        /* Get a handler for the MediaService from Service Discovery interface. */
-
-        EventBusService.getProxy(discovery, MediaService.class, mediaServiceDiscoveryHandler -> {
-          if (mediaServiceDiscoveryHandler.succeeded()) {
-            media = mediaServiceDiscoveryHandler.result();
-            LOGGER
-                .info("\n +++++++ Service Discovery  Success. +++++++ \n +++++++ Service name is : "
-                    + media.getClass().getName() + " +++++++ ");
-          } else {
-            LOGGER.info("\n +++++++ Service Discovery Failed. +++++++ ");
-          }
-        });
-        managementApi = new ManagementApiImpl();
-        subsService = new SubscriptionService();
-      }
-    });
+    managementApi = new ManagementApiImpl();
+    subsService = new SubscriptionService();
   }
 
   /**
@@ -325,10 +252,10 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* JsonObject of authentication related information */
     JsonObject authenticationInfo = new JsonObject();
     /* checking authentication info in requests */
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
     } else {
-      authenticationInfo.put(Constants.HEADER_TOKEN, Constants.PUBLIC_TOKEN);
+      authenticationInfo.put(HEADER_TOKEN, PUBLIC_TOKEN);
     }
     // get query paramaters
     MultiMap params = getQueryParams(routingContext, response).get();
@@ -342,8 +269,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         // create json
         JsonObject json = queryMapper.toJson(ngsildquery, false);
         /* HTTP request instance/host details */
-        String instanceID = request.getHeader(Constants.HEADER_HOST);
-        json.put(Constants.JSON_INSTANCEID, instanceID);
+        String instanceID = request.getHeader(HEADER_HOST);
+        json.put(JSON_INSTANCEID, instanceID);
         LOGGER.info("IUDX query json : " + json);
         /* HTTP request body as Json */
         JsonObject requestBody = routingContext.getBodyAsJson();
@@ -352,8 +279,8 @@ public class ApiServerVerticle extends AbstractVerticle {
           if (authHandler.succeeded()) {
             LOGGER.info(
                 "Authenticating entity search request ".concat(authHandler.result().toString()));
-            if (json.containsKey(Constants.IUDXQUERY_OPTIONS) && Constants.JSON_COUNT
-                .equalsIgnoreCase(json.getString(Constants.IUDXQUERY_OPTIONS))) {
+            if (json.containsKey(IUDXQUERY_OPTIONS) && JSON_COUNT
+                .equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
               database.countQuery(json, handler -> {
                 if (handler.succeeded()) {
                   handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
@@ -379,7 +306,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           }
         });
       } else if (validationHandler.failed()) {
-        handleResponse(response, ResponseType.BadRequestData, Constants.MSG_INVALID_PARAM, true);
+        handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_PARAM, true);
       }
     });
   }
@@ -395,10 +322,10 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.info("handlePostEntitiesQuery method started.");
     HttpServerRequest request = routingContext.request();
     JsonObject authenticationInfo = new JsonObject();
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
     } else {
-      authenticationInfo.put(Constants.HEADER_TOKEN, Constants.PUBLIC_TOKEN);
+      authenticationInfo.put(HEADER_TOKEN, PUBLIC_TOKEN);
     }
     JsonObject requestJson = routingContext.getBodyAsJson();
     LOGGER.info("request Json :: " + requestJson);
@@ -411,15 +338,15 @@ public class ApiServerVerticle extends AbstractVerticle {
         NGSILDQueryParams ngsildquery = new NGSILDQueryParams(requestJson);
         QueryMapper queryMapper = new QueryMapper();
         JsonObject json = queryMapper.toJson(ngsildquery, requestJson.containsKey("temporalQ"));
-        String instanceID = request.getHeader(Constants.HEADER_HOST);
-        json.put(Constants.JSON_INSTANCEID, instanceID);
+        String instanceID = request.getHeader(HEADER_HOST);
+        json.put(JSON_INSTANCEID, instanceID);
         LOGGER.info("IUDX query json : " + json);
         authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
           if (authHandler.succeeded()) {
             LOGGER.info(
                 "Authenticating entity search request ".concat(authHandler.result().toString()));
-            if (json.containsKey(Constants.IUDXQUERY_OPTIONS) && Constants.JSON_COUNT
-                .equalsIgnoreCase(json.getString(Constants.IUDXQUERY_OPTIONS))) {
+            if (json.containsKey(IUDXQUERY_OPTIONS) && JSON_COUNT
+                .equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
               database.countQuery(json, handler -> {
                 if (handler.succeeded()) {
                   handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
@@ -445,7 +372,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           }
         });
       } else if (validationHandler.failed()) {
-        handleResponse(response, ResponseType.BadRequestData, Constants.MSG_INVALID_PARAM, true);
+        handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_PARAM, true);
       }
     });
   }
@@ -466,13 +393,13 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* JsonObject of authentication related information */
     JsonObject authenticationInfo = new JsonObject();
     /* checking authentication info in requests */
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
     } else {
-      authenticationInfo.put(Constants.HEADER_TOKEN, Constants.PUBLIC_TOKEN);
+      authenticationInfo.put(HEADER_TOKEN, PUBLIC_TOKEN);
     }
     /* HTTP request instance/host details */
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     // get query parameters
     MultiMap params = getQueryParams(routingContext, response).get();
     // validate request params
@@ -484,7 +411,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         QueryMapper queryMapper = new QueryMapper();
         // create json
         JsonObject json = queryMapper.toJson(ngsildquery, true);
-        json.put(Constants.JSON_INSTANCEID, instanceID);
+        json.put(JSON_INSTANCEID, instanceID);
         LOGGER.info("IUDX temporal json query : " + json);
         /* HTTP request body as Json */
         JsonObject requestBody = routingContext.getBodyAsJson();
@@ -493,8 +420,8 @@ public class ApiServerVerticle extends AbstractVerticle {
           if (authHandler.succeeded()) {
             LOGGER.info("Authenticating entity temporal search request "
                 .concat(authHandler.result().toString()));
-            if (json.containsKey(Constants.IUDXQUERY_OPTIONS) && Constants.JSON_COUNT
-                .equalsIgnoreCase(json.getString(Constants.IUDXQUERY_OPTIONS))) {
+            if (json.containsKey(IUDXQUERY_OPTIONS) && JSON_COUNT
+                .equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
               database.countQuery(json, handler -> {
                 if (handler.succeeded()) {
                   handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
@@ -520,7 +447,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           }
         });
       } else if (validationHandler.failed()) {
-        handleResponse(response, ResponseType.BadRequestData, Constants.MSG_INVALID_PARAM, true);
+        handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_PARAM, true);
       }
     });
 
@@ -542,23 +469,23 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* HTTP request body as Json */
     JsonObject requestBody = routingContext.getBodyAsJson();
     /* HTTP request instance/host details */
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
-    String subHeader = request.getHeader(Constants.HEADER_OPTIONS);
+    String instanceID = request.getHeader(HEADER_HOST);
+    String subHeader = request.getHeader(HEADER_OPTIONS);
     String subscrtiptionType =
         subHeader != null && subHeader.contains(SubsType.STREAMING.getMessage())
             ? SubsType.STREAMING.getMessage()
             : SubsType.CALLBACK.getMessage();
-    requestBody.put(Constants.SUB_TYPE, subscrtiptionType);
+    requestBody.put(SUB_TYPE, subscrtiptionType);
     /* checking authentication info in requests */
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestBody.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          if (requestBody.containsKey(Constants.SUB_TYPE)) {
+          if (requestBody.containsKey(SUB_TYPE)) {
             JsonObject authJson = authHandler.result();
             JsonObject jsonObj = requestBody.copy();
-            jsonObj.put(Constants.JSON_CONSUMER, authJson.getString(Constants.JSON_CONSUMER));
-            jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
+            jsonObj.put(JSON_CONSUMER, authJson.getString(JSON_CONSUMER));
+            jsonObj.put(JSON_INSTANCEID, instanceID);
             LOGGER.info("json for subs :: " + jsonObj);
             Future<JsonObject> subsReq =
                 subsService.createSubscription(jsonObj, databroker, database);
@@ -572,7 +499,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               }
             });
           } else {
-            handleResponse(response, ResponseType.BadRequestData, Constants.MSG_SUB_TYPE_NOT_FOUND,
+            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND,
                 true);
           }
         } else if (authHandler.failed()) {
@@ -593,31 +520,31 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.info("appendSubscription method started");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String domain = request.getParam(Constants.JSON_DOMAIN);
-    String usersha = request.getParam(Constants.JSON_USERSHA);
-    String alias = request.getParam(Constants.JSON_ALIAS);
+    String domain = request.getParam(JSON_DOMAIN);
+    String usersha = request.getParam(JSON_USERSHA);
+    String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
     JsonObject requestJson = routingContext.getBodyAsJson();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
-    requestJson.put(Constants.SUBSCRIPTION_ID, subsId);
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    String subHeader = request.getHeader(Constants.HEADER_OPTIONS);
+    String instanceID = request.getHeader(HEADER_HOST);
+    requestJson.put(SUBSCRIPTION_ID, subsId);
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    String subHeader = request.getHeader(HEADER_OPTIONS);
     String subscrtiptionType =
         subHeader != null && subHeader.contains(SubsType.STREAMING.getMessage())
             ? SubsType.STREAMING.getMessage()
             : SubsType.CALLBACK.getMessage();
-    requestJson.put(Constants.SUB_TYPE, subscrtiptionType);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(SUB_TYPE, subscrtiptionType);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
-          if (requestJson != null && requestJson.containsKey(Constants.SUB_TYPE)) {
-            if (requestJson.getString(Constants.JSON_NAME).equalsIgnoreCase(alias)) {
+          if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
+            if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
               JsonObject authResult = authHandler.result();
               JsonObject jsonObj = requestJson.copy();
-              jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
+              jsonObj.put(JSON_CONSUMER, authResult.getString(JSON_CONSUMER));
               Future<JsonObject> subsReq =
                   subsService.appendSubscription(jsonObj, databroker, database);
               subsReq.onComplete(subsRequestHandler -> {
@@ -630,11 +557,11 @@ public class ApiServerVerticle extends AbstractVerticle {
                 }
               });
             } else {
-              handleResponse(response, ResponseType.BadRequestData, Constants.MSG_INVALID_NAME,
+              handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_NAME,
                   true);
             }
           } else {
-            handleResponse(response, ResponseType.BadRequestData, Constants.MSG_SUB_TYPE_NOT_FOUND,
+            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND,
                 true);
           }
         } else {
@@ -642,7 +569,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         }
       });
     } else {
-      handleResponse(response, ResponseType.AuthenticationFailure, Constants.MSG_SUB_INVALID_TOKEN,
+      handleResponse(response, ResponseType.AuthenticationFailure, MSG_SUB_INVALID_TOKEN,
           true);
     }
   }
@@ -656,31 +583,31 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.info("updateSubscription method started");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String domain = request.getParam(Constants.JSON_DOMAIN);
-    String usersha = request.getParam(Constants.JSON_USERSHA);
-    String alias = request.getParam(Constants.JSON_ALIAS);
+    String domain = request.getParam(JSON_DOMAIN);
+    String usersha = request.getParam(JSON_USERSHA);
+    String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
     JsonObject requestJson = routingContext.getBodyAsJson();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
-    String subHeader = request.getHeader(Constants.HEADER_OPTIONS);
+    String instanceID = request.getHeader(HEADER_HOST);
+    String subHeader = request.getHeader(HEADER_OPTIONS);
     String subscrtiptionType =
         subHeader != null && subHeader.contains(SubsType.STREAMING.getMessage())
             ? SubsType.STREAMING.getMessage()
             : SubsType.CALLBACK.getMessage();
-    requestJson.put(Constants.SUB_TYPE, subscrtiptionType);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(SUB_TYPE, subscrtiptionType);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
-          if (requestJson != null && requestJson.containsKey(Constants.SUB_TYPE)) {
-            if (requestJson.getString(Constants.JSON_NAME).equalsIgnoreCase(alias)) {
+          if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
+            if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
               JsonObject authResult = authHandler.result();
               JsonObject jsonObj = requestJson.copy();
-              jsonObj.put(Constants.SUBSCRIPTION_ID, subsId);
-              jsonObj.put(Constants.JSON_INSTANCEID, instanceID);
-              jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
+              jsonObj.put(SUBSCRIPTION_ID, subsId);
+              jsonObj.put(JSON_INSTANCEID, instanceID);
+              jsonObj.put(JSON_CONSUMER, authResult.getString(JSON_CONSUMER));
               Future<JsonObject> subsReq =
                   subsService.updateSubscription(jsonObj, databroker, database);
               subsReq.onComplete(subsRequestHandler -> {
@@ -693,11 +620,11 @@ public class ApiServerVerticle extends AbstractVerticle {
                 }
               });
             } else {
-              handleResponse(response, ResponseType.BadRequestData, Constants.MSG_INVALID_NAME,
+              handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_NAME,
                   true);
             }
           } else {
-            handleResponse(response, ResponseType.BadRequestData, Constants.MSG_SUB_TYPE_NOT_FOUND,
+            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND,
                 true);
           }
         } else {
@@ -705,7 +632,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         }
       });
     } else {
-      handleResponse(response, ResponseType.AuthenticationFailure, Constants.MSG_SUB_INVALID_TOKEN,
+      handleResponse(response, ResponseType.AuthenticationFailure, MSG_SUB_INVALID_TOKEN,
           true);
     }
   }
@@ -719,30 +646,30 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.info("getSubscription method started");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String domain = request.getParam(Constants.JSON_DOMAIN);
-    String usersha = request.getParam(Constants.JSON_USERSHA);
-    String alias = request.getParam(Constants.JSON_ALIAS);
+    String domain = request.getParam(JSON_DOMAIN);
+    String usersha = request.getParam(JSON_USERSHA);
+    String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
     JsonObject requestJson = new JsonObject();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
-    requestJson.put(Constants.SUBSCRIPTION_ID, subsId);
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    String subHeader = request.getHeader(Constants.HEADER_OPTIONS);
+    String instanceID = request.getHeader(HEADER_HOST);
+    requestJson.put(SUBSCRIPTION_ID, subsId);
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    String subHeader = request.getHeader(HEADER_OPTIONS);
     String subscrtiptionType =
         subHeader != null && subHeader.contains(SubsType.STREAMING.getMessage())
             ? SubsType.STREAMING.getMessage()
             : SubsType.CALLBACK.getMessage();
-    requestJson.put(Constants.SUB_TYPE, subscrtiptionType);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(SUB_TYPE, subscrtiptionType);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
-          if (requestJson != null && requestJson.containsKey(Constants.SUB_TYPE)) {
+          if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
             JsonObject authResult = authHandler.result();
             JsonObject jsonObj = requestJson.copy();
-            jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
+            jsonObj.put(JSON_CONSUMER, authResult.getString(JSON_CONSUMER));
             Future<JsonObject> subsReq = subsService.getSubscription(jsonObj, databroker, database);
             subsReq.onComplete(subHandler -> {
               if (subHandler.succeeded()) {
@@ -753,7 +680,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               }
             });
           } else {
-            handleResponse(response, ResponseType.BadRequestData, Constants.MSG_SUB_TYPE_NOT_FOUND,
+            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND,
                 true);
           }
         } else if (authHandler.failed()) {
@@ -774,29 +701,29 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.info("deleteSubscription method started");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String domain = request.getParam(Constants.JSON_DOMAIN);
-    String usersha = request.getParam(Constants.JSON_USERSHA);
-    String alias = request.getParam(Constants.JSON_ALIAS);
+    String domain = request.getParam(JSON_DOMAIN);
+    String usersha = request.getParam(JSON_USERSHA);
+    String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
     JsonObject requestJson = new JsonObject();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
-    requestJson.put(Constants.SUBSCRIPTION_ID, subsId);
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    String subHeader = request.getHeader(Constants.HEADER_OPTIONS);
+    String instanceID = request.getHeader(HEADER_HOST);
+    requestJson.put(SUBSCRIPTION_ID, subsId);
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    String subHeader = request.getHeader(HEADER_OPTIONS);
     String subscrtiptionType =
         subHeader != null && subHeader.contains(SubsType.STREAMING.getMessage())
             ? SubsType.STREAMING.getMessage()
             : SubsType.CALLBACK.getMessage();
-    requestJson.put(Constants.SUB_TYPE, subscrtiptionType);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(SUB_TYPE, subscrtiptionType);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          if (requestJson.containsKey(Constants.SUB_TYPE)) {
+          if (requestJson.containsKey(SUB_TYPE)) {
             JsonObject authResult = authHandler.result();
             JsonObject jsonObj = requestJson.copy();
-            jsonObj.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
+            jsonObj.put(JSON_CONSUMER, authResult.getString(JSON_CONSUMER));
             LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
             Future<JsonObject> subsReq =
                 subsService.deleteSubscription(jsonObj, databroker, database);
@@ -809,7 +736,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               }
             });
           } else {
-            handleResponse(response, ResponseType.BadRequestData, Constants.MSG_SUB_TYPE_NOT_FOUND,
+            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND,
                 true);
           }
         } else if (authHandler.failed()) {
@@ -832,17 +759,17 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.info("request ::: " + requestJson);
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
           LOGGER.info("databroker :: " + databroker);
           Future<Boolean> isValidNameResult =
-              isValidName(requestJson.copy().getString(Constants.JSON_EXCHANGE_NAME));
+              isValidName(requestJson.copy().getString(JSON_EXCHANGE_NAME));
           isValidNameResult.onComplete(validNameHandler -> {
             if (validNameHandler.succeeded()) {
               Future<JsonObject> brokerResult =
@@ -860,7 +787,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             } else {
               LOGGER.error(authHandler.cause());
               handleResponse(response, ResponseType.BadRequestData,
-                  Constants.MSG_INVALID_EXCHANGE_NAME, true);
+                  MSG_INVALID_EXCHANGE_NAME, true);
             }
           });
         } else if (authHandler.failed()) {
@@ -884,12 +811,12 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = new JsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
-    String exchangeId = request.getParam(Constants.EXCHANGE_ID);
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    String exchangeId = request.getParam(EXCHANGE_ID);
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           Future<JsonObject> brokerResult = managementApi.deleteExchange(exchangeId, databroker);
@@ -926,12 +853,12 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject authenticationInfo = new JsonObject();
     LOGGER.info("request :: " + request);
     LOGGER.info("request json :: " + requestJson);
-    String exchangeId = request.getParam(Constants.EXCHANGE_ID);
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
+    String exchangeId = request.getParam(EXCHANGE_ID);
+    String instanceID = request.getHeader(HEADER_HOST);
+    requestJson.put(JSON_INSTANCEID, instanceID);
     HttpServerResponse response = routingContext.response();
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           Future<JsonObject> brokerResult =
@@ -966,16 +893,16 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
         if (authHandler.succeeded()) {
           Future<Boolean> validNameResult =
-              isValidName(requestJson.copy().getString(Constants.JSON_QUEUE_NAME));
+              isValidName(requestJson.copy().getString(JSON_QUEUE_NAME));
           validNameResult.onComplete(validNameHandler -> {
             if (validNameHandler.succeeded()) {
               Future<JsonObject> brokerResult = managementApi.createQueue(requestJson, databroker);
@@ -992,7 +919,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             } else {
               LOGGER.error(authHandler.cause());
               handleResponse(response, ResponseType.BadRequestData,
-                  Constants.MSG_INVALID_EXCHANGE_NAME, true);
+                  MSG_INVALID_EXCHANGE_NAME, true);
             }
 
           });
@@ -1015,12 +942,12 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = new JsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
+    requestJson.put(JSON_INSTANCEID, instanceID);
     String queueId = routingContext.request().getParam("queueId");
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
         LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
         if (authHandler.succeeded()) {
@@ -1055,12 +982,12 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = new JsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
+    requestJson.put(JSON_INSTANCEID, instanceID);
     String queueId = routingContext.request().getParam("queueId");
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson, requestJson, authHandler -> {
         LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
         if (authHandler.succeeded()) {
@@ -1095,11 +1022,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           Future<JsonObject> brokerResult =
@@ -1133,11 +1060,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           Future<JsonObject> brokerResult =
@@ -1172,15 +1099,15 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           Future<Boolean> validNameResult =
-              isValidName(requestJson.copy().getString(Constants.JSON_VHOST));
+              isValidName(requestJson.copy().getString(JSON_VHOST));
           validNameResult.onComplete(validNameHandler -> {
             if (validNameHandler.succeeded()) {
               Future<JsonObject> brokerResult = managementApi.createVHost(requestJson, databroker);
@@ -1197,7 +1124,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             } else {
               LOGGER.error(authHandler.cause());
               handleResponse(response, ResponseType.BadRequestData,
-                  Constants.MSG_INVALID_EXCHANGE_NAME, true);
+                  MSG_INVALID_EXCHANGE_NAME, true);
             }
           });
         } else if (authHandler.failed()) {
@@ -1221,12 +1148,12 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = new JsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    String vhostId = routingContext.request().getParam(Constants.JSON_VHOST_ID);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    String vhostId = routingContext.request().getParam(JSON_VHOST_ID);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           Future<JsonObject> brokerResult = managementApi.deleteVHost(vhostId, databroker);
@@ -1260,16 +1187,16 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
         if (authHandler.succeeded()) {
           JsonObject authResult = authHandler.result();
-          requestJson.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
+          requestJson.put(JSON_CONSUMER, authResult.getString(JSON_CONSUMER));
           Future<JsonObject> brokerResult = managementApi.registerAdapter(requestJson, databroker);
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
@@ -1302,21 +1229,21 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = new JsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    String domain = request.getParam(Constants.JSON_DOMAIN);
-    String usersha = request.getParam(Constants.JSON_USERSHA);
-    String resourceGroup = request.getParam(Constants.JSON_RESOURCE_GROUP);
-    String resourceServer = request.getParam(Constants.JSON_RESOURCE_SERVER);
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    String domain = request.getParam(JSON_DOMAIN);
+    String usersha = request.getParam(JSON_USERSHA);
+    String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);
+    String resourceServer = request.getParam(JSON_RESOURCE_SERVER);
     String adapterId = domain + "/" + usersha + "/" + resourceServer + "/" + resourceGroup;
-    requestJson.put(Constants.JSON_ID, adapterId);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(JSON_ID, adapterId);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           JsonObject authResult = authHandler.result();
-          requestJson.put(Constants.JSON_CONSUMER, authResult.getString(Constants.JSON_CONSUMER));
+          requestJson.put(JSON_CONSUMER, authResult.getString(JSON_CONSUMER));
           Future<JsonObject> brokerResult = managementApi.deleteAdapter(adapterId, databroker);
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
@@ -1347,21 +1274,21 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = new JsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    String domain = request.getParam(Constants.JSON_DOMAIN);
-    String usersha = request.getParam(Constants.JSON_USERSHA);
-    String resourceGroup = request.getParam(Constants.JSON_RESOURCE_GROUP);
-    String resourceServer = request.getParam(Constants.JSON_RESOURCE_SERVER);
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    String domain = request.getParam(JSON_DOMAIN);
+    String usersha = request.getParam(JSON_USERSHA);
+    String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);
+    String resourceServer = request.getParam(JSON_RESOURCE_SERVER);
     String adapterId = domain + "/" + usersha + "/" + resourceServer + "/" + resourceGroup;
-    requestJson.put(Constants.JSON_ID, adapterId);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(JSON_ID, adapterId);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           JsonObject authResult = authHandler.result();
-          requestJson.put(Constants.JSON_ID, authResult.getString(Constants.JSON_CONSUMER));
+          requestJson.put(JSON_ID, authResult.getString(JSON_CONSUMER));
           Future<JsonObject> brokerResult = managementApi.getAdapterDetails(adapterId, databroker);
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
@@ -1392,11 +1319,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           Future<JsonObject> brokerResult = managementApi.publishHeartbeat(requestJson, databroker);
@@ -1429,11 +1356,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           Future<JsonObject> brokerResult =
@@ -1467,11 +1394,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           Future<JsonObject> brokerResult = managementApi.publishDataIssue(requestJson, databroker);
@@ -1504,11 +1431,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(Constants.HEADER_HOST);
+    String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
-    requestJson.put(Constants.JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(Constants.HEADER_TOKEN)) {
-      authenticationInfo.put(Constants.HEADER_TOKEN, request.getHeader(Constants.HEADER_TOKEN));
+    requestJson.put(JSON_INSTANCEID, instanceID);
+    if (request.headers().contains(HEADER_TOKEN)) {
+      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           Future<JsonObject> brokerResult =
@@ -1556,23 +1483,23 @@ public class ApiServerVerticle extends AbstractVerticle {
       boolean isBodyRequired) {
     if (isBodyRequired) {
       System.out.println(reply);
-      if (isValidJSON(reply) && new JsonObject(reply).containsKey(Constants.JSON_TYPE)) {
+      if (isValidJSON(reply) && new JsonObject(reply).containsKey(JSON_TYPE)) {
         JsonObject json = new JsonObject(reply);
-        response.putHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON)
-            .setStatusCode(json.getInteger(Constants.JSON_TYPE)).end(new RestResponse.Builder()
+        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .setStatusCode(json.getInteger(JSON_TYPE)).end(new RestResponse.Builder()
                 .withError(responseType).withMessage(reply).build().toJsonString());
       } else {
-        response.putHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON)
+        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(responseType.getCode()).end(new RestResponse.Builder()
                 .withError(responseType).withMessage(reply).build().toJsonString());
       }
     } else {
-      if (isValidJSON(reply) && new JsonObject(reply).containsKey(Constants.JSON_TYPE)) {
+      if (isValidJSON(reply) && new JsonObject(reply).containsKey(JSON_TYPE)) {
         JsonObject json = new JsonObject(reply);
-        response.putHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON)
-            .setStatusCode(json.getInteger(Constants.JSON_TYPE)).end(reply);
+        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .setStatusCode(json.getInteger(JSON_TYPE)).end(reply);
       } else {
-        response.putHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON)
+        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
             .setStatusCode(responseType.getCode()).end(reply);
       }
 
@@ -1599,11 +1526,11 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   public Future<Boolean> isValidName(String name) {
     Promise<Boolean> promise = Promise.promise();
-    if (Pattern.compile(Constants.APP_NAME_REGEX).matcher(name).matches()) {
+    if (Pattern.compile(APP_NAME_REGEX).matcher(name).matches()) {
       promise.complete(true);
     } else {
-      LOGGER.error(Constants.MSG_INVALID_NAME + name);
-      promise.fail(Constants.MSG_INVALID_NAME);
+      LOGGER.error(MSG_INVALID_NAME + name);
+      promise.fail(MSG_INVALID_NAME);
     }
     return promise.future();
   }
@@ -1629,10 +1556,10 @@ public class ApiServerVerticle extends AbstractVerticle {
         LOGGER.info(entry.getKey() + " : " + entry.getValue());
       }
     } catch (IllegalArgumentException ex) {
-      response.putHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON)
+      response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(ResponseType.BadRequestData.getCode())
           .end(new RestResponse.Builder().withError(ResponseType.BadRequestData)
-              .withMessage(Constants.MSG_PARAM_DECODE_ERROR).build().toJsonString());
+              .withMessage(MSG_PARAM_DECODE_ERROR).build().toJsonString());
     }
     return Optional.of(queryParams);
   }

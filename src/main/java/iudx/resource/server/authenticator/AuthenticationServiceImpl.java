@@ -9,8 +9,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -45,7 +45,7 @@ import org.apache.http.HttpStatus;
 
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-  private static final Logger logger = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
+  private static final Logger LOGGER = LogManager.getLogger(AuthenticationServiceImpl.class);
   private static final ConcurrentHashMap<String, JsonObject> tipCache = new ConcurrentHashMap<>();
   private static final ConcurrentHashMap<String, String> catCache = new ConcurrentHashMap<>();
   private static final Properties properties = new Properties();
@@ -69,7 +69,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         properties.load(configFile);
       }
     } catch (IOException e) {
-      logger.error("Could not load properties from config file", e);
+      LOGGER.error("Could not load properties from config file", e);
     }
 
     long cacheCleanupTime = 1000 * 60 * Constants.TIP_CACHE_TIMEOUT_AMOUNT;
@@ -196,7 +196,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           }
         }
       } catch (DateTimeParseException | ConcurrentModificationException e) {
-        logger.error(e.getMessage());
+        LOGGER.error(e.getMessage());
       }
     }
 
@@ -296,8 +296,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
               result.put(resourceID, resourceACL.equals("OPEN"));
               catCache.put(groupID, resourceACL);
             } catch (IndexOutOfBoundsException ignored) {
-              logger.error(ignored.getMessage());
-              logger.info("Group ID invalid : Empty response in results from Catalogue");
+              LOGGER.error(ignored.getMessage());
+              LOGGER.info("Group ID invalid : Empty response in results from Catalogue");
             }
             prom.complete();
           });

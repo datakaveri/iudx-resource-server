@@ -5,8 +5,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -36,7 +36,7 @@ import org.elasticsearch.client.RestClient;
 
 public class DatabaseServiceImpl implements DatabaseService {
 
-  private static final Logger logger = LoggerFactory.getLogger(DatabaseServiceImpl.class);
+  private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceImpl.class);
   private final RestClient client;
   private JsonObject query;
 
@@ -55,23 +55,23 @@ public class DatabaseServiceImpl implements DatabaseService {
   @Override
   public DatabaseService searchQuery(JsonObject request, Handler<AsyncResult<JsonArray>> handler) {
     /* TODO Need to update params to use contants */
-    logger.info("Inside searchQuery<DatabaseService> block-------- " + request.toString());
+    LOGGER.info("Inside searchQuery<DatabaseService> block-------- " + request.toString());
     request.put("search", true);
     // TODO : only for testing comment after testing.
     request.put("isTest", true);
 
     if (!request.containsKey("id")) {
-      logger.info("No id found");
+      LOGGER.info("No id found");
       handler.handle(Future.failedFuture("No id found"));
       return null;
     }
     if (request.getJsonArray("id").isEmpty()) {
-      logger.info("resource-id is empty");
+      LOGGER.info("resource-id is empty");
       handler.handle(Future.failedFuture("resource-id is empty"));
       return null;
     }
     if (!request.containsKey("searchType")) {
-      logger.info("No searchType found");
+      LOGGER.info("No searchType found");
       handler.handle(Future.failedFuture("No searchType found"));
       return null;
     }
@@ -83,21 +83,21 @@ public class DatabaseServiceImpl implements DatabaseService {
     // String resourceGroup = ""; //
     // request.getJsonArray("id").getString(0).split("/")[3];
     String resourceServer = request.getJsonArray("id").getString(0).split("/")[0];
-    logger.info("Resource Server instanceID is " + resourceServer);
+    LOGGER.info("Resource Server instanceID is " + resourceServer);
     Request elasticRequest = new Request("GET", Constants.VARANASI_TEST_SEARCH_INDEX);
     elasticRequest.addParameter(Constants.FILTER_PATH, Constants.FILTER_PATH_VAL);
     query = queryDecoder(request);
     if (query.containsKey("Error")) {
-      logger.error("Query returned with an error: " + query.getString("Error"));
+      LOGGER.error("Query returned with an error: " + query.getString("Error"));
       handler.handle(Future.failedFuture(query.getString("Error")));
       return null;
     }
-    logger.info("Query constructed: " + query.toString());
+    LOGGER.info("Query constructed: " + query.toString());
     elasticRequest.setJsonEntity(query.toString());
     client.performRequestAsync(elasticRequest, new ResponseListener() {
       @Override
       public void onSuccess(Response response) {
-        logger.info("Successful DB request");
+        LOGGER.info("Successful DB request");
         JsonArray dbResponse = new JsonArray();
         try {
           int statusCode = response.getStatusLine().getStatusCode();
@@ -117,7 +117,7 @@ public class DatabaseServiceImpl implements DatabaseService {
           }
           handler.handle(Future.succeededFuture(dbResponse));
         } catch (IOException e) {
-          logger.error("DB ERROR:\n");
+          LOGGER.error("DB ERROR:\n");
           e.printStackTrace();
           handler.handle(Future.failedFuture("DB ERROR"));
         }
@@ -125,7 +125,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
       @Override
       public void onFailure(Exception e) {
-        logger.error("DB request has failed. ERROR: \n");
+        LOGGER.error("DB request has failed. ERROR: \n");
         e.printStackTrace();
         handler.handle(Future.failedFuture("DB ERROR"));
       }
@@ -142,21 +142,21 @@ public class DatabaseServiceImpl implements DatabaseService {
    */
   @Override
   public DatabaseService countQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-    logger.info("Inside countQuery<DatabaseService> block-------- " + request.toString());
+    LOGGER.info("Inside countQuery<DatabaseService> block-------- " + request.toString());
     request.put("search", false);
 
     if (!request.containsKey("id")) {
-      logger.info("No id found");
+      LOGGER.info("No id found");
       handler.handle(Future.failedFuture("No id found"));
       return null;
     }
     if (request.getJsonArray("id").isEmpty()) {
-      logger.info("resource-id is empty");
+      LOGGER.info("resource-id is empty");
       handler.handle(Future.failedFuture("resource-id is empty"));
       return null;
     }
     if (!request.containsKey("searchType")) {
-      logger.info("No searchType found");
+      LOGGER.info("No searchType found");
       handler.handle(Future.failedFuture("No searchType found"));
       return null;
     }
@@ -164,17 +164,17 @@ public class DatabaseServiceImpl implements DatabaseService {
     // request.getJsonArray("id").getString(0).split("/")[3];
     query = queryDecoder(request);
     if (query.containsKey("Error")) {
-      logger.error("Query returned with an error " + query.getString("Error"));
+      LOGGER.error("Query returned with an error " + query.getString("Error"));
       handler.handle(Future.failedFuture(query.getString("Error")));
       return null;
     }
-    logger.info("Query constructed: " + query.toString());
+    LOGGER.info("Query constructed: " + query.toString());
     Request elasticRequest = new Request("GET", Constants.VARANASI_TEST_COUNT_INDEX);
     elasticRequest.setJsonEntity(query.toString());
     client.performRequestAsync(elasticRequest, new ResponseListener() {
       @Override
       public void onSuccess(Response response) {
-        logger.info("Successful DB request");
+        LOGGER.info("Successful DB request");
         try {
           int statusCode = response.getStatusLine().getStatusCode();
           if (statusCode != 200 && statusCode != 204) {
@@ -185,7 +185,7 @@ public class DatabaseServiceImpl implements DatabaseService {
           handler.handle(Future
               .succeededFuture(new JsonObject().put("Count", responseJson.getInteger("count"))));
         } catch (IOException e) {
-          logger.error("DB ERROR:\n");
+          LOGGER.error("DB ERROR:\n");
           e.printStackTrace();
           handler.handle(Future.failedFuture("DB ERROR"));
         }
@@ -193,7 +193,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
       @Override
       public void onFailure(Exception e) {
-        logger.error("DB request has failed. ERROR:\n");
+        LOGGER.error("DB request has failed. ERROR:\n");
         e.printStackTrace();
         handler.handle(Future.failedFuture("DB ERROR"));
       }
@@ -228,7 +228,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     /* Geo-Spatial Search */
     if (searchType.matches("(.*)geoSearch(.*)")) {
       match = true;
-      logger.info("In geoSearch block---------");
+      LOGGER.info("In geoSearch block---------");
       JsonObject shapeJson = new JsonObject();
       JsonObject geoSearch = new JsonObject();
       String relation;
@@ -289,7 +289,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     /* Response Filtering */
     if (searchType.matches("(.*)responseFilter(.*)")) {
       match = true;
-      logger.info("In responseFilter block---------");
+      LOGGER.info("In responseFilter block---------");
       if (!request.getBoolean("search")) {
         return new JsonObject().put("Error", Constants.COUNT_UNSUPPORTED);
       }
@@ -304,7 +304,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     if (searchType.matches("(.*)temporalSearch(.*)") && request.containsKey(Constants.REQ_TIMEREL)
         && request.containsKey("time")) {
       match = true;
-      logger.info("In temporalSearch block---------");
+      LOGGER.info("In temporalSearch block---------");
       String timeRelation = request.getString(Constants.REQ_TIMEREL);
       String time = request.getString(Constants.TIME_KEY);
       /* check if the time is valid based on the format. Supports both UTC and IST. */
@@ -315,7 +315,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         formatTimeIst.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
         Date parsedDateTimeUtc = formatTimeUtc.parse(time);
         Date parsedDateTimeIst = formatTimeIst.parse(time);
-        logger.info("Requested date: #UTC- " + formatTimeUtc.format(parsedDateTimeUtc) + "\n#IST- "
+        LOGGER.info("Requested date: #UTC- " + formatTimeUtc.format(parsedDateTimeUtc) + "\n#IST- "
             + formatTimeIst.format(parsedDateTimeIst));
       } catch (ParseException e) {
         e.printStackTrace();
@@ -344,7 +344,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     if (searchType.matches("(.*)attributeSearch(.*)")) {
       match = true;
       JsonArray attrQuery;
-      logger.info("In attributeFilter block---------");
+      LOGGER.info("In attributeFilter block---------");
       if (request.containsKey(Constants.ATTRIBUTE_QUERY_KEY)) {
         attrQuery = request.getJsonArray(Constants.ATTRIBUTE_QUERY_KEY);
         /* Multi-Attribute */

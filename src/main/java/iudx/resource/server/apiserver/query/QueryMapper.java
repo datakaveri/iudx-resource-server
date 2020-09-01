@@ -2,8 +2,8 @@ package iudx.resource.server.apiserver.query;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import iudx.resource.server.apiserver.util.Constants;
 import java.util.Arrays;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class QueryMapper {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(QueryMapper.class);
+  private static final Logger LOGGER = LogManager.getLogger(QueryMapper.class);
   private boolean isTemporal = false;
   private boolean isGeoSearch = false;
   private boolean isResponseFilter = false;
