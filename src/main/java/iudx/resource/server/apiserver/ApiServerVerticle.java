@@ -251,6 +251,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     /* JsonObject of authentication related information */
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/entities");
     /* checking authentication info in requests */
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
@@ -322,6 +323,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.info("handlePostEntitiesQuery method started.");
     HttpServerRequest request = routingContext.request();
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/entityOperations/query");
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
     } else {
@@ -392,6 +394,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     /* JsonObject of authentication related information */
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/temporal/entities");
     /* checking authentication info in requests */
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
@@ -466,6 +469,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     /* JsonObject of authentication related information */
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/subscription");
     /* HTTP request body as Json */
     JsonObject requestBody = routingContext.getBodyAsJson();
     /* HTTP request instance/host details */
@@ -525,6 +529,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/subscription");
     JsonObject requestJson = routingContext.getBodyAsJson();
     String instanceID = request.getHeader(HEADER_HOST);
     requestJson.put(SUBSCRIPTION_ID, subsId);
@@ -588,6 +593,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/subscription");
     JsonObject requestJson = routingContext.getBodyAsJson();
     String instanceID = request.getHeader(HEADER_HOST);
     String subHeader = request.getHeader(HEADER_OPTIONS);
@@ -651,6 +657,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/subscription");
     JsonObject requestJson = new JsonObject();
     String instanceID = request.getHeader(HEADER_HOST);
     requestJson.put(SUBSCRIPTION_ID, subsId);
@@ -706,6 +713,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/subscription");
     JsonObject requestJson = new JsonObject();
     String instanceID = request.getHeader(HEADER_HOST);
     requestJson.put(SUBSCRIPTION_ID, subsId);
@@ -761,6 +769,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/management/exchange");
     requestJson.put(JSON_INSTANCEID, instanceID);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
@@ -813,6 +822,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/management/exchange");
     String exchangeId = request.getParam(EXCHANGE_ID);
     requestJson.put(JSON_INSTANCEID, instanceID);
     if (request.headers().contains(HEADER_TOKEN)) {
@@ -851,6 +861,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = new JsonObject();
     HttpServerRequest request = routingContext.request();
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/management/exchange");
     LOGGER.info("request :: " + request);
     LOGGER.info("request json :: " + requestJson);
     String exchangeId = request.getParam(EXCHANGE_ID);
@@ -895,6 +906,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/management/queue");
     requestJson.put(JSON_INSTANCEID, instanceID);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
@@ -944,6 +956,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/management/queue");
     requestJson.put(JSON_INSTANCEID, instanceID);
     String queueId = routingContext.request().getParam("queueId");
     if (request.headers().contains(HEADER_TOKEN)) {
@@ -984,6 +997,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/management/queue");
     requestJson.put(JSON_INSTANCEID, instanceID);
     String queueId = routingContext.request().getParam("queueId");
     if (request.headers().contains(HEADER_TOKEN)) {
@@ -1024,6 +1038,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/management/bind");
     requestJson.put(JSON_INSTANCEID, instanceID);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
@@ -1062,6 +1077,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/management/unbind");
     requestJson.put(JSON_INSTANCEID, instanceID);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
@@ -1101,6 +1117,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/management/vhost");
     requestJson.put(JSON_INSTANCEID, instanceID);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
@@ -1150,6 +1167,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/management/vhost");
     requestJson.put(JSON_INSTANCEID, instanceID);
     String vhostId = routingContext.request().getParam(JSON_VHOST_ID);
     if (request.headers().contains(HEADER_TOKEN)) {
@@ -1189,6 +1207,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/iudx/v1/adapter");
     requestJson.put(JSON_INSTANCEID, instanceID);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
@@ -1231,6 +1250,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/iudx/v1/adapter");
     requestJson.put(JSON_INSTANCEID, instanceID);
     String domain = request.getParam(JSON_DOMAIN);
     String usersha = request.getParam(JSON_USERSHA);
@@ -1276,6 +1296,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/iudx/v1/adapter");
     requestJson.put(JSON_INSTANCEID, instanceID);
     String domain = request.getParam(JSON_DOMAIN);
     String usersha = request.getParam(JSON_USERSHA);
@@ -1321,6 +1342,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/iudx/v1/adapter");
     requestJson.put(JSON_INSTANCEID, instanceID);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
@@ -1358,6 +1380,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/iudx/v1/adapter");
     requestJson.put(JSON_INSTANCEID, instanceID);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
@@ -1396,6 +1419,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/iudx/v1/adapter");
     requestJson.put(JSON_INSTANCEID, instanceID);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
@@ -1433,6 +1457,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
+    authenticationInfo.put(API_ENDPOINT, "/iudx/v1/adapter");
     requestJson.put(JSON_INSTANCEID, instanceID);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
