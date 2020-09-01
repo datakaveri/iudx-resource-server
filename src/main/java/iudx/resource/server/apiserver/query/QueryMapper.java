@@ -70,7 +70,7 @@ public class QueryMapper {
     if (isTemporal && params.getTemporalRelation().getTemprel() != null
         && params.getTemporalRelation().getTime() != null) {
       isTemporal = true;
-      if (params.getTemporalRelation().getTemprel().equalsIgnoreCase(Constants.JSON_BETWEEN)) {
+      if (params.getTemporalRelation().getTemprel().equalsIgnoreCase(Constants.JSON_DURING)) {
         json.put(Constants.JSON_TIME, params.getTemporalRelation().getTime().toString());
         json.put(Constants.JSON_ENDTIME, params.getTemporalRelation().getEndTime().toString());
         json.put(Constants.JSON_TIMEREL, params.getTemporalRelation().getTemprel());
