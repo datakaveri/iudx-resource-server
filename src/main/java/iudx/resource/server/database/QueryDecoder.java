@@ -9,6 +9,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+import org.apache.commons.codec.digest.DigestUtils;
 
 import static iudx.resource.server.database.Constants.*;
 
@@ -39,6 +40,26 @@ public class QueryDecoder {
     /* TODO: Pagination for large result set */
     if (request.containsKey(SEARCH_KEY) && request.getBoolean(SEARCH_KEY)) {
       elasticQuery.put(SIZE_KEY, 10);
+    }
+
+    /* Latest Search */
+    if (LATEST_SEARCH.equalsIgnoreCase(searchType)) {
+      JsonArray sourceFilter = null;
+      if (request.containsKey(RESPONSE_ATTRS)) {
+        sourceFilter = request.getJsonArray(RESPONSE_ATTRS);
+      }
+      JsonObject latestQuery = new JsonObject();
+      JsonArray docs = new JsonArray();
+      for (Object o : id) {
+        String resourceString = (String) o;
+        String sha1String = DigestUtils.sha1Hex(resourceString);
+        JsonObject json = new JsonObject().put(DOC_ID, sha1String);
+        if (sourceFilter != null) {
+          json.put(SOURCE_FILTER_KEY, sourceFilter);
+        }
+        docs.add(json);
+      }
+      return latestQuery.put(DOCS_KEY, docs);
     }
 
     /* Geo-Spatial Search */

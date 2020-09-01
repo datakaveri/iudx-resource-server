@@ -15,12 +15,6 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.elasticsearch.client.RestClient;
 
 /**
  * The Database Verticle.
@@ -88,7 +82,7 @@ public class DatabaseVerticle extends AbstractVerticle {
 
     mgr = new HazelcastClusterManager();
     options = new VertxOptions().setClusterManager(mgr);
-    client = new ElasticClient(databaseIP, databasePort);    
+    client = new ElasticClient(databaseIP, databasePort, user, password);
 
     /* Create or Join a Vert.x Cluster. */
 

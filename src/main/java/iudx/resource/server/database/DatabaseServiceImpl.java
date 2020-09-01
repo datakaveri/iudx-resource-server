@@ -7,7 +7,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 import static iudx.resource.server.database.Constants.*;
 
 /**
@@ -25,7 +24,7 @@ import static iudx.resource.server.database.Constants.*;
 public class DatabaseServiceImpl implements DatabaseService {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseServiceImpl.class);
-  private final ElasticClient client;
+  private ElasticClient client;
   private JsonObject query;
   private QueryDecoder queryDecoder = new QueryDecoder();
 
@@ -85,16 +84,29 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     LOGGER.info("Info: Query constructed: " + query.toString());
-
-    client.searchAsync(VARANASI_TEST_SEARCH_INDEX, query.toString(), searchRes -> {
-      if (searchRes.succeeded()) {
-        LOGGER.debug("Success: Successful DB request");
-        handler.handle(Future.succeededFuture(searchRes.result()));
-      } else {
-        LOGGER.error("Fail: DB Request;" + searchRes.cause().getMessage());
-        handler.handle(Future.failedFuture(searchRes.cause().getMessage()));
-      }
-    });
+    if (LATEST_SEARCH.equalsIgnoreCase(request.getString(SEARCH_TYPE))) {
+      client.searchAsync(VARANASI_LATEST_RESOURCE_INDEX, FILTER_PATH_VAL_LATEST, query.toString(),
+          searchRes -> {
+            if (searchRes.succeeded()) {
+              LOGGER.debug("Success: Successful DB request");
+              handler.handle(Future.succeededFuture(searchRes.result()));
+            } else {
+              LOGGER.error("Fail: DB Request;" + searchRes.cause().getMessage());
+              handler.handle(Future.failedFuture(searchRes.cause().getMessage()));
+            }
+          });
+    } else {
+      client.searchAsync(VARANASI_TEST_SEARCH_INDEX, FILTER_PATH_VAL, query.toString(),
+          searchRes -> {
+          if (searchRes.succeeded()) {
+            LOGGER.debug("Success: Successful DB request");
+            handler.handle(Future.succeededFuture(searchRes.result()));
+          } else {
+            LOGGER.error("Fail: DB Request;" + searchRes.cause().getMessage());
+            handler.handle(Future.failedFuture(searchRes.cause().getMessage()));
+          }
+        });
+    }
     return this;
   }
 

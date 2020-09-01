@@ -8,6 +8,10 @@ import io.vertx.core.json.JsonObject;
 import java.io.IOException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.util.EntityUtils;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
@@ -26,8 +30,11 @@ public class ElasticClient {
    * @param databaseIP IP of the ElasticDB
    * @param databasePort Port of the ElasticDB
    */
-  public ElasticClient(String databaseIP, int databasePort) {
-    client = RestClient.builder(new HttpHost(databaseIP, databasePort, "http")).build();
+  public ElasticClient(String databaseIP, int databasePort, String user, String password) {
+    CredentialsProvider credentials = new BasicCredentialsProvider();
+    credentials.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(user, password));
+    client = RestClient.builder(new HttpHost(databaseIP, databasePort)).setHttpClientConfigCallback(
+        httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentials)).build();
   }
 
   /**
@@ -37,11 +44,11 @@ public class ElasticClient {
    * @param query Query
    * @param searchHandler JsonObject result {@link AsyncResult}
    */
-  public ElasticClient searchAsync(String index, String query,
+  public ElasticClient searchAsync(String index, String filterPathValue, String query,
       Handler<AsyncResult<JsonArray>> searchHandler) {
 
     Request queryRequest = new Request(REQUEST_GET, index);
-    queryRequest.addParameter(Constants.FILTER_PATH, Constants.FILTER_PATH_VAL);
+    queryRequest.addParameter(FILTER_PATH, filterPathValue);
     queryRequest.setJsonEntity(query);
 
     client.performRequestAsync(queryRequest, new ResponseListener() {
@@ -57,11 +64,16 @@ public class ElasticClient {
           }
 
           JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
-          if (!responseJson.containsKey(HITS)) {
+          if (!responseJson.containsKey(HITS) && !responseJson.containsKey(DOCS_KEY)) {
             searchHandler.handle(Future.failedFuture(EMPTY_RESPONSE));
             return;
           }
-          JsonArray responseHits = responseJson.getJsonObject(HITS).getJsonArray(HITS);
+          JsonArray responseHits = new JsonArray();
+          if (responseJson.containsKey(HITS)) {
+            responseHits = responseJson.getJsonObject(HITS).getJsonArray(HITS);
+          } else if (responseJson.containsKey(DOCS_KEY)) {
+            responseHits = responseJson.getJsonArray(DOCS_KEY);
+          }
           for (Object json : responseHits) {
             JsonObject jsonTemp = (JsonObject) json;
             dbResponse.add(jsonTemp.getJsonObject(SOURCE_FILTER_KEY));
