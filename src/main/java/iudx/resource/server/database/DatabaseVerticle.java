@@ -3,19 +3,12 @@ package iudx.resource.server.database;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.servicediscovery.Record;
-import io.vertx.servicediscovery.ServiceDiscovery;
-import io.vertx.servicediscovery.types.EventBusService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.serviceproxy.ServiceBinder;
-import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
-
 
 /**
  * The Database Verticle.
@@ -31,12 +24,7 @@ import java.util.Properties;
 
 public class DatabaseVerticle extends AbstractVerticle {
 
-  private static final Logger logger = LoggerFactory.getLogger(DatabaseVerticle.class);
-  private Vertx vertx;
-  private ClusterManager mgr;
-  private VertxOptions options;
-  private ServiceDiscovery discovery;
-  private Record record;
+  private static final Logger LOGGER = LogManager.getLogger(DatabaseVerticle.class);
   private DatabaseService database;
   private ElasticClient client;
   private Properties properties;
@@ -54,7 +42,7 @@ public class DatabaseVerticle extends AbstractVerticle {
    */
 
   @Override
-  public void start(Promise<Void> startPromise) throws Exception {
+  public void start() throws Exception {
 
 
     /* Read the configuration and set the rabbitMQ server properties. */
@@ -71,49 +59,14 @@ public class DatabaseVerticle extends AbstractVerticle {
 
     } catch (Exception ex) {
 
-      logger.info(ex.toString());
+      LOGGER.info(ex.toString());
 
     }
 
-    /* Create a reference to HazelcastClusterManager. */
-
-    mgr = new HazelcastClusterManager();
-    options = new VertxOptions().setClusterManager(mgr);
     client = new ElasticClient(databaseIP, databasePort);    
-    
-    /* Create or Join a Vert.x Cluster. */
+    database = new DatabaseServiceImpl(client);
 
-    Vertx.clusteredVertx(options, res -> {
-      if (res.succeeded()) {
-        vertx = res.result();
-        database = new DatabaseServiceImpl(client);
-
-        /* Publish the Database service with the Event Bus against an address. */
-
-        new ServiceBinder(vertx).setAddress(DATABASE_SERVICE_ADDRESS)
-            .register(DatabaseService.class, database);
-
-        /* Get a handler for the Service Discovery interface and publish a service record. */
-
-        discovery = ServiceDiscovery.create(vertx);
-        record = EventBusService.createRecord(DATABASE_SERVICE_ADDRESS, // The service name
-            DATABASE_SERVICE_ADDRESS, // the service address,
-            DatabaseService.class // the service interface
-        );
-
-        discovery.publish(record, publishRecordHandler -> {
-          if (publishRecordHandler.succeeded()) {
-            Record publishedRecord = publishRecordHandler.result();
-            startPromise.complete();
-            logger.info("Publication succeeded " + publishedRecord.toJson());
-          } else {
-            logger.info("Publication failed " + publishRecordHandler.result());
-          }
-        });
-
-      }
-
-    });
-
+    new ServiceBinder(vertx).setAddress(DATABASE_SERVICE_ADDRESS)
+      .register(DatabaseService.class, database);
   }
 }

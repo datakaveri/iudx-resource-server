@@ -3,8 +3,8 @@ package iudx.resource.server.apiserver.query;
 import io.vertx.core.MultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import iudx.resource.server.apiserver.util.Constants;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * NGSILDQueryParams Class to parse query parameters from HTTP request.
  */
 public class NGSILDQueryParams {
-  private static final Logger LOGGER = LoggerFactory.getLogger(NGSILDQueryParams.class);
+  private static final Logger LOGGER = LogManager.getLogger(NGSILDQueryParams.class);
 
   private List<URI> id;
   private List<String> type;

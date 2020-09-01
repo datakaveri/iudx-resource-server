@@ -7,8 +7,8 @@ import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
@@ -44,7 +44,7 @@ import org.apache.http.HttpStatus;
 
 public class DataBrokerServiceImpl implements DataBrokerService {
 
-  private static final Logger logger = LoggerFactory.getLogger(DataBrokerServiceImpl.class);
+  private static final Logger LOGGER = LogManager.getLogger(DataBrokerServiceImpl.class);
   private RabbitMQClient client;
   private String url;
   private WebClient webClient;
@@ -72,18 +72,18 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerServiceImpl(RabbitMQClient clientInstance, WebClient webClientInstance,
       JsonObject propObj, PgPool pgclientinstance) {
 
-    logger.info("Got the RabbitMQ Client instance");
+    LOGGER.info("Got the RabbitMQ Client instance");
     client = clientInstance;
     pgclient = pgclientinstance;
-    logger.info("Got the PSQL Client instance");
+    LOGGER.info("Got the PSQL Client instance");
 
     client.start(resultHandler -> {
 
       if (resultHandler.succeeded()) {
-        logger.info("RabbitMQ Client Connected");
+        LOGGER.info("RabbitMQ Client Connected");
 
       } else {
-        logger.info("RabbitMQ Client Not Connected");
+        LOGGER.info("RabbitMQ Client Not Connected");
       }
 
     });
@@ -114,9 +114,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     String resourceServer = request.getString("resourceServer");
     String userName = request.getString(Constants.CONSUMER);
 
-    logger.info("Resource Group Name given by user is : " + id);
-    logger.info("Resource Server Name by user is : " + resourceServer);
-    logger.info("User Name is : " + userName);
+    LOGGER.info("Resource Group Name given by user is : " + id);
+    LOGGER.info("Resource Server Name by user is : " + resourceServer);
+    LOGGER.info("User Name is : " + userName);
 
     /* Construct a response object */
     JsonObject registerResponse = new JsonObject();
@@ -136,7 +136,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
               if (rh.succeeded()) {
                 /* Obtain the result of user creation */
                 JsonObject result = rh.result();
-                logger.info("Response of createUserIfNotExist is : " + result);
+                LOGGER.info("Response of createUserIfNotExist is : " + result);
 
                 /* Construct the domain, userNameSHA, userID and adaptorID */
                 String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
@@ -144,8 +144,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                 String userID = domain + "/" + userNameSha;
                 String adaptorID = userID + "/" + resourceServer + "/" + id;
 
-                logger.info("userID is : " + userID);
-                logger.info("adaptorID is : " + adaptorID);
+                LOGGER.info("userID is : " + userID);
+                LOGGER.info("adaptorID is : " + adaptorID);
 
                 if (adaptorID != null && !adaptorID.isBlank() && !adaptorID.isEmpty()) {
                   JsonObject json = new JsonObject();
@@ -158,9 +158,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                       /* Obtain the result of exchange creation */
                       JsonObject obj = ar.result();
 
-                      logger.info("Response of createExchange is : " + obj);
-                      logger.info("exchange name provided : " + adaptorID);
-                      logger.info("exchange name received : " + obj.getString("exchange"));
+                      LOGGER.info("Response of createExchange is : " + obj);
+                      LOGGER.info("exchange name provided : " + adaptorID);
+                      LOGGER.info("exchange name received : " + obj.getString("exchange"));
 
                       // if exchange just registered then set topic permission and bind with queues
                       if (!obj.containsKey("detail")) {
@@ -169,14 +169,14 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                             domain + "/" + userNameSha + "/" + resourceServer + "/" + id, userID);
                         topicPermissionFuture.onComplete(topicHandler -> {
                           if (topicHandler.succeeded()) {
-                            logger.info("Write permission set on topic for exchange "
+                            LOGGER.info("Write permission set on topic for exchange "
                                 + obj.getString("exchange"));
                             /* Bind the exchange with the database and adaptorLogs queue */
                             Future<JsonObject> queueBindFuture = queueBinding(
                                 domain + "/" + userNameSha + "/" + resourceServer + "/" + id);
                             queueBindFuture.onComplete(res -> {
                               if (res.succeeded()) {
-                                logger.info("Queue_Database, Queue_adaptorLogs binding done with "
+                                LOGGER.info("Queue_Database, Queue_adaptorLogs binding done with "
                                     + obj.getString("exchange") + " exchange");
                                 /* Construct the response for registration of adaptor */
                                 registerResponse.put(Constants.USER_NAME,
@@ -191,12 +191,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                                     domain + "/" + userNameSha + "/" + resourceServer + "/" + id);
                                 registerResponse.put(Constants.VHOST, Constants.VHOST_IUDX);
 
-                                logger.info("registerResponse : " + registerResponse);
+                                LOGGER.info("registerResponse : " + registerResponse);
                                 handler.handle(Future.succeededFuture(registerResponse));
 
                               } else {
                                 /* Handle Queue Error */
-                                logger.error(
+                                LOGGER.error(
                                     "error in queue binding with adaptor - cause : " + res.cause());
                                 registerResponse.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
                                 handler.handle(Future.failedFuture(registerResponse.toString()));
@@ -206,7 +206,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
                           } else {
                             /* Handle Topic Permission Error */
-                            logger.info("topic permissions not set for exchange "
+                            LOGGER.info("topic permissions not set for exchange "
                                 + obj.getString("exchange") + " - cause : "
                                 + topicHandler.cause().getMessage());
 
@@ -221,14 +221,14 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                           && !obj.getString("detail").isEmpty()
                           && obj.getString("detail").equalsIgnoreCase("Exchange already exists")) {
                         /* Handle Exchange Error */
-                        logger.error("something wrong in exchange declaration : " + ar.cause());
+                        LOGGER.error("something wrong in exchange declaration : " + ar.cause());
                         registerResponse.put(Constants.ERROR, Constants.EXCHANGE_EXISTS);
                         handler.handle(Future.failedFuture(registerResponse.toString()));
                       }
 
                     } else {
                       /* Handle Exchange Error */
-                      logger.error("something wrong in exchange declaration : " + ar.cause());
+                      LOGGER.error("something wrong in exchange declaration : " + ar.cause());
                       registerResponse.put(Constants.ERROR, Constants.EXCHANGE_DECLARATION_ERROR);
                       handler.handle(Future.failedFuture(registerResponse.toString()));
 
@@ -238,7 +238,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
                 } else {
                   /* Handle Request Error */
-                  logger.error("AdaptorID / Exchange not provided in request");
+                  LOGGER.error("AdaptorID / Exchange not provided in request");
                   registerResponse.put(Constants.ERROR, Constants.ADAPTOR_ID_NOT_PROVIDED);
                   handler.handle(Future.failedFuture(registerResponse.toString()));
 
@@ -246,12 +246,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
               } else if (rh.failed()) {
                 /* Handle User Creation Error */
-                logger.error("User creation failed. " + rh.cause());
+                LOGGER.error("User creation failed. " + rh.cause());
                 registerResponse.put(Constants.ERROR, Constants.USER_CREATION_ERROR);
                 handler.handle(Future.failedFuture(registerResponse.toString()));
               } else {
                 /* Handle User Creation Error */
-                logger.error("User creation failed. " + rh.cause());
+                LOGGER.error("User creation failed. " + rh.cause());
                 registerResponse.put(Constants.ERROR, Constants.USER_CREATION_ERROR);
                 handler.handle(Future.failedFuture(registerResponse.toString()));
 
@@ -261,7 +261,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
           } else {
             /* Handle Request Error */
-            logger.error("user not provided in adaptor registration");
+            LOGGER.error("user not provided in adaptor registration");
             registerResponse.put(Constants.ERROR, Constants.USER_NAME_NOT_PROVIDED);
             handler.handle(Future.failedFuture(registerResponse.toString()));
           }
@@ -270,17 +270,17 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           registerResponse.put(Constants.ERROR, Constants.INVALID_ID);
           handler
               .handle(Future.failedFuture(new JsonObject().put("error", "invalid id").toString()));
-          logger.error("id not provided in adaptor registration");
+          LOGGER.error("id not provided in adaptor registration");
         }
       } else {
         /* Handle Request Error */
-        logger.error("id not provided in adaptor registration");
+        LOGGER.error("id not provided in adaptor registration");
         registerResponse.put(Constants.ERROR, Constants.ID_NOT_PROVIDED);
         handler.handle(Future.failedFuture(registerResponse.toString()));
       }
     } else {
       /* Handle Request Error */
-      logger.error("Bad Request");
+      LOGGER.error("Bad Request");
       registerResponse.put(Constants.ERROR, Constants.BAD_REQUEST);
       handler.handle(Future.failedFuture(registerResponse.toString()));
     }
@@ -323,7 +323,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
                               } else {
                                 /* Handle bind to adaptorLogs queue error */
-                                logger.error(" Queue_adaptorLogs binding error : "
+                                LOGGER.error(" Queue_adaptorLogs binding error : "
                                     + bindingdownstreamIssueResult.cause());
                                 response.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
                                 promise.fail(response.toString());
@@ -331,7 +331,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                             });
                       } else {
                         /* Handle bind to adaptorLogs queue error */
-                        logger.error(
+                        LOGGER.error(
                             " Queue_adaptorLogs binding error : " + bindingdataIssueResult.cause());
                         response.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
                         promise.fail(response.toString());
@@ -339,7 +339,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                     });
               } else {
                 /* Handle bind to adaptorLogs queue error */
-                logger
+                LOGGER
                     .error(" Queue_adaptorLogs binding error : " + bindingheartBeatResult.cause());
                 response.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
                 promise.fail(response.toString());
@@ -347,7 +347,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             });
       } else {
         /* Handle bind to database queue error */
-        logger.error(" Queue_Database binding error : " + result.cause());
+        LOGGER.error(" Queue_Database binding error : " + result.cause());
         response.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
         promise.fail(response.toString());
       }
@@ -381,7 +381,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         response.put(Constants.VHOST_PERMISSIONS, result.getString("vhostPermissions"));
         promise.complete(response);
       } else {
-        logger.info("Something went wrong - Cause: " + handler.cause());
+        LOGGER.info("Something went wrong - Cause: " + handler.cause());
         response.put(Constants.ERROR, Constants.USER_CREATION_ERROR);
         promise.fail(response.toString());
       }
@@ -415,7 +415,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       if (reply.succeeded()) {
         /* Check if user not found */
         if (reply.result().statusCode() == HttpStatus.SC_NOT_FOUND) {
-          logger.info(
+          LOGGER.info(
               "createUserIfNotExist success method : User not found. So creating user .........");
           /* Create new user */
           Future<JsonObject> userCreated = createUser(shaUsername, vhost, url);
@@ -431,7 +431,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
               response.put(Constants.VHOST_PERMISSIONS, result.getString("vhostPermissions"));
               promise.complete(response);
             } else {
-              logger.error("createUser method onComplete() - Error in user creation. Cause : "
+              LOGGER.error("createUser method onComplete() - Error in user creation. Cause : "
                   + handler.cause());
             }
           });
@@ -450,7 +450,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
       } else {
         /* Handle API error */
-        logger.info("Something went wrong while finding user using mgmt API: " + reply.cause());
+        LOGGER.info("Something went wrong while finding user using mgmt API: " + reply.cause());
         promise.fail(reply.cause().toString());
       }
 
@@ -481,13 +481,13 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       if (ar.succeeded()) {
         /* Check if user is created */
         if (ar.result().statusCode() == HttpStatus.SC_CREATED) {
-          logger.info("createUserRequest success");
+          LOGGER.info("createUserRequest success");
           response.put(Constants.SHA_USER_NAME, shaUsername);
           response.put(Constants.PASSWORD, arg.getString("password"));
           response.put(Constants.TITLE, Constants.SUCCESS);
           response.put(Constants.TYPE, "" + ar.result().statusCode());
           response.put(Constants.DETAILS, Constants.USER_CREATED);
-          logger.info("createUser method : given user created successfully");
+          LOGGER.info("createUser method : given user created successfully");
           // set permissions to vhost for newly created user
           Future<JsonObject> vhostPermission = setVhostPermissions(shaUsername, vhost);
           vhostPermission.onComplete(handler -> {
@@ -497,7 +497,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
               promise.complete(response);
             } else {
               /* Handle error */
-              logger.error("Error in setting vhostPermissions. Cause : " + handler.cause());
+              LOGGER.error("Error in setting vhostPermissions. Cause : " + handler.cause());
               response.put(Constants.VHOST_PERMISSIONS, Constants.VHOST_PERMISSIONS_FAILURE);
               promise.complete(response);
             }
@@ -505,13 +505,13 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
         } else {
           /* Handle error */
-          logger.error("createUser method - Some network error. cause" + ar.cause());
+          LOGGER.error("createUser method - Some network error. cause" + ar.cause());
           response.put(Constants.FAILURE, Constants.NETWORK_ISSUE);
           promise.fail(response.toString());
         }
       } else {
         /* Handle error */
-        logger.info("Something went wrong while creating user using mgmt API :" + ar.cause());
+        LOGGER.info("Something went wrong while creating user using mgmt API :" + ar.cause());
         response.put(Constants.FAILURE, Constants.CHECK_CREDENTIALS);
         promise.fail(response.toString());
       }
@@ -548,19 +548,19 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         /* Check if request was a success */
         if (result.result().statusCode() == HttpStatus.SC_CREATED) {
           response.put(Constants.TOPIC_PERMISSION, Constants.TOPIC_PERMISSION_SET_SUCCESS);
-          logger.info("Topic permission set");
+          LOGGER.info("Topic permission set");
           promise.complete(response);
         } else if (result.result()
             .statusCode() == HttpStatus.SC_NO_CONTENT) { /* Check if request was already served */
           response.put(Constants.TOPIC_PERMISSION, Constants.TOPIC_PERMISSION_ALREADY_SET);
           promise.complete(response);
         } else { /* Check if request has an error */
-          logger.error("Error in setting topic permissions" + result.result().statusMessage());
+          LOGGER.error("Error in setting topic permissions" + result.result().statusMessage());
           response.put(Constants.TOPIC_PERMISSION, Constants.TOPIC_PERMISSION_SET_ERROR);
           promise.fail(response.toString());
         }
       } else { /* Check if request has an error */
-        logger.error("Error in setting topic permission : " + result.cause());
+        LOGGER.error("Error in setting topic permission : " + result.cause());
         response.put(Constants.TOPIC_PERMISSION, Constants.TOPIC_PERMISSION_SET_ERROR);
         promise.fail(response.toString());
       }
@@ -599,14 +599,14 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       if (handler.succeeded()) {
         /* Check if permission was set */
         if (handler.result().statusCode() == HttpStatus.SC_CREATED) {
-          logger.info("vhostPermissionRequest success");
+          LOGGER.info("vhostPermissionRequest success");
           vhostPermissionResponse.put(Constants.VHOST_PERMISSIONS,
               Constants.VHOST_PERMISSIONS_WRITE);
-          logger.info(
+          LOGGER.info(
               "write permission set for user [ " + shaUsername + " ] in vHost [ " + vhost + "]");
           promise.complete(vhostPermissionResponse);
         } else {
-          logger.error("Error in write permission set for user [ " + shaUsername + " ] in vHost [ "
+          LOGGER.error("Error in write permission set for user [ " + shaUsername + " ] in vHost [ "
               + vhost + " ]");
           vhostPermissionResponse.put(Constants.VHOST_PERMISSIONS,
               Constants.VHOST_PERMISSION_SET_ERROR);
@@ -614,7 +614,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
       } else {
         /* Check if request has an error */
-        logger.error("Error in write permission set for user [ " + shaUsername + " ] in vHost [ "
+        LOGGER.error("Error in write permission set for user [ " + shaUsername + " ] in vHost [ "
             + vhost + " ]");
         vhostPermissionResponse.put(Constants.VHOST_PERMISSIONS,
             Constants.VHOST_PERMISSION_SET_ERROR);
@@ -636,7 +636,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     try {
       encodedVhost = URLEncoder.encode(vhost, StandardCharsets.UTF_8.toString());
     } catch (UnsupportedEncodingException ex) {
-      logger.error("Error in encode vhost name :" + ex.getCause());
+      LOGGER.error("Error in encode vhost name :" + ex.getCause());
     }
     return encodedVhost;
   }
@@ -655,7 +655,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       encodedValue = DigestUtils.md5Hex(plainUserName);
     } catch (Exception e) {
       // throw new RuntimeException(e);
-      logger.error("Unable to encode username using SHA" + e.getLocalizedMessage());
+      LOGGER.error("Unable to encode username using SHA" + e.getLocalizedMessage());
     }
     return encodedValue;
   }
@@ -679,10 +679,10 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     Matcher isInvalid = allowedPattern.matcher(id);
     
     if (isInvalid.find()) {
-      logger.info("Invalid ID" + id);
+      LOGGER.info("Invalid ID" + id);
       return false;
     } else {
-      logger.info("Valid ID" + id);
+      LOGGER.info("Valid ID" + id);
       return true;
     }
   }
@@ -715,7 +715,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("getExchange resultHandler failed : " + resultHandler.cause());
+          LOGGER.error("getExchange resultHandler failed : " + resultHandler.cause());
         }
       });
     }
@@ -756,7 +756,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           response.put("getExchange_error", result.cause());
           promise.fail("getExchange_error" + result.cause());
         }
-        logger.info("getExchange method response : " + response);
+        LOGGER.info("getExchange method response : " + response);
         promise.complete(response);
       });
 
@@ -789,7 +789,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           String exchangeID = request.getString("id");
           client.exchangeDelete(exchangeID, rh -> {
             if (rh.succeeded()) {
-              logger.info(exchangeID + " adaptor deleted successfully");
+              LOGGER.info(exchangeID + " adaptor deleted successfully");
               finalResponse.put("id", exchangeID);
               finalResponse.put(Constants.TYPE, "adaptor deletion");
               finalResponse.put(Constants.TITLE, "success");
@@ -800,7 +800,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
               finalResponse.put(Constants.DETAIL, rh.cause());
               handler.handle(Future.failedFuture("Bad request : nothing to delete"));
             } else {
-              logger.error("Something wrong in deleting adaptor" + rh.cause());
+              LOGGER.error("Something wrong in deleting adaptor" + rh.cause());
               handler.handle(Future.failedFuture("Bad request : nothing to delete"));
             }
             handler.handle(Future.succeededFuture(finalResponse));
@@ -817,7 +817,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       }
 
       if (resultHandler.failed()) {
-        logger.error("deleteAdaptor - resultHandler failed : " + resultHandler.cause());
+        LOGGER.error("deleteAdaptor - resultHandler failed : " + resultHandler.cause());
         handler.handle(Future.failedFuture("Bad request : nothing to delete"));
       }
 
@@ -847,7 +847,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("listAdaptor - resultHandler failed : " + resultHandler.cause());
+          LOGGER.error("listAdaptor - resultHandler failed : " + resultHandler.cause());
           handler.handle(Future.failedFuture(resultHandler.result().toString()));
         }
       });
@@ -883,10 +883,10 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           String streamingUrl = "amqp://" + userName + ":" + "1234" // generateRandomPassword()
               + "@" + Constants.BROKER_IP + ":" + Constants.BROKER_PORT + "/" + Constants.VHOST_IUDX
               + "/" + queueName;
-          logger.info("Streaming URL is : " + streamingUrl);
+          LOGGER.info("Streaming URL is : " + streamingUrl);
           JsonArray entitites = request.getJsonArray(Constants.ENTITIES);
-          logger.info("Request Access for " + entitites);
-          logger.info("No of bindings to do : " + entitites.size());
+          LOGGER.info("Request Access for " + entitites);
+          LOGGER.info("No of bindings to do : " + entitites.size());
 
           totalBindCount = entitites.size();
           totalBindSuccess = 0;
@@ -897,25 +897,25 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           resultqueue.onComplete(resultHandlerqueue -> {
             if (resultHandlerqueue.succeeded()) {
 
-              logger.info("sucess :: Create Queue " + resultHandlerqueue.result());
+              LOGGER.info("sucess :: Create Queue " + resultHandlerqueue.result());
               JsonObject createQueueResponse = (JsonObject) resultHandlerqueue.result();
 
               if (createQueueResponse.containsKey(Constants.TITLE) && createQueueResponse
                   .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
-                logger.error("failed ::" + resultHandlerqueue.cause());
+                LOGGER.error("failed ::" + resultHandlerqueue.cause());
                 handler.handle(Future.failedFuture(
                     new JsonObject().put(Constants.ERROR, "Queue Creation Failed").toString()));
               } else {
 
-                logger.info("Success Queue Created");
+                LOGGER.info("Success Queue Created");
 
                 for (Object currentEntity : entitites) {
                   String routingKey = (String) currentEntity;
-                  logger.info("routingKey is " + routingKey);
+                  LOGGER.info("routingKey is " + routingKey);
                   if (routingKey != null) {
                     if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
                         || routingKey.split("/").length != 5) {
-                      logger.error("failed :: Invalid (or) NULL routingKey");
+                      LOGGER.error("failed :: Invalid (or) NULL routingKey");
 
                       Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
                       resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
@@ -941,13 +941,13 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                         if (resultHandlerbind.succeeded()) {
                           // count++
                           totalBindSuccess += 1;
-                          logger.info("sucess :: totalBindSuccess " + totalBindSuccess
+                          LOGGER.info("sucess :: totalBindSuccess " + totalBindSuccess
                               + resultHandlerbind.result());
 
                           JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
                           if (bindResponse.containsKey(Constants.TITLE) && bindResponse
                               .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
-                            logger.error("failed ::" + resultHandlerbind.cause());
+                            LOGGER.error("failed ::" + resultHandlerbind.cause());
                             Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
                             resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                               if (resultHandlerDeletequeue.succeeded()) {
@@ -964,7 +964,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                                 Future.succeededFuture(registerStreamingSubscriptionResponse));
                           }
                         } else if (resultHandlerbind.failed()) {
-                          logger.error("failed ::" + resultHandlerbind.cause());
+                          LOGGER.error("failed ::" + resultHandlerbind.cause());
                           Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
                           resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                             if (resultHandlerDeletequeue.succeeded()) {
@@ -976,7 +976,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                       });
                     }
                   } else {
-                    logger.error("failed :: Invalid (or) NULL routingKey");
+                    LOGGER.error("failed :: Invalid (or) NULL routingKey");
                     Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
                     resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                       if (resultHandlerDeletequeue.succeeded()) {
@@ -988,14 +988,14 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                 }
               }
             } else if (resultHandlerqueue.failed()) {
-              logger.error("failed ::" + resultHandlerqueue.cause());
+              LOGGER.error("failed ::" + resultHandlerqueue.cause());
               handler.handle(Future.failedFuture("Queue Creation Failed"));
             }
           });
         }
       });
     } else {
-      logger.error("Error in payload");
+      LOGGER.error("Error in payload");
       handler.handle(Future
           .failedFuture(new JsonObject().put(Constants.ERROR, "Error in payload").toString()));
     }
@@ -1026,10 +1026,10 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           String streamingUrl = "amqp://" + userName + ":" + "1234" // generateRandomPassword()
               + "@" + Constants.BROKER_IP + ":" + Constants.BROKER_PORT + "/" + Constants.VHOST_IUDX
               + "/" + queueName;
-          logger.info("Streaming URL is : " + streamingUrl);
+          LOGGER.info("Streaming URL is : " + streamingUrl);
           JsonArray entitites = request.getJsonArray(Constants.ENTITIES);
-          logger.info("Request Access for " + entitites);
-          logger.info("No of bindings to do : " + entitites.size());
+          LOGGER.info("Request Access for " + entitites);
+          LOGGER.info("No of bindings to do : " + entitites.size());
 
           totalBindCount = entitites.size();
           totalBindSuccess = 0;
@@ -1039,31 +1039,31 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           Future<JsonObject> deleteQueue = deleteQueue(requestjson);
           deleteQueue.onComplete(deleteQueuehandler -> {
             if (deleteQueuehandler.succeeded()) {
-              logger.info("sucess :: Deleted Queue " + deleteQueuehandler.result());
+              LOGGER.info("sucess :: Deleted Queue " + deleteQueuehandler.result());
 
               Future<JsonObject> resultqueue = createQueue(requestjson);
               resultqueue.onComplete(resultHandlerqueue -> {
                 if (resultHandlerqueue.succeeded()) {
 
-                  logger.info("sucess :: Create Queue " + resultHandlerqueue.result());
+                  LOGGER.info("sucess :: Create Queue " + resultHandlerqueue.result());
                   JsonObject createQueueResponse = (JsonObject) resultHandlerqueue.result();
 
                   if (createQueueResponse.containsKey(Constants.TITLE) && createQueueResponse
                       .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
-                    logger.error("failed ::" + resultHandlerqueue.cause());
+                    LOGGER.error("failed ::" + resultHandlerqueue.cause());
                     handler.handle(Future.failedFuture(
                         new JsonObject().put(Constants.ERROR, "Queue Creation Failed").toString()));
                   } else {
 
-                    logger.info("Success Queue Created");
+                    LOGGER.info("Success Queue Created");
 
                     for (Object currentEntity : entitites) {
                       String routingKey = (String) currentEntity;
-                      logger.info("routingKey is " + routingKey);
+                      LOGGER.info("routingKey is " + routingKey);
                       if (routingKey != null) {
                         if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
                             || routingKey.split("/").length != 5) {
-                          logger.error("failed :: Invalid (or) NULL routingKey");
+                          LOGGER.error("failed :: Invalid (or) NULL routingKey");
 
                           Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
                           resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
@@ -1090,13 +1090,13 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                             if (resultHandlerbind.succeeded()) {
                               // count++
                               totalBindSuccess += 1;
-                              logger.info("sucess :: totalBindSuccess " + totalBindSuccess
+                              LOGGER.info("sucess :: totalBindSuccess " + totalBindSuccess
                                   + resultHandlerbind.result());
 
                               JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
                               if (bindResponse.containsKey(Constants.TITLE) && bindResponse
                                   .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
-                                logger.error("failed ::" + resultHandlerbind.cause());
+                                LOGGER.error("failed ::" + resultHandlerbind.cause());
                                 Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
                                 resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                                   if (resultHandlerDeletequeue.succeeded()) {
@@ -1113,7 +1113,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                                     Future.succeededFuture(updateStreamingSubscriptionResponse));
                               }
                             } else if (resultHandlerbind.failed()) {
-                              logger.error("failed ::" + resultHandlerbind.cause());
+                              LOGGER.error("failed ::" + resultHandlerbind.cause());
                               Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
                               resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                                 if (resultHandlerDeletequeue.succeeded()) {
@@ -1125,7 +1125,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                           });
                         }
                       } else {
-                        logger.error("failed :: Invalid (or) NULL routingKey");
+                        LOGGER.error("failed :: Invalid (or) NULL routingKey");
                         Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
                         resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                           if (resultHandlerDeletequeue.succeeded()) {
@@ -1137,19 +1137,19 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                     }
                   }
                 } else if (resultHandlerqueue.failed()) {
-                  logger.error("failed ::" + resultHandlerqueue.cause());
+                  LOGGER.error("failed ::" + resultHandlerqueue.cause());
                   handler.handle(Future.failedFuture("Queue Creation Failed"));
                 }
               });
             } else if (deleteQueuehandler.failed()) {
-              logger.error("failed ::" + deleteQueuehandler.cause());
+              LOGGER.error("failed ::" + deleteQueuehandler.cause());
               handler.handle(Future.failedFuture("Queue Deletion Failed"));
             }
           });
         }
       });
     } else {
-      logger.error("Error in payload");
+      LOGGER.error("Error in payload");
       handler.handle(Future
           .failedFuture(new JsonObject().put(Constants.ERROR, "Error in payload").toString()));
     }
@@ -1169,8 +1169,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     JsonObject requestjson = new JsonObject();
     if (request != null && !request.isEmpty()) {
       JsonArray entitites = request.getJsonArray(Constants.ENTITIES);
-      logger.info("Request Access for " + entitites);
-      logger.info("No of bindings to do : " + entitites.size());
+      LOGGER.info("Request Access for " + entitites);
+      LOGGER.info("No of bindings to do : " + entitites.size());
 
       totalBindCount = entitites.size();
       totalBindSuccess = 0;
@@ -1181,7 +1181,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       result.onComplete(resultHandlerqueue -> {
         if (resultHandlerqueue.succeeded()) {
           JsonObject listQueueResponse = (JsonObject) resultHandlerqueue.result();
-          logger.info(listQueueResponse);
+          LOGGER.info(listQueueResponse);
           if (listQueueResponse.containsKey(Constants.TITLE)
               && listQueueResponse.getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
             handler.handle(Future.failedFuture(
@@ -1189,11 +1189,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           } else {
             for (Object currentEntity : entitites) {
               String routingKey = (String) currentEntity;
-              logger.info("routingKey is " + routingKey);
+              LOGGER.info("routingKey is " + routingKey);
               if (routingKey != null) {
                 if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
                     || routingKey.split("/").length != 5) {
-                  logger.error("failed :: Invalid (or) NULL routingKey");
+                  LOGGER.error("failed :: Invalid (or) NULL routingKey");
 
                   handler.handle(Future.failedFuture(
                       new JsonObject().put(Constants.ERROR, "Invalid routingKey").toString()));
@@ -1213,13 +1213,13 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                     if (resultHandlerbind.succeeded()) {
                       // count++
                       totalBindSuccess += 1;
-                      logger.info("sucess :: totalBindSuccess " + totalBindSuccess
+                      LOGGER.info("sucess :: totalBindSuccess " + totalBindSuccess
                           + resultHandlerbind.result());
 
                       JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
                       if (bindResponse.containsKey(Constants.TITLE) && bindResponse
                           .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
-                        logger.error("failed ::" + resultHandlerbind.cause());
+                        LOGGER.error("failed ::" + resultHandlerbind.cause());
                         handler.handle(Future.failedFuture(
                             new JsonObject().put(Constants.ERROR, "Binding Failed").toString()));
                       } else if (totalBindSuccess == totalBindCount) {
@@ -1229,14 +1229,14 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                         handler.handle(Future.succeededFuture(appendStreamingSubscriptionResponse));
                       }
                     } else if (resultHandlerbind.failed()) {
-                      logger.error("failed ::" + resultHandlerbind.cause());
+                      LOGGER.error("failed ::" + resultHandlerbind.cause());
                       handler.handle(Future.failedFuture(
                           new JsonObject().put(Constants.ERROR, "Binding Failed").toString()));
                     }
                   });
                 }
               } else {
-                logger.error("failed :: Invalid (or) NULL routingKey");
+                LOGGER.error("failed :: Invalid (or) NULL routingKey");
                 Future<JsonObject> resultDeletequeue = deleteQueue(requestjson);
                 resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                   if (resultHandlerDeletequeue.succeeded()) {
@@ -1248,13 +1248,13 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             }
           }
         } else {
-          logger.error("Error in payload");
+          LOGGER.error("Error in payload");
           handler.handle(Future
               .failedFuture(new JsonObject().put(Constants.ERROR, "Error in payload").toString()));
         }
       });
     } else {
-      logger.error("Error in payload");
+      LOGGER.error("Error in payload");
       handler.handle(Future
           .failedFuture(new JsonObject().put(Constants.ERROR, "Error in payload").toString()));
     }
@@ -1283,7 +1283,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
           if (deleteQueueResponse.containsKey(Constants.TITLE) && deleteQueueResponse
               .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
-            logger.info("failed :: Response is " + deleteQueueResponse);
+            LOGGER.info("failed :: Response is " + deleteQueueResponse);
             handler.handle(Future.failedFuture(deleteQueueResponse.toString()));
           } else {
             deleteStreamingSubscription.put(Constants.SUBSCRIPTION_ID, queueName);
@@ -1291,7 +1291,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           }
         }
         if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
+          LOGGER.error("failed ::" + resultHandler.cause());
           handler.handle(Future.failedFuture(
               new JsonObject().put(Constants.ERROR, Constants.QUEUE_DELETE_ERROR).toString()));
         }
@@ -1321,15 +1321,15 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
           if (listQueueResponse.containsKey(Constants.TITLE) && listQueueResponse
               .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
-            logger.info("failed :: Response is " + listQueueResponse);
+            LOGGER.info("failed :: Response is " + listQueueResponse);
             handler.handle(Future.failedFuture(listQueueResponse.toString()));
           } else {
-            logger.info(listQueueResponse);
+            LOGGER.info(listQueueResponse);
             handler.handle(Future.succeededFuture(listQueueResponse));
           }
         }
         if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
+          LOGGER.error("failed ::" + resultHandler.cause());
           handler.handle(Future.failedFuture(
               new JsonObject().put(Constants.ERROR, Constants.QUEUE_LIST_ERROR).toString()));
         }
@@ -1358,7 +1358,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       publishjson.put(Constants.OPERATION, "create");
       JsonObject requestjson = new JsonObject();
 
-      logger.info("Call Back registration ID check starts");
+      LOGGER.info("Call Back registration ID check starts");
       pgclient.preparedQuery("Select * FROM registercallback WHERE subscriptionID = $1")
           .execute(Tuple.of(subscriptionID), resultHandlerSelectID -> {
             if (resultHandlerSelectID.succeeded()) {
@@ -1367,11 +1367,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
               String subscriptionIDdb = null;
               for (Row row : result) {
                 subscriptionIDdb = row.getString(0);
-                logger.info(subscriptionIDdb);
+                LOGGER.info(subscriptionIDdb);
               }
 
               if (subscriptionID.equalsIgnoreCase(subscriptionIDdb)) {
-                logger.info("Call Back registration has duplicate ID");
+                LOGGER.info("Call Back registration has duplicate ID");
                 registerCallbackSubscriptionResponse.put(Constants.ERROR,
                     "duplicate key value violates unique constraint");
                 handler
@@ -1388,18 +1388,18 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
                 for (Object currentEntity : entitites) {
                   String routingKey = (String) currentEntity;
-                  logger.info("routingKey is " + routingKey);
+                  LOGGER.info("routingKey is " + routingKey);
                   if (routingKey != null) {
                     if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
                         || routingKey.split("/").length != 5) {
-                      logger.error("failed :: Invalid (or) NULL routingKey");
+                      LOGGER.error("failed :: Invalid (or) NULL routingKey");
                       registerCallbackSubscriptionResponse.put(Constants.ERROR,
                           "Invalid routingKey");
                       handler.handle(
                           Future.failedFuture(registerCallbackSubscriptionResponse.toString()));
 
                     } else {
-                      logger.info("Valid ID :: Call Back registration starts");
+                      LOGGER.info("Valid ID :: Call Back registration starts");
                       String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
                       JsonArray array = new JsonArray();
                       array.add(currentEntity);
@@ -1412,14 +1412,14 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                       resultbind.onComplete(resultHandlerbind -> {
                         if (resultHandlerbind.succeeded()) {
                           totalBindSuccess += 1;
-                          logger.info("sucess :: totalBindSuccess " + totalBindSuccess
+                          LOGGER.info("sucess :: totalBindSuccess " + totalBindSuccess
                               + resultHandlerbind.result());
 
                           JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
                           if (bindResponse.containsKey(Constants.TITLE) && bindResponse
                               .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
 
-                            logger.error("failed ::" + resultHandlerbind.cause());
+                            LOGGER.error("failed ::" + resultHandlerbind.cause());
                             pgclient
                                 .preparedQuery(
                                     "Delete from registercallback WHERE subscriptionID = $1")
@@ -1448,7 +1448,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                                               if (resultHandler.succeeded()) {
                                                 registerCallbackSubscriptionResponse
                                                     .put("subscriptionID", subscriptionID);
-                                                logger.info("Message published to queue");
+                                                LOGGER.info("Message published to queue");
                                                 handler.handle(Future.succeededFuture(
                                                     registerCallbackSubscriptionResponse));
                                               } else {
@@ -1466,7 +1466,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                                               }
                                             });
                                       } else {
-                                        logger.error("failed ::" + ar.cause().getMessage());
+                                        LOGGER.error("failed ::" + ar.cause().getMessage());
 
                                         pgclient.preparedQuery(
                                             "Delete from registercallback WHERE subscriptionID = $1 ")
@@ -1485,7 +1485,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                                     });
                           }
                         } else if (resultHandlerbind.failed()) {
-                          logger.error("failed ::" + resultHandlerbind.cause());
+                          LOGGER.error("failed ::" + resultHandlerbind.cause());
                           registerCallbackSubscriptionResponse.put(Constants.ERROR,
                               "Binding Failed");
                           handler.handle(
@@ -1494,7 +1494,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                       });
                     }
                   } else {
-                    logger.error("failed :: Invalid (or) NULL routingKey");
+                    LOGGER.error("failed :: Invalid (or) NULL routingKey");
                     registerCallbackSubscriptionResponse.put(Constants.ERROR, "Invalid routingKey");
                     handler.handle(Future.succeededFuture(registerCallbackSubscriptionResponse));
                   }
@@ -1503,7 +1503,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             }
           });
     } else {
-      logger.error("Error in payload");
+      LOGGER.error("Error in payload");
       registerCallbackSubscriptionResponse.put(Constants.ERROR, "Error in payload");
       handler.handle(Future.failedFuture(registerCallbackSubscriptionResponse.toString()));
     }
@@ -1534,11 +1534,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
       for (Object currentEntity : entitites) {
         String routingKey = (String) currentEntity;
-        logger.info("routingKey is " + routingKey);
+        LOGGER.info("routingKey is " + routingKey);
         if (routingKey != null) {
           if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
               || routingKey.split("/").length != 5) {
-            logger.error("failed :: Invalid (or) NULL routingKey");
+            LOGGER.error("failed :: Invalid (or) NULL routingKey");
             updateCallbackSubscriptionResponse.put(Constants.ERROR, "Invalid routingKey");
             handler.handle(Future.failedFuture(updateCallbackSubscriptionResponse.toString()));
           } else {
@@ -1555,12 +1555,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
               if (resultHandlerbind.succeeded()) {
                 // count++
                 totalBindSuccess += 1;
-                logger.info(
+                LOGGER.info(
                     "sucess :: totalBindSuccess " + totalBindSuccess + resultHandlerbind.result());
                 JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
                 if (bindResponse.containsKey(Constants.TITLE) && bindResponse
                     .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
-                  logger.error("failed ::" + resultHandlerbind.cause());
+                  LOGGER.error("failed ::" + resultHandlerbind.cause());
 
                   updateCallbackSubscriptionResponse.put(Constants.ERROR, "Binding Failed");
                   handler
@@ -1582,11 +1582,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                             if (resultHandler.succeeded()) {
                               updateCallbackSubscriptionResponse.put("subscriptionID",
                                   subscriptionID);
-                              logger.info("Message published to queue");
+                              LOGGER.info("Message published to queue");
                               handler.handle(
                                   Future.succeededFuture(updateCallbackSubscriptionResponse));
                             } else {
-                              logger.info("Message published failed");
+                              LOGGER.info("Message published failed");
                               updateCallbackSubscriptionResponse.put("messagePublished", "failed");
                               handler.handle(Future
                                   .failedFuture(updateCallbackSubscriptionResponse.toString()));
@@ -1594,7 +1594,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                           });
 
                         } else {
-                          logger.error("failed ::" + ar.cause().getMessage());
+                          LOGGER.error("failed ::" + ar.cause().getMessage());
                           updateCallbackSubscriptionResponse.put(Constants.ERROR,
                               "duplicate key value violates unique constraint");
                           handler.handle(
@@ -1603,21 +1603,21 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                       });
                 }
               } else if (resultHandlerbind.failed()) {
-                logger.error("failed ::" + resultHandlerbind.cause());
+                LOGGER.error("failed ::" + resultHandlerbind.cause());
                 updateCallbackSubscriptionResponse.put(Constants.ERROR, "Binding Failed");
                 handler.handle(Future.failedFuture(updateCallbackSubscriptionResponse.toString()));
               }
             });
           }
         } else {
-          logger.error("failed :: Invalid (or) NULL routingKey");
+          LOGGER.error("failed :: Invalid (or) NULL routingKey");
           updateCallbackSubscriptionResponse.put(Constants.ERROR, "Invalid routingKey");
           handler.handle(Future.failedFuture(updateCallbackSubscriptionResponse.toString()));
         }
       }
 
     } else {
-      logger.error("Error in payload");
+      LOGGER.error("Error in payload");
       updateCallbackSubscriptionResponse.put(Constants.ERROR, "Error in payload");
       handler.handle(Future.failedFuture(updateCallbackSubscriptionResponse.toString()));
     }
@@ -1639,7 +1639,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       String subscriptionID =
           domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
 
-      logger.info("Call Back registration ID check starts");
+      LOGGER.info("Call Back registration ID check starts");
       pgclient.preparedQuery("Select * FROM registercallback WHERE subscriptionID = $1")
           .execute(Tuple.of(subscriptionID), resultHandlerSelectID -> {
             if (resultHandlerSelectID.succeeded()) {
@@ -1648,11 +1648,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
               String subscriptionIDdb = null;
               for (Row row : result) {
                 subscriptionIDdb = row.getString(0);
-                logger.info(subscriptionIDdb);
+                LOGGER.info(subscriptionIDdb);
               }
 
               if (!subscriptionID.equalsIgnoreCase(subscriptionIDdb)) {
-                logger.info("Call Back ID not found");
+                LOGGER.info("Call Back ID not found");
                 deleteCallbackSubscriptionResponse.put(Constants.ERROR, "Call Back ID not found");
                 handler.handle(Future.failedFuture(deleteCallbackSubscriptionResponse.toString()));
               } else {
@@ -1671,16 +1671,16 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                           if (resultHandler.succeeded()) {
                             deleteCallbackSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
                                 subscriptionID);
-                            logger.info("Message published to queue");
+                            LOGGER.info("Message published to queue");
                           } else {
-                            logger.info("Message published failed");
+                            LOGGER.info("Message published failed");
                             deleteCallbackSubscriptionResponse.put("messagePublished", "failed");
                           }
                           handler
                               .handle(Future.succeededFuture(deleteCallbackSubscriptionResponse));
                         });
                       } else {
-                        logger.error("failed ::" + ar.cause().getMessage());
+                        LOGGER.error("failed ::" + ar.cause().getMessage());
                         deleteCallbackSubscriptionResponse.put(Constants.ERROR, "delete failed");
                         handler.handle(Future.succeededFuture(deleteCallbackSubscriptionResponse));
                       }
@@ -1689,7 +1689,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             }
           });
     } else {
-      logger.error("Error in payload");
+      LOGGER.error("Error in payload");
       deleteCallbackSubscriptionResponse.put(Constants.ERROR, "Error in payload");
       handler.handle(Future.succeededFuture(deleteCallbackSubscriptionResponse));
     }
@@ -1713,7 +1713,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           .execute(Tuple.of(subscriptionID), ar -> {
             if (ar.succeeded()) {
               RowSet<Row> result = ar.result();
-              logger.info(ar.result().size() + " rows");
+              LOGGER.info(ar.result().size() + " rows");
               /* Iterating Rows for getting entity, callbackurl, username and password */
               if (ar.result().size() > 0) {
                 for (Row row : result) {
@@ -1735,7 +1735,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             }
           });
     } else {
-      logger.error("Error in payload");
+      LOGGER.error("Error in payload");
       listCallbackSubscriptionResponse.put(Constants.ERROR, "Error in payload");
       handler.handle(Future.failedFuture(listCallbackSubscriptionResponse.toString()));
     }
@@ -1758,7 +1758,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
+          LOGGER.error("failed ::" + resultHandler.cause());
           handler.handle(Future.failedFuture(resultHandler.result().toString()));
         }
       });
@@ -1807,7 +1807,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           }
 
         } else {
-          logger.error("Creation of Exchange failed" + ar.cause());
+          LOGGER.error("Creation of Exchange failed" + ar.cause());
           finalResponse.put(Constants.ERROR, Constants.EXCHANGE_CREATE_ERROR);
           promise.fail(finalResponse.toString());
         }
@@ -1845,7 +1845,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
+          LOGGER.error("failed ::" + resultHandler.cause());
           handler.handle(Future.failedFuture(resultHandler.result().toString()));
         }
       });
@@ -1881,9 +1881,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             }
           }
           promise.complete(finalResponse);
-          logger.info(finalResponse);
+          LOGGER.info(finalResponse);
         } else {
-          logger.error("Deletion of Exchange failed" + ar.cause());
+          LOGGER.error("Deletion of Exchange failed" + ar.cause());
           finalResponse.put(Constants.ERROR, Constants.EXCHANGE_DELETE_ERROR);
           promise.fail(finalResponse.toString());
         }
@@ -1908,7 +1908,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
+          LOGGER.error("failed ::" + resultHandler.cause());
           handler.handle(Future.failedFuture(resultHandler.result().toString()));
         }
       });
@@ -1969,9 +1969,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             }
           }
           promise.complete(finalResponse);
-          logger.info(finalResponse);
+          LOGGER.info(finalResponse);
         } else {
-          logger.error("Listing of Exchange failed" + ar.cause());
+          LOGGER.error("Listing of Exchange failed" + ar.cause());
           finalResponse.put(Constants.ERROR, Constants.EXCHANGE_LIST_ERROR);
           promise.fail(finalResponse.toString());
         }
@@ -1997,7 +1997,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
+          LOGGER.error("failed ::" + resultHandler.cause());
           handler.handle(Future.failedFuture(resultHandler.result().toString()));
         }
       });
@@ -2043,9 +2043,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             }
           }
           promise.complete(finalResponse);
-          logger.info(finalResponse);
+          LOGGER.info(finalResponse);
         } else {
-          logger.error("Creation of Queue failed" + ar.cause());
+          LOGGER.error("Creation of Queue failed" + ar.cause());
           finalResponse.put(Constants.ERROR, Constants.QUEUE_CREATE_ERROR);
           promise.fail(finalResponse.toString());
         }
@@ -2083,7 +2083,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
+          LOGGER.error("failed ::" + resultHandler.cause());
           handler.handle(Future.failedFuture(resultHandler.result().toString()));
         }
       });
@@ -2121,9 +2121,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             }
           }
           promise.complete(finalResponse);
-          logger.info(finalResponse);
+          LOGGER.info(finalResponse);
         } else {
-          logger.error("Deletion of Queue failed" + ar.cause());
+          LOGGER.error("Deletion of Queue failed" + ar.cause());
           finalResponse.put(Constants.ERROR, Constants.QUEUE_DELETE_ERROR);
           promise.fail(finalResponse.toString());
         }
@@ -2148,7 +2148,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
+          LOGGER.error("failed ::" + resultHandler.cause());
           handler.handle(Future.failedFuture(resultHandler.result().toString()));
         }
       });
@@ -2185,7 +2185,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             HttpResponse<Buffer> response = ar.result();
             if (response != null && !response.equals(" ")) {
               int status = response.statusCode();
-              logger.info("Binding " + rkey.toString() + "Success. Status is " + status);
+              LOGGER.info("Binding " + rkey.toString() + "Success. Status is " + status);
               if (status == HttpStatus.SC_CREATED) {
                 finalResponse.put(Constants.EXCHANGE, exchangeName);
                 finalResponse.put(Constants.QUEUE, queueName);
@@ -2200,7 +2200,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
               promise.complete(finalResponse);
             }
           } else {
-            logger.error("Binding of Queue failed" + ar.cause());
+            LOGGER.error("Binding of Queue failed" + ar.cause());
             finalResponse.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
             promise.fail(finalResponse.toString());
           }
@@ -2229,7 +2229,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
+          LOGGER.error("failed ::" + resultHandler.cause());
           handler.handle(Future.failedFuture(resultHandler.result().toString()));
         }
       });
@@ -2286,7 +2286,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
              * else { responseArray.add(reponse); }
              */
           } else {
-            logger.error("Unbinding of Queue failed" + ar.cause());
+            LOGGER.error("Unbinding of Queue failed" + ar.cause());
             finalResponse.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
             promise.fail(finalResponse.toString());
           }
@@ -2314,7 +2314,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
+          LOGGER.error("failed ::" + resultHandler.cause());
           handler.handle(Future.failedFuture(resultHandler.result().toString()));
         }
       });
@@ -2352,9 +2352,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             }
           }
           promise.complete(finalResponse);
-          logger.info(finalResponse);
+          LOGGER.info(finalResponse);
         } else {
-          logger.error("Creation of vHost failed" + ar.cause());
+          LOGGER.error("Creation of vHost failed" + ar.cause());
           finalResponse.put(Constants.ERROR, Constants.VHOST_CREATE_ERROR);
           promise.fail(finalResponse.toString());
         }
@@ -2391,7 +2391,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
+          LOGGER.error("failed ::" + resultHandler.cause());
           handler.handle(Future.failedFuture(resultHandler.result().toString()));
         }
       });
@@ -2430,9 +2430,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             }
           }
           promise.complete(finalResponse);
-          logger.info(finalResponse);
+          LOGGER.info(finalResponse);
         } else {
-          logger.error("Deletion of vHost failed" + ar.cause());
+          LOGGER.error("Deletion of vHost failed" + ar.cause());
           finalResponse.put(Constants.ERROR, Constants.VHOST_DELETE_ERROR);
           promise.fail(finalResponse.toString());
         }
@@ -2456,7 +2456,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
+          LOGGER.error("failed ::" + resultHandler.cause());
           handler.handle(Future.failedFuture(resultHandler.result().toString()));
         }
       });
@@ -2507,9 +2507,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             }
           }
           promise.complete(finalResponse);
-          logger.info(finalResponse);
+          LOGGER.info(finalResponse);
         } else {
-          logger.error("Listing of vHost failed" + ar.cause());
+          LOGGER.error("Listing of vHost failed" + ar.cause());
           finalResponse.put(Constants.ERROR, Constants.VHOST_LIST_ERROR);
           promise.fail(finalResponse.toString());
         }
@@ -2547,7 +2547,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {
-          logger.error("failed ::" + resultHandler.cause());
+          LOGGER.error("failed ::" + resultHandler.cause());
           handler.handle(Future.failedFuture(resultHandler.result().toString()));
         }
       });
@@ -2601,9 +2601,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             }
           }
           promise.complete(finalResponse);
-          logger.info(finalResponse);
+          LOGGER.info(finalResponse);
         } else {
-          logger.error("Listing of Queue failed" + ar.cause());
+          LOGGER.error("Listing of Queue failed" + ar.cause());
           finalResponse.put(Constants.ERROR, Constants.QUEUE_LIST_ERROR);
           promise.fail(finalResponse.toString());
         }
@@ -2632,10 +2632,10 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           if (resultHandler.succeeded()) {
             finalResponse.put(Constants.STATUS, HttpStatus.SC_OK);
             handler.handle(Future.succeededFuture(finalResponse));
-            logger.info("Message published to queue");
+            LOGGER.info("Message published to queue");
           } else {
             finalResponse.put(Constants.TYPE, HttpStatus.SC_BAD_REQUEST);
-            logger.error("Message publishing failed");
+            LOGGER.error("Message publishing failed");
             resultHandler.cause().printStackTrace();
             handler.handle(Future.failedFuture(resultHandler.result().toString()));
           }
@@ -2676,14 +2676,14 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                       message.put("body", request.toString());
                       client.basicPublish(adaptor, routingKey, message, resultHandler -> {
                         if (resultHandler.succeeded()) {
-                          logger.info("publishHeartbeat - message published to queue [ " + queueName
+                          LOGGER.info("publishHeartbeat - message published to queue [ " + queueName
                               + " ] for routingKey [ " + routingKey + " ]");
                           response.put("type", "success");
                           response.put("queueName", queueName);
                           response.put("routingKey", rk.toString());
                           response.put("detail", "routingKey matched");
                         } else {
-                          logger.error(
+                          LOGGER.error(
                               "publishHeartbeat - some error in publishing message to queue [ "
                                   + queueName + " ]. cause : " + resultHandler.cause());
                           response.put("messagePublished", "failed");
@@ -2693,7 +2693,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                         handler.handle(Future.succeededFuture(response));
                       });
                     } else {
-                      logger.error(
+                      LOGGER.error(
                           "publishHeartbeat - routingKey [ " + routingKey + " ] not matched with [ "
                               + rk.toString() + " ] for queue [ " + queueName + " ]");
                     }
@@ -2702,7 +2702,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                 });
 
               } else {
-                logger.error(
+                LOGGER.error(
                     "publishHeartbeat method - Oops !! None queue bound with given exchange");
                 handler.handle(Future.failedFuture(
                     "publishHeartbeat method - Oops !! None queue bound with given exchange"));
@@ -2711,20 +2711,20 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             });
 
           } else {
-            logger.error("Either adaptor does not exist or some other error to publish message");
+            LOGGER.error("Either adaptor does not exist or some other error to publish message");
             handler.handle(Future.failedFuture(
                 "Either adaptor does not exist or some other error to publish message"));
           }
 
         });
       } else {
-        logger.error("publishHeartbeat - adaptor and routingKey not provided to publish message");
+        LOGGER.error("publishHeartbeat - adaptor and routingKey not provided to publish message");
         handler.handle(Future.failedFuture(
             "publishHeartbeat - adaptor and routingKey not provided to publish message"));
       }
 
     } else {
-      logger.error("publishHeartbeat - request is null to publish message");
+      LOGGER.error("publishHeartbeat - request is null to publish message");
       handler.handle(Future.failedFuture("publishHeartbeat - request is null to publish message"));
     }
 

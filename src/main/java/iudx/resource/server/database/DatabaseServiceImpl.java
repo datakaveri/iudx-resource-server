@@ -5,8 +5,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static iudx.resource.server.database.Constants.*;
 
@@ -24,7 +24,7 @@ import static iudx.resource.server.database.Constants.*;
 
 public class DatabaseServiceImpl implements DatabaseService {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseServiceImpl.class);
+  private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceImpl.class);
   private final ElasticClient client;
   private JsonObject query;
   private QueryDecoder queryDecoder = new QueryDecoder();
