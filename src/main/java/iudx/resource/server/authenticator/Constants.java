@@ -13,9 +13,10 @@ public class Constants {
   public static final List<String> OPEN_ENDPOINTS =
       List.of("/ngsi-ld/v1/temporal/entities", "/ngsi-ld/v1/entities");
   public static final String AUTH_TIP_PATH = "/auth/v1/token/introspect";
-  public static final List<String> CLOSED_ENDPOINTS =
-      List.of("/iudx/v1/adaptor", "/ngsi-ld/v1/subscription");
+  public static final List<String> CLOSED_ENDPOINTS = List.of("/iudx/v1/adapter",
+      "/ngsi-ld/v1/subscription", "/management/queue", "/management/exchange", "/management/vhost");
   public static final long TIP_CACHE_TIMEOUT_AMOUNT = 30;
   public static final ChronoUnit TIP_CACHE_TIMEOUT_UNIT = ChronoUnit.MINUTES;
   public static final String CAT_RSG_PATH = "/iudx/cat/v1/search";
+  public static final String SERVER_MODE = "serverMode";
 }
