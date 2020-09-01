@@ -98,7 +98,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       result.put("message", "Public token cannot access requested endpoint");
       handler.handle(Future.succeededFuture(result));
       return this;
-    }
+    } else if (token.equals(Constants.PUBLIC_TOKEN)
+        && Constants.OPEN_ENDPOINTS.contains(requestEndpoint)
+        && properties.getProperty(Constants.SERVER_MODE).equalsIgnoreCase("testing")) {
+      JsonObject result = new JsonObject();
+      result.put("status", "success");
+      handler.handle(Future.succeededFuture(result));
+      return this;
+    } else {
 
     Future<JsonObject> tipResponseFut = retrieveTipResponse(token);
     Future<HashMap<String, Boolean>> catResponseFut = isOpenResource(request.getJsonArray("ids"));
@@ -135,6 +142,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       handler.handle(Future.succeededFuture(json));
     });
     return this;
+    }
   }
 
   private boolean isValidEndpoint(String requestEndpoint, JsonArray apis) {
