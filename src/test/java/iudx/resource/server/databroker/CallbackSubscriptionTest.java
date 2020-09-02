@@ -1,5 +1,9 @@
 package iudx.resource.server.databroker;
 
+
+import static iudx.resource.server.databroker.util.Constants.*;
+import static iudx.resource.server.databroker.util.Util.*;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -33,6 +37,8 @@ import io.vertx.sqlclient.PoolOptions;
 @TestMethodOrder(OrderAnnotation.class)
 public class CallbackSubscriptionTest {
 
+  private static final Logger logger = LoggerFactory.getLogger(CallbackSubscriptionTest.class);
+
   static DataBrokerService databroker;
   static private Properties properties;
   static private InputStream inputstream;
@@ -62,7 +68,10 @@ public class CallbackSubscriptionTest {
   private static PgConnectOptions connectOptions;
   private static PoolOptions poolOptions;
   private static PgPool pgclient;
-  private static final Logger logger = LoggerFactory.getLogger(CallbackSubscriptionTest.class);
+
+  private static RabbitMQStreamingClient rabbitMQStreamingClient;
+  private static RabbitMQWebClient rabbitMQWebClient;
+  private static PostgresQLClient pgClient;
 
   @BeforeAll
   @DisplayName("Initialize the Databroker class with web client and rabbitmq client")
@@ -146,8 +155,8 @@ public class CallbackSubscriptionTest {
     /* Create a Json Object for properties */
     propObj = new JsonObject();
     propObj.put("userName", dataBrokerUserName);
-    propObj.put(Constants.PASSWORD, dataBrokerPassword);
-    propObj.put(Constants.VHOST, dataBrokerVhost);
+    propObj.put(PASSWORD, dataBrokerPassword);
+    propObj.put(VHOST, dataBrokerVhost);
     propObj.put("databaseIP", databaseIP);
     propObj.put("databasePort", databasePort);
     propObj.put("databaseName", databaseName);
@@ -156,7 +165,10 @@ public class CallbackSubscriptionTest {
     propObj.put("databasePoolSize", poolSize);
 
     /* Call the databroker constructor with the RabbitMQ client Vertx web client. */
-    databroker = new DataBrokerServiceImpl(client, webClient, propObj, pgclient);
+    rabbitMQWebClient = new RabbitMQWebClient(vertx, webConfig, propObj);
+    rabbitMQStreamingClient = new RabbitMQStreamingClient(vertx, config, rabbitMQWebClient);
+    pgClient = new PostgresQLClient(vertx, connectOptions, poolOptions);
+    databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, dataBrokerVhost);
     testContext.completeNow();
 
   }
@@ -166,7 +178,7 @@ public class CallbackSubscriptionTest {
   @Order(1)
   void failedregisterCallbackSubscriptionEmptyRequest(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Error in payload");
+    expected.put(ERROR, "Error in payload");
 
     JsonObject request = new JsonObject();
     databroker.registerCallbackSubscription(request, handler -> {
@@ -184,18 +196,18 @@ public class CallbackSubscriptionTest {
   @Order(2)
   void failedregisterCallbackSubscriptionInvalidExchange(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Binding Failed");
+    expected.put(ERROR, "Binding Failed");
 
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "test-callback");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "callback");
-    request.put(Constants.CALLBACKURL, "http://localhost:9088/api");
-    request.put(Constants.QUEUE, "callback.data");
+    request.put(NAME, "test-callback");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "callback");
+    request.put(CALLBACKURL, "http://localhost:9088/api");
+    request.put(QUEUE, "callback.data");
     JsonArray array = new JsonArray();
     array.add(
         "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/varanasi.iudx.org.in/varanasi-aqm-2/EM_01_0103_02");
-    request.put(Constants.ENTITIES, array);
+    request.put(ENTITIES, array);
 
     databroker.registerCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -213,17 +225,17 @@ public class CallbackSubscriptionTest {
   @Order(3)
   void failedregisterCallbackSubscriptionNullRoutingKey(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Invalid routingKey");
+    expected.put(ERROR, "Invalid routingKey");
 
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "test-callback");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "callback");
-    request.put(Constants.CALLBACKURL, "http://localhost:9088/api");
-    request.put(Constants.QUEUE, "callback.data");
+    request.put(NAME, "test-callback");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "callback");
+    request.put(CALLBACKURL, "http://localhost:9088/api");
+    request.put(QUEUE, "callback.data");
     JsonArray array = new JsonArray();
     array.add("");
-    request.put(Constants.ENTITIES, array);
+    request.put(ENTITIES, array);
 
     databroker.registerCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -231,7 +243,7 @@ public class CallbackSubscriptionTest {
         logger.info(
             "Register callback subscription response invalid routingKey request is : " + response);
         assertEquals(expected, response);
-        // assertTrue(response.getString(Constants.ERROR).equalsIgnoreCase("Invalid routingKey"));
+        // assertTrue(response.getString(ERROR).equalsIgnoreCase("Invalid routingKey"));
       }
       testContext.completeNow();
     });
@@ -242,18 +254,18 @@ public class CallbackSubscriptionTest {
   @Order(4)
   void failedregisterCallbackSubscriptionInvalidRoutingKey(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Invalid routingKey");
+    expected.put(ERROR, "Invalid routingKey");
 
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "test-callback");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "callback");
-    request.put(Constants.CALLBACKURL, "http://localhost:9088/api");
-    request.put(Constants.QUEUE, "callback.data");
+    request.put(NAME, "test-callback");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "callback");
+    request.put(CALLBACKURL, "http://localhost:9088/api");
+    request.put(QUEUE, "callback.data");
     JsonArray array = new JsonArray();
     array.add(
         "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm");
-    request.put(Constants.ENTITIES, array);
+    request.put(ENTITIES, array);
 
     databroker.registerCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -272,14 +284,14 @@ public class CallbackSubscriptionTest {
   void successregisterCallbackSubscription(VertxTestContext testContext) {
     String subscriptionID = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/test-callback";
     JsonObject expected = new JsonObject();
-    expected.put(Constants.SUBSCRIPTION_ID, subscriptionID);
+    expected.put(SUBSCRIPTION_ID, subscriptionID);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "test-callback");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "callback");
-    request.put(Constants.CALLBACKURL, "http://localhost:9088/api");
-    request.put(Constants.QUEUE, "callback.data");
+    request.put(NAME, "test-callback");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "callback");
+    request.put(CALLBACKURL, "http://localhost:9088/api");
+    request.put(QUEUE, "callback.data");
     JsonArray array = new JsonArray();
     array.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
@@ -290,7 +302,7 @@ public class CallbackSubscriptionTest {
     array.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
 
-    request.put(Constants.ENTITIES, array);
+    request.put(ENTITIES, array);
     databroker.registerCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -306,18 +318,18 @@ public class CallbackSubscriptionTest {
   @Order(6)
   void failedregisterCallbackSubscriptionDuplicateSubscriptionID(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "duplicate key value violates unique constraint");
+    expected.put(ERROR, "duplicate key value violates unique constraint");
 
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "test-callback");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "callback");
-    request.put(Constants.CALLBACKURL, "http://localhost:9088/api");
-    request.put(Constants.QUEUE, "callback.data");
+    request.put(NAME, "test-callback");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "callback");
+    request.put(CALLBACKURL, "http://localhost:9088/api");
+    request.put(QUEUE, "callback.data");
     JsonArray array = new JsonArray();
     array.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
-    request.put(Constants.ENTITIES, array);
+    request.put(ENTITIES, array);
     databroker.registerCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -336,8 +348,8 @@ public class CallbackSubscriptionTest {
   void successlistCallbackSubscription(VertxTestContext testContext) throws InterruptedException {
     String subscriptionID = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/test-callback";
     JsonObject expected = new JsonObject();
-    expected.put(Constants.SUBSCRIPTION_ID, subscriptionID);
-    expected.put(Constants.CALLBACKURL, "http://localhost:9088/api");
+    expected.put(SUBSCRIPTION_ID, subscriptionID);
+    expected.put(CALLBACKURL, "http://localhost:9088/api");
     JsonArray array = new JsonArray();
     array.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
@@ -348,15 +360,15 @@ public class CallbackSubscriptionTest {
     array.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
 
-    expected.put(Constants.ENTITIES, array);
+    expected.put(ENTITIES, array);
  
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "test-callback");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "streaming");
-    request.put(Constants.CALLBACKURL, "http://localhost:9088/api");
+    request.put(NAME, "test-callback");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "streaming");
+    request.put(CALLBACKURL, "http://localhost:9088/api");
 
-    request.put(Constants.QUEUE, "callback.data");
+    request.put(QUEUE, "callback.data");
 
     databroker.listCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -373,17 +385,17 @@ public class CallbackSubscriptionTest {
   @Order(8)
   void failedlistCallbackSubscriptionNotvalidSubsciptionId(VertxTestContext testContext) throws InterruptedException {
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Error in payload");
+    expected.put(ERROR, "Error in payload");
 
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "alias-pawan");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "streaming");
-    request.put(Constants.CALLBACKURL, "https://rbccps.org/api");
-    request.put(Constants.QUEUE, "callback.data");
+    request.put(NAME, "alias-pawan");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "streaming");
+    request.put(CALLBACKURL, "https://rbccps.org/api");
+    request.put(QUEUE, "callback.data");
     JsonArray array = new JsonArray();
     array.add("");
-    request.put(Constants.ENTITIES, array);
+    request.put(ENTITIES, array);
 
     databroker.listCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -402,14 +414,14 @@ public class CallbackSubscriptionTest {
   void successupdateCallbackSubscription(VertxTestContext testContext) {
     String subscriptionID = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/test-callback";
     JsonObject expected = new JsonObject();
-    expected.put(Constants.SUBSCRIPTION_ID, subscriptionID);
+    expected.put(SUBSCRIPTION_ID, subscriptionID);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "test-callback");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "callback");
-    request.put(Constants.CALLBACKURL, "http://localhost:9088/api");
-    request.put(Constants.QUEUE, "callback.data");
+    request.put(NAME, "test-callback");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "callback");
+    request.put(CALLBACKURL, "http://localhost:9088/api");
+    request.put(QUEUE, "callback.data");
     JsonArray array = new JsonArray();
     array.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_10");
@@ -420,7 +432,7 @@ public class CallbackSubscriptionTest {
     array.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
 
-    request.put(Constants.ENTITIES, array);
+    request.put(ENTITIES, array);
     databroker.updateCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -437,11 +449,11 @@ public class CallbackSubscriptionTest {
   void failuredeleteCallbackSubscription(VertxTestContext testContext) {
     String error = "Call Back ID not found";
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, error);
+    expected.put(ERROR, error);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "test-callback-non-existing-id");
-    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(NAME, "test-callback-non-existing-id");
+    request.put(CONSUMER, "pawan@google.org");
     databroker.deleteCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -458,11 +470,11 @@ public class CallbackSubscriptionTest {
   void successdeleteCallbackSubscription(VertxTestContext testContext) {
     String subscriptionID = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/test-callback";
     JsonObject expected = new JsonObject();
-    expected.put(Constants.SUBSCRIPTION_ID, subscriptionID);
+    expected.put(SUBSCRIPTION_ID, subscriptionID);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "test-callback");
-    request.put(Constants.CONSUMER, "pawan@google.org");
+    request.put(NAME, "test-callback");
+    request.put(CONSUMER, "pawan@google.org");
     databroker.deleteCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();

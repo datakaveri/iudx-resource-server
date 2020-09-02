@@ -193,7 +193,6 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
         /* Call the databroker constructor with the RabbitMQ client. */
 
-        databroker = new DataBrokerServiceImpl(client, webClient, propObj, pgclient);
         // databroker = new DataBrokerServiceImpl(client, webClient, propObj);
 
         // rabbitMQClientImpl = new RabbitMQClientImpl(vertx, config, webConfig, propObj);
@@ -202,7 +201,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
         rabbitMQWebClient = new RabbitMQWebClient(vertx, webConfig, propObj);
         rabbitMQStreamingClient =
             new RabbitMQStreamingClient(vertx, config, rabbitMQWebClient);
-        pgClient = new PostgresQLClient();
+        pgClient = new PostgresQLClient(vertx, connectOptions, poolOptions);
         databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, dataBrokerVhost);
 
 

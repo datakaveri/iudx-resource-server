@@ -1152,4 +1152,8 @@ public class RabbitMQStreamingClient {
     });
     return promise.future();
   }
+
+  public RabbitMQClient getRabbitMQClient() {
+    return this.rabbitMQClient;
+  }
 }
