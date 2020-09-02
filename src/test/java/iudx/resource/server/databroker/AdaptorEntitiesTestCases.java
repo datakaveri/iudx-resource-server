@@ -171,6 +171,7 @@ public class AdaptorEntitiesTestCases {
     rabbitMQWebClient = new RabbitMQWebClient(vertx, webConfig, propObj);
     rabbitMQStreamingClient = new RabbitMQStreamingClient(vertx, config, rabbitMQWebClient);
     pgClient = new PostgresQLClient(vertx, connectOptions, poolOptions);
+
     databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, dataBrokerVhost);
     
     resourceGroup = UUID.randomUUID().toString();

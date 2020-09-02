@@ -77,6 +77,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
   private RabbitMQWebClient rabbitMQWebClient;
   private PostgresQLClient pgClient;
 
+
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
    * service with the Event bus against an address, publishes the service with the service discovery
@@ -202,6 +203,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
         rabbitMQStreamingClient =
             new RabbitMQStreamingClient(vertx, config, rabbitMQWebClient);
         pgClient = new PostgresQLClient(vertx, connectOptions, poolOptions);
+
         databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, dataBrokerVhost);
 
 

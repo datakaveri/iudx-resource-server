@@ -10,10 +10,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.rabbitmq.RabbitMQClient;
-
-
+import iudx.resource.server.databroker.util.Util;
 
 /**
  * The Data Broker Service Implementation.
@@ -44,6 +45,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   private int totalUnBindSuccess;
   private boolean bindingSuccessful;
 
+
   private RabbitMQStreamingClient rabbitMQStreamingClient;
   private PostgresQLClient pgClient;
   private SubscriptionService subscriptionService;
@@ -56,6 +58,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     this.vhost = vhost;
     this.subscriptionService =
         new SubscriptionService(this.rabbitMQStreamingClient, pgClient, this.vhost);
+
   }
 
   /**
@@ -291,6 +294,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           logger
               .error("listStreamingSubscription - resultHandler failed : " + resultHandler.cause());
           handler.handle(Future.failedFuture(resultHandler.cause().toString()));
+
         }
       });
     } else {
