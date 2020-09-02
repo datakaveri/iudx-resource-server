@@ -201,6 +201,7 @@ public class RabbitMQStreamingClient {
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
       String exchangeName = request.getString("exchangeName");
+      LOGGER.info(exchangeName);
       String url =
           "/api/exchanges/" + vhost + "/" + Util.encodedValue(exchangeName) + "/bindings/source";
       rabbitMQwebClient.requestAsync(REQUEST_GET, url).onComplete(ar -> {
@@ -218,6 +219,7 @@ public class RabbitMQStreamingClient {
                         Util.bindingMergeOperator));
                 LOGGER.info("exchange subscribers : " + jsonBody);
                 finalResponse.clear().mergeIn(new JsonObject(res));
+                LOGGER.info("final Response : " + finalResponse);
                 if (finalResponse.isEmpty()) {
                   finalResponse.clear().mergeIn(
                       Util.getResponseJson(HttpStatus.SC_NOT_FOUND, FAILURE, EXCHANGE_NOT_FOUND),
@@ -1138,10 +1140,10 @@ public class RabbitMQStreamingClient {
     return promise.future();
   }
 
-  Future<JsonObject> bindQueue(String data, String adaptorID, String topics) {
+  Future<Void> bindQueue(String data, String adaptorID, String topics) {
     LOGGER.info("RabbitMQStreamingClient#bindQueue() started");
     LOGGER.info("data : " + data + " adaptorID : " + adaptorID + " topics : " + topics);
-    Promise<JsonObject> promise = Promise.promise();
+    Promise<Void> promise = Promise.promise();
     rabbitMQClient.queueBind(data, adaptorID, topics, handler -> {
       if (handler.succeeded()) {
         promise.complete();

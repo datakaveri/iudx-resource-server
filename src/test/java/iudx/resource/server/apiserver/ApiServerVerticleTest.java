@@ -2,7 +2,10 @@ package iudx.resource.server.apiserver;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Properties;
 import java.util.UUID;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
@@ -45,6 +48,7 @@ public class ApiServerVerticleTest {
   private static String resourceServer;
   private static String streamingSubscriptionAliasName;
   private static String callbackSubscriptionAliasName;
+  private static final Properties properties = new Properties();
 
   private static WebClient client;
 
@@ -63,6 +67,13 @@ public class ApiServerVerticleTest {
      * starter.startServer(); result.onComplete(resultHandler -> { if (resultHandler.succeeded()) {
      * testContext.completeNow(); } });
      */
+    try {
+      FileInputStream configFile = new FileInputStream(Constants.CONFIG_FILE);
+      if (properties.isEmpty())
+        properties.load(configFile);
+    } catch (IOException e) {
+      LOGGER.error("Could not load properties from config file", e);
+    }
 
 
 
@@ -71,7 +82,7 @@ public class ApiServerVerticleTest {
     vhost = UUID.randomUUID().toString().replaceAll("-", "");
     entities = new JsonArray().add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_05");
-    fakeToken = UUID.randomUUID().toString();
+    fakeToken = properties.getProperty("testAuthToken");
     adapterId = UUID.randomUUID().toString();
     resourceGroup = UUID.randomUUID().toString();
     resourceServer = UUID.randomUUID().toString();
@@ -546,18 +557,19 @@ public class ApiServerVerticleTest {
     client.post(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
         .sendJsonObject(json, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result().bodyAsJsonObject();
-        assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
-        assertTrue(response.containsKey(Constants.JSON_TYPE));
-        assertTrue(response.containsKey(Constants.JSON_TITLE));
-        assertTrue(response.containsKey(Constants.JSON_DETAIL));
-        assertEquals(401, response.getInteger(Constants.JSON_TYPE));
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.AuthenticationFailure.getCode(),
+                handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            assertEquals(401, response.getInteger(Constants.JSON_TYPE));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   // @Test :: No relevance now for this test case
@@ -590,21 +602,21 @@ public class ApiServerVerticleTest {
   public void testGetStreamingSubscription401(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
     client.get(PORT, BASE_URL, apiUrl)
-        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
-        .send(handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result().bodyAsJsonObject();
-        assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
-        assertTrue(response.containsKey(Constants.JSON_TYPE));
-        assertTrue(response.containsKey(Constants.JSON_TITLE));
-        assertTrue(response.containsKey(Constants.JSON_DETAIL));
-        assertEquals(ResponseType.AuthenticationFailure.getCode(),
-            response.getInteger(Constants.JSON_TYPE));
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage()).send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.AuthenticationFailure.getCode(),
+                handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            assertEquals(ResponseType.AuthenticationFailure.getCode(),
+                response.getInteger(Constants.JSON_TYPE));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   // @Test :: No relevance now for this test case
@@ -614,8 +626,7 @@ public class ApiServerVerticleTest {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
     client.get(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
-        .putHeader(Constants.HEADER_TOKEN, fakeToken)
-        .send(handler -> {
+        .putHeader(Constants.HEADER_TOKEN, fakeToken).send(handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
@@ -644,8 +655,7 @@ public class ApiServerVerticleTest {
     json.put(Constants.JSON_ENTITIES, appendEntities);
     client.patch(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
-        .putHeader(Constants.HEADER_TOKEN, fakeToken)
-        .sendJsonObject(json, handler -> {
+        .putHeader(Constants.HEADER_TOKEN, fakeToken).sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
@@ -676,19 +686,20 @@ public class ApiServerVerticleTest {
     client.patch(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
         .sendJsonObject(json, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result().bodyAsJsonObject();
-        assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
-        assertTrue(response.containsKey(Constants.JSON_TYPE));
-        assertTrue(response.containsKey(Constants.JSON_TITLE));
-        assertTrue(response.containsKey(Constants.JSON_DETAIL));
-        assertEquals(ResponseType.AuthenticationFailure.getCode(),
-            response.getInteger(Constants.JSON_TYPE));
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.AuthenticationFailure.getCode(),
+                handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            assertEquals(ResponseType.AuthenticationFailure.getCode(),
+                response.getInteger(Constants.JSON_TYPE));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   @Test
@@ -705,8 +716,7 @@ public class ApiServerVerticleTest {
     json.put(Constants.JSON_ENTITIES, appendEntities);
     client.patch(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
-        .putHeader(Constants.HEADER_TOKEN, fakeToken)
-        .sendJsonObject(json, handler -> {
+        .putHeader(Constants.HEADER_TOKEN, fakeToken).sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
@@ -734,19 +744,20 @@ public class ApiServerVerticleTest {
     client.put(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
         .sendJsonObject(json, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result().bodyAsJsonObject();
-        assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
-        assertTrue(response.containsKey(Constants.JSON_TYPE));
-        assertTrue(response.containsKey(Constants.JSON_TITLE));
-        assertTrue(response.containsKey(Constants.JSON_DETAIL));
-        assertEquals(ResponseType.AuthenticationFailure.getCode(),
-            response.getInteger(Constants.JSON_TYPE));
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.AuthenticationFailure.getCode(),
+                handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            assertEquals(ResponseType.AuthenticationFailure.getCode(),
+                response.getInteger(Constants.JSON_TYPE));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   // @Test :: No relevance now for this test case
@@ -762,8 +773,7 @@ public class ApiServerVerticleTest {
     json.put(Constants.JSON_ENTITIES, appendEntities);
     client.put(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
-        .putHeader(Constants.HEADER_TOKEN, fakeToken)
-        .sendJsonObject(json, handler -> {
+        .putHeader(Constants.HEADER_TOKEN, fakeToken).sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
@@ -782,7 +792,8 @@ public class ApiServerVerticleTest {
   @Test
   @Order(108)
   @DisplayName("/subscription endpoint to update a subscription with a non matching name and ID")
-  public void testUpdateStreamingSubscription400NonMatchingNameFields(Vertx vertx, VertxTestContext testContext) {
+  public void testUpdateStreamingSubscription400NonMatchingNameFields(Vertx vertx,
+      VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_NAME, callbackSubscriptionAliasName);
@@ -792,8 +803,7 @@ public class ApiServerVerticleTest {
     json.put(Constants.JSON_ENTITIES, appendEntities);
     client.put(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
-        .putHeader(Constants.HEADER_TOKEN, fakeToken)
-        .sendJsonObject(json, handler -> {
+        .putHeader(Constants.HEADER_TOKEN, fakeToken).sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
@@ -823,8 +833,7 @@ public class ApiServerVerticleTest {
     json.put(Constants.JSON_ENTITIES, appendEntities);
     client.put(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
-        .putHeader(Constants.HEADER_TOKEN, fakeToken)
-        .sendJsonObject(json, handler -> {
+        .putHeader(Constants.HEADER_TOKEN, fakeToken).sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
@@ -845,8 +854,7 @@ public class ApiServerVerticleTest {
     System.out.println("subs  ID :" + subscriptionId);
     client.get(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
-        .putHeader(Constants.HEADER_TOKEN, fakeToken)
-        .send(handler -> {
+        .putHeader(Constants.HEADER_TOKEN, fakeToken).send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -864,8 +872,7 @@ public class ApiServerVerticleTest {
     System.out.println("subs  ID :" + subscriptionId);
     client.delete(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
-        .putHeader(Constants.HEADER_TOKEN, fakeToken)
-        .send(handler -> {
+        .putHeader(Constants.HEADER_TOKEN, fakeToken).send(handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
@@ -888,21 +895,21 @@ public class ApiServerVerticleTest {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
     System.out.println("subs  ID :" + subscriptionId);
     client.delete(PORT, BASE_URL, apiUrl)
-        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
-        .send(handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result().bodyAsJsonObject();
-        assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
-        assertTrue(response.containsKey(Constants.JSON_TYPE));
-        assertTrue(response.containsKey(Constants.JSON_TITLE));
-        assertTrue(response.containsKey(Constants.JSON_DETAIL));
-        assertEquals(ResponseType.AuthenticationFailure.getCode(),
-            response.getInteger(Constants.JSON_TYPE));
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage()).send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.AuthenticationFailure.getCode(),
+                handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            assertEquals(ResponseType.AuthenticationFailure.getCode(),
+                response.getInteger(Constants.JSON_TYPE));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   @Test
@@ -913,8 +920,7 @@ public class ApiServerVerticleTest {
     System.out.println("subs  ID :" + subscriptionId);
     client.delete(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
-        .putHeader(Constants.HEADER_TOKEN, fakeToken)
-        .send(handler -> {
+        .putHeader(Constants.HEADER_TOKEN, fakeToken).send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -941,18 +947,20 @@ public class ApiServerVerticleTest {
     client.post(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
         .sendJsonObject(json, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result().bodyAsJsonObject();
-        assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
-        assertTrue(response.containsKey(Constants.JSON_TYPE));
-        assertTrue(response.containsKey(Constants.JSON_TITLE));
-        assertTrue(response.containsKey(Constants.JSON_DETAIL));
-        assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.AuthenticationFailure.getCode(),
+                handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            assertEquals(ResponseType.AuthenticationFailure.getCode(),
+                handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   // @Test :: No relevance now for this test case
@@ -969,8 +977,7 @@ public class ApiServerVerticleTest {
     json.put(Constants.JSON_ENTITIES, entities);
     client.post(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
-        .putHeader(Constants.HEADER_TOKEN, fakeToken)
-        .sendJsonObject(json, handler -> {
+        .putHeader(Constants.HEADER_TOKEN, fakeToken).sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
@@ -1001,12 +1008,10 @@ public class ApiServerVerticleTest {
     json.put(Constants.JSON_ENTITIES, entities);
     client.post(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
-        .putHeader(Constants.HEADER_TOKEN, fakeToken)
-        .sendJsonObject(json, handler -> {
+        .putHeader(Constants.HEADER_TOKEN, fakeToken).sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
-            assertEquals(ResponseType.Created.getCode(),
-                handler.result().statusCode());
+            assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
             assertTrue(response.containsKey(Constants.JSON_SUBS_ID));
             callbackSubscriptionId = response.getString(Constants.JSON_SUBS_ID);
             testContext.completeNow();
@@ -1022,19 +1027,19 @@ public class ApiServerVerticleTest {
   public void testGetCallbackSubscription401(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + callbackSubscriptionId;
     client.get(PORT, BASE_URL, apiUrl)
-        .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
-        .send(handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result().bodyAsJsonObject();
-        assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
-        assertTrue(response.containsKey(Constants.JSON_TYPE));
-        assertTrue(response.containsKey(Constants.JSON_TITLE));
-        assertTrue(response.containsKey(Constants.JSON_DETAIL));
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+        .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage()).send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.AuthenticationFailure.getCode(),
+                handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
 
@@ -1045,8 +1050,7 @@ public class ApiServerVerticleTest {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + callbackSubscriptionId;
     client.get(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
-        .putHeader(Constants.HEADER_TOKEN, fakeToken)
-        .send(handler -> {
+        .putHeader(Constants.HEADER_TOKEN, fakeToken).send(handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
@@ -1069,8 +1073,7 @@ public class ApiServerVerticleTest {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + callbackSubscriptionId;
     client.get(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
-        .putHeader(Constants.HEADER_TOKEN, fakeToken)
-        .send(handler -> {
+        .putHeader(Constants.HEADER_TOKEN, fakeToken).send(handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());

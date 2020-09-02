@@ -495,10 +495,9 @@ public class SubscriptionService {
       LOGGER.info("Call Back registration ID check starts");
       String sql = "Select * FROM registercallback WHERE subscriptionID = $1";
       String deleteQuery = "Delete from registercallback WHERE subscriptionID = $1";
-      List<Object> args = new ArrayList<>();
-      // add to list in-according same order as in sql query parameter $1,$1.
-      args.add(subscriptionID);
-      pgSQLClient.executeAsync(sql, args).onComplete(resultHandlerSelectID -> {
+      String insertQuery =
+          "INSERT INTO registercallback (subscriptionID  ,callbackURL ,entities ,start_time , end_time , frequency ) VALUES ($1, $2, $3, $4, $5, $6)";
+      pgSQLClient.executeAsync(sql, Tuple.of(subscriptionID)).onComplete(resultHandlerSelectID -> {
         if (resultHandlerSelectID.succeeded()) {
           RowSet<Row> result = resultHandlerSelectID.result();
           /* Iterating Rows for getting entity, callbackurl, username and password */
@@ -554,7 +553,7 @@ public class SubscriptionService {
                           .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
 
                         LOGGER.error("failed ::" + resultHandlerbind.cause());
-                        pgSQLClient.executeAsync(deleteQuery, subscriptionID)
+                        pgSQLClient.executeAsync(deleteQuery, Tuple.of(subscriptionID))
                             .onComplete(resulthandlerdel -> {
                               if (resulthandlerdel.succeeded()) {
                                 registerCallbackSubscriptionResponse.put(Constants.ERROR,
@@ -563,10 +562,9 @@ public class SubscriptionService {
                               }
                             });
                       } else if (totalBindSuccess == totalBindCount) {
-                        String query =
-                            "INSERT INTO registercallback (subscriptionID  ,callbackURL ,entities ,start_time , end_time , frequency ) VALUES ($1, $2, $3, $4, $5, $6)";
-                        pgSQLClient.executeAsync(query, subscriptionID, callbackUrl, entitites,
-                            dateTime, dateTime, dateTime).onComplete(ar -> {
+                        pgSQLClient.executeAsync(insertQuery, Tuple.of(subscriptionID, callbackUrl,
+                            entitites,
+                            dateTime, dateTime, dateTime)).onComplete(ar -> {
                               if (ar.succeeded()) {
                                 String exchangename = "callback.notification";
                                 String routingkey = "create";
@@ -581,7 +579,8 @@ public class SubscriptionService {
                                         LOGGER.info("Message published to queue");
                                         promise.complete(registerCallbackSubscriptionResponse);
                                       } else {
-                                        pgSQLClient.executeAsync(deleteQuery, subscriptionID)
+                                        pgSQLClient
+                                            .executeAsync(deleteQuery, Tuple.of(subscriptionID))
                                             .onComplete(deletepg -> {
                                               if (deletepg.succeeded()) {
                                                 registerCallbackSubscriptionResponse
@@ -594,7 +593,7 @@ public class SubscriptionService {
                                     });
                               } else {
                                 LOGGER.error("failed ::" + ar.cause().getMessage());
-                                pgSQLClient.executeAsync(deleteQuery, subscriptionID)
+                                pgSQLClient.executeAsync(deleteQuery, Tuple.of(subscriptionID))
                                     .onComplete(resultHandlerDeletequeuepg -> {
                                       if (resultHandlerDeletequeuepg.succeeded()) {
                                         registerCallbackSubscriptionResponse.put(Constants.ERROR,
@@ -682,7 +681,8 @@ public class SubscriptionService {
                   updateCallbackSubscriptionResponse.put(Constants.ERROR, "Binding Failed");
                   promise.fail(updateCallbackSubscriptionResponse.toString());
                 } else if (totalBindSuccess == totalBindCount) {
-                  pgSQLClient.executeAsync(updateQuery, entities, subscriptionID).onComplete(ar -> {
+                  pgSQLClient.executeAsync(updateQuery, Tuple.of(entities, subscriptionID))
+                      .onComplete(ar -> {
                     if (ar.succeeded()) {
                       String exchangename = "callback.notification";
                       String routingkey = "update";
@@ -746,7 +746,8 @@ public class SubscriptionService {
       String subscriptionID =
           domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
       LOGGER.info("Call Back registration ID check starts");
-      pgSQLClient.executeAsync(getQuery, subscriptionID).onComplete(resultHandlerSelectID -> {
+      pgSQLClient.executeAsync(getQuery, Tuple.of(subscriptionID))
+          .onComplete(resultHandlerSelectID -> {
         if (resultHandlerSelectID.succeeded()) {
           RowSet<Row> result = resultHandlerSelectID.result();
           /* Iterating Rows for getting entity, callbackurl, username and password */
@@ -763,7 +764,7 @@ public class SubscriptionService {
             JsonObject publishjson = new JsonObject();
             publishjson.put(Constants.SUBSCRIPTION_ID, subscriptionID);
             publishjson.put(Constants.OPERATION, "delete");
-            pgSQLClient.executeAsync(deleteQuery, subscriptionID).onComplete(ar -> {
+                pgSQLClient.executeAsync(deleteQuery, Tuple.of(subscriptionID)).onComplete(ar -> {
               if (ar.succeeded()) {
                 String exchangename = "callback.notification";
                 String routingkey = "delete";
@@ -779,6 +780,7 @@ public class SubscriptionService {
                         LOGGER.info("Message published failed");
                         deleteCallbackSubscriptionResponse.put("messagePublished", "failed");
                       }
+                          promise.complete(deleteCallbackSubscriptionResponse);
                     });
               } else {
                 LOGGER.error("failed ::" + ar.cause().getMessage());
@@ -806,7 +808,7 @@ public class SubscriptionService {
       String subscriptionID =
           domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
       String query = "SELECT * FROM registercallback WHERE  subscriptionID = $1 ";
-      pgSQLClient.executeAsync(query, subscriptionID).onComplete(ar -> {
+      pgSQLClient.executeAsync(query, Tuple.of(subscriptionID)).onComplete(ar -> {
         if (ar.succeeded()) {
           RowSet<Row> result = ar.result();
           LOGGER.info(ar.result().size() + " rows");

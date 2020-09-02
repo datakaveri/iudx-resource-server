@@ -133,7 +133,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerService deleteAdaptor(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = rabbitMQStreamingClient.getExchange(request, vhost);
+      Future<JsonObject> result = rabbitMQStreamingClient.deleteAdapter(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));
@@ -159,7 +159,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler) {
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = rabbitMQStreamingClient.deleteAdapter(request, vhost);
+      Future<JsonObject> result = rabbitMQStreamingClient.listExchangeSubscribers(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));

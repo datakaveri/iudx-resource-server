@@ -163,4 +163,7 @@ public class Constants {
   // results
   public static final String SUCCCESS = "success";
 
+  // config
+  public static final String CONFIG_FILE = "config.properties";
+
 }

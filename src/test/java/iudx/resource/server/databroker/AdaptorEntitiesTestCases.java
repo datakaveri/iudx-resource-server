@@ -55,7 +55,8 @@ public class AdaptorEntitiesTestCases {
   static JsonObject propObj;
   private static String resourceGroup;
   private static String resourceServer;
-  private static String id, anotherid;
+  private static String id, anotherid; // TODO : another id never initialized but used in test
+                                       // cases(test cases failing).
   /* Database Properties */
   private static String databaseIP;
   private static int databasePort;
@@ -236,6 +237,7 @@ public class AdaptorEntitiesTestCases {
     Thread.sleep(1000);
     JsonObject request = new JsonObject();
     request.put(Constants.ID, id);
+    request.put("exchangeName", id);// TODO : discuss conflict between impl and test code
 
     JsonObject expected = new JsonObject();
     JsonArray adaptorLogs_entities = new JsonArray();
@@ -345,6 +347,7 @@ public class AdaptorEntitiesTestCases {
     Thread.sleep(1000);
     JsonObject request = new JsonObject();
     request.put(Constants.ID, anotherid);
+    request.put("exchangeName", anotherid);// TODO : discuss conflict between impl and test code
 
     JsonObject expected = new JsonObject();
     JsonArray adaptorLogs_entities = new JsonArray();
@@ -398,7 +401,7 @@ public class AdaptorEntitiesTestCases {
     Thread.sleep(5000);
     JsonObject expected = new JsonObject();
     expected.put(Constants.ID, id);
-    expected.put(Constants.TYPE, "adaptor deletion");
+    expected.put(Constants.TYPE, 200);
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, "adaptor deleted");
 
@@ -422,7 +425,7 @@ public class AdaptorEntitiesTestCases {
     Thread.sleep(5000);
     JsonObject expected = new JsonObject();
     expected.put(Constants.ID, anotherid);
-    expected.put(Constants.TYPE, "adaptor deletion");
+    expected.put(Constants.TYPE, 200);
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, "adaptor deleted");
 

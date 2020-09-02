@@ -91,6 +91,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     String token = authenticationInfo.getString("token", Constants.PUBLIC_TOKEN);
     String requestEndpoint = authenticationInfo.getString("apiEndpoint");
+    logger.info("requested endpoint :" + requestEndpoint);
     if (token.equals(Constants.PUBLIC_TOKEN)
         && !Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
       JsonObject result = new JsonObject();
