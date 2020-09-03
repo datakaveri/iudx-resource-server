@@ -1,7 +1,6 @@
 package iudx.resource.server.databroker;
 
-import java.util.List;
-import com.rabbitmq.client.AMQP.Connection;
+
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -18,18 +17,18 @@ import io.vertx.sqlclient.Tuple;
 public class PostgresQLClient {
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresQLClient.class);
 
-  private PgPool pgclient;
+  private PgPool pgPool;
 
   public PostgresQLClient(Vertx vertx, PgConnectOptions pgConnectOptions,
       PoolOptions connectionPoolOptions) {
-    this.pgclient = PgPool.pool(vertx, pgConnectOptions, connectionPoolOptions);
+    this.pgPool = PgPool.pool(vertx, pgConnectOptions, connectionPoolOptions);
   }
 
   public Future<RowSet<Row>> executeAsync(String preparedQuerySQL, Tuple args) {
     LOGGER.info("PostgresQLClient#executeAsync() started");
     LOGGER.info(args);
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgclient.getConnection(connectionHandler -> {
+    pgPool.getConnection(connectionHandler -> {
       if (connectionHandler.succeeded()) {
         SqlConnection pgConnection = connectionHandler.result();
         pgConnection.preparedQuery(preparedQuerySQL).execute(args, executeHandler -> {
@@ -44,18 +43,22 @@ public class PostgresQLClient {
         });
       }
     });
-
     return promise.future();
   }
 
   public Future<RowSet<Row>> executeAsync(String preparedQuerySQL) {
     LOGGER.info("PostgresQLClient#executeAsync() started");
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgclient.preparedQuery(preparedQuerySQL).execute(executeHandler -> {
-      if (executeHandler.succeeded()) {
-        promise.complete(executeHandler.result());
-      } else {
-        promise.fail(executeHandler.cause());
+    pgPool.getConnection(connectionHandler -> {
+      if (connectionHandler.succeeded()) {
+        SqlConnection pgConnection = connectionHandler.result();
+        pgConnection.preparedQuery(preparedQuerySQL).execute(executeHandler -> {
+          if (executeHandler.succeeded()) {
+            promise.complete(executeHandler.result());
+          } else {
+            promise.fail(executeHandler.cause());
+          }
+        });
       }
     });
     return promise.future();

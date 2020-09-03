@@ -1,6 +1,6 @@
 package iudx.resource.server.apiserver.response;
 
-
+import java.util.stream.Stream;
 /**
  * enum defines all the possible response codes from API.
  *
@@ -33,6 +33,13 @@ public enum ResponseType {
 
   public String getMessage() {
     return message;
+  }
+
+  public static ResponseType fromString(final int code) {
+    return Stream.of(values())
+        .filter(v -> v.code == code)
+        .findAny()
+        .orElse(null);
   }
 
   public String toString() {
