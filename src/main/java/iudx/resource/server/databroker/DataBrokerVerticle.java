@@ -37,7 +37,7 @@ import java.util.Properties;
 
 public class DataBrokerVerticle extends AbstractVerticle {
 
-  private static final String BROKER_SERVICE_ADDRESS = "iudx.rs.databroker.service";
+  private static final String BROKER_SERVICE_ADDRESS = "iudx.rs.broker.service";
   private static final Logger LOGGER = LogManager.getLogger(DataBrokerVerticle.class);
   private DataBrokerService databroker;
   private RabbitMQOptions config;
@@ -134,6 +134,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
     webConfig.setDefaultHost(dataBrokerIP);
     webConfig.setDefaultPort(dataBrokerManagementPort);
     webConfig.setKeepAliveTimeout(86400000);
+    webConfig.setSsl(true);
 
 
     /* Create a RabbitMQ Clinet with the configuration and vertx cluster instance. */
@@ -142,7 +143,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
     /* Create a Vertx Web Client with the configuration and vertx cluster instance. */
 
-    webClient = WebClient.create(vertx, webConfig);
+    webClient = WebClient.create(vertx, webConfig); 
 
     /* Set Connection Object */
     if (connectOptions == null) {
