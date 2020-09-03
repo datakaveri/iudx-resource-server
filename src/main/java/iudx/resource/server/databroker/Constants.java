@@ -15,6 +15,8 @@ public class Constants {
   
   public static final String BAD_REQUEST =
       "Bad request : insufficient request data to register adaptor";
+  public static final String BROKER_PRODUCTION_DOMAIN = "databroker.iudx.io";
+  public static final String BROKER_PRODUCTION_PORT = "5671";
   public static final String BROKER_IP = "68.183.80.248";
   public static final String BROKER_PORT = "5672";
   public static final String CHECK_CREDENTIALS =
@@ -75,6 +77,7 @@ public class Constants {
   
   public static final String PASSWORD = "password";
   public static final int PASSWORD_LENGTH = 16;
+  public static final String PORT = "port";
 
   public static final String QUEUE = "queue";
   public static final String QUEUE_BIND_ERROR = "error in queue binding with adaptor";
@@ -115,6 +118,7 @@ public class Constants {
       "userName not provided in adaptor registration";
   public static final String USER_CREATION_ERROR = "User creation failed";
   public static final String USER_NAME_TEST_EXAMPLE = "rbccps.org/e73ed7f5b7950f8b3b42f4bd14eade5c";
+  public static final String URL = "URL";
 
   public static final String VHOST = "vHost";
   public static final String VHOST_IUDX = "IUDX";

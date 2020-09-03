@@ -19,4 +19,7 @@ public class Constants {
   public static final ChronoUnit TIP_CACHE_TIMEOUT_UNIT = ChronoUnit.MINUTES;
   public static final String CAT_RSG_PATH = "/iudx/cat/v1/search";
   public static final String SERVER_MODE = "serverMode";
+  public static final String JSON_CONSUMER = "consumer"; 
+  public static final String JSON_TEST_CONSUMER = "vasanth.rajaraman@datakaveri.org";
+  
 }
