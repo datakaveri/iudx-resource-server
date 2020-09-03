@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import iudx.resource.server.apiserver.util.Constants;
 import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
@@ -16,7 +16,7 @@ import iudx.resource.server.databroker.DataBrokerService;
  */
 public class SubscriptionService {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SubscriptionService.class);
+  private static final Logger LOGGER = LogManager.getLogger(SubscriptionService.class);
 
   Subscription subscription = null;
 

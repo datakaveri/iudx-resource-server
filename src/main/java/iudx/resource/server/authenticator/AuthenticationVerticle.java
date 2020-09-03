@@ -3,17 +3,12 @@ package iudx.resource.server.authenticator;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.net.JksOptions;
-import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-import io.vertx.servicediscovery.Record;
-import io.vertx.servicediscovery.ServiceDiscovery;
-import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.serviceproxy.ServiceBinder;
-import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -32,13 +27,9 @@ import java.util.Properties;
 
 public class AuthenticationVerticle extends AbstractVerticle {
 
-  private static final Logger logger = LoggerFactory.getLogger(AuthenticationVerticle.class);
+  private static final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
+  private static final Logger LOGGER = LogManager.getLogger(AuthenticationVerticle.class);
   private final Properties properties = new Properties();
-  private Vertx vertx;
-  private ClusterManager mgr;
-  private VertxOptions options;
-  private ServiceDiscovery discovery;
-  private Record record;
   private AuthenticationService authentication;
 
   static WebClient createWebClient(Vertx vertx, Properties properties) {
@@ -52,7 +43,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
         properties.load(configFile);
       }
     } catch (IOException e) {
-      logger.error("Could not load properties from config file", e);
+      LOGGER.error("Could not load properties from config file", e);
     }
     WebClientOptions webClientOptions = new WebClientOptions();
     if (testing) {
@@ -75,44 +66,11 @@ public class AuthenticationVerticle extends AbstractVerticle {
   @Override
   public void start() throws Exception {
 
-    /* Create a reference to HazelcastClusterManager. */
+    authentication = new AuthenticationServiceImpl(vertx, createWebClient(vertx, properties));
 
-    mgr = new HazelcastClusterManager();
-    options = new VertxOptions().setClusterManager(mgr);
+    /* Publish the Authentication service with the Event Bus against an address. */
 
-    /* Create or Join a Vert.x Cluster. */
-
-    Vertx.clusteredVertx(options, res -> {
-      if (res.succeeded()) {
-        vertx = res.result();
-
-        authentication = new AuthenticationServiceImpl(vertx, createWebClient(vertx, properties));
-
-        /* Publish the Authentication service with the Event Bus against an address. */
-
-        new ServiceBinder(vertx).setAddress("iudx.rs.authentication.service")
-            .register(AuthenticationService.class, authentication);
-
-        /* Get a handler for the Service Discovery interface and publish a service record. */
-
-        discovery = ServiceDiscovery.create(vertx);
-        record = EventBusService.createRecord("iudx.rs.authentication.service", // The service name
-            "iudx.rs.authentication.service", // the service address,
-            AuthenticationService.class // the service interface
-        );
-
-        discovery.publish(record, publishRecordHandler -> {
-          if (publishRecordHandler.succeeded()) {
-            Record publishedRecord = publishRecordHandler.result();
-            logger.info("Publication succeeded " + publishedRecord.toJson());
-          } else {
-            logger.info("Publication failed " + publishRecordHandler.result());
-          }
-        });
-
-      }
-
-    });
-
+    new ServiceBinder(vertx).setAddress(AUTH_SERVICE_ADDRESS)
+      .register(AuthenticationService.class, authentication);
   }
 }

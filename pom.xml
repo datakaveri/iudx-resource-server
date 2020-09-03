@@ -7,9 +7,15 @@
 	<version>0.0.1-SNAPSHOT</version>
 
 	<properties>
-		<vertx.version>3.9.1</vertx.version>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+        <vertx.version>3.9.0</vertx.version>
+        <hazelcast.version>3.6.3</hazelcast.version>
+        <micrometer.version>1.5.2</micrometer.version>
+        <curator.version>4.0.1</curator.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <exec.mainClass>iudx.resource.server.deploy.Deployer</exec.mainClass>
+        <exec.mainClassDev>iudx.resource.server.deploy.DeployerDev</exec.mainClassDev>
 	</properties>
 
 	<dependencyManagement>
@@ -96,6 +102,41 @@
 			<artifactId>vertx-pg-client</artifactId>
 			<version>3.9.1</version>
 		</dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.13.3</version>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-micrometer-metrics</artifactId>
+            <version>3.9.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+            <version>${micrometer.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+            <version>${micrometer.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.lmax</groupId>
+            <artifactId>disruptor</artifactId>
+            <version>3.4.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-zookeeper</artifactId>
+            <version>${hazelcast.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-x-discovery</artifactId>
+            <version>${curator.version}</version>
+        </dependency>
 	</dependencies>
 
 	<build>
@@ -121,6 +162,77 @@
 					</module>
 				</configuration>
 			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>2.3</version>
+                <executions>
+                    <execution>
+                        <id>dev</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/maven/**</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.SF</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Main-Class>${exec.mainClassDev}</Main-Class>
+                                    </manifestEntries>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/services/io.vertx.core.spi.VerticleFactory</resource>
+                                </transformer>
+                            </transformers>
+                            <artifactSet></artifactSet>
+                            <outputFile>${project.build.directory}/${project.artifactId}-dev-${project.version}-fat.jar</outputFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>cluster</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/maven/**</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.SF</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Main-Class>${exec.mainClass}</Main-Class>
+                                    </manifestEntries>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/services/io.vertx.core.spi.VerticleFactory</resource>
+                                </transformer>
+                            </transformers>
+                            <artifactSet></artifactSet>
+                            <outputFile>${project.build.directory}/${project.artifactId}-cluster-${project.version}-fat.jar</outputFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -130,69 +242,29 @@
 					<target>13</target>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.5.0</version>
-				<executions>
-					<execution>
-						<id>resource-server-api-service</id>
-						<configuration>
-							<mainClass>iudx.resource.server.deploy.helper.ApiServerDeployer
-							</mainClass>
-						</configuration>
-					</execution>
-					<execution>
-						<id>resource-server-database-service</id>
-						<configuration>
-							<mainClass>iudx.resource.server.deploy.helper.DatabaseServiceDeployer
-							</mainClass>
-						</configuration>
-					</execution>
-					<execution>
-						<id>resource-server-authentication-service</id>
-						<configuration>
-							<mainClass>iudx.resource.server.deploy.helper.AuthenticationServiceDeployer
-							</mainClass>
-						</configuration>
-					</execution>
-					<execution>
-						<id>resource-server-data-broker-service</id>
-						<configuration>
-							<mainClass>iudx.resource.server.deploy.helper.DataBrokerServiceDeployer
-							</mainClass>
-						</configuration>
-					</execution>
-					<execution>
-						<id>resource-server-file-service</id>
-						<configuration>
-							<mainClass>iudx.resource.server.deploy.helper.FileDownloadServiceDeployer
-							</mainClass>
-						</configuration>
-					</execution>
-					<execution>
-						<id>resource-server-media-service</id>
-						<configuration>
-							<mainClass>iudx.resource.server.deploy.helper.MediaServiceDeployer
-							</mainClass>
-						</configuration>
-					</execution>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.5.0</version>
+                <executions>
 					<execution>
 						<id>resource-server</id>
 						<configuration>
-							<mainClass>iudx.resource.server.deploy.helper.ResourceServerDeployer
-							</mainClass>
+							<mainClass>iudx.resource.server.deploy.DeployerDev </mainClass>
+                            <arguments>
+                                <argument>-jar</argument>
+                                <argument>{project.build.directory}/${project.artifactId}-dev-${project.version}-fat.jar</argument>
+                                <argument>-m</argument>
+                                <argument>db</argument>
+                                <argument>auth</argument>
+                                <argument>broker</argument>
+                                <argument>call</argument>
+                                <argument>api</argument>
+                            </arguments>
 						</configuration>
 					</execution>
-					<execution>
-						<id>callback-server</id>
-						<configuration>
-							<mainClass>iudx.resource.server.deploy.helper.CallbackServerDeployer
-							</mainClass>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+                </executions>
+            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>

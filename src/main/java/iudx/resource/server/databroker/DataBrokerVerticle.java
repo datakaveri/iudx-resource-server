@@ -4,8 +4,8 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -37,12 +37,8 @@ import java.util.Properties;
 
 public class DataBrokerVerticle extends AbstractVerticle {
 
-  private static final Logger logger = LoggerFactory.getLogger(DataBrokerVerticle.class);
-  private Vertx vertx;
-  private ClusterManager mgr;
-  private VertxOptions options;
-  private ServiceDiscovery discovery;
-  private Record record;
+  private static final String BROKER_SERVICE_ADDRESS = "iudx.rs.broker.service";
+  private static final Logger LOGGER = LogManager.getLogger(DataBrokerVerticle.class);
   private DataBrokerService databroker;
   private RabbitMQOptions config;
   private RabbitMQClient client;
@@ -82,143 +78,109 @@ public class DataBrokerVerticle extends AbstractVerticle {
   @Override
   public void start() throws Exception {
 
-    /* Create a reference to HazelcastClusterManager. */
+    /* Read the configuration and set the rabbitMQ server properties. */
+    properties = new Properties();
+    inputstream = null;
 
-    mgr = new HazelcastClusterManager();
-    options = new VertxOptions().setClusterManager(mgr);
+    try {
 
-    /* Create or Join a Vert.x Cluster. */
+      inputstream = new FileInputStream("config.properties");
+      properties.load(inputstream);
 
-    Vertx.clusteredVertx(options, res -> {
-      if (res.succeeded()) {
-        vertx = res.result();
+      dataBrokerIP = properties.getProperty("dataBrokerIP");
+      dataBrokerPort = Integer.parseInt(properties.getProperty("dataBrokerPort"));
+      dataBrokerManagementPort =
+        Integer.parseInt(properties.getProperty("dataBrokerManagementPort"));
+      dataBrokerVhost = properties.getProperty("dataBrokerVhost");
+      dataBrokerUserName = properties.getProperty("dataBrokerUserName");
+      dataBrokerPassword = properties.getProperty("dataBrokerPassword");
+      connectionTimeout = Integer.parseInt(properties.getProperty("connectionTimeout"));
+      requestedHeartbeat = Integer.parseInt(properties.getProperty("requestedHeartbeat"));
+      handshakeTimeout = Integer.parseInt(properties.getProperty("handshakeTimeout"));
+      requestedChannelMax = Integer.parseInt(properties.getProperty("requestedChannelMax"));
+      networkRecoveryInterval =
+        Integer.parseInt(properties.getProperty("networkRecoveryInterval"));
+      databaseIP = properties.getProperty("callbackDatabaseIP");
+      databasePort = Integer.parseInt(properties.getProperty("callbackDatabasePort"));
+      databaseName = properties.getProperty("callbackDatabaseName");
+      databaseUserName = properties.getProperty("callbackDatabaseUserName");
+      databasePassword = properties.getProperty("callbackDatabasePassword");
+      poolSize = Integer.parseInt(properties.getProperty("callbackpoolSize"));
 
-        /* Read the configuration and set the rabbitMQ server properties. */
-        properties = new Properties();
-        inputstream = null;
+    } catch (Exception ex) {
 
-        try {
+      LOGGER.info(ex.toString());
 
-          inputstream = new FileInputStream("config.properties");
-          properties.load(inputstream);
+    }
 
-          dataBrokerIP = properties.getProperty("dataBrokerIP");
-          dataBrokerPort = Integer.parseInt(properties.getProperty("dataBrokerPort"));
-          dataBrokerManagementPort =
-              Integer.parseInt(properties.getProperty("dataBrokerManagementPort"));
-          dataBrokerVhost = properties.getProperty("dataBrokerVhost");
-          dataBrokerUserName = properties.getProperty("dataBrokerUserName");
-          dataBrokerPassword = properties.getProperty("dataBrokerPassword");
-          connectionTimeout = Integer.parseInt(properties.getProperty("connectionTimeout"));
-          requestedHeartbeat = Integer.parseInt(properties.getProperty("requestedHeartbeat"));
-          handshakeTimeout = Integer.parseInt(properties.getProperty("handshakeTimeout"));
-          requestedChannelMax = Integer.parseInt(properties.getProperty("requestedChannelMax"));
-          networkRecoveryInterval =
-              Integer.parseInt(properties.getProperty("networkRecoveryInterval"));
-          databaseIP = properties.getProperty("callbackDatabaseIP");
-          databasePort = Integer.parseInt(properties.getProperty("callbackDatabasePort"));
-          databaseName = properties.getProperty("callbackDatabaseName");
-          databaseUserName = properties.getProperty("callbackDatabaseUserName");
-          databasePassword = properties.getProperty("callbackDatabasePassword");
-          poolSize = Integer.parseInt(properties.getProperty("callbackpoolSize"));
+    /* Configure the RabbitMQ Data Broker client with input from config files. */
 
-        } catch (Exception ex) {
+    config = new RabbitMQOptions();
+    config.setUser(dataBrokerUserName);
+    config.setPassword(dataBrokerPassword);
+    config.setHost(dataBrokerIP);
+    config.setPort(dataBrokerPort);
+    config.setVirtualHost(dataBrokerVhost);
+    config.setConnectionTimeout(connectionTimeout);
+    config.setRequestedHeartbeat(requestedHeartbeat);
+    config.setHandshakeTimeout(handshakeTimeout);
+    config.setRequestedChannelMax(requestedChannelMax);
+    config.setNetworkRecoveryInterval(networkRecoveryInterval);
+    config.setAutomaticRecoveryEnabled(true);
 
-          logger.info(ex.toString());
-
-        }
-
-        /* Configure the RabbitMQ Data Broker client with input from config files. */
-
-        config = new RabbitMQOptions();
-        config.setUser(dataBrokerUserName);
-        config.setPassword(dataBrokerPassword);
-        config.setHost(dataBrokerIP);
-        config.setPort(dataBrokerPort);
-        config.setVirtualHost(dataBrokerVhost);
-        config.setConnectionTimeout(connectionTimeout);
-        config.setRequestedHeartbeat(requestedHeartbeat);
-        config.setHandshakeTimeout(handshakeTimeout);
-        config.setRequestedChannelMax(requestedChannelMax);
-        config.setNetworkRecoveryInterval(networkRecoveryInterval);
-        config.setAutomaticRecoveryEnabled(true);
-
-        webConfig = new WebClientOptions();
-        webConfig.setKeepAlive(true);
-        webConfig.setConnectTimeout(86400000);
-        webConfig.setDefaultHost(dataBrokerIP);
-        webConfig.setDefaultPort(dataBrokerManagementPort);
-        webConfig.setKeepAliveTimeout(86400000);
+    webConfig = new WebClientOptions();
+    webConfig.setKeepAlive(true);
+    webConfig.setConnectTimeout(86400000);
+    webConfig.setDefaultHost(dataBrokerIP);
+    webConfig.setDefaultPort(dataBrokerManagementPort);
+    webConfig.setKeepAliveTimeout(86400000);
+    webConfig.setSsl(true);
 
 
-        /* Create a RabbitMQ Clinet with the configuration and vertx cluster instance. */
+    /* Create a RabbitMQ Clinet with the configuration and vertx cluster instance. */
 
-        client = RabbitMQClient.create(vertx, config);
+    client = RabbitMQClient.create(vertx, config);
 
-        /* Create a Vertx Web Client with the configuration and vertx cluster instance. */
+    /* Create a Vertx Web Client with the configuration and vertx cluster instance. */
 
-        webClient = WebClient.create(vertx, webConfig);
+    webClient = WebClient.create(vertx, webConfig); 
 
-        /* Set Connection Object */
-        if (connectOptions == null) {
-          connectOptions = new PgConnectOptions().setPort(databasePort).setHost(databaseIP)
-              .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
-        }
+    /* Set Connection Object */
+    if (connectOptions == null) {
+      connectOptions = new PgConnectOptions().setPort(databasePort).setHost(databaseIP)
+        .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
+    }
 
-        /* Pool options */
-        if (poolOptions == null) {
-          poolOptions = new PoolOptions().setMaxSize(poolSize);
-        }
+    /* Pool options */
+    if (poolOptions == null) {
+      poolOptions = new PoolOptions().setMaxSize(poolSize);
+    }
 
-        /* Create the client pool */
-        pgclient = PgPool.pool(vertx, connectOptions, poolOptions);
-        
-        /* Create a Json Object for properties */
+    /* Create the client pool */
+    pgclient = PgPool.pool(vertx, connectOptions, poolOptions);
 
-        JsonObject propObj = new JsonObject();
+    /* Create a Json Object for properties */
 
-        propObj.put("userName", dataBrokerUserName);
-        propObj.put("password", dataBrokerPassword);
-        propObj.put("vHost", dataBrokerVhost);
-        propObj.put("databaseIP", databaseIP);
-        propObj.put("databasePort", databasePort);
-        propObj.put("databaseName", databaseName);
-        propObj.put("databaseUserName", databaseUserName);
-        propObj.put("databasePassword", databasePassword);
-        propObj.put("databasePoolSize", poolSize);
+    JsonObject propObj = new JsonObject();
 
-        /* Call the databroker constructor with the RabbitMQ client. */
+    propObj.put("userName", dataBrokerUserName);
+    propObj.put("password", dataBrokerPassword);
+    propObj.put("vHost", dataBrokerVhost);
+    propObj.put("databaseIP", databaseIP);
+    propObj.put("databasePort", databasePort);
+    propObj.put("databaseName", databaseName);
+    propObj.put("databaseUserName", databaseUserName);
+    propObj.put("databasePassword", databasePassword);
+    propObj.put("databasePoolSize", poolSize);
 
-        databroker = new DataBrokerServiceImpl(client, webClient, propObj, pgclient);
+    /* Call the databroker constructor with the RabbitMQ client. */
 
-        /* Publish the Data Broker service with the Event Bus against an address. */
+    databroker = new DataBrokerServiceImpl(client, webClient, propObj, pgclient);
 
-        new ServiceBinder(vertx).setAddress("iudx.rs.databroker.service")
-            .register(DataBrokerService.class, databroker);
+    /* Publish the Data Broker service with the Event Bus against an address. */
 
-        /* Get a handler for the Service Discovery interface and publish a service record. */
-
-        discovery = ServiceDiscovery.create(vertx);
-        record = EventBusService.createRecord("iudx.rs.databroker.service", // The service name
-            "iudx.rs.databroker.service", // the service address,
-            DataBrokerService.class // the service interface
-        );
-
-        discovery.publish(record, publishRecordHandler -> {
-          if (publishRecordHandler.succeeded()) {
-            Record publishedRecord = publishRecordHandler.result();
-            logger.info("Publication succeeded " + publishedRecord.toJson());
-          } else {
-            logger.info("Publication failed " + publishRecordHandler.result());
-          }
-        });
-
-      }
-
-    });
-
-    System.out.println("DataBrokerVerticle started");
+    new ServiceBinder(vertx).setAddress(BROKER_SERVICE_ADDRESS)
+      .register(DataBrokerService.class, databroker);
 
   }
-
 }

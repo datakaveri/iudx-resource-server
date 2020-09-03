@@ -8,7 +8,8 @@ public class Constants {
 
   public static final String APP_TEST_NAME = "vasanth";
   public static final String APP_TEST_CONSUMER = "vasanth@iudx.org";
-
+  public static final String API_ENDPOINT = "apiEndpoint";
+  
   // NGSI-LD endpoints
   public static final String NGSILD_BASE_PATH = "/ngsi-ld/v1";
   public static final String NGSILD_ENTITIES_URL = NGSILD_BASE_PATH + "/entities";
@@ -18,12 +19,13 @@ public class Constants {
 
   // IUDX management endpoints
   public static final String IUDX_MANAGEMENT_URL = "/management";
+  public static final String IUDX_ADAPTOR_URL = "/iudx/v1";
   public static final String IUDX_MANAGEMENT_EXCHANGE_URL = IUDX_MANAGEMENT_URL + "/exchange";
   public static final String IUDX_MANAGEMENT_QUEUE_URL = IUDX_MANAGEMENT_URL + "/queue";
   public static final String IUDX_MANAGEMENT_BIND_URL = IUDX_MANAGEMENT_URL + "/bind";
   public static final String IUDX_MANAGEMENT_UNBIND_URL = IUDX_MANAGEMENT_URL + "/unbind";
   public static final String IUDX_MANAGEMENT_VHOST_URL = IUDX_MANAGEMENT_URL + "/vhost";
-  public static final String IUDX_MANAGEMENT_ADAPTER_URL = IUDX_MANAGEMENT_URL + "/adapter";
+  public static final String IUDX_MANAGEMENT_ADAPTER_URL = IUDX_ADAPTOR_URL + "/adapter";
 
   // ngsi-ld/IUDX query paramaters
   public static final String NGSILDQUERY_ID = "id";
@@ -85,7 +87,7 @@ public class Constants {
   public static final String JSON_WITHIN = "within";
   public static final String JSON_MAXDISTANCE = "maxdistance";
   public static final String JSON_MINDISTANCE = "mindistance";
-  public static final String JSON_BETWEEN = "between";
+  public static final String JSON_DURING = "during";
   public static final String JSON_TIME = "time";
   public static final String JSON_ENDTIME = "endtime";
   public static final String JSON_TIMEREL = "timerel";
