@@ -89,60 +89,85 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   public AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
       Handler<AsyncResult<JsonObject>> handler) {
 
-    String token = authenticationInfo.getString("token", Constants.PUBLIC_TOKEN);
+    System.out.println(authenticationInfo);
+    String token = authenticationInfo.getString("token");
     String requestEndpoint = authenticationInfo.getString("apiEndpoint");
-    if (token.equals(Constants.PUBLIC_TOKEN)
-        && !Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
-      JsonObject result = new JsonObject();
-      result.put("status", "error");
-      result.put("message", "Public token cannot access requested endpoint");
-      handler.handle(Future.succeededFuture(result));
-      return this;
-    } else if (token.equals(Constants.PUBLIC_TOKEN)
-        && Constants.OPEN_ENDPOINTS.contains(requestEndpoint)
-        && properties.getProperty(Constants.SERVER_MODE).equalsIgnoreCase("testing")) {
-      JsonObject result = new JsonObject();
-      result.put("status", "success");
-      handler.handle(Future.succeededFuture(result));
-      return this;
+
+    if (properties.getProperty(Constants.SERVER_MODE).equalsIgnoreCase("testing")) {
+      if (token.equals(Constants.PUBLIC_TOKEN)
+          && Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
+        JsonObject result = new JsonObject();
+        result.put("status", "success");
+        handler.handle(Future.succeededFuture(result));
+        return this;
+      } else if (token.equals(Constants.PUBLIC_TOKEN)
+          && !Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
+        JsonObject result = new JsonObject();
+        result.put(Constants.JSON_CONSUMER, Constants.JSON_TEST_CONSUMER);
+        handler.handle(Future.succeededFuture(result));
+        return this;
+      } else if (!token.equals(Constants.PUBLIC_TOKEN)
+          && !Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
+        Future<JsonObject> tipResponseFut = retrieveTipResponse(token);
+        tipResponseFut.onComplete(tipResponseHandler -> {
+          if (tipResponseHandler.succeeded()) {
+            JsonObject result = tipResponseHandler.result();
+            System.out.println(result);
+            handler.handle(Future.succeededFuture(result));
+          }
+        });
+        return this;
+      }
+
     } else {
+      if (token.equals(Constants.PUBLIC_TOKEN)
+          && !Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
+        JsonObject result = new JsonObject();
+        result.put("status", "error");
+        result.put("message", "Public token cannot access requested endpoint");
+        handler.handle(Future.succeededFuture(result));
+        return this;
+      } else {
 
-    Future<JsonObject> tipResponseFut = retrieveTipResponse(token);
-    Future<HashMap<String, Boolean>> catResponseFut = isOpenResource(request.getJsonArray("ids"));
+        Future<JsonObject> tipResponseFut = retrieveTipResponse(token);
+        Future<HashMap<String, Boolean>> catResponseFut =
+            isOpenResource(request.getJsonArray("ids"));
 
-    CompositeFuture.all(tipResponseFut, catResponseFut).onFailure(throwable -> {
-      JsonObject result = new JsonObject();
-      result.put("status", "error");
-      result.put("message", throwable.getMessage());
-      handler.handle(Future.succeededFuture(result));
-    }).onSuccess(compositeFuture -> {
-      JsonObject tipResponse = compositeFuture.resultAt(0);
-      HashMap<String, Boolean> catResponse = compositeFuture.resultAt(1);
-      JsonArray result = new JsonArray();
+        CompositeFuture.all(tipResponseFut, catResponseFut).onFailure(throwable -> {
+          JsonObject result = new JsonObject();
+          result.put("status", "error");
+          result.put("message", throwable.getMessage());
+          handler.handle(Future.succeededFuture(result));
+        }).onSuccess(compositeFuture -> {
+          JsonObject tipResponse = compositeFuture.resultAt(0);
+          HashMap<String, Boolean> catResponse = compositeFuture.resultAt(1);
+          JsonArray result = new JsonArray();
 
-      for (Object reqID : request.getJsonArray("ids")) {
-        String requestID = (String) reqID;
-        JsonObject tipRequest = retrieveTipRequest(requestID, tipResponse);
-        boolean isAccessible = tipRequest.isEmpty() ? catResponse.getOrDefault(requestID, false)
-            : isValidEndpoint(requestEndpoint, tipRequest.getJsonArray("apis"));
-        result.add(new JsonObject().put("id", requestID).put("accessible", isAccessible));
+          for (Object reqID : request.getJsonArray("ids")) {
+            String requestID = (String) reqID;
+            JsonObject tipRequest = retrieveTipRequest(requestID, tipResponse);
+            boolean isAccessible = tipRequest.isEmpty() ? catResponse.getOrDefault(requestID, false)
+                : isValidEndpoint(requestEndpoint, tipRequest.getJsonArray("apis"));
+            result.add(new JsonObject().put("id", requestID).put("accessible", isAccessible));
+          }
+
+          JsonArray inAccessibleIDs = new JsonArray(
+              result.stream().filter(res -> !(((JsonObject) res).getBoolean("accessible")))
+                  .collect(Collectors.toList()));
+
+          JsonObject json = new JsonObject();
+          json.put("status", inAccessibleIDs.isEmpty() ? "success" : "error");
+          json.put("body", new JsonObject());
+          if (!inAccessibleIDs.isEmpty()) {
+            json.put("message", "Unauthorized resource IDs");
+            json.getJsonObject("body").put("rejected", inAccessibleIDs);
+          }
+          handler.handle(Future.succeededFuture(json));
+        });
+        return this;
       }
-
-      JsonArray inAccessibleIDs = new JsonArray(
-          result.stream().filter(res -> !(((JsonObject) res).getBoolean("accessible")))
-              .collect(Collectors.toList()));
-
-      JsonObject json = new JsonObject();
-      json.put("status", inAccessibleIDs.isEmpty() ? "success" : "error");
-      json.put("body", new JsonObject());
-      if (!inAccessibleIDs.isEmpty()) {
-        json.put("message", "Unauthorized resource IDs");
-        json.getJsonObject("body").put("rejected", inAccessibleIDs);
-      }
-      handler.handle(Future.succeededFuture(json));
-    });
-    return this;
     }
+    return this;
   }
 
   private boolean isValidEndpoint(String requestEndpoint, JsonArray apis) {
