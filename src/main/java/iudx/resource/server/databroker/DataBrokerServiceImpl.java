@@ -189,6 +189,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                                     Constants.APIKEY_TEST_EXAMPLE);
                                 registerResponse.put(Constants.ID,
                                     domain + "/" + userNameSha + "/" + resourceServer + "/" + id);
+                                registerResponse.put(Constants.URL, Constants.BROKER_PRODUCTION_DOMAIN);
+                                registerResponse.put(Constants.PORT, Constants.BROKER_PRODUCTION_PORT);
                                 registerResponse.put(Constants.VHOST, Constants.VHOST_IUDX);
 
                                 LOGGER.info("registerResponse : " + registerResponse);
@@ -302,52 +304,63 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     JsonObject response = new JsonObject();
     // Now bind newly created adaptor with queues i.e. adaptorLogs,database
     String topics = adaptorID + "/.*";
+    String heartbeat = adaptorID + Constants.HEARTBEAT;
+    String dataIssue = adaptorID + Constants.DATA_ISSUE;
+    String downstreamIssue = adaptorID + Constants.DOWNSTREAM_ISSUE;
     /* Bind to database queue */
-    client.queueBind(Constants.QUEUE_DATA, adaptorID, topics, result -> {
-      if (result.succeeded()) {
-        /* On success bind to adaptorLogs queue */
-        response.put("Queue_Database", Constants.QUEUE_DATA + " queue bound to " + adaptorID);
+    String exchangeName = adaptorID;
+    JsonArray array = new JsonArray();
+    array.add(topics);
+    JsonObject json = new JsonObject();
+    json.put(Constants.EXCHANGE_NAME, exchangeName);
+    json.put(Constants.QUEUE_NAME, Constants.QUEUE_DATA);
+    json.put(Constants.ENTITIES, array);
 
-        client.queueBind(Constants.QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + Constants.HEARTBEAT,
-            bindingheartBeatResult -> {
-              if (bindingheartBeatResult.succeeded()) {
-                client.queueBind(Constants.QUEUE_ADAPTOR_LOGS, adaptorID,
-                    adaptorID + Constants.DATA_ISSUE, bindingdataIssueResult -> {
-                      if (bindingdataIssueResult.succeeded()) {
-                        client.queueBind(Constants.QUEUE_ADAPTOR_LOGS, adaptorID,
-                            adaptorID + Constants.DOWNSTREAM_ISSUE,
-                            bindingdownstreamIssueResult -> {
-                              if (bindingdownstreamIssueResult.succeeded()) {
+    Future<JsonObject> resultbind = bindQueue(json);
+    resultbind.onComplete(resultHandlerbind -> {
+      if (resultHandlerbind.succeeded()) {
+        JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
+        if (bindResponse.containsKey(Constants.EXCHANGE)
+            && bindResponse.containsKey(Constants.QUEUE)
+            && bindResponse.containsKey(Constants.ENTITIES)) {
 
-                                promise.complete(response);
+          /* Bind to adaptorLogs queue */
+          JsonArray logTopics = new JsonArray();
+          logTopics.add(heartbeat);
+          logTopics.add(dataIssue);
+          logTopics.add(downstreamIssue);
+          JsonObject logjson = new JsonObject();
+          logjson.put(Constants.EXCHANGE_NAME, exchangeName);
+          logjson.put(Constants.QUEUE_NAME, Constants.QUEUE_ADAPTOR_LOGS);
+          logjson.put(Constants.ENTITIES, logTopics);
 
-                              } else {
-                                /* Handle bind to adaptorLogs queue error */
-                                LOGGER.error(" Queue_adaptorLogs binding error : "
-                                    + bindingdownstreamIssueResult.cause());
-                                response.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
-                                promise.fail(response.toString());
-                              }
-                            });
-                      } else {
-                        /* Handle bind to adaptorLogs queue error */
-                        LOGGER.error(
-                            " Queue_adaptorLogs binding error : " + bindingdataIssueResult.cause());
-                        response.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
-                        promise.fail(response.toString());
-                      }
-                    });
+          Future<JsonObject> resultLogsbind = bindQueue(logjson);
+          resultLogsbind.onComplete(resultHandlerLogsbind -> {
+            if (resultHandlerLogsbind.succeeded()) {
+              JsonObject bindLogsResponse = (JsonObject) resultHandlerLogsbind.result();
+              if (bindLogsResponse.containsKey(Constants.EXCHANGE)
+                  && bindLogsResponse.containsKey(Constants.QUEUE)
+                  && bindLogsResponse.containsKey(Constants.ENTITIES)) {
+                LOGGER.debug("success ::" + resultHandlerLogsbind.toString());
+                promise.complete(response);
               } else {
-                /* Handle bind to adaptorLogs queue error */
-                LOGGER
-                    .error(" Queue_adaptorLogs binding error : " + bindingheartBeatResult.cause());
+                LOGGER.error("failed ::" + resultHandlerLogsbind.cause());
                 response.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
                 promise.fail(response.toString());
               }
-            });
+            } else {
+              LOGGER.error("failed ::" + resultHandlerLogsbind.cause());
+              response.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
+              promise.fail(response.toString());
+            }
+          });
+        } else {
+          LOGGER.error("failed ::" + resultHandlerbind.cause());
+          response.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
+          promise.fail(response.toString());
+        }
       } else {
-        /* Handle bind to database queue error */
-        LOGGER.error(" Queue_Database binding error : " + result.cause());
+        LOGGER.error("failed ::" + resultHandlerbind.cause());
         response.put(Constants.ERROR, Constants.QUEUE_BIND_ERROR);
         promise.fail(response.toString());
       }
@@ -787,33 +800,35 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         // exchange found
         if (status == 200) {
           String exchangeID = request.getString("id");
-          client.exchangeDelete(exchangeID, rh -> {
-            if (rh.succeeded()) {
-              LOGGER.info(exchangeID + " adaptor deleted successfully");
-              finalResponse.put("id", exchangeID);
-              finalResponse.put(Constants.TYPE, "adaptor deletion");
-              finalResponse.put(Constants.TITLE, "success");
-              finalResponse.put(Constants.DETAIL, "adaptor deleted");
-            } else if (rh.failed()) {
-              finalResponse.put(Constants.TYPE, "adaptor delete");
-              finalResponse.put(Constants.TITLE, "Error in adaptor deletion");
-              finalResponse.put(Constants.DETAIL, rh.cause());
-              handler.handle(Future.failedFuture("Bad request : nothing to delete"));
+          JsonObject json = new JsonObject();
+          json.put("exchangeName", exchangeID);
+          Future<JsonObject> deleteresult = deleteExchange(json);
+          deleteresult.onComplete(deleteHandler -> {
+            if (deleteHandler.succeeded()) {
+              if (deleteHandler.result().containsKey(Constants.EXCHANGE)) {
+                LOGGER.info(exchangeID + " adaptor deleted successfully");
+                finalResponse.put("id", exchangeID);
+                finalResponse.put(Constants.TITLE, "success");
+                finalResponse.put(Constants.DETAIL, "adaptor deleted");
+                handler.handle(Future.succeededFuture(finalResponse));
+              } else {
+                LOGGER.error("Exchange Not Found" + deleteHandler.cause());
+                handler.handle(Future.failedFuture("Bad request : nothing to delete"));
+              }
             } else {
-              LOGGER.error("Something wrong in deleting adaptor" + rh.cause());
+              LOGGER.error("Something wrong in deleting adaptor" + deleteHandler.cause());
               handler.handle(Future.failedFuture("Bad request : nothing to delete"));
             }
-            handler.handle(Future.succeededFuture(finalResponse));
           });
-
         } else if (status == 404) { // exchange not found
           finalResponse.put(Constants.TYPE, status);
           finalResponse.put(Constants.TITLE, resultHandler.result().getString("title"));
           finalResponse.put(Constants.DETAIL, resultHandler.result().getString("detail"));
+          LOGGER.error("Something wrong in deleting adaptor" + resultHandler.cause());
+          handler.handle(Future.failedFuture("Bad request : nothing to delete"));
         } else { // some other issue
           handler.handle(Future.failedFuture("Bad request : nothing to delete"));
         }
-
       }
 
       if (resultHandler.failed()) {
@@ -880,8 +895,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         if (resultCreateUserhandler.succeeded()) {
 
           // For testing instead of generateRandomPassword() use password = 1234
-          String streamingUrl = "amqp://" + userName + ":" + "1234" // generateRandomPassword()
-              + "@" + Constants.BROKER_IP + ":" + Constants.BROKER_PORT + "/" + Constants.VHOST_IUDX
+          String streamingUrl = "amqp://" + userName + ":" + Constants.APIKEY_TEST_EXAMPLE // generateRandomPassword()
+              + "@" + Constants.BROKER_PRODUCTION_DOMAIN + ":" + Constants.BROKER_PRODUCTION_PORT + "/" + Constants.VHOST_IUDX
               + "/" + queueName;
           LOGGER.info("Streaming URL is : " + streamingUrl);
           JsonArray entitites = request.getJsonArray(Constants.ENTITIES);
@@ -956,10 +971,22 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                               }
                             });
                           } else if (totalBindSuccess == totalBindCount) {
+                            registerStreamingSubscriptionResponse.put(Constants.USER_NAME,
+                                userName);
+                            /*
+                             * APIKEY should be equal to password generated. For testing use
+                             * Constants.APIKEY_TEST_EXAMPLE
+                             */
+                            registerStreamingSubscriptionResponse.put(Constants.APIKEY,
+                                Constants.APIKEY_TEST_EXAMPLE);
                             registerStreamingSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
                                 queueName);
                             registerStreamingSubscriptionResponse.put(Constants.STREAMING_URL,
                                 streamingUrl);
+                            registerStreamingSubscriptionResponse.put(Constants.URL, Constants.BROKER_PRODUCTION_DOMAIN);
+                            registerStreamingSubscriptionResponse.put(Constants.PORT, Constants.BROKER_PRODUCTION_PORT);
+                            registerStreamingSubscriptionResponse.put(Constants.VHOST, Constants.VHOST_IUDX);
+
                             handler.handle(
                                 Future.succeededFuture(registerStreamingSubscriptionResponse));
                           }
@@ -1023,8 +1050,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         if (resultCreateUserhandler.succeeded()) {
 
           // For testing instead of generateRandomPassword() use password = 1234
-          String streamingUrl = "amqp://" + userName + ":" + "1234" // generateRandomPassword()
-              + "@" + Constants.BROKER_IP + ":" + Constants.BROKER_PORT + "/" + Constants.VHOST_IUDX
+          String streamingUrl = "amqp://" + userName + ":" + Constants.APIKEY_TEST_EXAMPLE // generateRandomPassword()
+              + "@" + Constants.BROKER_PRODUCTION_DOMAIN + ":" + Constants.BROKER_PRODUCTION_PORT + "/" + Constants.VHOST_IUDX
               + "/" + queueName;
           LOGGER.info("Streaming URL is : " + streamingUrl);
           JsonArray entitites = request.getJsonArray(Constants.ENTITIES);
@@ -1105,10 +1132,21 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                                   }
                                 });
                               } else if (totalBindSuccess == totalBindCount) {
+                                updateStreamingSubscriptionResponse.put(Constants.USER_NAME,
+                                    userName);
+                                /*
+                                 * APIKEY should be equal to password generated. For testing use
+                                 * Constants.APIKEY_TEST_EXAMPLE
+                                 */
+                                updateStreamingSubscriptionResponse.put(Constants.APIKEY,
+                                    Constants.APIKEY_TEST_EXAMPLE);
                                 updateStreamingSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
                                     queueName);
                                 updateStreamingSubscriptionResponse.put(Constants.STREAMING_URL,
                                     streamingUrl);
+                                updateStreamingSubscriptionResponse.put(Constants.URL, Constants.BROKER_PRODUCTION_DOMAIN);
+                                updateStreamingSubscriptionResponse.put(Constants.PORT, Constants.BROKER_PRODUCTION_PORT);
+                                updateStreamingSubscriptionResponse.put(Constants.VHOST, Constants.VHOST_IUDX);
                                 handler.handle(
                                     Future.succeededFuture(updateStreamingSubscriptionResponse));
                               }
@@ -1226,6 +1264,10 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                         appendStreamingSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
                             queueName);
                         appendStreamingSubscriptionResponse.put(Constants.ENTITIES, entitites);
+                        appendStreamingSubscriptionResponse.put(Constants.URL, Constants.BROKER_PRODUCTION_DOMAIN);
+                        appendStreamingSubscriptionResponse.put(Constants.PORT, Constants.BROKER_PRODUCTION_PORT);
+                        appendStreamingSubscriptionResponse.put(Constants.VHOST, Constants.VHOST_IUDX);
+                        
                         handler.handle(Future.succeededFuture(appendStreamingSubscriptionResponse));
                       }
                     } else if (resultHandlerbind.failed()) {
