@@ -27,6 +27,7 @@ import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
+import iudx.resource.server.databroker.util.Constants;
 
 
 @ExtendWith(VertxExtension.class)
@@ -62,6 +63,10 @@ public class CallbackSubscriptionTest {
   private static PgConnectOptions connectOptions;
   private static PoolOptions poolOptions;
   private static PgPool pgclient;
+  private static RabbitClient rabbitMQStreamingClient;
+  private static RabbitWebClient rabbitMQWebClient;
+  private static PostgresClient pgClient;
+
   private static final Logger logger = LoggerFactory.getLogger(CallbackSubscriptionTest.class);
 
   @BeforeAll
@@ -156,7 +161,12 @@ public class CallbackSubscriptionTest {
     propObj.put("databasePoolSize", poolSize);
 
     /* Call the databroker constructor with the RabbitMQ client Vertx web client. */
-    databroker = new DataBrokerServiceImpl(client, webClient, propObj, pgclient);
+    
+    rabbitMQWebClient = new RabbitWebClient(vertx, webConfig, propObj);
+    rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient);
+    pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
+
+    databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, dataBrokerVhost);
     testContext.completeNow();
 
   }

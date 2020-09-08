@@ -10,6 +10,9 @@ public class Constants {
   public static final String APP_TEST_CONSUMER = "vasanth@iudx.org";
   public static final String API_ENDPOINT = "apiEndpoint";
   
+  // config
+  public static final String CONFIG_FILE = "config.properties";
+  
   // NGSI-LD endpoints
   public static final String NGSILD_BASE_PATH = "/ngsi-ld/v1";
   public static final String NGSILD_ENTITIES_URL = NGSILD_BASE_PATH + "/entities";
