@@ -84,7 +84,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   /**
    * {@inheritDoc}
    */
-
+  // ToDo: API based auth flow.
   @Override
   public AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
       Handler<AsyncResult<JsonObject>> handler) {
@@ -92,6 +92,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     System.out.println(authenticationInfo);
     String token = authenticationInfo.getString("token");
     String requestEndpoint = authenticationInfo.getString("apiEndpoint");
+    LOGGER.info("requested endpoint :" + requestEndpoint);
 
     if (properties.getProperty(Constants.SERVER_MODE).equalsIgnoreCase("testing")) {
       if (token.equals(Constants.PUBLIC_TOKEN)

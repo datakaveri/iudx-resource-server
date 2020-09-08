@@ -274,7 +274,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         json.put(JSON_INSTANCEID, instanceID);
         LOGGER.info("IUDX query json : " + json);
         /* HTTP request body as Json */
-        JsonObject requestBody = routingContext.getBodyAsJson();
+        JsonObject requestBody = new JsonObject();
+        requestBody.put("ids", json.getJsonArray("id"));
         /* Authenticating the request */
         authenticator.tokenInterospect(requestBody, authenticationInfo, authHandler -> {
           if (authHandler.succeeded()) {
@@ -342,6 +343,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         JsonObject json = queryMapper.toJson(ngsildquery, requestJson.containsKey("temporalQ"));
         String instanceID = request.getHeader(HEADER_HOST);
         json.put(JSON_INSTANCEID, instanceID);
+        requestJson.put("ids", json.getJsonArray("id"));
         LOGGER.info("IUDX query json : " + json);
         authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
           if (authHandler.succeeded()) {
@@ -417,7 +419,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         json.put(JSON_INSTANCEID, instanceID);
         LOGGER.info("IUDX temporal json query : " + json);
         /* HTTP request body as Json */
-        JsonObject requestBody = routingContext.getBodyAsJson();
+        JsonObject requestBody = new JsonObject();
+        requestBody.put("ids", json.getJsonArray("id"));
         /* Authenticating the request */
         authenticator.tokenInterospect(requestBody, authenticationInfo, authHandler -> {
           if (authHandler.succeeded()) {
@@ -483,7 +486,10 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* checking authentication info in requests */
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestBody.copy(), authenticationInfo, authHandler -> {
+      authenticationInfo.put("apiEndpoint", "/ngsi-ld/v1/subscription");
+      JsonObject json = requestBody.copy();
+      json.put("ids", requestBody.getJsonArray("entities"));
+      authenticator.tokenInterospect(json, authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           if (requestBody.containsKey(SUB_TYPE)) {
             JsonObject authJson = authHandler.result();
@@ -542,7 +548,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(SUB_TYPE, subscrtiptionType);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
+      JsonObject json = requestJson.copy();
+      json.put("ids", requestJson.getJsonArray("entities"));
+      authenticator.tokenInterospect(json, authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
           if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
@@ -604,7 +612,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(SUB_TYPE, subscrtiptionType);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
+      JsonObject json = requestJson.copy();
+      json.put("ids", requestJson.getJsonArray("entities"));
+      authenticator.tokenInterospect(json, authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
           if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
@@ -670,7 +680,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(SUB_TYPE, subscrtiptionType);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
+      JsonObject json = requestJson.copy();
+      json.put("ids", subsId);
+      authenticator.tokenInterospect(json, authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
           if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
@@ -726,7 +738,10 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(SUB_TYPE, subscrtiptionType);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
+      authenticationInfo.put("apiEndpoint", "/ngsi-ld/v1/subscription");
+      JsonObject json = requestJson.copy();
+      json.put("ids", subsId);
+      authenticator.tokenInterospect(json, authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
           if (requestJson.containsKey(SUB_TYPE)) {
             JsonObject authResult = authHandler.result();

@@ -1,4 +1,4 @@
-package iudx.resource.server.databroker;
+package iudx.resource.server.databroker.util;
 
 public class Constants {
 
@@ -95,6 +95,10 @@ public class Constants {
 
   public static final String READ = "read";
   public static final String ROUTING_KEY = "routingKey";
+  public static final String REQUEST_GET = "GET";
+  public static final String REQUEST_POST = "POST";
+  public static final String REQUEST_PUT = "PUT";
+  public static final String REQUEST_DELETE = "DELETE";
 
   public static final String STATUS = "status";
   public static final String SUCCESS = "success";

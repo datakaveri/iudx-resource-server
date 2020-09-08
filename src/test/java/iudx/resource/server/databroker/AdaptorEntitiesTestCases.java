@@ -27,6 +27,7 @@ import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.PoolOptions;
+import iudx.resource.server.databroker.util.Constants;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -65,6 +66,9 @@ public class AdaptorEntitiesTestCases {
   private static PgConnectOptions connectOptions;
   private static PoolOptions poolOptions;
   private static PgPool pgclient;
+  private static RabbitClient rabbitMQStreamingClient;
+  private static RabbitWebClient rabbitMQWebClient;
+  private static PostgresClient pgClient;
 
   private static final Logger logger = LoggerFactory.getLogger(AdaptorEntitiesTestCases.class);
 
@@ -162,7 +166,11 @@ public class AdaptorEntitiesTestCases {
     
     /* Call the databroker constructor with the RabbitMQ client Vertx web client. */
 
-    databroker = new DataBrokerServiceImpl(client, webClient, propObj, pgclient);
+    rabbitMQWebClient = new RabbitWebClient(vertx, webConfig, propObj);
+    rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient);
+    pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
+
+    databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, dataBrokerVhost);
     
     resourceGroup = UUID.randomUUID().toString();
     resourceServer = UUID.randomUUID().toString();
@@ -226,6 +234,7 @@ public class AdaptorEntitiesTestCases {
     Thread.sleep(1000);
     JsonObject request = new JsonObject();
     request.put(Constants.ID, id);
+    request.put("exchangeName", id);// TODO : discuss conflict between impl and test code
 
     JsonObject expected = new JsonObject();
     JsonArray adaptorLogs_entities = new JsonArray();
@@ -335,6 +344,7 @@ public class AdaptorEntitiesTestCases {
     Thread.sleep(1000);
     JsonObject request = new JsonObject();
     request.put(Constants.ID, anotherid);
+    request.put("exchangeName", anotherid);// TODO : discuss conflict between impl and test code
 
     JsonObject expected = new JsonObject();
     JsonArray adaptorLogs_entities = new JsonArray();
@@ -388,7 +398,7 @@ public class AdaptorEntitiesTestCases {
     Thread.sleep(5000);
     JsonObject expected = new JsonObject();
     expected.put(Constants.ID, id);
-    expected.put(Constants.TYPE, "adaptor deletion");
+    expected.put(Constants.TYPE, 200);
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, "adaptor deleted");
 
@@ -412,7 +422,7 @@ public class AdaptorEntitiesTestCases {
     Thread.sleep(5000);
     JsonObject expected = new JsonObject();
     expected.put(Constants.ID, anotherid);
-    expected.put(Constants.TYPE, "adaptor deletion");
+    expected.put(Constants.TYPE, 200);
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, "adaptor deleted");
 

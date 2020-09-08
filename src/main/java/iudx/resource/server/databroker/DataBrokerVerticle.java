@@ -68,6 +68,9 @@ public class DataBrokerVerticle extends AbstractVerticle {
   private PgPool pgclient;
   private PoolOptions poolOptions;
   private PgConnectOptions connectOptions;
+  private RabbitClient rabbitClient;
+  private RabbitWebClient rabbitWebClient;
+  private PostgresClient pgClient;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
@@ -134,8 +137,6 @@ public class DataBrokerVerticle extends AbstractVerticle {
     webConfig.setDefaultHost(dataBrokerIP);
     webConfig.setDefaultPort(dataBrokerManagementPort);
     webConfig.setKeepAliveTimeout(86400000);
-    webConfig.setSsl(true);
-
 
     /* Create a RabbitMQ Clinet with the configuration and vertx cluster instance. */
 
@@ -175,7 +176,13 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
     /* Call the databroker constructor with the RabbitMQ client. */
 
-    databroker = new DataBrokerServiceImpl(client, webClient, propObj, pgclient);
+    rabbitWebClient = new RabbitWebClient(vertx, webConfig, propObj);
+    rabbitClient =
+        new RabbitClient(vertx, config, rabbitWebClient);
+    pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
+
+    databroker = new DataBrokerServiceImpl(rabbitClient, pgClient, dataBrokerVhost);
+
 
     /* Publish the Data Broker service with the Event Bus against an address. */
 
