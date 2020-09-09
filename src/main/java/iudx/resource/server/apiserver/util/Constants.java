@@ -9,6 +9,8 @@ public class Constants {
   public static final String APP_TEST_NAME = "vasanth";
   public static final String APP_TEST_CONSUMER = "vasanth@iudx.org";
   public static final String API_ENDPOINT = "apiEndpoint";
+  public static final String API_METHOD = "method";
+  public static final String ID = "id";
   
   // config
   public static final String CONFIG_FILE = "config.properties";
@@ -75,6 +77,7 @@ public class Constants {
   // json fields
   public static final String JSON_INSTANCEID = "instanceID";
   public static final String JSON_CONSUMER = "consumer";
+  public static final String JSON_PROVIDER = "provider";
   public static final String JSON_TYPE = "type";
   public static final String JSON_NAME = "name";
   public static final String JSON_ENTITIES = "entities";

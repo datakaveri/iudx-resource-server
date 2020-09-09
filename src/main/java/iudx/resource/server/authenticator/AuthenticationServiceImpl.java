@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.http.HttpStatus;
+import iudx.resource.server.databroker.util.Util;
 
 /**
  * The Authentication Service Implementation.
@@ -92,6 +93,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     System.out.println(authenticationInfo);
     String token = authenticationInfo.getString("token");
     String requestEndpoint = authenticationInfo.getString("apiEndpoint");
+
     LOGGER.info("requested endpoint :" + requestEndpoint);
 
     if (properties.getProperty(Constants.SERVER_MODE).equalsIgnoreCase("testing")) {
@@ -107,16 +109,31 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         result.put(Constants.JSON_CONSUMER, Constants.JSON_TEST_CONSUMER);
         handler.handle(Future.succeededFuture(result));
         return this;
-      } else if (!token.equals(Constants.PUBLIC_TOKEN)
-          && !Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
+      } else if (!token.equals(Constants.PUBLIC_TOKEN)) {
         Future<JsonObject> tipResponseFut = retrieveTipResponse(token);
         tipResponseFut.onComplete(tipResponseHandler -> {
           if (tipResponseHandler.succeeded()) {
             JsonObject result = tipResponseHandler.result();
-            System.out.println(result);
-            handler.handle(Future.succeededFuture(result));
+            LOGGER.info("TIP Response is : " + result);
+            
+            Future<JsonObject> validateAPIResponse = validateAPIAccess(result, authenticationInfo);
+            validateAPIResponse.onComplete(validateAPIResponseHandler -> {
+              if(validateAPIResponseHandler.succeeded()) {
+                JsonObject response = tipResponseHandler.result();
+                handler.handle(Future.succeededFuture(response));
+              } else if (validateAPIResponseHandler.failed()){
+                String response = tipResponseHandler.cause().toString();
+                handler.handle(Future.failedFuture(response));
+              }
+            });
+            
+          } else if (tipResponseHandler.failed()) {
+            String result = tipResponseHandler.cause().toString();
+            LOGGER.info("TIP Response is : " + result);
+            handler.handle(Future.failedFuture(result));
           }
         });
+
         return this;
       }
 
@@ -126,10 +143,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         JsonObject result = new JsonObject();
         result.put("status", "error");
         result.put("message", "Public token cannot access requested endpoint");
-        handler.handle(Future.succeededFuture(result));
+        handler.handle(Future.failedFuture(result.toString()));
         return this;
       } else {
-
+        // Based on API perform TIP. 
+        // For management and subscription no need to look-up at catalogue
         Future<JsonObject> tipResponseFut = retrieveTipResponse(token);
         Future<HashMap<String, Boolean>> catResponseFut =
             isOpenResource(request.getJsonArray("ids"));
@@ -342,4 +360,162 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     return promise.future();
   }
 
+  private Future<JsonObject> validateAPIAccess(JsonObject result, JsonObject authenticationInfo){
+    
+    Promise<JsonObject> promise = Promise.promise();
+    
+    LOGGER.info("TIP response is " + result);
+    LOGGER.info("Authentication Info is " + authenticationInfo);
+    String requestEndpoint = authenticationInfo.getString("apiEndpoint");
+    String requestMethod = authenticationInfo.getString("method");
+
+    LOGGER.info("requested endpoint :" + requestEndpoint);
+
+    // 1. Check the API requested.
+    if (Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
+      System.out.println(Constants.OPEN_ENDPOINTS);
+    } else if (Constants.ADAPTER_ENDPOINT.contains(requestEndpoint)) {
+      LOGGER.info("Requested access for " + requestEndpoint);
+      JsonArray tipresult = result.getJsonArray("request");
+      JsonObject tipresponse = tipresult.getJsonObject(0);
+      LOGGER.info("Allowed APIs " + tipresponse);
+      JsonArray allowedAPIs = tipresponse.getJsonArray("apis");
+      int total = allowedAPIs.size();
+      boolean allowedAccess = false;
+      for (int i = 0; i < total; i++) {
+        if (Constants.ADAPTER_ENDPOINT.contains(allowedAPIs.getString(i))) {
+          LOGGER.info("Success :: User has access to API");
+          allowedAccess = true;
+          break;
+        }
+      }
+      if (allowedAccess) {
+        String providerID = tipresponse.getString("id");
+        String[] id = providerID.split("/");
+        String providerSHA = id[0] + "/" + id[1];
+        LOGGER.info("Success :: Provider SHA is " + providerSHA);
+        if (requestMethod.equalsIgnoreCase("POST")) {
+          result.put("provider", providerSHA);
+          promise.complete(result);
+        } else if (requestMethod.equalsIgnoreCase("GET")) {
+          String requestId = authenticationInfo.getString("id");
+          if (requestId.contains(providerSHA)) {
+            LOGGER.info("Success :: Has access to " + requestEndpoint + " API and ID " + requestId);
+            promise.complete(result);
+          } else {
+            LOGGER.info("Failure");
+            promise.fail(result.toString());
+          }
+        } else if (requestMethod.equalsIgnoreCase("DELETE")) {
+          String requestId = authenticationInfo.getString("id");
+          if (requestId.contains(providerSHA)) {
+            LOGGER.info("Success :: Has access to " + requestEndpoint + " API and ID " + requestId);
+            promise.complete(result);
+          } else {
+            LOGGER.info("Failure");
+            promise.fail(result.toString());
+          }
+        }
+      } else {
+        LOGGER.info("Failure :: No access to " + requestEndpoint + " API");
+        promise.fail(result.toString());
+      }
+    } else if (Constants.SUBSCRIPTION_ENDPOINT.contains(requestEndpoint)) {
+      LOGGER.info("Requested access for " + requestEndpoint);
+      JsonArray tipresult = result.getJsonArray("request");
+      JsonObject tipresponse = tipresult.getJsonObject(0);
+      LOGGER.info("Allowed APIs " + tipresponse);
+      JsonArray allowedAPIs = tipresponse.getJsonArray("apis");
+      int total = allowedAPIs.size();
+      boolean allowedAccess = false;
+        for (int i = 0; i < total; i++) {
+          if (Constants.SUBSCRIPTION_ENDPOINT.contains(allowedAPIs.getString(i))) {
+            LOGGER.info("Success :: User has access to API");
+            allowedAccess = true;
+            break;
+          }
+        }
+      
+      if (allowedAccess) {
+        if (requestMethod.equalsIgnoreCase("POST")) {
+          promise.complete(result);
+        } else if (requestMethod.equalsIgnoreCase("GET")) {
+          String requestId = authenticationInfo.getString("id");
+          String email = result.getString("consumer");
+          if (requestId.contains(Util.getSha(email))) {
+            LOGGER.info("Success :: Has access to " + requestEndpoint + " API and ID " + requestId);
+            promise.complete(result);
+          } else {
+            LOGGER.info("Failure");
+            promise.fail(result.toString());
+          }
+        } else if (requestMethod.equalsIgnoreCase("DELETE")) {
+          String requestId = authenticationInfo.getString("id");
+          String email = result.getString("consumer");
+          if (requestId.contains(Util.getSha(email))) {
+            LOGGER.info("Success :: Has access to " + requestEndpoint + " API and ID " + requestId);
+            promise.complete(result);
+          } else {
+            LOGGER.info("Failure");
+            promise.fail(result.toString());
+          }
+        } else if (requestMethod.equalsIgnoreCase("PATCH")) {
+          String requestId = authenticationInfo.getString("id");
+          String email = result.getString("consumer");
+          if (requestId.contains(Util.getSha(email))) {
+            LOGGER.info("Success :: Has access to " + requestEndpoint + " API and ID " + requestId);
+            promise.complete(result);
+          } else {
+            LOGGER.info("Failure");
+            promise.fail(result.toString());
+          }
+        } else if (requestMethod.equalsIgnoreCase("PUT")) {
+          String requestId = authenticationInfo.getString("id");
+          String email = result.getString("consumer");
+          if (requestId.contains(Util.getSha(email))) {
+            LOGGER.info("Success :: Has access to " + requestEndpoint + " API and ID " + requestId);
+            promise.complete(result);
+          } else {
+            LOGGER.info("Failure");
+            promise.fail(result.toString());
+          }
+        }
+      } else {
+        LOGGER.info("Failure :: No access to " + requestEndpoint + " API");
+        promise.fail(result.toString());
+      }
+    } else if (Constants.MANAGEMENT_ENDPOINTS.contains(requestEndpoint)) {
+      LOGGER.info("Requested access for " + requestEndpoint);
+      JsonArray tipresult = result.getJsonArray("request");
+      JsonObject tipresponse = tipresult.getJsonObject(0);
+      LOGGER.info("Allowed APIs " + tipresponse);
+      JsonArray allowedAPIs = tipresponse.getJsonArray("apis");
+      int total = allowedAPIs.size();
+      boolean allowedAccess = false;
+      String providerID = tipresponse.getString("id");
+      String[] id = providerID.split("/");
+      String providerSHA = id[0] + "/" + id[1];
+      String email = result.getString("consumer");
+      if (providerSHA.equalsIgnoreCase(Constants.JSON_IUDX_ADMIN_SHA)) {
+        for (int i = 0; i < total; i++) {
+          if (Constants.MANAGEMENT_ENDPOINT.contains(allowedAPIs.getString(i))) {
+            LOGGER.info("Success :: User " + email + " has access to API");
+            allowedAccess = true;
+            break;
+          }
+        }
+      }
+
+      if (allowedAccess) {
+        LOGGER.info("Success :: Has access to " + requestEndpoint + " API");
+        promise.complete(result);
+      } else {
+        LOGGER.info("Failure :: No access to " + requestEndpoint + " API");
+        promise.fail(result.toString());
+      }
+    } else {
+
+    }    
+    return promise.future();    
+  }
 }
