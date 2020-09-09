@@ -473,6 +473,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* JsonObject of authentication related information */
     JsonObject authenticationInfo = new JsonObject();
     authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/subscription");
+    authenticationInfo.put(API_METHOD, "POST");
     /* HTTP request body as Json */
     JsonObject requestBody = routingContext.getBodyAsJson();
     /* HTTP request instance/host details */
@@ -536,6 +537,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
     authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/subscription");
+    authenticationInfo.put(API_METHOD, "PATCH");
+    authenticationInfo.put(ID, subsId);
     JsonObject requestJson = routingContext.getBodyAsJson();
     String instanceID = request.getHeader(HEADER_HOST);
     requestJson.put(SUBSCRIPTION_ID, subsId);
@@ -602,6 +605,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
     authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/subscription");
+    authenticationInfo.put(API_METHOD, "PUT");
+    authenticationInfo.put(ID, subsId);
     JsonObject requestJson = routingContext.getBodyAsJson();
     String instanceID = request.getHeader(HEADER_HOST);
     String subHeader = request.getHeader(HEADER_OPTIONS);
@@ -668,6 +673,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
     authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/subscription");
+    authenticationInfo.put(API_METHOD, "GET");
+    authenticationInfo.put(ID, subsId);
     JsonObject requestJson = new JsonObject();
     String instanceID = request.getHeader(HEADER_HOST);
     requestJson.put(SUBSCRIPTION_ID, subsId);
@@ -726,6 +733,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject authenticationInfo = new JsonObject();
     authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/subscription");
+    authenticationInfo.put(API_METHOD, "DELETE");
+    authenticationInfo.put(ID, subsId);
     JsonObject requestJson = new JsonObject();
     String instanceID = request.getHeader(HEADER_HOST);
     requestJson.put(SUBSCRIPTION_ID, subsId);
@@ -1223,14 +1232,16 @@ public class ApiServerVerticle extends AbstractVerticle {
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
     authenticationInfo.put(API_ENDPOINT, "/iudx/v1/adapter");
+    authenticationInfo.put(API_METHOD, "POST");
     requestJson.put(JSON_INSTANCEID, instanceID);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
-        LOGGER.info("Authenticating response ".concat(authHandler.result().toString()));
         if (authHandler.succeeded()) {
+          LOGGER.info("Authentication response ".concat(authHandler.result().toString()));
           JsonObject authResult = authHandler.result();
           requestJson.put(JSON_CONSUMER, authResult.getString(JSON_CONSUMER));
+          requestJson.put(JSON_PROVIDER, authResult.getString(JSON_PROVIDER));
           Future<JsonObject> brokerResult = managementApi.registerAdapter(requestJson, databroker);
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
@@ -1243,7 +1254,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             }
           });
         } else if (authHandler.failed()) {
-          LOGGER.error(authHandler.cause());
+          LOGGER.info("Authentication response ".concat(authHandler.cause().toString()));
           handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
       });
@@ -1266,12 +1277,14 @@ public class ApiServerVerticle extends AbstractVerticle {
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
     authenticationInfo.put(API_ENDPOINT, "/iudx/v1/adapter");
+    authenticationInfo.put(API_METHOD, "DELETE");
     requestJson.put(JSON_INSTANCEID, instanceID);
     String domain = request.getParam(JSON_DOMAIN);
     String usersha = request.getParam(JSON_USERSHA);
     String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);
     String resourceServer = request.getParam(JSON_RESOURCE_SERVER);
     String adapterId = domain + "/" + usersha + "/" + resourceServer + "/" + resourceGroup;
+    authenticationInfo.put(ID, adapterId);
     requestJson.put(JSON_ID, adapterId);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
@@ -1279,6 +1292,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         if (authHandler.succeeded()) {
           JsonObject authResult = authHandler.result();
           requestJson.put(JSON_CONSUMER, authResult.getString(JSON_CONSUMER));
+          requestJson.put(JSON_PROVIDER, authResult.getString(JSON_PROVIDER));
           Future<JsonObject> brokerResult = managementApi.deleteAdapter(adapterId, databroker);
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
@@ -1312,12 +1326,14 @@ public class ApiServerVerticle extends AbstractVerticle {
     String instanceID = request.getHeader(HEADER_HOST);
     JsonObject authenticationInfo = new JsonObject();
     authenticationInfo.put(API_ENDPOINT, "/iudx/v1/adapter");
+    authenticationInfo.put(API_METHOD, "GET");
     requestJson.put(JSON_INSTANCEID, instanceID);
     String domain = request.getParam(JSON_DOMAIN);
     String usersha = request.getParam(JSON_USERSHA);
     String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);
     String resourceServer = request.getParam(JSON_RESOURCE_SERVER);
     String adapterId = domain + "/" + usersha + "/" + resourceServer + "/" + resourceGroup;
+    authenticationInfo.put(ID, adapterId);
     requestJson.put(JSON_ID, adapterId);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
@@ -1325,6 +1341,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         if (authHandler.succeeded()) {
           JsonObject authResult = authHandler.result();
           requestJson.put(JSON_ID, authResult.getString(JSON_CONSUMER));
+          requestJson.put(JSON_PROVIDER, authResult.getString(JSON_PROVIDER));
           Future<JsonObject> brokerResult = managementApi.getAdapterDetails(adapterId, databroker);
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {

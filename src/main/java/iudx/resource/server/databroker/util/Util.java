@@ -45,7 +45,7 @@ public class Util {
   public static String getSha(String plainUserName) {
     String encodedValue = null;
     try {
-      encodedValue = DigestUtils.md5Hex(plainUserName);
+      encodedValue = DigestUtils.sha1Hex(plainUserName);
     } catch (Exception e) {
       LOGGER.error("Unable to encode username using SHA" + e.getLocalizedMessage());
     }

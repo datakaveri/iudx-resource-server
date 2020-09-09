@@ -592,9 +592,11 @@ public class RabbitClient {
     String id = request.getString("resourceGroup");
     String resourceServer = request.getString("resourceServer");
     String userName = request.getString(CONSUMER);
+    String provider = request.getString("provider");
     LOGGER.info("Resource Group Name given by user is : " + id);
     LOGGER.info("Resource Server Name by user is : " + resourceServer);
     LOGGER.info("User Name is : " + userName);
+    
     /* Construct a response object */
     JsonObject registerResponse = new JsonObject();
     /* Validate the request object */
@@ -617,7 +619,7 @@ public class RabbitClient {
                 String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
                 String userNameSha = Util.getSha(userName);
                 String userID = domain + "/" + userNameSha;
-                String adaptorID = userID + "/" + resourceServer + "/" + id;
+                String adaptorID = provider + "/" + resourceServer + "/" + id;
                 LOGGER.info("userID is : " + userID);
                 LOGGER.info("adaptorID is : " + adaptorID);
                 if (adaptorID != null && !adaptorID.isBlank() && !adaptorID.isEmpty()) {
@@ -636,28 +638,27 @@ public class RabbitClient {
                       // if exchange just registered then set topic permission and bind with queues
                       if (!obj.containsKey("detail")) {
                         Future<JsonObject> topicPermissionFuture = setTopicPermissions(vhost,
-                            domain + "/" + userNameSha + "/" + resourceServer + "/" + id, userID);
+                            adaptorID, userID);
                         topicPermissionFuture.onComplete(topicHandler -> {
                           if (topicHandler.succeeded()) {
                             LOGGER.info("Write permission set on topic for exchange "
                                 + obj.getString("exchange"));
                             /* Bind the exchange with the database and adaptorLogs queue */
                             Future<JsonObject> queueBindFuture = queueBinding(
-                                domain + "/" + userNameSha + "/" + resourceServer + "/" + id);
+                                adaptorID);
                             queueBindFuture.onComplete(res -> {
                               if (res.succeeded()) {
                                 LOGGER.info("Queue_Database, Queue_adaptorLogs binding done with "
                                     + obj.getString("exchange") + " exchange");
                                 /* Construct the response for registration of adaptor */
-                                registerResponse.put(USER_NAME, domain + "/" + userNameSha);
+                                registerResponse.put(USER_NAME, userID);
                                 /*
                                  * APIKEY should be equal to password generated. For testing use
                                  * APIKEY_TEST_EXAMPLE
                                  */
                                 registerResponse.put(Constants.APIKEY,
                                     Constants.APIKEY_TEST_EXAMPLE);
-                                registerResponse.put(Constants.ID,
-                                    domain + "/" + userNameSha + "/" + resourceServer + "/" + id);
+                                registerResponse.put(Constants.ID, adaptorID);
                                 registerResponse.put(Constants.URL,
                                     Constants.BROKER_PRODUCTION_DOMAIN);
                                 registerResponse.put(Constants.PORT,
