@@ -29,6 +29,8 @@ public class QueryMapper {
    * @return JsonObject result.
    */
   public JsonObject toJson(NGSILDQueryParams params, boolean isTemporal) {
+    LOGGER.debug("Info QuerryMapper#toJson() started");
+    LOGGER.debug("Info : params" + params);
     this.isTemporal = isTemporal;
     JsonObject json = new JsonObject();
 
@@ -36,12 +38,14 @@ public class QueryMapper {
       JsonArray jsonArray = new JsonArray();
       params.getId().forEach(s -> jsonArray.add(s.toString()));
       json.put(Constants.JSON_ID, jsonArray);
+      LOGGER.debug("Info : json " + json);
     }
     if (params.getAttrs() != null) {
       isResponseFilter = true;
       JsonArray jsonArray = new JsonArray();
       params.getAttrs().forEach(attribute -> jsonArray.add(attribute));
       json.put(Constants.JSON_ATTRIBUTE_FILTER, jsonArray);
+      LOGGER.debug("Info : json " + json);
     }
     // TODO : geometry/georel validations according to specifications
     if (params.getGeoRel() != null
@@ -65,6 +69,7 @@ public class QueryMapper {
           json.put(Constants.JSON_MINDISTANCE, params.getGeoRel().getMinDistance());
         }
       }
+      LOGGER.debug("Info : json " + json);
     }
     // TODO: timerel validations according to specifications.
     if (isTemporal && params.getTemporalRelation().getTemprel() != null
@@ -78,7 +83,7 @@ public class QueryMapper {
         json.put(Constants.JSON_TIME, params.getTemporalRelation().getTime().toString());
         json.put(Constants.JSON_TIMEREL, params.getTemporalRelation().getTemprel());
       }
-
+      LOGGER.debug("Info : json " + json);
     }
     if (params.getQ() != null) {
       isAttributeSearch = true;
@@ -88,15 +93,19 @@ public class QueryMapper {
         query.add(getQueryTerms(term));
       }
       json.put(Constants.JSON_ATTR_QUERY, query);
+      LOGGER.debug("Info : json " + json);
     }
     if (params.getGeoProperty() != null) {
       json.put(Constants.JSON_GEOPROPERTY, params.getGeoProperty());
+      LOGGER.debug("Info : json " + json);
     }
     if (params.getOptions() != null) {
       json.put(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT);
+      LOGGER.debug("Info : json " + json);
     }
 
     json.put(Constants.JSON_SEARCH_TYPE, getSearchType());
+    LOGGER.debug("Info : json " + json);
     return json;
   }
 

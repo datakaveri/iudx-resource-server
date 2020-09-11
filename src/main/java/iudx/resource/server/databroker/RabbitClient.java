@@ -32,9 +32,9 @@ public class RabbitClient {
     this.webClient = webClient;
     client.start(clientStartupHandler -> {
       if (clientStartupHandler.succeeded()) {
-        LOGGER.info("rabbit MQ client started");
+        LOGGER.debug("Info : rabbit MQ client started");
       } else if (clientStartupHandler.failed()) {
-        LOGGER.error("rabbit MQ client startup failed.");
+        LOGGER.fatal("Fail : rabbit MQ client startup failed.");
       }
     });
   }
@@ -51,7 +51,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    **/
   public Future<JsonObject> createExchange(JsonObject request, String vHost) {
-    LOGGER.info("RabbitMQStreamingClient#createExchage() started");
+    LOGGER.debug("Info : RabbitClient#createExchage() started");
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
       String exchangeName = request.getString("exchangeName");
@@ -74,10 +74,12 @@ public class RabbitClient {
             responseJson = Util.getResponseJson(statusCode, FAILURE,
                 EXCHANGE_EXISTS_WITH_DIFFERENT_PROPERTIES);
           }
+          LOGGER.debug("Success : " + responseJson);
           promise.complete(responseJson);
         } else {
           JsonObject errorJson = Util.getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR,
               EXCHANGE_CREATE_ERROR);
+          LOGGER.error("Fail : " + requestHandler.cause());
           promise.fail(errorJson.toString());
         }
       });
@@ -86,7 +88,7 @@ public class RabbitClient {
   }
 
   Future<JsonObject> getExchangeDetails(JsonObject request, String vHost) {
-    LOGGER.info("RabbitMQStreamingClient#getExchange() started");
+    LOGGER.debug("Info : RabbitClient#getExchange() started");
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
       String exchangeName = request.getString("exchangeName");
@@ -101,10 +103,12 @@ public class RabbitClient {
           } else {
             responseJson = Util.getResponseJson(statusCode, FAILURE, EXCHANGE_NOT_FOUND);
           }
+          LOGGER.debug("Success : " + responseJson);
           promise.complete(responseJson);
         } else {
           JsonObject errorJson =
               Util.getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR, EXCHANGE_NOT_FOUND);
+          LOGGER.error("Error : " + requestHandler.cause());
           promise.fail(errorJson.toString());
         }
       });
@@ -144,7 +148,6 @@ public class RabbitClient {
     } else {
       promise.fail("exchangeName not provided");
     }
-
     return promise.future();
 
   }
@@ -157,7 +160,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> deleteExchange(JsonObject request, String vHost) {
-    LOGGER.info("RabbitMQStreamingClient#deleteExchange() started");
+    LOGGER.debug("Info : RabbitClient#deleteExchange() started");
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
       String exchangeName = request.getString("exchangeName");
@@ -172,11 +175,13 @@ public class RabbitClient {
             responseJson.put(EXCHANGE, exchangeName);
           } else {
             responseJson = Util.getResponseJson(statusCode, FAILURE, EXCHANGE_NOT_FOUND);
+            LOGGER.debug("Success : " + responseJson);
           }
           promise.complete(responseJson);
         } else {
           JsonObject errorJson = Util.getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR,
               EXCHANGE_DELETE_ERROR);
+          LOGGER.error("Error : " + requestHandler.cause());
           promise.fail(errorJson.toString());
         }
       });
@@ -192,12 +197,11 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> listExchangeSubscribers(JsonObject request, String vhost) {
-    LOGGER.info("RabbitMQStreamingClient#listExchangeSubscribers() started");
+    LOGGER.debug("Info : RabbitClient#listExchangeSubscribers() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
       String exchangeName = request.getString("id");
-      LOGGER.info(exchangeName);
       String url =
           "/api/exchanges/" + vhost + "/" + Util.encodedValue(exchangeName) + "/bindings/source";
       webClient.requestAsync(REQUEST_GET, url).onComplete(ar -> {
@@ -213,9 +217,9 @@ public class RabbitClient {
                     .collect(Collectors.toMap(json -> json.getString("destination"),
                         json -> new JsonArray().add(json.getString("routing_key")),
                         Util.bindingMergeOperator));
-                LOGGER.info("exchange subscribers : " + jsonBody);
+                LOGGER.debug("Info : exchange subscribers : " + jsonBody);
                 finalResponse.clear().mergeIn(new JsonObject(res));
-                LOGGER.info("final Response : " + finalResponse);
+                LOGGER.debug("Info : final Response : " + finalResponse);
                 if (finalResponse.isEmpty()) {
                   finalResponse.clear().mergeIn(
                       Util.getResponseJson(HttpStatus.SC_NOT_FOUND, FAILURE, EXCHANGE_NOT_FOUND),
@@ -228,9 +232,9 @@ public class RabbitClient {
             }
           }
           promise.complete(finalResponse);
-          LOGGER.info(finalResponse);
+          LOGGER.debug("Success :" + finalResponse);
         } else {
-          LOGGER.error("Listing of Exchange failed" + ar.cause());
+          LOGGER.error("Fail : Listing of Exchange failed - " + ar.cause());
           JsonObject error = Util.getResponseJson(500, FAILURE, "Internal server error");
           promise.fail(error.toString());
         }
@@ -247,6 +251,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> createQueue(JsonObject request, String vhost) {
+    LOGGER.debug("Info : RabbitClient#createQueue() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
@@ -272,9 +277,9 @@ public class RabbitClient {
             }
           }
           promise.complete(finalResponse);
-          LOGGER.info(finalResponse);
+          LOGGER.info("Success : " + finalResponse);
         } else {
-          LOGGER.error("Creation of Queue failed" + ar.cause());
+          LOGGER.error("Fail : Creation of Queue failed - " + ar.cause());
           finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, QUEUE_CREATE_ERROR));
           promise.fail(finalResponse.toString());
         }
@@ -292,10 +297,12 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> deleteQueue(JsonObject request, String vhost) {
+    LOGGER.debug("Info : RabbitClient#deleteQueue() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
       String queueName = request.getString("queueName");
+      LOGGER.debug("Info : queuName" + queueName);
       String url = "/api/queues/" + vhost + "/" + Util.encodedValue(queueName);
       webClient.requestAsync(REQUEST_DELETE, url).onComplete(ar -> {
         if (ar.succeeded()) {
@@ -308,10 +315,10 @@ public class RabbitClient {
               finalResponse.mergeIn(Util.getResponseJson(status, FAILURE, QUEUE_DOES_NOT_EXISTS));
             }
           }
-          promise.complete(finalResponse);
           LOGGER.info(finalResponse);
+          promise.complete(finalResponse);
         } else {
-          LOGGER.error("Deletion of Queue failed" + ar.cause());
+          LOGGER.error("Fail : deletion of queue failed - " + ar.cause());
           finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, QUEUE_DELETE_ERROR));
           promise.fail(finalResponse.toString());
         }
@@ -328,6 +335,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> bindQueue(JsonObject request, String vhost) {
+    LOGGER.debug("Info : RabbitClient#bindQueue() started");
     JsonObject finalResponse = new JsonObject();
     JsonObject requestBody = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
@@ -345,7 +353,7 @@ public class RabbitClient {
             HttpResponse<Buffer> response = ar.result();
             if (response != null && !response.equals(" ")) {
               int status = response.statusCode();
-              LOGGER.info("Binding " + rkey.toString() + "Success. Status is " + status);
+              LOGGER.info("Info : Binding " + rkey.toString() + "Success. Status is " + status);
               if (status == HttpStatus.SC_CREATED) {
                 finalResponse.put(Constants.EXCHANGE, exchangeName);
                 finalResponse.put(Constants.QUEUE, queueName);
@@ -356,10 +364,11 @@ public class RabbitClient {
               }
             }
             if (rkey == entities.getValue(arrayPos)) {
+              LOGGER.debug("Success : " + finalResponse);
               promise.complete(finalResponse);
             }
           } else {
-            LOGGER.error("Binding of Queue failed" + ar.cause());
+            LOGGER.error("Fail : Binding of Queue failed - " + ar.cause());
             finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, QUEUE_BIND_ERROR));
             promise.fail(finalResponse.toString());
           }
@@ -377,6 +386,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> unbindQueue(JsonObject request, String vhost) {
+    LOGGER.debug("Info : RabbitClient#unbindQueue() started");
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
@@ -401,10 +411,11 @@ public class RabbitClient {
               }
             }
             if (rkey == entities.getValue(arrayPos)) {
+              LOGGER.debug("Success : " + finalResponse);
               promise.complete(finalResponse);
             }
           } else {
-            LOGGER.error("Unbinding of Queue failed" + ar.cause());
+            LOGGER.error("Fail : Unbinding of Queue failed" + ar.cause());
             finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, QUEUE_BIND_ERROR));
             promise.fail(finalResponse.toString());
           }
@@ -421,6 +432,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> createvHost(JsonObject request) {
+    LOGGER.debug("Info : RabbitClient#createvHost() started");
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
@@ -438,9 +450,9 @@ public class RabbitClient {
             }
           }
           promise.complete(finalResponse);
-          LOGGER.info(finalResponse);
+          LOGGER.info("Success : " + finalResponse);
         } else {
-          LOGGER.error("Creation of vHost failed" + ar.cause());
+          LOGGER.error(" Fail : Creation of vHost failed" + ar.cause());
           finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, VHOST_CREATE_ERROR));
           promise.fail(finalResponse.toString());
         }
@@ -456,6 +468,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> deletevHost(JsonObject request) {
+    LOGGER.debug("Info : RabbitClient#deletevHost() started");
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
@@ -466,6 +479,7 @@ public class RabbitClient {
           HttpResponse<Buffer> response = ar.result();
           if (response != null && !response.equals(" ")) {
             int status = response.statusCode();
+            LOGGER.debug("Info : statusCode" + status);
             if (status == HttpStatus.SC_NO_CONTENT) {
               finalResponse.put(Constants.VHOST, vhost);
             } else if (status == HttpStatus.SC_NOT_FOUND) {
@@ -473,9 +487,9 @@ public class RabbitClient {
             }
           }
           promise.complete(finalResponse);
-          LOGGER.info(finalResponse);
+          LOGGER.info("Success : " + finalResponse);
         } else {
-          LOGGER.error("Deletion of vHost failed" + ar.cause());
+          LOGGER.error("Fail : Deletion of vHost failed -" + ar.cause());
           finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, VHOST_DELETE_ERROR));
           promise.fail(finalResponse.toString());
         }
@@ -492,6 +506,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> listvHost(JsonObject request) {
+    LOGGER.debug("Info : RabbitClient#listvHost() started");
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     if (request != null) {
@@ -502,6 +517,7 @@ public class RabbitClient {
           HttpResponse<Buffer> response = ar.result();
           if (response != null && !response.equals(" ")) {
             int status = response.statusCode();
+            LOGGER.debug("Info : statusCode" + status);
             if (status == HttpStatus.SC_OK) {
               Buffer body = response.body();
               if (body != null) {
@@ -519,10 +535,10 @@ public class RabbitClient {
               finalResponse.mergeIn(Util.getResponseJson(status, FAILURE, VHOST_NOT_FOUND));
             }
           }
+          LOGGER.info("Success : " + finalResponse);
           promise.complete(finalResponse);
-          LOGGER.info(finalResponse);
         } else {
-          LOGGER.error("Listing of vHost failed" + ar.cause());
+          LOGGER.error("Fail : Listing of vHost failed - " + ar.cause());
           finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, VHOST_LIST_ERROR));
           promise.fail(finalResponse.toString());
         }
@@ -538,10 +554,10 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> listQueueSubscribers(JsonObject request, String vhost) {
+    LOGGER.debug("Info : RabbitClient#listQueueSubscribers() started");
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
-
       String queueName = request.getString("queueName");
       JsonArray oroutingKeys = new JsonArray();
       String url = "/api/queues/" + vhost + "/" + Util.encodedValue(queueName) + "/bindings";
@@ -550,6 +566,7 @@ public class RabbitClient {
           HttpResponse<Buffer> response = ar.result();
           if (response != null && !response.equals(" ")) {
             int status = response.statusCode();
+            LOGGER.debug("Info : statusCode " + status);
             if (status == HttpStatus.SC_OK) {
               Buffer body = response.body();
               if (body != null) {
@@ -573,10 +590,10 @@ public class RabbitClient {
                   .mergeIn(Util.getResponseJson(status, FAILURE, QUEUE_DOES_NOT_EXISTS));
             }
           }
+          LOGGER.debug("Info : " + finalResponse);
           promise.complete(finalResponse);
-          LOGGER.info(finalResponse);
         } else {
-          LOGGER.error("Listing of Queue failed" + ar.cause());
+          LOGGER.error("Error : Listing of Queue failed - " + ar.cause());
           finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, QUEUE_LIST_ERROR));
           promise.fail(finalResponse.toString());
         }
@@ -586,17 +603,18 @@ public class RabbitClient {
   }
 
   public Future<JsonObject> registerAdaptor(JsonObject request, String vhost) {
+    LOGGER.debug("Info : RabbitClient#registerAdaptor() started");
     Promise<JsonObject> promise = Promise.promise();
     System.out.println(request.toString());
     /* Get the ID and userName from the request */
     String id = request.getString("resourceGroup");
     String resourceServer = request.getString("resourceServer");
     String userName = request.getString(CONSUMER);
+
     String provider = request.getString("provider");
-    LOGGER.info("Resource Group Name given by user is : " + id);
-    LOGGER.info("Resource Server Name by user is : " + resourceServer);
-    LOGGER.info("User Name is : " + userName);
-    
+    LOGGER.debug("Info : Resource Group Name given by user is : " + id);
+    LOGGER.debug("Info : Resource Server Name by user is : " + resourceServer);
+    LOGGER.debug("Info : User Name is : " + userName);
     /* Construct a response object */
     JsonObject registerResponse = new JsonObject();
     /* Validate the request object */
@@ -614,14 +632,14 @@ public class RabbitClient {
               if (rh.succeeded()) {
                 /* Obtain the result of user creation */
                 JsonObject result = rh.result();
-                LOGGER.info("Response of createUserIfNotExist is : " + result);
+                LOGGER.debug("Info : Response of createUserIfNotExist is : " + result);
                 /* Construct the domain, userNameSHA, userID and adaptorID */
                 String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
                 String userNameSha = Util.getSha(userName);
                 String userID = domain + "/" + userNameSha;
                 String adaptorID = provider + "/" + resourceServer + "/" + id;
-                LOGGER.info("userID is : " + userID);
-                LOGGER.info("adaptorID is : " + adaptorID);
+                LOGGER.debug("Info : userID is : " + userID);
+                LOGGER.debug("Info : adaptorID is : " + adaptorID);
                 if (adaptorID != null && !adaptorID.isBlank() && !adaptorID.isEmpty()) {
                   JsonObject json = new JsonObject();
                   json.put(EXCHANGE_NAME, adaptorID);
@@ -632,24 +650,25 @@ public class RabbitClient {
                     if (ar.succeeded()) {
                       /* Obtain the result of exchange creation */
                       JsonObject obj = ar.result();
-                      LOGGER.info("Response of createExchange is : " + obj);
-                      LOGGER.info("exchange name provided : " + adaptorID);
-                      LOGGER.info("exchange name received : " + obj.getString("exchange"));
+                      LOGGER.debug("Info : Response of createExchange is : " + obj);
+                      LOGGER.debug("Info : exchange name provided : " + adaptorID);
+                      LOGGER.debug("Info : exchange name received : " + obj.getString("exchange"));
                       // if exchange just registered then set topic permission and bind with queues
                       if (!obj.containsKey("detail")) {
                         Future<JsonObject> topicPermissionFuture = setTopicPermissions(vhost,
                             adaptorID, userID);
                         topicPermissionFuture.onComplete(topicHandler -> {
                           if (topicHandler.succeeded()) {
-                            LOGGER.info("Write permission set on topic for exchange "
+                            LOGGER.debug("Success : Write permission set on topic for exchange "
                                 + obj.getString("exchange"));
                             /* Bind the exchange with the database and adaptorLogs queue */
                             Future<JsonObject> queueBindFuture = queueBinding(
                                 adaptorID);
                             queueBindFuture.onComplete(res -> {
                               if (res.succeeded()) {
-                                LOGGER.info("Queue_Database, Queue_adaptorLogs binding done with "
-                                    + obj.getString("exchange") + " exchange");
+                                LOGGER.debug(
+                                    "Success : Queue_Database, Queue_adaptorLogs binding done with "
+                                        + obj.getString("exchange") + " exchange");
                                 /* Construct the response for registration of adaptor */
                                 registerResponse.put(USER_NAME, userID);
                                 /*
@@ -665,25 +684,24 @@ public class RabbitClient {
                                     Constants.BROKER_PRODUCTION_PORT);
                                 registerResponse.put(Constants.VHOST, Constants.VHOST_IUDX);
 
-                                LOGGER.info("registerResponse : " + registerResponse);
-
-                                LOGGER.info("registerResponse : " + registerResponse);
+                                LOGGER.debug("Info : registerResponse : " + registerResponse);
                                 promise.complete(registerResponse);
                               } else {
                                 /* Handle Queue Error */
                                 LOGGER.error(
-                                    "error in queue binding with adaptor - cause : " + res.cause());
-                                registerResponse.put(ERROR, QUEUE_BIND_ERROR);
+                                    "Error : error in queue binding with adaptor - " + res.cause());
+                                registerResponse.clear().mergeIn(
+                                    getResponseJson(BAD_REQUEST_CODE, ERROR, QUEUE_BIND_ERROR));
                                 promise.fail(registerResponse.toString());
                               }
                             });
                           } else {
                             /* Handle Topic Permission Error */
-                            LOGGER.info("topic permissions not set for exchange "
+                            LOGGER.error("Error : topic permissions not set for exchange "
                                 + obj.getString("exchange") + " - cause : "
                                 + topicHandler.cause().getMessage());
-
-                            registerResponse.put(ERROR, TOPIC_PERMISSION_SET_ERROR);
+                            registerResponse.clear().mergeIn(getResponseJson(BAD_REQUEST_CODE,
+                                ERROR, TOPIC_PERMISSION_SET_ERROR));
                             promise.fail(registerResponse.toString());
                           }
                         });
@@ -691,62 +709,70 @@ public class RabbitClient {
                           && !obj.getString("detail").isEmpty()
                           && obj.getString("detail").equalsIgnoreCase("Exchange already exists")) {
                         /* Handle Exchange Error */
-                        LOGGER.error("something wrong in exchange declaration : " + ar.cause());
-                        registerResponse.put(ERROR, EXCHANGE_EXISTS);
+                        LOGGER.error(
+                            "Error : something wrong in exchange declaration : " + ar.cause());
+                        registerResponse.clear()
+                            .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, EXCHANGE_EXISTS));
                         promise.fail(registerResponse.toString());
                       }
                     } else {
                       /* Handle Exchange Error */
-                      registerResponse.put(ERROR, EXCHANGE_DECLARATION_ERROR);
+                      registerResponse.clear().mergeIn(
+                          getResponseJson(BAD_REQUEST_CODE, ERROR, EXCHANGE_DECLARATION_ERROR));
                       promise.fail(registerResponse.toString());
                     }
                   });
                 } else {
                   /* Handle Request Error */
-                  LOGGER.error("AdaptorID / Exchange not provided in request");
-                  registerResponse.put(ERROR, ADAPTOR_ID_NOT_PROVIDED);
+                  LOGGER.error("Error : AdaptorID / Exchange not provided in request");
+                  registerResponse.clear()
+                      .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, ADAPTER_ID_NOT_PROVIDED));
                   promise.fail(registerResponse.toString());
                 }
               } else if (rh.failed()) {
                 /* Handle User Creation Error */
-                LOGGER.error("User creation failed. " + rh.cause());
-                registerResponse.put(ERROR, USER_CREATION_ERROR);
+                LOGGER.error("Error : User creation failed. " + rh.cause());
+                registerResponse.clear()
+                    .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, USER_CREATION_ERROR));
                 promise.fail(registerResponse.toString());
               } else {
                 /* Handle User Creation Error */
-                LOGGER.error("User creation failed. " + rh.cause());
-                registerResponse.put(ERROR, USER_CREATION_ERROR);
+                LOGGER.error("Error : User creation failed. " + rh.cause());
+                registerResponse.clear()
+                    .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, USER_CREATION_ERROR));
                 promise.fail(registerResponse.toString());
               }
             });
           } else {
             /* Handle Request Error */
-            LOGGER.error("user not provided in adaptor registration");
-            registerResponse.put(ERROR, USER_NAME_NOT_PROVIDED);
+            LOGGER.error("Error : user not provided in adaptor registration");
+            registerResponse.clear()
+                .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, USER_NAME_NOT_PROVIDED));
             promise.fail(registerResponse.toString());
           }
         } else {
           /* Handle Invalid ID Error */
-          registerResponse.put(ERROR, INVALID_ID);
+          registerResponse.clear().mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ID));
           promise.fail(registerResponse.toString());
-          LOGGER.error("id not provided in adaptor registration");
+          LOGGER.error("Error : id not provided in adaptor registration");
         }
       } else {
         /* Handle Request Error */
-        LOGGER.error("id not provided in adaptor registration");
-        registerResponse.put(ERROR, ID_NOT_PROVIDED);
+        LOGGER.error("Error : id not provided in adaptor registration");
+        registerResponse.clear().mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, ID_NOT_PROVIDED));
         promise.fail(registerResponse.toString());
       }
     } else {
       /* Handle Request Error */
-      LOGGER.error("Bad Request");
-      registerResponse.put(ERROR, BAD_REQUEST);
+      LOGGER.error("Error : Bad Request");
+      registerResponse.clear().mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, BAD_REQUEST));
       promise.fail(registerResponse.toString());
     }
     return promise.future();
   }
 
   Future<JsonObject> deleteAdapter(JsonObject json, String vhost) {
+    LOGGER.debug("Info : RabbitClient#deleteAdapter() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
     System.out.println(json.toString());
@@ -758,15 +784,16 @@ public class RabbitClient {
           String exchangeID = json.getString("id");
           client.exchangeDelete(exchangeID, rh -> {
             if (rh.succeeded()) {
-              LOGGER.info(exchangeID + " adaptor deleted successfully");
+              LOGGER.debug("Info : " + exchangeID + " adaptor deleted successfully");
               finalResponse.mergeIn(getResponseJson(200, "success", "adaptor deleted"));
               finalResponse.put("id", exchangeID);
             } else if (rh.failed()) {
               finalResponse.clear()
                   .mergeIn(getResponseJson(500, "adaptor delete", rh.cause().toString()));
+              LOGGER.error("Error : Adaptor deletion failed cause - " + rh.cause());
               promise.fail(finalResponse.toString());
             } else {
-              LOGGER.error("Something wrong in deleting adaptor" + rh.cause());
+              LOGGER.error("Error : Something wrong in deleting adaptor" + rh.cause());
               finalResponse.mergeIn(getResponseJson(400, "bad request", "nothing to delete"));
               promise.fail(finalResponse.toString());
             }
@@ -776,15 +803,18 @@ public class RabbitClient {
         } else if (status == 404) { // exchange not found
           finalResponse.clear().mergeIn(
               getResponseJson(status, "not found", resultHandler.result().getString("detail")));
+          LOGGER.error("Error : Exchange not found cause ");
           promise.fail(finalResponse.toString());
         } else { // some other issue
+          LOGGER.error("Error : Bad request");
           finalResponse.mergeIn(getResponseJson(400, "bad request", "nothing to delete"));
           promise.fail(finalResponse.toString());
-       }
+        }
       }
       if (resultHandler.failed()) {
-        LOGGER.error("deleteAdaptor - resultHandler failed : " + resultHandler.cause());
-        finalResponse.clear().mergeIn(getResponseJson(500, "bad request", "nothing to delete"));
+        LOGGER.error("Error : deleteAdaptor - resultHandler failed : " + resultHandler.cause());
+        finalResponse
+            .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, "bad request", "nothing to delete"));
         promise.fail(finalResponse.toString());
 
       }
@@ -800,6 +830,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    **/
   Future<JsonObject> createUserIfNotExist(String userName, String vhost) {
+    LOGGER.debug("Info : RabbitClient#createUserIfNotExist() started");
     Promise<JsonObject> promise = Promise.promise();
     /* Create a response object */
     JsonObject response = new JsonObject();
@@ -815,10 +846,11 @@ public class RabbitClient {
         response.put(TITLE, result.getString("title"));
         response.put(DETAILS, result.getString("detail"));
         response.put(VHOST_PERMISSIONS, result.getString("vhostPermissions"));
+        LOGGER.debug("Success : " + response);
         promise.complete(response);
       } else {
-        LOGGER.info("Something went wrong - Cause: " + handler.cause());
-        response.put(ERROR, USER_CREATION_ERROR);
+        LOGGER.error("Error : Something went wrong - Cause: " + handler.cause());
+        response.mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, USER_CREATION_ERROR));
         promise.fail(response.toString());
       }
     });
@@ -833,6 +865,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    **/
   Future<JsonObject> createUserIfNotPresent(String userName, String vhost) {
+    LOGGER.debug("Info : RabbitClient#createUserIfNotPresent() started");
     Promise<JsonObject> promise = Promise.promise();
     /* Get domain, shaUsername from userName */
     String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
@@ -846,8 +879,7 @@ public class RabbitClient {
       if (reply.succeeded()) {
         /* Check if user not found */
         if (reply.result().statusCode() == HttpStatus.SC_NOT_FOUND) {
-          LOGGER.info(
-              "createUserIfNotExist success method : User not found. So creating user .........");
+          LOGGER.debug("Success : User not found. creating user");
           /* Create new user */
           Future<JsonObject> userCreated = createUser(shaUsername, vhost, url);
           userCreated.onComplete(handler -> {
@@ -862,8 +894,8 @@ public class RabbitClient {
               response.put(VHOST_PERMISSIONS, result.getString("vhostPermissions"));
               promise.complete(response);
             } else {
-              LOGGER.error("createUser method onComplete() - Error in user creation. Cause : "
-                  + handler.cause());
+              LOGGER.error("Error : Error in user creation. Cause : " + handler.cause());
+              promise.fail(handler.cause());
             }
           });
 
@@ -876,17 +908,17 @@ public class RabbitClient {
           response.put(TYPE, USER_EXISTS);
           response.put(TITLE, SUCCESS);
           response.put(DETAILS, USER_ALREADY_EXISTS);
+          LOGGER.debug("Success : user created");
           promise.complete(response);
         }
 
       } else {
         /* Handle API error */
-        LOGGER.info("Something went wrong while finding user using mgmt API: " + reply.cause());
+        LOGGER.error(
+            "Error : Something went wrong while finding user using mgmt API: " + reply.cause());
         promise.fail(reply.cause().toString());
       }
-
     });
-
     return promise.future();
 
   }
@@ -900,10 +932,8 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    **/
   Future<JsonObject> createUser(String shaUsername, String vhost, String url) {
+    LOGGER.debug("Info : RabbitClient#createUser() started");
     Promise<JsonObject> promise = Promise.promise();
-    // now creating user using same url with method put
-    // HttpRequest<Buffer> createUserRequest = webClient.put(url).basicAuthentication(user,
-    // password);
     JsonObject response = new JsonObject();
     JsonObject arg = new JsonObject();
     arg.put(PASSWORD, Util.randomPassword.get());
@@ -919,16 +949,17 @@ public class RabbitClient {
           response.put(TITLE, SUCCESS);
           response.put(TYPE, "" + ar.result().statusCode());
           response.put(DETAILS, USER_CREATED);
-          LOGGER.info("createUser method : given user created successfully");
+          LOGGER.debug("Info : user created successfully");
           // set permissions to vhost for newly created user
           Future<JsonObject> vhostPermission = setVhostPermissions(shaUsername, vhost);
           vhostPermission.onComplete(handler -> {
             if (handler.succeeded()) {
-              response.put(VHOST_PERMISSIONS, handler.result().getString("vhostPermissions"));
+              response.clear().mergeIn(getResponseJson(SUCCESS_CODE, VHOST_PERMISSIONS,
+                  handler.result().getString(DETAIL)));
               promise.complete(response);
             } else {
               /* Handle error */
-              LOGGER.error("Error in setting vhostPermissions. Cause : " + handler.cause());
+              LOGGER.error("Error : error in setting vhostPermissions. Cause : " + handler.cause());
               response.put(VHOST_PERMISSIONS, VHOST_PERMISSIONS_FAILURE);
               promise.complete(response);
             }
@@ -936,13 +967,14 @@ public class RabbitClient {
 
         } else {
           /* Handle error */
-          LOGGER.error("createUser method - Some network error. cause" + ar.cause());
+          LOGGER.error("Error : createUser method - Some network error. cause" + ar.cause());
           response.put(FAILURE, NETWORK_ISSUE);
           promise.fail(response.toString());
         }
       } else {
         /* Handle error */
-        LOGGER.info("Something went wrong while creating user using mgmt API :" + ar.cause());
+        LOGGER
+            .info("Error : Something went wrong while creating user using mgmt API :" + ar.cause());
         response.put(FAILURE, CHECK_CREDENTIALS);
         promise.fail(response.toString());
       }
@@ -959,7 +991,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    **/
   private Future<JsonObject> setTopicPermissions(String vhost, String adaptorID, String userID) {
-    // now set write permission to user for this adaptor(exchange)
+    LOGGER.debug("Info : RabbitClient#setTopicPermissions() started");
     String url = "/api/topic-permissions/" + vhost + "/" + Util.encodedValue(userID);
     JsonObject param = new JsonObject();
     // set all mandatory fields
@@ -974,25 +1006,29 @@ public class RabbitClient {
       if (result.succeeded()) {
         /* Check if request was a success */
         if (result.result().statusCode() == HttpStatus.SC_CREATED) {
-          response.put(TOPIC_PERMISSION, TOPIC_PERMISSION_SET_SUCCESS);
-          LOGGER.info("Topic permission set");
+          response.mergeIn(
+              getResponseJson(SUCCESS_CODE, TOPIC_PERMISSION, TOPIC_PERMISSION_SET_SUCCESS));
+          LOGGER.debug("Success : Topic permission set");
           promise.complete(response);
         } else if (result.result()
             .statusCode() == HttpStatus.SC_NO_CONTENT) { /* Check if request was already served */
-          response.put(TOPIC_PERMISSION, TOPIC_PERMISSION_ALREADY_SET);
+          response.mergeIn(
+              getResponseJson(SUCCESS_CODE, TOPIC_PERMISSION, TOPIC_PERMISSION_ALREADY_SET));
           promise.complete(response);
         } else { /* Check if request has an error */
-          LOGGER.error("Error in setting topic permissions" + result.result().statusMessage());
-          response.put(TOPIC_PERMISSION, TOPIC_PERMISSION_SET_ERROR);
+          LOGGER.error(
+              "Error : error in setting topic permissions" + result.result().statusMessage());
+          response.mergeIn(
+              getResponseJson(INTERNAL_ERROR_CODE, TOPIC_PERMISSION, TOPIC_PERMISSION_SET_ERROR));
           promise.fail(response.toString());
         }
       } else { /* Check if request has an error */
-        LOGGER.error("Error in setting topic permission : " + result.cause());
-        response.put(TOPIC_PERMISSION, TOPIC_PERMISSION_SET_ERROR);
+        LOGGER.error("Error : error in setting topic permission : " + result.cause());
+        response.mergeIn(
+            getResponseJson(INTERNAL_ERROR_CODE, TOPIC_PERMISSION, TOPIC_PERMISSION_SET_ERROR));
         promise.fail(response.toString());
       }
     });
-
     return promise.future();
   }
 
@@ -1004,7 +1040,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    **/
   private Future<JsonObject> setVhostPermissions(String shaUsername, String vhost) {
-    // set permissions for this user
+    LOGGER.debug("Info : RabbitClient#setVhostPermissions() started");
     /* Construct URL to use */
     String url = "/api/permissions/" + vhost + "/" + Util.encodedValue(shaUsername);
     JsonObject vhostPermissions = new JsonObject();
@@ -1013,7 +1049,6 @@ public class RabbitClient {
     vhostPermissions.put(CONFIGURE, DENY);
     vhostPermissions.put(WRITE, ALLOW);
     vhostPermissions.put(READ, ALLOW);
-
     Promise<JsonObject> promise = Promise.promise();
     /* Construct a response object */
     JsonObject vhostPermissionResponse = new JsonObject();
@@ -1021,26 +1056,27 @@ public class RabbitClient {
       if (handler.succeeded()) {
         /* Check if permission was set */
         if (handler.result().statusCode() == HttpStatus.SC_CREATED) {
-          LOGGER.info("vhostPermissionRequest success");
-          vhostPermissionResponse.put(VHOST_PERMISSIONS, VHOST_PERMISSIONS_WRITE);
-          LOGGER.info(
-              "write permission set for user [ " + shaUsername + " ] in vHost [ " + vhost + "]");
+          LOGGER.debug("Success :write permission set for user [ " + shaUsername + " ] in vHost [ "
+              + vhost + "]");
+          vhostPermissionResponse
+              .mergeIn(getResponseJson(SUCCESS_CODE, VHOST_PERMISSIONS, VHOST_PERMISSIONS_WRITE));
           promise.complete(vhostPermissionResponse);
         } else {
-          LOGGER.error("Error in write permission set for user [ " + shaUsername + " ] in vHost [ "
-              + vhost + " ]");
-          vhostPermissionResponse.put(VHOST_PERMISSIONS, VHOST_PERMISSION_SET_ERROR);
+          LOGGER.error("Error : error in write permission set for user [ " + shaUsername
+              + " ] in vHost [ " + vhost + " ]");
+          vhostPermissionResponse.mergeIn(
+              getResponseJson(INTERNAL_ERROR_CODE, VHOST_PERMISSIONS, VHOST_PERMISSION_SET_ERROR));
           promise.fail(vhostPermissions.toString());
         }
       } else {
         /* Check if request has an error */
-        LOGGER.error("Error in write permission set for user [ " + shaUsername + " ] in vHost [ "
-            + vhost + " ]");
-        vhostPermissionResponse.put(VHOST_PERMISSIONS, VHOST_PERMISSION_SET_ERROR);
+        LOGGER.error("Error : error in write permission set for user [ " + shaUsername
+            + " ] in vHost [ " + vhost + " ]");
+        vhostPermissionResponse.mergeIn(
+            getResponseJson(INTERNAL_ERROR_CODE, VHOST_PERMISSIONS, VHOST_PERMISSION_SET_ERROR));
         promise.fail(vhostPermissions.toString());
       }
     });
-
     return promise.future();
   }
 
@@ -1052,7 +1088,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> queueBinding(String adaptorID) {
-    LOGGER.info("RabbitMQStreamingClient#queueBinding() method started");
+    LOGGER.info("RabbitClient#queueBinding() method started");
     Promise<JsonObject> promise = Promise.promise();
     String topics = adaptorID + "/.*";
     bindQueue(QUEUE_DATA, adaptorID, topics)
@@ -1063,26 +1099,27 @@ public class RabbitClient {
             adaptorID + DOWNSTREAM_ISSUE))
         .onSuccess(successHandler -> {
           JsonObject response = new JsonObject();
-          response.put("Queue_Database", QUEUE_DATA + " queue bound to " + adaptorID);
+          response.mergeIn(getResponseJson(SUCCESS_CODE, "Queue_Database",
+              QUEUE_DATA + " queue bound to " + adaptorID));
+          LOGGER.debug("Success : " + response);
           promise.complete(response);
         }).onFailure(failureHandler -> {
-          LOGGER.error("queue bind error : " + failureHandler.getCause().toString());
-          JsonObject response = new JsonObject();
-          response.put(ERROR, QUEUE_BIND_ERROR);
+          LOGGER.error("Error : queue bind error : " + failureHandler.getCause().toString());
+          JsonObject response = getResponseJson(INTERNAL_ERROR_CODE, ERROR, QUEUE_BIND_ERROR);
           promise.fail(response.toString());
         });
     return promise.future();
   }
 
   Future<Void> bindQueue(String data, String adaptorID, String topics) {
-    LOGGER.info("RabbitMQStreamingClient#bindQueue() started");
-    LOGGER.info("data : " + data + " adaptorID : " + adaptorID + " topics : " + topics);
+    LOGGER.debug("Info : RabbitClient#bindQueue() started");
+    LOGGER.debug("Info : data : " + data + " adaptorID : " + adaptorID + " topics : " + topics);
     Promise<Void> promise = Promise.promise();
     client.queueBind(data, adaptorID, topics, handler -> {
       if (handler.succeeded()) {
         promise.complete();
       } else {
-        LOGGER.error(" Queue" + data + " binding error : " + handler.cause());
+        LOGGER.error("Error : Queue" + data + " binding error : " + handler.cause());
         promise.fail(handler.cause());
       }
     });

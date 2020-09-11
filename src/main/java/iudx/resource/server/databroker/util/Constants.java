@@ -5,7 +5,7 @@ public class Constants {
   // Registration response fields used for construction JSON
   public static final String APIKEY = "apiKey";
   public static final String ALLOW = ".*";
-  public static final String ADAPTOR_ID_NOT_PROVIDED =
+  public static final String ADAPTER_ID_NOT_PROVIDED =
       "AdaptorID / Exchange not provided in request";
   public static final String AUTO_DELETE = "auto_delete";
   public static final String ALL_NOT_FOUND = "Queue/Exchange/Routing Key does not exist";
@@ -145,4 +145,27 @@ public class Constants {
   public static final int X_MAXLENGTH_VALUE = 100;
   public static final String X_QUEUE_MODE_VALUE = "lazy";
   
+  public static final int BAD_REQUEST_CODE = 400;
+  public static final int INTERNAL_ERROR_CODE = 500;
+  public static final int SUCCESS_CODE = 200;
+  public static final String INVALID_ROUTING_KEY = "Invalid or null routing key";
+  public static final String BINDING_FAILED = "Binding failed";
+  public static final String BAD_REQUEST_DATA = "Bad Request data";
+  public static final String PAYLOAD_ERROR = "Invalid request payload";
+  public static final String MSG_PUBLISH_FAILED = "Message publishing failed";
+
+  // SQL Queries
+  public static final String SELECT_CALLBACK =
+      "Select * FROM registercallback WHERE subscriptionID = $1";
+  public static final String DELETE_CALLBACK =
+      "Delete from registercallback WHERE subscriptionID = $1";
+  public static final String INSERT_CALLBACK =
+      "INSERT INTO registercallback (subscriptionID  ,callbackURL ,entities ,start_time , end_time , frequency ) VALUES ($1, $2, $3, $4, $5, $6)";
+  public static final String UPDATE_CALLBACK =
+      " UPDATE registercallback SET entities = $1 WHERE subscriptionID = $2";
+
+  // sql errors
+  public static final String SQL_ERROR = "SQL Error";
+  public static final String DUPLICATE_KEY = "duplicate key value violates unique constraint";
+
 }

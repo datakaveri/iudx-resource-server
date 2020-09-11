@@ -139,7 +139,11 @@ public class NGSILDQueryParams {
 
   public static void main(String[] args) {
     JsonObject json = new JsonObject();
-    json.put("type", "query").put("geoQ",
+    json.put("type", "query")
+        .put("temporalQ",
+            new JsonObject().put("timerel", "during").put("time", "2020-06-01T14:20:00Z")
+                .put("endtime", "2020-06-03T15:00:00Z").put("timeProperty", "timeProperty"))
+        .put("geoQ",
         new JsonObject()
             .put("geometry", "point")
             .put("coordinates", new JsonArray().add(25.319768).add(82.987988))
@@ -149,7 +153,8 @@ public class NGSILDQueryParams {
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")));
 
     NGSILDQueryParams ng = new NGSILDQueryParams(json);
-    System.out.println(ng.toString());
+    QueryMapper qm = new QueryMapper();
+    System.out.println(qm.toJson(ng, true));
   }
 
   private void create(JsonObject requestJson) {
@@ -188,7 +193,7 @@ public class NGSILDQueryParams {
         JsonObject temporalJson = requestJson.getJsonObject(entry.getKey());
         this.temporalRelation.setTemprel(temporalJson.getString("timerel"));
         this.temporalRelation.setTime(temporalJson.getString("time"));
-        this.temporalRelation.setEndTime(temporalJson.getString("endTime"));
+        this.temporalRelation.setEndTime(temporalJson.getString("endtime"));
       } else if (entry.getKey().equalsIgnoreCase("entities")) {
         JsonArray array = new JsonArray(entry.getValue().toString());
         Iterator<?> iter = array.iterator();

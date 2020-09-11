@@ -27,13 +27,7 @@ public class Util {
    * @return encoded_value which is a String
    **/
   public static String encodedValue(String value) {
-    String encodedVhost = null;
-    try {
-      encodedVhost = URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
-    } catch (UnsupportedEncodingException ex) {
-      LOGGER.error("Error in encode vhost name :" + ex.getCause());
-    }
-    return encodedVhost;
+    return URLEncoder.encode(value, StandardCharsets.UTF_8);
   }
 
   /**
