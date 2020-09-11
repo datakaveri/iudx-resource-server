@@ -304,7 +304,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               });
             }
           } else if (authHandler.failed()) {
-            LOGGER.error("Fail: Unathorized request;".concat(authHandler.cause().toString()));
+            LOGGER.error("Fail: Unathorized request;".concat(authHandler.cause().getMessage()));
             handleResponse(response, ResponseType.AuthenticationFailure, true);
           }
         });
@@ -376,7 +376,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               });
             }
           } else if (authHandler.failed()) {
-            LOGGER.error("Fail: Unathorized request;".concat(authHandler.cause().toString()));
+            LOGGER.error("Fail: Unathorized request;".concat(authHandler.cause().getMessage()));
             handleResponse(response, ResponseType.AuthenticationFailure, true);
           }
         });
@@ -456,7 +456,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               });
             }
           } else if (authHandler.failed()) {
-            LOGGER.error("Fail: Unathorized request;".concat(authHandler.cause().toString()));
+            LOGGER.error("Fail: Unathorized request;".concat(authHandler.cause().getMessage()));
             handleResponse(response, ResponseType.AuthenticationFailure, true);
           }
         });
@@ -849,13 +849,13 @@ public class ApiServerVerticle extends AbstractVerticle {
                 }
               });
             } else {
-              LOGGER.error("Fail: Unauthorized;" + authHandler.cause().toString());
+              LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
               handleResponse(response, ResponseType.BadRequestData,
                   MSG_INVALID_EXCHANGE_NAME, true);
             }
           });
         } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().toString());
+          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
           handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
       });
@@ -892,13 +892,13 @@ public class ApiServerVerticle extends AbstractVerticle {
               handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
                   false);
             } else if (brokerResultHandler.failed()) {
-              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().toString());
+              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
               handleResponse(response, ResponseType.BadRequestData,
                   brokerResultHandler.cause().getMessage(), false);
             }
           });
         } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().toString());
+          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
           handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
       });
@@ -938,13 +938,13 @@ public class ApiServerVerticle extends AbstractVerticle {
               handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
                   false);
             } else if (brokerResultHandler.failed()) {
-              LOGGER.error("Fail: Bad request" + brokerResultHandler.cause().toString());
+              LOGGER.error("Fail: Bad request" + brokerResultHandler.cause().getMessage());
               handleResponse(response, ResponseType.BadRequestData,
                   brokerResultHandler.cause().getMessage(), false);
             }
           });
         } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized" + authHandler.cause().toString());
+          LOGGER.error("Fail: Unauthorized" + authHandler.cause().getMessage());
           handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
       });
@@ -984,7 +984,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                   handleResponse(response, ResponseType.Created,
                       brokerResultHandler.result().toString(), false);
                 } else if (brokerResultHandler.failed()) {
-                  LOGGER.error("Fail: Bad request" + brokerResultHandler.cause().toString());
+                  LOGGER.error("Fail: Bad request" + brokerResultHandler.cause().getMessage());
                   handleResponse(response, ResponseType.BadRequestData,
                       brokerResultHandler.cause().getMessage(), false);
                 }
@@ -997,7 +997,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
           });
         } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().toString());
+          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
           handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
       });
@@ -1034,13 +1034,13 @@ public class ApiServerVerticle extends AbstractVerticle {
               handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
                   false);
             } else if (brokerResultHandler.failed()) {
-              LOGGER.error("Fail: Bad request" + brokerResultHandler.cause().toString());
+              LOGGER.error("Fail: Bad request" + brokerResultHandler.cause().getMessage());
               handleResponse(response, ResponseType.BadRequestData,
                   brokerResultHandler.cause().getMessage(), false);
             }
           });
         } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().toString());
+          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
           handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
       });
@@ -1083,7 +1083,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             }
           });
         } else {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().toString());
+          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
           handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
       });
@@ -1119,13 +1119,13 @@ public class ApiServerVerticle extends AbstractVerticle {
               handleResponse(response, ResponseType.Created,
                   brokerResultHandler.result().toString(), false);
             } else if (brokerResultHandler.failed()) {
-              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().toString());
+              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
               handleResponse(response, ResponseType.BadRequestData,
                   brokerResultHandler.cause().getMessage(), false);
             }
           });
         } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().toString());
+          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
           handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
       });
@@ -1161,13 +1161,13 @@ public class ApiServerVerticle extends AbstractVerticle {
               handleResponse(response, ResponseType.Created,
                   brokerResultHandler.result().toString(), false);
             } else if (brokerResultHandler.failed()) {
-              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().toString());
+              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
               handleResponse(response, ResponseType.BadRequestData,
                   brokerResultHandler.cause().getMessage(), false);
             }
           });
         } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().toString());
+          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
           handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
       });
@@ -1206,13 +1206,13 @@ public class ApiServerVerticle extends AbstractVerticle {
                   handleResponse(response, ResponseType.Created,
                       brokerResultHandler.result().toString(), false);
                 } else if (brokerResultHandler.failed()) {
-                  LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().toString());
+                  LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
                   handleResponse(response, ResponseType.BadRequestData,
                       brokerResultHandler.cause().getMessage(), false);
                 }
               });
             } else {
-              LOGGER.error("Fail: Unauthorized;" + authHandler.cause().toString());
+              LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
               handleResponse(response, ResponseType.BadRequestData,
                   MSG_INVALID_EXCHANGE_NAME, true);
             }
@@ -1255,13 +1255,13 @@ public class ApiServerVerticle extends AbstractVerticle {
               handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
                   false);
             } else if (brokerResultHandler.failed()) {
-              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().toString());
+              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
               handleResponse(response, ResponseType.BadRequestData,
                   brokerResultHandler.cause().getMessage(), false);
             }
           });
         } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().toString());
+          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
           handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
       });
@@ -1301,13 +1301,13 @@ public class ApiServerVerticle extends AbstractVerticle {
               handleResponse(response, ResponseType.Created,
                   brokerResultHandler.result().toString(), false);
             } else if (brokerResult.failed()) {
-              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().toString());
+              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
               handleResponse(response, ResponseType.BadRequestData,
                   brokerResultHandler.cause().getMessage(), false);
             }
           });
         } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().toString());
+          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
           handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
       });
@@ -1354,13 +1354,13 @@ public class ApiServerVerticle extends AbstractVerticle {
               handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
                   false);
             } else {
-              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().toString());
+              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
               handleResponse(response, ResponseType.BadRequestData,
                   brokerResultHandler.cause().getMessage(), false);
             }
           });
         } else {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().toString());
+          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
           handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
       });
@@ -1445,13 +1445,13 @@ public class ApiServerVerticle extends AbstractVerticle {
               handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
                   false);
             } else {
-              LOGGER.debug("Fail: Unauthorized;" + authHandler.cause().toString());
+              LOGGER.debug("Fail: Unauthorized;" + authHandler.cause().getMessage());
               handleResponse(response, ResponseType.BadRequestData,
                   brokerResultHandler.cause().getMessage(), false);
             }
           });
         } else {
-          LOGGER.debug("Fail: Unauthorized;" + authHandler.cause().toString());
+          LOGGER.debug("Fail: Unauthorized;" + authHandler.cause().getMessage());
           handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
       });
@@ -1488,13 +1488,13 @@ public class ApiServerVerticle extends AbstractVerticle {
               handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
                   false);
             } else {
-              LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().toString());
+              LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
               handleResponse(response, ResponseType.BadRequestData,
                   brokerResultHandler.cause().getMessage(), false);
             }
           });
         } else {
-          LOGGER.debug("Fail: Unauthorized;" + authHandler.cause().toString());
+          LOGGER.debug("Fail: Unauthorized;" + authHandler.cause().getMessage());
           handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
       });
@@ -1530,7 +1530,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
                   false);
             } else {
-              LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().toString());
+              LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
               handleResponse(response, ResponseType.BadRequestData,
                   brokerResultHandler.cause().getMessage(), false);
             }
@@ -1572,13 +1572,13 @@ public class ApiServerVerticle extends AbstractVerticle {
               handleResponse(response, ResponseType.Ok, brokerResultHandler.result().toString(),
                   false);
             } else {
-              LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().toString());
+              LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
               handleResponse(response, ResponseType.BadRequestData,
                   brokerResultHandler.cause().getMessage(), false);
             }
           });
         } else {
-          LOGGER.debug("Fail: Unauthorized;" + authHandler.cause().toString());
+          LOGGER.debug("Fail: Unauthorized;" + authHandler.cause().getMessage());
           handleResponse(response, ResponseType.AuthenticationFailure, true);
         }
       });
