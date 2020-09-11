@@ -122,11 +122,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             validateAPI.onComplete(validateAPIResponseHandler -> {
               if(validateAPIResponseHandler.succeeded()) {
                 LOGGER.info("Success :: TIP Response is : " + result);
-                JsonObject response = tipResponseHandler.result();
+                JsonObject response = validateAPIResponseHandler.result();
                 handler.handle(Future.succeededFuture(response));
               } else if (validateAPIResponseHandler.failed()){
                 LOGGER.info("Failure :: TIP Response is : " + result);
-                String response = tipResponseHandler.cause().toString();
+                String response = validateAPIResponseHandler.cause().getMessage();
                 handler.handle(Future.failedFuture(response));
               }
             });
