@@ -34,7 +34,7 @@ public class ManagementApiImpl implements ManagementApi {
         }
       } else if (handler.failed()) {
         LOGGER.error(handler.cause());
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -59,7 +59,7 @@ public class ManagementApiImpl implements ManagementApi {
         }
       } else if (handler.failed()) {
         LOGGER.error(handler.cause());
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -75,6 +75,7 @@ public class ManagementApiImpl implements ManagementApi {
     // TOOD : discuss about DataBrokerService json exchangeName changed to id that's why test case
     // is failing
     json.put(Constants.JSON_EXCHANGE_NAME, exchangeid);
+    json.put("id", exchangeid);
     databroker.listExchangeSubscribers(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
@@ -86,7 +87,7 @@ public class ManagementApiImpl implements ManagementApi {
         }
       } else if (handler.failed()) {
         LOGGER.error(handler.cause());
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -109,7 +110,7 @@ public class ManagementApiImpl implements ManagementApi {
         }
       } else if (handler.failed()) {
         LOGGER.error(handler.cause());
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -134,7 +135,7 @@ public class ManagementApiImpl implements ManagementApi {
         }
       } else {
         LOGGER.error(handler.cause());
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -159,7 +160,7 @@ public class ManagementApiImpl implements ManagementApi {
         }
       } else {
         LOGGER.error(handler.cause());
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -182,7 +183,7 @@ public class ManagementApiImpl implements ManagementApi {
         }
       } else {
         LOGGER.error(handler.cause());
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -206,7 +207,7 @@ public class ManagementApiImpl implements ManagementApi {
         }
       } else {
         LOGGER.error(handler.cause());
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -229,7 +230,7 @@ public class ManagementApiImpl implements ManagementApi {
         }
       } else {
         LOGGER.error(handler.cause());
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -254,7 +255,7 @@ public class ManagementApiImpl implements ManagementApi {
         }
       } else {
         LOGGER.error(handler.cause());
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -276,7 +277,7 @@ public class ManagementApiImpl implements ManagementApi {
           promise.fail(result.toString());
         }
       } else {
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -300,7 +301,7 @@ public class ManagementApiImpl implements ManagementApi {
           promise.fail(result.toString());
         }
       } else {
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -324,7 +325,7 @@ public class ManagementApiImpl implements ManagementApi {
           promise.fail(result.toString());
         }
       } else {
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -347,7 +348,7 @@ public class ManagementApiImpl implements ManagementApi {
           promise.fail(result.toString());
         }
       } else {
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
 
     });
@@ -370,7 +371,7 @@ public class ManagementApiImpl implements ManagementApi {
           promise.fail(result.toString());
         }
       } else {
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -392,7 +393,7 @@ public class ManagementApiImpl implements ManagementApi {
           promise.fail(result.toString());
         }
       } else {
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -414,7 +415,7 @@ public class ManagementApiImpl implements ManagementApi {
           promise.fail(result.toString());
         }
       } else {
-        promise.fail(handler.cause().toString());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
