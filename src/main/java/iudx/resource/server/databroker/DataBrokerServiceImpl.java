@@ -71,7 +71,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error("registerAdaptor resultHandler failed : " + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.cause()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     }
@@ -107,7 +107,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error("getExchange resultHandler failed : " + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.cause()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     }
@@ -135,7 +135,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error("getExchange resultHandler failed : " + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.cause()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     }
@@ -162,7 +162,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error("deleteAdaptor - resultHandler failed : " + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.cause().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     } else {
@@ -188,7 +188,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         if (resultHandler.failed()) {
           logger.error(
               "registerStreamingSubscription - resultHandler failed : " + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.cause().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     } else {
@@ -213,7 +213,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         if (resultHandler.failed()) {
           logger.error(
               "updateStreamingSubscription - resultHandler failed : " + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.cause().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     } else {
@@ -239,7 +239,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         if (resultHandler.failed()) {
           logger.error(
               "appendStreamingSubscription - resultHandler failed : " + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.cause().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     } else {
@@ -263,8 +263,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error(
-              "deleteStreamingSubscription - resultHandler failed : " + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.cause().toString()));
+              "deleteStreamingSubscription - resultHandler failed : "
+                  + resultHandler.cause().getMessage());
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     } else {
@@ -289,7 +290,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         if (resultHandler.failed()) {
           logger
               .error("listStreamingSubscription - resultHandler failed : " + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.cause().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
 
         }
       });
@@ -315,7 +316,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         if (resultHandler.failed()) {
           logger.error(
               "registerCallbackSubscription - resultHandler failed : " + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.cause().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     } else {
@@ -340,7 +341,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         if (resultHandler.failed()) {
           logger.error(
               "updateCallbackSubscription - resultHandler failed : " + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.cause().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     } else {
@@ -365,7 +366,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         if (resultHandler.failed()) {
           logger.error(
               "deleteCallbackSubscription - resultHandler failed : " + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.cause().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     } else {
@@ -390,7 +391,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         if (resultHandler.failed()) {
           logger
               .error("listCallbackSubscription - resultHandler failed : " + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.cause().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     } else {
@@ -414,7 +415,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error("failed ::" + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.result().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     }
@@ -447,7 +448,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error("failed ::" + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.result().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     }
@@ -469,7 +470,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error("failed ::" + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.result().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     }
@@ -491,7 +492,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error("failed ::" + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.result().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     }
@@ -525,7 +526,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error("failed ::" + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.result().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     }
@@ -546,7 +547,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error("failed ::" + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.result().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     }
@@ -570,7 +571,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error("failed ::" + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.result().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
 
@@ -594,7 +595,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error("failed ::" + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.result().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     }
@@ -628,7 +629,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error("failed ::" + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.result().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     }
@@ -650,7 +651,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error("failed ::" + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.result().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     }
@@ -684,7 +685,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         }
         if (resultHandler.failed()) {
           logger.error("failed ::" + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.result().toString()));
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     }
@@ -715,7 +716,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             finalResponse.put(TYPE, HttpStatus.SC_BAD_REQUEST);
             logger.error("Message publishing failed");
             resultHandler.cause().printStackTrace();
-            handler.handle(Future.failedFuture(resultHandler.result().toString()));
+            handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
           }
         });
       }

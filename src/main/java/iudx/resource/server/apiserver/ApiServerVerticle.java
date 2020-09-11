@@ -794,7 +794,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 handleResponse(response, ResponseType.Ok, subHandler.result().toString(), false);
               } else {
                 handleResponse(response, ResponseType.BadRequestData,
-                    subHandler.result().toString(), false);
+                    subHandler.cause().getMessage(), false);
               }
             });
           } else {
@@ -1067,7 +1067,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String queueId = routingContext.request().getParam("queueId");
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson, requestJson, authHandler -> {
+      authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
         LOGGER.debug("Info: Authenticating response;".concat(authHandler.result().toString()));
         if (authHandler.succeeded()) {
           Future<JsonObject> brokerResult = managementApi.getQueueDetails(queueId, databroker);
