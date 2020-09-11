@@ -84,7 +84,7 @@ public class DatabaseServiceImpl implements DatabaseService {
       return null;
     }
 
-    LOGGER.info("Info: Query constructed: " + query.toString());
+    LOGGER.debug("Info: Query constructed: " + query.toString());
 
     client.searchAsync(VARANASI_TEST_SEARCH_INDEX, query.toString(), searchRes -> {
       if (searchRes.succeeded()) {
