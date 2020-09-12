@@ -1090,7 +1090,7 @@ public class RabbitClient {
   Future<JsonObject> queueBinding(String adaptorID) {
     LOGGER.info("RabbitClient#queueBinding() method started");
     Promise<JsonObject> promise = Promise.promise();
-    String topics = adaptorID + "/.*";
+    String topics = adaptorID + DATA_WILDCARD_ROUTINGKEY;
     bindQueue(QUEUE_DATA, adaptorID, topics)
         .compose(queueDataResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + HEARTBEAT))
         .compose(

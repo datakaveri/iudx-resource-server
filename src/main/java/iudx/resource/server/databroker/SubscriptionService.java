@@ -97,7 +97,7 @@ public class SubscriptionService {
                     } else {
                       String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
                       JsonArray array = new JsonArray();
-                      array.add(currentEntity);
+                      array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
                       JsonObject json = new JsonObject();
                       json.put(EXCHANGE_NAME, exchangeName);
                       json.put(QUEUE_NAME, queueName);
@@ -242,7 +242,7 @@ public class SubscriptionService {
                           String exchangeName =
                               routingKey.substring(0, routingKey.lastIndexOf("/"));
                           JsonArray array = new JsonArray();
-                          array.add(currentEntity);
+                          array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
                           JsonObject json = new JsonObject();
                           json.put(EXCHANGE_NAME, exchangeName);
                           json.put(QUEUE_NAME, queueName);
@@ -372,7 +372,7 @@ public class SubscriptionService {
                 } else {
                   String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
                   JsonArray array = new JsonArray();
-                  array.add(currentEntity);
+                  array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
                   JsonObject json = new JsonObject();
                   json.put(EXCHANGE_NAME, exchangeName);
                   json.put(QUEUE_NAME, queueName);
@@ -548,7 +548,7 @@ public class SubscriptionService {
                       LOGGER.debug("Info : Valid ID :: Call Back registration starts");
                       String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
                       JsonArray array = new JsonArray();
-                      array.add(currentEntity);
+                      array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
                       JsonObject json = new JsonObject();
                       json.put(Constants.EXCHANGE_NAME, exchangeName);
                       json.put(Constants.QUEUE_NAME, queueName);
@@ -682,7 +682,7 @@ public class SubscriptionService {
 
             String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
             JsonArray array = new JsonArray();
-            array.add(currentEntity);
+            array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
             JsonObject json = new JsonObject();
             json.put(Constants.EXCHANGE_NAME, exchangeName);
             json.put(Constants.QUEUE_NAME, queueName);

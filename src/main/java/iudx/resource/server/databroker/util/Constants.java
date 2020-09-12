@@ -32,7 +32,8 @@ public class Constants {
   public static final String DENY = "";
   public static final String DETAIL = "detail";
   public static final String DURABLE = "durable";
-
+  public static final String DATA_WILDCARD_ROUTINGKEY = "/.*";
+  
   public static final String ENTITIES = "entities";
   public static final String EXCHANGE_FOUND = "Exchange found";
   public static final String EXCHANGE_EXISTS = "Exchange already exists";
