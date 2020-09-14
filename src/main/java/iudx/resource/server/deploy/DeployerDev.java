@@ -64,7 +64,8 @@ public class DeployerDev {
 
   public static void deploy(List<String> modules) {
     EventBusOptions ebOptions = new EventBusOptions();
-    VertxOptions options = new VertxOptions().setEventBusOptions(ebOptions);
+    VertxOptions options =
+        new VertxOptions().setEventBusOptions(ebOptions).setPreferNativeTransport(true);
     Vertx vertx = Vertx.vertx(options);
     recursiveDeploy(vertx, modules, 0);
   }
