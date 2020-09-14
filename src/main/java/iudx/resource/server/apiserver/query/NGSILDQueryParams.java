@@ -5,7 +5,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import iudx.resource.server.apiserver.util.Constants;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -14,6 +13,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+
+import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.util.Util.*;
 
 
 
@@ -70,67 +72,68 @@ public class NGSILDQueryParams {
     List<Entry<String, String>> entries = paramsMap.entries();
     for (final Entry<String, String> entry : entries) {
       switch (entry.getKey()) {
-        case Constants.NGSILDQUERY_ID: {
+        case NGSILDQUERY_ID: {
           this.id = new ArrayList<URI>();
           String[] ids = entry.getValue().split(",");
-          List<URI> uris = Arrays.stream(ids).map(e -> toUri(e)).collect(Collectors.toList());
+          List<URI> uris =
+              Arrays.stream(ids).map(toUriFunction).collect(Collectors.toList());
           this.id.addAll(uris);
           break;
         }
-        case Constants.NGSILDQUERY_ATTRIBUTE: {
+        case NGSILDQUERY_ATTRIBUTE: {
           this.attrs = new ArrayList<String>();
           this.attrs
               .addAll(Arrays.stream(entry.getValue().split(",")).collect(Collectors.toList()));
           break;
         }
-        case Constants.NGSILDQUERY_GEOREL: {
+        case NGSILDQUERY_GEOREL: {
           String georel = entry.getValue();
           String[] values = georel.split(";");
           this.geoRel.setRelation(values[0]);
           if (values.length == 2) {
             String[] distance = values[1].split("=");
-            if (distance[0].equalsIgnoreCase(Constants.NGSILDQUERY_MAXDISTANCE)) {
+            if (distance[0].equalsIgnoreCase(NGSILDQUERY_MAXDISTANCE)) {
               this.geoRel.setMaxDistance(Double.parseDouble(distance[1]));
-            } else if (distance[0].equalsIgnoreCase(Constants.NGSILDQUERY_MINDISTANCE)) {
+            } else if (distance[0].equalsIgnoreCase(NGSILDQUERY_MINDISTANCE)) {
               this.geoRel.setMinDistance(Double.parseDouble(distance[1]));
             }
           }
           break;
         }
-        case Constants.NGSILDQUERY_GEOMETRY: {
+        case NGSILDQUERY_GEOMETRY: {
           this.geometry = entry.getValue();
           break;
         }
-        case Constants.NGSILDQUERY_COORDINATES: {
+        case NGSILDQUERY_COORDINATES: {
           this.coordinates = entry.getValue();
           break;
         }
-        case Constants.NGSILDQUERY_TIMEREL: {
+        case NGSILDQUERY_TIMEREL: {
           this.temporalRelation.setTemprel(entry.getValue());
           break;
         }
-        case Constants.NGSILDQUERY_TIME: {
+        case NGSILDQUERY_TIME: {
           this.temporalRelation.setTime(entry.getValue());
           break;
         }
-        case Constants.NGSILDQUERY_ENDTIME: {
+        case NGSILDQUERY_ENDTIME: {
           this.temporalRelation.setEndTime(entry.getValue());
           break;
         }
-        case Constants.NGSILDQUERY_Q: {
+        case NGSILDQUERY_Q: {
           this.textQuery = entry.getValue();
           break;
         }
-        case Constants.NGSILDQUERY_GEOPROPERTY: {
+        case NGSILDQUERY_GEOPROPERTY: {
           this.geoProperty = entry.getValue();
           break;
         }
-        case Constants.IUDXQUERY_OPTIONS: {
+        case IUDXQUERY_OPTIONS: {
           this.options = entry.getValue();
           break;
         }
         default: {
-          LOGGER.warn(Constants.MSG_INVALID_PARAM + ":" + entry.getKey());
+          LOGGER.warn(MSG_INVALID_PARAM + ":" + entry.getKey());
           break;
         }
       }
@@ -161,13 +164,13 @@ public class NGSILDQueryParams {
     LOGGER.info("create from json started");
     requestJson.forEach(entry -> {
       LOGGER.info("key ::" + entry.getKey() + " value :: " + entry.getValue());
-      if (entry.getKey().equalsIgnoreCase(Constants.NGSILDQUERY_Q)) {
-        this.textQuery = requestJson.getString(Constants.NGSILDQUERY_Q);
-      } else if (entry.getKey().equalsIgnoreCase(Constants.NGSILDQUERY_ATTRIBUTE)) {
+      if (entry.getKey().equalsIgnoreCase(NGSILDQUERY_Q)) {
+        this.textQuery = requestJson.getString(NGSILDQUERY_Q);
+      } else if (entry.getKey().equalsIgnoreCase(NGSILDQUERY_ATTRIBUTE)) {
         this.attrs = new ArrayList<String>();
         this.attrs =
             Arrays.stream(entry.getValue().toString().split(",")).collect(Collectors.toList());
-      } else if (entry.getKey().equalsIgnoreCase(Constants.NGSILDQUERY_TYPE)) {
+      } else if (entry.getKey().equalsIgnoreCase(NGSILDQUERY_TYPE)) {
         this.type = new ArrayList<String>();
         this.type =
             Arrays.stream(entry.getValue().toString().split(",")).collect(Collectors.toList());
@@ -182,9 +185,9 @@ public class NGSILDQueryParams {
           this.geoRel.setRelation(values[0]);
           if (values.length == 2) {
             String[] distance = values[1].split("=");
-            if (distance[0].equalsIgnoreCase(Constants.NGSILDQUERY_MAXDISTANCE)) {
+            if (distance[0].equalsIgnoreCase(NGSILDQUERY_MAXDISTANCE)) {
               this.geoRel.setMaxDistance(Double.parseDouble(distance[1]));
-            } else if (distance[0].equalsIgnoreCase(Constants.NGSILDQUERY_MINDISTANCE)) {
+            } else if (distance[0].equalsIgnoreCase(NGSILDQUERY_MINDISTANCE)) {
               this.geoRel.setMinDistance(Double.parseDouble(distance[1]));
             }
           }
@@ -211,7 +214,7 @@ public class NGSILDQueryParams {
             this.idPattern.add(idPattern);
           }
         }
-      } else if (entry.getKey().equalsIgnoreCase(Constants.IUDXQUERY_OPTIONS)) {
+      } else if (entry.getKey().equalsIgnoreCase(IUDXQUERY_OPTIONS)) {
         this.options = requestJson.getString(entry.getKey());
       }
     });
@@ -314,5 +317,17 @@ public class NGSILDQueryParams {
   public void setOptions(String options) {
     this.options = options;
   }
+
+
+
+  @Override
+  public String toString() {
+    return "NGSILDQueryParams [id=" + id + ", type=" + type + ", attrs=" + attrs + ", idPattern="
+        + idPattern + ", textQuery=" + textQuery + ", geoRel=" + geoRel + ", geometry=" + geometry
+        + ", coordinates=" + coordinates + ", geoProperty=" + geoProperty + ", temporalRelation="
+        + temporalRelation + ", options=" + options + "]";
+  }
+
+
 
 }

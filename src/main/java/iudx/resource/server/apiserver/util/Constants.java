@@ -129,6 +129,7 @@ public class Constants {
   public static final String JSON_PASSWORD = "password";
   public static final String JSON_RESOURCE_SERVER = "resourceServer";
   public static final String JSON_RESOURCE_GROUP = "resourceGroup";
+  public static final String JSON_RESOURCE_NAME = "resourceName";
   
   // searchtype
   public static final String JSON_SEARCH_TYPE = "searchType";
