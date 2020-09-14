@@ -35,12 +35,13 @@ import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.response.RestResponse;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
-import static iudx.resource.server.apiserver.util.Constants.*;
+import iudx.resource.server.apiserver.util.Util;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -52,6 +53,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.util.Util.*;
 
 
 /**
@@ -146,6 +150,9 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     /* NGSI-LD api endpoints */
     router.get(NGSILD_ENTITIES_URL).handler(this::handleEntitiesQuery);
+    router
+        .get(NGSILD_ENTITIES_URL + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
+        .handler(this::handleEntitiesQuery);
     router.post(NGSILD_POST_QUERY_PATH).handler(this::handlePostEntitiesQuery);
     router.get(NGSILD_TEMPORAL_URL).handler(this::handleTemporalQuery);
     router.post(NGSILD_SUBSCRIPTION_URL).handler(this::handleSubscriptions);
@@ -264,8 +271,22 @@ public class ApiServerVerticle extends AbstractVerticle {
     Future<Boolean> validationResult = Validator.validate(params);
     validationResult.onComplete(validationHandler -> {
       if (validationHandler.succeeded()) {
+        String domain = request.getParam(JSON_DOMAIN);
+        String userSha = request.getParam(JSON_USERSHA);
+        String resourceServer = request.getParam(JSON_RESOURCE_SERVER);
+        String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);
+        String resourceName = request.getParam(JSON_RESOURCE_NAME);
+        // TODO: append domain & userSha in begining after DB patch.
+        String pathId = resourceServer + "/" + resourceGroup + "/"
+            + resourceName;
         // parse query params
         NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
+        LOGGER.debug("Info : PathId " + pathId);
+        if (!pathId.contains("null")) {
+          List<URI> ids = new ArrayList<>();
+          ids.add(toUriFunction.apply(pathId));
+          ngsildquery.setId(ids);
+        }
         QueryMapper queryMapper = new QueryMapper();
         // create json
         JsonObject json = queryMapper.toJson(ngsildquery, false);
@@ -849,7 +870,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 }
               });
             } else {
-              LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
+              LOGGER.error("Fail: Unauthorized;" + validNameHandler.cause().getMessage());
               handleResponse(response, ResponseType.BadRequestData,
                   MSG_INVALID_EXCHANGE_NAME, true);
             }
