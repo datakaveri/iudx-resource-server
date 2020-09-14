@@ -16,7 +16,7 @@ public class Constants {
   public static final String BAD_REQUEST =
       "Bad request : insufficient request data to register adaptor";
   public static final String BROKER_PRODUCTION_DOMAIN = "databroker.iudx.io";
-  public static final String BROKER_PRODUCTION_PORT = "5671";
+  public static final String BROKER_PRODUCTION_PORT = "24567";
   public static final String BROKER_IP = "68.183.80.248";
   public static final String BROKER_PORT = "5672";
   public static final String CHECK_CREDENTIALS =
@@ -32,7 +32,10 @@ public class Constants {
   public static final String DENY = "";
   public static final String DETAIL = "detail";
   public static final String DURABLE = "durable";
-
+  public static final String DATA_WILDCARD_ROUTINGKEY = "/.*";
+  public static final String DATABASE_READ_SUCCESS = "Read Database Success";
+  public static final String DATABASE_READ_FAILURE = "Read Database Failed";
+  
   public static final String ENTITIES = "entities";
   public static final String EXCHANGE_FOUND = "Exchange found";
   public static final String EXCHANGE_EXISTS = "Exchange already exists";
@@ -156,14 +159,23 @@ public class Constants {
 
   // SQL Queries
   public static final String SELECT_CALLBACK =
-      "Select * FROM registercallback WHERE subscriptionID = $1";
+      "Select * FROM registercallback WHERE subscriptionID = '$1'";
   public static final String DELETE_CALLBACK =
-      "Delete from registercallback WHERE subscriptionID = $1";
+      "Delete from registercallback WHERE subscriptionID = '$1'";
   public static final String INSERT_CALLBACK =
-      "INSERT INTO registercallback (subscriptionID  ,callbackURL ,entities ,start_time , end_time , frequency ) VALUES ($1, $2, $3, $4, $5, $6)";
+      "INSERT INTO registercallback (subscriptionID  ,callbackURL ,entities ,start_time , end_time , frequency ) VALUES ('$1', '$2', '$3', '$4', '$5', '$6')";
   public static final String UPDATE_CALLBACK =
-      " UPDATE registercallback SET entities = $1 WHERE subscriptionID = $2";
+      " UPDATE registercallback SET entities = '$1' WHERE subscriptionID = '$2'";
 
+  public static final String INSERT_DATABROKER_USER =
+      "INSERT INTO databroker (username  ,password) VALUES ('$1', '$2')";
+  public static final String INSERT_DATABROKER_USER_TEST =
+      "INSERT INTO databroker (username,password) VALUES ('user-test', 'password-test')";
+  public static final String SELECT_DATABROKER_USER_TEST =
+      "SELECT * FROM databroker WHERE username='user-test'";
+  public static final String SELECT_DATABROKER_USER =
+      "SELECT * FROM databroker WHERE username='$1'";
+  
   // sql errors
   public static final String SQL_ERROR = "SQL Error";
   public static final String DUPLICATE_KEY = "duplicate key value violates unique constraint";

@@ -12,6 +12,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Tuple;
+import iudx.resource.server.databroker.util.Constants;
 
 public class PostgresClient {
   private static final Logger LOGGER = LogManager.getLogger(PostgresClient.class);
@@ -20,46 +21,30 @@ public class PostgresClient {
 
   public PostgresClient(Vertx vertx, PgConnectOptions pgConnectOptions,
       PoolOptions connectionPoolOptions) {
-    this.pgPool = PgPool.pool(vertx, pgConnectOptions, connectionPoolOptions);
-  }
-
-  public Future<RowSet<Row>> executeAsync(String preparedQuerySQL, Tuple args) {
-    LOGGER.info("PostgresQLClient#executeAsync() started");
-    LOGGER.info(args);
-    Promise<RowSet<Row>> promise = Promise.promise();
-    pgPool.getConnection(connectionHandler -> {
-      if (connectionHandler.succeeded()) {
-        SqlConnection pgConnection = connectionHandler.result();
-        pgConnection.preparedQuery(preparedQuerySQL).execute(args, executeHandler -> {
-          LOGGER.info("executeHandler");
-          if (executeHandler.succeeded()) {
-            promise.complete(executeHandler.result());
-          } else {
-            pgConnection.close();
-            LOGGER.error(executeHandler.cause());
-            promise.fail(executeHandler.cause());
-          }
-        });
-      }
-    });
-    return promise.future();
+    this.pgPool = PgPool.pool(vertx, pgConnectOptions, connectionPoolOptions);  
   }
 
   public Future<RowSet<Row>> executeAsync(String preparedQuerySQL) {
-    LOGGER.info("PostgresQLClient#executeAsync() started");
+    LOGGER.debug("Info : PostgresQLClient#executeAsync() started");
+    LOGGER.debug("Info : Query is : " + preparedQuerySQL);
     Promise<RowSet<Row>> promise = Promise.promise();
+
     pgPool.getConnection(connectionHandler -> {
       if (connectionHandler.succeeded()) {
         SqlConnection pgConnection = connectionHandler.result();
-        pgConnection.preparedQuery(preparedQuerySQL).execute(executeHandler -> {
-          if (executeHandler.succeeded()) {
-            promise.complete(executeHandler.result());
+        pgConnection.query(preparedQuerySQL).execute(handler -> {
+          if (handler.succeeded()) {
+            pgConnection.close();
+            promise.complete(handler.result());
           } else {
-            promise.fail(executeHandler.cause());
-          }
+            pgConnection.close();
+            LOGGER.fatal("Fail : " + handler.cause());
+            promise.fail(handler.cause());
+          }          
         });
       }
     });
+    
     return promise.future();
   }
 }
