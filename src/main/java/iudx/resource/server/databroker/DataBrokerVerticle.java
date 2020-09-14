@@ -19,8 +19,15 @@ import io.vertx.servicediscovery.types.EventBusService;
 import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.Tuple;
+import static iudx.resource.server.databroker.util.Constants.INSERT_DATABROKER_USER;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -177,9 +184,9 @@ public class DataBrokerVerticle extends AbstractVerticle {
     /* Call the databroker constructor with the RabbitMQ client. */
 
     rabbitWebClient = new RabbitWebClient(vertx, webConfig, propObj);
-    rabbitClient =
-        new RabbitClient(vertx, config, rabbitWebClient);
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
+    rabbitClient =
+        new RabbitClient(vertx, config, rabbitWebClient, pgClient);
 
     databroker = new DataBrokerServiceImpl(rabbitClient, pgClient, dataBrokerVhost);
 

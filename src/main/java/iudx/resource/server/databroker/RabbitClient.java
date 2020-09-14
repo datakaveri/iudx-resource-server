@@ -15,8 +15,13 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.Tuple;
 import iudx.resource.server.databroker.util.Constants;
 import iudx.resource.server.databroker.util.Util;
 
@@ -26,10 +31,12 @@ public class RabbitClient {
 
   private RabbitMQClient client;
   private RabbitWebClient webClient;
+  private PostgresClient pgSQLClient;
 
-  public RabbitClient(Vertx vertx, RabbitMQOptions rabbitConfigs, RabbitWebClient webClient) {
+  public RabbitClient(Vertx vertx, RabbitMQOptions rabbitConfigs, RabbitWebClient webClient, PostgresClient pgSQLClient) {
     this.client = getRabbitMQClient(vertx, rabbitConfigs);
     this.webClient = webClient;
+    this.pgSQLClient = pgSQLClient;
     client.start(clientStartupHandler -> {
       if (clientStartupHandler.succeeded()) {
         LOGGER.debug("Info : rabbit MQ client started");
@@ -638,8 +645,10 @@ public class RabbitClient {
                 String userNameSha = Util.getSha(userName);
                 String userID = domain + "/" + userNameSha;
                 String adaptorID = provider + "/" + resourceServer + "/" + id;
+                String apikey = result.getString(APIKEY);
                 LOGGER.debug("Info : userID is : " + userID);
                 LOGGER.debug("Info : adaptorID is : " + adaptorID);
+                LOGGER.debug("Info : apikey is : " + apikey);
                 if (adaptorID != null && !adaptorID.isBlank() && !adaptorID.isEmpty()) {
                   JsonObject json = new JsonObject();
                   json.put(EXCHANGE_NAME, adaptorID);
@@ -676,7 +685,7 @@ public class RabbitClient {
                                  * APIKEY_TEST_EXAMPLE
                                  */
                                 registerResponse.put(Constants.APIKEY,
-                                    Constants.APIKEY_TEST_EXAMPLE);
+                                    apikey);
                                 registerResponse.put(Constants.ID, adaptorID);
                                 registerResponse.put(Constants.URL,
                                     Constants.BROKER_PRODUCTION_DOMAIN);
@@ -829,47 +838,14 @@ public class RabbitClient {
    * @param vhost which is a String
    * @return response which is a Future object of promise of Json type
    **/
-  Future<JsonObject> createUserIfNotExist(String userName, String vhost) {
-    LOGGER.debug("Info : RabbitClient#createUserIfNotExist() started");
-    Promise<JsonObject> promise = Promise.promise();
-    /* Create a response object */
-    JsonObject response = new JsonObject();
-    Future<JsonObject> future = createUserIfNotPresent(userName, vhost);
-    future.onComplete(handler -> {
-      /* On successful response handle the result */
-      if (handler.succeeded()) {
-        /* Respond to the requestor */
-        JsonObject result = handler.result();
-        response.put(SHA_USER_NAME, result.getString("shaUsername"));
-        response.put(APIKEY, result.getString("password"));
-        response.put(TYPE, result.getString("type"));
-        response.put(TITLE, result.getString("title"));
-        response.put(DETAILS, result.getString("detail"));
-        response.put(VHOST_PERMISSIONS, result.getString("vhostPermissions"));
-        LOGGER.debug("Success : " + response);
-        promise.complete(response);
-      } else {
-        LOGGER.error("Error : Something went wrong - Cause: " + handler.cause());
-        response.mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, USER_CREATION_ERROR));
-        promise.fail(response.toString());
-      }
-    });
-    return promise.future();
-  }
 
-  /**
-   * createUserIfNotExist helper method which check user existence. Create user if not present
-   * 
-   * @param userName which is a String
-   * @param vhost which is a String
-   * @return response which is a Future object of promise of Json type
-   **/
-  Future<JsonObject> createUserIfNotPresent(String userName, String vhost) {
+  Future<JsonObject> createUserIfNotExist(String userName, String vhost) {
     LOGGER.debug("Info : RabbitClient#createUserIfNotPresent() started");
     Promise<JsonObject> promise = Promise.promise();
     /* Get domain, shaUsername from userName */
     String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
     String shaUsername = domain + "/" + Util.getSha(userName);
+    String password = Util.randomPassword.get();
     // This API requires user name in path parameter. Encode the username as it
     // contains a "/"
     String url = "/api/users/" + Util.encodedValue(shaUsername);
@@ -881,21 +857,22 @@ public class RabbitClient {
         if (reply.result().statusCode() == HttpStatus.SC_NOT_FOUND) {
           LOGGER.debug("Success : User not found. creating user");
           /* Create new user */
-          Future<JsonObject> userCreated = createUser(shaUsername, vhost, url);
+          Future<JsonObject> userCreated = createUser(shaUsername, password, vhost, url);
           userCreated.onComplete(handler -> {
             if (handler.succeeded()) {
               /* Handle the response */
               JsonObject result = handler.result();
-              response.put(SHA_USER_NAME, result.getString("shaUsername"));
-              response.put(APIKEY, result.getString("password"));
-              response.put(TYPE, result.getString("type"));
+              response.put(SHA_USER_NAME, shaUsername);
+              response.put(APIKEY, password);
+              response.put(TYPE, result.getInteger("type"));
               response.put(TITLE, result.getString("title"));
               response.put(DETAILS, result.getString("detail"));
-              response.put(VHOST_PERMISSIONS, result.getString("vhostPermissions"));
+              response.put(VHOST_PERMISSIONS, vhost);
               promise.complete(response);
             } else {
               LOGGER.error("Error : Error in user creation. Cause : " + handler.cause());
-              promise.fail(handler.cause());
+              response.mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, USER_CREATION_ERROR));
+              promise.fail(response.toString());
             }
           });
 
@@ -903,13 +880,24 @@ public class RabbitClient {
           // user exists , So something useful can be done here
           // TODO : Need to get the "apiKey"
           /* Handle the response if a user exists */
-          JsonObject result = reply.result().bodyAsJsonObject();
-          response.put(SHA_USER_NAME, result.getString("shaUsername"));
-          response.put(TYPE, USER_EXISTS);
-          response.put(TITLE, SUCCESS);
-          response.put(DETAILS, USER_ALREADY_EXISTS);
-          LOGGER.debug("Success : user created");
-          promise.complete(response);
+          JsonObject readDbResponse = new JsonObject();
+          Future<JsonObject> getUserApiKey = getUserInDb(shaUsername);
+          
+          getUserApiKey.onComplete(getUserApiKeyHandler -> {
+            if(getUserApiKeyHandler.succeeded()) {
+              LOGGER.info("DATABASE_READ_SUCCESS");
+              String apiKey = getUserApiKey.result().getString(APIKEY);
+              readDbResponse.put(SHA_USER_NAME, shaUsername);
+              readDbResponse.put(APIKEY, apiKey);
+              readDbResponse.mergeIn(getResponseJson(SUCCESS_CODE, DATABASE_READ_SUCCESS, DATABASE_READ_SUCCESS));
+              readDbResponse.put(VHOST_PERMISSIONS, vhost);
+              promise.complete(readDbResponse);
+            } else {
+              LOGGER.info("DATABASE_READ_FAILURE");
+              readDbResponse.mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, DATABASE_READ_FAILURE));
+              promise.fail(readDbResponse.toString());
+            }        
+          });
         }
 
       } else {
@@ -931,12 +919,12 @@ public class RabbitClient {
    * @param vhost which is a String
    * @return response which is a Future object of promise of Json type
    **/
-  Future<JsonObject> createUser(String shaUsername, String vhost, String url) {
+  Future<JsonObject> createUser(String shaUsername, String password, String vhost, String url) {
     LOGGER.debug("Info : RabbitClient#createUser() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject response = new JsonObject();
     JsonObject arg = new JsonObject();
-    arg.put(PASSWORD, Util.randomPassword.get());
+    arg.put(PASSWORD, password);
     arg.put(TAGS, NONE);
 
     webClient.requestAsync(REQUEST_PUT, url, arg).onComplete(ar -> {
@@ -945,23 +933,29 @@ public class RabbitClient {
         if (ar.result().statusCode() == HttpStatus.SC_CREATED) {
           LOGGER.info("createUserRequest success");
           response.put(SHA_USER_NAME, shaUsername);
-          response.put(PASSWORD, arg.getString("password"));
-          response.put(TITLE, SUCCESS);
-          response.put(TYPE, "" + ar.result().statusCode());
-          response.put(DETAILS, USER_CREATED);
+          response.put(PASSWORD, password);
           LOGGER.debug("Info : user created successfully");
           // set permissions to vhost for newly created user
           Future<JsonObject> vhostPermission = setVhostPermissions(shaUsername, vhost);
           vhostPermission.onComplete(handler -> {
             if (handler.succeeded()) {
-              response.clear().mergeIn(getResponseJson(SUCCESS_CODE, VHOST_PERMISSIONS,
+              response.mergeIn(getResponseJson(SUCCESS_CODE, VHOST_PERMISSIONS,
                   handler.result().getString(DETAIL)));
-              promise.complete(response);
+              //Call the DB method to store username and password
+              Future<JsonObject> createUserinDb = createUserInDb(shaUsername, password);
+              createUserinDb.onComplete(createUserinDbHandler -> {
+                if(createUserinDbHandler.succeeded()) {
+                  promise.complete(response);
+                } else {
+                  /* Handle error */
+                  LOGGER.error("Error : error in saving credentials. Cause : " + createUserinDbHandler.cause());
+                  promise.fail("Error : error in saving credentials");
+                }
+              });
             } else {
               /* Handle error */
               LOGGER.error("Error : error in setting vhostPermissions. Cause : " + handler.cause());
-              response.put(VHOST_PERMISSIONS, VHOST_PERMISSIONS_FAILURE);
-              promise.complete(response);
+              promise.fail("Error : error in setting vhostPermissions");
             }
           });
 
@@ -979,6 +973,61 @@ public class RabbitClient {
         promise.fail(response.toString());
       }
     });
+    return promise.future();
+  }
+
+  Future<JsonObject> createUserInDb(String shaUsername, String password) {
+    LOGGER.debug("Info : RabbitClient#createUserInDb() started");
+    Promise<JsonObject> promise = Promise.promise();
+    JsonObject response = new JsonObject();
+
+    String query = INSERT_DATABROKER_USER.replace("$1", shaUsername).replace("$2", password);
+    System.out.println(query);
+  
+    // Check in DB, get username and password
+    pgSQLClient.executeAsync(query)
+        .onComplete(db -> {
+          LOGGER.debug("Info : RabbitClient#createUserInDb()executeAsync completed");
+          if (db.succeeded()) {
+            LOGGER.debug("Info : RabbitClient#createUserInDb()executeAsync success");
+            response.put("status", "success");
+            promise.complete(response);
+          } else {
+            LOGGER.fatal("Fail : RabbitClient#createUserInDb()executeAsync failed");
+            promise.fail("Error : Write to database failed");
+          }
+        });
+    return promise.future();
+  }
+  
+  Future<JsonObject> getUserInDb(String shaUsername) {
+    LOGGER.debug("Info : RabbitClient#getUserInDb() started");
+    
+    Promise<JsonObject> promise = Promise.promise();
+    JsonObject response = new JsonObject();
+    String query = SELECT_DATABROKER_USER.replace("$1", shaUsername);
+    LOGGER.debug("Info : " + query);
+    // Check in DB, get username and password
+    pgSQLClient.executeAsync(query)
+        .onComplete(db -> {
+          LOGGER.debug("Info : RabbitClient#getUserInDb()executeAsync completed");
+          if (db.succeeded()) {
+            LOGGER.debug("Info : RabbitClient#getUserInDb()executeAsync success");
+            String apiKey = null;
+            // Get the apiKey
+            RowSet<Row> result = db.result();
+            if (db.result().size() > 0) {
+              for (Row row : result) {
+                apiKey = row.getString(1);
+              }
+            }
+            response.put(APIKEY, apiKey);
+            promise.complete(response);
+          } else {
+            LOGGER.fatal("Fail : RabbitClient#getUserInDb()executeAsync failed");
+            promise.fail("Error : Get ID from database failed");
+          }
+        });
     return promise.future();
   }
 

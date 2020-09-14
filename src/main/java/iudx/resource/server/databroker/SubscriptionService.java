@@ -55,11 +55,16 @@ public class SubscriptionService {
       Future<JsonObject> resultCreateUser = rabbitClient.createUserIfNotExist(userName, VHOST_IUDX);
       resultCreateUser.onComplete(resultCreateUserhandler -> {
         if (resultCreateUserhandler.succeeded()) {
-          LOGGER.debug("success :: createUserIfNotExist " + resultCreateUserhandler.result());
+          JsonObject result = resultCreateUserhandler.result();
+          LOGGER.debug("success :: createUserIfNotExist " + result);
+          String streamingUserName = result.getString("shaUsername");
+          String apiKey = result.getString("apiKey");
+          
           // For testing instead of generateRandomPassword() use password = 1234
-          String streamingUrl = "amqp://" + userName + ":" + Constants.APIKEY_TEST_EXAMPLE // generateRandomPassword()
-              + "@" + Constants.BROKER_PRODUCTION_DOMAIN + ":" + Constants.BROKER_PRODUCTION_PORT
-              + "/" + Constants.VHOST_IUDX + "/" + queueName;
+          String streamingUrl =
+              "amqp://" + streamingUserName + ":" + apiKey // generateRandomPassword()
+                  + "@" + Constants.BROKER_PRODUCTION_DOMAIN + ":"
+                  + Constants.BROKER_PRODUCTION_PORT + "/" + Constants.VHOST_IUDX + "/" + queueName;
           LOGGER.debug("Info : Streaming URL is : " + streamingUrl);
           JsonArray entitites = request.getJsonArray(ENTITIES);
           LOGGER.debug("Info : Request Access for " + entitites);
@@ -125,13 +130,13 @@ public class SubscriptionService {
                             });
                           } else if (totalBindSuccess == totalBindCount) {
                             registerStreamingSubscriptionResponse.put(Constants.USER_NAME,
-                                userName);
+                                streamingUserName);
                             /*
                              * APIKEY should be equal to password generated. For testing use
                              * Constants.APIKEY_TEST_EXAMPLE
                              */
                             registerStreamingSubscriptionResponse.put(Constants.APIKEY,
-                                Constants.APIKEY_TEST_EXAMPLE);
+                                apiKey);
                             registerStreamingSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
                                 queueName);
                             registerStreamingSubscriptionResponse.put(Constants.STREAMING_URL,
@@ -196,9 +201,16 @@ public class SubscriptionService {
       Future<JsonObject> resultCreateUser = rabbitClient.createUserIfNotExist(userName, VHOST_IUDX);
       resultCreateUser.onComplete(resultCreateUserhandler -> {
         if (resultCreateUserhandler.succeeded()) {
+          JsonObject result = resultCreateUserhandler.result();
+          LOGGER.debug("success :: createUserIfNotExist " + result);
+          String streamingUserName = result.getString("shaUsername");
+          String apiKey = result.getString("apiKey");
+
           // For testing instead of generateRandomPassword() use password = 1234
-          String streamingUrl = "amqp://" + userName + ":" + "1234" // generateRandomPassword()
-              + "@" + BROKER_IP + ":" + BROKER_PORT + "/" + VHOST_IUDX + "/" + queueName;
+          String streamingUrl =
+              "amqp://" + streamingUserName + ":" + apiKey // generateRandomPassword()
+                  + "@" + Constants.BROKER_PRODUCTION_DOMAIN + ":"
+                  + Constants.BROKER_PRODUCTION_PORT + "/" + Constants.VHOST_IUDX + "/" + queueName;
           LOGGER.debug("Info : Streaming URL is : " + streamingUrl);
           JsonArray entitites = request.getJsonArray(ENTITIES);
           LOGGER.debug("Info : Request Access for " + entitites);
@@ -270,13 +282,13 @@ public class SubscriptionService {
                                 });
                               } else if (totalBindSuccess == totalBindCount) {
                                 updateStreamingSubscriptionResponse.put(Constants.USER_NAME,
-                                    userName);
+                                    streamingUserName);
                                 /*
                                  * APIKEY should be equal to password generated. For testing use
                                  * Constants.APIKEY_TEST_EXAMPLE
                                  */
                                 updateStreamingSubscriptionResponse.put(Constants.APIKEY,
-                                    Constants.APIKEY_TEST_EXAMPLE);
+                                    apiKey);
                                 updateStreamingSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
                                     queueName);
                                 updateStreamingSubscriptionResponse.put(Constants.STREAMING_URL,
@@ -508,7 +520,9 @@ public class SubscriptionService {
       JsonObject requestjson = new JsonObject();
 
       LOGGER.debug("Info : Call Back registration ID check starts");
-      pgSQLClient.executeAsync(SELECT_CALLBACK, Tuple.of(subscriptionID))
+      String query = SELECT_CALLBACK.replace("$1", subscriptionID);
+      LOGGER.debug("Info : " + query);
+      pgSQLClient.executeAsync(query)
           .onComplete(resultHandlerSelectID -> {
             if (resultHandlerSelectID.succeeded()) {
               RowSet<Row> result = resultHandlerSelectID.result();
@@ -564,7 +578,8 @@ public class SubscriptionService {
                           if (bindResponse.containsKey(Constants.TITLE) && bindResponse
                               .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
                             LOGGER.error("failed ::" + resultHandlerbind.cause());
-                            pgSQLClient.executeAsync(DELETE_CALLBACK, Tuple.of(subscriptionID))
+                            String deleteQuery = DELETE_CALLBACK.replace("$1", subscriptionID);
+                            pgSQLClient.executeAsync(deleteQuery)
                                 .onComplete(resulthandlerdel -> {
                                   if (resulthandlerdel.succeeded()) {
                                     registerCallbackSubscriptionResponse.clear()
@@ -574,8 +589,11 @@ public class SubscriptionService {
                                   }
                                 });
                           } else if (totalBindSuccess == totalBindCount) {
-                            pgSQLClient.executeAsync(INSERT_CALLBACK, Tuple.of(subscriptionID,
-                                callbackUrl, entitites, dateTime, dateTime, dateTime))
+                                String insertQuery = INSERT_CALLBACK.replace("$1", subscriptionID)
+                                    .replace("$2", callbackUrl).replace("$3", entitites.toString())
+                                    .replace("$4", dateTime.toString()).replace("$5", dateTime.toString())
+                                    .replace("$6", dateTime.toString());
+                            pgSQLClient.executeAsync(insertQuery)
                                 .onComplete(ar -> {
                                   if (ar.succeeded()) {
                                     String exchangename = "callback.notification";
@@ -591,9 +609,9 @@ public class SubscriptionService {
                                             LOGGER.info("Message published to queue");
                                             promise.complete(registerCallbackSubscriptionResponse);
                                           } else {
+                                            String deleteQuery = DELETE_CALLBACK.replace("$1", subscriptionID);
                                             pgSQLClient
-                                                .executeAsync(DELETE_CALLBACK,
-                                                    Tuple.of(subscriptionID))
+                                                .executeAsync(deleteQuery)
                                                 .onComplete(deletepg -> {
                                                   if (deletepg.succeeded()) {
                                                     registerCallbackSubscriptionResponse.clear()
@@ -609,8 +627,9 @@ public class SubscriptionService {
                                         });
                                   } else {
                                     LOGGER.error("failed ::" + ar.cause().getMessage());
+                                    String deleteQuery = DELETE_CALLBACK.replace("$1", subscriptionID);
                                     pgSQLClient
-                                        .executeAsync(DELETE_CALLBACK, Tuple.of(subscriptionID))
+                                        .executeAsync(deleteQuery)
                                         .onComplete(resultHandlerDeletequeuepg -> {
                                           if (resultHandlerDeletequeuepg.succeeded()) {
                                             registerCallbackSubscriptionResponse.clear()
@@ -704,7 +723,8 @@ public class SubscriptionService {
                       .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED));
                   promise.fail(updateCallbackSubscriptionResponse.toString());
                 } else if (totalBindSuccess == totalBindCount) {
-                  pgSQLClient.executeAsync(UPDATE_CALLBACK, Tuple.of(entities, subscriptionID))
+                  String updateQuery = UPDATE_CALLBACK.replace("$1", entities.toString()).replace("$2", subscriptionID);
+                  pgSQLClient.executeAsync(updateQuery)
                       .onComplete(ar -> {
                         if (ar.succeeded()) {
                           String exchangename = "callback.notification";
@@ -772,7 +792,8 @@ public class SubscriptionService {
       String subscriptionID =
           domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
       LOGGER.debug("Info : Call Back registration ID check starts");
-      pgSQLClient.executeAsync(SELECT_CALLBACK, Tuple.of(subscriptionID))
+      String selectQuery = SELECT_CALLBACK.replace("$1", subscriptionID);
+      pgSQLClient.executeAsync(selectQuery)
           .onComplete(resultHandlerSelectID -> {
             if (resultHandlerSelectID.succeeded()) {
               RowSet<Row> result = resultHandlerSelectID.result();
@@ -790,7 +811,8 @@ public class SubscriptionService {
                 JsonObject publishjson = new JsonObject();
                 publishjson.put(Constants.SUBSCRIPTION_ID, subscriptionID);
                 publishjson.put(Constants.OPERATION, "delete");
-                pgSQLClient.executeAsync(DELETE_CALLBACK, Tuple.of(subscriptionID))
+                String deleteQuery = DELETE_CALLBACK.replace("$1", subscriptionID);
+                pgSQLClient.executeAsync(deleteQuery)
                     .onComplete(ar -> {
                   if (ar.succeeded()) {
                     String exchangename = "callback.notification";
@@ -839,7 +861,8 @@ public class SubscriptionService {
       String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
       String subscriptionID =
           domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
-      pgSQLClient.executeAsync(SELECT_CALLBACK, Tuple.of(subscriptionID)).onComplete(ar -> {
+      String selectQuery = SELECT_CALLBACK.replace("$1", subscriptionID);
+      pgSQLClient.executeAsync(selectQuery).onComplete(ar -> {
         if (ar.succeeded()) {
           RowSet<Row> result = ar.result();
           LOGGER.debug("Info : " + ar.result().size() + " rows");
