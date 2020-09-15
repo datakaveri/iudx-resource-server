@@ -31,7 +31,7 @@ import iudx.resource.server.databroker.util.Constants;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class AdaptorEntitiesTestCases {
+public class AdapterEntitiesTest {
 
   static DataBrokerService databroker;
   static private Properties properties;
@@ -70,7 +70,7 @@ public class AdaptorEntitiesTestCases {
   private static RabbitWebClient rabbitMQWebClient;
   private static PostgresClient pgClient;
 
-  private static final Logger logger = LoggerFactory.getLogger(AdaptorEntitiesTestCases.class);
+  private static final Logger logger = LoggerFactory.getLogger(AdapterEntitiesTest.class);
 
   @BeforeAll
   @DisplayName("Initialize the Databroker class with web client and rabbitmq client")

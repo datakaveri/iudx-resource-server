@@ -208,7 +208,7 @@ public class RabbitClient {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      String exchangeName = request.getString("id");
+      String exchangeName = request.getString(ID);
       String url =
           "/api/exchanges/" + vhost + "/" + Util.encodedValue(exchangeName) + "/bindings/source";
       webClient.requestAsync(REQUEST_GET, url).onComplete(ar -> {
