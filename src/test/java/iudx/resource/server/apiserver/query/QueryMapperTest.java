@@ -111,7 +111,7 @@ public class QueryMapperTest {
 		MultiMap map = MultiMap.caseInsensitiveMultiMap();
 		map.add(Constants.NGSILDQUERY_ID, "id1,id2");
 		map.add(Constants.NGSILDQUERY_ATTRIBUTE, "attr1,attr2");
-		map.add(Constants.NGSILDQUERY_TIMEREL, "between");
+    map.add(Constants.NGSILDQUERY_TIMEREL, "during");
 		map.add(Constants.NGSILDQUERY_TIME, "2020-01-23T14:20:00Z");
 		map.add(Constants.NGSILDQUERY_ENDTIME, "2020-01-24T14:40:00Z");
 		NGSILDQueryParams params = new NGSILDQueryParams(map);
