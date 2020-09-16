@@ -19,10 +19,22 @@ public class StreamingSubscription implements Subscription {
 
   private DataBrokerService databroker;
   private DatabaseService dbService;
+  private static volatile StreamingSubscription instance;
 
-  public StreamingSubscription(DataBrokerService databroker, DatabaseService dbService) {
+  private StreamingSubscription(DataBrokerService databroker, DatabaseService dbService) {
     this.databroker = databroker;
     this.dbService = dbService;
+  }
+
+  public static StreamingSubscription getInstance(DataBrokerService databroker,
+      DatabaseService dbService) {
+    if (instance == null) {
+      synchronized (StreamingSubscription.class) {
+        if (instance == null)
+          instance = new StreamingSubscription(databroker, dbService);
+      }
+    }
+    return instance;
   }
 
   /**
