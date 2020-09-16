@@ -33,10 +33,10 @@ public class SubscriptionService {
     LOGGER.info("getSubscriptionContext() method started");
     if (type != null && type.equalsIgnoreCase(SubsType.CALLBACK.getMessage())) {
       LOGGER.info("callback subscription context");
-      return new CallbackSubscription(databroker, databaseService);
+      return CallbackSubscription.getInstance(databroker, databaseService);
     } else {
       LOGGER.info("streaming subscription context");
-      return new StreamingSubscription(databroker, databaseService);
+      return StreamingSubscription.getInstance(databroker, databaseService);
     }
   }
 

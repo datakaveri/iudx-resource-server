@@ -163,9 +163,8 @@ public class CallbackSubscriptionTest {
     /* Call the databroker constructor with the RabbitMQ client Vertx web client. */
     
     rabbitMQWebClient = new RabbitWebClient(vertx, webConfig, propObj);
-    rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient);
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
-
+    rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient, pgClient);
     databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, dataBrokerVhost);
     testContext.completeNow();
 

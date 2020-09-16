@@ -191,9 +191,8 @@ public class DataBrokerServiceTest {
 
     /* Call the databroker constructor with the RabbitMQ client. */
     rabbitMQWebClient = new RabbitWebClient(vertx, webConfig, propObj);
-    rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient);
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
-
+    rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient, pgClient);
     databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, dataBrokerVhost);
 
     testContext.completeNow();
@@ -686,12 +685,15 @@ public class DataBrokerServiceTest {
     JsonObject expected = new JsonObject();
     expected.put(SUBSCRIPTION_ID, queueName);
     expected.put("streamingURL",
-        "amqp://pawan@google.org:123456@databroker.iudx.io:5671/IUDX/google.org/98a9a7401988c2cde925b406b7ec2a8a99e7f9f8/alias-pawan");
+        "amqp://pawan@google.org:123456" // generateRandomPassword()
+        + "@" + Constants.BROKER_PRODUCTION_DOMAIN + ":" + Constants.BROKER_PRODUCTION_PORT + "/"
+            + Constants.VHOST_IUDX + "/" + queueName);
+
     expected.put(USER_NAME, "pawan@google.org");
     expected.put(APIKEY, "123456");
-    expected.put(URL, "databroker.iudx.io");
-    expected.put(PORT, "5671");
-    expected.put(VHOST, "IUDX");
+    expected.put(URL, BROKER_PRODUCTION_DOMAIN);
+    expected.put(PORT, BROKER_PRODUCTION_PORT);
+    expected.put(VHOST, VHOST_IUDX);
 
 
     JsonObject request = new JsonObject();

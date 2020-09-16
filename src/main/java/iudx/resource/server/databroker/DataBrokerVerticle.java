@@ -25,6 +25,8 @@ import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Tuple;
 import static iudx.resource.server.databroker.util.Constants.INSERT_DATABROKER_USER;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -117,10 +119,16 @@ public class DataBrokerVerticle extends AbstractVerticle {
       databasePassword = properties.getProperty("callbackDatabasePassword");
       poolSize = Integer.parseInt(properties.getProperty("callbackpoolSize"));
 
-    } catch (Exception ex) {
-
-      LOGGER.info(ex.toString());
-
+    } catch (FileNotFoundException ex) {
+      LOGGER.error("FATAL : config file not found.");
+    } finally {
+      if (inputstream != null) {
+        try {
+          inputstream.close();
+        } catch (IOException ex) {
+          LOGGER.error("Error : error while closing input stream.");
+        }
+      }
     }
 
     /* Configure the RabbitMQ Data Broker client with input from config files. */

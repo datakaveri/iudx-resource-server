@@ -21,9 +21,22 @@ public class CallbackSubscription implements Subscription {
   private DataBrokerService databroker;
   private DatabaseService dbService;
 
-  public CallbackSubscription(DataBrokerService databroker, DatabaseService dbService) {
+  private static volatile CallbackSubscription instance = null;
+
+  private CallbackSubscription(DataBrokerService databroker, DatabaseService dbService) {
     this.databroker = databroker;
     this.dbService = dbService;
+  }
+
+  public static CallbackSubscription getInstance(DataBrokerService databroker,
+      DatabaseService dbService) {
+    if (instance == null) {
+      synchronized (CallbackSubscription.class) {
+        if (instance == null)
+          instance = new CallbackSubscription(databroker, dbService);
+      }
+    }
+    return instance;
   }
 
   /**
