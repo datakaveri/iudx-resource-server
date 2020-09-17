@@ -32,6 +32,14 @@ public class Constants {
   public static final String IUDX_MANAGEMENT_VHOST_URL = IUDX_MANAGEMENT_URL + "/vhost";
   public static final String IUDX_MANAGEMENT_ADAPTER_URL = IUDX_ADAPTOR_URL + "/adapter";
 
+  /** API Documentation endpoint */
+  public static final String ROUTE_STATIC_SPEC = "/apis/spec";
+  public static final String ROUTE_DOC = "/apis";
+
+  /** Accept Headers and CORS */
+  public static final String MIME_APPLICATION_JSON = "application/json";
+  public static final String MIME_TEXT_HTML = "text/html";
+
   // ngsi-ld/IUDX query paramaters
   public static final String NGSILDQUERY_ID = "id";
   public static final String NGSILDQUERY_IDPATTERN = "idpattern";
