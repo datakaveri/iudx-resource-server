@@ -71,7 +71,7 @@ public class ApiServerVerticleTest {
     vhost = UUID.randomUUID().toString().replaceAll("-", "");
     entities = new JsonArray().add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_05");
-    fakeToken = UUID.randomUUID().toString();
+    fakeToken = "public";
     adapterId = UUID.randomUUID().toString();
     resourceGroup = UUID.randomUUID().toString();
     resourceServer = UUID.randomUUID().toString();

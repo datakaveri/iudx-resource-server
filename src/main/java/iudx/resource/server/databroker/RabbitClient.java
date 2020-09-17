@@ -1,8 +1,7 @@
 package iudx.resource.server.databroker;
 
 import static iudx.resource.server.databroker.util.Constants.*;
-import static iudx.resource.server.databroker.util.Util.encodedValue;
-import static iudx.resource.server.databroker.util.Util.getResponseJson;
+import static iudx.resource.server.databroker.util.Util.*;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.http.HttpStatus;
@@ -33,7 +32,8 @@ public class RabbitClient {
   private RabbitWebClient webClient;
   private PostgresClient pgSQLClient;
 
-  public RabbitClient(Vertx vertx, RabbitMQOptions rabbitConfigs, RabbitWebClient webClient, PostgresClient pgSQLClient) {
+  public RabbitClient(Vertx vertx, RabbitMQOptions rabbitConfigs, RabbitWebClient webClient,
+      PostgresClient pgSQLClient) {
     this.client = getRabbitMQClient(vertx, rabbitConfigs);
     this.webClient = webClient;
     this.pgSQLClient = pgSQLClient;
@@ -62,7 +62,7 @@ public class RabbitClient {
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
       String exchangeName = request.getString("exchangeName");
-      String url = "/api/exchanges/" + vHost + "/" + Util.encodedValue(exchangeName);
+      String url = "/api/exchanges/" + vHost + "/" + encodeValue(exchangeName);
       JsonObject obj = new JsonObject();
       obj.put(TYPE, EXCHANGE_TYPE);
       obj.put(AUTO_DELETE, false);
@@ -76,7 +76,7 @@ public class RabbitClient {
           if (statusCode == HttpStatus.SC_CREATED) {
             responseJson.put(EXCHANGE, exchangeName);
           } else if (statusCode == HttpStatus.SC_NO_CONTENT) {
-            responseJson = Util.getResponseJson(statusCode, FAILURE, EXCHANGE_EXISTS);
+            responseJson = Util.getResponseJson(HttpStatus.SC_CONFLICT, FAILURE, EXCHANGE_EXISTS);
           } else if (statusCode == HttpStatus.SC_BAD_REQUEST) {
             responseJson = Util.getResponseJson(statusCode, FAILURE,
                 EXCHANGE_EXISTS_WITH_DIFFERENT_PROPERTIES);
@@ -99,7 +99,7 @@ public class RabbitClient {
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
       String exchangeName = request.getString("exchangeName");
-      String url = "/api/exchanges/" + vHost + "/" + Util.encodedValue(exchangeName);
+      String url = "/api/exchanges/" + vHost + "/" + encodeValue(exchangeName);
       webClient.requestAsync(REQUEST_GET, url).onComplete(requestHandler -> {
         if (requestHandler.succeeded()) {
           JsonObject responseJson = new JsonObject();
@@ -129,7 +129,7 @@ public class RabbitClient {
     if (request != null && !request.isEmpty()) {
       String exchangeName = request.getString("id");
       String url;
-      url = "/api/exchanges/" + vhost + "/" + encodedValue(exchangeName);
+      url = "/api/exchanges/" + vhost + "/" + encodeValue(exchangeName);
       webClient.requestAsync(REQUEST_GET, url).onComplete(result -> {
         if (result.succeeded()) {
           int status = result.result().statusCode();
@@ -171,7 +171,7 @@ public class RabbitClient {
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
       String exchangeName = request.getString("exchangeName");
-      String url = "/api/exchanges/" + vHost + "/" + Util.encodedValue(exchangeName);
+      String url = "/api/exchanges/" + vHost + "/" + encodeValue(exchangeName);
       webClient.requestAsync(REQUEST_DELETE, url).onComplete(requestHandler -> {
         if (requestHandler.succeeded()) {
           JsonObject responseJson = new JsonObject();
@@ -208,9 +208,9 @@ public class RabbitClient {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      String exchangeName = request.getString("id");
+      String exchangeName = request.getString(ID);
       String url =
-          "/api/exchanges/" + vhost + "/" + Util.encodedValue(exchangeName) + "/bindings/source";
+          "/api/exchanges/" + vhost + "/" + Util.encodeValue(exchangeName) + "/bindings/source";
       webClient.requestAsync(REQUEST_GET, url).onComplete(ar -> {
         if (ar.succeeded()) {
           HttpResponse<Buffer> response = ar.result();
@@ -263,7 +263,7 @@ public class RabbitClient {
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
       String queueName = request.getString("queueName");
-      String url = "/api/queues/" + vhost + "/" + Util.encodedValue(queueName);
+      String url = "/api/queues/" + vhost + "/" + Util.encodeValue(queueName);
       JsonObject configProp = new JsonObject();
       configProp.put(Constants.X_MESSAGE_TTL_NAME, Constants.X_MESSAGE_TTL_VALUE)
           .put(Constants.X_MAXLENGTH_NAME, Constants.X_MAXLENGTH_VALUE)
@@ -276,7 +276,8 @@ public class RabbitClient {
             if (status == HttpStatus.SC_CREATED) {
               finalResponse.put(Constants.QUEUE, queueName);
             } else if (status == HttpStatus.SC_NO_CONTENT) {
-              finalResponse.mergeIn(Util.getResponseJson(status, FAILURE, QUEUE_ALREADY_EXISTS),
+              finalResponse.mergeIn(
+                  Util.getResponseJson(HttpStatus.SC_CONFLICT, FAILURE, QUEUE_ALREADY_EXISTS),
                   true);
             } else if (status == HttpStatus.SC_BAD_REQUEST) {
               finalResponse.mergeIn(Util.getResponseJson(status, FAILURE,
@@ -310,7 +311,7 @@ public class RabbitClient {
     if (request != null && !request.isEmpty()) {
       String queueName = request.getString("queueName");
       LOGGER.debug("Info : queuName" + queueName);
-      String url = "/api/queues/" + vhost + "/" + Util.encodedValue(queueName);
+      String url = "/api/queues/" + vhost + "/" + encodeValue(queueName);
       webClient.requestAsync(REQUEST_DELETE, url).onComplete(ar -> {
         if (ar.succeeded()) {
           HttpResponse<Buffer> response = ar.result();
@@ -351,8 +352,8 @@ public class RabbitClient {
       String queueName = request.getString("queueName");
       JsonArray entities = request.getJsonArray("entities");
       int arrayPos = entities.size() - 1;
-      String url = "/api/bindings/" + vhost + "/e/" + Util.encodedValue(exchangeName) + "/q/"
-          + Util.encodedValue(queueName);
+      String url = "/api/bindings/" + vhost + "/e/" + encodeValue(exchangeName) + "/q/"
+          + Util.encodeValue(queueName);
       for (Object rkey : entities) {
         requestBody.put("routing_key", rkey.toString());
         webClient.requestAsync(REQUEST_POST, url, requestBody).onComplete(ar -> {
@@ -402,8 +403,8 @@ public class RabbitClient {
       JsonArray entities = request.getJsonArray("entities");
       int arrayPos = entities.size() - 1;
       for (Object rkey : entities) {
-        String url = "/api/bindings/" + vhost + "/e/" + Util.encodedValue(exchangeName) + "/q/"
-            + Util.encodedValue(queueName) + "/" + Util.encodedValue((String) rkey);
+        String url = "/api/bindings/" + vhost + "/e/" + encodeValue(exchangeName) + "/q/"
+            + Util.encodeValue(queueName) + "/" + encodeValue((String) rkey);
         webClient.requestAsync(REQUEST_DELETE, url).onComplete(ar -> {
           if (ar.succeeded()) {
             HttpResponse<Buffer> response = ar.result();
@@ -444,7 +445,7 @@ public class RabbitClient {
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
       String vhost = request.getString("vHost");
-      String url = "/api/vhosts/" + Util.encodedValue(vhost);
+      String url = "/api/vhosts/" + encodeValue(vhost);
       webClient.requestAsync(REQUEST_PUT, url).onComplete(ar -> {
         if (ar.succeeded()) {
           HttpResponse<Buffer> response = ar.result();
@@ -453,7 +454,8 @@ public class RabbitClient {
             if (status == HttpStatus.SC_CREATED) {
               finalResponse.put(Constants.VHOST, vhost);
             } else if (status == HttpStatus.SC_NO_CONTENT) {
-              finalResponse.mergeIn(Util.getResponseJson(status, FAILURE, VHOST_ALREADY_EXISTS));
+              finalResponse.mergeIn(
+                  Util.getResponseJson(HttpStatus.SC_CONFLICT, FAILURE, VHOST_ALREADY_EXISTS));
             }
           }
           promise.complete(finalResponse);
@@ -480,7 +482,7 @@ public class RabbitClient {
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
       String vhost = request.getString("vHost");
-      String url = "/api/vhosts/" + Util.encodedValue(vhost);
+      String url = "/api/vhosts/" + encodeValue(vhost);
       webClient.requestAsync(REQUEST_DELETE, url).onComplete(ar -> {
         if (ar.succeeded()) {
           HttpResponse<Buffer> response = ar.result();
@@ -567,7 +569,7 @@ public class RabbitClient {
     if (request != null && !request.isEmpty()) {
       String queueName = request.getString("queueName");
       JsonArray oroutingKeys = new JsonArray();
-      String url = "/api/queues/" + vhost + "/" + Util.encodedValue(queueName) + "/bindings";
+      String url = "/api/queues/" + vhost + "/" + encodeValue(queueName) + "/bindings";
       webClient.requestAsync(REQUEST_GET, url).onComplete(ar -> {
         if (ar.succeeded()) {
           HttpResponse<Buffer> response = ar.result();
@@ -609,7 +611,79 @@ public class RabbitClient {
     return promise.future();
   }
 
-  public Future<JsonObject> registerAdaptor(JsonObject request, String vhost) {
+  public Future<JsonObject> registerAdapter(JsonObject request, String vhost) {
+    LOGGER.debug("Info : RabbitClient#registerAdaptor() started");
+    Promise<JsonObject> promise = Promise.promise();
+
+    AdaptorResultContainer requestParams = new AdaptorResultContainer();
+    requestParams.vhost = vhost;
+    requestParams.id = request.getString("resourceGroup");
+    requestParams.resourceServer = request.getString("resourceServer");
+    requestParams.userName = request.getString(CONSUMER);
+    requestParams.provider = request.getString("provider");
+    requestParams.domain = requestParams.userName.substring(requestParams.userName.indexOf("@") + 1,
+        requestParams.userName.length());
+    requestParams.userNameSha = getSha(requestParams.userName);
+    requestParams.userId = requestParams.domain + "/" + requestParams.userNameSha;
+    requestParams.adaptorId =
+        requestParams.provider + "/" + requestParams.resourceServer + "/" + requestParams.id;
+
+    if (isValidId.test(requestParams.id)) {
+      if (requestParams.id != null && !requestParams.id.isEmpty() && !requestParams.id.isBlank()) {
+        Future<JsonObject> userCreationFuture = createUserIfNotExist(requestParams.userName, vhost);
+        userCreationFuture.compose(userCreationResult -> {
+          requestParams.apiKey = userCreationResult.getString("apiKey");
+          JsonObject json = new JsonObject();
+          json.put(EXCHANGE_NAME, requestParams.adaptorId);
+          LOGGER.debug("Success : User created/exist.");
+          return createExchange(json, vhost);
+        }).compose(createExchangeResult -> {
+          if (createExchangeResult.containsKey("detail")) {
+            LOGGER.error("Error : Exchange creation failed. ");
+            return Future.failedFuture(createExchangeResult.toString());
+          }
+          LOGGER.debug("Success : Exchange created successfully.");
+          return setTopicPermissions(requestParams.vhost, requestParams.adaptorId,
+              requestParams.userId);
+        }).compose(topicPermissionsResult -> {
+          LOGGER.debug("Success : topic permissions set.");
+          return queueBinding(requestParams.adaptorId);
+        }).onSuccess(success -> {
+          LOGGER.debug("Success : queue bindings done.");
+          JsonObject response = new JsonObject()
+              .put(USER_NAME, requestParams.userId)
+              .put(Constants.APIKEY, requestParams.apiKey)
+              .put(Constants.ID, requestParams.adaptorId)
+              .put(Constants.URL, BROKER_PRODUCTION_DOMAIN)
+              .put(Constants.PORT, BROKER_PRODUCTION_PORT)
+              .put(Constants.VHOST, VHOST_IUDX);
+          LOGGER.debug("Success : Adapter created successfully.");
+          promise.complete(response);
+        }).onFailure(failure -> {
+          LOGGER.info("Error : " + failure);
+          promise.fail(failure);
+        });
+      }
+    }
+    return promise.future();
+  }
+
+  private class AdaptorResultContainer {
+    public String apiKey;
+    public String id;
+    public String resourceServer;
+    public String userName;
+    public String userNameSha;
+    public String provider;
+    public String domain;
+    public String userId;
+    public String adaptorId;
+    public String vhost;
+
+  }
+
+  @Deprecated
+  public Future<JsonObject> registerAdaptor_V1(JsonObject request, String vhost) {
     LOGGER.debug("Info : RabbitClient#registerAdaptor() started");
     Promise<JsonObject> promise = Promise.promise();
     System.out.println(request.toString());
@@ -664,15 +738,14 @@ public class RabbitClient {
                       LOGGER.debug("Info : exchange name received : " + obj.getString("exchange"));
                       // if exchange just registered then set topic permission and bind with queues
                       if (!obj.containsKey("detail")) {
-                        Future<JsonObject> topicPermissionFuture = setTopicPermissions(vhost,
-                            adaptorID, userID);
+                        Future<JsonObject> topicPermissionFuture =
+                            setTopicPermissions(vhost, adaptorID, userID);
                         topicPermissionFuture.onComplete(topicHandler -> {
                           if (topicHandler.succeeded()) {
                             LOGGER.debug("Success : Write permission set on topic for exchange "
                                 + obj.getString("exchange"));
                             /* Bind the exchange with the database and adaptorLogs queue */
-                            Future<JsonObject> queueBindFuture = queueBinding(
-                                adaptorID);
+                            Future<JsonObject> queueBindFuture = queueBinding(adaptorID);
                             queueBindFuture.onComplete(res -> {
                               if (res.succeeded()) {
                                 LOGGER.debug(
@@ -684,8 +757,7 @@ public class RabbitClient {
                                  * APIKEY should be equal to password generated. For testing use
                                  * APIKEY_TEST_EXAMPLE
                                  */
-                                registerResponse.put(Constants.APIKEY,
-                                    apikey);
+                                registerResponse.put(Constants.APIKEY, apikey);
                                 registerResponse.put(Constants.ID, adaptorID);
                                 registerResponse.put(Constants.URL,
                                     Constants.BROKER_PRODUCTION_DOMAIN);
@@ -798,7 +870,8 @@ public class RabbitClient {
               finalResponse.put("id", exchangeID);
             } else if (rh.failed()) {
               finalResponse.clear()
-                  .mergeIn(getResponseJson(500, "adaptor delete", rh.cause().toString()));
+                  .mergeIn(getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, "adaptor delete",
+                      rh.cause().toString()));
               LOGGER.error("Error : Adaptor deletion failed cause - " + rh.cause());
               promise.fail(finalResponse.toString());
             } else {
@@ -848,7 +921,7 @@ public class RabbitClient {
     String password = Util.randomPassword.get();
     // This API requires user name in path parameter. Encode the username as it
     // contains a "/"
-    String url = "/api/users/" + Util.encodedValue(shaUsername);
+    String url = "/api/users/" + encodeValue(shaUsername);
     /* Check if user exists */
     JsonObject response = new JsonObject();
     webClient.requestAsync(REQUEST_GET, url).onComplete(reply -> {
@@ -882,21 +955,23 @@ public class RabbitClient {
           /* Handle the response if a user exists */
           JsonObject readDbResponse = new JsonObject();
           Future<JsonObject> getUserApiKey = getUserInDb(shaUsername);
-          
+
           getUserApiKey.onComplete(getUserApiKeyHandler -> {
-            if(getUserApiKeyHandler.succeeded()) {
+            if (getUserApiKeyHandler.succeeded()) {
               LOGGER.info("DATABASE_READ_SUCCESS");
               String apiKey = getUserApiKey.result().getString(APIKEY);
               readDbResponse.put(SHA_USER_NAME, shaUsername);
               readDbResponse.put(APIKEY, apiKey);
-              readDbResponse.mergeIn(getResponseJson(SUCCESS_CODE, DATABASE_READ_SUCCESS, DATABASE_READ_SUCCESS));
+              readDbResponse.mergeIn(
+                  getResponseJson(SUCCESS_CODE, DATABASE_READ_SUCCESS, DATABASE_READ_SUCCESS));
               readDbResponse.put(VHOST_PERMISSIONS, vhost);
               promise.complete(readDbResponse);
             } else {
               LOGGER.info("DATABASE_READ_FAILURE");
-              readDbResponse.mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, DATABASE_READ_FAILURE));
+              readDbResponse
+                  .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, DATABASE_READ_FAILURE));
               promise.fail(readDbResponse.toString());
-            }        
+            }
           });
         }
 
@@ -941,14 +1016,15 @@ public class RabbitClient {
             if (handler.succeeded()) {
               response.mergeIn(getResponseJson(SUCCESS_CODE, VHOST_PERMISSIONS,
                   handler.result().getString(DETAIL)));
-              //Call the DB method to store username and password
+              // Call the DB method to store username and password
               Future<JsonObject> createUserinDb = createUserInDb(shaUsername, password);
               createUserinDb.onComplete(createUserinDbHandler -> {
-                if(createUserinDbHandler.succeeded()) {
+                if (createUserinDbHandler.succeeded()) {
                   promise.complete(response);
                 } else {
                   /* Handle error */
-                  LOGGER.error("Error : error in saving credentials. Cause : " + createUserinDbHandler.cause());
+                  LOGGER.error("Error : error in saving credentials. Cause : "
+                      + createUserinDbHandler.cause());
                   promise.fail("Error : error in saving credentials");
                 }
               });
@@ -983,51 +1059,49 @@ public class RabbitClient {
 
     String query = INSERT_DATABROKER_USER.replace("$1", shaUsername).replace("$2", password);
     System.out.println(query);
-  
+
     // Check in DB, get username and password
-    pgSQLClient.executeAsync(query)
-        .onComplete(db -> {
-          LOGGER.debug("Info : RabbitClient#createUserInDb()executeAsync completed");
-          if (db.succeeded()) {
-            LOGGER.debug("Info : RabbitClient#createUserInDb()executeAsync success");
-            response.put("status", "success");
-            promise.complete(response);
-          } else {
-            LOGGER.fatal("Fail : RabbitClient#createUserInDb()executeAsync failed");
-            promise.fail("Error : Write to database failed");
-          }
-        });
+    pgSQLClient.executeAsync(query).onComplete(db -> {
+      LOGGER.debug("Info : RabbitClient#createUserInDb()executeAsync completed");
+      if (db.succeeded()) {
+        LOGGER.debug("Info : RabbitClient#createUserInDb()executeAsync success");
+        response.put("status", "success");
+        promise.complete(response);
+      } else {
+        LOGGER.fatal("Fail : RabbitClient#createUserInDb()executeAsync failed");
+        promise.fail("Error : Write to database failed");
+      }
+    });
     return promise.future();
   }
-  
+
   Future<JsonObject> getUserInDb(String shaUsername) {
     LOGGER.debug("Info : RabbitClient#getUserInDb() started");
-    
+
     Promise<JsonObject> promise = Promise.promise();
     JsonObject response = new JsonObject();
     String query = SELECT_DATABROKER_USER.replace("$1", shaUsername);
     LOGGER.debug("Info : " + query);
     // Check in DB, get username and password
-    pgSQLClient.executeAsync(query)
-        .onComplete(db -> {
-          LOGGER.debug("Info : RabbitClient#getUserInDb()executeAsync completed");
-          if (db.succeeded()) {
-            LOGGER.debug("Info : RabbitClient#getUserInDb()executeAsync success");
-            String apiKey = null;
-            // Get the apiKey
-            RowSet<Row> result = db.result();
-            if (db.result().size() > 0) {
-              for (Row row : result) {
-                apiKey = row.getString(1);
-              }
-            }
-            response.put(APIKEY, apiKey);
-            promise.complete(response);
-          } else {
-            LOGGER.fatal("Fail : RabbitClient#getUserInDb()executeAsync failed");
-            promise.fail("Error : Get ID from database failed");
+    pgSQLClient.executeAsync(query).onComplete(db -> {
+      LOGGER.debug("Info : RabbitClient#getUserInDb()executeAsync completed");
+      if (db.succeeded()) {
+        LOGGER.debug("Info : RabbitClient#getUserInDb()executeAsync success");
+        String apiKey = null;
+        // Get the apiKey
+        RowSet<Row> result = db.result();
+        if (db.result().size() > 0) {
+          for (Row row : result) {
+            apiKey = row.getString(1);
           }
-        });
+        }
+        response.put(APIKEY, apiKey);
+        promise.complete(response);
+      } else {
+        LOGGER.fatal("Fail : RabbitClient#getUserInDb()executeAsync failed");
+        promise.fail("Error : Get ID from database failed");
+      }
+    });
     return promise.future();
   }
 
@@ -1041,7 +1115,7 @@ public class RabbitClient {
    **/
   private Future<JsonObject> setTopicPermissions(String vhost, String adaptorID, String userID) {
     LOGGER.debug("Info : RabbitClient#setTopicPermissions() started");
-    String url = "/api/topic-permissions/" + vhost + "/" + Util.encodedValue(userID);
+    String url = "/api/topic-permissions/" + vhost + "/" + encodeValue(userID);
     JsonObject param = new JsonObject();
     // set all mandatory fields
     param.put(EXCHANGE, adaptorID);
@@ -1091,7 +1165,7 @@ public class RabbitClient {
   private Future<JsonObject> setVhostPermissions(String shaUsername, String vhost) {
     LOGGER.debug("Info : RabbitClient#setVhostPermissions() started");
     /* Construct URL to use */
-    String url = "/api/permissions/" + vhost + "/" + Util.encodedValue(shaUsername);
+    String url = "/api/permissions/" + vhost + "/" + encodeValue(shaUsername);
     JsonObject vhostPermissions = new JsonObject();
     // all keys are mandatory. empty strings used for configure,read as not
     // permitted.

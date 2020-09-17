@@ -1,10 +1,14 @@
 package iudx.resource.server.databroker;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static iudx.resource.server.databroker.util.Constants.*;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Base64;
 import java.util.Properties;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
@@ -72,6 +76,7 @@ public class DataBrokerServiceTest {
   private static RabbitClient rabbitMQStreamingClient;
   private static RabbitWebClient rabbitMQWebClient;
   private static PostgresClient pgClient;
+  private static int statusConflict;
 
 
   private static final Logger logger = LoggerFactory.getLogger(DataBrokerServiceTest.class);
@@ -79,32 +84,14 @@ public class DataBrokerServiceTest {
   @BeforeAll
   @DisplayName("Deploy a verticle")
   static void startVertx(Vertx vertx, VertxTestContext testContext) {
-
-    /* Choose a Character random from this String */
-    String AlphaNumericString =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "0123456789" + "abcdefghijklmnopqrstuvxyz";
-
-    /* Create StringBuffer size of AlphaNumericString */
-    StringBuilder sb = new StringBuilder(20);
-
-    for (int i = 0; i < 20; i++) {
-
-      /*
-       * Generate a random number between 0 to AlphaNumericString variable length
-       */
-      int index = (int) (AlphaNumericString.length() * Math.random());
-
-      /* Add Character one by one in end of sb */
-      sb.append(AlphaNumericString.charAt(index));
-    }
-
-    exchangeName = sb.toString();
-    queueName = sb.toString();
+    exchangeName = UUID.randomUUID().toString();
+    queueName = UUID.randomUUID().toString();
     entities = new JsonArray("[\"id1\", \"id2\"]");
     vHost = "IUDX-Test";
     statusOk = 200;
     statusNotFound = 404;
     statusNoContent = 204;
+    statusConflict = 409;
 
 
     logger.info("Exchange Name is " + exchangeName);
@@ -195,8 +182,8 @@ public class DataBrokerServiceTest {
     propObj = new JsonObject();
 
     propObj.put("userName", dataBrokerUserName);
-    propObj.put(Constants.PASSWORD, dataBrokerPassword);
-    propObj.put(Constants.VHOST, dataBrokerVhost);
+    propObj.put(PASSWORD, dataBrokerPassword);
+    propObj.put(VHOST, dataBrokerVhost);
     propObj.put("databaseIP", databaseIP);
     propObj.put("databasePort", databasePort);
     propObj.put("databaseName", databaseName);
@@ -206,9 +193,8 @@ public class DataBrokerServiceTest {
 
     /* Call the databroker constructor with the RabbitMQ client. */
     rabbitMQWebClient = new RabbitWebClient(vertx, webConfig, propObj);
-    rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient);
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
-
+    rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient, pgClient);
     databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, dataBrokerVhost);
 
     testContext.completeNow();
@@ -221,10 +207,10 @@ public class DataBrokerServiceTest {
   void successCreateExchange(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.EXCHANGE, exchangeName);
+    expected.put(EXCHANGE, exchangeName);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.EXCHANGE_NAME, exchangeName);
+    request.put(EXCHANGE_NAME, exchangeName);
 
     databroker.createExchange(request, handler -> {
       if (handler.succeeded()) {
@@ -242,12 +228,12 @@ public class DataBrokerServiceTest {
   void failCreateExchange(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.TYPE, statusNoContent);
-    expected.put(Constants.TITLE, Constants.FAILURE);
-    expected.put(Constants.DETAIL, Constants.EXCHANGE_EXISTS);
+    expected.put(TYPE, statusConflict);
+    expected.put(TITLE, FAILURE);
+    expected.put(DETAIL, EXCHANGE_EXISTS);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.EXCHANGE_NAME, exchangeName);
+    request.put(EXCHANGE_NAME, exchangeName);
 
     databroker.createExchange(request, handler -> {
       if (handler.succeeded()) {
@@ -265,10 +251,10 @@ public class DataBrokerServiceTest {
   void successCreateQueue(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.QUEUE, queueName);
+    expected.put(QUEUE, queueName);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.QUEUE_NAME, queueName);
+    request.put(QUEUE_NAME, queueName);
 
     databroker.createQueue(request, handler -> {
       if (handler.succeeded()) {
@@ -287,12 +273,12 @@ public class DataBrokerServiceTest {
   void failCreateQueue(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.TYPE, statusNoContent);
-    expected.put(Constants.TITLE, Constants.FAILURE);
-    expected.put(Constants.DETAIL, Constants.QUEUE_ALREADY_EXISTS);
+    expected.put(TYPE, statusConflict);
+    expected.put(TITLE, FAILURE);
+    expected.put(DETAIL, QUEUE_ALREADY_EXISTS);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.QUEUE_NAME, queueName);
+    request.put(QUEUE_NAME, queueName);
 
     databroker.createQueue(request, handler -> {
       if (handler.succeeded()) {
@@ -310,14 +296,14 @@ public class DataBrokerServiceTest {
   void successBindQueue(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.QUEUE, queueName);
-    expected.put(Constants.EXCHANGE, exchangeName);
-    expected.put(Constants.ENTITIES, entities);
+    expected.put(QUEUE, queueName);
+    expected.put(EXCHANGE, exchangeName);
+    expected.put(ENTITIES, entities);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.QUEUE_NAME, queueName);
-    request.put(Constants.EXCHANGE_NAME, exchangeName);
-    request.put(Constants.ENTITIES, entities);
+    request.put(QUEUE_NAME, queueName);
+    request.put(EXCHANGE_NAME, exchangeName);
+    request.put(ENTITIES, entities);
 
     databroker.bindQueue(request, handler -> {
       if (handler.succeeded()) {
@@ -338,7 +324,7 @@ public class DataBrokerServiceTest {
     expected.put(queueName, entities);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.EXCHANGE_NAME, exchangeName);
+    request.put(ID, exchangeName);
 
     databroker.listExchangeSubscribers(request, handler -> {
       if (handler.succeeded()) {
@@ -359,10 +345,10 @@ public class DataBrokerServiceTest {
   void successListQueueBindings(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ENTITIES, entities);
+    expected.put(ENTITIES, entities);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.QUEUE_NAME, queueName);
+    request.put(QUEUE_NAME, queueName);
 
     databroker.listQueueSubscribers(request, handler -> {
       if (handler.succeeded()) {
@@ -381,14 +367,14 @@ public class DataBrokerServiceTest {
   void successUnbindQueue(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.QUEUE, queueName);
-    expected.put(Constants.EXCHANGE, exchangeName);
-    expected.put(Constants.ENTITIES, entities);
+    expected.put(QUEUE, queueName);
+    expected.put(EXCHANGE, exchangeName);
+    expected.put(ENTITIES, entities);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.QUEUE_NAME, queueName);
-    request.put(Constants.EXCHANGE_NAME, exchangeName);
-    request.put(Constants.ENTITIES, entities);
+    request.put(QUEUE_NAME, queueName);
+    request.put(EXCHANGE_NAME, exchangeName);
+    request.put(ENTITIES, entities);
 
     databroker.unbindQueue(request, handler -> {
       if (handler.succeeded()) {
@@ -407,10 +393,10 @@ public class DataBrokerServiceTest {
   void successDeleteQueue(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.QUEUE, queueName);
+    expected.put(QUEUE, queueName);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.QUEUE_NAME, queueName);
+    request.put(QUEUE_NAME, queueName);
 
     databroker.deleteQueue(request, handler -> {
       if (handler.succeeded()) {
@@ -429,12 +415,12 @@ public class DataBrokerServiceTest {
   void failDeleteQueue(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.TYPE, statusNotFound);
-    expected.put(Constants.TITLE, Constants.FAILURE);
-    expected.put(Constants.DETAIL, Constants.QUEUE_DOES_NOT_EXISTS);
+    expected.put(TYPE, statusNotFound);
+    expected.put(TITLE, FAILURE);
+    expected.put(DETAIL, QUEUE_DOES_NOT_EXISTS);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.QUEUE_NAME, queueName);
+    request.put(QUEUE_NAME, queueName);
 
     databroker.deleteQueue(request, handler -> {
       if (handler.succeeded()) {
@@ -453,10 +439,10 @@ public class DataBrokerServiceTest {
   void successDeleteExchange(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.EXCHANGE, exchangeName);
+    expected.put(EXCHANGE, exchangeName);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.EXCHANGE_NAME, exchangeName);
+    request.put(EXCHANGE_NAME, exchangeName);
 
     databroker.deleteExchange(request, handler -> {
       if (handler.succeeded()) {
@@ -475,12 +461,12 @@ public class DataBrokerServiceTest {
   void failDeleteExchange(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.TYPE, statusNotFound);
-    expected.put(Constants.TITLE, Constants.FAILURE);
-    expected.put(Constants.DETAIL, Constants.EXCHANGE_NOT_FOUND);
+    expected.put(TYPE, statusNotFound);
+    expected.put(TITLE, FAILURE);
+    expected.put(DETAIL, EXCHANGE_NOT_FOUND);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.EXCHANGE_NAME, exchangeName);
+    request.put(EXCHANGE_NAME, exchangeName);
 
     databroker.deleteExchange(request, handler -> {
       if (handler.succeeded()) {
@@ -499,10 +485,10 @@ public class DataBrokerServiceTest {
   void successCreateVhost(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.VHOST, vHost);
+    expected.put(VHOST, vHost);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.VHOST, vHost);
+    request.put(VHOST, vHost);
 
     databroker.createvHost(request, handler -> {
       if (handler.succeeded()) {
@@ -521,10 +507,10 @@ public class DataBrokerServiceTest {
   void successDeleteVhost(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.VHOST, vHost);
+    expected.put(VHOST, vHost);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.VHOST, vHost);
+    request.put(VHOST, vHost);
 
     databroker.deletevHost(request, handler -> {
       if (handler.succeeded()) {
@@ -541,17 +527,14 @@ public class DataBrokerServiceTest {
   @DisplayName("List all Virtual Hosts")
   @Order(15)
   void successListVhosts(VertxTestContext testContext) {
-
-    JsonObject expected = new JsonObject();
-    expected.put(Constants.VHOST, new JsonArray("[\"/\",\"IUDX\",\"test\"]"));
-
     JsonObject request = new JsonObject();
 
     databroker.listvHost(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         logger.info("List vHost response is : " + response);
-        assertEquals(expected, response);
+        assertTrue(response.containsKey(VHOST));
+        assertTrue(response.getJsonArray(VHOST).size() > 1);
       }
       testContext.completeNow();
     });
@@ -574,7 +557,7 @@ public class DataBrokerServiceTest {
     request.put("SoundMax", 100.82);
     request.put("PM10", 4.83);
     request.put("Rainfall", 0);
-    request.put("id", "ankita_exchange/EM_01_0103_01");
+    request.put("id", "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/aqm/EM_01_0103_01");
     request.put("SoundMin", 73.54);
     request.put("Avg_Humidity", 100);
     request.put("SO2", 17.95);
@@ -604,7 +587,7 @@ public class DataBrokerServiceTest {
   @Order(17)
   void failedregisterStreamingSubscriptionEmptyRequest(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Error in payload");
+    expected.put(ERROR, "Error in payload");
     
     JsonObject request = new JsonObject();
     databroker.registerStreamingSubscription(request, handler -> {
@@ -622,16 +605,16 @@ public class DataBrokerServiceTest {
   @Order(18)
   void failedregisterStreamingSubscriptionInvalidExchange(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Binding Failed");
+    expected.put(ERROR, "Binding Failed");
     
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "alias-pawan");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "streaming");
+    request.put(NAME, "alias-pawan");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "streaming");
     JsonArray array = new JsonArray();
     array.add(
         "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
-    request.put(Constants.ENTITIES, array);
+    request.put(ENTITIES, array);
     
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -648,16 +631,16 @@ public class DataBrokerServiceTest {
   @Order(19)
   void failedregisterStreamingSubscriptionNullRoutingKey(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Invalid routingKey");
+    expected.put(ERROR, "Invalid routingKey");
     
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "alias-pawan");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "streaming");
+    request.put(NAME, "alias-pawan");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "streaming");
     JsonArray array = new JsonArray();
     array.add(
         "");
-    request.put(Constants.ENTITIES, array);
+    request.put(ENTITIES, array);
     
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -674,16 +657,16 @@ public class DataBrokerServiceTest {
   @Order(20)
   void failedregisterStreamingSubscriptionInvalidRoutingKey(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Invalid routingKey");
+    expected.put(ERROR, "Invalid routingKey");
     
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "alias-pawan");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "streaming");
+    request.put(NAME, "alias-pawan");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "streaming");
     JsonArray array = new JsonArray();
     array.add(
         "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm");
-    request.put(Constants.ENTITIES, array);
+    request.put(ENTITIES, array);
     
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -700,17 +683,25 @@ public class DataBrokerServiceTest {
   @Order(21)
   void successregisterStreamingSubscription(VertxTestContext testContext) {
 
-    String queueName = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan";
+    String queueName = "google.org/98a9a7401988c2cde925b406b7ec2a8a99e7f9f8/alias-pawan";
     JsonObject expected = new JsonObject();
-    expected.put(Constants.SUBSCRIPTION_ID, queueName);
-
+    expected.put(SUBSCRIPTION_ID, queueName);
     expected.put("streamingURL",
-        "amqp://pawan@google.org:1234@68.183.80.248:5672/IUDX/google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+        "amqp://pawan@google.org:123456" // generateRandomPassword()
+        + "@" + Constants.BROKER_PRODUCTION_DOMAIN + ":" + Constants.BROKER_PRODUCTION_PORT + "/"
+            + Constants.VHOST_IUDX + "/" + queueName);
+
+    expected.put(USER_NAME, "pawan@google.org");
+    expected.put(APIKEY, "123456");
+    expected.put(URL, BROKER_PRODUCTION_DOMAIN);
+    expected.put(PORT, BROKER_PRODUCTION_PORT);
+    expected.put(VHOST, VHOST_IUDX);
+
 
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "alias-pawan");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "streaming");
+    request.put(NAME, "alias-pawan");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "streaming");
     JsonArray array = new JsonArray();
     array.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
@@ -721,7 +712,7 @@ public class DataBrokerServiceTest {
     array.add(
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
  
-    request.put(Constants.ENTITIES, array);
+    request.put(ENTITIES, array);
 
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -738,16 +729,16 @@ public class DataBrokerServiceTest {
   @Order(22)
   void failedregisterStreamingSubscriptionAlreadyExistingQueue(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Queue Creation Failed");
+    expected.put(ERROR, "Queue Creation Failed");
     
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "alias-pawan");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "streaming");
+    request.put(NAME, "alias-pawan");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "streaming");
     JsonArray array = new JsonArray();
     array.add(
         "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
-    request.put(Constants.ENTITIES, array);
+    request.put(ENTITIES, array);
     
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -769,10 +760,10 @@ public class DataBrokerServiceTest {
     routingKeys.add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_03");
     routingKeys.add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
     routingKeys.add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm2/EM_01_0103_04");
-    expected.put(Constants.ENTITIES, routingKeys);
+    expected.put(ENTITIES, routingKeys);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.SUBSCRIPTION_ID, "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+    request.put(SUBSCRIPTION_ID, "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
     databroker.listStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -789,11 +780,11 @@ public class DataBrokerServiceTest {
   void failedlistStreamingSubscriptionIdNotFound(VertxTestContext testContext) {
     String id = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias";
     JsonObject expected = new JsonObject();
-    expected.put(Constants.TYPE, 404);
-    expected.put(Constants.TITLE, Constants.FAILURE);
-    expected.put(Constants.DETAIL, Constants.QUEUE_DOES_NOT_EXISTS);
+    expected.put(TYPE, 404);
+    expected.put(TITLE, FAILURE);
+    expected.put(DETAIL, QUEUE_DOES_NOT_EXISTS);
     JsonObject request = new JsonObject();
-    request.put(Constants.SUBSCRIPTION_ID, id);
+    request.put(SUBSCRIPTION_ID, id);
 
     databroker.deleteStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -812,20 +803,25 @@ public class DataBrokerServiceTest {
 
     String queueName = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan";
     JsonObject expected = new JsonObject();
-    expected.put(Constants.SUBSCRIPTION_ID, queueName);
+    expected.put(SUBSCRIPTION_ID, queueName);
+    expected.put(USER_NAME, "pawan@google.org");
+    expected.put(APIKEY, "123456");
+    expected.put(URL, "databroker.iudx.io");
+    expected.put(PORT, "5671");
+    expected.put(VHOST, "IUDX");
 
     expected.put("streamingURL",
         "amqp://pawan@google.org:1234@68.183.80.248:5672/IUDX/google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
 
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "alias-pawan");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "streaming");
+    request.put(NAME, "alias-pawan");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "streaming");
     JsonArray array = new JsonArray();
     array.add(
-        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
+        "rbccps.org/63ac4f5d7fd26840f955408b0e4d30f2/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
  
-    request.put(Constants.ENTITIES, array);
+    request.put(ENTITIES, array);
 
     databroker.updateStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -843,7 +839,9 @@ public class DataBrokerServiceTest {
   @Order(26)
   void failedupdateStreamingSubscriptionEmptyRequest(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Error in payload");
+    expected.put(TYPE, 400);
+    expected.put(TITLE, BAD_REQUEST_DATA);
+    expected.put(DETAIL, BAD_REQUEST_DATA);
     
     JsonObject request = new JsonObject();
     databroker.updateStreamingSubscription(request, handler -> {
@@ -861,16 +859,16 @@ public class DataBrokerServiceTest {
   @Order(27)
   void failedupdateStreamingSubscriptionInvalidExchange(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Binding Failed");
+    expected.put(ERROR, "Binding Failed");
     
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "alias-pawan");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "streaming");
+    request.put(NAME, "alias-pawan");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "streaming");
     JsonArray array = new JsonArray();
     array.add(
         "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/EM_01_0103_02");
-    request.put(Constants.ENTITIES, array);
+    request.put(ENTITIES, array);
     
     databroker.updateStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -887,16 +885,16 @@ public class DataBrokerServiceTest {
   @Order(28)
   void failedupdateStreamingSubscriptionNullRoutingKey(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Invalid routingKey");
+    expected.put(ERROR, "Invalid routingKey");
     
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "alias-pawan");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "streaming");
+    request.put(NAME, "alias-pawan");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "streaming");
     JsonArray array = new JsonArray();
     array.add(
         "");
-    request.put(Constants.ENTITIES, array);
+    request.put(ENTITIES, array);
     
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -913,16 +911,16 @@ public class DataBrokerServiceTest {
   @Order(29)
   void failedupdateStreamingSubscriptionInvalidRoutingKey(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Invalid routingKey");
+    expected.put(ERROR, "Invalid routingKey");
     
     JsonObject request = new JsonObject();
-    request.put(Constants.NAME, "alias-pawan");
-    request.put(Constants.CONSUMER, "pawan@google.org");
-    request.put(Constants.TYPE, "streaming");
+    request.put(NAME, "alias-pawan");
+    request.put(CONSUMER, "pawan@google.org");
+    request.put(TYPE, "streaming");
     JsonArray array = new JsonArray();
     array.add(
         "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm");
-    request.put(Constants.ENTITIES, array);
+    request.put(ENTITIES, array);
     
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -941,10 +939,10 @@ public class DataBrokerServiceTest {
     JsonObject expected = new JsonObject();
     JsonArray routingKeys = new JsonArray();
     routingKeys.add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
-    expected.put(Constants.ENTITIES, routingKeys);
+    expected.put(ENTITIES, routingKeys);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.SUBSCRIPTION_ID, "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+    request.put(SUBSCRIPTION_ID, "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
     databroker.listStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -966,12 +964,12 @@ public class DataBrokerServiceTest {
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.SUBSCRIPTION_ID, queueName);
-    expected.put(Constants.ENTITIES, array);
+    expected.put(SUBSCRIPTION_ID, queueName);
+    expected.put(ENTITIES, array);
     
     JsonObject request = new JsonObject();
-    request.put(Constants.SUBSCRIPTION_ID, queueName);
-    request.put(Constants.ENTITIES, array);
+    request.put(SUBSCRIPTION_ID, queueName);
+    request.put(ENTITIES, array);
 
     databroker.appendStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -988,7 +986,7 @@ public class DataBrokerServiceTest {
   @Order(32)
   void failedappendStreamingSubscriptionEmptyRequest(VertxTestContext testContext) {
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Error in payload");
+    expected.put(ERROR, "Error in payload");
     
     JsonObject request = new JsonObject();
     databroker.appendStreamingSubscription(request, handler -> {
@@ -1012,11 +1010,11 @@ public class DataBrokerServiceTest {
         "iudx.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Binding Failed");
+    expected.put(ERROR, "Binding Failed");
     
     JsonObject request = new JsonObject();
-    request.put(Constants.SUBSCRIPTION_ID, queueName);
-    request.put(Constants.ENTITIES, array);
+    request.put(SUBSCRIPTION_ID, queueName);
+    request.put(ENTITIES, array);
     
     databroker.appendStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -1039,11 +1037,11 @@ public class DataBrokerServiceTest {
         "");
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Invalid routingKey");
+    expected.put(ERROR, "Invalid routingKey");
     
     JsonObject request = new JsonObject();
-    request.put(Constants.SUBSCRIPTION_ID, queueName);
-    request.put(Constants.ENTITIES, array);
+    request.put(SUBSCRIPTION_ID, queueName);
+    request.put(ENTITIES, array);
     
     databroker.appendStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -1067,11 +1065,11 @@ public class DataBrokerServiceTest {
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm");
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Invalid routingKey");
+    expected.put(ERROR, "Invalid routingKey");
     
     JsonObject request = new JsonObject();
-    request.put(Constants.SUBSCRIPTION_ID, queueName);
-    request.put(Constants.ENTITIES, array);
+    request.put(SUBSCRIPTION_ID, queueName);
+    request.put(ENTITIES, array);
         
     databroker.appendStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -1091,10 +1089,10 @@ public class DataBrokerServiceTest {
     JsonArray routingKeys = new JsonArray();
     routingKeys.add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
     routingKeys.add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
-    expected.put(Constants.ENTITIES, routingKeys);
+    expected.put(ENTITIES, routingKeys);
 
     JsonObject request = new JsonObject();
-    request.put(Constants.SUBSCRIPTION_ID, "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+    request.put(SUBSCRIPTION_ID, "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
     databroker.listStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -1116,11 +1114,11 @@ public class DataBrokerServiceTest {
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
 
     JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, "Invalid routingKey");
+    expected.put(ERROR, "Invalid routingKey");
     
     JsonObject request = new JsonObject();
-    request.put(Constants.SUBSCRIPTION_ID, queueName);
-    request.put(Constants.ENTITIES, array);
+    request.put(SUBSCRIPTION_ID, queueName);
+    request.put(ENTITIES, array);
 
     databroker.appendStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -1138,9 +1136,9 @@ public class DataBrokerServiceTest {
   void successdeleteStreamingSubscription(VertxTestContext testContext) {
     String queueName = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan";
     JsonObject expected = new JsonObject();
-    expected.put(Constants.SUBSCRIPTION_ID, queueName);
+    expected.put(SUBSCRIPTION_ID, queueName);
     JsonObject request = new JsonObject();
-    request.put(Constants.SUBSCRIPTION_ID, "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
+    request.put(SUBSCRIPTION_ID, "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
 
     databroker.deleteStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
@@ -1158,11 +1156,11 @@ public class DataBrokerServiceTest {
   void faileddeleteStreamingSubscriptionIdNotFound(VertxTestContext testContext) {
     String id = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias";
     JsonObject expected = new JsonObject();
-    expected.put(Constants.TYPE, 404);
-    expected.put(Constants.TITLE, Constants.FAILURE);
-    expected.put(Constants.DETAIL, Constants.QUEUE_DOES_NOT_EXISTS);
+    expected.put(TYPE, 404);
+    expected.put(TITLE, FAILURE);
+    expected.put(DETAIL, QUEUE_DOES_NOT_EXISTS);
     JsonObject request = new JsonObject();
-    request.put(Constants.SUBSCRIPTION_ID, id);
+    request.put(SUBSCRIPTION_ID, id);
 
     databroker.deleteStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {

@@ -31,7 +31,7 @@ import iudx.resource.server.databroker.util.Constants;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class AdaptorEntitiesTestCases {
+public class AdapterEntitiesTest {
 
   static DataBrokerService databroker;
   static private Properties properties;
@@ -70,7 +70,7 @@ public class AdaptorEntitiesTestCases {
   private static RabbitWebClient rabbitMQWebClient;
   private static PostgresClient pgClient;
 
-  private static final Logger logger = LoggerFactory.getLogger(AdaptorEntitiesTestCases.class);
+  private static final Logger logger = LoggerFactory.getLogger(AdapterEntitiesTest.class);
 
   @BeforeAll
   @DisplayName("Initialize the Databroker class with web client and rabbitmq client")
@@ -167,9 +167,8 @@ public class AdaptorEntitiesTestCases {
     /* Call the databroker constructor with the RabbitMQ client Vertx web client. */
 
     rabbitMQWebClient = new RabbitWebClient(vertx, webConfig, propObj);
-    rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient);
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
-
+    rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient, pgClient);
     databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, dataBrokerVhost);
     
     resourceGroup = UUID.randomUUID().toString();
