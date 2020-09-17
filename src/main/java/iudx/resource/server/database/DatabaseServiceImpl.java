@@ -5,6 +5,11 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import static iudx.resource.server.database.Constants.*;
@@ -73,8 +78,22 @@ public class DatabaseServiceImpl implements DatabaseService {
     // String resourceGroup = "";
     // request.getJsonArray("id").getString(0).split("/")[3];
 
-    String resourceServer = request.getJsonArray(ID).getString(0).split("/")[0];
-    LOGGER.debug("Info: Resource Server instanceID is " + resourceServer);
+    // String resourceServer = request.getJsonArray(ID).getString(0).split("/")[0];
+    // LOGGER.debug("Info: Resource Server instanceID is " + resourceServer);
+
+    if (request.getJsonArray(ID).getString(0).split("/").length != 5) {
+      LOGGER.error("Malformed ID: " + request.getJsonArray(ID).getString(0));
+      handler.handle(Future.failedFuture("Malformed ID: " + request.getJsonArray(ID)
+          .getString(0)));
+      return null;
+    }
+
+    List<String> splitId = new LinkedList<>(Arrays.asList(request.getJsonArray(ID)
+        .getString(0).split("/")));
+    splitId.remove(splitId.size() - 1);
+    String index = String.join("__", splitId);
+    index = index.concat(SEARCH_REQ_PARAM);
+    LOGGER.debug("Index name: " + index);
 
     query = queryDecoder.queryDecoder(request);
     if (query.containsKey(ERROR)) {
@@ -96,7 +115,7 @@ public class DatabaseServiceImpl implements DatabaseService {
             }
           });
     } else {
-      client.searchAsync(VARANASI_TEST_SEARCH_INDEX, FILTER_PATH_VAL, query.toString(),
+      client.searchAsync(index, FILTER_PATH_VAL, query.toString(),
           searchRes -> {
           if (searchRes.succeeded()) {
             LOGGER.debug("Success: Successful DB request");
@@ -142,8 +161,18 @@ public class DatabaseServiceImpl implements DatabaseService {
       return null;
     }
 
-    // String resourceGroup = "";
-    // request.getJsonArray("id").getString(0).split("/")[3];
+    if (request.getJsonArray(ID).getString(0).split("/").length != 5) {
+      LOGGER.error("Malformed ID: " + request.getJsonArray(ID).getString(0));
+      handler.handle(Future.failedFuture("Malformed ID: " + request.getJsonArray(ID)
+          .getString(0)));
+      return null;
+    }
+    List<String> splitId = new LinkedList<>(Arrays.asList(request.getJsonArray(ID)
+        .getString(0).split("/")));
+    splitId.remove(splitId.size() - 1);
+    String index = String.join("__", splitId);
+    index = index.concat(COUNT_REQ_PARAM);
+    LOGGER.debug("Index name: " + index);
 
     query = queryDecoder.queryDecoder(request);
     if (query.containsKey(ERROR)) {
@@ -154,7 +183,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     LOGGER.debug("Info: Query constructed: " + query.toString());
 
-    client.countAsync(VARANASI_TEST_COUNT_INDEX, query.toString(), countRes -> {
+    client.countAsync(index, query.toString(), countRes -> {
       if (countRes.succeeded()) {
         LOGGER.debug("Success: Successful DB request");
         handler.handle(Future.succeededFuture(countRes.result()));

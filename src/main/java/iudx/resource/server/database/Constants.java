@@ -4,9 +4,11 @@ public class Constants {
   /* General Purpose */
   static final String SEARCH_TYPE = "searchType";
   static final String ID = "id";
-  static final String RESOURCE_ID_KEY = "resource-id";
+  //static final String RESOURCE_ID_KEY = "resource-id";
+  static final String RESOURCE_ID_KEY = "id";
   /* Database */
-  static final String GEO_KEY = "geoJsonLocation";
+  //static final String GEO_KEY = "geoJsonLocation";
+  static final String GEO_KEY = "location";
   static final String GEO_CIRCLE = "circle";
   static final String GEO_BBOX = "envelope";
   static final String COORDINATES_KEY = "coordinates";
@@ -41,6 +43,8 @@ public class Constants {
   static final String COUNT = "count";
   static final String DOC_ID = "_id";
   static final String DOCS_KEY = "docs";
+  static final String SEARCH_REQ_PARAM = "/_search";
+  static final String COUNT_REQ_PARAM = "/_count";
   /* Request Params */
   /* Temporal */
   static final String REQ_TIMEREL = "timerel";
@@ -101,7 +105,7 @@ public class Constants {
   static final String GEO_SHAPE_QUERY =
       "{ \"geo_shape\": { \"$4\": { \"shape\": { \"type\": \"$1\", \"coordinates\": $2 },"
           + " \"relation\": \"$3\" } } }";
-  static final String TIME_QUERY = "{\"range\":{\"time\":{\"$1\":\"$2\"}}}";
+  static final String TIME_QUERY = "{\"range\":{\"observationDateTime\":{\"$1\":\"$2\"}}}";
   static final String TERM_QUERY = "{\"term\":{\"$1\":\"$2\"}}";
   static final String TERMS_QUERY = "{\"terms\":{\"$1\":$2}}";
   static final String RANGE_QUERY = "{\"range\":{\"$1\":{\"$2\":$3}}}";
