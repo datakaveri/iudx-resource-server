@@ -1,0 +1,1721 @@
+openapi: 3.0.2
+
+schemes:
+  - "http"
+  - "https"
+
+produces:
+  - "application/json"
+  - "text/plain"
+
+consumes:
+  - "application/json"
+  - "text/plain"
+
+info:
+  title: "IUDX Resource Server APIs"
+  version: 1.0.0
+  description: |
+    The Resource Server is IUDX's data store which allows publication, subscription and discovery of data.
+    For search and discovery, it allows users to search through temporal, geo-based and attribute queries. 
+    For publication and subscription, it allows users to use AMQP streaming protocol over TLS.
+    It enables *Providers* of datasources to publish data as per the IUDX data descriptor.
+    It enables *Consumers* of datasources to search and query for data using HTTPs APIs.
+    It enables *Subscribers* a.k.a [Streaming Consumer] of datasources to stream data using AMQP streaming protocol over TLS.
+    
+tags:
+- name: Entities
+  x-displayName: "Entity"
+  description: |
+    Discover data of a resource using geo-based, temporal and attribute queries.
+    These apis are intended to be used by IUDX Data *Consumers*.
+
+- name: Latest Entity
+  x-displayName: "Latest Entity"
+  description: |
+    Get the latest data of a resource using the id of the resource.
+    These apis are intended to be used by IUDX Data *Consumers*.
+
+- name: Entities Post Query
+  x-displayName: "Entity Post Query"
+  description: |
+    Discover data of a resource using geo-based, temporal and attribute queries using HTTPs POST method. Intended to be used for complex queries.
+    These apis are intended to be used by IUDX Data *Consumers*.
+
+- name: Data Adaptor
+  x-displayName: "Data Adaptor"
+  description: |
+    Register Data Adaptor using HTTPs APIs to publish data as per the IUDX data descriptor.
+    Stream data of an adaptor using AMQP streaming protocol.
+    These apis are intended to be used by IUDX Data *Providers*.
+
+- name: Data Subscriber
+  x-displayName: "Data Subscriber"
+  description: |
+    Register Subscriber a.k.a [Streaming Consumer] using HTTPs APIs to subscribe for data as per the IUDX data descriptor.
+    Get data published by a provider using AMQP streaming protocol.
+    These apis are intended to be used by IUDX Data *Subscribers* a.k.a [Streaming Consumer].
+
+paths:
+  /ngsi-ld/v1/entities:
+    get:
+      tags:
+      - Entities
+      summary: Query entities based on geo-spatial, temporal and attribute property. 
+      operationId: entities
+      parameters:
+      - name: token
+        in: header
+        description: IUDX Auth token to process the request for secure entity
+        schema:
+          type: string
+      
+      - name: id
+        in: query
+        description: 'ID of the IUDX entity. This can be obtained from the IUDX catalogue server.'
+        required: true
+        schema:
+          type: string
+      - name: geoproperty
+        in: query
+        description: 'Name of the property if the query is on a geospatial property.'
+        schema:
+          type: string
+      - name: georel
+        in: query
+        description: 'Type of geoquery, for e.g, within, near, outside.'
+        schema:
+          type: string
+      - name: geometry
+        in: query
+        description: 'Geometry of the geo-query, for e.g, linstring, bbox, polygon.'
+        schema:
+          type: string
+      - name: coordinates
+        in: query
+        description: 'Coordinates for the specific query type. For e.g, [[1,2], [3,4]]. Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array.'
+        schema:
+          type: array
+          items:
+            type: number
+          format: double
+      - name: timerel
+        in: query
+        description: 'Type of the temporal-query, for e.g, during, before, after.'
+        schema:
+          type: string
+      - name: time
+        in: query
+        description: 'Start time for the temporal-query in ISO8601 format.'
+        schema:
+          type: string
+      - name: endtime
+        in: query
+        description: 'End time for the temporal-query in ISO8601 format. (Only applicable for timerel=during)'
+        schema:
+          type: string
+      - name: q
+        in: query
+        description: 'Query on a value of a resource attribute, for e.g, attribute > value, attribute < value, attribute >= value, attribute <= value'
+        schema:
+          type: string
+      - name: attrs
+        in: query
+        description: 'List of attributes to be provided in response.'
+        schema:
+          type: string
+      - name: options
+        in: query
+        description: 'Specifying options=count will provide the number of document hits for the query.'
+        schema:
+          type: string
+
+      responses:
+        200:
+          description: 'Successful query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/entityresponse'
+
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
+
+      x-codeSamples:
+        - lang: 'search by attribute'
+          source: |
+            https://rs.iudx.io/ngsi-ld/v1/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&q=speed%3E=50
+        - lang: 'search by circle'
+          source: |
+            https://rs.iudx.io/ngsi-ld/v1/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]
+        - lang: 'search by polygon'
+          source: |
+            https://rs.iudx.io/ngsi-ld/v1/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[82.9738998413086,25.330372970610558],[82.97201156616211,25.28428253090838],[83.02436828613281,25.285524253944203],[83.02007675170898,25.32866622999033],[82.9738998413086,25.330372970610558]]]
+        - lang: 'search by bbox'
+          source: |
+            https://rs.iudx.io/ngsi-ld/v1/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&geoproperty=location&georel=within&geometry=bbox&coordinates=[[82.97698974609375,25.321994194865383],[83.00411224365234,25.291267057619464]]
+        - lang: 'search by attribute and filter'
+          source: |
+            https://rs.iudx.io/ngsi-ld/v1/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&q=speed%3E=50&attrs=speed,id
+        - lang: 'complex search'
+          source: |
+            https://rs.iudx.io/ngsi-ld/v1/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]&timerel=before&time=2020-06-01T14:20:01Z&attrs=speed,id
+        - lang: 'count by circle'
+          source: |
+            https://rs.iudx.io/ngsi-ld/v1/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]&options=count
+        - lang: 'complex count'
+          source: |
+            https://rs.iudx.io/ngsi-ld/v1/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]&timerel=before&time=2020-06-01T14:20:01Z&options=count
+          
+      deprecated: false
+      description: |
+        Generic resource search query. Searches for data published by entites that meet the
+        query criteria. The entities enpoint allows one to query an
+        entity by its geo-location annotation, by a temporal property, by an attribute query or by a combination of
+        all three.
+        
+        #### Geo Search
+        Geo search accepts geojson based queries. The params and their accepted values are -
+          - geoproperty: Which geoproperty to query. Default is `location`.
+          - georel: Geo-relationship. One of `within`, `contains`, `disjoint`, `intersects`.
+          - geometry: GeoJson geometries. One of `Point`(point and circle), `Polygon`, `LineString`(for interseaction with points and polygons), `bbox`.
+              - Point: Point and radius query
+                  - coordinates: The center point of the circle, for e.g, `[73,13]` (lon and lat)
+                  - maxDistance: Radius from the center point in meters, for e.g `100`
+                  - georel: `within`
+              - Polygon: Polygon/Multi-Polygon query
+                  - coordinates: Coordinates of the polygon/s, for e.g, `[[[73,13],[73,12],[73,13]]]`.  Note, (lon and lat) and the first coordinate must be same as last.
+                  - georel: `within`
+              - LineString: Multi line string
+                  - coordinates: Coordinates of the multi-line, for e.g, `[[73,13],[74,15],[75,16]]`. 
+                  - georel: `intersects`
+              - bbox: Bounding box
+                  - coordinates: `[[top-left],[bottom-right]]`, `[[73,13],[74,12]]`. 
+                  - georel: `within`
+
+        #### Temporal search
+        Temporal search accepts time property based queries which are specified in ISO 8601 format. The params and their accepted values are -
+          - timerel: The time relation of the query. Should be either `during`, `before` or `after`.
+          - time: Start time for the temporal query in `ISO 8601` format. 
+          - endtime: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = during`. 
+      
+        #### Attribute search
+        Attribute search queries for a `quantitative` value of an attribute using an `operation` such as `<`, `>`, `<=` or `>=` 
+          - `q=attribute-name>attribute-value`
+
+        #### Complex search
+        A combination of the above is allowed to make searches more  complex.
+
+        #### Filters
+          - A subset of properties of returned documents can be filtered out. For e.g, `attrs=[id]` returns documents with only the `id` property retained in them.
+
+      
+  /ngsi-ld/v1/entities/{id}:
+    get:
+      tags:
+      - Latest Entity
+      summary: Get latest data of a resource. 
+      operationId: latest-entities
+      parameters:
+      - name: token
+        in: header
+        description: IUDX Auth token to process the request for secure entity
+        schema:
+          type: string
+      
+      - name: id
+        in: path
+        description: 'ID of the IUDX entity. This can be obtained from the IUDX catalogue server.'
+        required: true
+        schema:
+          type: string
+
+      responses:
+        200:
+          description: 'Successful query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/entityresponse'
+
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
+
+      x-codeSamples:
+        - lang: 'get latest data'
+          source: |
+            https://rs.iudx.io/ngsi-ld/v1/entities/iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+
+      description: |
+        Get latest resource data query. Obtains the latest data of a resource using the `id`. 
+
+      deprecated: false
+
+  /ngsi-ld/v1/temporal/entities:
+    get:
+      tags:
+      - Entities
+      summary: Query entities based on temporal and attribute property. 
+      operationId: temporal-entities
+      parameters:
+      - name: token
+        in: header
+        description: IUDX Auth token to process the request for secure entity
+        schema:
+          type: string
+
+      - name: id
+        in: query
+        description: 'ID of the IUDX entity. This can be obtained from the IUDX catalogue server.'
+        required: true
+        schema:
+          type: string
+      - name: timerel
+        in: query
+        description: 'Type of the temporal-query, for e.g, during, before, after.'
+        schema:
+          type: string
+      - name: time
+        in: query
+        description: 'Start time for the temporal-query in ISO8601 format.'
+        schema:
+          type: string
+      - name: endtime
+        in: query
+        description: 'End time for the temporal-query in ISO8601 format. (Only applicable for timerel=during)'
+        schema:
+          type: string
+      - name: q
+        in: query
+        description: 'Query on a value of a resource attribute, for e.g, attribute > value, attribute < value, attribute >= value, attribute <= value'
+        schema:
+          type: string
+      - name: attrs
+        in: query
+        description: 'List of attributes to be provided in response.'
+        schema:
+          type: string
+      - name: options
+        in: query
+        description: 'Specifying options=count will provide the number of document hits for the query.'
+        schema:
+          type: string
+
+      responses:
+        200:
+          description: 'Successful query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/entityresponse'
+
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
+
+      x-codeSamples:
+        - lang: 'search by during'
+          source: |
+            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&timerel=during&time=2020-06-01T14:20:00Z&endtime=2020-06-06T14:20:00Z
+        - lang: 'search by before'
+          source: |
+            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&timerel=before&time=2020-06-01T14:20:01Z
+        - lang: 'search by after'
+          source: |
+            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&timerel=after&time=2020-06-01T14:20:01Z
+        - lang: 'search by after and filter'
+          source: |
+            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&timerel=after&time=2020-06-01T14:20:01Z&attrs=speed,id
+        - lang: 'count by after'
+          source: |
+            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&timerel=after&time=2020-06-01T14:20:01Z&options=count
+
+      deprecated: false
+
+      
+  /ngsi-ld/v1/entityOperations/query:
+    post:
+      tags:
+      - Entities Post Query
+      summary: Query entities based on geo-spatial, temporal and attribute property using POST query. 
+      operationId: complex-query
+      parameters: 
+      - name: token
+        in: header
+        description: IUDX Auth token to process the request for secure entity
+        schema:
+          type: string
+      
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/complex-geo-circle-time-filterrequest'
+            example:
+              type: Query
+              entities:
+              - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+              geoQ:
+                geometry: Point
+                coordinates:
+                - 25.319768
+                - 82.987988000000001
+                georel: near;maxDistance=1000
+                geoproperty: geoJsonLocation
+              temporalQ:
+                timerel: "during"
+                time: "2020-06-01T14:20:00Z"
+                endtime: "2020-06-03T15:00:00Z"
+                timeProperty: "observationDateTime"
+              q: "speed>=50"
+              attrs: "id,location"
+
+        required: true
+
+      responses:
+        200:
+          description: 'Successful query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/entityresponse'
+
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
+
+      description: |
+        Complex resource search query. Searches for data published by entites that meet the
+        query criteria. The entitiesOperations/query enpoint allows one to query an
+        entity by its geo-location annotation, by a temporal property, by an attribute query or by a combination of
+        all three.
+        
+        #### Geo Search
+        A Geo search should be enclosed within a `geoQ` JSON object.
+        Geo search accepts geojson based queries. The params and their accepted values are -
+          - geoproperty: Which geoproperty to query. Default is `location`.
+          - georel: Geo-relationship. One of `within`, `contains`, `disjoint`, `intersects`.
+          - geometry: GeoJson geometries. One of `Point`(point and circle), `Polygon`, `LineString`(for interseaction with points and polygons), `bbox`.
+              - Point: Point and radius query
+                  - coordinates: The center point of the circle, for e.g, `[73,13]` (lon and lat)
+                  - maxDistance: Radius from the center point in meters, for e.g `100`
+                  - georel: `within`
+              - Polygon: Polygon/Multi-Polygon query
+                  - coordinates: Coordinates of the polygon/s, for e.g, `[[[73,13],[73,12],[73,13]]]`.  Note, (lon and lat) and the first coordinate must be same as last.
+                  - georel: `within`
+              - LineString: Multi line string
+                  - coordinates: Coordinates of the multi-line, for e.g, `[[73,13],[74,15],[75,16]]`. 
+                  - georel: `intersects`
+              - bbox: Bounding box
+                  - coordinates: `[[top-left],[bottom-right]]`, `[[73,13],[74,12]]`. 
+                  - georel: `within`
+
+        #### Temporal search
+        Temporal search accepts time property based queries which are specified in ISO 8601 format. 
+                A temporal search should be enclosed within a `temporalQ` JSON object. The params and their accepted values are -
+          - timerel: The time relation of the query. Should be either `during`, `before` or `after`.
+          - time: Start time for the temporal query in `ISO 8601` format. 
+          - endtime: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = during`. 
+      
+        #### Attribute search
+        Attribute search queries for a `quantitative` value of an attribute using an `operation` such as `<`, `>`, `<=` or `>=` 
+          - `q=attribute-name>attribute-value`
+
+        #### Complex search
+        A combination of the above is allowed to make searches more  complex.
+
+        #### Filters
+          - A subset of properties of returned documents can be filtered out. For e.g, `attrs=[id]` returns documents with only the `id` property retained in them.
+
+      deprecated: false
+
+  /iudx/v1/adapter/register:
+    post:
+      tags:
+      - Data Adaptor
+      summary: Register adapter
+      operationId: registeradapter
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing API and the resource.'
+        required: true
+        style: simple
+        schema:
+          type: string
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/registeradapterrequest'
+        required: true
+      responses:
+        201:
+          description: 'Successful query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/registeradapter'
+
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+      description: |
+        Register Adapter API allows a provider to register an adapter with IUDX Resource Server. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
+        
+        #### Register Adapter
+        To register an adapter, a user must request for a consent from the provider, obtain a token from IUDX Auth server and then access the API with the following values:
+          - `resourceGroup`: Name of the resource group as registered in IUDX catalogue.
+          - `resourceServer`: Domain name of the resource server in which the adapter needs to register. 
+      
+      deprecated: false
+
+  /iudx/v1/adapter/{id}:
+    get:
+      tags:
+      - Data Adaptor
+      summary: Retrieve adapter details
+      operationId: getadaptordetails
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing API and the resource.'
+        required: true
+        style: simple
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: 'id of the adapter obtained from Register adapter.'
+        required: true
+        style: simple
+        schema:
+          type: string
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/retrieveadapter'
+          description: 'Successful query'
+
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
+
+      x-codeSamples:
+        - lang: 'by id'
+          source: |
+            https://rs.iudx.io/iudx/v1/adapter/iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms --header 'token: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/896f2d9f8b866671a4341b882e3ba2b3'
+
+      description: |
+        Retrieve Adapter API allows a provider to fetch the list of `Subscribers` a.k.a [Streaming Consumers] for the data. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
+        
+        #### Retrieve Adapter Details
+        To retrieve subscriber list, the provider must present the `id` and `token`. Retrieve API validates the request with the Auth server to allow or deny access to the provider.
+
+      deprecated: false
+      
+    delete:
+      tags:
+      - Data Adaptor
+      summary: Delete adaptor
+      operationId: deleteadaptor
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing API and the resource.'
+        required: true
+        style: simple
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: 'id of the adapter obtained from Register adapter.'
+        required: true
+        style: simple
+        schema:
+          type: string
+      responses:
+        200:
+          description: 'Successful query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deleteadapter'
+
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
+
+      x-codeSamples:
+        - lang: 'by id'
+          source: |
+            https://rs.iudx.io/iudx/v1/adapter/iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms --header 'token: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/896f2d9f8b866671a4341b882e3ba2b3'
+ 
+      description: |
+        Delete Adapter API allows a provider to delete a publisher. Once this is done all the `Subscribers` a.k.a [Streaming Consumers] and `Consumers` of the data with stop reveiving further updates. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
+        
+        #### Delete Adapter
+        To delete an adapter, the provider must present the `id` and `token`. Delete API validates the request with the Auth server to allow or deny access to the provider.
+                
+      deprecated: false
+
+  /ngsi-ld/v1/subscription:
+    post:
+      tags:
+      - Data Subscriber
+      summary: Create subscription
+      operationId: createastreamingsubscription
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing API and the resource.'
+        required: true
+        style: simple
+        schema:
+          type: string
+      - name: options
+        in: header
+        description: 'Type of subscription, for e.g. streaming (or) callback. Default value is callback'
+        required: true
+        style: simple
+        schema:
+          type: string
+      requestBody:
+        description: 'Successful query'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createastreamingsubscriptionrequest'
+        required: true
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/createstreaming'
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+      description: |
+        Register Subscription API allows a subscriber to register an streaming subscription with IUDX Resource Server. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
+        
+        #### Register Subscription
+        To register subscription, a user must request for consent from the provider, obtain a token from IUDX Auth server and then access the API with the following values:
+          - `options`: A header parameter which specifies the type of subscription. Should be `streaming` to request for a streaming registration.
+          - `name`: A user friendly `alias-name` of the subscription
+          - `type`: Type of request. Should be `subscription`.
+          - `entities`: An array of entities to subscribe.
+          
+      deprecated: false
+
+  /ngsi-ld/v1/subscription/{id}:
+    get:
+      tags:
+      - Data Subscriber
+      summary: Retrieve subscription details
+      operationId: getstreamingsubscription
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing API and the resource.'
+        required: true
+        style: simple
+        schema:
+          type: string
+      - name: options
+        in: header
+        description: 'Type of subscription, for e.g. streaming (or) callback. Default value is callback'
+        required: true
+        style: simple
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: 'Subscription ID obtained during registration.'
+        required: true
+        style: simple
+        schema:
+          type: string
+      responses:
+        200:
+          description: 'Successful query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/retrievestreaming'
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
+
+      deprecated: false
+
+      x-codeSamples:
+        - lang: 'by id'
+          source: |
+            https://rs.iudx.io/ngsi-ld/v1/subscription/iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application --header 'token: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/896f2d9f8b866671a4341b882e3ba2b3'
+
+      description: |
+        Retrieve Subscription API allows a subscriber to fetch the list of `entities` subscribed. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
+        
+        #### Retrieve Subscription Details
+        To retrieve subscriber list, the provider must present the `id` and `token`. Retrieve API validates the request with the Auth server to allow or deny access to the subscriber.
+          - `options`: A header parameter which specifies the type of subscription. Should be `streaming` to request for a streaming registration.
+
+      
+    patch:
+      tags:
+      - Data Subscriber
+      summary: Append subscription
+      operationId: appendstreamingsubscription
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing API and the resource.'
+        required: true
+        style: simple
+        schema:
+          type: string
+      - name: options
+        in: header
+        description: 'Type of subscription, for e.g. streaming (or) callback. Default value is callback'
+        required: true
+        style: simple
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: 'Subscription ID obtained during registration.'
+        required: true
+        style: simple
+        schema:
+          type: string
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/appendstreamingsubscriptionrequest'
+        required: true
+      responses:
+        200:
+          description: 'Successful query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/appendstreaming'
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
+
+      description: |
+        Append Subscription API allows a subscriber to add a new stream to the list of `entities` subscribed. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
+        
+        #### Append Subscription 
+        To append an entity to the subscriber list, the provider must present the `id` and `token` along with the list of `entities`. Append API validates the request with the Auth server to allow or deny access to the subscriber.
+          - `options`: A header parameter which specifies the type of subscription. Should be `streaming` to request for a streaming registration.
+
+      deprecated: false
+      
+    put:
+      tags:
+      - Data Subscriber
+      summary: Update subscription
+      operationId: updatestreamingsubscription
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+      - name: options
+        in: header
+        description: 'Type of subscription, for e.g. streaming (or) callback. Default value is callback'
+        required: true
+        style: simple
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: 'Subscription ID obtained during registration.'
+        required: true
+        style: simple
+        schema:
+          type: string
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updatestreamingsubscriptionrequest'
+        required: true
+      responses:
+        200:
+          description: 'Successful query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/updatestreaming'
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
+
+      description: |
+        Update Subscription API allows a subscriber to replace the list of `entities` subscribed. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
+        
+        #### Update (Replace) Subscription 
+        To replace the subscriber list, the provider must present the `id` and `token` along with the list of `entities`. Update API validates the request with the Auth server to allow or deny access to the subscriber.
+          - `options`: A header parameter which specifies the type of subscription. Should be `streaming` to request for a streaming registration.
+
+      deprecated: false
+      
+    delete:
+      tags:
+      - Data Subscriber
+      summary: Delete subscription
+      operationId: deleteasubscription
+      parameters:
+      - name: options
+        in: header
+        description: 'Type of subscription, for e.g. streaming (or) callback. Default value is callback'
+        required: true
+        style: simple
+        schema:
+          type: string
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+      - name: id
+        in: path
+        description: 'Subscription ID obtained during registration.'
+        required: true
+        style: simple
+        schema:
+          type: string
+      responses:
+        200:
+          description: 'Successful query'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deletestreaming'
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
+
+      x-codeSamples:
+        - lang: 'by id'
+          source: |
+            https://rs.iudx.io/ngsi-ld/v1/subscription/iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application --header 'token: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/896f2d9f8b866671a4341b882e3ba2b3'
+
+      description: |
+        Delete Subscription API allows a subscriber to delete the subscription. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
+        
+        #### Delete Subscription 
+        To delete the subscription list, the provider must present the `id` and `token`. Delete API validates the request with the Auth server to allow or deny access to the subscriber.
+          - `options`: A header parameter which specifies the type of subscription. Should be `streaming` to request for a streaming registration.
+
+      deprecated: false
+
+      
+
+components:
+  schemas:
+    createastreamingsubscriptionrequest:
+      title: createastreamingsubscriptionrequest
+      required:
+      - name
+      - type
+      - entities
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            type: string
+          description: ''
+      example:
+        name: alias-name-of-application
+        type: subscription
+        entities:
+        - iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/*
+    appendstreamingsubscriptionrequest:
+      title: appendstreamingsubscriptionrequest
+      required:
+      - name
+      - type
+      - entities
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            type: string
+          description: ''
+      example:
+        name: alias-name-of-application
+        type: subscription
+        entities:
+        - iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*
+    updatestreamingsubscriptionrequest:
+      title: updatestreamingsubscriptionrequest
+      required:
+      - name
+      - type
+      - entities
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            type: string
+          description: ''
+      example:
+        name: alias-name-of-application
+        type: subscription
+        entities:
+        - iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*
+    geospatial-circlerequest:
+      title: geospatial-circlerequest
+      required:
+      - type
+      - entities
+      - geoQ
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        geoQ:
+          $ref: '#/components/schemas/GeoQ'
+      example:
+        type: Query
+        entities:
+        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        geoQ:
+          geometry: Point
+          coordinates:
+          - 25.319768
+          - 82.987988000000001
+          georel: near;maxDistance=1000
+          geoproperty: geoJsonLocation
+    Entity:
+      title: Entity
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: string
+      example:
+        id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+    GeoQ:
+      title: GeoQ
+      required:
+      - geometry
+      - coordinates
+      - georel
+      - geoproperty
+      type: object
+      properties:
+        geometry:
+          type: string
+        coordinates:
+          type: array
+          items:
+            type: number
+          description: ''
+        georel:
+          type: string
+        geoproperty:
+          type: string
+      example:
+        geometry: Point
+        coordinates:
+        - 25.319768
+        - 82.987988000000001
+        georel: near;maxDistance=1000
+        geoproperty: geoJsonLocation
+    geospatial-circlecount-request:
+      title: geospatial-circle(count)request
+      required:
+      - type
+      - entities
+      - geoQ
+      - options
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        geoQ:
+          $ref: '#/components/schemas/GeoQ'
+        options:
+          type: string
+      example:
+        type: Query
+        entities:
+        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        geoQ:
+          geometry: Point
+          coordinates:
+          - 25.319768
+          - 82.987988000000001
+          georel: near;maxDistance=100
+          geoproperty: geoJsonLocation
+        options: count
+    geospatial-polygonrequest:
+      title: geospatial-polygonrequest
+      required:
+      - type
+      - entities
+      - geoQ
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        geoQ:
+          $ref: '#/components/schemas/GeoQ2'
+    GeoQ2:
+      title: GeoQ2
+      required:
+      - geometry
+      - coordinates
+      - georel
+      - geoproperty
+      type: object
+      properties:
+        geometry:
+          type: string
+        coordinates:
+          type: array
+          items:
+            type: array
+            items:
+              type: number
+        georel:
+          type: string
+        geoproperty:
+          type: string
+    geospatial-linestringrequest:
+      title: geospatial-linestringrequest
+      required:
+      - type
+      - entities
+      - geoQ
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        geoQ:
+          $ref: '#/components/schemas/GeoQ2'
+      example:
+        type: Query
+        entities:
+        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        geoQ:
+          geometry: linestring
+          coordinates:
+          - - 82.973500000000001
+            - 25.3352
+          - - 82.989400000000003
+            - 25.345199999999998
+          - - 82.989999999999995
+            - 25.34
+          georel: intersects
+          geoproperty: geoJsonLocation
+    geospatial-bboxrequest:
+      title: geospatial-bboxrequest
+      required:
+      - type
+      - entities
+      - geoQ
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        geoQ:
+          $ref: '#/components/schemas/GeoQ2'
+      example:
+        type: Query
+        entities:
+        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        geoQ:
+          geometry: bbox
+          coordinates:
+          - - 82.950000000000003
+            - 25.3567
+          - - 83.005300000000005
+            - 25
+          georel: within
+          geoproperty: geoJsonLocation
+    responsefilterrequest:
+      title: responsefilterrequest
+      required:
+      - type
+      - entities
+      - attrs
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        attrs:
+          type: string
+      example:
+        type: Query
+        entities:
+        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        attrs: resource-id,latitude,longitude
+    geospatial-circle-responsefilterrequest:
+      title: geospatial-circle+responsefilterrequest
+      required:
+      - type
+      - entities
+      - geoQ
+      - attrs
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        geoQ:
+          $ref: '#/components/schemas/GeoQ'
+        attrs:
+          type: string
+      example:
+        type: Query
+        entities:
+        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        geoQ:
+          geometry: Point
+          coordinates:
+          - 25.319768
+          - 82.987988000000001
+          georel: near;maxDistance=1000
+          geoproperty: geoJsonLocation
+        attrs: resource-id,longitude,latitude
+    temporal-duringrequest:
+      title: temporal-duringrequest
+      required:
+      - type
+      - entities
+      - temporalQ
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        temporalQ:
+          $ref: '#/components/schemas/TemporalQ'
+      example:
+        type: Query
+        entities:
+        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        temporalQ:
+          timerel: during
+          time: 2020-06-01T14:20:00Z
+          endtime: 2020-06-03T15:00:00Z
+          timeProperty: timeProperty
+    TemporalQ:
+      title: TemporalQ
+      required:
+      - timerel
+      - time
+      - endtime
+      - timeProperty
+      type: object
+      properties:
+        timerel:
+          type: string
+        time:
+          type: string
+        endtime:
+          type: string
+        timeProperty:
+          type: string
+      example:
+        timerel: during
+        time: 2020-06-01T14:20:00Z
+        endtime: 2020-06-03T15:00:00Z
+        timeProperty: timeProperty
+    time-beforerequest:
+      title: time-beforerequest
+      required:
+      - type
+      - entities
+      - temporalQ
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        temporalQ:
+          $ref: '#/components/schemas/TemporalQ1'
+      example:
+        type: Query
+        entities:
+        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        temporalQ:
+          timerel: before
+          time: 2020-06-01T14:20:00Z
+          timeProperty: timeProperty
+    TemporalQ1:
+      title: TemporalQ1
+      required:
+      - timerel
+      - time
+      - timeProperty
+      type: object
+      properties:
+        timerel:
+          type: string
+        time:
+          type: string
+        timeProperty:
+          type: string
+      example:
+        timerel: before
+        time: 2020-06-01T14:20:00Z
+        timeProperty: timeProperty
+    complex-geo-circle-time-filterrequest:
+      title: complex-geo-(circle)+time+filterrequest
+      required:
+      - type
+      - entities
+      - geoQ
+      - temporalQ
+      - attrs
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        geoQ:
+          $ref: '#/components/schemas/GeoQ'
+        temporalQ:
+          $ref: '#/components/schemas/TemporalQ'
+        attrs:
+          type: string
+      example:
+        type: Query
+        entities:
+        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        geoQ:
+          geometry: Point
+          coordinates:
+          - 25.319768
+          - 82.987988000000001
+          georel: near;maxDistance=1000
+          geoproperty: geoJsonLocation
+        temporalQ:
+          timerel: during
+          time: 2020-06-01T14:20:00Z
+          endtime: 2020-06-03T15:00:00Z
+          timeProperty: timeProperty
+        attrs: resource-id,latitude,longitude
+    registeradapterrequest:
+      title: registeradapterrequest
+      required:
+      - resourceGroup
+      - resourceServer
+      type: object
+      properties:
+        resourceGroup:
+          type: string
+        resourceServer:
+          type: string
+      example:
+        resourceGroup: aqm
+        resourceServer: example.com
+
+    entityresponse:
+      title: entityresponse
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: string
+          observationDateTime:
+            type: string
+          trip_id:
+            type: string
+          route_id:
+            type: string
+
+      example:
+        id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        observationDateTime: 2020-06-01T14:20:00Z
+        trip_id: 23958368
+        route_id: 14U
+    registeradapter:
+      title: registeradapter
+      required:
+      - username
+      - apiKey
+      - id
+      - URL
+      - port
+      - vHost
+      type: object
+      properties:
+        username:
+          type: string
+        apiKey:
+          type: string
+        id:
+          type: string
+        URL:
+          type: string
+        port:
+          type: string
+        vHost:
+          type: string
+      example:
+        username: iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d
+        apiKey: 123456
+        id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms
+        URL: databroker.iudx.io
+        port: 24567
+        vHost: IUDX
+
+    retrieveadapter:
+      title: retrieveadapter
+      required:
+      - database
+      - adaptorLogs
+      type: object
+      properties:
+        database:
+          type: array
+          items:
+            type: string
+        adaptorLogs:
+          type: array
+          items:
+            type: string
+      example:
+        database: ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]
+        adaptorLogs: ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.dataIssue", "iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.downstreamIssue", "iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.heartbeat"]
+
+    deleteadapter:
+      title: deleteadapter
+      required:
+      - type
+      - title
+      - detail
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: 200
+        title: success
+        detail: Adapter deleted
+
+    createstreaming:
+      title: createstreaming
+      required:
+      - username
+      - apiKey
+      - id
+      - URL
+      - port
+      - vHost
+      type: object
+      properties:
+        username:
+          type: string
+        apiKey:
+          type: string
+        id:
+          type: string
+        URL:
+          type: string
+        port:
+          type: string
+        vHost:
+          type: string
+      example:
+        username: iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d
+        apiKey: 123456
+        id: iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application
+        URL: databroker.iudx.io
+        port: 24567
+        vHost: IUDX
+
+
+    retrievestreaming:
+      title: retrievestreaming
+      required:
+      - entities
+      type: object
+      properties:
+        entities:
+          type: array
+          items:
+            type: string
+      example:
+        entities: ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]           
+        
+    appendstreaming:
+      title: appendstreaming
+      required:
+      - entities
+      type: object
+      properties:
+        entities:
+          type: array
+          items:
+            type: string
+      example:
+        entities: ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]  
+        
+    updatestreaming:
+      title: updatestreaming
+      required:
+      - entities
+      type: object
+      properties:
+        entities:
+          type: array
+          items:
+            type: string
+      example:
+        entities: ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]  
+                 
+    deletestreaming:
+      title: deletestreaming
+      required:
+      - entities
+      type: object
+      properties:
+        subscriptionID:
+          type: string
+      example:
+        subscriptionID: iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application
+        
+    standardBadRequestErrorResponse:
+      title: standardBadRequestErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: 400
+        title: Bad Request Data
+        detail: Empty response | Missing/Invalid temporal parameters | Missing/Invalid geo parameters | Count is not supported with filtering
+        
+    standardInvalidTokenErrorResponse:
+      title: standardInvalidTokenErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: 401
+        title: Invalid credentials
+        detail: Invalid credentials
+
+    standardResourceNotFoundErrorResponse:
+      title: standardResourceNotFoundErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: 404
+        title: Not Found
+        detail: Resource Not Found
+
+    adapterBadRequestErrorResponse:
+      title: adapterBadRequestErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: 400
+        title: Bad Request Data
+        detail: Missing/Invalid parameters
+
+        
+
+
+
