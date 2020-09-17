@@ -65,7 +65,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerService registerAdaptor(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = webClient.registerAdaptor(request, vhost);
+      Future<JsonObject> result = webClient.registerAdapter(request, vhost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));

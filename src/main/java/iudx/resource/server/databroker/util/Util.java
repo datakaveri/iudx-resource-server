@@ -26,7 +26,7 @@ public class Util {
    * @param value which is a String
    * @return encoded_value which is a String
    **/
-  public static String encodedValue(String value) {
+  public static String encodeValue(String value) {
     return URLEncoder.encode(value, StandardCharsets.UTF_8);
   }
 

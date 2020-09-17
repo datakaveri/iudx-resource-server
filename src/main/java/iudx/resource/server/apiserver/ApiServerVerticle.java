@@ -1322,7 +1322,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               handleResponse(response, ResponseType.Created,
                   brokerResultHandler.result().toString(), false);
             } else if (brokerResult.failed()) {
-              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
+              LOGGER.error("Fail: Bad request" + brokerResultHandler.cause().getMessage());
               handleResponse(response, ResponseType.BadRequestData,
                   brokerResultHandler.cause().getMessage(), false);
             }
