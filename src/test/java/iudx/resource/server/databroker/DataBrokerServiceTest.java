@@ -76,6 +76,7 @@ public class DataBrokerServiceTest {
   private static RabbitClient rabbitMQStreamingClient;
   private static RabbitWebClient rabbitMQWebClient;
   private static PostgresClient pgClient;
+  private static int statusConflict;
 
 
   private static final Logger logger = LoggerFactory.getLogger(DataBrokerServiceTest.class);
@@ -90,6 +91,7 @@ public class DataBrokerServiceTest {
     statusOk = 200;
     statusNotFound = 404;
     statusNoContent = 204;
+    statusConflict = 409;
 
 
     logger.info("Exchange Name is " + exchangeName);
@@ -226,7 +228,7 @@ public class DataBrokerServiceTest {
   void failCreateExchange(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put(TYPE, statusNoContent);
+    expected.put(TYPE, statusConflict);
     expected.put(TITLE, FAILURE);
     expected.put(DETAIL, EXCHANGE_EXISTS);
 
@@ -271,7 +273,7 @@ public class DataBrokerServiceTest {
   void failCreateQueue(VertxTestContext testContext) {
 
     JsonObject expected = new JsonObject();
-    expected.put(TYPE, statusNoContent);
+    expected.put(TYPE, statusConflict);
     expected.put(TITLE, FAILURE);
     expected.put(DETAIL, QUEUE_ALREADY_EXISTS);
 
