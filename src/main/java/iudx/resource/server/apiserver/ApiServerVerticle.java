@@ -53,7 +53,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Util.*;
 
@@ -145,7 +144,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     router = Router.router(vertx);
     router.route().handler(
         CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
-    router.route("/apis/*").handler(StaticHandler.create());
     router.route().handler(BodyHandler.create());
 
     /* NGSI-LD api endpoints */
@@ -205,6 +203,22 @@ public class ApiServerVerticle extends AbstractVerticle {
       .handler(this::publishDataIssue);
     router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/entities")
       .handler(this::publishDataFromAdapter);
+
+    /**
+     * Documentation routes
+     */
+    /* Static Resource Handler */
+    /* Get openapiv3 spec */
+    router.get(ROUTE_STATIC_SPEC).produces(MIME_APPLICATION_JSON).handler(routingContext -> {
+      HttpServerResponse response = routingContext.response();
+      response.sendFile("docs/openapi.yaml");
+    });
+    /* Get redoc */
+    router.get(ROUTE_DOC).produces(MIME_TEXT_HTML).handler(routingContext -> {
+      HttpServerResponse response = routingContext.response();
+      response.sendFile("docs/apidoc.html");
+    });
+
     /* Read the configuration and set the HTTPs server properties. */
 
     try {
