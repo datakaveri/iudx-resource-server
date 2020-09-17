@@ -1,0 +1,1648 @@
+openapi: 3.0.2
+
+schemes:
+  - "http"
+  - "https"
+
+produces:
+  - "application/json"
+  - "text/plain"
+
+consumes:
+  - "application/json"
+  - "text/plain"
+
+info:
+  title: "IUDX Resource Server APIs"
+  version: 1.0.0
+  description: |
+    The Catalogue is IUDX's dataset discovery portal and metadata store. 
+    It enables *Providers* of datasources to describe them with IUDX based annotations
+    to make discovery and consumption of data both automatable and semantically describable. 
+    For search and discovery, it allows users to search through text and geo-based queries.
+    The catalogue is a [JSON-LD](https://json-ld.org/) document stored and based on the [RDF](https://www.w3.org/RDF/) information exchange model. 
+
+tags:
+- name: Entities
+  x-displayName: "Entity"
+  description: |
+    Manage catalogue entities and perform Create/Update/Read/Delete operations on them.
+    These apis are intended to be used by IUDX Data *Providers*.
+
+- name: Temporal Entities
+  x-displayName: "Temporal Entity"
+  description: |
+    Manage catalogue entities and perform Create/Update/Read/Delete operations on them.
+    These apis are intended to be used by IUDX Data *Providers*.
+
+- name: Entities Post Query
+  x-displayName: "Entity Post Query"
+  description: |
+    Manage catalogue entities and perform Create/Update/Read/Delete operations on them.
+    These apis are intended to be used by IUDX Data *Providers*.
+
+- name: Data Adaptor
+  x-displayName: "Data Adaptor"
+  description: |
+    Manage catalogue entities and perform Create/Update/Read/Delete operations on them.
+    These apis are intended to be used by IUDX Data *Providers*.
+
+- name: Data Subscriber
+  x-displayName: "Data Subscriber"
+  description: |
+    Manage catalogue entities and perform Create/Update/Read/Delete operations on them.
+    These apis are intended to be used by IUDX Data *Providers*.
+
+- name: Management
+  x-displayName: "Management"
+  description: |
+    Manage catalogue entities and perform Create/Update/Read/Delete operations on them.
+    These apis are intended to be used by IUDX Data *Providers*.
+
+paths:
+  /ngsi-ld/v1/entities:
+    get:
+      tags:
+      - Entities
+      summary: Query entities based on geo-spatial, temporal and attribute property. 
+      operationId: entities
+      parameters:
+      - name: id
+        in: query
+        description: 'ID of the IUDX entity. This can be obtained from the IUDX catalogue server.'
+        required: true
+        schema:
+          type: string
+          example: rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+      - name: geoproperty
+        in: query
+        description: 'Name of the property if the query is on a geospatial property.'
+        schema:
+          type: string
+          example: location
+      - name: georel
+        in: query
+        description: 'Type of geoquery, for e.g, within, near, outside.'
+        schema:
+          type: string
+          example: near;maxDistance=100
+      - name: geometry
+        in: query
+        description: 'Geometry of the geo-query, for e.g, linstring, bbox, polygon.'
+        schema:
+          type: string
+          example: Point
+      - name: coordinates
+        in: query
+        description: 'Coordinates for the specific query type. For e.g, [[1,2], [3,4]]. Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array.'
+        schema:
+          type: array
+          items:
+            type: number
+          format: double
+      - name: timerel
+        in: query
+        description: 'Type of the temporal-query, for e.g, during, before, after.'
+        schema:
+          type: string
+          example: during
+      - name: time
+        in: query
+        description: 'Start time for the temporal-query in ISO8601 format.'
+        schema:
+          type: string
+          example: "2020-06-01T14:20:00Z"
+      - name: endtime
+        in: query
+        description: 'End time for the temporal-query in ISO8601 format. (Only applicable for timerel=during)'
+        schema:
+          type: string
+          example: "2020-06-06T14:20:00Z"
+      - name: q
+        in: query
+        description: 'Query on a value of a resource attribute, for e.g, attribute > value, attribute < value, attribute >= value, attribute <= value'
+        schema:
+          type: string
+          example: "CO2<=500"
+      - name: attrs
+        in: query
+        description: 'List of attributes to be provided in response.'
+        schema:
+          type: string
+          example: "location,id"
+      - name: options
+        in: query
+        description: 'Specifying options=count will provide the number of document hits for the query.'
+        schema:
+          type: string
+          example: "count"
+          
+      responses:
+        200:
+          description: ''
+          headers: {}
+      deprecated: false
+  /ngsi-ld/v1/temporal/entities:
+    get:
+      tags:
+      - Temporal Entities
+      summary: Query temporal entities based on temporal and attribute property. 
+      operationId: temporal-entities
+      parameters:
+      - name: id
+        in: query
+        description: 'ID of the IUDX entity. This can be obtained from the IUDX catalogue server.'
+        required: true
+        schema:
+          type: string
+          example: rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+      - name: timerel
+        in: query
+        description: 'Type of the temporal-query, for e.g, during, before, after.'
+        schema:
+          type: string
+          example: during
+      - name: time
+        in: query
+        description: 'Start time for the temporal-query in ISO8601 format.'
+        schema:
+          type: string
+          example: "2020-06-01T14:20:00Z"
+      - name: endtime
+        in: query
+        description: 'End time for the temporal-query in ISO8601 format. (Only applicable for timerel=during)'
+        schema:
+          type: string
+          example: "2020-06-06T14:20:00Z"
+      - name: q
+        in: query
+        description: 'Query on a value of a resource attribute, for e.g, attribute > value, attribute < value, attribute >= value, attribute <= value'
+        schema:
+          type: string
+          example: "CO2<=500"
+      - name: attrs
+        in: query
+        description: 'List of attributes to be provided in response.'
+        schema:
+          type: string
+          example: "location,id"
+      - name: options
+        in: query
+        description: 'Specifying options=count will provide the number of document hits for the query.'
+        schema:
+          type: string
+          example: "count"
+
+      responses:
+        200:
+          description: ''
+          headers: {}
+      deprecated: false
+      
+  /ngsi-ld/v1/entityOperations/query:
+    post:
+      tags:
+      - Entities Post Query
+      summary: Query entities based on geo-spatial, temporal and attribute property using POST query. 
+      operationId: complex-query
+      parameters: []
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/complex-geo-circle-time-filterrequest'
+            example:
+              type: Query
+              entities:
+              - id: rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+              geoQ:
+                geometry: Point
+                coordinates:
+                - 25.319768
+                - 82.987988000000001
+                georel: near;maxDistance=1000
+                geoproperty: geoJsonLocation
+              temporalQ:
+                timerel: "during"
+                time: "2020-06-01T14:20:00Z"
+                endtime: "2020-06-03T15:00:00Z"
+                timeProperty: "observationDateTime"
+              attrs: "id,location"
+        required: true
+      responses:
+        200:
+          description: ''
+          headers: {}
+      deprecated: false
+
+  /iudx/v1/adapter/register:
+    post:
+      tags:
+      - Data Adaptor
+      summary: Register adapter
+      operationId: registeradapter
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/c5281a623d11d39a84d3af5a79f75892
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/registeradapterrequest'
+            example:
+              resourceGroup: aqm
+              resourceServer: example.com
+        required: true
+      responses:
+        201:
+          description: ''
+          headers:
+            content-type:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                  example: application/json
+            content-length:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                  example: 225
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/registeradapter'
+              example:
+                username: datakaveri.org/3ae88e7ba006938ffc38203d326b1711b892226d
+                apiKey: 123456
+                id: rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms
+                URL: databroker.iudx.io
+                port: 5671
+                vHost: IUDX
+      deprecated: false
+
+  /iudx/v1/adapter/{id}:
+    get:
+      tags:
+      - Data Adaptor
+      summary: Retrieve adapter details
+      operationId: getadaptordetails
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/c5281a623d11d39a84d3af5a79f75892
+      - name: id
+        in: path
+        description: 'Registration id of the adapter'
+        required: true
+        style: simple
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          headers:
+            content-type:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                  example: application/json
+            content-length:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                  example: 225
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/retrieveadapter'
+      deprecated: false
+    delete:
+      tags:
+      - Data Adaptor
+      summary: Delete adaptor
+      operationId: deleteadaptor
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/e598c42734b027f6d83609106c8251ef
+      - name: id
+        in: path
+        description: 'Registration id of the adapter'
+        required: true
+        style: simple
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          headers:
+            content-type:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                  example: application/json
+            content-length:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                  example: 225
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deleteadapter'
+      deprecated: false
+
+  /ngsi-ld/v1/subscription:
+    post:
+      tags:
+      - Data Subscriber
+      summary: Create subscription
+      operationId: createastreamingsubscription
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/422fca9ba72fea3d19d8d09c4d759587
+      - name: options
+        in: header
+        description: 'Type of subscription, for e.g. streaming (or) callback. Default value is callback'
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: streaming
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createastreamingsubscriptionrequest'
+            example:
+              name: alias-name-of-application
+              type: subscription
+              entities:
+              - rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/*
+        required: true
+      responses:
+        200:
+          description: ''
+          headers:
+            content-type:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                  example: application/json
+            content-length:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                  example: 225
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/createstreaming'
+      deprecated: false
+
+  /ngsi-ld/v1/subscription/{subscriptionID}:
+    get:
+      tags:
+      - Data Subscriber
+      summary: Retrieve subscription details
+      operationId: getstreamingsubscription
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/422fca9ba72fea3d19d8d09c4d759587
+      - name: options
+        in: header
+        description: 'Type of subscription, for e.g. streaming (or) callback. Default value is callback'
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: streaming
+      - name: subscriptionID
+        in: path
+        description: 'Subscription ID obtained during registration.'
+        required: true
+        style: simple
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          headers:
+            content-type:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                  example: application/json
+            content-length:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                  example: 225
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/retrievestreaming'
+      deprecated: false
+    patch:
+      tags:
+      - Data Subscriber
+      summary: Append subscription
+      operationId: appendstreamingsubscription
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/422fca9ba72fea3d19d8d09c4d759587
+      - name: options
+        in: header
+        description: 'Type of subscription, for e.g. streaming (or) callback. Default value is callback'
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: streaming
+      - name: subscriptionID
+        in: path
+        description: 'Subscription ID obtained during registration.'
+        required: true
+        style: simple
+        schema:
+          type: string
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/appendstreamingsubscriptionrequest'
+        required: true
+      responses:
+        200:
+          description: ''
+          headers:
+            content-type:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                  example: application/json
+            content-length:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                  example: 225
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/appendstreaming'
+      deprecated: false
+    put:
+      tags:
+      - Data Subscriber
+      summary: Update subscription
+      operationId: updatestreamingsubscription
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/b254376059f92f4eefb68a5ead7cb43e
+      - name: options
+        in: header
+        description: 'Type of subscription, for e.g. streaming (or) callback. Default value is callback'
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: streaming
+      - name: subscriptionID
+        in: path
+        description: 'Subscription ID obtained during registration.'
+        required: true
+        style: simple
+        schema:
+          type: string
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updatestreamingsubscriptionrequest'
+        required: true
+      responses:
+        200:
+          description: ''
+          headers:
+            content-type:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                  example: application/json
+            content-length:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                  example: 225
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/updatestreaming'
+      deprecated: false
+    delete:
+      tags:
+      - Data Subscriber
+      summary: Delete subscription
+      operationId: deleteasubscription
+      parameters:
+      - name: options
+        in: header
+        description: 'Type of subscription, for e.g. streaming (or) callback. Default value is callback'
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: streaming
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/422fca9ba72fea3d19d8d09c4d759587
+      - name: subscriptionID
+        in: path
+        description: 'Subscription ID obtained during registration.'
+        required: true
+        style: simple
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          headers:
+            content-type:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                  example: application/json
+            content-length:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+                  example: 225
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/deletestreaming'
+      deprecated: false
+
+      
+  /management/exchange:
+    post:
+      tags:
+      - Management
+      summary: create a exchange
+      operationId: createaexchange
+      parameters:
+      - name: token
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/d09f7a5ba21f1c8643c6ddd9bad4e19c
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createaexchangerequest'
+            example:
+              exchangeName: 1asdf
+        required: true
+      responses:
+        200:
+          description: ''
+          headers: {}
+      deprecated: false
+
+  /management/exchange/{exchangeName}:
+    get:
+      tags:
+      - Management
+      summary: get exchange
+      operationId: getexchange
+      parameters:
+      - name: token
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: dummy
+      - name: exchangeName
+        in: path
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          headers: {}
+      deprecated: false
+    delete:
+      tags:
+      - Management
+      summary: delete exchange
+      operationId: deleteexchange
+      parameters:
+      - name: token
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: testing-token
+      - name: exchangeName
+        in: path
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          headers: {}
+      deprecated: false
+
+  /management/queue:
+    post:
+      tags:
+      - Management
+      summary: create queue
+      operationId: createqueue
+      parameters:
+      - name: token
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: public
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createqueuerequest'
+            example:
+              queueName: '{{$guid}}'
+        required: true
+      responses:
+        200:
+          description: ''
+          headers: {}
+      deprecated: false
+
+  /management/queue/{queueName}:
+    get:
+      tags:
+      - Management
+      summary: get queue
+      operationId: getqueue
+      parameters:
+      - name: token
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: testing-token
+      - name: queueName
+        in: path
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          headers: {}
+      deprecated: false
+    delete:
+      tags:
+      - Management
+      summary: delete queue
+      operationId: deletequeue
+      parameters:
+      - name: token
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: testing-token
+      - name: queueName
+        in: path
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          headers: {}
+      deprecated: false
+
+
+  /management/bind:
+    post:
+      tags:
+      - Management
+      summary: bind queue 2 exchange
+      operationId: bindqueue2exchange
+      parameters:
+      - name: token
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: public
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/bindqueue2exchangerequest'
+            example:
+              exchangeName: '{{exchangeName}}'
+              queueName: '{{queueName}}'
+              entities:
+              - entity1
+              - entity2
+              - entity5
+        required: true
+      responses:
+        200:
+          description: ''
+          headers: {}
+      deprecated: false
+
+  /management/unbind:
+    post:
+      tags:
+      - Management
+      summary: unbind queue from exchange
+      operationId: unbindqueuefromexchange
+      parameters:
+      - name: token
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: testing-token
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/unbindqueuefromexchangerequest'
+            example:
+              exchangeName: '{{exchangeName}}'
+              queueName: '{{queueName}}'
+              entities:
+              - entity1
+              - entity2
+              - entity5
+        required: true
+      responses:
+        200:
+          description: ''
+          headers: {}
+      deprecated: false
+
+  /management/vhost:
+    post:
+      tags:
+      - Management
+      summary: create vhost
+      operationId: createvhost
+      parameters:
+      - name: token
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: testing-token
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createvhostrequest'
+            example:
+              vHost: '{{$guid}}'
+        required: true
+      responses:
+        200:
+          description: ''
+          headers: {}
+      deprecated: false
+
+  /management/vhost/{vhost}:
+    delete:
+      tags:
+      - Management
+      summary: delete vhost
+      operationId: deletevhost
+      parameters:
+      - name: token
+        in: header
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+          example: testing-token
+      - name: vhost
+        in: path
+        description: ''
+        required: true
+        style: simple
+        schema:
+          type: string
+      responses:
+        200:
+          description: ''
+          headers: {}
+      deprecated: false
+
+components:
+  schemas:
+    createaexchangerequest:
+      title: createaexchangerequest
+      required:
+      - exchangeName
+      type: object
+      properties:
+        exchangeName:
+          type: string
+      example:
+        exchangeName: 1asdf
+    createqueuerequest:
+      title: createqueuerequest
+      required:
+      - queueName
+      type: object
+      properties:
+        queueName:
+          type: string
+      example:
+        queueName: '{{$guid}}'
+    bindqueue2exchangerequest:
+      title: bindqueue2exchangerequest
+      required:
+      - exchangeName
+      - queueName
+      - entities
+      type: object
+      properties:
+        exchangeName:
+          type: string
+        queueName:
+          type: string
+        entities:
+          type: array
+          items:
+            type: string
+          description: ''
+      example:
+        exchangeName: '{{exchangeName}}'
+        queueName: '{{queueName}}'
+        entities:
+        - entity1
+        - entity2
+        - entity5
+    unbindqueuefromexchangerequest:
+      title: unbindqueuefromexchangerequest
+      required:
+      - exchangeName
+      - queueName
+      - entities
+      type: object
+      properties:
+        exchangeName:
+          type: string
+        queueName:
+          type: string
+        entities:
+          type: array
+          items:
+            type: string
+          description: ''
+      example:
+        exchangeName: '{{exchangeName}}'
+        queueName: '{{queueName}}'
+        entities:
+        - entity1
+        - entity2
+        - entity5
+    createvhostrequest:
+      title: createvhostrequest
+      required:
+      - vHost
+      type: object
+      properties:
+        vHost:
+          type: string
+      example:
+        vHost: '{{$guid}}'
+    createastreamingsubscriptionrequest:
+      title: createastreamingsubscriptionrequest
+      required:
+      - name
+      - type
+      - entities
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            type: string
+          description: ''
+      example:
+        name: alias-name-of-application
+        type: subscription
+        entities:
+        - rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/*
+    appendstreamingsubscriptionrequest:
+      title: appendstreamingsubscriptionrequest
+      required:
+      - name
+      - type
+      - entities
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            type: string
+          description: ''
+      example:
+        name: alias-name-of-application
+        type: subscription
+        entities:
+        - rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*
+    updatestreamingsubscriptionrequest:
+      title: updatestreamingsubscriptionrequest
+      required:
+      - name
+      - type
+      - entities
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            type: string
+          description: ''
+      example:
+        name: alias-name-of-application
+        type: subscription
+        entities:
+        - rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*
+    geospatial-circlerequest:
+      title: geospatial-circlerequest
+      required:
+      - type
+      - entities
+      - geoQ
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        geoQ:
+          $ref: '#/components/schemas/GeoQ'
+      example:
+        type: Query
+        entities:
+        - id: rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        geoQ:
+          geometry: Point
+          coordinates:
+          - 25.319768
+          - 82.987988000000001
+          georel: near;maxDistance=1000
+          geoproperty: geoJsonLocation
+    Entity:
+      title: Entity
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: string
+      example:
+        id: rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+    GeoQ:
+      title: GeoQ
+      required:
+      - geometry
+      - coordinates
+      - georel
+      - geoproperty
+      type: object
+      properties:
+        geometry:
+          type: string
+        coordinates:
+          type: array
+          items:
+            type: number
+          description: ''
+        georel:
+          type: string
+        geoproperty:
+          type: string
+      example:
+        geometry: Point
+        coordinates:
+        - 25.319768
+        - 82.987988000000001
+        georel: near;maxDistance=1000
+        geoproperty: geoJsonLocation
+    geospatial-circlecount-request:
+      title: geospatial-circle(count)request
+      required:
+      - type
+      - entities
+      - geoQ
+      - options
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        geoQ:
+          $ref: '#/components/schemas/GeoQ'
+        options:
+          type: string
+      example:
+        type: Query
+        entities:
+        - id: rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        geoQ:
+          geometry: Point
+          coordinates:
+          - 25.319768
+          - 82.987988000000001
+          georel: near;maxDistance=100
+          geoproperty: geoJsonLocation
+        options: count
+    geospatial-polygonrequest:
+      title: geospatial-polygonrequest
+      required:
+      - type
+      - entities
+      - geoQ
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        geoQ:
+          $ref: '#/components/schemas/GeoQ2'
+    GeoQ2:
+      title: GeoQ2
+      required:
+      - geometry
+      - coordinates
+      - georel
+      - geoproperty
+      type: object
+      properties:
+        geometry:
+          type: string
+        coordinates:
+          type: array
+          items:
+            type: array
+            items:
+              type: number
+        georel:
+          type: string
+        geoproperty:
+          type: string
+    geospatial-linestringrequest:
+      title: geospatial-linestringrequest
+      required:
+      - type
+      - entities
+      - geoQ
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        geoQ:
+          $ref: '#/components/schemas/GeoQ2'
+      example:
+        type: Query
+        entities:
+        - id: rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        geoQ:
+          geometry: linestring
+          coordinates:
+          - - 82.973500000000001
+            - 25.3352
+          - - 82.989400000000003
+            - 25.345199999999998
+          - - 82.989999999999995
+            - 25.34
+          georel: intersects
+          geoproperty: geoJsonLocation
+    geospatial-bboxrequest:
+      title: geospatial-bboxrequest
+      required:
+      - type
+      - entities
+      - geoQ
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        geoQ:
+          $ref: '#/components/schemas/GeoQ2'
+      example:
+        type: Query
+        entities:
+        - id: rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        geoQ:
+          geometry: bbox
+          coordinates:
+          - - 82.950000000000003
+            - 25.3567
+          - - 83.005300000000005
+            - 25
+          georel: within
+          geoproperty: geoJsonLocation
+    responsefilterrequest:
+      title: responsefilterrequest
+      required:
+      - type
+      - entities
+      - attrs
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        attrs:
+          type: string
+      example:
+        type: Query
+        entities:
+        - id: rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        attrs: resource-id,latitude,longitude
+    geospatial-circle-responsefilterrequest:
+      title: geospatial-circle+responsefilterrequest
+      required:
+      - type
+      - entities
+      - geoQ
+      - attrs
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        geoQ:
+          $ref: '#/components/schemas/GeoQ'
+        attrs:
+          type: string
+      example:
+        type: Query
+        entities:
+        - id: rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        geoQ:
+          geometry: Point
+          coordinates:
+          - 25.319768
+          - 82.987988000000001
+          georel: near;maxDistance=1000
+          geoproperty: geoJsonLocation
+        attrs: resource-id,longitude,latitude
+    temporal-duringrequest:
+      title: temporal-duringrequest
+      required:
+      - type
+      - entities
+      - temporalQ
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        temporalQ:
+          $ref: '#/components/schemas/TemporalQ'
+      example:
+        type: Query
+        entities:
+        - id: rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        temporalQ:
+          timerel: during
+          time: 2020-06-01T14:20:00Z
+          endtime: 2020-06-03T15:00:00Z
+          timeProperty: timeProperty
+    TemporalQ:
+      title: TemporalQ
+      required:
+      - timerel
+      - time
+      - endtime
+      - timeProperty
+      type: object
+      properties:
+        timerel:
+          type: string
+        time:
+          type: string
+        endtime:
+          type: string
+        timeProperty:
+          type: string
+      example:
+        timerel: during
+        time: 2020-06-01T14:20:00Z
+        endtime: 2020-06-03T15:00:00Z
+        timeProperty: timeProperty
+    time-beforerequest:
+      title: time-beforerequest
+      required:
+      - type
+      - entities
+      - temporalQ
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        temporalQ:
+          $ref: '#/components/schemas/TemporalQ1'
+      example:
+        type: Query
+        entities:
+        - id: rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        temporalQ:
+          timerel: before
+          time: 2020-06-01T14:20:00Z
+          timeProperty: timeProperty
+    TemporalQ1:
+      title: TemporalQ1
+      required:
+      - timerel
+      - time
+      - timeProperty
+      type: object
+      properties:
+        timerel:
+          type: string
+        time:
+          type: string
+        timeProperty:
+          type: string
+      example:
+        timerel: before
+        time: 2020-06-01T14:20:00Z
+        timeProperty: timeProperty
+    complex-geo-circle-time-filterrequest:
+      title: complex-geo-(circle)+time+filterrequest
+      required:
+      - type
+      - entities
+      - geoQ
+      - temporalQ
+      - attrs
+      type: object
+      properties:
+        type:
+          type: string
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+          description: ''
+        geoQ:
+          $ref: '#/components/schemas/GeoQ'
+        temporalQ:
+          $ref: '#/components/schemas/TemporalQ'
+        attrs:
+          type: string
+      example:
+        type: Query
+        entities:
+        - id: rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        geoQ:
+          geometry: Point
+          coordinates:
+          - 25.319768
+          - 82.987988000000001
+          georel: near;maxDistance=1000
+          geoproperty: geoJsonLocation
+        temporalQ:
+          timerel: during
+          time: 2020-06-01T14:20:00Z
+          endtime: 2020-06-03T15:00:00Z
+          timeProperty: timeProperty
+        attrs: resource-id,latitude,longitude
+    registeradapterrequest:
+      title: registeradapterrequest
+      required:
+      - resourceGroup
+      - resourceServer
+      type: object
+      properties:
+        resourceGroup:
+          type: string
+        resourceServer:
+          type: string
+      example:
+        resourceGroup: aqm
+        resourceServer: example.com
+
+    registeradapter:
+      title: registeradapter
+      required:
+      - username
+      - apiKey
+      - id
+      - URL
+      - port
+      - vHost
+      type: object
+      properties:
+        username:
+          type: string
+        apiKey:
+          type: string
+        id:
+          type: string
+        URL:
+          type: string
+        port:
+          type: string
+        vHost:
+          type: string
+      example:
+        username: datakaveri.org/3ae88e7ba006938ffc38203d326b1711b892226d
+        apiKey: 123456
+        id: rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms
+        URL: databroker.iudx.io
+        port: 5671
+        vHost: IUDX
+
+    retrieveadapter:
+      title: retrieveadapter
+      required:
+      - database
+      - adaptorLogs
+      type: object
+      properties:
+        database:
+          type: array
+          items:
+            type: string
+        adaptorLogs:
+          type: array
+          items:
+            type: string
+      example:
+        database: ["iudx.org.in/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]
+        adaptorLogs: ["iudx.org.in/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.dataIssue", "iudx.org.in/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.downstreamIssue", "iudx.org.in/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.heartbeat"]
+
+    deleteadapter:
+      title: deleteadapter
+      required:
+      - type
+      - title
+      - detail
+      - id
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: 200
+        title: success
+        detail: adaptor deleted
+        id: iudx.org.in/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms
+
+    createstreaming:
+      title: createstreaming
+      required:
+      - username
+      - apiKey
+      - subscriptionID
+      - streamingURL
+      - URL
+      - port
+      - vHost
+      type: object
+      properties:
+        username:
+          type: string
+        apiKey:
+          type: string
+        subscriptionID:
+          type: string
+        streamingURL:
+          type: string
+        URL:
+          type: string
+        port:
+          type: string
+        vHost:
+          type: string
+      example:
+        username: vHost
+        apiKey: 123456	
+        subscriptionID: datakaveri.org/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application
+        streamingURL: amqps://datakaveri.org/3ae88e7ba006938ffc38203d326b1711b892226d:123456@databroker.iudx.io:24567/IUDX/datakaveri.org/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application
+        URL: databroker.iudx.io
+        port: 24567
+        vHost: IUDX
+
+    retrievestreaming:
+      title: retrievestreaming
+      required:
+      - entities
+      type: object
+      properties:
+        entities:
+          type: array
+          items:
+            type: string
+      example:
+        entities: ["iudx.org.in/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]           
+        
+    appendstreaming:
+      title: appendstreaming
+      required:
+      - entities
+      type: object
+      properties:
+        entities:
+          type: array
+          items:
+            type: string
+      example:
+        entities: ["iudx.org.in/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]  
+        
+    updatestreaming:
+      title: updatestreaming
+      required:
+      - entities
+      type: object
+      properties:
+        entities:
+          type: array
+          items:
+            type: string
+      example:
+        entities: ["iudx.org.in/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]  
+                 
+    deletestreaming:
+      title: deletestreaming
+      required:
+      - entities
+      type: object
+      properties:
+        subscriptionID:
+          type: string
+      example:
+        subscriptionID: datakaveri.org/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application
+
