@@ -1651,13 +1651,21 @@ components:
     deletestreaming:
       title: deletestreaming
       required:
-      - entities
+      - type
+      - title
+      - detail
       type: object
       properties:
-        subscriptionID:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
           type: string
       example:
-        subscriptionID: iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application
+        type: 200
+        title: success
+        detail: Subscription deleted
         
     standardBadRequestErrorResponse:
       title: standardBadRequestErrorResponse
