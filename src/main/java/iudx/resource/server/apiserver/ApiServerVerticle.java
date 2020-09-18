@@ -291,7 +291,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);
         String resourceName = request.getParam(JSON_RESOURCE_NAME);
         // TODO: append domain & userSha in begining after DB patch.
-        String pathId = resourceServer + "/" + resourceGroup + "/"
+        String pathId = domain + "/" + userSha + "/" + resourceServer + "/" + resourceGroup + "/"
             + resourceName;
         // parse query params
         NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
