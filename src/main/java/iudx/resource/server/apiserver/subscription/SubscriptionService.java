@@ -1,11 +1,14 @@
 package iudx.resource.server.apiserver.subscription;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static iudx.resource.server.apiserver.util.Constants.*;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.util.Constants;
 import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
@@ -51,10 +54,19 @@ public class SubscriptionService {
   public Future<JsonObject> createSubscription(JsonObject json, DataBrokerService databroker,
       DatabaseService databaseService) {
     LOGGER.info("createSubscription() method started");
+    Promise<JsonObject> promise = Promise.promise();
     subscription =
         getSubscriptionContext(json.getString(Constants.SUB_TYPE), databroker, databaseService);
     assertNotNull(subscription);
-    return subscription.create(json);
+    subscription.create(json).onComplete(handler -> {
+      if (handler.succeeded()) {
+        promise.complete(handler.result());
+      } else {
+        JsonObject res = new JsonObject(handler.cause().getMessage());
+        promise.fail(generateResponse(res).toString());
+      }
+    });
+    return promise.future();
   }
 
   /**
@@ -68,10 +80,19 @@ public class SubscriptionService {
   public Future<JsonObject> updateSubscription(JsonObject json, DataBrokerService databroker,
       DatabaseService databaseService) {
     LOGGER.info("updateSubscription() method started");
+    Promise<JsonObject> promise = Promise.promise();
     subscription =
         getSubscriptionContext(json.getString(Constants.SUB_TYPE), databroker, databaseService);
     assertNotNull(subscription);
-    return subscription.update(json);
+    subscription.update(json).onComplete(handler -> {
+      if (handler.succeeded()) {
+        promise.complete(handler.result());
+      } else {
+        JsonObject res = new JsonObject(handler.cause().getMessage());
+        promise.fail(generateResponse(res).toString());
+      }
+    });
+    return promise.future();
   }
 
   /**
@@ -85,10 +106,19 @@ public class SubscriptionService {
   public Future<JsonObject> deleteSubscription(JsonObject json, DataBrokerService databroker,
       DatabaseService databaseService) {
     LOGGER.info("deleteSubscription() method started");
+    Promise<JsonObject> promise = Promise.promise();
     subscription =
         getSubscriptionContext(json.getString(Constants.SUB_TYPE), databroker, databaseService);
     assertNotNull(subscription);
-    return subscription.delete(json);
+    subscription.delete(json).onComplete(handler -> {
+      if (handler.succeeded()) {
+        promise.complete(handler.result());
+      } else {
+        JsonObject res = new JsonObject(handler.cause().getMessage());
+        promise.fail(generateResponse(res).toString());
+      }
+    });
+    return promise.future();
   }
 
   /**
@@ -102,10 +132,19 @@ public class SubscriptionService {
   public Future<JsonObject> getSubscription(JsonObject json, DataBrokerService databroker,
       DatabaseService databaseService) {
     LOGGER.info("getSubscription() method started");
+    Promise<JsonObject> promise = Promise.promise();
     subscription =
         getSubscriptionContext(json.getString(Constants.SUB_TYPE), databroker, databaseService);
     assertNotNull(subscription);
-    return subscription.get(json);
+    subscription.get(json).onComplete(handler -> {
+      if (handler.succeeded()) {
+        promise.complete(handler.result());
+      } else {
+        JsonObject res = new JsonObject(handler.cause().getMessage());
+        promise.fail(generateResponse(res).toString());
+      }
+    });
+    return promise.future();
   }
 
   /**
@@ -119,9 +158,50 @@ public class SubscriptionService {
   public Future<JsonObject> appendSubscription(JsonObject json, DataBrokerService databroker,
       DatabaseService databaseService) {
     LOGGER.info("appendSubscription() method started");
+    Promise<JsonObject> promise = Promise.promise();
     subscription =
         getSubscriptionContext(json.getString(Constants.SUB_TYPE), databroker, databaseService);
     assertNotNull(subscription);
-    return subscription.append(json);
+    subscription.append(json).onComplete(handler -> {
+      if (handler.succeeded()) {
+        promise.complete(handler.result());
+      } else {
+        JsonObject res = new JsonObject(handler.cause().getMessage());
+        promise.fail(generateResponse(res).toString());
+      }
+    });
+    return promise.future();
+  }
+
+  private JsonObject generateResponse(JsonObject response) {
+    JsonObject finalResponse = new JsonObject();
+    int type = response.getInteger(JSON_TYPE);
+    switch(type) {
+      case 400:{
+        finalResponse.put(JSON_TYPE, type)
+            .put(JSON_TITLE, ResponseType.fromString(type).getMessage())
+            .put(JSON_DETAIL, response.getString(JSON_DETAIL));
+        break;
+      }
+      case 404:{
+        finalResponse.put(JSON_TYPE, type)
+            .put(JSON_TITLE, ResponseType.fromString(type).getMessage())
+            .put(JSON_DETAIL, ResponseType.ResourceNotFound.getMessage());
+        break;
+      }
+      case 409: {
+        finalResponse.put(JSON_TYPE, type)
+            .put(JSON_TITLE, ResponseType.fromString(type).getMessage())
+            .put(JSON_DETAIL, "Subscription " + ResponseType.AlreadyExists.getMessage());
+        break;
+      }
+      default: {
+        finalResponse.put(JSON_TYPE, ResponseType.BadRequestData.getCode())
+            .put(JSON_TITLE, ResponseType.BadRequestData.getMessage())
+            .put(JSON_DETAIL, response.getString(JSON_DETAIL));
+        break;
+      }
+    }
+    return finalResponse;
   }
 }

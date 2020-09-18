@@ -40,6 +40,8 @@ import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -51,6 +53,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import static iudx.resource.server.apiserver.util.Constants.*;
@@ -78,7 +81,7 @@ import static iudx.resource.server.apiserver.util.Util.*;
 
 public class ApiServerVerticle extends AbstractVerticle {
 
-  
+
   private static final Logger LOGGER = LogManager.getLogger(ApiServerVerticle.class);
 
 
@@ -156,29 +159,25 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.post(NGSILD_SUBSCRIPTION_URL).handler(this::handleSubscriptions);
     // append sub
     router.patch(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
-      .handler(this::appendSubscription);
+        .handler(this::appendSubscription);
     // update sub
     router.put(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
-      .handler(this::updateSubscription);
+        .handler(this::updateSubscription);
     // get sub
-    router.get(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
-      .handler(this::getSubscription);
+    router.get(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias").handler(this::getSubscription);
     // delete sub
     router.delete(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
-      .handler(this::deleteSubscription);
+        .handler(this::deleteSubscription);
 
     /* Management Api endpoints */
     // Exchange
     router.post(IUDX_MANAGEMENT_EXCHANGE_URL).handler(this::createExchange);
-    router.delete(IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId")
-      .handler(this::deleteExchange);
-    router.get(IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId")
-      .handler(this::getExchangeDetails);
+    router.delete(IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId").handler(this::deleteExchange);
+    router.get(IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId").handler(this::getExchangeDetails);
     // Queue
     router.post(IUDX_MANAGEMENT_QUEUE_URL).handler(this::createQueue);
     router.delete(IUDX_MANAGEMENT_QUEUE_URL + "/:queueId").handler(this::deleteQueue);
-    router.get(IUDX_MANAGEMENT_QUEUE_URL + "/:queueId")
-      .handler(this::getQueueDetails);
+    router.get(IUDX_MANAGEMENT_QUEUE_URL + "/:queueId").handler(this::getQueueDetails);
     // bind
     router.post(IUDX_MANAGEMENT_BIND_URL).handler(this::bindQueue2Exchange);
     // unbind
@@ -187,22 +186,16 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.post(IUDX_MANAGEMENT_VHOST_URL).handler(this::createVHost);
     router.delete(IUDX_MANAGEMENT_VHOST_URL + "/:vhostId").handler(this::deleteVHost);
     // adapter
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/register")
-      .handler(this::registerAdapter);
-    router.delete(IUDX_MANAGEMENT_ADAPTER_URL
-        + "/:domain/:userSHA/:resourceServer/:resourceGroup").handler(this::deleteAdapter);
-    router
-      .get(IUDX_MANAGEMENT_ADAPTER_URL
-          + "/:domain/:userSHA/:resourceServer/:resourceGroup")
-      .handler(this::getAdapterDetails);
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat")
-      .handler(this::publishHeartbeat);
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/register").handler(this::registerAdapter);
+    router.delete(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSHA/:resourceServer/:resourceGroup")
+        .handler(this::deleteAdapter);
+    router.get(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSHA/:resourceServer/:resourceGroup")
+        .handler(this::getAdapterDetails);
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat").handler(this::publishHeartbeat);
     router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/downstreamissue")
-      .handler(this::publishDownstreamIssue);
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/dataissue")
-      .handler(this::publishDataIssue);
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/entities")
-      .handler(this::publishDataFromAdapter);
+        .handler(this::publishDownstreamIssue);
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/dataissue").handler(this::publishDataIssue);
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/entities").handler(this::publishDataFromAdapter);
 
     /**
      * Documentation routes
@@ -229,10 +222,16 @@ public class ApiServerVerticle extends AbstractVerticle {
       keystore = properties.getProperty("keystore");
       keystorePassword = properties.getProperty("keystorePassword");
 
-    } catch (Exception ex) {
-
+    } catch (FileNotFoundException ex) {
       LOGGER.fatal(ex.toString());
-
+    } finally {
+      if (inputstream != null) {
+        try {
+          inputstream.close();
+        } catch (IOException e) {
+          LOGGER.error("FATAL : error while closing input stream");
+        }
+      }
     }
 
     /* Setup the HTTPs server properties, APIs and port. */
@@ -245,14 +244,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* Get a handler for the Service Discovery interface. */
 
 
-    database 
-      = DatabaseService.createProxy(vertx, DATABASE_SERVICE_ADDRESS);
+    database = DatabaseService.createProxy(vertx, DATABASE_SERVICE_ADDRESS);
 
-    authenticator =
-        AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
+    authenticator = AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
 
-    databroker =
-        DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
+    databroker = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
 
 
     managementApi = new ManagementApiImpl();
@@ -291,8 +287,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);
         String resourceName = request.getParam(JSON_RESOURCE_NAME);
         // TODO: append domain & userSha in begining after DB patch.
-        String pathId = resourceServer + "/" + resourceGroup + "/"
-            + resourceName;
+        String pathId = resourceServer + "/" + resourceGroup + "/" + resourceName;
         // parse query params
         NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
         LOGGER.debug("Info : PathId " + pathId);
@@ -314,9 +309,10 @@ public class ApiServerVerticle extends AbstractVerticle {
         /* Authenticating the request */
         authenticator.tokenInterospect(requestBody, authenticationInfo, authHandler -> {
           if (authHandler.succeeded()) {
-            LOGGER.debug("Success: Authenticating entity search request;".concat(authHandler.result().toString()));
-            if (json.containsKey(IUDXQUERY_OPTIONS) && JSON_COUNT
-                .equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
+            LOGGER.debug("Success: Authenticating entity search request;"
+                .concat(authHandler.result().toString()));
+            if (json.containsKey(IUDXQUERY_OPTIONS)
+                && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
               database.countQuery(json, handler -> {
                 if (handler.succeeded()) {
                   handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
@@ -384,9 +380,10 @@ public class ApiServerVerticle extends AbstractVerticle {
         LOGGER.debug("Info: IUDX query json : ;" + json);
         authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
           if (authHandler.succeeded()) {
-            LOGGER.debug("Success: Authenticating entity search request ;".concat(authHandler.result().toString()));
-            if (json.containsKey(IUDXQUERY_OPTIONS) && JSON_COUNT
-                .equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
+            LOGGER.debug("Success: Authenticating entity search request ;"
+                .concat(authHandler.result().toString()));
+            if (json.containsKey(IUDXQUERY_OPTIONS)
+                && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
               database.countQuery(json, handler -> {
                 if (handler.succeeded()) {
                   LOGGER.info("Success: Count Success");
@@ -467,8 +464,8 @@ public class ApiServerVerticle extends AbstractVerticle {
           if (authHandler.succeeded()) {
             LOGGER.debug("Info: Authenticating entity temporal search request;"
                 .concat(authHandler.result().toString()));
-            if (json.containsKey(IUDXQUERY_OPTIONS) && JSON_COUNT
-                .equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
+            if (json.containsKey(IUDXQUERY_OPTIONS)
+                && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
               database.countQuery(json, handler -> {
                 if (handler.succeeded()) {
                   handleResponse(response, ResponseType.Ok, handler.result().toString(), false);
@@ -557,8 +554,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             });
           } else {
             LOGGER.error("Fail: Bad request");
-            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND,
-                true);
+            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND, true);
           }
         } else if (authHandler.failed()) {
           LOGGER.error("Fail: Unauthorized");
@@ -620,18 +616,16 @@ public class ApiServerVerticle extends AbstractVerticle {
                 } else {
                   LOGGER.error("Fail: Appending subscription");
                   handleResponse(response, ResponseType.BadRequestData,
-                      subsRequestHandler.result().toString(), false);
+                      subsRequestHandler.cause().getMessage(), false);
                 }
               });
             } else {
               LOGGER.error("Fail: Bad request");
-              handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_NAME,
-                  true);
+              handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_NAME, true);
             }
           } else {
             LOGGER.error("Fail: Bad request");
-            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND,
-                true);
+            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND, true);
           }
         } else {
           LOGGER.error("Fail: Unauthorized");
@@ -640,8 +634,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       });
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure, MSG_SUB_INVALID_TOKEN,
-          true);
+      handleResponse(response, ResponseType.AuthenticationFailure, MSG_SUB_INVALID_TOKEN, true);
     }
   }
 
@@ -693,18 +686,16 @@ public class ApiServerVerticle extends AbstractVerticle {
                 } else {
                   LOGGER.error("Fail: Bad request");
                   handleResponse(response, ResponseType.BadRequestData,
-                      subsRequestHandler.result().toString(), false);
+                      subsRequestHandler.cause().getMessage(), false);
                 }
               });
             } else {
               LOGGER.error("Fail: Bad request");
-              handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_NAME,
-                  true);
+              handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_NAME, true);
             }
           } else {
             LOGGER.error("Fail: Bad request");
-            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND,
-                true);
+            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND, true);
           }
         } else {
           LOGGER.error("Fail: Authentication");
@@ -713,8 +704,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       });
     } else {
       LOGGER.error("Fail: Authentication");
-      handleResponse(response, ResponseType.AuthenticationFailure, MSG_SUB_INVALID_TOKEN,
-          true);
+      handleResponse(response, ResponseType.AuthenticationFailure, MSG_SUB_INVALID_TOKEN, true);
     }
   }
 
@@ -764,13 +754,12 @@ public class ApiServerVerticle extends AbstractVerticle {
               } else {
                 LOGGER.error("Fail: Bad request");
                 handleResponse(response, ResponseType.BadRequestData,
-                    subHandler.result().toString(), false);
+                    subHandler.cause().getMessage(), false);
               }
             });
           } else {
             LOGGER.error("Fail: Bad request");
-            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND,
-                true);
+            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND, true);
           }
         } else if (authHandler.failed()) {
           LOGGER.error("Fail: Unauthorized");
@@ -833,8 +822,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               }
             });
           } else {
-            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND,
-                true);
+            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND, true);
           }
         } else if (authHandler.failed()) {
           handleResponse(response, ResponseType.AuthenticationFailure, true);
@@ -885,8 +873,8 @@ public class ApiServerVerticle extends AbstractVerticle {
               });
             } else {
               LOGGER.error("Fail: Unauthorized;" + validNameHandler.cause().getMessage());
-              handleResponse(response, ResponseType.BadRequestData,
-                  MSG_INVALID_EXCHANGE_NAME, true);
+              handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_EXCHANGE_NAME,
+                  true);
             }
           });
         } else if (authHandler.failed()) {
@@ -1026,8 +1014,8 @@ public class ApiServerVerticle extends AbstractVerticle {
               });
             } else {
               LOGGER.error("Fail: Bad request");
-              handleResponse(response, ResponseType.BadRequestData,
-                  MSG_INVALID_EXCHANGE_NAME, true);
+              handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_EXCHANGE_NAME,
+                  true);
             }
 
           });
@@ -1230,8 +1218,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
       authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
         if (authHandler.succeeded()) {
-          Future<Boolean> validNameResult =
-              isValidName(requestJson.copy().getString(JSON_VHOST));
+          Future<Boolean> validNameResult = isValidName(requestJson.copy().getString(JSON_VHOST));
           validNameResult.onComplete(validNameHandler -> {
             if (validNameHandler.succeeded()) {
               Future<JsonObject> brokerResult = managementApi.createVHost(requestJson, databroker);
@@ -1248,8 +1235,8 @@ public class ApiServerVerticle extends AbstractVerticle {
               });
             } else {
               LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-              handleResponse(response, ResponseType.BadRequestData,
-                  MSG_INVALID_EXCHANGE_NAME, true);
+              handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_EXCHANGE_NAME,
+                  true);
             }
           });
         } else if (authHandler.failed()) {
@@ -1457,8 +1444,8 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * publish heartbeat details to Rabbit MQ.
    * 
-   * @param routingContext routingContext
-   * Note: This is too frequent an operation to have info or error level logs
+   * @param routingContext routingContext Note: This is too frequent an operation to have info or
+   *        error level logs
    */
   public void publishHeartbeat(RoutingContext routingContext) {
     LOGGER.debug("Info: publishHeartbeat method starts;");
@@ -1499,8 +1486,8 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * publish downstream issues to Rabbit MQ.
    * 
-   * @param routingContext routingContext
-   * Note: This is too frequent an operation to have info or error level logs
+   * @param routingContext routingContext Note: This is too frequent an operation to have info or
+   *        error level logs
    */
   public void publishDownstreamIssue(RoutingContext routingContext) {
     LOGGER.debug("Info: publishDownStreamIssue method started;");
@@ -1542,8 +1529,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * publish data issue to Rabbit MQ.
    * 
-   * @param routingContext routingContext
-   * Note: All logs are debug level only
+   * @param routingContext routingContext Note: All logs are debug level only
    */
   public void publishDataIssue(RoutingContext routingContext) {
     LOGGER.debug("Info: publishDataIssue method started;");
@@ -1583,8 +1569,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * publish data from adapter to rabbit MQ.
    * 
-   * @param routingContext routingContext
-   * Note: All logs are debug level
+   * @param routingContext routingContext Note: All logs are debug level
    */
   public void publishDataFromAdapter(RoutingContext routingContext) {
     LOGGER.debug("Info: publishDataFromAdapter method started;");
@@ -1647,35 +1632,45 @@ public class ApiServerVerticle extends AbstractVerticle {
       boolean isBodyRequired) {
     if (isBodyRequired) {
       System.out.println(reply);
-      if (isValidJSON(reply) && new JsonObject(reply).containsKey(JSON_TYPE)) {
+      if (isValid(reply) && new JsonObject(reply).containsKey(JSON_TYPE)) {
         JsonObject json = new JsonObject(reply);
-        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(json.getInteger(JSON_TYPE)).end(new RestResponse.Builder()
-                .withError(responseType).withMessage(reply).build().toJsonString());
+        response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(json.getInteger(JSON_TYPE))
+            .end(new RestResponse.Builder().withError(responseType).withMessage(reply).build()
+                .toJsonString());
       } else {
-        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(responseType.getCode()).end(new RestResponse.Builder()
-                .withError(responseType).withMessage(reply).build().toJsonString());
+        response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(responseType.getCode())
+            .end(new RestResponse.Builder().withError(responseType).withMessage(reply).build()
+                .toJsonString());
       }
     } else {
-      if (isValidJSON(reply) && new JsonObject(reply).containsKey(JSON_TYPE)) {
+      if (isValid(reply) && new JsonObject(reply).containsKey(JSON_TYPE)) {
         JsonObject json = new JsonObject(reply);
-        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(json.getInteger(JSON_TYPE)).end(reply);
+        response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(json.getInteger(JSON_TYPE))
+            .end(reply);
       } else {
-        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(responseType.getCode()).end(reply);
+        response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(responseType.getCode())
+            .end(reply);
       }
 
 
     }
   }
 
-  private boolean isValidJSON(String jsonString) {
+
+  /**
+   * check for a valid json and no Ip addresses in Json
+   * 
+   * @param jsonString
+   * @return
+   */
+  private boolean isValid(String jsonString) {
     boolean result = false;
     try {
-      new JsonObject(jsonString);
-      result = true;
+      new JsonObject(jsonString); // will throw exception if not valid json.
+      Pattern p = Pattern.compile(
+          "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
+      Matcher m = p.matcher(jsonString);
+      return m.find(); // check for IP through regex.
     } catch (Exception ex) {
       result = false;
     }

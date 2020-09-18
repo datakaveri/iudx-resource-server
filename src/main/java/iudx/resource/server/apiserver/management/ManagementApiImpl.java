@@ -3,8 +3,12 @@ package iudx.resource.server.apiserver.management;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
+import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.util.Constants;
 import iudx.resource.server.databroker.DataBrokerService;
 
@@ -322,7 +326,7 @@ public class ManagementApiImpl implements ManagementApi {
         if (!result.containsKey(Constants.JSON_TYPE)) {
           promise.complete(result);
         } else {
-          promise.fail(result.toString());
+          promise.fail(generateResponse(result).toString());
         }
       } else {
         promise.fail(handler.cause().getMessage());
@@ -419,6 +423,38 @@ public class ManagementApiImpl implements ManagementApi {
       }
     });
     return promise.future();
+  }
+
+  private JsonObject generateResponse(JsonObject response) {
+    JsonObject finalResponse = new JsonObject();
+    int type = response.getInteger(JSON_TYPE);
+    switch (type) {
+      case 400: {
+        finalResponse.put(JSON_TYPE, type)
+            .put(JSON_TITLE, ResponseType.fromString(type).getMessage())
+            .put(JSON_DETAIL, response.getString(JSON_DETAIL));
+        break;
+      }
+      case 404: {
+        finalResponse.put(JSON_TYPE, type)
+            .put(JSON_TITLE, ResponseType.fromString(type).getMessage())
+            .put(JSON_DETAIL, ResponseType.ResourceNotFound.getMessage());
+        break;
+      }
+      case 409: {
+        finalResponse.put(JSON_TYPE, type)
+            .put(JSON_TITLE, ResponseType.fromString(type).getMessage())
+            .put(JSON_DETAIL, ResponseType.AlreadyExists.getMessage());
+        break;
+      }
+      default: {
+        finalResponse.put(JSON_TYPE, ResponseType.BadRequestData.getCode())
+            .put(JSON_TITLE, ResponseType.BadRequestData.getMessage())
+            .put(JSON_DETAIL, response.getString(JSON_DETAIL));
+        break;
+      }
+    }
+    return finalResponse;
   }
 
 }

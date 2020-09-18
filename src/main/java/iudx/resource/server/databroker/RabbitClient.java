@@ -663,7 +663,15 @@ public class RabbitClient {
           LOGGER.info("Error : " + failure);
           promise.fail(failure);
         });
+      } else {
+        promise.fail(
+            getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, "Invalid/Missing Parameters")
+                .toString());
       }
+    } else {
+      promise
+          .fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, "Invalid/Missing Parameters")
+              .toString());
     }
     return promise.future();
   }
@@ -867,10 +875,9 @@ public class RabbitClient {
             if (rh.succeeded()) {
               LOGGER.debug("Info : " + exchangeID + " adaptor deleted successfully");
               finalResponse.mergeIn(getResponseJson(200, "success", "adaptor deleted"));
-              finalResponse.put("id", exchangeID);
             } else if (rh.failed()) {
               finalResponse.clear()
-                  .mergeIn(getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, "adaptor delete",
+                  .mergeIn(getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Adaptor deleted",
                       rh.cause().toString()));
               LOGGER.error("Error : Adaptor deletion failed cause - " + rh.cause());
               promise.fail(finalResponse.toString());
