@@ -278,7 +278,7 @@ public class ManagementApiImpl implements ManagementApi {
         if (!result.containsKey(Constants.JSON_TYPE)) {
           promise.complete(result);
         } else {
-          promise.fail(result.toString());
+          promise.fail(generateResponse(result).toString());
         }
       } else {
         promise.fail(handler.cause().getMessage());
@@ -299,13 +299,10 @@ public class ManagementApiImpl implements ManagementApi {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.info("Result from databroker verticle :: " + result);
-        if (result.containsKey(Constants.JSON_ID)) {
-          promise.complete(result);
-        } else {
-          promise.fail(result.toString());
-        }
-      } else {
-        promise.fail(handler.cause().getMessage());
+         promise.complete(generateResponse(result));
+      } else if (handler.failed()) {
+        JsonObject result = handler.result();
+        promise.fail(generateResponse(result).toString());
       }
     });
     return promise.future();
@@ -429,6 +426,12 @@ public class ManagementApiImpl implements ManagementApi {
     JsonObject finalResponse = new JsonObject();
     int type = response.getInteger(JSON_TYPE);
     switch (type) {
+      case 200: {
+        finalResponse.put(JSON_TYPE, type)
+            .put(JSON_TITLE, ResponseType.fromString(type).getMessage())
+            .put(JSON_DETAIL, response.getString(JSON_DETAIL));
+        break;
+      }
       case 400: {
         finalResponse.put(JSON_TYPE, type)
             .put(JSON_TITLE, ResponseType.fromString(type).getMessage())
