@@ -87,7 +87,7 @@ public class DatabaseServiceTest {
             .put("radius", 100);
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      assertEquals(82.98797, response.getJsonObject(0).getDouble("longitude"));
+      assertEquals(82.987942, response.getJsonObject(0).getDouble("longitude"));
       testContext.completeNow();
     })));
   }
@@ -223,7 +223,7 @@ public class DatabaseServiceTest {
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
       assertTrue(82.9735 <= response.getJsonObject(2).getDouble("longitude")
-          && response.getJsonObject(0).getDouble("longitude") <= 82.9894);
+          && response.getJsonObject(0).getDouble("longitude") <= 82.9896);
       testContext.completeNow();
     })));
   }
@@ -388,7 +388,7 @@ public class DatabaseServiceTest {
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
       OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(5)
-          .getString("time"), dateTimeFormatter);
+          .getString("observationDateTime"), dateTimeFormatter);
       OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
       logger.info("#### response Date " + resDateUtc);
       assertTrue(!(resDateUtc.isBefore(start) || resDateUtc.isAfter(end)));
@@ -438,7 +438,7 @@ public class DatabaseServiceTest {
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
       OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(3)
-          .getString("time"), dateTimeFormatter);
+          .getString("observationDateTime"), dateTimeFormatter);
       OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
       logger.info("#### response Date " + resDateUtc);
       assertTrue(resDateUtc.isAfter(start));
@@ -480,7 +480,7 @@ public class DatabaseServiceTest {
   
       dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
         OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(0)
-            .getString("time"), dateTimeFormatter);
+            .getString("observationDateTime"), dateTimeFormatter);
         OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
         logger.info("#### response Date " + resDateUtc);
         assertTrue(resDateUtc.isEqual(start));
@@ -547,19 +547,19 @@ public class DatabaseServiceTest {
             .put("searchType", "temporalSearch_geoSearch_responseFilter_")
             .put("timerel", "before").put("time","2020-06-01T14:20:00Z").put("lon", 82.987988)
             .put("lat", 25.319768).put("radius", 100).put("attrs", new JsonArray()
-            .add("id").add("longitude").add("time"));
+            .add("id").add("longitude").add("observationDateTime"));
     Set<String> attrs = new HashSet<>();
     attrs.add("id");
-    attrs.add("time");
+    attrs.add("observationDateTime");
     attrs.add("longitude");
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
     OffsetDateTime start = OffsetDateTime.parse("2020-06-01T14:20:00Z",dateTimeFormatter);
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
       OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(3)
-          .getString("time"), dateTimeFormatter);
+          .getString("observationDateTime"), dateTimeFormatter);
       OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
-      assertEquals(82.98797, response.getJsonObject(0).getDouble("longitude"));
+      assertEquals(82.987942, response.getJsonObject(0).getDouble("longitude"));
       assertTrue(resDateUtc.isBefore(start));
       assertEquals(attrs,response.getJsonObject(2).fieldNames());
       testContext.completeNow();
@@ -598,9 +598,9 @@ public class DatabaseServiceTest {
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
       OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(3)
-          .getString("time"), dateTimeFormatter);
+          .getString("observationDateTime"), dateTimeFormatter);
       OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
-      assertEquals(82.98797, response.getJsonObject(0).getDouble("longitude"));
+      assertEquals(82.987942, response.getJsonObject(0).getDouble("longitude"));
       assertTrue(resDateUtc.isBefore(start));
       testContext.completeNow();
     })));
@@ -758,10 +758,10 @@ public class DatabaseServiceTest {
         .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-bins/234")
         .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-bins/693"))
         .put("searchType","latestSearch").put("attrs", new JsonArray().add("id")
-            .add("time"));
+            .add("observationDateTime"));
     Set<String> attrs = new HashSet<>();
     attrs.add("id");
-    attrs.add("time");
+    attrs.add("observationDateTime");
     JsonArray id = request.getJsonArray("id");
     JsonArray idFromResponse = new JsonArray();
     dbService.searchQuery(request, testContext.succeeding(response -> {

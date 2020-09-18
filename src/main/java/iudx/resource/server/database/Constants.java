@@ -45,6 +45,7 @@ public class Constants {
   static final String DOCS_KEY = "docs";
   static final String SEARCH_REQ_PARAM = "/_search";
   static final String COUNT_REQ_PARAM = "/_count";
+  static final String TIME_FIELD_DB = "observationDateTime";
   /* Request Params */
   /* Temporal */
   static final String REQ_TIMEREL = "timerel";
