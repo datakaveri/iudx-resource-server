@@ -1325,8 +1325,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                   brokerResultHandler.result().toString(), false);
             } else if (brokerResult.failed()) {
               LOGGER.error("Fail: Bad request" + brokerResultHandler.cause().getMessage());
-              JsonObject brokerResponse = brokerResult.result();
-              if(brokerResponse.getInteger("type") == 409) {
+              if(brokerResultHandler.cause().getMessage().contains("409")) {
                 handleResponse(response, ResponseType.AlreadyExists,
                     brokerResultHandler.cause().getMessage(), false);
               } else {
