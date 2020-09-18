@@ -166,7 +166,7 @@ public class QueryDecoder {
         rangeTimeQuery = TIME_QUERY.replace("$1", GREATER_THAN).replace("$2", time);
 
       } else if ("tequals".equalsIgnoreCase(timeRelation)) {
-        rangeTimeQuery = TERM_QUERY.replace("$1", TIME_KEY).replace("$2", time);
+        rangeTimeQuery = TERM_QUERY.replace("$1", TIME_FIELD_DB).replace("$2", time);
 
       } else {
         return new JsonObject().put(ERROR, MISSING_TEMPORAL_FIELDS);

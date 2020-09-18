@@ -23,7 +23,7 @@ import static iudx.resource.server.database.Constants.*;
 public class ElasticClient {
 
   private final RestClient client;
-
+  
   /**
    * ElasticClient - Elastic Low level wrapper.
    * 
