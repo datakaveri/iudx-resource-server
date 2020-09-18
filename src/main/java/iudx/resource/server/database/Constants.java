@@ -22,7 +22,6 @@ public class Constants {
   static final String BOOL_KEY = "bool";
   static final String VARANASI_TEST_SEARCH_INDEX = "varanasi/_search";
   static final String VARANASI_TEST_COUNT_INDEX = "varanasi/_count";
-  static final String VARANASI_LATEST_RESOURCE_INDEX = "varanasi-latest/_mget";
   static final String LATEST_RESOURCE_INDEX = "latest/_mget";
   static final String SOURCE_FILTER_KEY = "_source";
   static final String RANGE_KEY = "range";
@@ -97,6 +96,7 @@ public class Constants {
   static final String ID_NOT_FOUND = "No id found";
   static final String EMPTY_RESOURCE_ID = "resource-id is empty";
   static final String SEARCHTYPE_NOT_FOUND = "No searchType found";
+  static final String BAD_PARAMETERS = "Bad parameters";
   /* Search Regex */
   static final String GEOSEARCH_REGEX = "(.*)geoSearch(.*)";
   static final String RESPONSE_FILTER_REGEX = "(.*)responseFilter(.*)";

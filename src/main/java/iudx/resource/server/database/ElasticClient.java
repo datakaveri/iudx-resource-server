@@ -23,7 +23,7 @@ import static iudx.resource.server.database.Constants.*;
 public class ElasticClient {
 
   private final RestClient client;
-  
+
   /**
    * ElasticClient - Elastic Low level wrapper.
    * 
@@ -57,11 +57,6 @@ public class ElasticClient {
         JsonArray dbResponse = new JsonArray();
 
         try {
-          int statusCode = response.getStatusLine().getStatusCode();
-          if (statusCode != 200 && statusCode != 204) {
-            searchHandler.handle(Future.failedFuture(DB_ERROR_2XX));
-            return;
-          }
 
           JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
           if (!responseJson.containsKey(HITS) && !responseJson.containsKey(DOCS_KEY)) {
@@ -86,7 +81,7 @@ public class ElasticClient {
 
       @Override
       public void onFailure(Exception e) {
-        searchHandler.handle(Future.failedFuture(e));
+        searchHandler.handle(Future.failedFuture(BAD_PARAMETERS));
       }
     });
     return this;
