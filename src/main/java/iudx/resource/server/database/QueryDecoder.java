@@ -35,7 +35,7 @@ public class QueryDecoder {
 
     JsonObject boolObject = new JsonObject().put(BOOL_KEY, new JsonObject());
     filterQuery.add(new JsonObject(
-        TERMS_QUERY.replace("$1", RESOURCE_ID_KEY + ".keyword").replace("$2", id.encode())));
+        TERMS_QUERY.replace("$1", RESOURCE_ID_KEY).replace("$2", id.encode())));
 
     /* TODO: Pagination for large result set */
     if (request.containsKey(SEARCH_KEY) && request.getBoolean(SEARCH_KEY)) {
