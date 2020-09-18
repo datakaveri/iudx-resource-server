@@ -9,6 +9,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.ext.web.client.WebClient;
@@ -60,12 +61,6 @@ public class SubscriptionService {
           String streamingUserName = result.getString("shaUsername");
           String apiKey = result.getString("apiKey");
           
-          // For testing instead of generateRandomPassword() use password = 1234
-          String streamingUrl =
-              "amqp://" + streamingUserName + ":" + apiKey // generateRandomPassword()
-                  + "@" + Constants.BROKER_PRODUCTION_DOMAIN + ":"
-                  + Constants.BROKER_PRODUCTION_PORT + "/" + Constants.VHOST_IUDX + "/" + queueName;
-          LOGGER.debug("Info : Streaming URL is : " + streamingUrl);
           JsonArray entitites = request.getJsonArray(ENTITIES);
           LOGGER.debug("Info : Request Access for " + entitites);
           LOGGER.debug("Info : No of bindings to do : " + entitites.size());
@@ -95,7 +90,7 @@ public class SubscriptionService {
                           rabbitClient.deleteQueue(requestjson, vhost);
                       resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                         if (resultHandlerDeletequeue.succeeded()) {
-                          promise.fail(getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY)
+                          promise.fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, INVALID_ROUTING_KEY)
                               .toString());
                         }
                       });
@@ -124,7 +119,7 @@ public class SubscriptionService {
                             resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                               if (resultHandlerDeletequeue.succeeded()) {
                                 promise
-                                    .fail(getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED)
+                                    .fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, BINDING_FAILED)
                                         .toString());
                               }
                             });
@@ -137,10 +132,8 @@ public class SubscriptionService {
                              */
                             registerStreamingSubscriptionResponse.put(Constants.APIKEY,
                                 apiKey);
-                            registerStreamingSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
+                            registerStreamingSubscriptionResponse.put(Constants.ID,
                                 queueName);
-                            registerStreamingSubscriptionResponse.put(Constants.STREAMING_URL,
-                                streamingUrl);
                             registerStreamingSubscriptionResponse.put(Constants.URL,
                                 Constants.BROKER_PRODUCTION_DOMAIN);
                             registerStreamingSubscriptionResponse.put(Constants.PORT,
@@ -155,7 +148,7 @@ public class SubscriptionService {
                               rabbitClient.deleteQueue(requestjson, vhost);
                           resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                             if (resultHandlerDeletequeue.succeeded()) {
-                              promise.fail(getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED)
+                              promise.fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, BINDING_FAILED)
                                   .toString());
                             }
                           });
@@ -168,7 +161,7 @@ public class SubscriptionService {
                         rabbitClient.deleteQueue(requestjson, vhost);
                     resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                       if (resultHandlerDeletequeue.succeeded()) {
-                        promise.fail(getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY)
+                        promise.fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, INVALID_ROUTING_KEY)
                             .toString());
                       }
                     });
@@ -184,7 +177,7 @@ public class SubscriptionService {
       });
     } else {
       LOGGER.error("Fail : Error in payload");
-      promise.fail(getResponseJson(BAD_REQUEST_CODE, ERROR, BAD_REQUEST_DATA).toString());
+      promise.fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, PAYLOAD_ERROR).toString());
     }
     return promise.future();
   }
@@ -206,12 +199,6 @@ public class SubscriptionService {
           String streamingUserName = result.getString("shaUsername");
           String apiKey = result.getString("apiKey");
 
-          // For testing instead of generateRandomPassword() use password = 1234
-          String streamingUrl =
-              "amqp://" + streamingUserName + ":" + apiKey // generateRandomPassword()
-                  + "@" + Constants.BROKER_PRODUCTION_DOMAIN + ":"
-                  + Constants.BROKER_PRODUCTION_PORT + "/" + Constants.VHOST_IUDX + "/" + queueName;
-          LOGGER.debug("Info : Streaming URL is : " + streamingUrl);
           JsonArray entitites = request.getJsonArray(ENTITIES);
           LOGGER.debug("Info : Request Access for " + entitites);
           LOGGER.debug("Info : No of bindings to do : " + entitites.size());
@@ -281,24 +268,8 @@ public class SubscriptionService {
                                   }
                                 });
                               } else if (totalBindSuccess == totalBindCount) {
-                                updateStreamingSubscriptionResponse.put(Constants.USER_NAME,
-                                    streamingUserName);
-                                /*
-                                 * APIKEY should be equal to password generated. For testing use
-                                 * Constants.APIKEY_TEST_EXAMPLE
-                                 */
-                                updateStreamingSubscriptionResponse.put(Constants.APIKEY,
-                                    apiKey);
-                                updateStreamingSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
-                                    queueName);
-                                updateStreamingSubscriptionResponse.put(Constants.STREAMING_URL,
-                                    streamingUrl);
-                                updateStreamingSubscriptionResponse.put(Constants.URL,
-                                    Constants.BROKER_PRODUCTION_DOMAIN);
-                                updateStreamingSubscriptionResponse.put(Constants.PORT,
-                                    Constants.BROKER_PRODUCTION_PORT);
-                                updateStreamingSubscriptionResponse.put(Constants.VHOST,
-                                    Constants.VHOST_IUDX);
+                                updateStreamingSubscriptionResponse.put(Constants.ENTITIES,
+                                    entitites);
                                 promise.complete(updateStreamingSubscriptionResponse);
                               }
                             } else if (resultHandlerbind.failed()) {
@@ -404,15 +375,7 @@ public class SubscriptionService {
                         LOGGER.error("failed ::" + resultHandlerbind.cause());
                         promise.fail(new JsonObject().put(ERROR, "Binding Failed").toString());
                       } else if (totalBindSuccess == totalBindCount) {
-                        appendStreamingSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
-                            queueName);
                         appendStreamingSubscriptionResponse.put(Constants.ENTITIES, entitites);
-                        appendStreamingSubscriptionResponse.put(Constants.URL,
-                            Constants.BROKER_PRODUCTION_DOMAIN);
-                        appendStreamingSubscriptionResponse.put(Constants.PORT,
-                            Constants.BROKER_PRODUCTION_PORT);
-                        appendStreamingSubscriptionResponse.put(Constants.VHOST,
-                            Constants.VHOST_IUDX);
                         promise.complete(appendStreamingSubscriptionResponse);
                       }
                     } else if (resultHandlerbind.failed()) {
@@ -463,7 +426,8 @@ public class SubscriptionService {
             LOGGER.debug("failed :: Response is " + deleteQueueResponse);
             promise.fail(deleteQueueResponse.toString());
           } else {
-            deleteStreamingSubscription.put(SUBSCRIPTION_ID, queueName);
+            deleteStreamingSubscription.mergeIn(getResponseJson(HttpStatus.SC_OK, SUCCESS,
+                "Subscription deleted Successfully"));
             promise.complete(deleteStreamingSubscription);
           }
         }
@@ -522,145 +486,135 @@ public class SubscriptionService {
       LOGGER.debug("Info : Call Back registration ID check starts");
       String query = SELECT_CALLBACK.replace("$1", subscriptionID);
       LOGGER.debug("Info : " + query);
-      pgSQLClient.executeAsync(query)
-          .onComplete(resultHandlerSelectID -> {
-            if (resultHandlerSelectID.succeeded()) {
-              RowSet<Row> result = resultHandlerSelectID.result();
-              /* Iterating Rows for getting entity, callbackurl, username and password */
-              String subscriptionIDdb = null;
-              for (Row row : result) {
-                subscriptionIDdb = row.getString(0);
-                LOGGER.debug(subscriptionIDdb);
-              }
-              if (subscriptionID.equalsIgnoreCase(subscriptionIDdb)) {
-                LOGGER.error("error : Call Back registration has duplicate ID");
-                registerCallbackSubscriptionResponse.clear()
-                    .mergeIn(
-                        getResponseJson(INTERNAL_ERROR_CODE, SQL_ERROR, DUPLICATE_KEY));
-                promise.fail(registerCallbackSubscriptionResponse.toString());
-              } else {
+      pgSQLClient.executeAsync(query).onComplete(resultHandlerSelectID -> {
+        if (resultHandlerSelectID.succeeded()) {
+          RowSet<Row> result = resultHandlerSelectID.result();
+          /* Iterating Rows for getting entity, callbackurl, username and password */
+          String subscriptionIDdb = null;
+          for (Row row : result) {
+            subscriptionIDdb = row.getString(0);
+            LOGGER.debug(subscriptionIDdb);
+          }
+          if (subscriptionID.equalsIgnoreCase(subscriptionIDdb)) {
+            LOGGER.error("error : Call Back registration has duplicate ID");
+            registerCallbackSubscriptionResponse.clear()
+                .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, SQL_ERROR, DUPLICATE_KEY));
+            promise.fail(registerCallbackSubscriptionResponse.toString());
+          } else {
 
-                OffsetDateTime dateTime = OffsetDateTime.now();
-                String callbackUrl = request.getString(Constants.CALLBACKURL);
-                String queueName = request.getString(Constants.QUEUE);
-                JsonArray entitites = request.getJsonArray(Constants.ENTITIES);
-                totalBindCount = entitites.size();
-                totalBindSuccess = 0;
-                requestjson.put(Constants.QUEUE_NAME, queueName);
+            OffsetDateTime dateTime = OffsetDateTime.now();
+            String callbackUrl = request.getString(Constants.CALLBACKURL);
+            String queueName = request.getString(Constants.QUEUE);
+            JsonArray entitites = request.getJsonArray(Constants.ENTITIES);
+            totalBindCount = entitites.size();
+            totalBindSuccess = 0;
+            requestjson.put(Constants.QUEUE_NAME, queueName);
 
-                for (Object currentEntity : entitites) {
-                  String routingKey = (String) currentEntity;
-                  LOGGER.info("routingKey is " + routingKey);
-                  if (routingKey != null) {
-                    if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
-                        || routingKey.split("/").length != 5) {
-                      LOGGER.error("failed :: Invalid (or) NULL routingKey");
-                      registerCallbackSubscriptionResponse.clear().mergeIn(
-                          getResponseJson(INTERNAL_ERROR_CODE, ERROR, INVALID_ROUTING_KEY));
-                      promise.fail(registerCallbackSubscriptionResponse.toString());
-                    } else {
-                      LOGGER.debug("Info : Valid ID :: Call Back registration starts");
-                      String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
-                      JsonArray array = new JsonArray();
-                      array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
-                      JsonObject json = new JsonObject();
-                      json.put(Constants.EXCHANGE_NAME, exchangeName);
-                      json.put(Constants.QUEUE_NAME, queueName);
-                      json.put(Constants.ENTITIES, array);
+            for (Object currentEntity : entitites) {
+              String routingKey = (String) currentEntity;
+              LOGGER.info("routingKey is " + routingKey);
+              if (routingKey != null) {
+                if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
+                    || routingKey.split("/").length != 5) {
+                  LOGGER.error("failed :: Invalid (or) NULL routingKey");
+                  registerCallbackSubscriptionResponse.clear()
+                      .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, INVALID_ROUTING_KEY));
+                  promise.fail(registerCallbackSubscriptionResponse.toString());
+                } else {
+                  LOGGER.debug("Info : Valid ID :: Call Back registration starts");
+                  String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
+                  JsonArray array = new JsonArray();
+                  array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                  JsonObject json = new JsonObject();
+                  json.put(Constants.EXCHANGE_NAME, exchangeName);
+                  json.put(Constants.QUEUE_NAME, queueName);
+                  json.put(Constants.ENTITIES, array);
 
-                      Future<JsonObject> resultbind = rabbitClient.bindQueue(json, vhost);
-                      resultbind.onComplete(resultHandlerbind -> {
-                        if (resultHandlerbind.succeeded()) {
-                          totalBindSuccess += 1;
-                          LOGGER.debug("sucess :: totalBindSuccess " + totalBindSuccess
-                              + resultHandlerbind.result());
-                          JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
-                          if (bindResponse.containsKey(Constants.TITLE) && bindResponse
-                              .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
-                            LOGGER.error("failed ::" + resultHandlerbind.cause());
+                  Future<JsonObject> resultbind = rabbitClient.bindQueue(json, vhost);
+                  resultbind.onComplete(resultHandlerbind -> {
+                    if (resultHandlerbind.succeeded()) {
+                      totalBindSuccess += 1;
+                      LOGGER.debug("sucess :: totalBindSuccess " + totalBindSuccess
+                          + resultHandlerbind.result());
+                      JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
+                      if (bindResponse.containsKey(Constants.TITLE) && bindResponse
+                          .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+                        LOGGER.error("failed ::" + resultHandlerbind.cause());
+                        String deleteQuery = DELETE_CALLBACK.replace("$1", subscriptionID);
+                        pgSQLClient.executeAsync(deleteQuery).onComplete(resulthandlerdel -> {
+                          if (resulthandlerdel.succeeded()) {
+                            registerCallbackSubscriptionResponse.clear().mergeIn(
+                                getResponseJson(INTERNAL_ERROR_CODE, ERROR, BINDING_FAILED));
+                            promise.fail(registerCallbackSubscriptionResponse.toString());
+                          }
+                        });
+                      } else if (totalBindSuccess == totalBindCount) {
+                        String insertQuery = INSERT_CALLBACK.replace("$1", subscriptionID)
+                            .replace("$2", callbackUrl).replace("$3", entitites.toString())
+                            .replace("$4", dateTime.toString()).replace("$5", dateTime.toString())
+                            .replace("$6", dateTime.toString());
+                        pgSQLClient.executeAsync(insertQuery).onComplete(ar -> {
+                          if (ar.succeeded()) {
+                            String exchangename = "callback.notification";
+                            String routingkey = "create";
+
+                            JsonObject jsonpg = new JsonObject();
+                            jsonpg.put("body", publishjson.toString());
+                            rabbitClient.getRabbitMQClient().basicPublish(exchangename, routingkey,
+                                jsonpg, resultHandler -> {
+                                  if (resultHandler.succeeded()) {
+                                    registerCallbackSubscriptionResponse.put("subscriptionID",
+                                        subscriptionID);
+                                    LOGGER.info("Message published to queue");
+                                    promise.complete(registerCallbackSubscriptionResponse);
+                                  } else {
+                                    String deleteQuery =
+                                        DELETE_CALLBACK.replace("$1", subscriptionID);
+                                    pgSQLClient.executeAsync(deleteQuery).onComplete(deletepg -> {
+                                      if (deletepg.succeeded()) {
+                                        registerCallbackSubscriptionResponse.clear()
+                                            .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR,
+                                                MSG_PUBLISH_FAILED));
+                                        promise
+                                            .fail(registerCallbackSubscriptionResponse.toString());
+                                      }
+                                    });
+                                  }
+                                });
+                          } else {
+                            LOGGER.error("failed ::" + ar.cause().getMessage());
                             String deleteQuery = DELETE_CALLBACK.replace("$1", subscriptionID);
                             pgSQLClient.executeAsync(deleteQuery)
-                                .onComplete(resulthandlerdel -> {
-                                  if (resulthandlerdel.succeeded()) {
+                                .onComplete(resultHandlerDeletequeuepg -> {
+                                  if (resultHandlerDeletequeuepg.succeeded()) {
                                     registerCallbackSubscriptionResponse.clear()
-                                        .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR,
-                                            BINDING_FAILED));
+                                        .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, SQL_ERROR,
+                                            DUPLICATE_KEY));
                                     promise.fail(registerCallbackSubscriptionResponse.toString());
                                   }
                                 });
-                          } else if (totalBindSuccess == totalBindCount) {
-                                String insertQuery = INSERT_CALLBACK.replace("$1", subscriptionID)
-                                    .replace("$2", callbackUrl).replace("$3", entitites.toString())
-                                    .replace("$4", dateTime.toString()).replace("$5", dateTime.toString())
-                                    .replace("$6", dateTime.toString());
-                            pgSQLClient.executeAsync(insertQuery)
-                                .onComplete(ar -> {
-                                  if (ar.succeeded()) {
-                                    String exchangename = "callback.notification";
-                                    String routingkey = "create";
-
-                                    JsonObject jsonpg = new JsonObject();
-                                    jsonpg.put("body", publishjson.toString());
-                                    rabbitClient.getRabbitMQClient().basicPublish(exchangename,
-                                        routingkey, jsonpg, resultHandler -> {
-                                          if (resultHandler.succeeded()) {
-                                            registerCallbackSubscriptionResponse
-                                                .put("subscriptionID", subscriptionID);
-                                            LOGGER.info("Message published to queue");
-                                            promise.complete(registerCallbackSubscriptionResponse);
-                                          } else {
-                                            String deleteQuery = DELETE_CALLBACK.replace("$1", subscriptionID);
-                                            pgSQLClient
-                                                .executeAsync(deleteQuery)
-                                                .onComplete(deletepg -> {
-                                                  if (deletepg.succeeded()) {
-                                                    registerCallbackSubscriptionResponse.clear()
-                                                        .mergeIn(
-                                                            getResponseJson(INTERNAL_ERROR_CODE,
-                                                                ERROR, MSG_PUBLISH_FAILED));
-                                                    promise
-                                                        .fail(registerCallbackSubscriptionResponse
-                                                            .toString());
-                                                  }
-                                                });
-                                          }
-                                        });
-                                  } else {
-                                    LOGGER.error("failed ::" + ar.cause().getMessage());
-                                    String deleteQuery = DELETE_CALLBACK.replace("$1", subscriptionID);
-                                    pgSQLClient
-                                        .executeAsync(deleteQuery)
-                                        .onComplete(resultHandlerDeletequeuepg -> {
-                                          if (resultHandlerDeletequeuepg.succeeded()) {
-                                            registerCallbackSubscriptionResponse.clear()
-                                                .mergeIn(getResponseJson(INTERNAL_ERROR_CODE,
-                                                    SQL_ERROR, DUPLICATE_KEY));
-                                            promise.fail(
-                                                registerCallbackSubscriptionResponse.toString());
-                                          }
-                                        });
-                                  }
-                                });
                           }
-                        } else if (resultHandlerbind.failed()) {
-                          LOGGER.error("failed ::" + resultHandlerbind.cause());
-                          registerCallbackSubscriptionResponse.clear()
-                              .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED));
-                          promise.fail(registerCallbackSubscriptionResponse.toString());
-                        }
-                      });
+                        });
+                      }
+                    } else if (resultHandlerbind.failed()) {
+                      LOGGER.error("failed ::" + resultHandlerbind.cause());
+                      registerCallbackSubscriptionResponse.clear()
+                          .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED));
+                      promise.fail(registerCallbackSubscriptionResponse.toString());
                     }
-                  } else {
-                    // TODO : DOUBT : why future passing even its handler failed ?.
-                    LOGGER.error("failed :: Invalid (or) NULL routingKey");
-                    registerCallbackSubscriptionResponse.clear()
-                        .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY));
-                    promise.complete(registerCallbackSubscriptionResponse);
-                  }
+                  });
                 }
+              } else {
+                // TODO : DOUBT : why future passing even its handler failed ?.
+                LOGGER.error("failed :: Invalid (or) NULL routingKey");
+                registerCallbackSubscriptionResponse.clear()
+                    .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY));
+                promise.complete(registerCallbackSubscriptionResponse);
               }
             }
-          });
+          }
+        }
+      });
     } else {
       LOGGER.error("Fail : Error in payload");
       registerCallbackSubscriptionResponse.clear()
@@ -723,38 +677,37 @@ public class SubscriptionService {
                       .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED));
                   promise.fail(updateCallbackSubscriptionResponse.toString());
                 } else if (totalBindSuccess == totalBindCount) {
-                  String updateQuery = UPDATE_CALLBACK.replace("$1", entities.toString()).replace("$2", subscriptionID);
-                  pgSQLClient.executeAsync(updateQuery)
-                      .onComplete(ar -> {
-                        if (ar.succeeded()) {
-                          String exchangename = "callback.notification";
-                          String routingkey = "update";
+                  String updateQuery = UPDATE_CALLBACK.replace("$1", entities.toString())
+                      .replace("$2", subscriptionID);
+                  pgSQLClient.executeAsync(updateQuery).onComplete(ar -> {
+                    if (ar.succeeded()) {
+                      String exchangename = "callback.notification";
+                      String routingkey = "update";
 
-                          JsonObject jsonpg = new JsonObject();
-                          jsonpg.put("body", publishjson.toString());
+                      JsonObject jsonpg = new JsonObject();
+                      jsonpg.put("body", publishjson.toString());
 
-                          rabbitClient.getRabbitMQClient().basicPublish(exchangename, routingkey,
-                              jsonpg, resultHandler -> {
-                                if (resultHandler.succeeded()) {
-                                  updateCallbackSubscriptionResponse.put("subscriptionID",
-                                      subscriptionID);
-                                  LOGGER.debug("Info : Message published to queue");
-                                  promise.complete(updateCallbackSubscriptionResponse);
-                                } else {
-                                  LOGGER.error("Fail : Message published failed");
-                                  updateCallbackSubscriptionResponse.clear()
-                                      .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR,
-                                          MSG_PUBLISH_FAILED));
-                                  promise.fail(updateCallbackSubscriptionResponse.toString());
-                                }
-                              });
-                        } else {
-                          LOGGER.error("failed ::" + ar.cause().getMessage());
-                          updateCallbackSubscriptionResponse.clear().mergeIn(
-                              getResponseJson(INTERNAL_ERROR_CODE, SQL_ERROR, DUPLICATE_KEY));
-                          promise.fail(updateCallbackSubscriptionResponse.toString());
-                        }
-                      });
+                      rabbitClient.getRabbitMQClient().basicPublish(exchangename, routingkey,
+                          jsonpg, resultHandler -> {
+                            if (resultHandler.succeeded()) {
+                              updateCallbackSubscriptionResponse.put("subscriptionID",
+                                  subscriptionID);
+                              LOGGER.debug("Info : Message published to queue");
+                              promise.complete(updateCallbackSubscriptionResponse);
+                            } else {
+                              LOGGER.error("Fail : Message published failed");
+                              updateCallbackSubscriptionResponse.clear().mergeIn(
+                                  getResponseJson(INTERNAL_ERROR_CODE, ERROR, MSG_PUBLISH_FAILED));
+                              promise.fail(updateCallbackSubscriptionResponse.toString());
+                            }
+                          });
+                    } else {
+                      LOGGER.error("failed ::" + ar.cause().getMessage());
+                      updateCallbackSubscriptionResponse.clear()
+                          .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, SQL_ERROR, DUPLICATE_KEY));
+                      promise.fail(updateCallbackSubscriptionResponse.toString());
+                    }
+                  });
                 }
               } else if (resultHandlerbind.failed()) {
                 LOGGER.error("failed ::" + resultHandlerbind.cause());
@@ -793,56 +746,54 @@ public class SubscriptionService {
           domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
       LOGGER.debug("Info : Call Back registration ID check starts");
       String selectQuery = SELECT_CALLBACK.replace("$1", subscriptionID);
-      pgSQLClient.executeAsync(selectQuery)
-          .onComplete(resultHandlerSelectID -> {
-            if (resultHandlerSelectID.succeeded()) {
-              RowSet<Row> result = resultHandlerSelectID.result();
-              /* Iterating Rows for getting entity, callbackurl, username and password */
-              String subscriptionIDdb = null;
-              for (Row row : result) {
-                subscriptionIDdb = row.getString(0);
-                LOGGER.debug("Info : " + subscriptionIDdb);
-              }
-              if (!subscriptionID.equalsIgnoreCase(subscriptionIDdb)) {
-                LOGGER.debug("Info : Call Back ID not found");
-                deleteCallbackSubscriptionResponse.put(Constants.ERROR, "Call Back ID not found");
-                promise.fail(deleteCallbackSubscriptionResponse.toString());
+      pgSQLClient.executeAsync(selectQuery).onComplete(resultHandlerSelectID -> {
+        if (resultHandlerSelectID.succeeded()) {
+          RowSet<Row> result = resultHandlerSelectID.result();
+          /* Iterating Rows for getting entity, callbackurl, username and password */
+          String subscriptionIDdb = null;
+          for (Row row : result) {
+            subscriptionIDdb = row.getString(0);
+            LOGGER.debug("Info : " + subscriptionIDdb);
+          }
+          if (!subscriptionID.equalsIgnoreCase(subscriptionIDdb)) {
+            LOGGER.debug("Info : Call Back ID not found");
+            deleteCallbackSubscriptionResponse.put(Constants.ERROR, "Call Back ID not found");
+            promise.fail(deleteCallbackSubscriptionResponse.toString());
+          } else {
+            JsonObject publishjson = new JsonObject();
+            publishjson.put(Constants.SUBSCRIPTION_ID, subscriptionID);
+            publishjson.put(Constants.OPERATION, "delete");
+            String deleteQuery = DELETE_CALLBACK.replace("$1", subscriptionID);
+            pgSQLClient.executeAsync(deleteQuery).onComplete(ar -> {
+              if (ar.succeeded()) {
+                String exchangename = "callback.notification";
+                String routingkey = "delete";
+                JsonObject jsonpg = new JsonObject();
+                jsonpg.put("body", publishjson.toString());
+                rabbitClient.getRabbitMQClient().basicPublish(exchangename, routingkey, jsonpg,
+                    resultHandler -> {
+                      if (resultHandler.succeeded()) {
+                        deleteCallbackSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
+                            subscriptionID);
+                        LOGGER.debug("Info : Message published to queue");
+                      } else {
+                        LOGGER.debug("Info : Message published failed");
+                        deleteCallbackSubscriptionResponse.clear().mergeIn(
+                            getResponseJson(INTERNAL_ERROR_CODE, ERROR, MSG_PUBLISH_FAILED));
+                      }
+                      promise.complete(deleteCallbackSubscriptionResponse);
+                    });
               } else {
-                JsonObject publishjson = new JsonObject();
-                publishjson.put(Constants.SUBSCRIPTION_ID, subscriptionID);
-                publishjson.put(Constants.OPERATION, "delete");
-                String deleteQuery = DELETE_CALLBACK.replace("$1", subscriptionID);
-                pgSQLClient.executeAsync(deleteQuery)
-                    .onComplete(ar -> {
-                  if (ar.succeeded()) {
-                    String exchangename = "callback.notification";
-                    String routingkey = "delete";
-                    JsonObject jsonpg = new JsonObject();
-                    jsonpg.put("body", publishjson.toString());
-                    rabbitClient.getRabbitMQClient().basicPublish(exchangename, routingkey, jsonpg,
-                        resultHandler -> {
-                          if (resultHandler.succeeded()) {
-                            deleteCallbackSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
-                                subscriptionID);
-                                LOGGER.debug("Info : Message published to queue");
-                          } else {
-                                LOGGER.debug("Info : Message published failed");
-                                deleteCallbackSubscriptionResponse.clear().mergeIn(getResponseJson(
-                                    INTERNAL_ERROR_CODE, ERROR, MSG_PUBLISH_FAILED));
-                          }
-                          promise.complete(deleteCallbackSubscriptionResponse);
-                        });
-                  } else {
-                    LOGGER.error("failed ::" + ar.cause().getMessage());
-                    deleteCallbackSubscriptionResponse.put(Constants.ERROR, "delete failed");
-                        deleteCallbackSubscriptionResponse.clear()
-                            .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, FAILURE));
-                    promise.complete(deleteCallbackSubscriptionResponse);
-                  }
-                });
+                LOGGER.error("failed ::" + ar.cause().getMessage());
+                deleteCallbackSubscriptionResponse.put(Constants.ERROR, "delete failed");
+                deleteCallbackSubscriptionResponse.clear()
+                    .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, FAILURE));
+                promise.complete(deleteCallbackSubscriptionResponse);
               }
-            }
-          });
+            });
+          }
+        }
+      });
     } else {
       LOGGER.error("Fail : Error in payload");
       deleteCallbackSubscriptionResponse.clear()

@@ -686,11 +686,6 @@ public class DataBrokerServiceTest {
     String queueName = "google.org/98a9a7401988c2cde925b406b7ec2a8a99e7f9f8/alias-pawan";
     JsonObject expected = new JsonObject();
     expected.put(SUBSCRIPTION_ID, queueName);
-    expected.put("streamingURL",
-        "amqp://pawan@google.org:123456" // generateRandomPassword()
-        + "@" + Constants.BROKER_PRODUCTION_DOMAIN + ":" + Constants.BROKER_PRODUCTION_PORT + "/"
-            + Constants.VHOST_IUDX + "/" + queueName);
-
     expected.put(USER_NAME, "pawan@google.org");
     expected.put(APIKEY, "123456");
     expected.put(URL, BROKER_PRODUCTION_DOMAIN);
@@ -803,15 +798,12 @@ public class DataBrokerServiceTest {
 
     String queueName = "google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan";
     JsonObject expected = new JsonObject();
-    expected.put(SUBSCRIPTION_ID, queueName);
+    expected.put(ID, queueName);
     expected.put(USER_NAME, "pawan@google.org");
     expected.put(APIKEY, "123456");
     expected.put(URL, "databroker.iudx.io");
     expected.put(PORT, "5671");
     expected.put(VHOST, "IUDX");
-
-    expected.put("streamingURL",
-        "amqp://pawan@google.org:1234@68.183.80.248:5672/IUDX/google.org/63ac4f5d7fd26840f955408b0e4d30f2/alias-pawan");
 
     JsonObject request = new JsonObject();
     request.put(NAME, "alias-pawan");
