@@ -23,6 +23,7 @@ public class Constants {
   static final String VARANASI_TEST_SEARCH_INDEX = "varanasi/_search";
   static final String VARANASI_TEST_COUNT_INDEX = "varanasi/_count";
   static final String VARANASI_LATEST_RESOURCE_INDEX = "varanasi-latest/_mget";
+  static final String LATEST_RESOURCE_INDEX = "latest/_mget";
   static final String SOURCE_FILTER_KEY = "_source";
   static final String RANGE_KEY = "range";
   static final String TERM_KEY = "term";

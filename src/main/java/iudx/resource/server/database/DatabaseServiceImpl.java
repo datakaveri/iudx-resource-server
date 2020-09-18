@@ -104,7 +104,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     LOGGER.info("Info: Query constructed: " + query.toString());
     if (LATEST_SEARCH.equalsIgnoreCase(request.getString(SEARCH_TYPE))) {
-      client.searchAsync(VARANASI_LATEST_RESOURCE_INDEX, FILTER_PATH_VAL_LATEST, query.toString(),
+      client.searchAsync(LATEST_RESOURCE_INDEX, FILTER_PATH_VAL_LATEST, query.toString(),
           searchRes -> {
             if (searchRes.succeeded()) {
               LOGGER.debug("Success: Successful DB request");
