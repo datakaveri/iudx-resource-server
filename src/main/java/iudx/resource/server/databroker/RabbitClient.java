@@ -263,11 +263,14 @@ public class RabbitClient {
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
       String queueName = request.getString("queueName");
-      String url = "/api/queues/" + vhost + "/" + Util.encodeValue(queueName);
+      String url = "/api/queues/" + vhost + "/" + Util.encodeValue(queueName);//"durable":true
       JsonObject configProp = new JsonObject();
-      configProp.put(Constants.X_MESSAGE_TTL_NAME, Constants.X_MESSAGE_TTL_VALUE)
+      JsonObject arguments = new JsonObject();
+      arguments.put(Constants.X_MESSAGE_TTL_NAME, Constants.X_MESSAGE_TTL_VALUE)
           .put(Constants.X_MAXLENGTH_NAME, Constants.X_MAXLENGTH_VALUE)
           .put(Constants.X_QUEUE_MODE_NAME, Constants.X_QUEUE_MODE_VALUE);
+      configProp.put(Constants.X_QUEUE_TYPE,true);
+      configProp.put(Constants.X_QUEUE_ARGUMENTS, arguments);
       webClient.requestAsync(REQUEST_PUT, url, configProp).onComplete(ar -> {
         if (ar.succeeded()) {
           HttpResponse<Buffer> response = ar.result();

@@ -145,8 +145,10 @@ public class Constants {
   public static final String X_MAXLENGTH_NAME = "x-max-length";
   public static final String X_QUEUE_MODE_NAME = "x-queue-mode";
   public static final long X_MESSAGE_TTL_VALUE = 86400000; // 24hours
-  public static final int X_MAXLENGTH_VALUE = 100;
+  public static final int X_MAXLENGTH_VALUE = 10000;
   public static final String X_QUEUE_MODE_VALUE = "lazy";
+  public static final String X_QUEUE_TYPE = "durable";
+  public static final String X_QUEUE_ARGUMENTS = "arguments";
   
   public static final int BAD_REQUEST_CODE = 400;
   public static final int INTERNAL_ERROR_CODE = 500;
