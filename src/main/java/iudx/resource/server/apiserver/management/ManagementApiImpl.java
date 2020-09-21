@@ -428,25 +428,25 @@ public class ManagementApiImpl implements ManagementApi {
     switch (type) {
       case 200: {
         finalResponse.put(JSON_TYPE, type)
-            .put(JSON_TITLE, ResponseType.fromString(type).getMessage())
+            .put(JSON_TITLE, ResponseType.fromCode(type).getMessage())
             .put(JSON_DETAIL, response.getString(JSON_DETAIL));
         break;
       }
       case 400: {
         finalResponse.put(JSON_TYPE, type)
-            .put(JSON_TITLE, ResponseType.fromString(type).getMessage())
+            .put(JSON_TITLE, ResponseType.fromCode(type).getMessage())
             .put(JSON_DETAIL, response.getString(JSON_DETAIL));
         break;
       }
       case 404: {
         finalResponse.put(JSON_TYPE, type)
-            .put(JSON_TITLE, ResponseType.fromString(type).getMessage())
+            .put(JSON_TITLE, ResponseType.fromCode(type).getMessage())
             .put(JSON_DETAIL, ResponseType.ResourceNotFound.getMessage());
         break;
       }
       case 409: {
         finalResponse.put(JSON_TYPE, type)
-            .put(JSON_TITLE, ResponseType.fromString(type).getMessage())
+            .put(JSON_TITLE, ResponseType.fromCode(type).getMessage())
             .put(JSON_DETAIL, ResponseType.AlreadyExists.getMessage());
         break;
       }
