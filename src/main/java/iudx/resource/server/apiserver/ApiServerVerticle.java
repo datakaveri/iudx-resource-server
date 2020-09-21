@@ -1584,8 +1584,8 @@ public class ApiServerVerticle extends AbstractVerticle {
       LOGGER.error("ERROR : Expecting Json received else from backend service");
       handleResponse(response, ResponseType.BadRequestData);
     }
-
   }
+
 
   private void handleResponse(HttpServerResponse response, ResponseType responseType) {
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(responseType.getCode())
