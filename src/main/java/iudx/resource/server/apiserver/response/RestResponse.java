@@ -13,10 +13,10 @@ public class RestResponse {
   private String title;
   private String detail;
 
-  private RestResponse(ResponseType error, String message) {
+  private RestResponse(int type, String title, String message) {
     super();
-    this.type = error.getCode();
-    this.title = error.getMessage();
+    this.type = type;
+    this.title = title;
     this.detail = message;
   }
 
@@ -25,7 +25,7 @@ public class RestResponse {
    * 
    * @return JsonObject json representation for object
    */
-  private JsonObject toJson() {
+  public JsonObject toJson() {
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_TYPE, this.type);
     json.put(Constants.JSON_TITLE, this.title);
@@ -38,14 +38,20 @@ public class RestResponse {
   }
 
   public static class Builder {
-    private ResponseType error;
+    private int type;
+    private String title;
     private String message;
 
     public Builder() {
     }
 
-    public Builder withError(ResponseType error) {
-      this.error = error;
+    public Builder withType(int type) {
+      this.type = type;
+      return this;
+    }
+
+    public Builder withTitle(String title) {
+      this.title = title;
       return this;
     }
 
@@ -55,7 +61,7 @@ public class RestResponse {
     }
 
     public RestResponse build() {
-      return new RestResponse(this.error, this.message);
+      return new RestResponse(this.type, this.title, this.message);
     }
   }
 

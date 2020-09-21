@@ -30,4 +30,11 @@ public class TemporalRelation {
     this.time = time;
   }
 
+  @Override
+  public String toString() {
+    return "TemporalRelation [endTime=" + endTime + ", temprel=" + temprel + ", time=" + time + "]";
+  }
+
+
+
 }
