@@ -108,6 +108,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           && !Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
         JsonObject result = new JsonObject();
         result.put(Constants.JSON_CONSUMER, Constants.JSON_TEST_CONSUMER);
+        result.put(Constants.JSON_PROVIDER, Constants.JSON_TEST_PROVIDER_SHA);
         handler.handle(Future.succeededFuture(result));
         return this;
       } else if (!token.equals(Constants.PUBLIC_TOKEN)) {
