@@ -31,6 +31,7 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
@@ -1601,6 +1602,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.debug("Info : " + failureMessage);
     try {
     JsonObject json = new JsonObject(failureMessage);
+
     int type = json.getInteger(JSON_TYPE);
     ResponseType responseType = ResponseType.fromCode(type);
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(type)
@@ -1609,7 +1611,6 @@ public class ApiServerVerticle extends AbstractVerticle {
       LOGGER.error("ERROR : Expecting Json received else from backend service");
       handleResponse(response, ResponseType.BadRequestData);
     }
-
   }
 
   private void handleResponse(HttpServerResponse response, ResponseType responseType) {
@@ -1621,6 +1622,14 @@ public class ApiServerVerticle extends AbstractVerticle {
       String message) {
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(responseType.getCode())
         .end(generateResponse(responseType, message).toString());
+  }
+
+  private JsonObject generateResponse(JsonObject response) {
+    int type = response.getInteger(JSON_TYPE);
+    return new RestResponse.Builder().withType(type)
+        .withTitle(ResponseType.fromCode(type).getMessage())
+        .withMessage(ResponseType.fromCode(type).getMessage()).build().toJson();
+
   }
 
   private JsonObject generateResponse(ResponseType responseType) {
@@ -1635,7 +1644,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     return new RestResponse.Builder().withType(type)
         .withTitle(ResponseType.fromCode(type).getMessage()).withMessage(message).build().toJson();
   }
-
   /**
    * validate if name passes the regex test for IUDX queue,exchage name.
    * 
