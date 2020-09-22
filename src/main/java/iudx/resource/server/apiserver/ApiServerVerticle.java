@@ -1,13 +1,29 @@
 package iudx.resource.server.apiserver;
 
 
+import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.util.Util.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
@@ -15,50 +31,25 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.DecodeException;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
-import io.vertx.ext.web.handler.StaticHandler;
+import iudx.resource.server.apiserver.handlers.TokenHandler;
 import iudx.resource.server.apiserver.management.ManagementApi;
 import iudx.resource.server.apiserver.management.ManagementApiImpl;
-import iudx.resource.server.apiserver.query.GeoRelation;
 import iudx.resource.server.apiserver.query.NGSILDQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
-import iudx.resource.server.apiserver.query.TemporalRelation;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.response.RestResponse;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
-import iudx.resource.server.apiserver.util.Util;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import static iudx.resource.server.apiserver.util.Constants.*;
-import static iudx.resource.server.apiserver.util.Util.*;
 
 
 /**
@@ -82,9 +73,7 @@ import static iudx.resource.server.apiserver.util.Util.*;
 
 public class ApiServerVerticle extends AbstractVerticle {
 
-
   private static final Logger LOGGER = LogManager.getLogger(ApiServerVerticle.class);
-
 
   /** Service addresses */
   private static final String DATABASE_SERVICE_ADDRESS = "iudx.rs.database.service";
@@ -148,6 +137,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     router = Router.router(vertx);
     router.route().handler(
         CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
+    // router.route().handler(new TokenHandler());
     router.route().handler(BodyHandler.create());
 
     /* NGSI-LD api endpoints */
@@ -1611,7 +1601,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.debug("Info : " + failureMessage);
     try {
     JsonObject json = new JsonObject(failureMessage);
-
     int type = json.getInteger(JSON_TYPE);
     ResponseType responseType = ResponseType.fromCode(type);
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(type)
@@ -1634,14 +1623,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         .end(generateResponse(responseType, message).toString());
   }
 
-  private JsonObject generateResponse(JsonObject response) {
-    int type = response.getInteger(JSON_TYPE);
-    return new RestResponse.Builder().withType(type)
-        .withTitle(ResponseType.fromCode(type).getMessage())
-        .withMessage(ResponseType.fromCode(type).getMessage()).build().toJson();
-
-  }
-
   private JsonObject generateResponse(ResponseType responseType) {
     int type = responseType.getCode();
     return new RestResponse.Builder().withType(type)
@@ -1653,27 +1634,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     int type = responseType.getCode();
     return new RestResponse.Builder().withType(type)
         .withTitle(ResponseType.fromCode(type).getMessage()).withMessage(message).build().toJson();
-  }
-
-
-  /**
-   * check for a valid json and no Ip addresses in Json
-   * 
-   * @param jsonString
-   * @return
-   */
-  private boolean isValid(String jsonString) {
-    boolean result = false;
-    try {
-      new JsonObject(jsonString); // will throw exception if not valid json.
-      Pattern p = Pattern.compile(
-          "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
-      Matcher m = p.matcher(jsonString);
-      return m.find(); // check for IP through regex.
-    } catch (Exception ex) {
-      result = false;
-    }
-    return result;
   }
 
   /**
