@@ -3,13 +3,10 @@ package iudx.resource.server.database;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import static iudx.resource.server.database.Constants.*;
@@ -32,6 +29,7 @@ public class DatabaseServiceImpl implements DatabaseService {
   private final ElasticClient client;
   private JsonObject query;
   private QueryDecoder queryDecoder = new QueryDecoder();
+  private ResponseBuilder responseBuilder;
 
   public DatabaseServiceImpl(ElasticClient client) {
     this.client = client;
@@ -45,7 +43,7 @@ public class DatabaseServiceImpl implements DatabaseService {
    *        message in case of failure
    */
   @Override
-  public DatabaseService searchQuery(JsonObject request, Handler<AsyncResult<JsonArray>> handler) {
+  public DatabaseService searchQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
 
     LOGGER.debug("Info: searchQuery;" + request.toString());
 
@@ -55,19 +53,24 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     if (!request.containsKey(ID)) {
       LOGGER.debug("Info: " + ID_NOT_FOUND);
-      handler.handle(Future.failedFuture(ID_NOT_FOUND));
+      responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(ID_NOT_FOUND);
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return null;
     }
 
     if (request.getJsonArray(ID).isEmpty()) {
       LOGGER.debug("Info: " + EMPTY_RESOURCE_ID);
-      handler.handle(Future.failedFuture(EMPTY_RESOURCE_ID));
+      responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
+          .setMessage(EMPTY_RESOURCE_ID);
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return null;
     }
 
     if (!request.containsKey(SEARCH_TYPE)) {
       LOGGER.debug("Info: " + SEARCHTYPE_NOT_FOUND);
-      handler.handle(Future.failedFuture(SEARCHTYPE_NOT_FOUND));
+      responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
+          .setMessage(SEARCHTYPE_NOT_FOUND);
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return null;
     }
 
@@ -83,8 +86,10 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     if (request.getJsonArray(ID).getString(0).split("/").length != 5) {
       LOGGER.error("Malformed ID: " + request.getJsonArray(ID).getString(0));
-      handler.handle(Future.failedFuture("Malformed ID: " + request.getJsonArray(ID)
-          .getString(0)));
+      responseBuilder =
+          new ResponseBuilder(FAILED).setTypeAndTitle(400)
+              .setMessage(MALFORMED_ID + request.getJsonArray(ID));
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return null;
     }
 
@@ -98,11 +103,14 @@ public class DatabaseServiceImpl implements DatabaseService {
     query = queryDecoder.queryDecoder(request);
     if (query.containsKey(ERROR)) {
       LOGGER.error("Fail: Query returned with an error: " + query.getString(ERROR));
-      handler.handle(Future.failedFuture(query.getString(ERROR)));
+      responseBuilder =
+          new ResponseBuilder(FAILED).setTypeAndTitle(400)
+              .setMessage(query.getString(ERROR));
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return null;
     }
 
-    LOGGER.info("Info: Query constructed: " + query.toString());
+    LOGGER.debug("Info: Query constructed: " + query.toString());
     if (LATEST_SEARCH.equalsIgnoreCase(request.getString(SEARCH_TYPE))) {
       client.searchAsync(LATEST_RESOURCE_INDEX, FILTER_PATH_VAL_LATEST, query.toString(),
           searchRes -> {
@@ -145,28 +153,36 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     if (!request.containsKey(ID)) {
       LOGGER.debug("Info: " + ID_NOT_FOUND);
-      handler.handle(Future.failedFuture(ID_NOT_FOUND));
+      responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(ID_NOT_FOUND);
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return null;
     }
 
     if (request.getJsonArray(ID).isEmpty()) {
       LOGGER.debug("Info: " + EMPTY_RESOURCE_ID);
-      handler.handle(Future.failedFuture(EMPTY_RESOURCE_ID));
+      responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
+          .setMessage(EMPTY_RESOURCE_ID);
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return null;
     }
 
     if (!request.containsKey(SEARCH_TYPE)) {
       LOGGER.debug("Info: " + SEARCHTYPE_NOT_FOUND);
-      handler.handle(Future.failedFuture(SEARCHTYPE_NOT_FOUND));
+      responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
+          .setMessage(SEARCHTYPE_NOT_FOUND);
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return null;
     }
 
     if (request.getJsonArray(ID).getString(0).split("/").length != 5) {
       LOGGER.error("Malformed ID: " + request.getJsonArray(ID).getString(0));
-      handler.handle(Future.failedFuture("Malformed ID: " + request.getJsonArray(ID)
-          .getString(0)));
+      responseBuilder =
+          new ResponseBuilder(FAILED).setTypeAndTitle(400)
+              .setMessage(MALFORMED_ID + request.getJsonArray(ID));
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return null;
     }
+
     List<String> splitId = new LinkedList<>(Arrays.asList(request.getJsonArray(ID)
         .getString(0).split("/")));
     splitId.remove(splitId.size() - 1);
@@ -177,7 +193,10 @@ public class DatabaseServiceImpl implements DatabaseService {
     query = queryDecoder.queryDecoder(request);
     if (query.containsKey(ERROR)) {
       LOGGER.error("Fail: Query returned with an error: " + query.getString(ERROR));
-      handler.handle(Future.failedFuture(query.getString(ERROR)));
+      responseBuilder =
+          new ResponseBuilder(FAILED).setTypeAndTitle(400)
+              .setMessage(query.getString(ERROR));
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return null;
     }
 

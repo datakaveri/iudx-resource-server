@@ -1,14 +1,12 @@
 package iudx.resource.server.database;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.serviceproxy.ServiceBinder;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * The Database Verticle.
@@ -51,11 +49,10 @@ public class DatabaseVerticle extends AbstractVerticle {
     user = config().getString("dbUser");
     password = config().getString("dbPassword");
 
-
     client = new ElasticClient(databaseIP, databasePort, user, password);    
     database = new DatabaseServiceImpl(client);
 
     new ServiceBinder(vertx).setAddress(DATABASE_SERVICE_ADDRESS)
-      .register(DatabaseService.class, database);
+        .register(DatabaseService.class, database);
   }
 }

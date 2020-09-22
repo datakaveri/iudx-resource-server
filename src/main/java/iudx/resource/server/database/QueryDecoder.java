@@ -39,7 +39,7 @@ public class QueryDecoder {
 
     /* TODO: Pagination for large result set */
     if (request.containsKey(SEARCH_KEY) && request.getBoolean(SEARCH_KEY)) {
-      elasticQuery.put(SIZE_KEY, 10);
+      elasticQuery.put(SIZE_KEY, 10000);
     }
 
     /* Latest Search */
@@ -165,7 +165,7 @@ public class QueryDecoder {
       } else if (AFTER.equalsIgnoreCase(timeRelation)) {
         rangeTimeQuery = TIME_QUERY.replace("$1", GREATER_THAN).replace("$2", time);
 
-      } else if ("tequals".equalsIgnoreCase(timeRelation)) {
+      } else if (TEQUALS.equalsIgnoreCase(timeRelation)) {
         rangeTimeQuery = TERM_QUERY.replace("$1", TIME_FIELD_DB).replace("$2", time);
 
       } else {

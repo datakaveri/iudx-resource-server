@@ -50,10 +50,11 @@ public class DatabaseServiceTest {
       inputstream = new FileInputStream("config.properties");
       properties.load(inputstream);
 
-      databaseIP = properties.getProperty("databaseIP");
-      databasePort = Integer.parseInt(properties.getProperty("databasePort"));
-      user = properties.getProperty("dbUser");
-      password = properties.getProperty("dbPassword");
+      databaseIP = properties.getProperty("testDatabaseIP");
+      databasePort = Integer.parseInt(properties.getProperty("testDatabasePort"));
+      user = properties.getProperty("testDbUser");
+      password = properties.getProperty("testDbPassword");
+      logger.debug("DB creds " + databaseIP + ", " + databasePort + ", " + user + ", " + password);
 
     } catch (Exception ex) {
 
@@ -82,12 +83,13 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
-            .put("searchType", "geoSearch_").put("lon", 82.987988).put("lat", 25.319768)
-            .put("radius", 100);
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+            .put("searchType", "geoSearch_").put("lon", 72.8296).put("lat",  21.2)
+            .put("radius", 500);
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      assertEquals(82.987942, response.getJsonObject(0).getDouble("longitude"));
+      assertEquals(72.833759, response.getJsonArray("results").getJsonObject(0)
+          .getJsonObject("location").getJsonArray("coordinates").getDouble(0));
       testContext.completeNow();
     })));
   }
@@ -98,7 +100,8 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject().put("searchType", "geoSearch_");
 
     dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
-      assertEquals("No id found", response.getMessage());
+      assertEquals("No id found", new JsonObject(response.getMessage()).getString(
+          "detail"));
       testContext.completeNow();
     })));
   }
@@ -110,7 +113,8 @@ public class DatabaseServiceTest {
         new JsonObject().put("id", new JsonArray()).put("searchType", "geoSearch_");
 
     dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
-      assertEquals("resource-id is empty", response.getMessage());
+      assertEquals("resource-id is empty", new JsonObject(response.getMessage()).getString(
+          "detail"));
       testContext.completeNow();
     })));
   }
@@ -119,10 +123,11 @@ public class DatabaseServiceTest {
   @DisplayName("Testing Basic Exceptions (No searchType key)")
   void searchWithSearchType(VertxTestContext testContext) {
     JsonObject request = new JsonObject().put("id", new JsonArray()
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"));
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"));
 
     dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
-      assertEquals("No searchType found", response.getMessage());
+      assertEquals("No searchType found", new JsonObject(response.getMessage()).getString(
+          "detail"));
       testContext.completeNow();
     })));
   }
@@ -134,10 +139,11 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("searchType", "geoSearch_");
     dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
-      assertEquals("Missing/Invalid geo parameters", response.getMessage());
+      assertEquals("Missing/Invalid geo parameters", new JsonObject(response.getMessage())
+          .getString("detail"));
       testContext.completeNow();
     })));
   }
@@ -154,16 +160,16 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("geometry", "polygon").put("georel", "within")
-            .put("coordinates","[[[82.9735,25.3703],[83.0053,25.3567],[82.9766,25.3372],[82.95,25.3519],"
-                + "[82.936,25.3722],[82.9735,25.3703]]]")
-            .put("geoproperty", "geoJsonLocation").put("searchType", "geoSearch_")
-            ;
+            .put("coordinates","[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]")
+            .put("geoproperty", "location").put("searchType", "geoSearch_");
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      assertTrue(82.93 <= response.getJsonObject(0).getDouble("longitude")
-          && response.getJsonObject(0).getDouble("longitude") <= 83.006);
+      assertTrue(72.5 <= response.getJsonArray("results").getJsonObject(0)
+          .getJsonObject("location").getJsonArray("coordinates").getDouble(0)
+          && response.getJsonArray("results").getJsonObject(0).getJsonObject("location")
+          .getJsonArray("coordinates").getDouble(1) <= 73);
       testContext.completeNow();
     })));
   }
@@ -175,11 +181,12 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("searchType", "geoSearch_").put("geometry", "polygon");
 
     dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
-      assertEquals("Missing/Invalid geo parameters", response.getMessage());
+      assertEquals("Missing/Invalid geo parameters", new JsonObject(response.getMessage())
+          .getString("detail"));
       testContext.completeNow();
     })));
   }
@@ -191,7 +198,7 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("geometry", "polygon").put("georel", "within")
             .put("coordinates","[[[82.9735,25.3703],[83.0053,25.3567],[82.9766,25.3372],[82.95,25.3519],"
                 + "[82.936,25.3722]]]")
@@ -199,7 +206,8 @@ public class DatabaseServiceTest {
             ;
 
     dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
-      assertEquals("Coordinate mismatch (Polygon)", response.getMessage());
+      assertEquals("Coordinate mismatch (Polygon)", new JsonObject(response.getMessage())
+          .getString("detail"));
       testContext.completeNow();
     })));
   }
@@ -215,15 +223,16 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("geometry", "linestring").put("georel", "intersects")
-            .put("coordinates","[[82.9735,25.3352],[82.9894,25.3452],[82.99,25.34]]")
-            .put("geoproperty", "geoJsonLocation")
-            .put("searchType", "geoSearch_");
+            .put("coordinates","[[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20]]")
+            .put("geoproperty", "location").put("searchType", "geoSearch_");
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      assertTrue(82.9735 <= response.getJsonObject(2).getDouble("longitude")
-          && response.getJsonObject(0).getDouble("longitude") <= 82.9896);
+      assertTrue(72.5 <= response.getJsonArray("results").getJsonObject(0)
+          .getJsonObject("location").getJsonArray("coordinates").getDouble(0)
+          && response.getJsonArray("results").getJsonObject(0)
+          .getJsonObject("location").getJsonArray("coordinates").getDouble(0) <= 72.9);
       testContext.completeNow();
     })));
   }
@@ -239,15 +248,16 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("geometry", "bbox").put("georel", "within")
-            .put("coordinates","[[82.95,25.3567],[83.0053,25]]")
-            .put("geoproperty", "geoJsonLocation")
-            .put("searchType", "geoSearch_");
+            .put("coordinates","[[72.8296,21.2],[72.8297,21.15]]")
+            .put("geoproperty", "location").put("searchType", "geoSearch_");
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      assertTrue(82.9 <= response.getJsonObject(0).getDouble("longitude")
-          && response.getJsonObject(0).getDouble("longitude") <= 83.1);
+      assertTrue(72.8 <= response.getJsonArray("results").getJsonObject(0)
+          .getJsonObject("location").getJsonArray("coordinates").getDouble(0)
+          && response.getJsonArray("results").getJsonObject(0)
+          .getJsonObject("location").getJsonArray("coordinates").getDouble(0) <= 73);
       testContext.completeNow();
     })));
 
@@ -264,14 +274,15 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("geometry", "bbox").put("georel", "within")
             .put("coordinates","[[82,25.33],[82.01,25.317]]")
             .put("geoproperty", "geoJsonLocation")
             .put("searchType", "geoSearch_");
 
     dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
-      assertEquals("Empty response", response.getMessage());
+      assertEquals("Empty response", new JsonObject(response.getMessage())
+          .getString("detail"));
       testContext.completeNow();
     })));
 
@@ -284,16 +295,16 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("searchType", "responseFilter_")
-            .put("attrs", new JsonArray().add("id").add("latitude").add("longitude"));
+            .put("attrs", new JsonArray().add("id").add("license_plate").add("speed"));
     Set<String> attrs = new HashSet<>();
     attrs.add("id");
-    attrs.add("latitude");
-    attrs.add("longitude");
+    attrs.add("license_plate");
+    attrs.add("speed");
     dbService.searchQuery(request, testContext.succeeding(response -> {
       Set<String> resAttrs = new HashSet<>();
-      for (Object obj : response) {
+      for (Object obj : response.getJsonArray("results")) {
         JsonObject jsonObj = (JsonObject) obj;
         if (resAttrs != attrs) {
           resAttrs = jsonObj.fieldNames();
@@ -314,11 +325,12 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("searchType", "responseFilter_");
 
     dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
-      assertEquals("Missing/Invalid responseFilter parameters", response.getMessage());
+      assertEquals("Missing/Invalid responseFilter parameters", new JsonObject(response
+          .getMessage()).getString("detail"));
       testContext.completeNow();
     })));
   }
@@ -330,17 +342,17 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("searchType", "responseFilter_geoSearch_")
-            .put("attrs", new JsonArray().add("id").add("latitude").add("longitude"))
-            .put("lon", 82.987988).put("lat", 25.319768).put("radius", 100);
+            .put("attrs", new JsonArray().add("id").add("location").add("speed"))
+            .put("lon", 72.8296).put("lat",  21.2).put("radius", 500);
     Set<String> attrs = new HashSet<>();
     attrs.add("id");
-    attrs.add("latitude");
-    attrs.add("longitude");
+    attrs.add("location");
+    attrs.add("speed");
     dbService.searchQuery(request, testContext.succeeding(response -> {
       Set<String> resAttrs = new HashSet<>();
-      for (Object obj : response) {
+      for (Object obj : response.getJsonArray("results")) {
         JsonObject jsonObj = (JsonObject) obj;
         if (resAttrs != attrs) {
           resAttrs = jsonObj.fieldNames();
@@ -348,7 +360,8 @@ public class DatabaseServiceTest {
       }
       Set<String> finalResAttrs = resAttrs;
       testContext.verify(() -> {
-        assertTrue(82.987988 > response.getJsonObject(0).getDouble("longitude"));
+        assertTrue(72.8 < response.getJsonArray("results").getJsonObject(0)
+            .getJsonObject("location").getJsonArray("coordinates").getDouble(0));
         assertEquals(attrs, finalResAttrs);
         testContext.completeNow();
       });
@@ -360,12 +373,12 @@ public class DatabaseServiceTest {
   void countGeoCircle(VertxTestContext testContext) {
     JsonObject request = new JsonObject()
         .put("id",new JsonArray()
-            .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
-        .put("searchType","geoSearch_").put("lon",82.987988).put("lat",25.319768)
-        .put("radius",100).put("isTest",true);
+            .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+        .put("searchType","geoSearch_").put("lon", 72.8296).put("lat",  21.2)
+        .put("radius", 500);
 
     dbService.countQuery(request, testContext.succeeding(response-> testContext.verify(()->{
-      assertEquals(3146,response.getInteger("Count"));
+      assertEquals(1555,response.getInteger("count"));
       testContext.completeNow();
     })));
   }
@@ -377,18 +390,18 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("searchType", "temporalSearch_").put("timerel", "during")
-            .put("time","2020-06-01T14:20:00Z").put("endtime","2020-06-03T15:00:00Z");
+            .put("time","2020-09-18T00:00:00Z").put("endtime","2020-09-22T00:00:00Z");
 
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
-    OffsetDateTime start = OffsetDateTime.parse("2020-06-01T14:20:00Z", dateTimeFormatter);
-    OffsetDateTime end = OffsetDateTime.parse("2020-06-03T15:00:00Z", dateTimeFormatter);
+    OffsetDateTime start = OffsetDateTime.parse("2020-09-18T00:00:00Z", dateTimeFormatter);
+    OffsetDateTime end = OffsetDateTime.parse("2020-09-22T00:00:00Z", dateTimeFormatter);
     logger.info("### start date: " + start);
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(5)
-          .getString("observationDateTime"), dateTimeFormatter);
+      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonArray("results")
+          .getJsonObject(5).getString("observationDateTime"), dateTimeFormatter);
       OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
       logger.info("#### response Date " + resDateUtc);
       assertTrue(!(resDateUtc.isBefore(start) || resDateUtc.isAfter(end)));
@@ -403,17 +416,17 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("searchType", "temporalSearch_").put("timerel", "before")
-            .put("time","2020-06-01T14:20:00Z");
+            .put("time","2020-09-22T00:00:00Z");
 
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
-    OffsetDateTime start = OffsetDateTime.parse("2020-06-01T14:20:00Z",dateTimeFormatter);
+    OffsetDateTime start = OffsetDateTime.parse("2020-09-22T00:00:00Z",dateTimeFormatter);
     logger.info("### start date: " + start);
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(6)
-          .getString("observationDateTime"), dateTimeFormatter);
+      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonArray("results")
+          .getJsonObject(6).getString("observationDateTime"), dateTimeFormatter);
       OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
       logger.info("#### response Date " + resDateUtc);
       assertTrue(resDateUtc.isBefore(start));
@@ -428,16 +441,16 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("searchType", "temporalSearch_").put("timerel", "after")
-            .put("time","2020-06-01T14:20:00Z");
+            .put("time","2020-09-18T00:00:00Z");
 
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
-    OffsetDateTime start = OffsetDateTime.parse("2020-06-01T14:20:00Z",dateTimeFormatter);
+    OffsetDateTime start = OffsetDateTime.parse("2020-09-18T00:00:00Z",dateTimeFormatter);
     logger.info("### start date: " + start);
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(3)
+      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonArray("results").getJsonObject(3)
           .getString("observationDateTime"), dateTimeFormatter);
       OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
       logger.info("#### response Date " + resDateUtc);
@@ -451,14 +464,13 @@ public class DatabaseServiceTest {
   void countGeoPolygon(VertxTestContext testContext) {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
-            .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+            .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
         .put("geometry","polygon").put("georel","within")
-        .put("coordinates","[[[82.9735,25.3703],[83.0053,25.3567],[82.9766,25.3372],[82.95,25.3519],"
-            + "[82.936,25.3722],[82.9735,25.3703]]]")
-        .put("geoproperty","geoJsonLocation").put("searchType","geoSearch_").put("isTest",true);
+        .put("coordinates","[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]")
+        .put("geoproperty", "location").put("searchType","geoSearch_");
 
     dbService.countQuery(request, testContext.succeeding(response-> testContext.verify(()->{
-      assertEquals(91870,response.getInteger("Count"));
+      assertEquals(62857,response.getInteger("count"));
       testContext.completeNow();
     })));
   }
@@ -470,16 +482,16 @@ public class DatabaseServiceTest {
           new JsonObject()
               .put("id",
                   new JsonArray().add(
-                      "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                      "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
               .put("searchType", "temporalSearch_").put("timerel", "tequals")
-              .put("time","2020-06-01T14:20:00Z");
+              .put("time","2020-09-20T11:17:51Z");
   
       DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
-      OffsetDateTime start = OffsetDateTime.parse("2020-06-01T14:20:00Z",dateTimeFormatter);
+      OffsetDateTime start = OffsetDateTime.parse("2020-09-20T11:17:51Z",dateTimeFormatter);
       logger.info("### start date: " + start);
   
       dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-        OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(0)
+        OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonArray("results").getJsonObject(0)
             .getString("observationDateTime"), dateTimeFormatter);
         OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
         logger.info("#### response Date " + resDateUtc);
@@ -493,13 +505,13 @@ public class DatabaseServiceTest {
   void countGeoLineString(VertxTestContext testContext) {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
-            .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+            .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
         .put("geometry","linestring").put("georel","intersects")
-        .put("coordinates","[[82.9735,25.3352],[82.9894,25.3452],[82.99,25.34]]")
-        .put("geoproperty","geoJsonLocation").put("isTest",true).put("searchType","geoSearch_");
+        .put("coordinates","[[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20]]")
+        .put("geoproperty", "location").put("searchType","geoSearch_");
 
     dbService.countQuery(request, testContext.succeeding(response-> testContext.verify(()->{
-      assertEquals(207,response.getInteger("Count"));
+      assertEquals(33517,response.getInteger("count"));
       testContext.completeNow();
     })));
   }
@@ -510,12 +522,13 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("searchType", "temporalSearch_").put("timerel", "tequals")
             .put("time","Invalid date");
 
     dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
-      assertEquals("Invalid date format", response.getMessage());
+      assertEquals("Invalid date format", new JsonObject(response.getMessage())
+          .getString("detail"));
       testContext.completeNow();
     })));
   }
@@ -525,13 +538,13 @@ public class DatabaseServiceTest {
   void countGeoBbox(VertxTestContext testContext) {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
-            .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+            .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
         .put("geometry","bbox").put("georel","within")
-        .put("coordinates","[[82.95,25.3567],[83.0053,25]]")
-        .put("geoproperty","geoJsonLocation").put("isTest",true).put("searchType","geoSearch_");
+        .put("coordinates","[[72.8296,21.2],[72.8297,21.15]]")
+        .put("geoproperty", "location").put("searchType","geoSearch_");
 
     dbService.countQuery(request, testContext.succeeding(response-> testContext.verify(()->{
-      assertEquals(2194856,response.getInteger("Count"));
+      assertEquals(405,response.getInteger("count"));
       testContext.completeNow();
     })));
   }
@@ -543,25 +556,26 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("searchType", "temporalSearch_geoSearch_responseFilter_")
-            .put("timerel", "before").put("time","2020-06-01T14:20:00Z").put("lon", 82.987988)
-            .put("lat", 25.319768).put("radius", 100).put("attrs", new JsonArray()
-            .add("id").add("longitude").add("observationDateTime"));
+            .put("timerel", "before").put("time","2020-09-22T00:00:00Z").put("lon", 72.8296).put("lat",  21.2)
+            .put("radius", 500).put("attrs", new JsonArray()
+            .add("id").add("location").add("observationDateTime"));
     Set<String> attrs = new HashSet<>();
     attrs.add("id");
     attrs.add("observationDateTime");
-    attrs.add("longitude");
+    attrs.add("location");
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
-    OffsetDateTime start = OffsetDateTime.parse("2020-06-01T14:20:00Z",dateTimeFormatter);
+    OffsetDateTime start = OffsetDateTime.parse("2020-09-22T00:00:00Z", dateTimeFormatter);
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(3)
+      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonArray("results").getJsonObject(3)
           .getString("observationDateTime"), dateTimeFormatter);
       OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
-      assertEquals(82.987942, response.getJsonObject(0).getDouble("longitude"));
+      assertEquals(72.833759, response.getJsonArray("results").getJsonObject(0).getJsonObject(
+          "location").getJsonArray("coordinates").getDouble(0));
       assertTrue(resDateUtc.isBefore(start));
-      assertEquals(attrs,response.getJsonObject(2).fieldNames());
+      assertEquals(attrs,response.getJsonArray("results").getJsonObject(2).fieldNames());
       testContext.completeNow();
     })));
   }
@@ -570,13 +584,13 @@ public class DatabaseServiceTest {
   @DisplayName("Testing response filter with count")
   void countResponseFilter(VertxTestContext testContext) {
     JsonObject request = new JsonObject().put("id", new JsonArray()
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
         .put("searchType","responseFilter_").put("attrs", new JsonArray().add("id")
-            .add("latitude").add("longitude"))
-        .put("isTest",true);
+            .add("latitude").add("longitude"));
 
     dbService.countQuery(request, testContext.failing(response-> testContext.verify(()->{
-      assertEquals("Count is not supported with filtering", response.getMessage());
+      assertEquals("Count is not supported with filtering", new JsonObject(response
+          .getMessage()).getString("detail"));
       testContext.completeNow();
     })));
   }
@@ -588,19 +602,20 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("searchType", "temporalSearch_geoSearch_response@KSf_")
-            .put("timerel", "before").put("time","2020-06-01T14:20:00Z").put("lon", 82.987988)
-            .put("lat", 25.319768).put("radius", 100).put("attrs", new JsonArray()
-            .add("id").add("longitude").add("time"));
+            .put("timerel", "before").put("time","2020-09-22T00:00:00Z").put("lon", 72.8296).put("lat",  21.2)
+            .put("radius", 500).put("attrs", new JsonArray()
+            .add("id").add("longitude").add("observationDateTime"));
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
-    OffsetDateTime start = OffsetDateTime.parse("2020-06-01T14:20:00Z",dateTimeFormatter);
+    OffsetDateTime start = OffsetDateTime.parse("2020-09-22T00:00:00Z",dateTimeFormatter);
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonObject(3)
+      OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonArray("results").getJsonObject(3)
           .getString("observationDateTime"), dateTimeFormatter);
       OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
-      assertEquals(82.987942, response.getJsonObject(0).getDouble("longitude"));
+      assertEquals(72.833759, response.getJsonArray("results").getJsonObject(0).getJsonObject(
+          "location").getJsonArray("coordinates").getDouble(0));
       assertTrue(resDateUtc.isBefore(start));
       testContext.completeNow();
     })));
@@ -611,11 +626,12 @@ public class DatabaseServiceTest {
   @DisplayName("Testing invalid Search request")
   void searchInvalidType(VertxTestContext testContext){
     JsonObject request = new JsonObject().put("id", new JsonArray()
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live"))
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
         .put("searchType","response!@$_geoS241");
 
     dbService.searchQuery(request, testContext.failing(response -> testContext.verify(()->{
-      assertEquals("Invalid search request", response.getMessage());
+      assertEquals("Invalid search request", new JsonObject(response.getMessage()).
+          getString("detail"));
       testContext.completeNow();
     })));
   }
@@ -624,11 +640,11 @@ public class DatabaseServiceTest {
   @DisplayName("Testing Attribute Search (property is greater than)")
   void searchAttributeGt(VertxTestContext testContext){
     JsonObject request = new JsonObject().put("id", new JsonArray()
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-aqm/EM_01_0103_01")).put("searchType",
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013")).put("searchType",
         "attributeSearch_").put("attr-query", new JsonArray().add(new JsonObject().put(
-            "attribute", "CO2").put("operator", ">").put("value", "500")));
+            "attribute", "referenceLevel").put("operator", ">").put("value", "2")));
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(()->{
-      assertTrue(response.getJsonObject(4).getDouble("CO2") > 500);
+      assertTrue(response.getJsonArray("results").getJsonObject(4).getDouble("referenceLevel") > 2);
       testContext.completeNow();
     })));
   }
@@ -637,11 +653,11 @@ public class DatabaseServiceTest {
   @DisplayName("Testing Attribute Search (property is lesser than)")
   void searchAttributeLt(VertxTestContext testContext){
     JsonObject request = new JsonObject().put("id", new JsonArray()
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-aqm/EM_01_0103_01")).put("searchType",
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013")).put("searchType",
         "attributeSearch_").put("attr-query", new JsonArray().add(new JsonObject().put(
-        "attribute", "CO2").put("operator", "<").put("value", "500")));
+        "attribute", "referenceLevel").put("operator", "<").put("value", "5")));
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(()->{
-      assertTrue(response.getJsonObject(2).getDouble("CO2") < 500);
+      assertTrue(response.getJsonArray("results").getJsonObject(2).getDouble("referenceLevel") < 5);
       testContext.completeNow();
     })));
   }
@@ -650,11 +666,11 @@ public class DatabaseServiceTest {
   @DisplayName("Testing Attribute Search (property is greater than equal)")
   void searchAttributeGte(VertxTestContext testContext){
     JsonObject request = new JsonObject().put("id", new JsonArray()
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-aqm/EM_01_0103_01")).put("searchType",
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013")).put("searchType",
         "attributeSearch_").put("attr-query", new JsonArray().add(new JsonObject().put(
-        "attribute", "CO2").put("operator", ">=").put("value", "500")));
+        "attribute", "referenceLevel").put("operator", ">=").put("value", "3")));
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(()->{
-      assertTrue(response.getJsonObject(3).getDouble("CO2") >= 500);
+      assertTrue(response.getJsonArray("results").getJsonObject(3).getDouble("referenceLevel") >= 3);
       testContext.completeNow();
     })));
   }
@@ -663,11 +679,11 @@ public class DatabaseServiceTest {
   @DisplayName("Testing Attribute Search (property is lesser than equal)")
   void searchAttributeLte(VertxTestContext testContext){
     JsonObject request = new JsonObject().put("id", new JsonArray()
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-aqm/EM_01_0103_01")).put("searchType",
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013")).put("searchType",
         "attributeSearch_").put("attr-query", new JsonArray().add(new JsonObject().put(
-        "attribute", "CO2").put("operator", "<=").put("value", "500")));
+        "attribute", "referenceLevel").put("operator", "<=").put("value", "5")));
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(()->{
-      assertTrue(response.getJsonObject(7).getDouble("CO2") <= 500);
+      assertTrue(response.getJsonArray("results").getJsonObject(7).getDouble("referenceLevel") <= 5);
       testContext.completeNow();
     })));
   }
@@ -676,12 +692,14 @@ public class DatabaseServiceTest {
   @DisplayName("Testing Attribute Search (property is between)")
   void searchAttributeBetween(VertxTestContext testContext){
     JsonObject request = new JsonObject().put("id", new JsonArray()
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-aqm/EM_01_0103_01")).put("searchType",
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013")).put("searchType",
         "attributeSearch_").put("attr-query", new JsonArray().add(new JsonObject().put(
-        "attribute", "CO2").put("operator", "<==>").put("valueLower", "500").put("valueUpper",
-        "1000")));
+        "attribute", "referenceLevel").put("operator", "<==>").put("valueLower", "3").put(
+            "valueUpper",
+        "5")));
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(()->{
-      assertTrue(response.getJsonObject(9).getDouble("CO2") > 500);
+      assertTrue(response.getJsonArray("results").getJsonObject(9).getDouble("referenceLevel") > 3
+          && response.getJsonArray("results").getJsonObject(9).getDouble("referenceLevel") < 5);
       testContext.completeNow();
     })));
   }
@@ -706,11 +724,12 @@ public class DatabaseServiceTest {
   @DisplayName("Testing Attribute Search (property is equal)")
   void searchAttributeEqual(VertxTestContext testContext){
     JsonObject request = new JsonObject().put("id", new JsonArray()
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-aqm/EM_01_0103_01")).put("searchType",
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013")).put("searchType",
         "attributeSearch_").put("attr-query", new JsonArray().add(new JsonObject().put(
-        "attribute", "CO2").put("operator", "==").put("value", "501.11")));
+        "attribute", "referenceLevel").put("operator", "==").put("value", "4.2")));
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(()->{
-      assertEquals(response.getJsonObject(0).getDouble("CO2"), 501.11);
+      assertEquals(response.getJsonArray("results").getJsonObject(0)
+              .getDouble("referenceLevel"), 4.2);
       testContext.completeNow();
     })));
   }
@@ -719,11 +738,11 @@ public class DatabaseServiceTest {
   @DisplayName("Testing Attribute Search (property is not equal)")
   void searchAttributeNe(VertxTestContext testContext){
     JsonObject request = new JsonObject().put("id", new JsonArray()
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-aqm/EM_01_0103_01")).put("searchType",
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013")).put("searchType",
         "attributeSearch_").put("attr-query", new JsonArray().add(new JsonObject().put(
-        "attribute", "CO2").put("operator", "!=").put("value", "500")));
+        "attribute", "referenceLevel").put("operator", "!=").put("value", "5")));
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(()->{
-      assertTrue(response.getJsonObject(4).getDouble("CO2") != 500);
+      assertTrue(response.getJsonArray("results").getJsonObject(4).getDouble("referenceLevel") != 5);
       testContext.completeNow();
     })));
   }
@@ -732,15 +751,14 @@ public class DatabaseServiceTest {
   @DisplayName("Testing Latest Search")
   void latestSearch (VertxTestContext testContext){
     JsonObject request = new JsonObject().put("id", new JsonArray()
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-bins/783")
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-bins/1286")
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-bins/234")
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-bins/693"))
-        .put("searchType","latestSearch");
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013")
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR020")
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx"
+            + ".io/pune-env-flood/FWR064")).put("searchType","latestSearch");
     JsonArray id = request.getJsonArray("id");
     JsonArray idFromResponse = new JsonArray();
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-        for (Object o : response) {
+        for (Object o : response.getJsonArray("results")) {
           JsonObject doc = (JsonObject) o;
           idFromResponse.add(doc.getString("id"));
         }
@@ -753,11 +771,11 @@ public class DatabaseServiceTest {
   @DisplayName("Testing Latest Search with Response Filter")
   void latestSearchFiltered (VertxTestContext testContext) {
     JsonObject request = new JsonObject().put("id", new JsonArray()
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-bins/783")
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-bins/1286")
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-bins/234")
-        .add("rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-bins/693"))
-        .put("searchType","latestSearch").put("attrs", new JsonArray().add("id")
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013")
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR020")
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx"
+            + ".io/pune-env-flood/FWR064")).put("searchType","latestSearch")
+        .put("attrs", new JsonArray().add("id")
             .add("observationDateTime"));
     Set<String> attrs = new HashSet<>();
     attrs.add("id");
@@ -766,7 +784,7 @@ public class DatabaseServiceTest {
     JsonArray idFromResponse = new JsonArray();
     dbService.searchQuery(request, testContext.succeeding(response -> {
       Set<String> resAttrs = new HashSet<>();
-      for (Object obj : response) {
+      for (Object obj : response.getJsonArray("results")) {
         JsonObject jsonObj = (JsonObject) obj;
         idFromResponse.add(jsonObj.getString("id"));
         if (resAttrs != attrs) {
@@ -781,5 +799,36 @@ public class DatabaseServiceTest {
       });
     }));
   }
+
+  @Test
+  @DisplayName("Testing auto index selection with malformed id")
+  void malformedResourceId(VertxTestContext testContext) {
+    JsonObject request = new JsonObject().put("id", new JsonArray().add("malformed-id")).put(
+        "searchType","latestSearch");
+    dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
+      assertEquals("Malformed Id [\"malformed-id\"]", new JsonObject(response.getMessage())
+          .getString("detail"));
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing auto index selection with Invalid resource-id")
+  void autoIndexInvalidId(VertxTestContext testContext) {
+    JsonObject request =
+        new JsonObject()
+            .put("id",
+                new JsonArray().add(
+                    "i/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx"
+                        + ".io/surat-itms-realtime-information/surat-itms-live-eta"))
+            .put("searchType", "geoSearch_").put("lon", 72.8296).put("lat",  21.2)
+            .put("radius", 500);
+
+    dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
+      assertEquals("Invalid resource id", new JsonObject(response.getMessage()).getString("detail"));
+      testContext.completeNow();
+    })));
+  }
 }
+
 
