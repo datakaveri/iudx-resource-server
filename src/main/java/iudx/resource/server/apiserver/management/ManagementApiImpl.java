@@ -301,8 +301,8 @@ public class ManagementApiImpl implements ManagementApi {
         LOGGER.info("Result from databroker verticle :: " + result);
          promise.complete(generateResponse(result));
       } else if (handler.failed()) {
-        JsonObject result = handler.result();
-        promise.fail(generateResponse(result).toString());
+        String result = handler.cause().getMessage();
+        promise.fail(generateResponse(new JsonObject(result)).toString());
       }
     });
     return promise.future();
