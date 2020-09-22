@@ -4,10 +4,10 @@
         {
             "id": "iudx.resource.server.database.DatabaseVerticle",
             "verticleInstances": 2,
-            "databaseIP": "tasks.elasticsearch",
-            "databasePort": "9201",
-            "dbUser": "user",
-            "dbPassword": "password"
+            "databaseIP": "database.iudx.io",
+            "databasePort": "24034",
+            "dbUser": "rs-user",
+            "dbPassword": "rs-user-password"
         },
         {
             "id": "iudx.resource.server.authenticator.AuthenticationVerticle",
