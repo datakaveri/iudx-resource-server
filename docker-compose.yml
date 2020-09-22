@@ -38,6 +38,7 @@ services:
     volumes:
       - ./configs/config-dev.json:/usr/share/app/configs/config.json
       - ./configs/keystore.jks:/usr/share/app/configs/keystore.jks
+      - ./docs/:/usr/share/app/docs
     ports:
       - "8443:8443"
       - "9000:9000"
