@@ -1,3 +1,5 @@
+# Run from project root directory
+
 ARG VERSION="0.0.1-SNAPSHOT"
 
 FROM maven:latest as dependencies
@@ -21,6 +23,3 @@ ENV JAR="iudx.resource.server-dev-${VERSION}-fat.jar"
 
 WORKDIR /usr/share/app
 COPY --from=builder /usr/share/app/target/${JAR} ./fatjar.jar
-
-## ZOOKEEPER is from host env variable 
-ENTRYPOINT java -jar ./fatjar.jar -m db auth call broker api 

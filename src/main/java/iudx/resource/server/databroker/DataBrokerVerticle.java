@@ -24,13 +24,8 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Tuple;
 import static iudx.resource.server.databroker.util.Constants.INSERT_DATABROKER_USER;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * The Data Broker Verticle.
@@ -51,8 +46,6 @@ public class DataBrokerVerticle extends AbstractVerticle {
   private DataBrokerService databroker;
   private RabbitMQOptions config;
   private RabbitMQClient client;
-  private Properties properties;
-  private InputStream inputstream;
   private String dataBrokerIP;
   private int dataBrokerPort;
   private int dataBrokerManagementPort;
@@ -91,45 +84,25 @@ public class DataBrokerVerticle extends AbstractVerticle {
   public void start() throws Exception {
 
     /* Read the configuration and set the rabbitMQ server properties. */
-    properties = new Properties();
-    inputstream = null;
-
-    try {
-
-      inputstream = new FileInputStream("config.properties");
-      properties.load(inputstream);
-
-      dataBrokerIP = properties.getProperty("dataBrokerIP");
-      dataBrokerPort = Integer.parseInt(properties.getProperty("dataBrokerPort"));
-      dataBrokerManagementPort =
-        Integer.parseInt(properties.getProperty("dataBrokerManagementPort"));
-      dataBrokerVhost = properties.getProperty("dataBrokerVhost");
-      dataBrokerUserName = properties.getProperty("dataBrokerUserName");
-      dataBrokerPassword = properties.getProperty("dataBrokerPassword");
-      connectionTimeout = Integer.parseInt(properties.getProperty("connectionTimeout"));
-      requestedHeartbeat = Integer.parseInt(properties.getProperty("requestedHeartbeat"));
-      handshakeTimeout = Integer.parseInt(properties.getProperty("handshakeTimeout"));
-      requestedChannelMax = Integer.parseInt(properties.getProperty("requestedChannelMax"));
-      networkRecoveryInterval =
-        Integer.parseInt(properties.getProperty("networkRecoveryInterval"));
-      databaseIP = properties.getProperty("callbackDatabaseIP");
-      databasePort = Integer.parseInt(properties.getProperty("callbackDatabasePort"));
-      databaseName = properties.getProperty("callbackDatabaseName");
-      databaseUserName = properties.getProperty("callbackDatabaseUserName");
-      databasePassword = properties.getProperty("callbackDatabasePassword");
-      poolSize = Integer.parseInt(properties.getProperty("callbackpoolSize"));
-
-    } catch (FileNotFoundException ex) {
-      LOGGER.error("FATAL : config file not found.");
-    } finally {
-      if (inputstream != null) {
-        try {
-          inputstream.close();
-        } catch (IOException ex) {
-          LOGGER.error("Error : error while closing input stream.");
-        }
-      }
-    }
+    dataBrokerIP = config().getString("dataBrokerIP");
+    dataBrokerPort = Integer.parseInt(config().getString("dataBrokerPort"));
+    dataBrokerManagementPort =
+      Integer.parseInt(config().getString("dataBrokerManagementPort"));
+    dataBrokerVhost = config().getString("dataBrokerVhost");
+    dataBrokerUserName = config().getString("dataBrokerUserName");
+    dataBrokerPassword = config().getString("dataBrokerPassword");
+    connectionTimeout = Integer.parseInt(config().getString("connectionTimeout"));
+    requestedHeartbeat = Integer.parseInt(config().getString("requestedHeartbeat"));
+    handshakeTimeout = Integer.parseInt(config().getString("handshakeTimeout"));
+    requestedChannelMax = Integer.parseInt(config().getString("requestedChannelMax"));
+    networkRecoveryInterval =
+      Integer.parseInt(config().getString("networkRecoveryInterval"));
+    databaseIP = config().getString("callbackDatabaseIP");
+    databasePort = Integer.parseInt(config().getString("callbackDatabasePort"));
+    databaseName = config().getString("callbackDatabaseName");
+    databaseUserName = config().getString("callbackDatabaseUserName");
+    databasePassword = config().getString("callbackDatabasePassword");
+    poolSize = Integer.parseInt(config().getString("callbackpoolSize"));
 
     /* Configure the RabbitMQ Data Broker client with input from config files. */
 

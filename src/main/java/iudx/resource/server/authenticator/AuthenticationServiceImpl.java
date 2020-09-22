@@ -16,7 +16,6 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import static iudx.resource.server.databroker.util.Constants.ENTITIES;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
@@ -26,7 +25,6 @@ import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -50,9 +48,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private static final Logger LOGGER = LogManager.getLogger(AuthenticationServiceImpl.class);
   private static final ConcurrentHashMap<String, JsonObject> tipCache = new ConcurrentHashMap<>();
   private static final ConcurrentHashMap<String, String> catCache = new ConcurrentHashMap<>();
-  private static final Properties properties = new Properties();
   private final WebClient webClient;
   private final Vertx vertxObj;
+  private JsonObject config;
 
   /**
    * This is a constructor which is used by the DataBroker Verticle to instantiate a RabbitMQ
@@ -62,17 +60,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
    * @param client which is a Vertx Web client
    */
 
-  public AuthenticationServiceImpl(Vertx vertx, WebClient client) {
+  public AuthenticationServiceImpl(Vertx vertx, WebClient client, JsonObject config) {
     webClient = client;
     vertxObj = vertx;
-    try {
-      FileInputStream configFile = new FileInputStream(Constants.CONFIG_FILE);
-      if (properties.isEmpty()) {
-        properties.load(configFile);
-      }
-    } catch (IOException e) {
-      LOGGER.error("Could not load properties from config file", e);
-    }
+    this.config = config;
 
     long cacheCleanupTime = 1000 * 60 * Constants.TIP_CACHE_TIMEOUT_AMOUNT;
     vertx.setPeriodic(cacheCleanupTime, timerID -> tipCache.values().removeIf(entry -> {
@@ -97,7 +88,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     LOGGER.info("requested endpoint :" + requestEndpoint);
 
-    if (properties.getProperty(Constants.SERVER_MODE).equalsIgnoreCase("testing")) {
+    if (config.getString(Constants.SERVER_MODE).equalsIgnoreCase("testing")) {
       if (token.equals(Constants.PUBLIC_TOKEN)
           && Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
         JsonObject result = new JsonObject();
@@ -259,7 +250,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     JsonObject body = new JsonObject();
     body.put("token", token);
-    webClient.post(443, properties.getProperty(Constants.AUTH_SERVER_HOST), Constants.AUTH_TIP_PATH)
+    webClient.post(443, config.getString(Constants.AUTH_SERVER_HOST), Constants.AUTH_TIP_PATH)
         .expect(ResponsePredicate.JSON).sendJsonObject(body, httpResponseAsyncResult -> {
           if (httpResponseAsyncResult.failed()) {
             promise.fail(httpResponseAsyncResult.cause());
@@ -322,8 +313,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         prom.complete();
         continue;
       }
-      String catHost = properties.getProperty("catServerHost");
-      int catPort = Integer.parseInt(properties.getProperty("catServerPort"));
+      String catHost = config.getString("catServerHost");
+      int catPort = Integer.parseInt(config.getString("catServerPort"));
       String catPath = Constants.CAT_RSG_PATH;
       catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
           .addQueryParam("value", "[[" + groupID + "]]")

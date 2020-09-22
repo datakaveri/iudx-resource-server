@@ -1,6 +1,5 @@
 package iudx.resource.server.deploy;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import java.util.EnumSet;
@@ -16,16 +15,14 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.cli.CLI;
 import io.vertx.core.cli.Option;
 import io.vertx.core.cli.CommandLine;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.DeploymentOptions;
 
-import iudx.resource.server.apiserver.ApiServerVerticle;
-import iudx.resource.server.database.DatabaseVerticle;
-import iudx.resource.server.databroker.DataBrokerVerticle;
-import iudx.resource.server.callback.CallbackVerticle;
-import iudx.resource.server.authenticator.AuthenticationVerticle;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.micrometer.VertxPrometheusOptions;
@@ -45,32 +42,23 @@ import org.apache.logging.log4j.Logger;
 public class Deployer {
   private static final Logger LOGGER = LogManager.getLogger(Deployer.class);
 
-  private static AbstractVerticle getVerticle(String name) {
-    switch (name) {
-      case "api":
-        return new ApiServerVerticle();
-      case "db":
-        return new DatabaseVerticle();
-      case "broker":
-        return new DataBrokerVerticle();
-      case "auth":
-        return new AuthenticationVerticle();
-      case "call":
-        return new CallbackVerticle();
-    }
-    return null;
-  }
 
-  public static void recursiveDeploy(Vertx vertx, List<String> modules, int i) {
-    if (i >= modules.size()) {
+  public static void recursiveDeploy(Vertx vertx, JsonObject configs, int i) {
+    if (i >= configs.getJsonArray("modules").size()) {
       LOGGER.info("Deployed all");
       return;
     }
-    String moduleName = modules.get(i);
-    vertx.deployVerticle(getVerticle(moduleName), ar -> {
+    JsonObject config = configs.getJsonArray("modules").getJsonObject(i);
+    String moduleName = config.getString("id");
+    int numInstances = config.getInteger("verticleInstances");
+    vertx.deployVerticle(moduleName,
+                           new DeploymentOptions()
+                                  .setInstances(numInstances)
+                                  .setConfig(config),
+                          ar -> {
       if (ar.succeeded()) {
         LOGGER.info("Deployed " + moduleName);
-        recursiveDeploy(vertx, modules, i + 1);
+        recursiveDeploy(vertx, configs, i+1);
       } else {
         LOGGER.fatal("Failed to deploy " + moduleName + " cause:", ar.cause());
       }
@@ -118,8 +106,23 @@ public class Deployer {
 
   }
 
-  public static void deploy(List<String> modules, List<String> zookeepers, String host) {
-    ClusterManager mgr = getClusterManager(host, zookeepers, "iudx-rs");
+  public static void deploy(String configPath) {
+    String config;
+    try {
+     config = new String(Files.readAllBytes(Paths.get(configPath)), StandardCharsets.UTF_8);
+    } catch (Exception e) {
+      LOGGER.fatal("Couldn't read configuration file");
+      return;
+    }
+    if (config.length() < 1) {
+      LOGGER.fatal("Couldn't read configuration file");
+      return;
+    }
+    JsonObject configuration = new JsonObject(config);
+    List<String> zookeepers = configuration.getJsonArray("zookeepers").getList();
+    String clusterId = configuration.getString("clusterId");
+    String host = configuration.getString("host");
+    ClusterManager mgr = getClusterManager(host, zookeepers, clusterId);
     EventBusOptions ebOptions = new EventBusOptions().setClustered(true).setHost(host);
     VertxOptions options = new VertxOptions().setClusterManager(mgr).setEventBusOptions(ebOptions)
         .setMetricsOptions(getMetricsOptions());
@@ -128,7 +131,7 @@ public class Deployer {
       if (res.succeeded()) {
         Vertx vertx = res.result();
         setJVMmetrics();
-        recursiveDeploy(vertx, modules, 0);
+        recursiveDeploy(vertx, configuration, 0);
       } else {
         LOGGER.fatal("Could not join cluster");
       }
@@ -136,26 +139,20 @@ public class Deployer {
 
   }
 
+
   public static void main(String[] args) {
-    CLI cli = CLI.create("IUDX RS").setSummary("A CLI to deploy the resource server")
+    CLI cli = CLI.create("IUDX Rs").setSummary("A CLI to deploy the resource")
         .addOption(new Option().setLongName("help").setShortName("h").setFlag(true)
             .setDescription("display help"))
-        .addOption(new Option().setLongName("modules").setShortName("m").setMultiValued(true)
-            .setRequired(true).setDescription("modules to launch").addChoice("api")
-            .addChoice("db").addChoice("auth").addChoice("broker").addChoice("call"))
-        .addOption(new Option().setLongName("zookeepers").setShortName("z").setMultiValued(true)
-            .setRequired(true).setDescription("zookeeper hosts"))
-        .addOption(new Option().setLongName("host").setShortName("i").setRequired(true)
-            .setDescription("public host"));
+        .addOption(new Option().setLongName("config").setShortName("c")
+            .setRequired(true).setDescription("configuration file"));
 
     StringBuilder usageString = new StringBuilder();
     cli.usage(usageString);
     CommandLine commandLine = cli.parse(Arrays.asList(args), false);
     if (commandLine.isValid() && !commandLine.isFlagEnabled("help")) {
-      List<String> modules = new ArrayList<String>(commandLine.getOptionValues("modules"));
-      List<String> zookeepers = new ArrayList<String>(commandLine.getOptionValues("zookeepers"));
-      String host = commandLine.getOptionValue("host");
-      deploy(modules, zookeepers, host);
+      String configPath = commandLine.getOptionValue("config");
+      deploy(configPath);
     } else {
       LOGGER.info(usageString);
     }
