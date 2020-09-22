@@ -254,12 +254,8 @@
                             <arguments>
                                 <argument>-jar</argument>
                                 <argument>{project.build.directory}/${project.artifactId}-dev-${project.version}-fat.jar</argument>
-                                <argument>-m</argument>
-                                <argument>db</argument>
-                                <argument>auth</argument>
-                                <argument>broker</argument>
-                                <argument>call</argument>
-                                <argument>api</argument>
+                                <argument>-c</argument>
+                                <argument>./configs/config-dev.json</argument>
                             </arguments>
 						</configuration>
 					</execution>

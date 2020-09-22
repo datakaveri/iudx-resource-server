@@ -21,6 +21,3 @@ ENV JAR="iudx.resource.server-cluster-${VERSION}-fat.jar"
 
 WORKDIR /usr/share/app
 COPY --from=builder /usr/share/app/target/${JAR} ./fatjar.jar
-
-## ZOOKEEPER is from host env variable 
-ENTRYPOINT ["java", "-jar", "./fatjar.jar", "-m",  "call", "--host", "$(hostname)", "--zookeepers", "$ZOOKEEPER"]

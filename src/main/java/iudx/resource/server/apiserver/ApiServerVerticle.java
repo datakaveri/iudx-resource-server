@@ -39,10 +39,6 @@ import iudx.resource.server.apiserver.util.Util;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,7 +47,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -94,8 +89,6 @@ public class ApiServerVerticle extends AbstractVerticle {
   private VertxOptions options;
   private HttpServer server;
   private Router router;
-  private Properties properties;
-  private InputStream inputstream;
   private final int port = 8443;
   private String keystore;
   private String keystorePassword;
@@ -139,8 +132,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* Create a reference to HazelcastClusterManager. */
 
     router = Router.router(vertx);
-    properties = new Properties();
-    inputstream = null;
 
     /* Define the APIs, methods, endpoints and associated methods. */
 
@@ -214,25 +205,9 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     /* Read the configuration and set the HTTPs server properties. */
 
-    try {
+    keystore = config().getString("keystore");
+    keystorePassword = config().getString("keystorePassword");
 
-      inputstream = new FileInputStream("config.properties");
-      properties.load(inputstream);
-
-      keystore = properties.getProperty("keystore");
-      keystorePassword = properties.getProperty("keystorePassword");
-
-    } catch (FileNotFoundException ex) {
-      LOGGER.fatal(ex.toString());
-    } finally {
-      if (inputstream != null) {
-        try {
-          inputstream.close();
-        } catch (IOException e) {
-          LOGGER.error("FATAL : error while closing input stream");
-        }
-      }
-    }
 
     /* Setup the HTTPs server properties, APIs and port. */
 

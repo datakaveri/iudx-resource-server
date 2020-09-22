@@ -46,26 +46,11 @@ public class DatabaseVerticle extends AbstractVerticle {
   @Override
   public void start() throws Exception {
 
+    databaseIP = config().getString("databaseIP");
+    databasePort = Integer.parseInt(config().getString("databasePort"));
+    user = config().getString("dbUser");
+    password = config().getString("dbPassword");
 
-    /* Read the configuration and set the rabbitMQ server properties. */
-    properties = new Properties();
-    inputstream = null;
-
-    try {
-
-      inputstream = new FileInputStream("config.properties");
-      properties.load(inputstream);
-
-      databaseIP = properties.getProperty("databaseIP");
-      databasePort = Integer.parseInt(properties.getProperty("databasePort"));
-      user = properties.getProperty("dbUser");
-      password = properties.getProperty("dbPassword");
-
-    } catch (Exception ex) {
-
-      LOGGER.info(ex.toString());
-
-    }
 
     client = new ElasticClient(databaseIP, databasePort, user, password);    
     database = new DatabaseServiceImpl(client);
