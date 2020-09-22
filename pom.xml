@@ -137,6 +137,10 @@
             <artifactId>curator-x-discovery</artifactId>
             <version>${curator.version}</version>
         </dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-sync</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
