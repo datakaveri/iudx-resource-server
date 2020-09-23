@@ -211,8 +211,9 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     /* Setup the HTTPs server properties, APIs and port. */
 
-    server = vertx.createHttpServer(new HttpServerOptions().setSsl(true)
-        .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword)));
+    server = vertx.createHttpServer(
+        new HttpServerOptions().setSsl(true).setCompressionSupported(true).setCompressionLevel(5)
+            .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword)));
 
     server.requestHandler(router).listen(port);
 
