@@ -45,7 +45,7 @@ public class DatabaseVerticle extends AbstractVerticle {
   public void start() throws Exception {
 
     databaseIP = config().getString("databaseIP");
-    databasePort = Integer.parseInt(config().getString("databasePort"));
+    databasePort = config().getInteger("databasePort");
     user = config().getString("dbUser");
     password = config().getString("dbPassword");
 
