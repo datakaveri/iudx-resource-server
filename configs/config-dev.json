@@ -5,7 +5,7 @@
             "id": "iudx.resource.server.database.DatabaseVerticle",
             "verticleInstances": 2,
             "databaseIP": "database.iudx.io",
-            "databasePort": "24034",
+            "databasePort": 24034,
             "dbUser": "rs-user",
             "dbPassword": "rs-user-password"
         },
