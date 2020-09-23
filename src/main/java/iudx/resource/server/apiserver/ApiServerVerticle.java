@@ -127,7 +127,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     router = Router.router(vertx);
     router.route().handler(
         CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
-    // router.route().handler(new TokenHandler());
+    // router.route().handler(new TokenHandler()).failureHandler(new AuthFailureHandler());
     router.route().handler(BodyHandler.create());
 
     /* NGSI-LD api endpoints */
