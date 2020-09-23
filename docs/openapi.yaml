@@ -24,20 +24,26 @@ info:
     It enables *Subscribers* a.k.a [Streaming Consumer] of datasources to stream data using AMQP streaming protocol over TLS.
     
 tags:
-- name: Entities
-  x-displayName: "Entity"
-  description: |
-    Discover data of a resource using geo-based, temporal and attribute queries.
-    These apis are intended to be used by IUDX Data *Consumers*.
-
 - name: Latest Entity
-  x-displayName: "Latest Entity"
+  x-displayName: "Latest Data"
   description: |
     Get the latest data of a resource using the id of the resource.
     These apis are intended to be used by IUDX Data *Consumers*.
 
+- name: Temporal Entities
+  x-displayName: "Temporal Search"
+  description: |
+    Discover data of a resource using temporal and attribute queries.
+    These apis are intended to be used by IUDX Data *Consumers*.
+
+- name: Entities
+  x-displayName: "Complex Search"
+  description: |
+    Discover data of a resource using geo-based, temporal and attribute queries.
+    These apis are intended to be used by IUDX Data *Consumers*.
+
 - name: Entities Post Query
-  x-displayName: "Entity Post Query"
+  x-displayName: "Complex Search (Post Query)"
   description: |
     Discover data of a resource using geo-based, temporal and attribute queries using HTTPs POST method. Intended to be used for complex queries.
     These apis are intended to be used by IUDX Data *Consumers*.
@@ -61,8 +67,7 @@ paths:
     get:
       tags:
       - Entities
-      summary: Query entities based on geo-spatial, temporal and attribute property. 
-      operationId: entities
+      operationId: Search
       parameters:
       - name: token
         in: header
@@ -162,28 +167,28 @@ paths:
       x-codeSamples:
         - lang: 'search by attribute'
           source: |
-            https://rs.iudx.io/ngsi-ld/v1/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&q=speed%3E=50
+            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&q=speed%3E30.0
         - lang: 'search by circle'
           source: |
-            https://rs.iudx.io/ngsi-ld/v1/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]
+            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=1000&geometry=Point&coordinates=[21.178,72.834]
         - lang: 'search by polygon'
           source: |
-            https://rs.iudx.io/ngsi-ld/v1/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[82.9738998413086,25.330372970610558],[82.97201156616211,25.28428253090838],[83.02436828613281,25.285524253944203],[83.02007675170898,25.32866622999033],[82.9738998413086,25.330372970610558]]]
+            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[82.9738998413086,25.330372970610558],[82.97201156616211,25.28428253090838],[83.02436828613281,25.285524253944203],[83.02007675170898,25.32866622999033],[82.9738998413086,25.330372970610558]]]
         - lang: 'search by bbox'
           source: |
-            https://rs.iudx.io/ngsi-ld/v1/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&geoproperty=location&georel=within&geometry=bbox&coordinates=[[82.97698974609375,25.321994194865383],[83.00411224365234,25.291267057619464]]
+            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[82.97698974609375,25.321994194865383],[83.00411224365234,25.291267057619464]]
         - lang: 'search by attribute and filter'
           source: |
-            https://rs.iudx.io/ngsi-ld/v1/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&q=speed%3E=50&attrs=speed,id
+            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&q=speed%3E=50&attrs=speed,id
         - lang: 'complex search'
           source: |
-            https://rs.iudx.io/ngsi-ld/v1/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]&timerel=before&time=2020-06-01T14:20:01Z&attrs=speed,id
+            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]&timerel=before&time=2020-06-01T14:20:01Z&attrs=speed,id
         - lang: 'count by circle'
           source: |
-            https://rs.iudx.io/ngsi-ld/v1/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]&options=count
+            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]&options=count
         - lang: 'complex count'
           source: |
-            https://rs.iudx.io/ngsi-ld/v1/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]&timerel=before&time=2020-06-01T14:20:01Z&options=count
+            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]&timerel=before&time=2020-06-01T14:20:01Z&options=count
           
       deprecated: false
       description: |
@@ -232,7 +237,7 @@ paths:
     get:
       tags:
       - Latest Entity
-      summary: Get latest data of a resource. 
+      summary: Latest Data 
       operationId: latest-entities
       parameters:
       - name: token
@@ -280,7 +285,7 @@ paths:
       x-codeSamples:
         - lang: 'get latest data'
           source: |
-            https://rs.iudx.io/ngsi-ld/v1/entities/iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+            https://rs.iudx.org.in/ngsi-ld/v1/entities/suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta
 
       description: |
         Get latest resource data query. Obtains the latest data of a resource using the `id`. 
@@ -290,8 +295,8 @@ paths:
   /ngsi-ld/v1/temporal/entities:
     get:
       tags:
-      - Entities
-      summary: Query entities based on temporal and attribute property. 
+      - Temporal Entities
+      summary: Temporal Search 
       operationId: temporal-entities
       parameters:
       - name: token
@@ -369,19 +374,19 @@ paths:
       x-codeSamples:
         - lang: 'search by during'
           source: |
-            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&timerel=during&time=2020-06-01T14:20:00Z&endtime=2020-06-06T14:20:00Z
+            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&timerel=during&time=2020-06-01T14:20:00Z&endtime=2020-06-06T14:20:00Z
         - lang: 'search by before'
           source: |
-            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&timerel=before&time=2020-06-01T14:20:01Z
+            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&timerel=before&time=2020-06-01T14:20:01Z
         - lang: 'search by after'
           source: |
-            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&timerel=after&time=2020-06-01T14:20:01Z
+            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&timerel=after&time=2020-06-01T14:20:01Z
         - lang: 'search by after and filter'
           source: |
-            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&timerel=after&time=2020-06-01T14:20:01Z&attrs=speed,id
+            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&timerel=after&time=2020-06-01T14:20:01Z&attrs=speed,id
         - lang: 'count by after'
           source: |
-            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live&timerel=after&time=2020-06-01T14:20:01Z&options=count
+            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&timerel=after&time=2020-06-01T14:20:01Z&options=count
 
       deprecated: false
 
@@ -390,7 +395,7 @@ paths:
     post:
       tags:
       - Entities Post Query
-      summary: Query entities based on geo-spatial, temporal and attribute property using POST query. 
+      summary: Search (Post Query) 
       operationId: complex-query
       parameters: 
       - name: token
@@ -408,7 +413,7 @@ paths:
             example:
               type: Query
               entities:
-              - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+              - id: suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta
               geoQ:
                 geometry: Point
                 coordinates:
@@ -1490,24 +1495,34 @@ components:
 
     entityresponse:
       title: entityresponse
-      type: array
-      items:
-        type: object
-        properties:
-          id:
-            type: string
-          observationDateTime:
-            type: string
-          trip_id:
-            type: string
-          route_id:
-            type: string
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          type: object
+          properties:
+            id:
+              type: string
+            observationDateTime:
+              type: string
+            trip_id:
+              type: string
+            route_id:
+              type: string
 
       example:
-        id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
-        observationDateTime: 2020-06-01T14:20:00Z
-        trip_id: 23958368
-        route_id: 14U
+        type: 200
+        title: success
+        results: [
+         { "id": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta",
+         "observationDateTime": 2020-06-01T14:20:00Z,
+         "trip_id": 23958368,
+         "route_id": 14U
+         }
+         ]
     registeradapter:
       title: registeradapter
       required:
