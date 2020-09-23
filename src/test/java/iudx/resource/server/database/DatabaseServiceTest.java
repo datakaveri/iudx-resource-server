@@ -1,12 +1,13 @@
 package iudx.resource.server.database;
 
-import io.vertx.core.Vertx;
+import io.vertx.reactivex.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.core.logging.Logger;
 import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.configuration.Configuration;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -30,39 +31,26 @@ public class DatabaseServiceTest {
   private static DatabaseService dbService;
   private static Vertx vertxObj;
   private static ElasticClient client;
-  private static Properties properties;
-  private static InputStream inputstream;
   private static String databaseIP, user, password;
   private static int databasePort;
+  private static Configuration config;
   
   /* TODO Need to update params to use contants */
   @BeforeAll
   @DisplayName("Deploying Verticle")
   static void startVertx(Vertx vertx, VertxTestContext testContext) {
     vertxObj = vertx;
+    config = new Configuration();
+    JsonObject dbConfig = config.configLoader(0, vertx);
 
     /* Read the configuration and set the rabbitMQ server properties. */
-    properties = new Properties();
-    inputstream = null;
+    /* Configuration setup */
+    databaseIP = dbConfig.getString("databaseIP");
+    databasePort = dbConfig.getInteger("databasePort");
+    user = dbConfig.getString("dbUser");
+    password = dbConfig.getString("dbPassword");
 
-    try {
-
-      inputstream = new FileInputStream("config.properties");
-      properties.load(inputstream);
-
-      databaseIP = properties.getProperty("testDatabaseIP");
-      databasePort = Integer.parseInt(properties.getProperty("testDatabasePort"));
-      user = properties.getProperty("testDbUser");
-      password = properties.getProperty("testDbPassword");
-      logger.debug("DB creds " + databaseIP + ", " + databasePort + ", " + user + ", " + password);
-
-    } catch (Exception ex) {
-
-      logger.info(ex.toString());
-
-    }
-
-    // TODO : Need to enable TLS using xpack security
+    logger.debug("Info : DB creds " + databaseIP + ", " + databasePort + ", " + user + ", " + password);
 
     client = new ElasticClient(databaseIP, databasePort, user, password);
     dbService = new DatabaseServiceImpl(client);
