@@ -55,7 +55,7 @@ public class ResponseBuilder {
   }
 
   ResponseBuilder setCount(int count) {
-    response.put(COUNT, count);
+    response.put(RESULTS, new JsonArray().add(new JsonObject().put(COUNT, count)));
     return this;
   }
 
