@@ -12,37 +12,32 @@ import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.configuration.Configuration;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
-
 @ExtendWith(VertxExtension.class)
 public class AuthenticationServiceTest {
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationServiceTest.class);
-    private static final Properties properties = new Properties();
+    private static JsonObject authConfig;
     private static Vertx vertxObj;
     private static AuthenticationService authenticationService;
+    private static Configuration config;
 
     @BeforeAll
     @DisplayName("Initialize Vertx and deploy Auth Verticle")
-    static void initialize(Vertx vertx, VertxTestContext testContext) {
+    static void initialize(Vertx vertx, io.vertx.reactivex.core.Vertx vertx2, VertxTestContext testContext) {
         vertxObj = vertx;
-        WebClient client = AuthenticationVerticle.createWebClient(vertxObj, properties, true);
-        authenticationService = new AuthenticationServiceImpl(vertxObj, client);
+        config = new Configuration();
+        authConfig = config.configLoader(1, vertx2);
+
+        WebClient client = AuthenticationVerticle.createWebClient(vertxObj, authConfig, true);
+        authenticationService = new AuthenticationServiceImpl(vertxObj, client, authConfig);
         logger.info("Auth tests setup complete");
         testContext.completeNow();
-        try {
-            FileInputStream configFile = new FileInputStream(Constants.CONFIG_FILE);
-            if (properties.isEmpty()) properties.load(configFile);
-        } catch (IOException e) {
-            logger.error("Could not load properties from config file", e);
-        }
     }
 
     @Test
@@ -55,8 +50,8 @@ public class AuthenticationServiceTest {
     @Test
     @DisplayName("Test if webClient has been initialized properly")
     public void testWebClientSetup(VertxTestContext testContext) {
-        WebClient client = AuthenticationVerticle.createWebClient(vertxObj, properties, true);
-        String host = properties.getProperty(Constants.AUTH_SERVER_HOST);
+        WebClient client = AuthenticationVerticle.createWebClient(vertxObj, authConfig, true);
+        String host = authConfig.getString(Constants.AUTH_SERVER_HOST);
         client.post(443, host, Constants.AUTH_CERTINFO_PATH).send(httpResponseAsyncResult -> {
             if (httpResponseAsyncResult.failed()) {
                 logger.error("Cert info call failed");
@@ -97,9 +92,9 @@ public class AuthenticationServiceTest {
     public void testHappyPath(VertxTestContext testContext) {
         JsonObject request = new JsonObject()
                 .put("ids", new JsonArray()
-                        .add(properties.getProperty("testResourceID")));
+                        .add(authConfig.getString("testResourceID")));
         JsonObject authInfo = new JsonObject()
-                .put("token", properties.getProperty("testAuthToken"))
+                .put("token", authConfig.getString("testAuthToken"))
                 .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(0));
         authenticationService.tokenInterospect(request, authInfo, asyncResult -> {
             if (asyncResult.failed()) {
@@ -122,9 +117,9 @@ public class AuthenticationServiceTest {
     public void testHappyPathTipCache(VertxTestContext testContext) {
         JsonObject request = new JsonObject()
                 .put("ids", new JsonArray()
-                        .add(properties.getProperty("testResourceID")));
+                        .add(authConfig.getString("testResourceID")));
         JsonObject authInfo = new JsonObject()
-                .put("token", properties.getProperty("testAuthToken"))
+                .put("token", authConfig.getString("testAuthToken"))
                 .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(0));
         authenticationService.tokenInterospect(request, authInfo, asyncResult -> {
             if (asyncResult.failed()) {
@@ -139,7 +134,7 @@ public class AuthenticationServiceTest {
             }
 
             JsonObject authInfo2 = new JsonObject()
-                    .put("token", properties.getProperty("testAuthToken"))
+                    .put("token", authConfig.getString("testAuthToken"))
                     .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(1));
             authenticationService.tokenInterospect(request, authInfo2, asyncResult2 -> {
                 if (asyncResult2.failed()) {
@@ -191,7 +186,7 @@ public class AuthenticationServiceTest {
                 .put("ids", new JsonArray()
                         .add("datakaveri.org/1022f4c20542abd5087107c0b6de4cb3130c5b7b/example.com/test-providers"));
         JsonObject authInfo = new JsonObject()
-                .put("token", properties.getProperty("testExpiredAuthToken"))
+                .put("token", authConfig.getString("testExpiredAuthToken"))
                 .put("apiEndpoint",  Constants.OPEN_ENDPOINTS.get(0));
         authenticationService.tokenInterospect(request, authInfo, asyncResult -> {
             if (asyncResult.failed()) {
@@ -213,8 +208,8 @@ public class AuthenticationServiceTest {
     @Test
     @DisplayName("Test CAT resource group ID API")
     public void testCatAPI(Vertx vertx, VertxTestContext testContext) {
-        int catPort = Integer.parseInt(properties.getProperty("catServerPort"));
-        String catHost = properties.getProperty("catServerHost");
+        int catPort = Integer.parseInt(authConfig.getString("catServerPort"));
+        String catHost = authConfig.getString("catServerHost");
         String catPath = Constants.CAT_RSG_PATH;
         String groupID = "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc/rs.iudx.org.in/aqm-bosch-climo";
 
@@ -254,8 +249,8 @@ public class AuthenticationServiceTest {
     @Test
     @DisplayName("Test CAT resource group invalid ID API")
     public void testCatAPIWithInvalidID(Vertx vertx, VertxTestContext testContext) {
-        int catPort = Integer.parseInt(properties.getProperty("catServerPort"));
-        String catHost = properties.getProperty("catServerHost");
+        int catPort = Integer.parseInt(authConfig.getString("catServerPort"));
+        String catHost = authConfig.getString("catServerHost");
         String catPath = Constants.CAT_RSG_PATH;
         String groupID = "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc/rs.iudx.org.in/invalid";
 

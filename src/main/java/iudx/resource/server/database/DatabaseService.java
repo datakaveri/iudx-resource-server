@@ -7,7 +7,6 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -37,7 +36,7 @@ public interface DatabaseService {
    */
 
   @Fluent
-  DatabaseService searchQuery(JsonObject request, Handler<AsyncResult<JsonArray>> handler);
+  DatabaseService searchQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The countQuery implements the count operation with the database.

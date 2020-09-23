@@ -54,6 +54,7 @@ public class Constants {
   static final String DURING = "during";
   static final String AFTER = "after";
   static final String BEFORE = "before";
+  static final String TEQUALS = "tequals";
   /* Geo-Spatial */
   static final String LAT = "lat";
   static final String LON = "lon";
@@ -97,6 +98,18 @@ public class Constants {
   static final String EMPTY_RESOURCE_ID = "resource-id is empty";
   static final String SEARCHTYPE_NOT_FOUND = "No searchType found";
   static final String BAD_PARAMETERS = "Bad parameters";
+  static final String ERROR_TYPE = "type";
+  static final String SUCCESS = "Success";
+  static final String FAILED = "Failed";
+  static final String TITLE = "title";
+  static final String RESULTS = "results";
+  static final String DETAIL = "detail";
+  static final String ROOT_CAUSE = "root_cause";
+  static final String REASON = "reason";
+  static final String MALFORMED_ID = "Malformed Id ";
+  static final String STATUS = "status";
+  static final String INDEX_NOT_FOUND = "index_not_found_exception";
+  static final String INVALID_RESOURCE_ID = "Invalid resource id";
   /* Search Regex */
   static final String GEOSEARCH_REGEX = "(.*)geoSearch(.*)";
   static final String RESPONSE_FILTER_REGEX = "(.*)responseFilter(.*)";
