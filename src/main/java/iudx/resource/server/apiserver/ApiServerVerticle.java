@@ -33,6 +33,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
+import iudx.resource.server.apiserver.handlers.AuthHandler;
 import iudx.resource.server.apiserver.management.ManagementApi;
 import iudx.resource.server.apiserver.management.ManagementApiImpl;
 import iudx.resource.server.apiserver.query.NGSILDQueryParams;
@@ -128,7 +129,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.route().handler(
         CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
     router.route().handler(BodyHandler.create());
-    // router.route().handler(new AuthHandler());
+    router.route().handler(new AuthHandler());
 
     /*
      * router.errorHandler(500, errorHandler -> { LOGGER.debug("error" + errorHandler);
