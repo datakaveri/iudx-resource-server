@@ -3,12 +3,17 @@ package iudx.resource.server.apiserver;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Util.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
@@ -26,6 +31,7 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.spi.cluster.ClusterManager;
@@ -128,6 +134,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     router = Router.router(vertx);
     router.route().handler(
         CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
+    // router.route().handler(new TokenHandler());
     router.route().handler(BodyHandler.create());
     router.route().handler(new AuthHandler());
 
@@ -304,7 +311,6 @@ public class ApiServerVerticle extends AbstractVerticle {
             }
           });
         }
-
       } else if (validationHandler.failed()) {
         LOGGER.error("Fail: Validation failed");
         handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_PARAM);
@@ -439,7 +445,6 @@ public class ApiServerVerticle extends AbstractVerticle {
             }
           });
         }
-
       } else if (validationHandler.failed()) {
         LOGGER.error("Fail: Bad request;");
         handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_PARAM);
@@ -474,7 +479,6 @@ public class ApiServerVerticle extends AbstractVerticle {
             : SubsType.CALLBACK.getMessage();
     requestBody.put(SUB_TYPE, subscrtiptionType);
     /* checking authentication info in requests */
-
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     LOGGER.debug("authInfo : " + authInfo);
 
@@ -523,7 +527,6 @@ public class ApiServerVerticle extends AbstractVerticle {
             ? SubsType.STREAMING.getMessage()
             : SubsType.CALLBACK.getMessage();
     requestJson.put(SUB_TYPE, subscrtiptionType);
-
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     LOGGER.debug("authInfo : " + authInfo);
     if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
@@ -572,7 +575,6 @@ public class ApiServerVerticle extends AbstractVerticle {
             ? SubsType.STREAMING.getMessage()
             : SubsType.CALLBACK.getMessage();
     requestJson.put(SUB_TYPE, subscrtiptionType);
-
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
       if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
@@ -1393,8 +1395,6 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param isBodyRequired body is required or not for response
    */
 
-
-
   /*
    * private void handleResponse(HttpServerResponse response, JsonObject json, int statusCode) {
    * response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(statusCode)
@@ -1442,8 +1442,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     int type = responseType.getCode();
     return new RestResponse.Builder().withType(type)
         .withTitle(ResponseType.fromCode(type).getMessage()).withMessage(message).build().toJson();
-  }
 
+  }
   /**
    * validate if name passes the regex test for IUDX queue,exchage name.
    * 
