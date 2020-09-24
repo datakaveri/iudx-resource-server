@@ -83,7 +83,7 @@ public class AuthHandler implements Handler<RoutingContext> {
   }
 
   private void processAuthFailure(RoutingContext ctx) {
-    LOGGER.debug("processException");
+    LOGGER.error("Error : Authentication Failure");
     final String payload = responseJson().toString();
     ctx.response().putHeader(CONTENT_TYPE, APPLICATION_JSON)
         .setStatusCode(ResponseType.fromCode(HttpStatus.SC_UNAUTHORIZED).getCode()).end(payload);
