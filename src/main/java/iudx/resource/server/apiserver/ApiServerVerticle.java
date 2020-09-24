@@ -127,8 +127,14 @@ public class ApiServerVerticle extends AbstractVerticle {
     router = Router.router(vertx);
     router.route().handler(
         CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
-    // router.route().handler(new TokenHandler()).failureHandler(new AuthFailureHandler());
     router.route().handler(BodyHandler.create());
+    // router.route().handler(new AuthHandler());
+
+    /*
+     * router.errorHandler(500, errorHandler -> { LOGGER.debug("error" + errorHandler);
+     * LOGGER.debug("error" + errorHandler.failure()); LOGGER.debug("ex" +
+     * errorHandler.getBodyAsString()); });
+     */
 
     /* NGSI-LD api endpoints */
     router.get(NGSILD_ENTITIES_URL).handler(this::handleEntitiesQuery);
@@ -229,6 +235,8 @@ public class ApiServerVerticle extends AbstractVerticle {
   private void handleEntitiesQuery(RoutingContext routingContext) {
     LOGGER.debug("Info:handleEntitiesQuery method started.;");
     /* Handles HTTP request from client */
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+    LOGGER.debug("authInfo : " + authInfo);
     HttpServerRequest request = routingContext.request();
     /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
@@ -272,39 +280,30 @@ public class ApiServerVerticle extends AbstractVerticle {
         /* HTTP request body as Json */
         JsonObject requestBody = new JsonObject();
         requestBody.put("ids", json.getJsonArray("id"));
-        /* Authenticating the request */
-        authenticator.tokenInterospect(requestBody, authenticationInfo, authHandler -> {
-          if (authHandler.succeeded()) {
-            LOGGER.debug("Success: Authenticating entity search request;"
-                .concat(authHandler.result().toString()));
-            if (json.containsKey(IUDXQUERY_OPTIONS)
-                && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
-              database.countQuery(json, handler -> {
-                if (handler.succeeded()) {
-                  handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                      handler.result().toString());
-                } else if (handler.failed()) {
-                  processBackendResponse(response, handler.cause().getMessage());
-                }
-              });
-            } else {
-              // call database vertical for seaarch
-              database.searchQuery(json, handler -> {
-                if (handler.succeeded()) {
-                  LOGGER.info("Success: Search Query success");
-                  handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                      handler.result().toString());
-                } else if (handler.failed()) {
-                  LOGGER.error("Fail: Search Query failed");
-                  processBackendResponse(response, handler.cause().getMessage());
-                }
-              });
+        if (json.containsKey(IUDXQUERY_OPTIONS)
+            && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
+          database.countQuery(json, handler -> {
+            if (handler.succeeded()) {
+              handleSuccessResponse(response, ResponseType.Ok.getCode(),
+                  handler.result().toString());
+            } else if (handler.failed()) {
+              processBackendResponse(response, handler.cause().getMessage());
             }
-          } else if (authHandler.failed()) {
-            LOGGER.error("Fail: Unathorized request;".concat(authHandler.cause().getMessage()));
-            handleResponse(response, ResponseType.AuthenticationFailure);
-          }
-        });
+          });
+        } else {
+          // call database vertical for seaarch
+          database.searchQuery(json, handler -> {
+            if (handler.succeeded()) {
+              LOGGER.info("Success: Search Query success");
+              handleSuccessResponse(response, ResponseType.Ok.getCode(),
+                  handler.result().toString());
+            } else if (handler.failed()) {
+              LOGGER.error("Fail: Search Query failed");
+              processBackendResponse(response, handler.cause().getMessage());
+            }
+          });
+        }
+
       } else if (validationHandler.failed()) {
         LOGGER.error("Fail: Validation failed");
         handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_PARAM);
@@ -344,40 +343,31 @@ public class ApiServerVerticle extends AbstractVerticle {
         json.put(JSON_INSTANCEID, instanceID);
         requestJson.put("ids", json.getJsonArray("id"));
         LOGGER.debug("Info: IUDX query json : ;" + json);
-        authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
-          if (authHandler.succeeded()) {
-            LOGGER.debug("Success: Authenticating entity search request ;"
-                .concat(authHandler.result().toString()));
-            if (json.containsKey(IUDXQUERY_OPTIONS)
-                && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
-              database.countQuery(json, handler -> {
-                if (handler.succeeded()) {
-                  LOGGER.info("Success: Count Success");
-                  handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                      handler.result().toString());
-                } else if (handler.failed()) {
-                  LOGGER.error("Fail: Count Fail");
-                  processBackendResponse(response, handler.cause().getMessage());
-                }
-              });
-            } else {
-              // call database vertical for search
-              database.searchQuery(json, handler -> {
-                if (handler.succeeded()) {
-                  LOGGER.info("Success: Search Success");
-                  handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                      handler.result().toString());
-                } else if (handler.failed()) {
-                  LOGGER.error("Fail: Search Fail");
-                  processBackendResponse(response, handler.cause().getMessage());
-                }
-              });
+        if (json.containsKey(IUDXQUERY_OPTIONS)
+            && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
+          database.countQuery(json, handler -> {
+            if (handler.succeeded()) {
+              LOGGER.info("Success: Count Success");
+              handleSuccessResponse(response, ResponseType.Ok.getCode(),
+                  handler.result().toString());
+            } else if (handler.failed()) {
+              LOGGER.error("Fail: Count Fail");
+              processBackendResponse(response, handler.cause().getMessage());
             }
-          } else if (authHandler.failed()) {
-            LOGGER.error("Fail: Unathorized request;".concat(authHandler.cause().getMessage()));
-            handleResponse(response, ResponseType.AuthenticationFailure);
-          }
-        });
+          });
+        } else {
+          // call database vertical for search
+          database.searchQuery(json, handler -> {
+            if (handler.succeeded()) {
+              LOGGER.info("Success: Search Success");
+              handleSuccessResponse(response, ResponseType.Ok.getCode(),
+                  handler.result().toString());
+            } else if (handler.failed()) {
+              LOGGER.error("Fail: Search Fail");
+              processBackendResponse(response, handler.cause().getMessage());
+            }
+          });
+        }
       } else if (validationHandler.failed()) {
         LOGGER.error("Fail: Bad request");
         handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_PARAM);
@@ -425,39 +415,30 @@ public class ApiServerVerticle extends AbstractVerticle {
         /* HTTP request body as Json */
         JsonObject requestBody = new JsonObject();
         requestBody.put("ids", json.getJsonArray("id"));
-        /* Authenticating the request */
-        authenticator.tokenInterospect(requestBody, authenticationInfo, authHandler -> {
-          if (authHandler.succeeded()) {
-            LOGGER.debug("Info: Authenticating entity temporal search request;"
-                .concat(authHandler.result().toString()));
-            if (json.containsKey(IUDXQUERY_OPTIONS)
-                && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
-              database.countQuery(json, handler -> {
-                if (handler.succeeded()) {
-                  handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                      handler.result().toString());
-                } else if (handler.failed()) {
-                  processBackendResponse(response, handler.cause().getMessage());
-                }
-              });
-            } else {
-              // call database vertical for normal seaarch
-              database.searchQuery(json, handler -> {
-                if (handler.succeeded()) {
-                  LOGGER.info("Success: Temporal query");
-                  handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                      handler.result().toString());
-                } else if (handler.failed()) {
-                  LOGGER.error("Fail: Temporal query");
-                  processBackendResponse(response, handler.cause().getMessage());
-                }
-              });
+        if (json.containsKey(IUDXQUERY_OPTIONS)
+            && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
+          database.countQuery(json, handler -> {
+            if (handler.succeeded()) {
+              handleSuccessResponse(response, ResponseType.Ok.getCode(),
+                  handler.result().toString());
+            } else if (handler.failed()) {
+              processBackendResponse(response, handler.cause().getMessage());
             }
-          } else if (authHandler.failed()) {
-            LOGGER.error("Fail: Unathorized request;".concat(authHandler.cause().getMessage()));
-            handleResponse(response, ResponseType.AuthenticationFailure);
-          }
-        });
+          });
+        } else {
+          // call database vertical for normal seaarch
+          database.searchQuery(json, handler -> {
+            if (handler.succeeded()) {
+              LOGGER.info("Success: Temporal query");
+              handleSuccessResponse(response, ResponseType.Ok.getCode(),
+                  handler.result().toString());
+            } else if (handler.failed()) {
+              LOGGER.error("Fail: Temporal query");
+              processBackendResponse(response, handler.cause().getMessage());
+            }
+          });
+        }
+
       } else if (validationHandler.failed()) {
         LOGGER.error("Fail: Bad request;");
         handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_PARAM);
@@ -492,43 +473,29 @@ public class ApiServerVerticle extends AbstractVerticle {
             : SubsType.CALLBACK.getMessage();
     requestBody.put(SUB_TYPE, subscrtiptionType);
     /* checking authentication info in requests */
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticationInfo.put("apiEndpoint", "/ngsi-ld/v1/subscription");
-      JsonObject json = requestBody.copy();
-      json.put("ids", requestBody.getJsonArray("entities"));
-      authenticator.tokenInterospect(json, authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          if (requestBody.containsKey(SUB_TYPE)) {
-            JsonObject authJson = authHandler.result();
-            JsonObject jsonObj = requestBody.copy();
-            jsonObj.put(JSON_CONSUMER, authJson.getString(JSON_CONSUMER));
-            jsonObj.put(JSON_INSTANCEID, instanceID);
-            LOGGER.debug("Info: json for subs :: ;" + jsonObj);
-            Future<JsonObject> subsReq =
-                subsService.createSubscription(jsonObj, databroker, database);
-            subsReq.onComplete(subHandler -> {
-              if (subHandler.succeeded()) {
-                LOGGER.info("Success: Handle Subscription request;");
-                handleSuccessResponse(response, ResponseType.Created.getCode(),
-                    subHandler.result().toString());
-              } else {
-                LOGGER.error("Fail: Handle Subscription request;");
-                processBackendResponse(response, subHandler.cause().getMessage());
-              }
-            });
-          } else {
-            LOGGER.error("Fail: Bad request");
-            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND);
-          }
-        } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized");
-          handleResponse(response, ResponseType.AuthenticationFailure);
+
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+    LOGGER.debug("authInfo : " + authInfo);
+
+    if (requestBody.containsKey(SUB_TYPE)) {
+      JsonObject jsonObj = requestBody.copy();
+      jsonObj.put(JSON_CONSUMER, authInfo.getString(JSON_CONSUMER));
+      jsonObj.put(JSON_INSTANCEID, instanceID);
+      LOGGER.debug("Info: json for subs :: ;" + jsonObj);
+      Future<JsonObject> subsReq = subsService.createSubscription(jsonObj, databroker, database);
+      subsReq.onComplete(subHandler -> {
+        if (subHandler.succeeded()) {
+          LOGGER.info("Success: Handle Subscription request;");
+          handleSuccessResponse(response, ResponseType.Created.getCode(),
+              subHandler.result().toString());
+        } else {
+          LOGGER.error("Fail: Handle Subscription request;");
+          processBackendResponse(response, subHandler.cause().getMessage());
         }
       });
     } else {
-      LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      LOGGER.error("Fail: Bad request");
+      handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND);
     }
   }
 
@@ -545,10 +512,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     String usersha = request.getParam(JSON_USERSHA);
     String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/subscription");
-    authenticationInfo.put(API_METHOD, "PATCH");
-    authenticationInfo.put(ID, subsId);
     JsonObject requestJson = routingContext.getBodyAsJson();
     String instanceID = request.getHeader(HEADER_HOST);
     requestJson.put(SUBSCRIPTION_ID, subsId);
@@ -559,46 +522,31 @@ public class ApiServerVerticle extends AbstractVerticle {
             ? SubsType.STREAMING.getMessage()
             : SubsType.CALLBACK.getMessage();
     requestJson.put(SUB_TYPE, subscrtiptionType);
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      JsonObject json = requestJson.copy();
-      json.put("ids", requestJson.getJsonArray("entities"));
-      authenticator.tokenInterospect(json, authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          LOGGER.debug("Info: Authenticating response ;".concat(authHandler.result().toString()));
-          if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
-            if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
-              JsonObject authResult = authHandler.result();
-              JsonObject jsonObj = requestJson.copy();
-              jsonObj.put(JSON_CONSUMER, authResult.getString(JSON_CONSUMER));
-              Future<JsonObject> subsReq =
-                  subsService.appendSubscription(jsonObj, databroker, database);
-              subsReq.onComplete(subsRequestHandler -> {
-                if (subsRequestHandler.succeeded()) {
-                  LOGGER.info("Success: Appending subscription");
-                  handleSuccessResponse(response, ResponseType.Created.getCode(),
-                      subsRequestHandler.result().toString());
-                } else {
-                  LOGGER.error("Fail: Appending subscription");
-                  processBackendResponse(response, subsRequestHandler.cause().getMessage());
-                }
-              });
-            } else {
-              LOGGER.error("Fail: Bad request");
-              handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_NAME);
-            }
+
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+    LOGGER.debug("authInfo : " + authInfo);
+    if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
+      if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
+        JsonObject jsonObj = requestJson.copy();
+        jsonObj.put(JSON_CONSUMER, authInfo.getString(JSON_CONSUMER));
+        Future<JsonObject> subsReq = subsService.appendSubscription(jsonObj, databroker, database);
+        subsReq.onComplete(subsRequestHandler -> {
+          if (subsRequestHandler.succeeded()) {
+            LOGGER.info("Success: Appending subscription");
+            handleSuccessResponse(response, ResponseType.Created.getCode(),
+                subsRequestHandler.result().toString());
           } else {
-            LOGGER.error("Fail: Bad request");
-            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND);
+            LOGGER.error("Fail: Appending subscription");
+            processBackendResponse(response, subsRequestHandler.cause().getMessage());
           }
-        } else {
-          LOGGER.error("Fail: Unauthorized");
-          handleResponse(response, ResponseType.AuthenticationFailure);
-        }
-      });
+        });
+      } else {
+        LOGGER.error("Fail: Bad request");
+        handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_NAME);
+      }
     } else {
-      LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure, MSG_SUB_INVALID_TOKEN);
+      LOGGER.error("Fail: Bad request");
+      handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND);
     }
   }
 
@@ -615,10 +563,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     String usersha = request.getParam(JSON_USERSHA);
     String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/subscription");
-    authenticationInfo.put(API_METHOD, "PUT");
-    authenticationInfo.put(ID, subsId);
     JsonObject requestJson = routingContext.getBodyAsJson();
     String instanceID = request.getHeader(HEADER_HOST);
     String subHeader = request.getHeader(HEADER_OPTIONS);
@@ -627,48 +571,34 @@ public class ApiServerVerticle extends AbstractVerticle {
             ? SubsType.STREAMING.getMessage()
             : SubsType.CALLBACK.getMessage();
     requestJson.put(SUB_TYPE, subscrtiptionType);
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      JsonObject json = requestJson.copy();
-      json.put("ids", requestJson.getJsonArray("entities"));
-      authenticator.tokenInterospect(json, authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          LOGGER.debug("Info: Authenticating response ;".concat(authHandler.result().toString()));
-          if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
-            if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
-              JsonObject authResult = authHandler.result();
-              JsonObject jsonObj = requestJson.copy();
-              jsonObj.put(SUBSCRIPTION_ID, subsId);
-              jsonObj.put(JSON_INSTANCEID, instanceID);
-              jsonObj.put(JSON_CONSUMER, authResult.getString(JSON_CONSUMER));
-              Future<JsonObject> subsReq =
-                  subsService.updateSubscription(jsonObj, databroker, database);
-              subsReq.onComplete(subsRequestHandler -> {
-                if (subsRequestHandler.succeeded()) {
-                  handleSuccessResponse(response, ResponseType.Created.getCode(),
-                      subsRequestHandler.result().toString());
-                } else {
-                  LOGGER.error("Fail: Bad request");
-                  processBackendResponse(response, subsRequestHandler.cause().getMessage());
-                }
-              });
-            } else {
-              LOGGER.error("Fail: Bad request");
-              handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_NAME);
-            }
+
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+    if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
+      if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
+        JsonObject jsonObj = requestJson.copy();
+        jsonObj.put(SUBSCRIPTION_ID, subsId);
+        jsonObj.put(JSON_INSTANCEID, instanceID);
+        jsonObj.put(JSON_CONSUMER, authInfo.getString(JSON_CONSUMER));
+        Future<JsonObject> subsReq = subsService.updateSubscription(jsonObj, databroker, database);
+        subsReq.onComplete(subsRequestHandler -> {
+          if (subsRequestHandler.succeeded()) {
+            handleSuccessResponse(response, ResponseType.Created.getCode(),
+                subsRequestHandler.result().toString());
           } else {
             LOGGER.error("Fail: Bad request");
-            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND);
+            processBackendResponse(response, subsRequestHandler.cause().getMessage());
           }
-        } else {
-          LOGGER.error("Fail: Authentication");
-          handleResponse(response, ResponseType.AuthenticationFailure);
-        }
-      });
+        });
+      } else {
+        LOGGER.error("Fail: Bad request");
+        handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_NAME);
+      }
     } else {
-      LOGGER.error("Fail: Authentication");
-      handleResponse(response, ResponseType.AuthenticationFailure, MSG_SUB_INVALID_TOKEN);
+      LOGGER.error("Fail: Bad request");
+      handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND);
     }
+
+
   }
 
   /**
@@ -698,40 +628,25 @@ public class ApiServerVerticle extends AbstractVerticle {
             ? SubsType.STREAMING.getMessage()
             : SubsType.CALLBACK.getMessage();
     requestJson.put(SUB_TYPE, subscrtiptionType);
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      JsonObject json = requestJson.copy();
-      json.put("ids", subsId);
-      authenticator.tokenInterospect(json, authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          LOGGER.debug("Info: Authenticating response ;".concat(authHandler.result().toString()));
-          if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
-            JsonObject authResult = authHandler.result();
-            JsonObject jsonObj = requestJson.copy();
-            jsonObj.put(JSON_CONSUMER, authResult.getString(JSON_CONSUMER));
-            Future<JsonObject> subsReq = subsService.getSubscription(jsonObj, databroker, database);
-            subsReq.onComplete(subHandler -> {
-              if (subHandler.succeeded()) {
-                LOGGER.info("Success: Getting subscription");
-                handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                    subHandler.result().toString());
-              } else {
-                LOGGER.error("Fail: Bad request");
-                processBackendResponse(response, subHandler.cause().getMessage());
-              }
-            });
-          } else {
-            LOGGER.error("Fail: Bad request");
-            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND);
-          }
-        } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized");
-          handleResponse(response, ResponseType.AuthenticationFailure);
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+
+    if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
+      JsonObject jsonObj = requestJson.copy();
+      jsonObj.put(JSON_CONSUMER, authInfo.getString(JSON_CONSUMER));
+      Future<JsonObject> subsReq = subsService.getSubscription(jsonObj, databroker, database);
+      subsReq.onComplete(subHandler -> {
+        if (subHandler.succeeded()) {
+          LOGGER.info("Success: Getting subscription");
+          handleSuccessResponse(response, ResponseType.Ok.getCode(),
+              subHandler.result().toString());
+        } else {
+          LOGGER.error("Fail: Bad request");
+          processBackendResponse(response, subHandler.cause().getMessage());
         }
       });
     } else {
-      LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      LOGGER.error("Fail: Bad request");
+      handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND);
     }
   }
 
@@ -748,10 +663,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     String usersha = request.getParam(JSON_USERSHA);
     String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/subscription");
-    authenticationInfo.put(API_METHOD, "DELETE");
-    authenticationInfo.put(ID, subsId);
     JsonObject requestJson = new JsonObject();
     String instanceID = request.getHeader(HEADER_HOST);
     requestJson.put(SUBSCRIPTION_ID, subsId);
@@ -762,37 +673,21 @@ public class ApiServerVerticle extends AbstractVerticle {
             ? SubsType.STREAMING.getMessage()
             : SubsType.CALLBACK.getMessage();
     requestJson.put(SUB_TYPE, subscrtiptionType);
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticationInfo.put("apiEndpoint", "/ngsi-ld/v1/subscription");
-      JsonObject json = requestJson.copy();
-      json.put("ids", subsId);
-      authenticator.tokenInterospect(json, authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          if (requestJson.containsKey(SUB_TYPE)) {
-            JsonObject authResult = authHandler.result();
-            JsonObject jsonObj = requestJson.copy();
-            jsonObj.put(JSON_CONSUMER, authResult.getString(JSON_CONSUMER));
-            LOGGER.debug("Info: Authenticating response ;".concat(authHandler.result().toString()));
-            Future<JsonObject> subsReq =
-                subsService.deleteSubscription(jsonObj, databroker, database);
-            subsReq.onComplete(subHandler -> {
-              if (subHandler.succeeded()) {
-                handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                    subHandler.result().toString());
-              } else {
-                processBackendResponse(response, subHandler.cause().getMessage());
-              }
-            });
-          } else {
-            handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND);
-          }
-        } else if (authHandler.failed()) {
-          handleResponse(response, ResponseType.AuthenticationFailure);
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+    if (requestJson.containsKey(SUB_TYPE)) {
+      JsonObject jsonObj = requestJson.copy();
+      jsonObj.put(JSON_CONSUMER, authInfo.getString(JSON_CONSUMER));
+      Future<JsonObject> subsReq = subsService.deleteSubscription(jsonObj, databroker, database);
+      subsReq.onComplete(subHandler -> {
+        if (subHandler.succeeded()) {
+          handleSuccessResponse(response, ResponseType.Ok.getCode(),
+              subHandler.result().toString());
+        } else {
+          processBackendResponse(response, subHandler.cause().getMessage());
         }
       });
     } else {
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND);
     }
   }
 
@@ -1254,39 +1149,21 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/iudx/v1/adapter");
-    authenticationInfo.put(API_METHOD, "POST");
     requestJson.put(JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          LOGGER.debug("Info: Authentication response ;".concat(authHandler.result().toString()));
-          JsonObject authResult = authHandler.result();
-          requestJson.put(JSON_CONSUMER, authResult.getString(JSON_CONSUMER));
-          requestJson.put(JSON_PROVIDER, authResult.getString(JSON_PROVIDER));
-          Future<JsonObject> brokerResult = managementApi.registerAdapter(requestJson, databroker);
-          brokerResult.onComplete(brokerResultHandler -> {
-            if (brokerResultHandler.succeeded()) {
-              LOGGER.info("Success: Registering adapter");
-              handleSuccessResponse(response, ResponseType.Created.getCode(),
-                  brokerResultHandler.result().toString());
-            } else if (brokerResult.failed()) {
-              LOGGER.error("Fail: Bad request" + brokerResultHandler.cause().getMessage());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
-            }
-          });
-        } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, ResponseType.AuthenticationFailure);
-        }
-      });
-    } else {
-      LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
-    }
-
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+    requestJson.put(JSON_CONSUMER, authInfo.getString(JSON_CONSUMER));
+    requestJson.put(JSON_PROVIDER, authInfo.getString(JSON_PROVIDER));
+    Future<JsonObject> brokerResult = managementApi.registerAdapter(requestJson, databroker);
+    brokerResult.onComplete(brokerResultHandler -> {
+      if (brokerResultHandler.succeeded()) {
+        LOGGER.info("Success: Registering adapter");
+        handleSuccessResponse(response, ResponseType.Created.getCode(),
+            brokerResultHandler.result().toString());
+      } else if (brokerResult.failed()) {
+        LOGGER.error("Fail: Bad request" + brokerResultHandler.cause().getMessage());
+        processBackendResponse(response, brokerResultHandler.cause().getMessage());
+      }
+    });
   }
 
   /**
@@ -1296,48 +1173,25 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   public void deleteAdapter(RoutingContext routingContext) {
     LOGGER.debug("Info: deleteAdapter method starts;");
-    JsonObject requestJson = new JsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(HEADER_HOST);
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/iudx/v1/adapter");
-    authenticationInfo.put(API_METHOD, "DELETE");
-    requestJson.put(JSON_INSTANCEID, instanceID);
     String domain = request.getParam(JSON_DOMAIN);
     String usersha = request.getParam(JSON_USERSHA);
     String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);
     String resourceServer = request.getParam(JSON_RESOURCE_SERVER);
     String adapterId = domain + "/" + usersha + "/" + resourceServer + "/" + resourceGroup;
-    authenticationInfo.put(ID, adapterId);
-    requestJson.put(JSON_ID, adapterId);
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          JsonObject authResult = authHandler.result();
-          requestJson.put(JSON_CONSUMER, authResult.getString(JSON_CONSUMER));
-          requestJson.put(JSON_PROVIDER, authResult.getString(JSON_PROVIDER));
-          Future<JsonObject> brokerResult = managementApi.deleteAdapter(adapterId, databroker);
-          brokerResult.onComplete(brokerResultHandler -> {
-            if (brokerResultHandler.succeeded()) {
-              LOGGER.info("Success: Deleting adapter");
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  brokerResultHandler.result().toString());
-            } else {
-              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
-            }
-          });
-        } else {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, ResponseType.AuthenticationFailure);
-        }
-      });
-    } else {
-      LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
-    }
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+    Future<JsonObject> brokerResult = managementApi.deleteAdapter(adapterId, databroker);
+    brokerResult.onComplete(brokerResultHandler -> {
+      if (brokerResultHandler.succeeded()) {
+        LOGGER.info("Success: Deleting adapter");
+        handleSuccessResponse(response, ResponseType.Ok.getCode(),
+            brokerResultHandler.result().toString());
+      } else {
+        LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
+        processBackendResponse(response, brokerResultHandler.cause().getMessage());
+      }
+    });
   }
 
   /**
@@ -1347,45 +1201,24 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   public void getAdapterDetails(RoutingContext routingContext) {
     LOGGER.info("getAdapterDetails method starts");
-    JsonObject requestJson = new JsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(HEADER_HOST);
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/iudx/v1/adapter");
-    authenticationInfo.put(API_METHOD, "GET");
-    requestJson.put(JSON_INSTANCEID, instanceID);
     String domain = request.getParam(JSON_DOMAIN);
     String usersha = request.getParam(JSON_USERSHA);
     String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);
     String resourceServer = request.getParam(JSON_RESOURCE_SERVER);
     String adapterId = domain + "/" + usersha + "/" + resourceServer + "/" + resourceGroup;
-    authenticationInfo.put(ID, adapterId);
-    requestJson.put(JSON_ID, adapterId);
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          JsonObject authResult = authHandler.result();
-          requestJson.put(JSON_ID, authResult.getString(JSON_CONSUMER));
-          requestJson.put(JSON_PROVIDER, authResult.getString(JSON_PROVIDER));
-          Future<JsonObject> brokerResult = managementApi.getAdapterDetails(adapterId, databroker);
-          brokerResult.onComplete(brokerResultHandler -> {
-            if (brokerResultHandler.succeeded()) {
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  brokerResultHandler.result().toString());
-            } else {
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
-            }
-          });
-        } else {
-          LOGGER.error(authHandler.cause());
-          handleResponse(response, ResponseType.AuthenticationFailure);
-        }
-      });
-    } else {
-      handleResponse(response, ResponseType.AuthenticationFailure);
-    }
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+    Future<JsonObject> brokerResult = managementApi.getAdapterDetails(adapterId, databroker);
+    brokerResult.onComplete(brokerResultHandler -> {
+      if (brokerResultHandler.succeeded()) {
+        handleSuccessResponse(response, ResponseType.Ok.getCode(),
+            brokerResultHandler.result().toString());
+      } else {
+        processBackendResponse(response, brokerResultHandler.cause().getMessage());
+      }
+    });
+
   }
 
   /**
@@ -1561,7 +1394,6 @@ public class ApiServerVerticle extends AbstractVerticle {
 
 
 
-
   /*
    * private void handleResponse(HttpServerResponse response, JsonObject json, int statusCode) {
    * response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(statusCode)
@@ -1575,11 +1407,11 @@ public class ApiServerVerticle extends AbstractVerticle {
   private void processBackendResponse(HttpServerResponse response, String failureMessage) {
     LOGGER.debug("Info : " + failureMessage);
     try {
-    JsonObject json = new JsonObject(failureMessage);
-    int type = json.getInteger(JSON_TYPE);
-    ResponseType responseType = ResponseType.fromCode(type);
-    response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(type)
-        .end(generateResponse(responseType).toString());
+      JsonObject json = new JsonObject(failureMessage);
+      int type = json.getInteger(JSON_TYPE);
+      ResponseType responseType = ResponseType.fromCode(type);
+      response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(type)
+          .end(generateResponse(responseType).toString());
     } catch (DecodeException ex) {
       LOGGER.error("ERROR : Expecting Json received else from backend service");
       handleResponse(response, ResponseType.BadRequestData);
