@@ -1,6 +1,15 @@
 package iudx.resource.server.databroker;
 
+
+import static iudx.resource.server.apiserver.util.Constants.JSON_CONSUMER;
+import static iudx.resource.server.apiserver.util.Constants.JSON_PROVIDER;
+import static iudx.resource.server.databroker.util.Constants.APIKEY;
+import static iudx.resource.server.databroker.util.Constants.PORT;
+import static iudx.resource.server.databroker.util.Constants.URL;
+import static iudx.resource.server.databroker.util.Constants.USER_NAME;
+import static iudx.resource.server.databroker.util.Constants.VHOST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
@@ -27,6 +36,7 @@ import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.PoolOptions;
+import iudx.resource.server.Configuration;
 import iudx.resource.server.databroker.util.Constants;
 
 @ExtendWith(VertxExtension.class)
@@ -55,6 +65,9 @@ public class AdapterEntitiesTest {
   static JsonObject propObj;
   private static String resourceGroup;
   private static String resourceServer;
+  private static String consumer;
+  private static String provider;
+
   private static String id, anotherid;
   /* Database Properties */
   private static String databaseIP;
@@ -69,6 +82,7 @@ public class AdapterEntitiesTest {
   private static RabbitClient rabbitMQStreamingClient;
   private static RabbitWebClient rabbitMQWebClient;
   private static PostgresClient pgClient;
+  private static Configuration appConfig;
 
   private static final Logger logger = LoggerFactory.getLogger(AdapterEntitiesTest.class);
 
@@ -77,32 +91,31 @@ public class AdapterEntitiesTest {
   static void startVertx(Vertx vertx, VertxTestContext testContext) {
 
     /* Read the configuration and set the rabbitMQ server properties. */
-    properties = new Properties();
-    inputstream = null;
+    appConfig = new Configuration();
+    JsonObject brokerConfig = appConfig.configLoader(2, vertx);
 
     try {
 
-      inputstream = new FileInputStream("config.properties");
-      properties.load(inputstream);
 
-      dataBrokerIP = properties.getProperty("dataBrokerIP");
-      dataBrokerPort = Integer.parseInt(properties.getProperty("dataBrokerPort"));
+
+      dataBrokerIP = brokerConfig.getString("dataBrokerIP");
+      dataBrokerPort = Integer.parseInt(brokerConfig.getString("dataBrokerPort"));
       dataBrokerManagementPort =
-          Integer.parseInt(properties.getProperty("dataBrokerManagementPort"));
-      dataBrokerVhost = properties.getProperty("dataBrokerVhost");
-      dataBrokerUserName = properties.getProperty("dataBrokerUserName");
-      dataBrokerPassword = properties.getProperty("dataBrokerPassword");
-      connectionTimeout = Integer.parseInt(properties.getProperty("connectionTimeout"));
-      requestedHeartbeat = Integer.parseInt(properties.getProperty("requestedHeartbeat"));
-      handshakeTimeout = Integer.parseInt(properties.getProperty("handshakeTimeout"));
-      requestedChannelMax = Integer.parseInt(properties.getProperty("requestedChannelMax"));
-      networkRecoveryInterval = Integer.parseInt(properties.getProperty("networkRecoveryInterval"));
-      databaseIP = properties.getProperty("callbackDatabaseIP");
-      databasePort = Integer.parseInt(properties.getProperty("callbackDatabasePort"));
-      databaseName = properties.getProperty("callbackDatabaseName");
-      databaseUserName = properties.getProperty("callbackDatabaseUserName");
-      databasePassword = properties.getProperty("callbackDatabasePassword");
-      poolSize = Integer.parseInt(properties.getProperty("callbackpoolSize"));
+          Integer.parseInt(brokerConfig.getString("dataBrokerManagementPort"));
+      dataBrokerVhost = brokerConfig.getString("dataBrokerVhost");
+      dataBrokerUserName = brokerConfig.getString("dataBrokerUserName");
+      dataBrokerPassword = brokerConfig.getString("dataBrokerPassword");
+      connectionTimeout = Integer.parseInt(brokerConfig.getString("connectionTimeout"));
+      requestedHeartbeat = Integer.parseInt(brokerConfig.getString("requestedHeartbeat"));
+      handshakeTimeout = Integer.parseInt(brokerConfig.getString("handshakeTimeout"));
+      requestedChannelMax = Integer.parseInt(brokerConfig.getString("requestedChannelMax"));
+      networkRecoveryInterval = Integer.parseInt(brokerConfig.getString("networkRecoveryInterval"));
+      databaseIP = brokerConfig.getString("callbackDatabaseIP");
+      databasePort = Integer.parseInt(brokerConfig.getString("callbackDatabasePort"));
+      databaseName = brokerConfig.getString("callbackDatabaseName");
+      databaseUserName = brokerConfig.getString("callbackDatabaseUserName");
+      databasePassword = brokerConfig.getString("callbackDatabasePassword");
+      poolSize = Integer.parseInt(brokerConfig.getString("callbackpoolSize"));
 
     } catch (Exception ex) {
       logger.info(ex.toString());
@@ -171,10 +184,10 @@ public class AdapterEntitiesTest {
     rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient, pgClient);
     databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, dataBrokerVhost);
     
-    resourceGroup = UUID.randomUUID().toString();
-    resourceServer = UUID.randomUUID().toString();
-    id = Constants.USER_NAME_TEST_EXAMPLE + "/" + resourceServer + "/" + resourceGroup;
-
+    resourceGroup = brokerConfig.getString("testResourceGroup");
+    resourceServer = brokerConfig.getString("testResourceServer");
+    consumer = brokerConfig.getString("testConsumer");
+    provider = brokerConfig.getString("testProvider");
     testContext.completeNow();
 
   }
@@ -184,9 +197,10 @@ public class AdapterEntitiesTest {
   @Order(1)
   void successRegisterAdaptor(VertxTestContext testContext) {
     JsonObject request = new JsonObject();
-    request.put(Constants.CONSUMER, Constants.CONSUMER_TEST_EXAMPLE);
     request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
     request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    request.put(Constants.CONSUMER, consumer);
+    request.put(JSON_PROVIDER, provider);
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.USER_NAME, Constants.USER_NAME_TEST_EXAMPLE);
@@ -198,7 +212,12 @@ public class AdapterEntitiesTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         logger.info("inside  successRegisterAdaptor - RegisteAdaptor response is : " + response);
-        assertEquals(expected, response);
+        assertTrue(response.containsKey(USER_NAME));
+        assertTrue(response.containsKey(APIKEY));
+        assertTrue(response.containsKey(URL));
+        assertTrue(response.containsKey(PORT));
+        assertTrue(response.containsKey(VHOST));
+        // assertEquals(expected, response);
       }
       testContext.completeNow();
     });

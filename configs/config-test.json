@@ -42,7 +42,11 @@
             "callbackDatabaseName": "iudx",
             "callbackDatabaseUserName": "iudx_user",
             "callbackDatabasePassword": "iudx@123",
-            "callbackpoolSize": "25"
+            "callbackpoolSize": "25",
+            "testConsumer":"vasanth.rajaraman@datakaveri.org",
+            "testProvider":"datakaveri.org/3ae88e7ba006938ffc38203d326b1711b892226d",
+            "testResourceGroup":"iudx-adaptor-test",
+    		"testResourceServer":"rs.iudx.org.in"
         },
         {
             "id": "iudx.resource.server.callback.CallbackVerticle",
@@ -71,7 +75,8 @@
             "keystore": "configs/keystore.jks",
             "keystorePassword": "password",
             "rsAdmin": "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc",
-            "verticleInstances": 2
+            "verticleInstances": 2,
+            "testResourceID":"datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc/rs.iudx.org.in/pune-streetlights/testResourceLight"
 
         }
     ]

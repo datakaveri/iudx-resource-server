@@ -30,6 +30,7 @@ import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.PoolOptions;
+import iudx.resource.server.Configuration;
 import iudx.resource.server.databroker.util.Constants;
 
 @ExtendWith(VertxExtension.class)
@@ -77,6 +78,7 @@ public class DataBrokerServiceTest {
   private static RabbitWebClient rabbitMQWebClient;
   private static PostgresClient pgClient;
   private static int statusConflict;
+  private static Configuration appConfig;
 
 
   private static final Logger logger = LoggerFactory.getLogger(DataBrokerServiceTest.class);
@@ -93,6 +95,9 @@ public class DataBrokerServiceTest {
     statusNoContent = 204;
     statusConflict = 409;
 
+    appConfig = new Configuration();
+    JsonObject brokerConfig = appConfig.configLoader(2, vertx);
+
 
     logger.info("Exchange Name is " + exchangeName);
     logger.info("Queue Name is " + queueName);
@@ -103,27 +108,28 @@ public class DataBrokerServiceTest {
 
     try {
 
-      inputstream = new FileInputStream("config.properties");
-      properties.load(inputstream);
+      /*
+       * inputstream = new FileInputStream("config.properties"); properties.load(inputstream);
+       */
 
-      dataBrokerIP = properties.getProperty("dataBrokerIP");
-      dataBrokerPort = Integer.parseInt(properties.getProperty("dataBrokerPort"));
+      dataBrokerIP = brokerConfig.getString("dataBrokerIP");
+      dataBrokerPort = Integer.parseInt(brokerConfig.getString("dataBrokerPort"));
       dataBrokerManagementPort =
-          Integer.parseInt(properties.getProperty("dataBrokerManagementPort"));
-      dataBrokerVhost = properties.getProperty("dataBrokerVhost");
-      dataBrokerUserName = properties.getProperty("dataBrokerUserName");
-      dataBrokerPassword = properties.getProperty("dataBrokerPassword");
-      connectionTimeout = Integer.parseInt(properties.getProperty("connectionTimeout"));
-      requestedHeartbeat = Integer.parseInt(properties.getProperty("requestedHeartbeat"));
-      handshakeTimeout = Integer.parseInt(properties.getProperty("handshakeTimeout"));
-      requestedChannelMax = Integer.parseInt(properties.getProperty("requestedChannelMax"));
-      networkRecoveryInterval = Integer.parseInt(properties.getProperty("networkRecoveryInterval"));
-      databaseIP = properties.getProperty("callbackDatabaseIP");
-      databasePort = Integer.parseInt(properties.getProperty("callbackDatabasePort"));
-      databaseName = properties.getProperty("callbackDatabaseName");
-      databaseUserName = properties.getProperty("callbackDatabaseUserName");
-      databasePassword = properties.getProperty("callbackDatabasePassword");
-      poolSize = Integer.parseInt(properties.getProperty("callbackpoolSize"));
+          Integer.parseInt(brokerConfig.getString("dataBrokerManagementPort"));
+      dataBrokerVhost = brokerConfig.getString("dataBrokerVhost");
+      dataBrokerUserName = brokerConfig.getString("dataBrokerUserName");
+      dataBrokerPassword = brokerConfig.getString("dataBrokerPassword");
+      connectionTimeout = Integer.parseInt(brokerConfig.getString("connectionTimeout"));
+      requestedHeartbeat = Integer.parseInt(brokerConfig.getString("requestedHeartbeat"));
+      handshakeTimeout = Integer.parseInt(brokerConfig.getString("handshakeTimeout"));
+      requestedChannelMax = Integer.parseInt(brokerConfig.getString("requestedChannelMax"));
+      networkRecoveryInterval = Integer.parseInt(brokerConfig.getString("networkRecoveryInterval"));
+      databaseIP = brokerConfig.getString("callbackDatabaseIP");
+      databasePort = Integer.parseInt(brokerConfig.getString("callbackDatabasePort"));
+      databaseName = brokerConfig.getString("callbackDatabaseName");
+      databaseUserName = brokerConfig.getString("callbackDatabaseUserName");
+      databasePassword = brokerConfig.getString("callbackDatabasePassword");
+      poolSize = Integer.parseInt(brokerConfig.getString("callbackpoolSize"));
 
     } catch (Exception ex) {
 
@@ -713,7 +719,11 @@ public class DataBrokerServiceTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         logger.info("Register subscription response is : " + response);
-        assertEquals(expected, response);
+        assertTrue(response.containsKey(USER_NAME));
+        assertTrue(response.containsKey(APIKEY));
+        assertTrue(response.containsKey(URL));
+        assertTrue(response.containsKey(PORT));
+        assertTrue(response.containsKey(VHOST));
       }
       testContext.completeNow();
     });
