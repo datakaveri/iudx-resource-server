@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import iudx.resource.server.apiserver.response.ResponseType;
@@ -25,17 +26,14 @@ public class AuthHandler implements Handler<RoutingContext> {
 
   private final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
   private final String AUTH_INFO = "authInfo";
-
-  private final List<String> allowedPublicEndPoints = openEndPoints;
   private final List<String> noAuthRequired = bypassEndpoint;
-
-
   private AuthenticationService authenticator;
+  private HttpServerRequest request;
 
   @Override
   public void handle(RoutingContext context) {
-    HttpServerRequest request = context.request();
-    JsonObject requestJson = context.getBodyAsJson();
+    request = context.request();
+    JsonObject requestJson = new JsonObject();
     LOGGER.debug("Info : path " + request.path());
     // bypassing auth for RDocs
     if (noAuthRequired.contains(request.path())) {
@@ -47,51 +45,54 @@ public class AuthHandler implements Handler<RoutingContext> {
     final String path = getNormalizedPath(request.path());
     final String method = context.request().method().toString();
 
+    if (token == null)
+      token = "public";
 
-    if (token != null || isAllowedPublicTip(path)) {
-      if (token == null)
-        token = "public";
+    JsonObject authInfo =
+        new JsonObject().put(API_ENDPOINT, path).put(HEADER_TOKEN, token).put(API_METHOD, method);
 
-      JsonObject authInfo =
-          new JsonObject().put(API_ENDPOINT, path).put(HEADER_TOKEN, token).put(API_METHOD, method);
-
-      if (!method.equalsIgnoreCase("POST")) {
-        authInfo.put(ID, getId(context.request().path(), path));
-      }
-
-      LOGGER.debug("request" + requestJson);
-      Vertx vertx = context.vertx();
-      authenticator = AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
-      authenticator.tokenInterospect(requestJson, authInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          LOGGER.debug("Auth info : " + authHandler.result());
-          context.data().put(AUTH_INFO, authHandler.result());
-        } else {
-          processAuthFailure(context);
-          return;
-        }
-        context.next();
+    String id = getId(context.request().path(), path);
+    authInfo.put(ID, id);
+    requestJson.put(IDS, new JsonArray().add(id));
+    
+    LOGGER.debug("request" + requestJson);
+    Vertx vertx = context.vertx();
+    authenticator = AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
+    authenticator.tokenInterospect(requestJson, authInfo, authHandler -> {
+      if (authHandler.succeeded()) {
+        LOGGER.debug("Auth info : " + authHandler.result());
+        context.data().put(AUTH_INFO, authHandler.result());
+      } else {
+        processAuthFailure(context, authHandler.cause().getMessage());
         return;
-      });
+      }
+      context.next();
+      return;
+    });
+  }
+
+  private void processAuthFailure(RoutingContext ctx, String result) {
+    if (result.contains("Not Found")) {
+      LOGGER.error("Error : Item Not Found");
+      final String payload = responseNotFoundJson().toString();
+      ctx.response().putHeader(CONTENT_TYPE, APPLICATION_JSON)
+      .setStatusCode(ResponseType.fromCode(HttpStatus.SC_NOT_FOUND).getCode()).end(payload);
     } else {
-      processAuthFailure(context);
+      LOGGER.error("Error : Authentication Failure");
+      final String payload = responseUnauthorizedJson().toString();
+      ctx.response().putHeader(CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(ResponseType.fromCode(HttpStatus.SC_UNAUTHORIZED).getCode()).end(payload);
     }
   }
 
-  private boolean isAllowedPublicTip(String tip) {
-    return allowedPublicEndPoints.contains(tip);
-  }
-
-  private void processAuthFailure(RoutingContext ctx) {
-    LOGGER.error("Error : Authentication Failure");
-    final String payload = responseJson().toString();
-    ctx.response().putHeader(CONTENT_TYPE, APPLICATION_JSON)
-        .setStatusCode(ResponseType.fromCode(HttpStatus.SC_UNAUTHORIZED).getCode()).end(payload);
-  }
-
-  private JsonObject responseJson() {
+  private JsonObject responseUnauthorizedJson() {
     return new JsonObject().put(JSON_TYPE, HttpStatus.SC_UNAUTHORIZED)
         .put(JSON_TITLE, "Not Authorized").put(JSON_DETAIL, "Invalid credentials");
+  }
+
+  private JsonObject responseNotFoundJson() {
+    return new JsonObject().put(JSON_TYPE, HttpStatus.SC_NOT_FOUND)
+        .put(JSON_TITLE, "Not Found").put(JSON_DETAIL, "Resource Not Found");
   }
 
   /**
@@ -121,6 +122,18 @@ public class AuthHandler implements Handler<RoutingContext> {
         break;
       }
       case IUDX_MANAGEMENT_VHOST_URL: {
+        id = path.replaceAll(IUDX_MANAGEMENT_VHOST_URL + "/", "");
+        break;
+      }
+      case NGSILD_ENTITIES_URL: {
+        id = request.getParam("id");
+        break;
+      }
+      case NGSILD_TEMPORAL_URL: {
+        id = request.getParam("id");
+        break;
+      }
+      case NGSILD_POST_QUERY_PATH: {
         id = path.replaceAll(IUDX_MANAGEMENT_VHOST_URL + "/", "");
         break;
       }
