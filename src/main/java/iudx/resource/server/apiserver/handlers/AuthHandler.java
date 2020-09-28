@@ -51,7 +51,9 @@ public class AuthHandler implements Handler<RoutingContext> {
     JsonObject authInfo =
         new JsonObject().put(API_ENDPOINT, path).put(HEADER_TOKEN, token).put(API_METHOD, method);
 
-    String id = getId(context.request().path(), path);
+    LOGGER.debug("Info :" + context.request().path());
+    LOGGER.debug("Info :" + context.request().path().split("/").length);
+    String id = getId(context.request().path(), path, context);
     authInfo.put(ID, id);
     requestJson.put(IDS, new JsonArray().add(id));
     
@@ -102,7 +104,7 @@ public class AuthHandler implements Handler<RoutingContext> {
    * @param forPath endpoint called for
    * @return id extraced fro path if present
    */
-  private String getId(String path, String forPath) {
+  private String getId(String path, String forPath, RoutingContext context) {
     String id = "";
     switch (forPath) {
       case NGSILD_SUBSCRIPTION_URL: {
@@ -126,15 +128,21 @@ public class AuthHandler implements Handler<RoutingContext> {
         break;
       }
       case NGSILD_ENTITIES_URL: {
-        id = request.getParam("id");
-        break;
+        if (path.split("/").length == 9) {
+          id = path.replaceAll(NGSILD_ENTITIES_URL + "/", "");
+          break;
+        } else {
+          id = request.getParam("id");
+          break;
+        }
       }
       case NGSILD_TEMPORAL_URL: {
         id = request.getParam("id");
         break;
       }
       case NGSILD_POST_QUERY_PATH: {
-        id = path.replaceAll(IUDX_MANAGEMENT_VHOST_URL + "/", "");
+        JsonObject body = context.getBodyAsJson();
+        id = body.getJsonArray("entities").getJsonObject(0).getString("id");
         break;
       }
       default: {
