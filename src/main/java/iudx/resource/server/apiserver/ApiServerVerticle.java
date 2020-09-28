@@ -248,15 +248,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerRequest request = routingContext.request();
     /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
-    /* JsonObject of authentication related information */
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/entities");
-    /* checking authentication info in requests */
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-    } else {
-      authenticationInfo.put(HEADER_TOKEN, PUBLIC_TOKEN);
-    }
     // get query paramaters
     MultiMap params = getQueryParams(routingContext, response).get();
     // validate request parameters
@@ -328,13 +319,6 @@ public class ApiServerVerticle extends AbstractVerticle {
   public void handlePostEntitiesQuery(RoutingContext routingContext) {
     LOGGER.debug("Info: handlePostEntitiesQuery method started.");
     HttpServerRequest request = routingContext.request();
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/entityOperations/query");
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-    } else {
-      authenticationInfo.put(HEADER_TOKEN, PUBLIC_TOKEN);
-    }
     JsonObject requestJson = routingContext.getBodyAsJson();
     LOGGER.debug("Info: request Json :: ;" + requestJson);
     HttpServerResponse response = routingContext.response();
@@ -395,15 +379,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerRequest request = routingContext.request();
     /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
-    /* JsonObject of authentication related information */
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/temporal/entities");
-    /* checking authentication info in requests */
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-    } else {
-      authenticationInfo.put(HEADER_TOKEN, PUBLIC_TOKEN);
-    }
     /* HTTP request instance/host details */
     String instanceID = request.getHeader(HEADER_HOST);
     // get query parameters
@@ -464,10 +439,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerRequest request = routingContext.request();
     /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
-    /* JsonObject of authentication related information */
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/subscription");
-    authenticationInfo.put(API_METHOD, "POST");
     /* HTTP request body as Json */
     JsonObject requestBody = routingContext.getBodyAsJson();
     /* HTTP request instance/host details */
@@ -617,10 +588,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     String usersha = request.getParam(JSON_USERSHA);
     String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/ngsi-ld/v1/subscription");
-    authenticationInfo.put(API_METHOD, "GET");
-    authenticationInfo.put(ID, subsId);
     JsonObject requestJson = new JsonObject();
     String instanceID = request.getHeader(HEADER_HOST);
     requestJson.put(SUBSCRIPTION_ID, subsId);
