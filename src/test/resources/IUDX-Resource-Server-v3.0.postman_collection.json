@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "e89eeeaa-5d85-4854-98b5-ab50dbca31fd",
-		"name": "IUDX-Resource-Server-v3.0",
+		"_postman_id": "4725b966-65ed-4453-bcd0-d5e35459260a",
+		"name": "IUDX-Resource-Server-v3.0.1",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -91,7 +91,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "56b912b8-4d05-4df7-bb00-10e5494aeed5",
+						"id": "e22d4011-aa07-41e7-9f03-bec96b4a63e1",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -101,7 +101,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "5a82c022-e09a-4d7f-8de9-ef38d92629a4",
+						"id": "7086a416-bdcc-47e5-8d50-6e869775ef30",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -120,7 +120,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "2debe556-2f2a-4955-9504-c614e9d031a7",
+								"id": "6abe4429-e70c-42f1-bd6b-4ab1767077d5",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
@@ -179,7 +179,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "a7ca88f7-1fa0-4579-bb7d-f3ecfa763996",
+								"id": "b8894809-e41a-4e1c-9294-719521863c5b",
 								"exec": [
 									"pm.test(\"response is 400\", function () {\r",
 									"    pm.response.to.have.status(400);\r",
@@ -238,7 +238,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "52bf22ab-8aaa-4fd7-813a-7086ab43c03d",
+								"id": "2dc41a9b-86f7-45ea-8393-e985f31416d5",
 								"exec": [
 									"pm.test(\"response is 401\", function () {\r",
 									"    pm.response.to.have.status(401);\r",
@@ -303,7 +303,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "e204f73e-54f1-4faf-b0f9-fccf8189b9fb",
+								"id": "64e2a41a-3610-42e6-8a63-7874d29ff065",
 								"exec": [
 									"pm.test(\"response is 404\", function () {\r",
 									"    pm.response.to.have.status(404);\r",
@@ -362,7 +362,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "2095f49d-61e2-47d4-bfa7-c3e39e352df8",
+								"id": "5766c7bd-1aee-47be-aacf-def389f8def0",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
@@ -431,7 +431,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "1bbea468-ae6a-4c9a-a5c5-d25b030d988a"
+								"id": "cd75d408-e402-4cea-975d-de36bc52c0b1"
 							}
 						}
 					],
@@ -479,7 +479,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "3e029f74-c620-424a-82f1-b88d580d6ee9",
+						"id": "4da56ef7-a5e2-4ee2-bad2-18c723fe303f",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -489,7 +489,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "62b3e240-5fb3-4349-b0a7-cfa667a6ff14",
+						"id": "df6d683d-4370-4557-9a0e-58a352527acf",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -508,7 +508,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "5757cd5f-119e-4dbe-b5ef-abd24a0416fb",
+								"id": "01ea31fa-da5a-4dfb-9ea4-1a2874d54d50",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -577,7 +577,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "cdd1dd6e-c97d-4ce1-9717-33140086efd9",
+								"id": "7abc2086-02c8-4207-ae2a-8efaa5caafe3",
 								"exec": [
 									"pm.test(\"response is 400\", function () {",
 									"    pm.response.to.have.status(400);",
@@ -646,7 +646,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "8326d89c-ce68-45bc-8a81-b17491a9a2b8",
+								"id": "19da98fe-57f0-44b1-9553-7263789034fa",
 								"exec": [
 									"pm.test(\"response is 401\", function () {",
 									"    pm.response.to.have.status(401);",
@@ -721,7 +721,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "1476529a-e82c-4041-8ab2-ee4d2f8271a1",
+								"id": "29580889-f5a7-4726-bfd2-77d0f2650b2d",
 								"exec": [
 									"pm.test(\"response is 404\", function () {",
 									"    pm.response.to.have.status(404);",
@@ -790,7 +790,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "f80786aa-7b38-4938-b395-94ee10d4c01a",
+								"id": "78e80b4c-c577-4d23-a980-d07be61dc6ed",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -874,7 +874,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "b9daacd4-6563-4ec2-8c4a-4828bb3dac0a"
+								"id": "665821ea-6ddf-407b-bce6-c2533ff8fd83"
 							}
 						}
 					],
@@ -928,7 +928,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "c0dfda67-b9fa-4462-b2fa-f2fd946e53dd",
+								"id": "6c2458ee-0312-4314-a5ab-2f3edcff1503",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -996,7 +996,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "b6a4ad90-3a04-4a0b-aaa7-c1a5fc22f183",
+						"id": "972a07c0-fd7e-44e3-8048-6f12f6f647c1",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -1006,7 +1006,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "b55a445f-2fb1-4b02-a723-b6b5baa67902",
+						"id": "72a254bc-f01f-44e5-902d-539a701bff87",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -1025,14 +1025,14 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "0da589c1-3cbb-4903-873f-9d1c3852d9a1",
+								"id": "e19800b5-016d-425b-aaec-8c27ad576165",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"\r",
 									"pm.test(\"Response time is less than 1s\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -1081,7 +1081,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "d1fa102f-eac5-4e46-9d64-8d62b64d7b3b",
+								"id": "f1d10110-a3c7-4d31-9f6b-fa1cb80fa080",
 								"exec": [
 									"pm.test(\"response is 400\", function () {\r",
 									"    pm.response.to.have.status(400);\r",
@@ -1132,12 +1132,68 @@
 					"response": []
 				},
 				{
+					"name": "400(invalid date format) temporal (between)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b5bdb68f-12fc-4c08-b21a-d75fa3a94c70",
+								"exec": [
+									"pm.test(\"response is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1s\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2020-09-18X14:20:00Z&endtime=2020-09-19X14:20:00Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "timerel",
+									"value": "during"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-18X14:20:00Z"
+								},
+								{
+									"key": "endtime",
+									"value": "2020-09-19X14:20:00Z"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "404(not found) temporal (between)",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "78b862a2-48d4-45b8-bc11-3c197cea7c79",
+								"id": "d637677a-82bb-499d-bc8d-fc93efe71c0b",
 								"exec": [
 									"pm.test(\"response is 404\", function () {\r",
 									"    pm.response.to.have.status(404);\r",
@@ -1193,7 +1249,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "21dfc30c-9ed2-469c-a0c0-f654ea23d14c",
+								"id": "727e6bb4-af42-45ba-a24d-8fb8c7f3a951",
 								"exec": [
 									"pm.test(\"response is 401\", function () {\r",
 									"    pm.response.to.have.status(401);\r",
@@ -1217,7 +1273,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-et&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z",
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z",
 							"host": [
 								"{{base_url}}"
 							],
@@ -1230,7 +1286,7 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-et"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
 								},
 								{
 									"key": "timerel",
@@ -1255,7 +1311,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "a88678f9-d84f-4b62-a472-e88648f8ef7c",
+								"id": "81700251-9ea4-4468-9d24-3d3abd2deaf7",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
@@ -1317,7 +1373,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "4941cbed-eccc-4441-99c4-4228d9fa8fb1",
+								"id": "db25ff09-ded4-4ce0-b513-6b25d758bce3",
 								"exec": [
 									"pm.test(\"response is 400\", function () {\r",
 									"    pm.response.to.have.status(400);\r",
@@ -1374,12 +1430,74 @@
 					"response": []
 				},
 				{
+					"name": "400 (invalid date format) temporal (before)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9d4baeb6-d694-4a27-b558-779bf8fbac74",
+								"exec": [
+									"pm.test(\"response is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1s\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=before&time=2020-09-19XX12:00:00Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-19XX12:00:00Z"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "404 (not found) temporal (before)",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "5a233750-8f15-487a-a494-ab4de2378b9c",
+								"id": "b33cb439-a50b-41f6-aa6e-47b7107bf69c",
 								"exec": [
 									"pm.test(\"response is 404\", function () {\r",
 									"    pm.response.to.have.status(404);\r",
@@ -1441,7 +1559,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "3f1b836c-f68d-4e2c-be7d-a3e322a96ff9",
+								"id": "4d4326b7-fa44-48ce-95b7-aef972564ebc",
 								"exec": [
 									"pm.test(\"response is 401\", function () {\r",
 									"    pm.response.to.have.status(401);\r",
@@ -1509,7 +1627,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "e629178e-faea-4b44-9061-7eeafcae7f94",
+								"id": "105bbb28-9654-42fc-b177-487970270fbb",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
@@ -1561,7 +1679,59 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "8dcf3fc9-449d-452c-8b8d-e734a30678d9",
+								"id": "5a77fdb8-0fcc-4837-a85f-da532cd8d255",
+								"exec": [
+									"pm.test(\"response is 400\", function () {\r",
+									"    pm.response.to.have.status(400  );\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1s\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id1=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=after&time=2020-06-01T14:20:01Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id1",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "timerel",
+									"value": "after"
+								},
+								{
+									"key": "time",
+									"value": "2020-06-01T14:20:01Z"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400(invalid date format) temporal (after)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b078af27-1a4e-4374-a152-7a4cd5a679dd",
 								"exec": [
 									"pm.test(\"response is 400\", function () {\r",
 									"    pm.response.to.have.status(400  );\r",
@@ -1613,7 +1783,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "a9830de7-9f27-4aea-9c47-d9b6826a95c7",
+								"id": "b722f76f-ae0f-4b6b-b5d8-c5e2195c1490",
 								"exec": [
 									"pm.test(\"response is 404\", function () {\r",
 									"    pm.response.to.have.status(404);\r",
@@ -1660,12 +1830,12 @@
 					"response": []
 				},
 				{
-					"name": "401 (Invalid credentials) temporal (after)",
+					"name": "404 (invalid credentials) temporal (after)",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "a7d2f81f-4c3e-41b6-aa5e-7629185aea3e",
+								"id": "4a08438a-9962-4f18-b3e2-bab4cf78ed0b",
 								"exec": [
 									"pm.test(\"response is 401\", function () {\r",
 									"    pm.response.to.have.status(401);\r",
@@ -1722,7 +1892,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "4f406e04-f434-4b84-8310-3345f4fa89be",
+						"id": "803bf23e-f871-4527-a12a-baefc24cc947",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -1732,7 +1902,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "03d1f23d-60b6-460e-b56c-f5e65a6ef233",
+						"id": "0574f43b-97fc-4edf-b078-91035e6f5376",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -1751,7 +1921,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "3119c5b0-8929-4972-b106-5ef44292c01c",
+								"id": "07ddc837-c156-4463-88c3-1097d9fe939c",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
@@ -1767,7 +1937,14 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z&options=count",
 							"host": [
@@ -1806,12 +1983,258 @@
 					"response": []
 				},
 				{
+					"name": "400(invalid params) temporal (between)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "5e0e906d-9618-40b3-90e4-d4fa8416ba80",
+								"exec": [
+									"pm.test(\"response is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1s\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerelation=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "timerelation",
+									"value": "during"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-18T14:20:00Z"
+								},
+								{
+									"key": "endtime",
+									"value": "2020-09-19T14:20:00Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400(invalid date format) temporal (between)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "420998f8-b8ae-4401-8ad4-6e81bee1cb5e",
+								"exec": [
+									"pm.test(\"response is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1s\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2020-09-18XX14:20:00Z&endtime=2020-09-19XX14:20:00Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "timerel",
+									"value": "during"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-18XX14:20:00Z"
+								},
+								{
+									"key": "endtime",
+									"value": "2020-09-19XX14:20:00Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404(not found) temporal (between)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4dbd0fff-14a0-46f7-a27c-8362c4d4afb3",
+								"exec": [
+									"pm.test(\"response is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1s\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-et&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-et"
+								},
+								{
+									"key": "timerel",
+									"value": "during"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-18T14:20:00Z"
+								},
+								{
+									"key": "endtime",
+									"value": "2020-09-19T14:20:00Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401(invalid credentials) temporal (between)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "818de336-172d-4a8d-9d15-05a06c9a2a4f",
+								"exec": [
+									"pm.test(\"response is 401\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1s\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "abc",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-et&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-et"
+								},
+								{
+									"key": "timerel",
+									"value": "during"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-18T14:20:00Z"
+								},
+								{
+									"key": "endtime",
+									"value": "2020-09-19T14:20:00Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "temporal (before)",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "f4b206b9-7869-4f1f-b887-0dbb6ab5f07e",
+								"id": "c37f61ed-e9e0-42e5-ad80-9310e6c14267",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
@@ -1867,12 +2290,262 @@
 					"response": []
 				},
 				{
+					"name": "400 (Invalid params) temporal (before)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "cad6fc72-be6a-477b-b9cf-9e5fe12c7794",
+								"exec": [
+									"pm.test(\"response is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1s\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=before&timea=2020-09-19T12:00:00Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "timea",
+									"value": "2020-09-19T12:00:00Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (invalid date format) temporal (before)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f8b9cb81-ea85-4d8c-92ad-85e5e9bda99b",
+								"exec": [
+									"pm.test(\"response is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1s\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=before&time=2020-09-19XX12:00:00Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-19XX12:00:00Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404 (not found) temporal (before) Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3acc6bcd-ed0a-412c-97b0-2336f71b3dd0",
+								"exec": [
+									"pm.test(\"response is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1s\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-et&timerel=before&time=2020-09-19T12:00:00Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-et"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-19T12:00:00Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (invalid credentials) temporal (before) Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e973e032-3686-461b-a7e6-4ae41899816b",
+								"exec": [
+									"pm.test(\"response is 401\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1s\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "abc",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-et&timerel=before&time=2020-09-19T12:00:00Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-et"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-19T12:00:00Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "temporal (after)",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "f9cccf21-bd93-4e3a-8ce0-79924323220f",
+								"id": "1c475fdc-96f6-43c9-ba1e-de9fe3a34fd6",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
@@ -1921,13 +2594,243 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "400(invalid param) temporal (after)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "c3b040e5-786e-4107-80b3-e4a716f0cd27",
+								"exec": [
+									"pm.test(\"response is 400\", function () {\r",
+									"    pm.response.to.have.status(400  );\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1s\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id1=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=after&time=2020-06-01T14:20:01Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id1",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "timerel",
+									"value": "after"
+								},
+								{
+									"key": "time",
+									"value": "2020-06-01T14:20:01Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400(invalid date format) temporal (after)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4b2ac771-4da7-4c31-923e-45a3c3a35b20",
+								"exec": [
+									"pm.test(\"response is 400\", function () {\r",
+									"    pm.response.to.have.status(400  );\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1s\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=after&time=2020-06-01XX14:20:01Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "timerel",
+									"value": "after"
+								},
+								{
+									"key": "time",
+									"value": "2020-06-01XX14:20:01Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404 (not found) temporal (after) Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "afaf9f04-d871-450d-b799-e0eabf19493c",
+								"exec": [
+									"pm.test(\"response is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1s\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-et&timerel=after&time=2020-06-01T14:20:01Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-et"
+								},
+								{
+									"key": "timerel",
+									"value": "after"
+								},
+								{
+									"key": "time",
+									"value": "2020-06-01T14:20:01Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (Invalid credentials) temporal (after)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fc120d23-a9fb-44ab-a50c-c9b058b54cd8",
+								"exec": [
+									"pm.test(\"response is 401\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is less than 1s\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "abc",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-et&timerel=after&time=2020-06-01T14:20:01Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-et"
+								},
+								{
+									"key": "timerel",
+									"value": "after"
+								},
+								{
+									"key": "time",
+									"value": "2020-06-01T14:20:01Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"event": [
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "3f4eb6d4-c9ef-41ed-a521-fbd31be72a2c",
+						"id": "89057991-37e8-411b-a703-e3845274199d",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -1937,7 +2840,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "8e0010af-c80f-43d1-9046-a3fb3ec1572c",
+						"id": "83692c05-ea49-4512-bc27-400fba300719",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -1956,7 +2859,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "70f605f9-82bc-4fc1-9065-0bd35db0aba0",
+								"id": "98a83a72-d453-49a0-bbc0-33d61073dcba",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -2019,7 +2922,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "59a7cc9e-a25d-4d94-bc62-ff564ce4b88d",
+								"id": "fbd68bf7-bfa0-47bb-9419-5875a9a3a64d",
 								"exec": [
 									"pm.test(\"response is 400\", function () {",
 									"    pm.response.to.have.status(400);",
@@ -2082,7 +2985,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "93c08d7c-3d0c-4f57-bd0a-5cb0f107dc98",
+								"id": "d3a3aa17-40d6-44e4-9501-8879ede2d402",
 								"exec": [
 									"pm.test(\"response is 404\", function () {",
 									"    pm.response.to.have.status(404);",
@@ -2106,7 +3009,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q1=speed>30.0",
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=test>30.0",
 							"host": [
 								"{{base_url}}"
 							],
@@ -2121,8 +3024,8 @@
 									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
 								},
 								{
-									"key": "q1",
-									"value": "speed>30.0"
+									"key": "q",
+									"value": "test>30.0"
 								},
 								{
 									"key": "",
@@ -2145,7 +3048,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "0d1f4228-ae90-4865-b915-278ce54acc46",
+								"id": "54ea8dfc-4e27-4972-b606-92c7a28cc778",
 								"exec": [
 									"pm.test(\"response is 401\", function () {",
 									"    pm.response.to.have.status(401);",
@@ -2209,12 +3112,65 @@
 					"response": []
 				},
 				{
+					"name": "400 (invalid operator) attribute >",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "31f83a81-de07-4d77-8e97-038f6e78eb73",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"//test CO2 Values >= 500",
+									"pm.test(\"test values >\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.at.least(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>>50",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "q",
+									"value": "speed>>50"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "attribute <",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "ca0a63ac-c208-4a5b-8a95-77b47cd268d5",
+								"id": "b49e6b47-2f75-4407-94f6-f70b8d30ba62",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -2267,7 +3223,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "f11acf56-8729-4e4f-acc9-0bd2581cad88",
+								"id": "0c8c26fc-b6a6-40e7-a76b-42cab8ea6993",
 								"exec": [
 									"pm.test(\"response is 400\", function () {",
 									"    pm.response.to.have.status(400);",
@@ -2320,7 +3276,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "417fad90-a7af-4161-a06e-a0771c2756ea",
+								"id": "fd59563d-a307-4ab9-868f-4f7bc9bfcd3f",
 								"exec": [
 									"pm.test(\"response is 404\", function () {",
 									"    pm.response.to.have.status(404);",
@@ -2373,7 +3329,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "0e7a3ffe-f0bc-4016-82ae-95497b93884b",
+								"id": "10b4d476-c6a1-4efc-90b6-440542ef978c",
 								"exec": [
 									"pm.test(\"response is 401\", function () {",
 									"    pm.response.to.have.status(401);",
@@ -2427,12 +3383,65 @@
 					"response": []
 				},
 				{
+					"name": "400 (invalid operator) attribute <",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3a4e0587-d494-4088-9270-4b5bb0b42a6b",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"//test CO2 Values >= 500",
+									"pm.test(\"test values >\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.at.least(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<<50",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "q",
+									"value": "speed<<50"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "attribute >=",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "7ea3d5ae-4be1-46fd-8f0c-20fca8a1edee",
+								"id": "c7e6ae74-0b16-4501-90cb-39a63b1a004b",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -2480,21 +3489,21 @@
 					"response": []
 				},
 				{
-					"name": "400 (invalid operator) attribute >=",
+					"name": "400(invalid param)attribute >=",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "c87fca01-5508-43b0-b401-0e51ac50a229",
+								"id": "db2f6fab-fc3a-421d-88ec-96d60f6a0d55",
 								"exec": [
 									"pm.test(\"response is 400\", function () {",
 									"    pm.response.to.have.status(400);",
 									"});",
 									"",
-									"//test CO2 Values >= 500",
-									"pm.test(\"test values >\",function(){",
+									"//test CO2 Values < 500",
+									"pm.test(\"test values <\",function(){",
 									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData[0].CO2).to.be.at.least(500);",
+									"    pm.expect(jsonData[0].CO2).to.be.below(500);",
 									"});",
 									"",
 									"pm.test(\"Response time is less than 1s\", function () {",
@@ -2509,7 +3518,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>>50",
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id1=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>=500",
 							"host": [
 								"{{base_url}}"
 							],
@@ -2520,12 +3529,12 @@
 							],
 							"query": [
 								{
-									"key": "id",
+									"key": "id1",
 									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
 								},
 								{
 									"key": "q",
-									"value": "speed>>50"
+									"value": "speed>=500"
 								}
 							]
 						}
@@ -2538,7 +3547,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "0162f65e-1509-4223-95d6-68f42e6a6025",
+								"id": "6965dc27-441a-47fb-9f16-d2c97f9940f5",
 								"exec": [
 									"pm.test(\"response is 404\", function () {",
 									"    pm.response.to.have.status(404);",
@@ -2591,7 +3600,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "f4e61bec-5ce8-42a7-b979-0ccc8be57af8",
+								"id": "26927644-42f5-4cfb-a90a-e9b93c304926",
 								"exec": [
 									"pm.test(\"response is 401\", function () {",
 									"    pm.response.to.have.status(401);",
@@ -2613,9 +3622,15 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "abc",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-&q=speed>=50",
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>=50",
 							"host": [
 								"{{base_url}}"
 							],
@@ -2627,11 +3642,64 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
 								},
 								{
 									"key": "q",
 									"value": "speed>=50"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (invalid operator) attribute >=",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "76dc4168-a095-4ecd-ba7a-02dee4623420",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"//test CO2 Values >= 500",
+									"pm.test(\"test values >\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.at.least(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<>=50",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "q",
+									"value": "speed<>=50"
 								}
 							]
 						}
@@ -2644,7 +3712,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "444c9b67-29b9-4a0e-9acf-6f4053331c34",
+								"id": "c12a2058-fcdc-4a73-b0a3-b193bc99898f",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -2697,7 +3765,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "fb2337e1-6c26-4380-a960-c615ab891d17",
+								"id": "938fc2b4-4eb2-4baa-b2a7-63c654960351",
 								"exec": [
 									"pm.test(\"response is 400\", function () {",
 									"    pm.response.to.have.status(400);",
@@ -2750,7 +3818,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "f885b8ab-42f4-4d20-b615-482ee258539b",
+								"id": "9c0dc62f-517d-4747-b482-16ab342899db",
 								"exec": [
 									"pm.test(\"response is 404\", function () {",
 									"    pm.response.to.have.status(404);",
@@ -2803,7 +3871,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "30cb8eb9-89ac-4ba5-abda-70938857ab97",
+								"id": "ca5f0581-ce94-4f82-a932-052bd6abe013",
 								"exec": [
 									"pm.test(\"response is 401\", function () {",
 									"    pm.response.to.have.status(401);",
@@ -2855,13 +3923,70 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "400 (invalid operator) attribute <=",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "2bf1fe14-5efd-4a69-9cba-a08eb1741094",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"//test CO2 Values >= 500",
+									"pm.test(\"test values >\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.at.least(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<>=50&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "q",
+									"value": "speed<>=50"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"event": [
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "c4e753f7-c50c-4f52-9a9b-d408b69410c3",
+						"id": "20a65927-130b-4ebb-bd09-94ea244d1110",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -2871,7 +3996,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "3d7eeb3f-8245-4ad0-8712-af0fc1559012",
+						"id": "e2632e7f-838d-45cd-9d98-4cf047570845",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -2890,7 +4015,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "ccf70eb0-cbf8-4dc7-b54c-1af403ea94ef",
+								"id": "099e36fa-c91e-4b39-9f3c-01043b0221a0",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -2912,7 +4037,14 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>30.0&options=count",
 							"host": [
@@ -2937,9 +4069,258 @@
 									"value": "count"
 								},
 								{
-									"key": "attrs",
-									"value": "speed,id",
+									"key": "",
+									"value": "",
 									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400(invalid params) attribute >",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "22be41ea-7ac6-4145-ad3b-5d5aca55bc9b",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"//test CO2 Values > 500",
+									"pm.test(\"test values >\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.above(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q1=speed>30.0&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "q1",
+									"value": "speed>30.0"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404(not found) attribute >",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "64e3cff8-859e-41a9-ba07-4a656bb5a7e9",
+								"exec": [
+									"pm.test(\"response is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"//test CO2 Values > 500",
+									"pm.test(\"test values >\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.above(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>3000.0&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "q",
+									"value": "speed>3000.0"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401(not authorized) attribute >",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d1e764ad-d7c8-4d2d-9216-760a394173eb",
+								"exec": [
+									"pm.test(\"response is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"//test CO2 Values > 500",
+									"pm.test(\"test values >\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.above(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "abc",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>30.0&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "q",
+									"value": "speed>30.0"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (invalid operator) attribute >",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "e4c93e6a-10f8-479e-8e85-63b81d41e225",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"//test CO2 Values >= 500",
+									"pm.test(\"test values >\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.at.least(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>>50&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "q",
+									"value": "speed>>50"
+								},
+								{
+									"key": "options",
+									"value": "count"
 								}
 							]
 						}
@@ -2952,7 +4333,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "ccd01efe-a9d6-449c-9d55-8fe68a1034c1",
+								"id": "9fe46818-8125-4f74-9eca-ff47d94aa831",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -3004,12 +4385,246 @@
 					"response": []
 				},
 				{
+					"name": "400(invalid param)attribute <",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "749a6cd1-09a6-4778-9849-1c23888ec13a",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"//test CO2 Values < 500",
+									"pm.test(\"test values <\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.below(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id1=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<500&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id1",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "q",
+									"value": "speed<500"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404(not found)attribute <",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4976679d-c116-438e-a34f-b36cf2fa88d2",
+								"exec": [
+									"pm.test(\"response is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"//test CO2 Values < 500",
+									"pm.test(\"test values <\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.below(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-ea&q=speed<500&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-ea"
+								},
+								{
+									"key": "q",
+									"value": "speed<500"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401(not authorized) attribute <",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "21ce9330-36e0-4095-a278-bfe4a3f383a8",
+								"exec": [
+									"pm.test(\"response is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"//test CO2 Values < 500",
+									"pm.test(\"test values <\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.below(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "abc",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-ea&q=speed<500&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-ea"
+								},
+								{
+									"key": "q",
+									"value": "speed<500"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (invalid operator) attribute <",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fadf7269-2d13-444d-9c22-3aca62dd2680",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"//test CO2 Values >= 500",
+									"pm.test(\"test values >\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.at.least(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<<50&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "q",
+									"value": "speed<<50"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "attribute >=",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "2bbf8b4f-2d76-46fc-86a9-0d2797fcfd4e",
+								"id": "d4b3e5c4-9ec9-4022-a383-594c2f5ce2d8",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -3061,12 +4676,242 @@
 					"response": []
 				},
 				{
+					"name": "400(invalid param)attribute >=",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "c52085c7-6356-482d-9723-cd70502815aa",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"//test CO2 Values < 500",
+									"pm.test(\"test values <\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.below(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id1=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>=500&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id1",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "q",
+									"value": "speed>=500"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404 (not found) attribute >=",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "9f4d5ace-de9f-4516-b638-c518ebd648d8",
+								"exec": [
+									"pm.test(\"response is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"//test CO2 Values >= 500",
+									"pm.test(\"test values >\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.at.least(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-&q=speed>=50&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-"
+								},
+								{
+									"key": "q",
+									"value": "speed>=50"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (not authorized) attribute >=",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "42047864-9622-4ab4-b8b2-5a9a068be689",
+								"exec": [
+									"pm.test(\"response is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"//test CO2 Values >= 500",
+									"pm.test(\"test values >\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.at.least(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "abc",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-&q=speed>=50&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-"
+								},
+								{
+									"key": "q",
+									"value": "speed>=50"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (invalid operator) attribute >=",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "44cb446d-33e9-47f1-b957-abbc2b08080d",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"//test CO2 Values >= 500",
+									"pm.test(\"test values >\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.at.least(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<>=50",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "q",
+									"value": "speed<>=50"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "attribute <=",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "8e39c1ac-230f-4ff4-b90d-de592ba760e5",
+								"id": "84884683-8bb8-4626-9ff9-39b415a0ede1",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -3090,7 +4935,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<=50&options=count",
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<=50",
 							"host": [
 								"{{base_url}}"
 							],
@@ -3107,10 +4952,224 @@
 								{
 									"key": "q",
 									"value": "speed<=50"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (invalid param) attribute <=",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ea92b89e-3b7f-48ac-9c82-6750045c5798",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"//test CO2 Values <= 500",
+									"pm.test(\"test values <=\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.at.most(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&qxyz=speed<=50",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
 								},
 								{
-									"key": "options",
-									"value": "count"
+									"key": "qxyz",
+									"value": "speed<=50"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404 (not found) attribute <=",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3200d179-1f04-4418-b265-3e73dad75a2f",
+								"exec": [
+									"pm.test(\"response is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"//test CO2 Values <= 500",
+									"pm.test(\"test values <=\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.at.most(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-&q=speed<=50",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-"
+								},
+								{
+									"key": "q",
+									"value": "speed<=50"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (not authorized) attribute <=",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "85a14056-880a-4836-b6a8-d52e7b68ca78",
+								"exec": [
+									"pm.test(\"response is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"//test CO2 Values <= 500",
+									"pm.test(\"test values <=\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.at.most(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "abc",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<=50",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "q",
+									"value": "speed<=50"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (invalid operator) attribute <=",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "12f9df25-81c0-42e8-8b94-ef24fcc369c8",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"//test CO2 Values >= 500",
+									"pm.test(\"test values >\",function(){",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0].CO2).to.be.at.least(500);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<>=50",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "q",
+									"value": "speed<>=50"
 								}
 							]
 						}
@@ -3122,7 +5181,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "b0c09176-de75-4ceb-a0c8-bbb77c644422",
+						"id": "320f0350-88cb-4858-b2c9-22b488a7f2c6",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -3132,7 +5191,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "1868dabe-de51-4ce8-bd36-a8762ce5097f",
+						"id": "b6a69884-2cab-4f94-865e-afe340ba082b",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -3151,7 +5210,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "2c3dd75a-d701-48f5-a80c-400671d9d972",
+								"id": "f5a68598-4fca-46ca-aca4-48c7d0fab610",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -3213,7 +5272,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "f618a43a-9fae-4317-bf83-54aa71a69819",
+								"id": "d2cddd9c-a006-4d8b-b017-722693ce8c96",
 								"exec": [
 									"pm.test(\"response is 400\", function () {",
 									"    pm.response.to.have.status(400);",
@@ -3275,7 +5334,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "971d21a4-be76-41b5-abdd-82ea088ee2c7",
+								"id": "ba94662d-c102-4827-af9e-52c40a9c9166",
 								"exec": [
 									"pm.test(\"response is 400\", function () {",
 									"    pm.response.to.have.status(400);",
@@ -3337,7 +5396,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "4c255a7c-32a7-41df-8f19-c9c7edf6e8bf",
+								"id": "72b9fe34-870b-46cb-8e7a-556e07c0b28d",
 								"exec": [
 									"pm.test(\"response is 404\", function () {",
 									"    pm.response.to.have.status(404);",
@@ -3399,7 +5458,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "5150cfab-fd6b-4d96-8599-78e5f2db2e7e",
+								"id": "f37f45e1-5718-41e2-8cb8-d5fb9fe4865f",
 								"exec": [
 									"pm.test(\"response is 401\", function () {",
 									"    pm.response.to.have.status(401);",
@@ -3467,7 +5526,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "0e7b9ff7-f3fb-4b1a-ba86-2da695d3c881",
+								"id": "4a39f48f-06a0-4b9b-8c89-784203b53605",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
@@ -3527,7 +5586,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "1de21956-13db-4c3f-a504-8751f718db92",
+								"id": "05821da9-7dae-4a6a-af03-e04c77b056da",
 								"exec": [
 									"pm.test(\"response is 400\", function () {\r",
 									"    pm.response.to.have.status(400);\r",
@@ -3587,7 +5646,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "85e4a90a-7209-4f0f-b467-b70650389735",
+								"id": "ee0534ae-844c-4194-b80b-3a98c7bdad2e",
 								"exec": [
 									"pm.test(\"response is 404\", function () {\r",
 									"    pm.response.to.have.status(404);\r",
@@ -3647,7 +5706,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "d38bfd38-30a1-4ab3-8eb3-b5a5b3177fbf",
+								"id": "2a2cad5c-df3d-4043-9f54-fb60c154203b",
 								"exec": [
 									"pm.test(\"response is 401\", function () {\r",
 									"    pm.response.to.have.status(401);\r",
@@ -3663,7 +5722,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "abc",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z&attrs=id,speed",
 							"host": [
@@ -3713,7 +5778,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "25894643-9772-45fc-8c79-0879fc66167e",
+								"id": "4f42ed1b-f988-4546-99bb-3f7945efa983",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -3788,12 +5853,92 @@
 					"response": []
 				},
 				{
+					"name": "400 (Invalid params) Search - circle geom + temporal before + response filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3342b299-a0d5-46c9-8357-8448c261da3e",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"test response for complex\",function(){",
+									"    var jsonData = pm.response.json(); ",
+									"    //set exchange name to env variables.",
+									"    pm.expect(jsonData[0]).to.have.property(\"latitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"longitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"resource-id\");",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geo=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&attrs=id,location,speed",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "geoproperty",
+									"value": "location"
+								},
+								{
+									"key": "georel",
+									"value": "near;maxDistance=100"
+								},
+								{
+									"key": "geo",
+									"value": "Point"
+								},
+								{
+									"key": "coordinates",
+									"value": "[21.178,72.834]"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-19T14:00:00Z"
+								},
+								{
+									"key": "attrs",
+									"value": "id,location,speed"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "400 (Invalid geometry type) Search - circle geom + temporal before + response filter",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "dc62768a-cb0e-4c7c-8b0d-6a38efc2cc57",
+								"id": "645e5b37-b0cb-450c-b6e8-58b55e95b37b",
 								"exec": [
 									"pm.test(\"response is 400\", function () {",
 									"    pm.response.to.have.status(400);",
@@ -3873,7 +6018,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "914fe687-28d4-48e6-8216-4a2d4b3bb1f2",
+								"id": "77d383cd-e03f-43c2-8b8f-6b806347e18c",
 								"exec": [
 									"pm.test(\"response is 404\", function () {",
 									"    pm.response.to.have.status(404);",
@@ -3953,7 +6098,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "e60e6733-fbe0-45cd-b1a4-11ab30d13f00",
+								"id": "d71cd121-36f7-453e-ae65-6fce721d399e",
 								"exec": [
 									"pm.test(\"response is 401\", function () {",
 									"    pm.response.to.have.status(401);",
@@ -4032,13 +6177,195 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "401 (Invalid Operator) Search - circle geom + temporal before + response filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "6b1a32e8-34f5-4360-9ddf-fbb13cf6f999",
+								"exec": [
+									"pm.test(\"response is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"test response for complex\",function(){",
+									"    var jsonData = pm.response.json(); ",
+									"    //set exchange name to env variables.",
+									"    pm.expect(jsonData[0]).to.have.property(\"latitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"longitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"resource-id\");",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"type": "text",
+								"value": "",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&attrs=id,location,speed&q=speed<<500",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "geoproperty",
+									"value": "location"
+								},
+								{
+									"key": "georel",
+									"value": "near;maxDistance=100"
+								},
+								{
+									"key": "geometry",
+									"value": "Point"
+								},
+								{
+									"key": "coordinates",
+									"value": "[21.178,72.834]"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-19T14:00:00Z"
+								},
+								{
+									"key": "attrs",
+									"value": "id,location,speed"
+								},
+								{
+									"key": "q",
+									"value": "speed<<500"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (Invalid Data format) Search - circle geom + temporal before + response filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b126ea69-848f-49e7-a720-989beadf55a9",
+								"exec": [
+									"pm.test(\"response is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"test response for complex\",function(){",
+									"    var jsonData = pm.response.json(); ",
+									"    //set exchange name to env variables.",
+									"    pm.expect(jsonData[0]).to.have.property(\"latitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"longitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"resource-id\");",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"type": "text",
+								"value": "",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19X14:00:00X&attrs=id,location,speed&q=speed<<500",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "geoproperty",
+									"value": "location"
+								},
+								{
+									"key": "georel",
+									"value": "near;maxDistance=100"
+								},
+								{
+									"key": "geometry",
+									"value": "Point"
+								},
+								{
+									"key": "coordinates",
+									"value": "[21.178,72.834]"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-19X14:00:00X"
+								},
+								{
+									"key": "attrs",
+									"value": "id,location,speed"
+								},
+								{
+									"key": "q",
+									"value": "speed<<500"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"event": [
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "d2a4e9e5-bac1-4b33-a9b4-e90cb8241060",
+						"id": "a090e077-35c9-48d7-82c4-daac95e4fdd1",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -4048,7 +6375,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "4e4593c0-83f2-4c55-a7fc-a0808ccfa94d",
+						"id": "20fea6d4-1635-4db6-9e5f-c846412b3b58",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -4067,7 +6394,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "e22c21e1-e9a0-4feb-97fa-d9f94c67d228",
+								"id": "1b8d9776-c1ac-435b-b9f0-f485d283b788",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -4093,13 +6420,360 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count",
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"ngsi-ld",
 								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "geoproperty",
+									"value": "location"
+								},
+								{
+									"key": "georel",
+									"value": "near;maxDistance=100"
+								},
+								{
+									"key": "geometry",
+									"value": "Point"
+								},
+								{
+									"key": "coordinates",
+									"value": "[21.178,72.834]"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-19T14:00:00Z"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (Invalid params) Count - circle geom + temporal before + response filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "5d5ca9d0-c713-426f-a5da-430cc608f142",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"test response for complex\",function(){",
+									"    var jsonData = pm.response.json(); ",
+									"    //set exchange name to env variables.",
+									"    pm.expect(jsonData[0]).to.have.property(\"latitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"longitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"resource-id\");",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geo=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "geoproperty",
+									"value": "location"
+								},
+								{
+									"key": "georel",
+									"value": "near;maxDistance=100"
+								},
+								{
+									"key": "geo",
+									"value": "Point"
+								},
+								{
+									"key": "coordinates",
+									"value": "[21.178,72.834]"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-19T14:00:00Z"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (Invalid geometry type) Count - circle geom + temporal before + response filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "3c75ec2a-d17a-4a71-b41c-94877abdedb2",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"test response for complex\",function(){",
+									"    var jsonData = pm.response.json(); ",
+									"    //set exchange name to env variables.",
+									"    pm.expect(jsonData[0]).to.have.property(\"latitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"longitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"resource-id\");",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=PointB&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "geoproperty",
+									"value": "location"
+								},
+								{
+									"key": "georel",
+									"value": "near;maxDistance=100"
+								},
+								{
+									"key": "geometry",
+									"value": "PointB"
+								},
+								{
+									"key": "coordinates",
+									"value": "[21.178,72.834]"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-19T14:00:00Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404 (not found) Count - circle geom + temporal before + response filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "0e17277c-05f0-44f1-8b0b-501bb10b3479",
+								"exec": [
+									"pm.test(\"response is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"test response for complex\",function(){",
+									"    var jsonData = pm.response.json(); ",
+									"    //set exchange name to env variables.",
+									"    pm.expect(jsonData[0]).to.have.property(\"latitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"longitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"resource-id\");",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-"
+								},
+								{
+									"key": "geoproperty",
+									"value": "location"
+								},
+								{
+									"key": "georel",
+									"value": "near;maxDistance=100"
+								},
+								{
+									"key": "geometry",
+									"value": "Point"
+								},
+								{
+									"key": "coordinates",
+									"value": "[21.178,72.834]"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-19T14:00:00Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (not authorize) Count - circle geom + temporal before + response filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "541baa69-4aa1-4f9f-ad81-ebc7c1c7f860",
+								"exec": [
+									"pm.test(\"response is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"test response for complex\",function(){",
+									"    var jsonData = pm.response.json(); ",
+									"    //set exchange name to env variables.",
+									"    pm.expect(jsonData[0]).to.have.property(\"latitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"longitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"resource-id\");",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"type": "text",
+								"value": "abc"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
 								"entities"
 							],
 							"query": [
@@ -4144,13 +6818,196 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "401 (Invalid Operator) Count - circle geom + temporal before + response filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "6bc34763-ae42-414a-ad08-bb99190d2862",
+								"exec": [
+									"pm.test(\"response is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"test response for complex\",function(){",
+									"    var jsonData = pm.response.json(); ",
+									"    //set exchange name to env variables.",
+									"    pm.expect(jsonData[0]).to.have.property(\"latitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"longitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"resource-id\");",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"type": "text",
+								"value": "",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count&q=speed<<500",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "geoproperty",
+									"value": "location"
+								},
+								{
+									"key": "georel",
+									"value": "near;maxDistance=100"
+								},
+								{
+									"key": "geometry",
+									"value": "Point"
+								},
+								{
+									"key": "coordinates",
+									"value": "[21.178,72.834]"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-19T14:00:00Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								},
+								{
+									"key": "q",
+									"value": "speed<<500"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (Invalid Data format) Count - circle geom + temporal before + response filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "c755c9d4-2622-4cc0-83b4-8d321e8082d7",
+								"exec": [
+									"pm.test(\"response is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"test response for complex\",function(){",
+									"    var jsonData = pm.response.json(); ",
+									"    //set exchange name to env variables.",
+									"    pm.expect(jsonData[0]).to.have.property(\"latitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"longitude\");",
+									"    pm.expect(jsonData[0]).to.have.property(\"resource-id\");",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"type": "text",
+								"value": "",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19X14:00:00X&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "geoproperty",
+									"value": "location"
+								},
+								{
+									"key": "georel",
+									"value": "near;maxDistance=100"
+								},
+								{
+									"key": "geometry",
+									"value": "Point"
+								},
+								{
+									"key": "coordinates",
+									"value": "[21.178,72.834]"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "time",
+									"value": "2020-09-19X14:00:00X"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"event": [
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "908191c2-69db-4ca7-91d8-9e65071c75a6",
+						"id": "c3f6174b-a0b4-47c9-9381-540add8fed8e",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -4160,7 +7017,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "8255cab3-4239-4fd6-8018-fb722da07dbf",
+						"id": "bcbf1b2f-f7d5-4d02-9fc3-0f5e035b2532",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -4179,7 +7036,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "12e57668-8d90-4337-9d5f-1ff5e58a9fc9",
+								"id": "8592c323-47c3-472a-accf-418e13b7d85a",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -4226,7 +7083,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "85d3e711-20a1-4663-b019-8a2a9e9c89df",
+								"id": "9a80e481-3b2c-4bf7-aeb8-248ad71146e2",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -4273,7 +7130,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "1f89d2f8-d816-4563-a930-96aa77e77d50",
+								"id": "e8db1f58-be55-47ad-8e94-0f171068dfc1",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -4320,7 +7177,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "c764c931-aebe-43b8-8be2-63ec350d8c41",
+								"id": "850a2209-e885-4faa-b95b-fea6524d1828",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -4373,7 +7230,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "cf120df7-ca4a-4317-b93a-2fdea31648e3",
+								"id": "96db30b3-5b15-4449-b712-f69bedf4b236",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -4420,7 +7277,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "188ae628-21b6-4737-9d41-23a40e457613",
+								"id": "df75864f-7f7f-43b0-a8c3-7b50c18fb7d2",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -4467,7 +7324,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "c29eb726-fe61-4796-a82f-7ac349913302",
+								"id": "26781e73-301c-4988-ad9a-f1723b51b13f",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -4514,7 +7371,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "8d5fe47d-1b6b-47ca-b33c-954f9fb997de",
+								"id": "9e727556-09d5-49f6-90b5-acca1777ae25",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -4562,12 +7419,66 @@
 					"response": []
 				},
 				{
+					"name": "401 (invalid date format) temporal - during",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b21b3b01-7b7e-4cfc-b8b3-f8c288b6f370",
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"type": "text",
+								"value": "",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n        }\n    ],\n    \"temporalQ\": {\n        \"timerel\": \"during\",\n        \"time\": \"2020-09-18Z14:20:00Z\",\n        \"endtime\": \"2020-09-19T14:20:00Z\",\n        \"timeProperty\": \"observationDateTime\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "time - before",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "8eecae62-003e-4d6c-ab6f-bf89377f333c",
+								"id": "bccc7847-d780-409c-ae29-8b6bd54d10e6",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -4614,7 +7525,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "eff637bb-5bd7-4d68-af1b-cda7fab99f04",
+								"id": "fab22f61-bde7-47fc-9041-9a64fa96ae03",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -4661,7 +7572,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "4d27a2dd-3014-4fe5-a21f-d8a448ef5fc5",
+								"id": "af74cdfc-e67b-434e-855b-3d289ca48a7a",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -4708,7 +7619,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "8208f855-a31b-49b6-9084-e4093e8e8760",
+								"id": "81dee89a-a4ec-43ab-a98b-d9e62a98a2b0",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -4756,12 +7667,66 @@
 					"response": []
 				},
 				{
+					"name": "401 (invalid date format) time - before",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "906f108c-fd44-43f0-a7a1-843a17a3843f",
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"type": "text",
+								"value": "",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n        }\n    ],\n    \"temporalQ\": {\n        \"timerel\": \"before\",\n        \"time\": \"2020-09-19z14:20:00Z\",\n        \"timeProperty\": \"observationDateTime\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "response filter",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "8ff5c473-e72f-4fb9-894d-0f4d67b7bb39",
+								"id": "18bf6ee2-70c5-413f-aabe-e05918c76fbe",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -4803,59 +7768,12 @@
 					"response": []
 				},
 				{
-					"name": "400(invalid time) response filter",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "c0e9b51c-6aa5-4259-89e9-446beadc3ced",
-								"exec": [
-									"pm.test(\"response is 400\", function () {",
-									"    pm.response.to.have.status(400);",
-									"});",
-									"",
-									"pm.test(\"Response time is less than 1s\", function () {",
-									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n        }\n    ],\n    \"temporalQ\": {\n        \"timerel\": \"before\",\n        \"time\": \"2020-09-19X14:20:00Z\",\n        \"timeProperty\": \"observationDateTime\"\n    },\n    \"attrs\":\"id\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"entityOperations",
-								"query"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "404(not found) response filter",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "25596141-3fb8-49cc-a18e-a7e25a799b81",
+								"id": "bcf588cd-528d-4544-91cd-fc012726150e",
 								"exec": [
 									"pm.test(\"response is 404\", function () {",
 									"    pm.response.to.have.status(404);",
@@ -4902,7 +7820,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "aacd3d44-3e57-49b4-9b57-7b4b303160bf",
+								"id": "ef92ac45-4121-4bd2-ab91-189a89b62d5a",
 								"exec": [
 									"pm.test(\"response is 401\", function () {",
 									"    pm.response.to.have.status(401);",
@@ -4950,12 +7868,59 @@
 					"response": []
 				},
 				{
+					"name": "400(invalid date format) response filter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "1308ff9a-d013-412d-82d7-ce1455322953",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n        }\n    ],\n    \"temporalQ\": {\n        \"timerel\": \"before\",\n        \"time\": \"2020-09-19X14:20:00Z\",\n        \"timeProperty\": \"observationDateTime\"\n    },\n    \"attrs\":\"id\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "complex - geo - (circle) + time + filter",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "89056ff2-eb6d-43fb-964f-35b9f9058030",
+								"id": "97cac2e9-ec05-4acb-9424-52c14ba41dc0",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -5002,7 +7967,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "a55fc516-b222-47db-9dcc-f12a43513051",
+								"id": "8d49215b-e45f-47a7-b29a-4363712694a7",
 								"exec": [
 									"pm.test(\"response is 400\", function () {",
 									"    pm.response.to.have.status(400);",
@@ -5049,7 +8014,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "30f62749-278a-4f0f-9eb8-6c50c0793c2f",
+								"id": "1391d182-1aeb-4f44-a9d7-bb9ea0291a1b",
 								"exec": [
 									"pm.test(\"response is 400\", function () {",
 									"    pm.response.to.have.status(400);",
@@ -5096,7 +8061,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "5ef2ae6a-9346-482f-aca9-8f8f2a081d56",
+								"id": "31a4b63c-1789-4b99-8f4d-f28143227a5a",
 								"exec": [
 									"pm.test(\"response is 400\", function () {",
 									"    pm.response.to.have.status(400);",
@@ -5144,60 +8109,6 @@
 					"response": []
 				},
 				{
-					"name": "geo spatial - circle (count)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"response is 200 (OK)\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"Response time is less than 1s\", function () {",
-									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
-									"});"
-								],
-								"type": "text/javascript",
-								"id": "ba535569-57e8-47f3-b1a0-70962c7c6dca"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "options",
-								"value": "Count",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live\"\n        }\n    ],\n    \"geoQ\": {\n        \"geometry\": \"Point\",\n        \"coordinates\": [25.319768,82.987988],\n        \"georel\": \"near;maxDistance=100\",\n        \"geoproperty\": \"geoJsonLocation\"\n    },\n    \"options\":\"count\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"entityOperations",
-								"query"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "geo spatial - polygon",
 					"event": [
 						{
@@ -5213,7 +8124,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "4e3c43fa-3439-418c-89bc-b32172a451ec"
+								"id": "fdf5ec28-3083-49d4-93de-6a5893fb4fc6"
 							}
 						}
 					],
@@ -5260,7 +8171,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "294ddb99-1854-409f-9860-4d85c0c3701d"
+								"id": "eec5e9fd-d2de-405e-8a6e-d580efcbe03a"
 							}
 						}
 					],
@@ -5307,7 +8218,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "9a837e0e-2cdf-46a6-91cb-38158d0a1344"
+								"id": "72c37697-bb6a-43cb-a2fb-44f11234093d"
 							}
 						}
 					],
@@ -5343,7 +8254,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "8c3b6412-0998-4fdf-9236-254c37c0397e",
+						"id": "ce1ecfaa-da84-450c-8b0b-4317c56a88cb",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -5353,7 +8264,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "5475d44a-6cf7-4d63-94ea-6deb00557f05",
+						"id": "c5d3adcb-ef52-4fd1-9b21-c45bb19d2ea2",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -5372,7 +8283,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "cf6fa716-5af6-49ea-b85b-3dc249ef754f",
+								"id": "b8c7b204-1b3a-4d18-a9e0-7ffac855596f",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -5414,12 +8325,159 @@
 					"response": []
 				},
 				{
+					"name": "400(invalid param) geo spatial - circle",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "539b21fb-63d6-4f66-beb7-501d7bdf66df",
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n        }\n    ],\n    \"geoQuery\": {\n        \"geometry\": \"Point\",\n        \"coordinates\": [21.178,72.834],\n        \"georel\": \"near;maxDistance=1000\",\n        \"geoproperty\": \"location\"\n    },\n    \"options\":\"count\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404(not found) geo spatial - circle",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4198cc77-f55c-47c1-9d13-100fca334d53",
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live\"\n        }\n    ],\n    \"geoQ\": {\n        \"geometry\": \"Point\",\n        \"coordinates\": [21.178,72.834],\n        \"georel\": \"near;maxDistance=1000\",\n        \"geoproperty\": \"location\"\n    },\n    \"options\":\"count\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401(not authorized) geo spatial - circle",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d0123e83-8898-442d-a058-c8dabeb4241e",
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "abc",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n        }\n    ],\n    \"geoQ\": {\n        \"geometry\": \"Point\",\n        \"coordinates\": [21.178,72.834],\n        \"georel\": \"near;maxDistance=1000\",\n        \"geoproperty\": \"location\"\n    },\n    \"options\":\"count\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "temporal - during",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "47332eab-50e2-419d-9d75-329dc267f337",
+								"id": "b50408ea-9c24-4d91-9c95-8d2ead9c4451",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -5461,12 +8519,213 @@
 					"response": []
 				},
 				{
+					"name": "400 (invalid param) temporal - during",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "aa43c60e-6e98-481c-9281-8d16f91aa0ce",
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n        }\n    ],\n    \"temporalQ\": {\n        \"timerelation\": \"during\",\n        \"time\": \"2020-09-18T14:20:00Z\",\n        \"endtime\": \"2020-09-19T14:20:00Z\",\n        \"timeProperty\": \"observationDateTime\"\n    },\n    \"options\":\"count\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404 (not found) temporal - during",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "0ce303c8-296c-4379-ba34-0800d01164eb",
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live\"\n        }\n    ],\n    \"temporalQ\": {\n        \"timerel\": \"during\",\n        \"time\": \"2020-09-18T14:20:00Z\",\n        \"endtime\": \"2020-09-19T14:20:00Z\",\n        \"timeProperty\": \"observationDateTime\"\n    },\n    \"options\":\"count\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (not authorized) temporal - during",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "039e5fb3-fcb7-4dbf-a711-594d4df331d1",
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "abc",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n        }\n    ],\n    \"temporalQ\": {\n        \"timerel\": \"during\",\n        \"time\": \"2020-09-18T14:20:00Z\",\n        \"endtime\": \"2020-09-19T14:20:00Z\",\n        \"timeProperty\": \"observationDateTime\"\n    },\n    \"options\":\"count\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (invalid date format) temporal - during",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "09055d0c-4120-4de8-a1dc-94baa6a1ad2a",
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"type": "text",
+								"value": "",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n        }\n    ],\n    \"temporalQ\": {\n        \"timerel\": \"during\",\n        \"time\": \"2020-09-18Z14:20:00Z\",\n        \"endtime\": \"2020-09-19T14:20:00Z\",\n        \"timeProperty\": \"observationDateTime\"\n    },\n    \"options\":\"count\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "time - before",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "e40adfaa-fd83-45d1-bd43-ce5b75910670",
+								"id": "7b4568b6-d836-4897-bd8c-e0956ea01d59",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -5508,12 +8767,213 @@
 					"response": []
 				},
 				{
-					"name": "complex - geo - (circle) + time + filter",
+					"name": "400 (invalid param) time - before",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "cdbcc33a-d858-4cae-8de4-04d8d069bd10",
+								"id": "43448aa6-c7a9-4d69-bad4-fdf38b6e5c30",
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entitiey\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n        }\n    ],\n    \"temporalQ\": {\n        \"timerel\": \"before\",\n        \"time\": \"2020-09-19T14:20:00Z\",\n        \"timeProperty\": \"observationDateTime\"\n    },\n    \"options\":\"count\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404 (not found) time - before",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d01a023b-b4ea-4821-9763-30e4ca38f32b",
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live\"\n        }\n    ],\n    \"temporalQ\": {\n        \"timerel\": \"before\",\n        \"time\": \"2020-09-19T14:20:00Z\",\n        \"timeProperty\": \"observationDateTime\"\n    },\n    \"options\":\"count\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (not authorized) time - before",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7a42c3fd-f3b0-4bf2-a127-f6e8da80482a",
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "abc",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n        }\n    ],\n    \"temporalQ\": {\n        \"timerel\": \"before\",\n        \"time\": \"2020-09-19T14:20:00Z\",\n        \"timeProperty\": \"observationDateTime\"\n    },\n    \"options\":\"count\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (invalid date format) time - before",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "be3d7f4b-bcb0-4fc6-bc7b-6f884b22efdf",
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "",
+								"type": "text",
+								"value": "",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n        }\n    ],\n    \"temporalQ\": {\n        \"timerel\": \"before\",\n        \"time\": \"2020-09-19z14:20:00Z\",\n        \"timeProperty\": \"observationDateTime\"\n    },\n    \"options\":\"count\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "complex - geo - (circle) + time",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a5142546-10de-4f81-b57c-1ef7cfb9d79c",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -5555,11 +9015,159 @@
 					"response": []
 				},
 				{
+					"name": "400 (Invalid params) complex - geo - (circle) + time",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "c755cc4c-eb4f-4811-b5f0-a97e0b52a1d4",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n        }\n    ],\n    \"geoQ\": {\n        \"geometry\": \"Point\",\n        \"coordinates\": [21.178,72.834],\n        \"georel\": \"near;maxDistance=1000\",\n        \"geoproperty\": \"location\"\n    },\n    \"temporalQuery\": {\n        \"timerel\": \"during\",\n        \"time\": \"2020-09-18T14:20:00Z\",\n        \"endtime\": \"2020-09-19T14:20:00Z\",\n        \"timeProperty\": \"observationDateTime\"\n    },\n    \"options\":\"count\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404 (not found) complex - geo - (circle) + time",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "31602545-1c66-4a62-ac23-598ac78d403e",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live\"\n        }\n    ],\n    \"geoQ\": {\n        \"geometry\": \"Point\",\n        \"coordinates\": [21.178,72.834],\n        \"georel\": \"near;maxDistance=1000\",\n        \"geoproperty\": \"location\"\n    },\n    \"temporalQ\": {\n        \"timerel\": \"during\",\n        \"time\": \"2020-09-18T14:20:00Z\",\n        \"endtime\": \"2020-09-19T14:20:00Z\",\n        \"timeProperty\": \"observationDateTime\"\n    },\n    \"options\":\"count\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (not authorized ) complex - geo - (circle) + time",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a353d734-3724-465e-8315-298abf4a8317",
+								"exec": [
+									"pm.test(\"response is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 1s\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "abc",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live\"\n        }\n    ],\n    \"geoQ\": {\n        \"geometry\": \"Point\",\n        \"coordinates\": [21.178,72.834],\n        \"georel\": \"near;maxDistance=1000\",\n        \"geoproperty\": \"location\"\n    },\n    \"temporalQ\": {\n        \"timerel\": \"during\",\n        \"time\": \"2020-09-18T14:20:00Z\",\n        \"endtime\": \"2020-09-19T14:20:00Z\",\n        \"timeProperty\": \"observationDateTime\"\n    },\n    \"options\":\"count\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "geo spatial - polygon",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
+								"id": "1ba8deaf-9c74-406c-9ffd-8b1c12d811d0",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -5569,8 +9177,7 @@
 									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
 									"});"
 								],
-								"type": "text/javascript",
-								"id": "8f5ec655-0cc8-4a1a-a1d0-0fee20305c84"
+								"type": "text/javascript"
 							}
 						}
 					],
@@ -5579,7 +9186,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live\"\n        }\n    ],\n    \"geoQ\": {\n        \"geometry\": \"Polygon\",\n        \"coordinates\": [[[82.9735,25.3703],[83.0053,25.3567],[82.9766,25.3372],[82.95,25.3519],[82.936,25.3722],[82.9735,25.3703]]],\n        \"georel\": \"within\",\n        \"geoproperty\": \"geoJsonLocation\"\n    }\n}",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live\"\n        }\n    ],\n    \"geoQ\": {\n        \"geometry\": \"Polygon\",\n        \"coordinates\": [[[82.9735,25.3703],[83.0053,25.3567],[82.9766,25.3372],[82.95,25.3519],[82.936,25.3722],[82.9735,25.3703]]],\n        \"georel\": \"within\",\n        \"geoproperty\": \"geoJsonLocation\"\n    },\n    \"options\":\"count\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5607,6 +9214,7 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "b92b687d-16ab-441d-bb23-d8d585d01fb9",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -5616,8 +9224,7 @@
 									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
 									"});"
 								],
-								"type": "text/javascript",
-								"id": "56c8e659-b1af-49eb-8dff-59d95572801e"
+								"type": "text/javascript"
 							}
 						}
 					],
@@ -5626,7 +9233,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live\"\n        }\n    ],\n    \"geoQ\": {\n        \"geometry\": \"linestring\",\n        \"coordinates\": [[82.9735,25.3352],[82.9894,25.3452],[82.99,25.34]],\n        \"georel\": \"intersects\",\n        \"geoproperty\": \"geoJsonLocation\"\n    }\n}",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live\"\n        }\n    ],\n    \"geoQ\": {\n        \"geometry\": \"linestring\",\n        \"coordinates\": [[82.9735,25.3352],[82.9894,25.3452],[82.99,25.34]],\n        \"georel\": \"intersects\",\n        \"geoproperty\": \"geoJsonLocation\"\n    },\n    \"options\":\"count\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5654,6 +9261,7 @@
 						{
 							"listen": "test",
 							"script": {
+								"id": "5d24406f-807e-4d07-be91-c7c5c08ae492",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -5663,8 +9271,7 @@
 									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
 									"});"
 								],
-								"type": "text/javascript",
-								"id": "47f24c21-042f-4193-b2db-24ad38c726dd"
+								"type": "text/javascript"
 							}
 						}
 					],
@@ -5673,7 +9280,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live\"\n        }\n    ],\n    \"geoQ\": {\n        \"geometry\": \"bbox\",\n        \"coordinates\": [[82.95,25.3567],[83.0053,25]],\n        \"georel\": \"within\",\n        \"geoproperty\": \"geoJsonLocation\"\n    }\n}",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live\"\n        }\n    ],\n    \"geoQ\": {\n        \"geometry\": \"bbox\",\n        \"coordinates\": [[82.95,25.3567],[83.0053,25]],\n        \"georel\": \"within\",\n        \"geoproperty\": \"geoJsonLocation\"\n    },\n    \"options\":\"count\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5700,7 +9307,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "77a409a0-4def-4724-92d1-ef41fba8bf0d",
+						"id": "7206e79c-8b34-4e2c-ac7a-9d5241256533",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -5710,7 +9317,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "5abf61ee-ae1f-4ec7-90fd-27de8765e69f",
+						"id": "ce48d0fc-2335-489d-8947-64e096800a21",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -5729,7 +9336,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "b2f2dcfc-8d3c-4100-9a49-20d4f09d956a",
+								"id": "971c7b1e-2ddb-4c5d-8912-3ac4181700b8",
 								"exec": [
 									"pm.test(\"response is 201 (created)\", function () {\r",
 									"    pm.response.to.have.status(201);\r",
@@ -5805,7 +9412,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "d4f8b6bd-e708-4023-92a4-09f5e368b6c0"
+								"id": "836c290f-c8c5-48b5-a1e2-994ca09e2ddd"
 							}
 						}
 					],
@@ -5847,7 +9454,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "150b71d8-d3f6-4586-b272-a383ad1f5564",
+								"id": "8ab67f7d-8535-46a9-ace5-39a2f54d0c34",
 								"exec": [
 									"pm.test(\"response is 400 (Bad Request data- invalid exchange name)\", function () {\r",
 									"    pm.response.to.have.status(400);\r",
@@ -5905,7 +9512,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "045d60bb-b552-4bf7-baee-cd4e920ffa5c",
+								"id": "95c1dd68-8da5-4a4e-a44d-e14c148ccd7a",
 								"exec": [
 									"pm.test(\"response is 201 (created)\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -5987,7 +9594,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "69c2f72d-0206-41e6-845d-55d9f809a12c"
+								"id": "a43ab12a-e6e0-4e39-be9d-febd50e1366f"
 							}
 						}
 					],
@@ -6046,7 +9653,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "2ad84154-8a72-4a31-9047-a90e1433f029"
+								"id": "493217b2-069e-45f4-b4c0-24296154f49e"
 							}
 						}
 					],
@@ -6087,7 +9694,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "a888e2b3-9c85-4710-b736-19404d8f357a",
+								"id": "1f2e00b5-c919-43b9-af49-d06471436102",
 								"exec": [
 									"pm.test(\"response is 201 (created)\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -6165,7 +9772,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "72ba52a0-91b8-4a1a-824f-de2b481d4c16"
+								"id": "61e720a7-f4ae-417d-8608-7f8f9b699ea8"
 							}
 						}
 					],
@@ -6225,7 +9832,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "0617aad0-db72-45ea-bda4-1d67fc95e803"
+								"id": "005ff06c-3aff-4e6d-a3d8-376560413178"
 							}
 						}
 					],
@@ -6284,7 +9891,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "7e80bd1f-b56b-43f1-adf3-edc27e955f3b"
+								"id": "9814f8de-e9d9-4733-a026-5adbbb1ebb1a"
 							}
 						}
 					],
@@ -6341,7 +9948,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "977ad314-bcfb-41e1-a5b9-0c3715ee61ce"
+								"id": "fff22688-880c-4313-baff-8d14473706d3"
 							}
 						}
 					],
@@ -6399,7 +10006,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "2a574a94-4f9c-483c-a279-dc51d9d0a2a7"
+								"id": "19908727-ec0e-412e-8837-57ea8a3bb6ff"
 							}
 						}
 					],
@@ -6458,7 +10065,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "935b9234-87c6-47dc-8e58-a208b83ab31b"
+								"id": "ebdf3ac5-1263-4fc6-871b-bfa540efadf4"
 							}
 						}
 					],
@@ -6512,7 +10119,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "f95fa99d-8eb7-416b-8cf5-d5fc7758956a"
+								"id": "49d0b842-bfd2-4a28-8f81-2e9f76e59004"
 							}
 						}
 					],
@@ -6563,7 +10170,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "cfcc8070-43ff-40da-9a14-4a4f0b5628e7"
+								"id": "2536ff25-5d8f-4a63-8e85-ec494b59d00d"
 							}
 						}
 					],
@@ -6615,7 +10222,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "18891716-4de8-49df-83fd-471489b88102"
+								"id": "0ef25184-768e-4ada-8f16-b1b357952c09"
 							}
 						}
 					],
@@ -6667,7 +10274,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "a3c96a91-f00b-4466-a2c3-a6f5e079285e"
+								"id": "fb62a307-1603-4e6c-aa8b-6072ba86c649"
 							}
 						}
 					],
@@ -6726,7 +10333,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "579680a6-a27f-4a17-9112-7251b56465c2"
+								"id": "699f45db-0ee8-45fb-a180-72ed7da6fc6f"
 							}
 						}
 					],
@@ -6786,7 +10393,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "b7c300e5-b53f-44c4-b11d-5eccfcff4c65"
+								"id": "fb707dbd-0c6a-40f5-a18f-10606840f25d"
 							}
 						}
 					],
@@ -6845,7 +10452,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "746dd812-e5b2-447a-b410-70e58fada885"
+								"id": "2eb0b153-40c1-4c36-af40-1892801ec77d"
 							}
 						}
 					],
@@ -6904,7 +10511,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "e7ea2446-20a6-42f5-a51c-76a07c034650"
+								"id": "6108aa28-e5f8-4cd0-9813-89e60070e5c3"
 							}
 						}
 					],
@@ -6961,7 +10568,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "cd4ff918-d841-4338-8fc4-718f21bba1c5"
+								"id": "34de21c8-8cf1-4a1e-bd56-1686592d469f"
 							}
 						}
 					],
@@ -7011,7 +10618,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "63633b75-3f46-424d-8760-26d6289a9598"
+								"id": "b6f45352-7133-4814-8502-e8e376810b27"
 							}
 						}
 					],
@@ -7058,7 +10665,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "7e2159db-d1b8-4db1-9c99-d02b29090a94"
+								"id": "421b32ec-8d51-4760-96bd-0efd4f34524c"
 							}
 						}
 					],
@@ -7109,7 +10716,7 @@
 									"});"
 								],
 								"type": "text/javascript",
-								"id": "7f81bbbc-4987-4f3c-afe8-a6d8a6a3e567"
+								"id": "dc0cd9f8-b926-44f9-a88d-c4aabecaa991"
 							}
 						}
 					],
@@ -7157,7 +10764,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "98360957-b582-414c-9b28-d76c99241430",
+								"id": "e56e8d0d-04a4-4cc2-8a04-9daea22a472f",
 								"exec": [
 									"pm.test(\"response is 201 (created)\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -7214,7 +10821,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "bf3ff969-d7ad-4bfd-82f7-a52ca2399569",
+								"id": "83f8a1d2-83b2-44b7-bba1-cf5e0dd3b7c4",
 								"exec": [
 									"pm.test(\"response is 409\", function () {",
 									"    pm.response.to.have.status(409);",
@@ -7271,7 +10878,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "1c90f1b9-0b22-47ec-9610-362aba1f7c28",
+								"id": "3fbe5f5e-afc1-4e2b-ad50-88a120a223a3",
 								"exec": [
 									"pm.test(\"response is 401\", function () {",
 									"    pm.response.to.have.status(401);",
@@ -7329,7 +10936,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "aaa07933-1195-4b22-ab3c-017aa8cbce22",
+								"id": "301aae01-7fb8-46f4-ba7e-779a58d7ccdb",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -7390,7 +10997,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "7056aebe-4f2e-4f3f-8767-81fff9434fe0",
+								"id": "d1103e36-94d8-4167-b7a6-eaf935e6244e",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -7451,7 +11058,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "87f1fe46-4b0a-4003-997f-e55ef316072d",
+								"id": "8382c8a5-10c2-4f5c-a80c-120f9745b194",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -7512,7 +11119,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "c487e7f7-cda0-4f76-9524-a4dd5f8849b8",
+								"id": "a36fe71d-5d94-4508-9fde-67b930c16135",
 								"exec": [
 									"pm.test(\"response is 201 (created)\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -7570,7 +11177,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "b2315904-5750-4c9f-9867-2fb3be4c7d05",
+								"id": "8ab4c6fb-c0f4-4a07-83bf-1cd6bc07ea71",
 								"exec": [
 									"pm.test(\"response is 400\", function () {",
 									"    pm.response.to.have.status(400);",
@@ -7628,7 +11235,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "2a78c166-967f-432c-93a1-734aeaaa48ce",
+								"id": "75038614-c371-49a3-a584-7c6e9d02304d",
 								"exec": [
 									"pm.test(\"response is 401\", function () {",
 									"    pm.response.to.have.status(401);",
@@ -7686,7 +11293,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "d1857b5f-b3b5-4f4d-9b97-d49c6e48da33",
+								"id": "c86286bb-6b65-40ab-b8f9-05f662eae002",
 								"exec": [
 									"pm.test(\"response is 201 (created)\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -7746,7 +11353,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "f46e7ac5-3ad5-4a78-bb23-1920beda5a29",
+								"id": "8c2b52f2-822e-4b51-a277-69a3b724f7f5",
 								"exec": [
 									"pm.test(\"response is 201 (created)\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -7804,7 +11411,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "f4682b1c-7487-484b-85fb-eceea2b2fad5",
+								"id": "5e7b400e-af2d-4683-adda-d50e32714f24",
 								"exec": [
 									"pm.test(\"response is 201 (created)\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -7864,7 +11471,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "1212698d-8172-4cf5-b448-bf87d8f28ef8",
+								"id": "b56d7d69-9ef3-47de-98db-3f2e85d2a4b4",
 								"exec": [
 									"pm.test(\"response is 201 (created)\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -7922,7 +11529,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "2cbd632e-d60e-480d-8eb6-29f54eede6ff",
+								"id": "e7e19570-51cb-491a-bc6f-dd4e7905eb78",
 								"exec": [
 									"pm.test(\"response is 201 (created)\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -7980,7 +11587,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "166abd6f-e197-40d8-a96d-9ed22e77488f",
+								"id": "ac624ce6-0bfe-4ffb-9c85-6aa9764c3936",
 								"exec": [
 									"pm.test(\"response is 200 (ok)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -8030,7 +11637,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "3ff16ffd-cdf7-4465-b4f3-997abdb1c312",
+								"id": "d19c8141-3dd3-4b2f-b494-cb65fb9b6e23",
 								"exec": [
 									"pm.test(\"response is 200 (ok)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -8080,7 +11687,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "a7c2e14e-de25-40d5-9b39-57072375ac08",
+								"id": "012cd851-ca26-49da-bd76-52622bea3309",
 								"exec": [
 									"pm.test(\"response is 404\", function () {",
 									"    pm.response.to.have.status(404);",
@@ -8136,7 +11743,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "969ec5fe-4b61-4101-87b8-1701f92f848a",
+								"id": "aa25c74e-bb63-46a1-983f-cea04dee2e8f",
 								"exec": [
 									"pm.test(\"response is 201 (created)\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -8243,7 +11850,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "0d4c33b8-95d9-4f80-8e56-544f69a5ff24",
+								"id": "197cc7bf-bd18-4083-a67e-e85e6f7b3cdd",
 								"exec": [
 									"pm.test(\"response is 201 (created)\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -8347,7 +11954,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "e6253220-ed48-44ed-a93d-3eccbeb446cb",
+								"id": "0bdc2376-07b6-4a13-932c-acdb391e5d1f",
 								"exec": [
 									"pm.test(\"response is 201 (created)\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -8454,7 +12061,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "19f9b47c-6356-48d8-8009-17b9c4624438",
+								"id": "8832812e-23aa-425a-b9b9-f38a300b45b3",
 								"exec": [
 									"pm.test(\"response is 201 (created)\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -8561,7 +12168,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "c9d97221-0370-4337-b7ef-929ee9ecebbf",
+								"id": "b091324b-ec8e-4b83-8183-391521601e7c",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -8605,7 +12212,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "81a7df7d-4a01-4c98-9cae-417f5208f31c",
+								"id": "a2e7ad72-2dfd-469f-ad37-0e99670ac0f6",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -8652,7 +12259,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "f46d5f8d-32f2-4e33-9c6f-0a33208d9645",
+								"id": "246c5754-2139-4d09-b8e0-7967234dc6d3",
 								"exec": [
 									"pm.test(\"response is 401\", function () {",
 									"    pm.response.to.have.status(401);",
@@ -8696,7 +12303,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "e5428fbb-5e2b-42ed-9615-dae5fa0e466d",
+								"id": "e782baac-d6db-4b48-a1f1-b6254b2ffa17",
 								"exec": [
 									"pm.test(\"response is 200 (OK)\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -8740,7 +12347,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "ead54f1a-3300-4d09-8d59-98993a61de63",
+								"id": "4a1fea31-f181-4054-9f47-86992d0a6240",
 								"exec": [
 									"pm.test(\"response is 404\", function () {",
 									"    pm.response.to.have.status(404);",
@@ -8787,7 +12394,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "d96a32f3-dcf4-4812-a101-6afc1862adc0",
+								"id": "a0ab66d6-2e1d-41eb-86bb-a17a80907cb2",
 								"exec": [
 									"pm.test(\"response is 401\", function () {",
 									"    pm.response.to.have.status(401);",
@@ -8836,7 +12443,7 @@
 		{
 			"listen": "prerequest",
 			"script": {
-				"id": "195a21cb-2562-4aee-9616-bb26dfae381f",
+				"id": "b3029c69-5949-4dc4-9e52-e076fc5e28be",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -8846,7 +12453,7 @@
 		{
 			"listen": "test",
 			"script": {
-				"id": "88eece82-9544-4d9d-b263-d6df59b3ceb7",
+				"id": "0af5bb7e-8249-4389-af26-9c89f5781b47",
 				"type": "text/javascript",
 				"exec": [
 					""
