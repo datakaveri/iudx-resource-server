@@ -87,7 +87,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String token = authenticationInfo.getString("token");
     String requestEndpoint = authenticationInfo.getString("apiEndpoint");
 
-    LOGGER.info("requested endpoint :" + requestEndpoint);
+    LOGGER.debug("Info: requested endpoint :" + requestEndpoint);
 
     if (config.getString(Constants.SERVER_MODE).equalsIgnoreCase("testing")) {
       if (token.equals(Constants.PUBLIC_TOKEN)
@@ -110,7 +110,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Future<HashMap<String, Boolean>> catResponseFut =
             isOpenResource(request.getJsonArray("ids"));
         CompositeFuture.all(tipResponseFut, catResponseFut).onFailure(failedHandler -> {
-          LOGGER.info("TIP / Cat Failed");
+          LOGGER.debug("Info: TIP / Cat Failed");
           JsonObject result = new JsonObject();
           result.put("status", "error");
           result.put("message", failedHandler.getMessage());
@@ -118,18 +118,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }).onSuccess(successHandler -> {
           JsonObject tipResponse = successHandler.resultAt(0);
           HashMap<String, Boolean> catResponse = successHandler.resultAt(1);
-          LOGGER.info("TIP Response is : " + tipResponse);
-          LOGGER.info("CAT Response is : " + Collections.singletonList(catResponse));
+          LOGGER.debug("Info: TIP Response is : " + tipResponse);
+          LOGGER.debug("Info: CAT Response is : " + Collections.singletonList(catResponse));
           
           Future<JsonObject> validateAPI = validateAccess(tipResponse, catResponse, authenticationInfo, request);
           
           validateAPI.onComplete(validateAPIResponseHandler -> {
             if(validateAPIResponseHandler.succeeded()) {
-              LOGGER.info("Success :: TIP Response is : " + tipResponse);
+              LOGGER.debug("Info: Success :: TIP Response is : " + tipResponse);
               JsonObject response = validateAPIResponseHandler.result();
               handler.handle(Future.succeededFuture(response));
             } else if (validateAPIResponseHandler.failed()){
-              LOGGER.info("Failure :: TIP Response is : " + tipResponse);
+              LOGGER.debug("Info: Failure :: TIP Response is : " + tipResponse);
               String response = validateAPIResponseHandler.cause().getMessage();
               handler.handle(Future.failedFuture(response));
             }
@@ -230,6 +230,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           if (!tipCache.remove(token, cacheResponse)) {
             throw new ConcurrentModificationException("TIP cache premature invalidation");
           }
+          LOGGER.debug("Info: Token has expired");
           promise.fail(new Throwable("Token has expired"));
         }
         if (cacheExpiry.isAfter(now)) {
@@ -321,7 +322,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       String catHost = config.getString("catServerHost");
       int catPort = Integer.parseInt(config.getString("catServerPort"));
       String catPath = Constants.CAT_RSG_PATH;
-      LOGGER.info("Host " + catHost + " Port " + catPort + " Path " + catPath);
+      LOGGER.debug("Info: Host " + catHost + " Port " + catPort + " Path " + catPath);
       catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
           .addQueryParam("value", "[[" + groupID + "]]")
           .addQueryParam("filter", "[accessPolicy]").expect(ResponsePredicate.JSON)
@@ -349,9 +350,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                   .getString("accessPolicy");
               result.put(resourceID, resourceACL.equals("OPEN"));
               catCache.put(groupID, resourceACL);
+              LOGGER.debug("Info: Group ID valid : Catalogue item Found");
             } catch (IndexOutOfBoundsException ignored) {
               LOGGER.error(ignored.getMessage());
-              LOGGER.info("Group ID invalid : Empty response in results from Catalogue");
+              LOGGER.debug("Info: Group ID invalid : Empty response in results from Catalogue");
             }
             prom.complete();
           });
@@ -367,13 +369,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     Promise<JsonObject> promise = Promise.promise();
 
-    LOGGER.info("TIP response is " + result);
-    LOGGER.info("Authentication Info is " + authenticationInfo);
-    LOGGER.info("catResponse is " + catResponse);
+    LOGGER.debug("Info: TIP response is " + result);
+    LOGGER.debug("Info: Authentication Info is " + authenticationInfo);
+    LOGGER.debug("Info: catResponse is " + catResponse);
     String requestEndpoint = authenticationInfo.getString("apiEndpoint");
     String requestMethod = authenticationInfo.getString("method");
 
-    LOGGER.info("requested endpoint :" + requestEndpoint);
+    LOGGER.debug("Info: requested endpoint :" + requestEndpoint);
 
     // 1. Check the API requested.
     if (Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
@@ -384,41 +386,41 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       // 2. If open respond success.
       // 3. If closed, check if auth response has access to the requested resource.
 
-      LOGGER.info("TIP response is " + result);
+      LOGGER.debug("Info: TIP response is " + result);
 
       String allowedID = result.getJsonArray("request").getJsonObject(0).getString("id");
       String allowedGroupID = allowedID.substring(0, allowedID.lastIndexOf("/"));
 
-      LOGGER.info("allowedID is " + allowedID);
-      LOGGER.info("allowedGroupID is " + allowedGroupID);
+      LOGGER.debug("Info: allowedID is " + allowedID);
+      LOGGER.debug("Info: allowedGroupID is " + allowedGroupID);
       
-      LOGGER.info("userRequest is " + userRequest);
+      LOGGER.debug("Info: userRequest is " + userRequest);
       
       String requestedID = userRequest.getJsonArray("ids").getString(0);
       String requestedGroupID = requestedID.substring(0, requestedID.lastIndexOf("/"));
 
-      LOGGER.info("requestedID is " + requestedID);
-      LOGGER.info("requestedGroupID is " + requestedGroupID);
+      LOGGER.debug("Info: requestedID is " + requestedID);
+      LOGGER.debug("Info: requestedGroupID is " + requestedGroupID);
       
       // Check if resource is available in Catalogue
       if (catResponse.isEmpty()) {
-        LOGGER.info("No such catalogue item");
+        LOGGER.debug("Info: No such catalogue item");
         response.put("item", "Not Found");
         promise.fail(response.toString());
       } else {
         if (catResponse.get(requestedID)) {
-          LOGGER.info("Catalogue item is OPEN");
+          LOGGER.debug("Info: Catalogue item is OPEN");
           response.put(Constants.JSON_CONSUMER, result.getString(Constants.JSON_CONSUMER));
           promise.complete(response);
         } else {
           // Check if the token has access to the requestedID
-          LOGGER.info("Catalogue item is SECURE");
+          LOGGER.debug("Info: Catalogue item is SECURE");
           if (requestedGroupID.equalsIgnoreCase(allowedGroupID)) {
-            LOGGER.info("Catalogue item is SECURE and User has ACCESS");
+            LOGGER.debug("Info: Catalogue item is SECURE and User has ACCESS");
             response.put(Constants.JSON_CONSUMER, result.getString(Constants.JSON_CONSUMER));
             promise.complete(response);
           } else {
-            LOGGER.info("Catalogue item is SECURE and User does not have ACCESS");
+            LOGGER.debug("Info: Catalogue item is SECURE and User does not have ACCESS");
             response.put(Constants.JSON_CONSUMER, result.getString(Constants.JSON_CONSUMER));
             promise.fail(response.toString());
           }
@@ -426,16 +428,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       }
       
     } else if (Constants.ADAPTER_ENDPOINT.contains(requestEndpoint)) {
-      LOGGER.info("Requested access for " + requestEndpoint);
+      LOGGER.debug("Info: Requested access for " + requestEndpoint);
       JsonArray tipresult = result.getJsonArray("request");
       JsonObject tipresponse = tipresult.getJsonObject(0);
-      LOGGER.info("Allowed APIs " + tipresponse);
+      LOGGER.debug("Info: Allowed APIs " + tipresponse);
       JsonArray allowedAPIs = tipresponse.getJsonArray("apis");
       int total = allowedAPIs.size();
       boolean allowedAccess = false;
       for (int i = 0; i < total; i++) {
         if (Constants.ADAPTER_ENDPOINT.contains(allowedAPIs.getString(i))) {
-          LOGGER.info("Success :: User has access to " + requestEndpoint + " API");
+          LOGGER.debug("Info: Success :: User has access to " + requestEndpoint + " API");
           allowedAccess = true;
           break;
         }
@@ -445,7 +447,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String adapterID = providerID.substring(0, providerID.lastIndexOf("/"));
         String[] id = providerID.split("/");
         String providerSHA = id[0] + "/" + id[1];
-        LOGGER.info("Success :: Provider SHA is " + providerSHA);
+        LOGGER.debug("Info: Success :: Provider SHA is " + providerSHA);
         if (requestMethod.equalsIgnoreCase("POST")) {
           String resourceGroup = userRequest.getString("resourceGroup");
           String resourceServer = userRequest.getString("resourceServer");
@@ -458,7 +460,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             result.put("provider", providerSHA);
             promise.complete(result);
           } else {
-            LOGGER.info("Failure :: Has access to " + requestEndpoint + " API but not for Adapter "
+            LOGGER.debug("Info: Failure :: Has access to " + requestEndpoint + " API but not for Adapter "
                 + adapterID);
             promise.fail(result.toString());
           }
@@ -469,26 +471,26 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 "Success :: Has access to " + requestEndpoint + " API and Adapter " + requestId);
             promise.complete(result);
           } else {
-            LOGGER.info("Failure :: Has access to " + requestEndpoint + " API but not for Adapter "
+            LOGGER.debug("Info: Failure :: Has access to " + requestEndpoint + " API but not for Adapter "
                 + requestId);
             promise.fail(result.toString());
           }
         }
       } else {
-        LOGGER.info("Failure :: No access to " + requestEndpoint + " API");
+        LOGGER.debug("Info: Failure :: No access to " + requestEndpoint + " API");
         promise.fail(result.toString());
       }
     } else if (Constants.SUBSCRIPTION_ENDPOINT.contains(requestEndpoint)) {
-      LOGGER.info("Requested access for " + requestEndpoint);
+      LOGGER.debug("Info: Requested access for " + requestEndpoint);
       JsonArray tipresult = result.getJsonArray("request");
       JsonObject tipresponse = tipresult.getJsonObject(0);
-      LOGGER.info("Allowed APIs " + tipresponse);
+      LOGGER.debug("Info: Allowed APIs " + tipresponse);
       JsonArray allowedAPIs = tipresponse.getJsonArray("apis");
       int total = allowedAPIs.size();
       boolean allowedAccess = false;
       for (int i = 0; i < total; i++) {
         if (Constants.SUBSCRIPTION_ENDPOINT.contains(allowedAPIs.getString(i))) {
-          LOGGER.info("Success :: User has access to API");
+          LOGGER.debug("Info: Success :: User has access to API");
           allowedAccess = true;
           break;
         }
@@ -501,7 +503,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           String requestedId = id.substring(0, id.lastIndexOf("/"));
 
           if (allowedId.contains(requestedId)) {
-            LOGGER.info("Success :: Has access to " + requestEndpoint + " API and entity " + id);
+            LOGGER.debug("Info: Success :: Has access to " + requestEndpoint + " API and entity " + id);
             promise.complete(result);
           } else {
             LOGGER.info(
@@ -516,25 +518,25 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           String id = userRequest.getJsonArray("entities").getString(0);
           String requestedId = id.substring(0, id.lastIndexOf("/"));
           if (requestId.contains(Util.getSha(email))) {
-            LOGGER.info("Success :: Has access to " + requestEndpoint + " API and Subscription ID " + requestId);
+            LOGGER.debug("Info: Success :: Has access to " + requestEndpoint + " API and Subscription ID " + requestId);
             if (allowedId.contains(requestedId)) {
-              LOGGER.info("Success :: Has access to " + requestEndpoint + " API and Subscription ID " + requestId
+              LOGGER.debug("Info: Success :: Has access to " + requestEndpoint + " API and Subscription ID " + requestId
                   + " and entity " + id);
               promise.complete(result);
             } else {
-              LOGGER.info("Failure :: Has access to " + requestEndpoint + " API and Subscription ID " + requestId
+              LOGGER.debug("Info: Failure :: Has access to " + requestEndpoint + " API and Subscription ID " + requestId
                   + " but not for entity " + id);
               promise.fail(result.toString());
             }
           } else {
-            LOGGER.info("Failure");
+            LOGGER.debug("Info: Failure");
             promise.fail(result.toString());
           }
         } else {
           String requestId = authenticationInfo.getString("id");
           String email = result.getString("consumer");
           if (requestId.contains(Util.getSha(email))) {
-            LOGGER.info("Success :: Has access to " + requestEndpoint + " API and Subscription ID " + requestId);
+            LOGGER.debug("Info: Success :: Has access to " + requestEndpoint + " API and Subscription ID " + requestId);
             promise.complete(result);
           } else {
             LOGGER.info(
@@ -543,14 +545,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           }
         }
       } else {
-        LOGGER.info("Failure :: No access to " + requestEndpoint + " API");
+        LOGGER.debug("Info: Failure :: No access to " + requestEndpoint + " API");
         promise.fail(result.toString());
       }
     } else if (Constants.MANAGEMENT_ENDPOINTS.contains(requestEndpoint)) {
-      LOGGER.info("Requested access for " + requestEndpoint);
+      LOGGER.debug("Info: Requested access for " + requestEndpoint);
       JsonArray tipresult = result.getJsonArray("request");
       JsonObject tipresponse = tipresult.getJsonObject(0);
-      LOGGER.info("Allowed APIs " + tipresponse);
+      LOGGER.debug("Info: Allowed APIs " + tipresponse);
       JsonArray allowedAPIs = tipresponse.getJsonArray("apis");
       int total = allowedAPIs.size();
       boolean allowedAccess = false;
@@ -561,7 +563,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       if (providerSHA.equalsIgnoreCase(Constants.JSON_IUDX_ADMIN_SHA)) {
         for (int i = 0; i < total; i++) {
           if (Constants.MANAGEMENT_ENDPOINT.contains(allowedAPIs.getString(i))) {
-            LOGGER.info("Success :: User " + email + " has access to API");
+            LOGGER.debug("Info: Success :: User " + email + " has access to API");
             allowedAccess = true;
             break;
           }
@@ -569,10 +571,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       }
 
       if (allowedAccess) {
-        LOGGER.info("Success :: Has access to " + requestEndpoint + " API");
+        LOGGER.debug("Info: Success :: Has access to " + requestEndpoint + " API");
         promise.complete(result);
       } else {
-        LOGGER.info("Failure :: No access to " + requestEndpoint + " API");
+        LOGGER.debug("Info: Failure :: No access to " + requestEndpoint + " API");
         promise.fail(result.toString());
       }
     }
