@@ -11,10 +11,10 @@ public class Constants {
   public static final String AUTH_CERTINFO_PATH = "/auth/v1/certificate-info";
   public static final String PUBLIC_TOKEN = "public";
   public static final List<String> OPEN_ENDPOINTS =
-      List.of("/ngsi-ld/v1/temporal/entities", "/ngsi-ld/v1/entities");
+      List.of("/ngsi-ld/v1/temporal/entities", "/ngsi-ld/v1/entities", "/ngsi-ld/v1/entityOperations/query");
   public static final String AUTH_TIP_PATH = "/auth/v1/token/introspect";
   public static final List<String> CLOSED_ENDPOINTS =
-      List.of("/iudx/v1/adapter", "/ngsi-ld/v1/subscription", "/ngsi-ld/v1/entityOperations/query");
+      List.of("/iudx/v1/adapter", "/ngsi-ld/v1/subscription");
   public static final List<String> MANAGEMENT_ENDPOINTS =
       List.of("/management/queue", "/management/exchange", "/management/vhost");
   public static final String ADAPTER_ENDPOINT = "/iudx/v1/adapter";
