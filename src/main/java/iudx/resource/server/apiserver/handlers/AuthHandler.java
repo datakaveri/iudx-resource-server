@@ -33,7 +33,12 @@ public class AuthHandler implements Handler<RoutingContext> {
   @Override
   public void handle(RoutingContext context) {
     request = context.request();
-    JsonObject requestJson = new JsonObject();
+    JsonObject requestJson = context.getBodyAsJson();
+    
+    if(requestJson == null) {
+      requestJson = new JsonObject();
+    }
+    
     LOGGER.debug("Info : path " + request.path());
     // bypassing auth for RDocs
     if (noAuthRequired.contains(request.path())) {
