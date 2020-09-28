@@ -100,7 +100,7 @@ public class QueryMapper {
       LOGGER.debug("Info : json " + json);
     }
     if (params.getOptions() != null) {
-      json.put(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT);
+      json.put(Constants.IUDXQUERY_OPTIONS, params.getOptions());
       LOGGER.debug("Info : json " + json);
     }
 

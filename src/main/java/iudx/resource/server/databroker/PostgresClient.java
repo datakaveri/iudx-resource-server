@@ -28,7 +28,6 @@ public class PostgresClient {
     LOGGER.debug("Info : PostgresQLClient#executeAsync() started");
     LOGGER.debug("Info : Query is : " + preparedQuerySQL);
     Promise<RowSet<Row>> promise = Promise.promise();
-
     pgPool.getConnection(connectionHandler -> {
       if (connectionHandler.succeeded()) {
         SqlConnection pgConnection = connectionHandler.result();
