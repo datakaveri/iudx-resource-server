@@ -20,7 +20,7 @@
             "testResourceID": "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc/rs.iudx.org.in/pune-streetlights/testResourceLight",
             "catServerHost": "catalogue.iudx.io",
             "catServerPort": "443",
-            "serverMode": "testing"
+            "serverMode": "production"
         },
         {
             "id": "iudx.resource.server.databroker.DataBrokerVerticle",
