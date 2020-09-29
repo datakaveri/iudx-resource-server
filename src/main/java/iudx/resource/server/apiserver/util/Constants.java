@@ -21,6 +21,7 @@ public class Constants {
   public static final String API_ENDPOINT = "apiEndpoint";
   public static final String API_METHOD = "method";
   public static final String ID = "id";
+  public static final String IDS = "ids";
   
   // config
   public static final String CONFIG_FILE = "config.properties";

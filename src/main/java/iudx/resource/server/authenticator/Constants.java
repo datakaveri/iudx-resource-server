@@ -2,6 +2,8 @@ package iudx.resource.server.authenticator;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class Constants {
   public static final String CONFIG_FILE = "config.properties";
@@ -11,10 +13,10 @@ public class Constants {
   public static final String AUTH_CERTINFO_PATH = "/auth/v1/certificate-info";
   public static final String PUBLIC_TOKEN = "public";
   public static final List<String> OPEN_ENDPOINTS =
-      List.of("/ngsi-ld/v1/temporal/entities", "/ngsi-ld/v1/entities");
+      List.of("/ngsi-ld/v1/temporal/entities", "/ngsi-ld/v1/entities", "/ngsi-ld/v1/entityOperations/query");
   public static final String AUTH_TIP_PATH = "/auth/v1/token/introspect";
   public static final List<String> CLOSED_ENDPOINTS =
-      List.of("/iudx/v1/adapter", "/ngsi-ld/v1/subscription", "/ngsi-ld/v1/entityOperations/query");
+      List.of("/iudx/v1/adapter", "/ngsi-ld/v1/subscription");
   public static final List<String> MANAGEMENT_ENDPOINTS =
       List.of("/management/queue", "/management/exchange", "/management/vhost");
   public static final String ADAPTER_ENDPOINT = "/iudx/v1/adapter";
@@ -29,5 +31,11 @@ public class Constants {
   public static final String JSON_TEST_CONSUMER = "vasanth.rajaraman@datakaveri.org";
   public static final String JSON_TEST_PROVIDER_SHA = "datakaveri.org/3ae88e7ba006938ffc38203d326b1711b892226d";
   public static final String JSON_IUDX_ADMIN_SHA = "datakaveri.org/27E503DA0BDDA6EFAE3A52B3EF423C1F9005657A";
+  public static final JsonObject JSON_PUBLIC_TIP_RESPONSE =
+      new JsonObject().put("consumer", "public.data@iudx.org")
+          .put("request",
+              new JsonArray().add(new JsonObject().put("id", "iudx.org/public/server/group/*")))
+          .put("apis", new JsonArray().add("/iudx/public"));
+  public static final String JSON_PUBLIC_CONSUMER = "public.data@iudx.org";
   
 }
