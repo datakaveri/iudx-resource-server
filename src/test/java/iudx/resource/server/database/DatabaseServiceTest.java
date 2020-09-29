@@ -819,7 +819,7 @@ public class DatabaseServiceTest {
   }
 
   @Test
-  @DisplayName("Testing count empty response with 404")
+  @DisplayName("Testing count empty response with 204")
   void countEmptyResponse(VertxTestContext testContext) {
     JsonObject request = new JsonObject()
         .put("id",new JsonArray()
