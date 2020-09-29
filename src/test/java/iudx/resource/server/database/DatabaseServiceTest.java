@@ -819,6 +819,20 @@ public class DatabaseServiceTest {
   }
 
   @Test
+  @DisplayName("Testing search empty response with 204")
+  void searchEmptyResponse(VertxTestContext testContext) {
+    JsonObject request = new JsonObject()
+        .put("id",new JsonArray()
+            .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+        .put("searchType","geoSearch_").put("lon", 72.8296).put("lat",  23.2)
+        .put("radius", 10);
+    dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
+      assertEquals("Empty response", new JsonObject(response.getMessage()).getString("detail"));
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
   @DisplayName("Testing count empty response with 204")
   void countEmptyResponse(VertxTestContext testContext) {
     JsonObject request = new JsonObject()
