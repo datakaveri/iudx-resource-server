@@ -110,7 +110,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         Future<JsonObject> tipResponseFut = retrieveTipResponse(token);
         // Check if resource is Open or Secure with Catalogue Server
         Future<HashMap<String, Boolean>> catResponseFut =
-            isOpenResource(request.getJsonArray("ids"));
+            isOpenResource(request.getJsonArray("ids"), requestEndpoint);
         CompositeFuture.all(tipResponseFut, catResponseFut).onFailure(failedHandler -> {
           LOGGER.debug("Info: TIP / Cat Failed");
           JsonObject result = new JsonObject();
@@ -153,7 +153,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // For management and subscription no need to look-up at catalogue
         Future<JsonObject> tipResponseFut = retrieveTipResponse(token);
         Future<HashMap<String, Boolean>> catResponseFut =
-            isOpenResource(request.getJsonArray("ids"));
+            isOpenResource(request.getJsonArray("ids"), requestEndpoint);
         // Based on catalogue item accessPolicy, decide the TIP
         CompositeFuture.all(tipResponseFut, catResponseFut).onFailure(throwable -> {
           LOGGER.debug("Info: TIP / Cat Failed");
@@ -298,104 +298,111 @@ public class AuthenticationServiceImpl implements AuthenticationService {
    *         requests for invalid IDs.
    *         </p>
    */
-  private Future<HashMap<String, Boolean>> isOpenResource(JsonArray requestIDs) {
+  private Future<HashMap<String, Boolean>> isOpenResource(JsonArray requestIDs,
+      String requestEndpoint) {
     Promise<HashMap<String, Boolean>> promise = Promise.promise();
     HashMap<String, Boolean> result = new HashMap<>();
-    List<Future> catResponses = new ArrayList<>();
-    WebClientOptions options =
-        new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
-    WebClient catWebClient = WebClient.create(vertxObj, options);
-    for (Object rID : requestIDs) {
-      String resourceID = (String) rID;
-      String[] idComponents = resourceID.split("/");
-      if (idComponents.length < 4) {
-        continue;
+    if (Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
+      List<Future> catResponses = new ArrayList<>();
+      WebClientOptions options =
+          new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
+      WebClient catWebClient = WebClient.create(vertxObj, options);
+      for (Object rID : requestIDs) {
+        String resourceID = (String) rID;
+        String[] idComponents = resourceID.split("/");
+        if (idComponents.length < 4) {
+          continue;
+        }
+        String groupID = (idComponents.length == 4) ? resourceID
+            : String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
+        Promise prom = Promise.promise();
+        catResponses.add(prom.future());
+
+        String catHost = config.getString("catServerHost");
+        int catPort = Integer.parseInt(config.getString("catServerPort"));
+        String catPath = Constants.CAT_RSG_PATH;
+        LOGGER.debug("Info: Host " + catHost + " Port " + catPort + " Path " + catPath);
+        // Check if resourceID is available
+        catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
+            .addQueryParam("value", "[[" + resourceID + "]]").addQueryParam("filter", "[id]")
+            .expect(ResponsePredicate.JSON).send(httpResponserIDAsyncResult -> {
+              if (httpResponserIDAsyncResult.failed()) {
+                result.put(resourceID, false);
+                prom.fail("Not Found");
+                return;
+              }
+              HttpResponse<Buffer> rIDResponse = httpResponserIDAsyncResult.result();
+              JsonObject rIDResponseBody = rIDResponse.bodyAsJsonObject();
+
+              if (rIDResponse.statusCode() != HttpStatus.SC_OK) {
+                LOGGER.debug("Info: Catalogue Query failed");
+                result.put(resourceID, false);
+                prom.fail("Not Found");
+                return;
+              } else if (!rIDResponseBody.getString("status").equals("success")) {
+                LOGGER.debug("Info: Catalogue Query failed");
+                result.put(resourceID, false);
+                prom.fail("Not Found");
+                return;
+              } else if (rIDResponseBody.getInteger("totalHits") == 0) {
+                LOGGER.debug("Info: Resource ID invalid : Catalogue item Not Found");
+                result.put(resourceID, false);
+                prom.fail("Not Found");
+                return;
+              } else {
+                LOGGER.debug("Info: Resource ID valid : Catalogue item Found");
+                catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
+                    .addQueryParam("value", "[[" + groupID + "]]")
+                    .addQueryParam("filter", "[accessPolicy]").expect(ResponsePredicate.JSON)
+                    .send(httpResponseAsyncResult -> {
+                      if (httpResponseAsyncResult.failed()) {
+                        result.put(resourceID, false);
+                        prom.fail("Not Found");
+                        return;
+                      }
+                      HttpResponse<Buffer> response = httpResponseAsyncResult.result();
+                      if (response.statusCode() != HttpStatus.SC_OK) {
+                        result.put(resourceID, false);
+                        prom.fail("Not Found");
+                        return;
+                      }
+                      JsonObject responseBody = response.bodyAsJsonObject();
+                      if (!responseBody.getString("status").equals("success")) {
+                        result.put(resourceID, false);
+                        prom.fail("Not Found");
+                        return;
+                      }
+                      String resourceACL = "SECURE";
+                      try {
+                        resourceACL = responseBody.getJsonArray("results").getJsonObject(0)
+                            .getString("accessPolicy");
+                        result.put(resourceID, resourceACL.equals("OPEN"));
+                        catCache.put(groupID, resourceACL);
+                        catrIDCache.put(resourceID, resourceACL);
+                        LOGGER.debug("Info: Group ID valid : Catalogue item Found");
+                      } catch (IndexOutOfBoundsException ignored) {
+                        LOGGER.error(ignored.getMessage());
+                        LOGGER.debug(
+                            "Info: Group ID invalid : Empty response in results from Catalogue");
+                      }
+                      prom.complete();
+                    });
+              }
+            });
       }
-      String groupID = (idComponents.length == 4) ? resourceID
-          : String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
-      Promise prom = Promise.promise();
-      catResponses.add(prom.future());
-      
-      String catHost = config.getString("catServerHost");
-      int catPort = Integer.parseInt(config.getString("catServerPort"));
-      String catPath = Constants.CAT_RSG_PATH;
-      LOGGER.debug("Info: Host " + catHost + " Port " + catPort + " Path " + catPath);
-      // Check if resourceID is available
-      catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
-          .addQueryParam("value", "[[" + resourceID + "]]").addQueryParam("filter", "[id]")
-          .expect(ResponsePredicate.JSON).send(httpResponserIDAsyncResult -> {
-            if (httpResponserIDAsyncResult.failed()) {
-              result.put(resourceID, false);
-              prom.fail("Not Found");
-              return;
-            }
-            HttpResponse<Buffer> rIDResponse = httpResponserIDAsyncResult.result();
-            JsonObject rIDResponseBody = rIDResponse.bodyAsJsonObject();
 
-            if (rIDResponse.statusCode() != HttpStatus.SC_OK) {
-              LOGGER.debug("Info: Catalogue Query failed");
-              result.put(resourceID, false);
-              prom.fail("Not Found");
-              return;
-            } else if (!rIDResponseBody.getString("status").equals("success")) {
-              LOGGER.debug("Info: Catalogue Query failed");
-              result.put(resourceID, false);
-              prom.fail("Not Found");
-              return;
-            } else if (rIDResponseBody.getInteger("totalHits") == 0) {
-              LOGGER.debug("Info: Resource ID invalid : Catalogue item Not Found");
-              result.put(resourceID, false);
-              prom.fail("Not Found");
-              return;
-            } else {
-              LOGGER.debug("Info: Resource ID valid : Catalogue item Found");
-              catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
-                  .addQueryParam("value", "[[" + groupID + "]]")
-                  .addQueryParam("filter", "[accessPolicy]").expect(ResponsePredicate.JSON)
-                  .send(httpResponseAsyncResult -> {
-                    if (httpResponseAsyncResult.failed()) {
-                      result.put(resourceID, false);
-                      prom.fail("Not Found");
-                      return;
-                    }
-                    HttpResponse<Buffer> response = httpResponseAsyncResult.result();
-                    if (response.statusCode() != HttpStatus.SC_OK) {
-                      result.put(resourceID, false);
-                      prom.fail("Not Found");
-                      return;
-                    }
-                    JsonObject responseBody = response.bodyAsJsonObject();
-                    if (!responseBody.getString("status").equals("success")) {
-                      result.put(resourceID, false);
-                      prom.fail("Not Found");
-                      return;
-                    }
-                    String resourceACL = "SECURE";
-                    try {
-                      resourceACL = responseBody.getJsonArray("results").getJsonObject(0)
-                          .getString("accessPolicy");
-                      result.put(resourceID, resourceACL.equals("OPEN"));
-                      catCache.put(groupID, resourceACL);
-                      catrIDCache.put(resourceID, resourceACL);
-                      LOGGER.debug("Info: Group ID valid : Catalogue item Found");
-                    } catch (IndexOutOfBoundsException ignored) {
-                      LOGGER.error(ignored.getMessage());
-                      LOGGER.debug(
-                          "Info: Group ID invalid : Empty response in results from Catalogue");
-                    }
-                    prom.complete();
-                  });
-            }
+      CompositeFuture.all(catResponses).onSuccess(compositeFuture -> promise.complete(result))
+          .onFailure(failedhandler -> {
+            LOGGER.debug("Info: TIP / Cat Failed");
+            JsonObject failedresult = new JsonObject();
+            failedresult.put("status", "Not Found");
+            promise.fail(failedresult.toString());
           });
-    }
 
-    CompositeFuture.all(catResponses).onSuccess(compositeFuture -> promise.complete(result))
-        .onFailure(failedhandler -> {
-          LOGGER.debug("Info: TIP / Cat Failed");
-          JsonObject failedresult = new JsonObject();
-          failedresult.put("status", "Not Found");
-          promise.fail(failedresult.toString());
-        });
+    } else {
+      result.put("Closed End Point", true);
+      promise.complete();
+    }
 
     return promise.future();
   }
