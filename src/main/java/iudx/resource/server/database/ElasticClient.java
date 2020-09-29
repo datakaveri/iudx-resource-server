@@ -63,7 +63,7 @@ public class ElasticClient {
           JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
           if (!responseJson.containsKey(HITS) && !responseJson.containsKey(DOCS_KEY)) {
             responseBuilder =
-                new ResponseBuilder(FAILED).setTypeAndTitle(404).setMessage(EMPTY_RESPONSE);
+                new ResponseBuilder(FAILED).setTypeAndTitle(204).setMessage(EMPTY_RESPONSE);
             searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
             return;
           }
@@ -138,7 +138,7 @@ public class ElasticClient {
           JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
           if (responseJson.getInteger(COUNT) == 0) {
             responseBuilder =
-                new ResponseBuilder(FAILED).setTypeAndTitle(404).setMessage(EMPTY_RESPONSE);
+                new ResponseBuilder(FAILED).setTypeAndTitle(204).setMessage(EMPTY_RESPONSE);
             countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
             return;
           }
