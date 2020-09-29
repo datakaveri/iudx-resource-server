@@ -30,7 +30,7 @@ import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.PoolOptions;
-import iudx.resource.server.Configuration;
+import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.databroker.util.Constants;
 
 @ExtendWith(VertxExtension.class)
@@ -85,7 +85,8 @@ public class DataBrokerServiceTest {
 
   @BeforeAll
   @DisplayName("Deploy a verticle")
-  static void startVertx(Vertx vertx, VertxTestContext testContext) {
+  static void startVertx(Vertx vertx, io.vertx.reactivex.core.Vertx vertx2,
+      VertxTestContext testContext) {
     exchangeName = UUID.randomUUID().toString();
     queueName = UUID.randomUUID().toString();
     entities = new JsonArray("[\"id1\", \"id2\"]");
@@ -96,7 +97,7 @@ public class DataBrokerServiceTest {
     statusConflict = 409;
 
     appConfig = new Configuration();
-    JsonObject brokerConfig = appConfig.configLoader(2, vertx);
+    JsonObject brokerConfig = appConfig.configLoader(2, vertx2);
 
 
     logger.info("Exchange Name is " + exchangeName);

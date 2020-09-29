@@ -74,8 +74,8 @@ public class Constants {
   public static final String FETCH_DATA_FROM_DATABASE = "Fetching Data from DataBase.......!!!!";
   public static final String CACHE_UPDATE_SUCCESS = "Cache Updated Successfully";
   public static final String CACHE_DATA = "Cache Data";
-  public static final String EXECUTE_QUERY_FAIL = "Failed to execute Query";
   public static final String CONNECT_DATABASE_FAIL = "Error in Connecting Database";
+  public static final String EXECUTE_QUERY_FAIL = "Failed to execute Query";
   public static final String CREATE_PG_CLIENT_OBJECT_FAIL =
       "Failed to create pgClient for database query";
   public static final String ROWS = "rows";

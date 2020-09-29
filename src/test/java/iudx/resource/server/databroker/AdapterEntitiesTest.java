@@ -36,7 +36,8 @@ import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.PoolOptions;
-import iudx.resource.server.Configuration;
+import iudx.resource.server.apiserver.response.ResponseType;
+import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.databroker.util.Constants;
 
 @ExtendWith(VertxExtension.class)
@@ -69,6 +70,7 @@ public class AdapterEntitiesTest {
   private static String provider;
 
   private static String id, anotherid;
+  private static String anotherProvider;
   /* Database Properties */
   private static String databaseIP;
   private static int databasePort;
@@ -88,11 +90,12 @@ public class AdapterEntitiesTest {
 
   @BeforeAll
   @DisplayName("Initialize the Databroker class with web client and rabbitmq client")
-  static void startVertx(Vertx vertx, VertxTestContext testContext) {
+  static void startVertx(Vertx vertx, io.vertx.reactivex.core.Vertx vertx2,
+      VertxTestContext testContext) {
 
     /* Read the configuration and set the rabbitMQ server properties. */
     appConfig = new Configuration();
-    JsonObject brokerConfig = appConfig.configLoader(2, vertx);
+    JsonObject brokerConfig = appConfig.configLoader(2, vertx2);
 
     try {
 
@@ -212,6 +215,7 @@ public class AdapterEntitiesTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         logger.info("inside  successRegisterAdaptor - RegisteAdaptor response is : " + response);
+        id = response.getString(Constants.ID);
         assertTrue(response.containsKey(USER_NAME));
         assertTrue(response.containsKey(APIKEY));
         assertTrue(response.containsKey(URL));
@@ -227,7 +231,6 @@ public class AdapterEntitiesTest {
   @DisplayName("Testing getExchange method for exchange created after new adaptor (adaptor-1) registration")
   @Order(2)
   void successGetExchange(VertxTestContext testContext) throws InterruptedException {
-    Thread.sleep(1000);
     JsonObject request = new JsonObject();
     request.put(Constants.ID, id);
     JsonObject expected = new JsonObject();
@@ -278,7 +281,6 @@ public class AdapterEntitiesTest {
   @DisplayName("Testing publishHeartbeat method for publication of heartbeat data")
   @Order(4)
   void successPublishHeartbeat(VertxTestContext testContext) throws InterruptedException {
-    Thread.sleep(1000);
     JsonObject request = new JsonObject();
     request.put(Constants.ID, id);
     request.put(Constants.STATUS, "heartbeat");
@@ -305,15 +307,13 @@ public class AdapterEntitiesTest {
   @Order(5)
   void successRegisterAdaptorwithExistingUser(VertxTestContext testContext)
       throws InterruptedException {
-    Thread.sleep(1000);
-    resourceGroup = UUID.randomUUID().toString();
-    resourceServer = UUID.randomUUID().toString();
-    anotherid = Constants.USER_NAME_TEST_EXAMPLE + "/" + resourceServer + "/" + resourceGroup;
+    anotherProvider = Constants.USER_NAME_TEST_EXAMPLE;
 
     JsonObject request = new JsonObject();
-    request.put(Constants.CONSUMER, Constants.CONSUMER_TEST_EXAMPLE);
-    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
+    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup + "_1");
     request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    request.put(Constants.CONSUMER, consumer);
+    request.put(JSON_PROVIDER, anotherProvider);
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.USER_NAME, Constants.USER_NAME_TEST_EXAMPLE);
@@ -324,10 +324,15 @@ public class AdapterEntitiesTest {
     databroker.registerAdaptor(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
+        anotherid = response.getString(Constants.ID);
         logger.info(
             "inside  successRegisterAdaptor with existing user - RegisteAdaptor response is : "
                 + response);
-        assertEquals(expected, response);
+        assertTrue(response.containsKey(USER_NAME));
+        assertTrue(response.containsKey(APIKEY));
+        assertTrue(response.containsKey(URL));
+        assertTrue(response.containsKey(PORT));
+        assertTrue(response.containsKey(VHOST));
       }
       testContext.completeNow();
     });
@@ -337,7 +342,6 @@ public class AdapterEntitiesTest {
   @DisplayName("Testing getExchange method for exchanges created after another adaptor (adaptor-2) registration")
   @Order(6)
   void successGetExchangeExistingUser(VertxTestContext testContext) throws InterruptedException {
-    Thread.sleep(1000);
     JsonObject request = new JsonObject();
     request.put(Constants.ID, anotherid);
     JsonObject expected = new JsonObject();
@@ -413,7 +417,6 @@ public class AdapterEntitiesTest {
   @DisplayName("Testing deleteAdaptor method for deleting new (adaptor-1) adaptor")
   @Order(9)
   void successDeleteAdaptor(VertxTestContext testContext) throws InterruptedException {
-    Thread.sleep(5000);
     JsonObject expected = new JsonObject();
     expected.put(Constants.ID, id);
     expected.put(Constants.TYPE, 200);
@@ -427,7 +430,7 @@ public class AdapterEntitiesTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         logger.info("inside test - DeleteAdaptor response is : " + response);
-        assertEquals(expected, response);
+        assertEquals(ResponseType.Ok.getCode(), handler.result().getInteger(Constants.TYPE));
       }
       testContext.completeNow();
     });
@@ -437,7 +440,6 @@ public class AdapterEntitiesTest {
   @DisplayName("Testing deleteAdaptor method for deleting another (adaptor-2) adaptor")
   @Order(10)
   void successDeleteAdaptorExistingUser(VertxTestContext testContext) throws InterruptedException {
-    Thread.sleep(5000);
     JsonObject expected = new JsonObject();
     expected.put(Constants.ID, anotherid);
     expected.put(Constants.TYPE, 200);
@@ -451,7 +453,7 @@ public class AdapterEntitiesTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         logger.info("inside test - DeleteAdaptor response is : " + response);
-        assertEquals(expected, response);
+        assertEquals(200, response.getInteger(Constants.TYPE));
       }
       testContext.completeNow();
     });
@@ -461,7 +463,6 @@ public class AdapterEntitiesTest {
   @DisplayName("Testing registerAdaptor with invalid ID")
   @Order(11)
   void failureRegisterInvalidAdaptorID(VertxTestContext testContext) throws InterruptedException {
-    Thread.sleep(1000);
     JsonObject request = new JsonObject();
     request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup + "+()*&");
     request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
