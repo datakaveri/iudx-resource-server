@@ -6,6 +6,7 @@ import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -182,6 +183,10 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = IUDX_MANAGEMENT_QUEUE_URL;
     } else if (url.matches(VHOST_URL_REGEX)) {
       path = IUDX_MANAGEMENT_VHOST_URL;
+    } else if (url.matches(BIND_URL_REGEX)) {
+      path = IUDX_MANAGEMENT_BIND_URL;
+    } else if (url.matches(UNBIND_URL_REGEX)) {
+      path = IUDX_MANAGEMENT_UNBIND_URL;
     }
     return path;
   }

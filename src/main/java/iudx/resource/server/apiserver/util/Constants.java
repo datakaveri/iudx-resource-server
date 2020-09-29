@@ -60,6 +60,9 @@ public class Constants {
   public static final String EXCHANGE_URL_REGEX = IUDX_MANAGEMENT_EXCHANGE_URL + "(.*)";
   public static final String QUEUE_URL_REGEX = IUDX_MANAGEMENT_QUEUE_URL + "(.*)";
   public static final String VHOST_URL_REGEX = IUDX_MANAGEMENT_VHOST_URL + "(.*)";
+  public static final String BIND_URL_REGEX = IUDX_MANAGEMENT_BIND_URL + "(.*)";
+  public static final String UNBIND_URL_REGEX = IUDX_MANAGEMENT_UNBIND_URL + "(.*)";
+
 
 
   /** Accept Headers and CORS */

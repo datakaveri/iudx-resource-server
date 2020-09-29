@@ -27,7 +27,7 @@ import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
-import iudx.resource.server.Configuration;
+import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.databroker.util.Constants;
 
 
@@ -73,14 +73,15 @@ public class CallbackSubscriptionTest {
 
   @BeforeAll
   @DisplayName("Initialize the Databroker class with web client and rabbitmq client")
-  static void startVertx(Vertx vertx, VertxTestContext testContext) {
+  static void startVertx(Vertx vertx, io.vertx.reactivex.core.Vertx vertx2,
+      VertxTestContext testContext) {
 
     /* Read the configuration and set the rabbitMQ server properties. */
     properties = new Properties();
     inputstream = null;
 
     appConfig = new Configuration();
-    JsonObject callbackConfig = appConfig.configLoader(2, vertx);
+    JsonObject callbackConfig = appConfig.configLoader(2, vertx2);
 
     try {
 
