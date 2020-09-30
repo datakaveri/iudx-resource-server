@@ -1,0 +1,25 @@
+{
+	"name": "rs.iudx.io",
+	"values": [
+		{
+			"key": "base_url",
+			"value": "https://rs.iudx.io",
+			"enabled": true
+		},
+		{
+			"key": "consumerToken",
+			"value": "auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/token",
+			"enabled": true
+		},
+		{
+			"key": "subscriberToken",
+			"value": "auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/token",
+			"enabled": true
+		},
+		{
+			"key": "adapterToken",
+			"value": "auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/token",
+			"enabled": true
+		}
+	]
+}
