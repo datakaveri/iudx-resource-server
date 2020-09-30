@@ -8,19 +8,26 @@
     </Properties>
     <Appenders>
         <Console name="ConsoleAppender" target="SYSTEM_OUT" follow="true">
-            <!-- 
-            <JSONLayout compact="true" eventEol="true" stacktraceAsString="true" includeTimeMillis="true">
-            <KeyValuePair key="source" value="rs"/>
-            <KeyValuePair key="sourceURL" value="$${env:RS_URL}"/>
-            </JSONLayout>
-            -->
             <PatternLayout pattern="${CONSOLE_LOG_PATTERN}" />
         </Console>
+		<RollingFile name="RollingFile" append="false" ignoreExceptions="false">
+            <FileName>/tmp/iudx/rs.log</FileName>
+            <FilePattern>/tmp/iudx/rs.log</FilePattern>
+            <JSONLayout compact="true" eventEol="true" stacktraceAsString="true" includeTimeMillis="true">
+                <KeyValuePair key="source" value="rs"/>
+                <KeyValuePair key="sourceURL" value="$${env:RS_URL}"/>
+            </JSONLayout>
+			<Policies>
+				<SizeBasedTriggeringPolicy size="10 MB"/>
+			</Policies>
+			<DefaultRolloverStrategy max="1" />
+		</RollingFile>
     </Appenders>
     <Loggers>
         <logger name="iudx.resource.server" level="ALL"
             additivity="false">
             <appender-ref ref="ConsoleAppender" />
+			<appender-ref ref="RollingFile" />
         </logger>
         <logger name="com.hazelcast" level="ERROR" additivity="false">
             <appender-ref ref="ConsoleAppender" />
