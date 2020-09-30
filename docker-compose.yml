@@ -6,7 +6,7 @@ networks:
 
 services:
 
-  server:
+  prod:
     image: iudx/rs-depl:latest
     environment:
       - HOSTNAME=server
