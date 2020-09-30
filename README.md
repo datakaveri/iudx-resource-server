@@ -45,10 +45,30 @@ Make a config file based on the template in `./configs/config-example.json`
 2. Use the maven exec plugin based starter to start the server 
    `mvn clean compile exec:java@resource-server`
 
+### Testing
+
+### Unit tests
+1. Run the server through either docker, maven or redeployer
+2. Run the unit tests and generate a surefire report 
+   `mvn clean test-compile surefire:test surefire-report:report`
+3. Reports are stored in `./target/`
+
+### Integration tests
+Integration tests are through Postman/Newman whose script can be found from [here](./src/test/resources/IUDX-Resource-Server-Release-v2.0.postman_collection.json).
+1. Install prerequisites 
+   - [postman](https://www.postman.com/) + [newman](https://www.npmjs.com/package/newman)
+   - [newman reporter-htmlextra](https://www.npmjs.com/package/newman-reporter-htmlextra)
+2. Example Postman environment can be found [here](./configs/postman-env.json)
+3. Run the server through either docker, maven or redeployer
+4. Run the integration tests and generate the newman report 
+   `newman run <postman-collection-path> -e <postman-environment> --insecure -r htmlextra --reporter-htmlextra-export .`
+5. Reports are stored in `./target/`
+
 ## Contributing
 We follow Git Merge based workflow 
 1. Fork this repo
-2. Create a new feature branch in your fork. Multiple features must have a hyphen separated name, or refer to a milestone name as mentioned in Github -> Projects  
-4. Commit to your fork and raise a Pull Request with upstream
+2. Create a new feature branch in your fork. Multiple features must have a hyphen separated name, or refer to a milestone name as mentioned in Github -> Projects 
+3. Commit to your fork and raise a Pull Request with upstream
 
 ## License
+[MIT](./LICENSE.txt)
