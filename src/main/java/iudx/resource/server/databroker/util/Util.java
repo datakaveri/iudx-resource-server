@@ -3,7 +3,6 @@ package iudx.resource.server.databroker.util;
 import static iudx.resource.server.databroker.util.Constants.DETAIL;
 import static iudx.resource.server.databroker.util.Constants.TITLE;
 import static iudx.resource.server.databroker.util.Constants.TYPE;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.function.BinaryOperator;
@@ -66,10 +65,6 @@ public class Util {
     Pattern allowedPattern = Pattern.compile("[^-_.a-z0-9 ]", Pattern.CASE_INSENSITIVE);
     Matcher isInvalid = allowedPattern.matcher(id);
     return !isInvalid.find();
-    /*
-     * if (isInvalid.find()) { LOGGER.info("Invalid ID" + id); return false; } else {
-     * LOGGER.info("Valid ID" + id); return true; }
-     */
   }
 
   public static Predicate<String> isValidId=(id)->{

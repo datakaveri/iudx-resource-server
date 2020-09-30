@@ -4,10 +4,8 @@ public class Constants {
   /* General Purpose */
   static final String SEARCH_TYPE = "searchType";
   static final String ID = "id";
-  //static final String RESOURCE_ID_KEY = "resource-id";
   static final String RESOURCE_ID_KEY = "id";
   /* Database */
-  //static final String GEO_KEY = "geoJsonLocation";
   static final String GEO_KEY = "location";
   static final String GEO_CIRCLE = "circle";
   static final String GEO_BBOX = "envelope";

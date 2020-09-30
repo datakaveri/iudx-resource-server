@@ -182,6 +182,10 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = IUDX_MANAGEMENT_QUEUE_URL;
     } else if (url.matches(VHOST_URL_REGEX)) {
       path = IUDX_MANAGEMENT_VHOST_URL;
+    } else if (url.matches(BIND_URL_REGEX)) {
+      path = IUDX_MANAGEMENT_BIND_URL;
+    } else if (url.matches(UNBIND_URL_REGEX)) {
+      path = IUDX_MANAGEMENT_UNBIND_URL;
     }
     return path;
   }

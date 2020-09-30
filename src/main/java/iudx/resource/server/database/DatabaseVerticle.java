@@ -2,7 +2,6 @@ package iudx.resource.server.database;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.serviceproxy.ServiceBinder;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 import org.apache.logging.log4j.Logger;
@@ -25,8 +24,6 @@ public class DatabaseVerticle extends AbstractVerticle {
   private static final Logger LOGGER = LogManager.getLogger(DatabaseVerticle.class);
   private DatabaseService database;
   private ElasticClient client;
-  private Properties properties;
-  private InputStream inputstream;
   private String databaseIP;
   private String user;
   private String password;

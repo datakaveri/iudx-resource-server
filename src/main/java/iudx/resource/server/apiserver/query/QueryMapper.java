@@ -47,7 +47,6 @@ public class QueryMapper {
       json.put(Constants.JSON_ATTRIBUTE_FILTER, jsonArray);
       LOGGER.debug("Info : json " + json);
     }
-    // TODO : geometry/georel validations according to specifications
     if (params.getGeoRel() != null
         && (params.getCoordinates() != null || params.getGeometry() != null)) {
       isGeoSearch = true;
@@ -71,7 +70,6 @@ public class QueryMapper {
       }
       LOGGER.debug("Info : json " + json);
     }
-    // TODO: timerel validations according to specifications.
     if (isTemporal && params.getTemporalRelation().getTemprel() != null
         && params.getTemporalRelation().getTime() != null) {
       isTemporal = true;

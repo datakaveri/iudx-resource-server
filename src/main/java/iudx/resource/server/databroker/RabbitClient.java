@@ -14,13 +14,10 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.Tuple;
 import iudx.resource.server.databroker.util.Constants;
 import iudx.resource.server.databroker.util.Util;
 
@@ -961,7 +958,6 @@ public class RabbitClient {
 
         } else if (reply.result().statusCode() == HttpStatus.SC_OK) {
           // user exists , So something useful can be done here
-          // TODO : Need to get the "apiKey"
           /* Handle the response if a user exists */
           JsonObject readDbResponse = new JsonObject();
           Future<JsonObject> getUserApiKey = getUserInDb(shaUsername);
@@ -1213,8 +1209,8 @@ public class RabbitClient {
     return promise.future();
   }
 
-  /*
-   * helper method which bind registered exchange with predefined queues
+  /**
+   * Helper method which bind registered exchange with predefined queues
    * 
    * @param adaptorID which is a String object
    * 

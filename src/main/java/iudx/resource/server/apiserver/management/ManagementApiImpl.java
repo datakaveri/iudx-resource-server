@@ -76,8 +76,6 @@ public class ManagementApiImpl implements ManagementApi {
   public Future<JsonObject> getExchangeDetails(String exchangeid, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
-    // TOOD : discuss about DataBrokerService json exchangeName changed to id that's why test case
-    // is failing
     json.put(Constants.JSON_EXCHANGE_NAME, exchangeid);
     json.put("id", exchangeid);
     databroker.listExchangeSubscribers(json, handler -> {

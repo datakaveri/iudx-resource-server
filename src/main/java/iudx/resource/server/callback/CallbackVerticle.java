@@ -1,8 +1,6 @@
 package iudx.resource.server.callback;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

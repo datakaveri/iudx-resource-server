@@ -1,13 +1,5 @@
 package iudx.resource.server.apiserver.util;
 
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_ADAPTER_URL;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_EXCHANGE_URL;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_QUEUE_URL;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_VHOST_URL;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_ENTITIES_URL;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_QUERY_PATH;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_SUBSCRIPTION_URL;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
 import java.util.List;
 
 public class Constants {
@@ -60,6 +52,9 @@ public class Constants {
   public static final String EXCHANGE_URL_REGEX = IUDX_MANAGEMENT_EXCHANGE_URL + "(.*)";
   public static final String QUEUE_URL_REGEX = IUDX_MANAGEMENT_QUEUE_URL + "(.*)";
   public static final String VHOST_URL_REGEX = IUDX_MANAGEMENT_VHOST_URL + "(.*)";
+  public static final String BIND_URL_REGEX = IUDX_MANAGEMENT_BIND_URL + "(.*)";
+  public static final String UNBIND_URL_REGEX = IUDX_MANAGEMENT_UNBIND_URL + "(.*)";
+
 
 
   /** Accept Headers and CORS */

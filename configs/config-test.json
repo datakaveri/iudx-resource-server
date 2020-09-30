@@ -14,10 +14,10 @@
             "verticleInstances": 2,
             "keystore": "configs/keystore.jks",
             "keystorePassword": "password",
-            "authServerHost": "auth.iudx.org.in",
-            "testAuthToken": "auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/22280bbb6d4fdf91a1410359e2629e54",
+            "authServerHost": "authdev.iudx.io",
+            "testAuthToken": "auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/2193f8fd113ce35dea668b050b5d960a",
             "testExpiredAuthToken": "auth.iudx.org.in/bryan.robert@datakaveri.org/9cc9682858fb41c863ba52502bfd8743",
-            "testResourceID": "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc/rs.iudx.org.in/pune-streetlights/testResourceLight",
+            "testResourceID": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055",
             "catServerHost": "catalogue.iudx.io",
             "catServerPort": "443",
             "serverMode": "testing"
@@ -42,7 +42,11 @@
             "callbackDatabaseName": "iudx",
             "callbackDatabaseUserName": "iudx_user",
             "callbackDatabasePassword": "iudx@123",
-            "callbackpoolSize": "25"
+            "callbackpoolSize": "25",
+            "testConsumer":"vasanth.rajaraman@datakaveri.org",
+            "testProvider":"datakaveri.org/3ae88e7ba006938ffc38203d326b1711b892226d",
+            "testResourceGroup":"iudx-adaptor-test",
+    		"testResourceServer":"rs.iudx.org.in"
         },
         {
             "id": "iudx.resource.server.callback.CallbackVerticle",
@@ -64,15 +68,28 @@
             "callbackDatabaseName": "iudx",
             "callbackDatabaseUserName": "iudx_user",
             "callbackDatabasePassword": "iudx@123",
-            "callbackpoolSize": "25"
+            "callbackpoolSize": "25",
+            "callbackUrl":"httpr://localhost:8080"
         },
         {
             "id": "iudx.resource.server.apiserver.ApiServerVerticle",
             "keystore": "configs/keystore.jks",
             "keystorePassword": "password",
             "rsAdmin": "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc",
-            "verticleInstances": 2
-
+            "verticleInstances": 2,
+            "authToken":"public",
+            "invalidauthToken":"invalid",
+            "resourceID":"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+            "circleCoords":"[21.178,72.834]",
+            "polygonCoords":"[[[72.79695510864258,21.15928007059242],[72.83369064331055,21.15928007059242],[72.83369064331055,21.188413229984015],[72.79695510864258,21.188413229984015],[72.79695510864258,21.15928007059242]]]",
+            "bboxCoords":"[[72.83369064331055,21.188413229984015],[72.79695510864258,21.15928007059242]]",
+            "lineCoords":"[[72.840108,21.204765],[72.84011,21.204678]]",
+            "temporalTime":"2020-09-18T14:20:00Z",
+            "temporalEndTime":"2020-09-19T14:20:00Z",
+            "qparamGreaterThan":"speed>30",
+            "qparamLessThan":"speed<500",
+            "qparamGreaterEquals":"speed>=30",
+            "qparamLessEquals":"speed<=50"
         }
     ]
 }

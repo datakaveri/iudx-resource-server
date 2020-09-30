@@ -90,7 +90,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     return null;
   }
 
-  /*
+  /**
    * It retrieves exchange is exist
    * 
    * @param request which is of type JsonObject

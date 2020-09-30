@@ -50,7 +50,7 @@ public class StreamingSubscription implements Subscription {
       if (handler.succeeded()) {
         promise.complete(handler.result());
       } else {
-        promise.fail(handler.cause());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -69,7 +69,7 @@ public class StreamingSubscription implements Subscription {
       if (handler.succeeded()) {
         promise.complete(handler.result());
       } else {
-        promise.fail(handler.cause());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -88,7 +88,7 @@ public class StreamingSubscription implements Subscription {
       if (handler.succeeded()) {
         promise.complete(handler.result());
       } else {
-        promise.fail(handler.cause());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -107,7 +107,7 @@ public class StreamingSubscription implements Subscription {
       if (handler.succeeded()) {
         promise.complete(handler.result());
       } else {
-        promise.fail(handler.cause());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
@@ -127,7 +127,7 @@ public class StreamingSubscription implements Subscription {
       if (handler.succeeded()) {
         promise.complete(handler.result());
       } else {
-        promise.fail(handler.cause());
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();

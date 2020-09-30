@@ -1,5 +1,9 @@
 package iudx.resource.server.callback;
 
+import java.util.HashMap;
+import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -8,8 +12,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
@@ -21,8 +23,7 @@ import io.vertx.rabbitmq.RabbitMQConsumer;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-import java.util.HashMap;
-import org.apache.http.HttpStatus;
+import io.vertx.sqlclient.SqlConnection;
 
 /**
  * <h1>Callback Service Service Implementation.</h1>
@@ -516,8 +517,8 @@ public class CallbackServiceImpl implements CallbackService {
         }
         if (resultHandler.failed()) {
           LOGGER.error("queryCallBackDataBase resultHandler failed : "
-              + resultHandler.cause().getMessage().toString());
-          handler.handle(Future.failedFuture(resultHandler.cause().getMessage().toString()));
+              + resultHandler.cause());
+          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
     }
@@ -560,53 +561,64 @@ public class CallbackServiceImpl implements CallbackService {
     if (pgClient != null) {
       try {
         /* Execute simple query */
-        pgClient.preparedQuery("SELECT * FROM " + tableName).execute(action -> {
-          if (action.succeeded()) {
-            LOGGER.info(Constants.EXECUTING_SQL_QUERY + Constants.COLON + tableName);
-            /* Rows in Table */
-            RowSet<Row> rows = action.result();
-            LOGGER.info(Constants.FETCH_DATA_FROM_DATABASE);
-            LOGGER.info(Constants.ROWS + Constants.COLON + rows.size());
+        pgClient.getConnection(handler->{
+          if(handler.succeeded()) {
+            SqlConnection pgConnection = handler.result();
+            pgConnection.preparedQuery("SELECT * FROM " + tableName).execute(action -> {
+              if (action.succeeded()) {
+                LOGGER.info(Constants.EXECUTING_SQL_QUERY + Constants.COLON + tableName);
+                /* Rows in Table */
+                RowSet<Row> rows = action.result();
+                LOGGER.info(Constants.FETCH_DATA_FROM_DATABASE);
+                LOGGER.info(Constants.ROWS + Constants.COLON + rows.size());
 
-            /* Clear Cache Data */
-            if (pgCache != null) {
-              clearCacheData();
-              LOGGER.info("Cache Data Clear.....!!!");
-            }
+                /* Clear Cache Data */
+                if (pgCache != null) {
+                  clearCacheData();
+                  LOGGER.info("Cache Data Clear.....!!!");
+                }
 
-            /* Iterating Rows */
-            for (Row row : rows) {
-              /* Getting entities, callBackUrl, userName and password from row */
-              JsonObject callBackDataObj = new JsonObject();
-              String callBackUrl = row.getString(1);
-              JsonArray entities = (JsonArray) row.getValue(2);
-              String userName = row.getString(6);
-              String password = row.getString(7);
+                /* Iterating Rows */
+                for (Row row : rows) {
+                  /* Getting entities, callBackUrl, userName and password from row */
+                  JsonObject callBackDataObj = new JsonObject();
+                  String callBackUrl = row.getString(1);
+                  JsonArray entities = (JsonArray) row.getValue(2);
+                  String userName = row.getString(6);
+                  String password = row.getString(7);
 
-              /* Iterating entities JsonArray for updating Cache */
-              if (entities != null) {
-                entities.forEach(entity -> {
-                  /* Creating entityData */
-                  callBackDataObj.put(Constants.CALLBACK_URL, callBackUrl);
-                  callBackDataObj.put(Constants.USER_NAME, userName);
-                  callBackDataObj.put(Constants.PASSWORD, password);
-                  /* Update Cache for each entity */
-                  if (entity != null) {
-                    updateCache(entity.toString(), callBackDataObj);
+                  /* Iterating entities JsonArray for updating Cache */
+                  if (entities != null) {
+                    entities.forEach(entity -> {
+                      /* Creating entityData */
+                      callBackDataObj.put(Constants.CALLBACK_URL, callBackUrl);
+                      callBackDataObj.put(Constants.USER_NAME, userName);
+                      callBackDataObj.put(Constants.PASSWORD, password);
+                      /* Update Cache for each entity */
+                      if (entity != null) {
+                        updateCache(entity.toString(), callBackDataObj);
+                      }
+                    });
                   }
-                });
+                }
+                LOGGER.info(Constants.SUCCESS + Constants.COLON + Constants.CACHE_UPDATE_SUCCESS);
+                LOGGER.info(Constants.CACHE_DATA + Constants.COLON + pgCache);
+                finalResponse.put(Constants.SUCCESS, Constants.CACHE_UPDATE_SUCCESS);
+                promise.complete(finalResponse);
+              } else {
+                LOGGER.info(Constants.ERROR + action.cause());
+                LOGGER.error("", action.cause());
+                finalResponse.put(Constants.ERROR, Constants.EXECUTE_QUERY_FAIL);
+                promise.fail(finalResponse.toString());
               }
-            }
-            LOGGER.info(Constants.SUCCESS + Constants.COLON + Constants.CACHE_UPDATE_SUCCESS);
-            LOGGER.info(Constants.CACHE_DATA + Constants.COLON + pgCache);
-            finalResponse.put(Constants.SUCCESS, Constants.CACHE_UPDATE_SUCCESS);
-            promise.complete(finalResponse);
+            });
           } else {
-            LOGGER.info(Constants.ERROR + action.cause());
-            finalResponse.put(Constants.ERROR, Constants.EXECUTE_QUERY_FAIL);
+            LOGGER.error(Constants.CONNECT_DATABASE_FAIL + handler.cause().getMessage());
+            finalResponse.put(Constants.ERROR, Constants.CONNECT_DATABASE_FAIL);
             promise.fail(finalResponse.toString());
           }
         });
+
       } catch (Exception e) {
         LOGGER.info(Constants.CONNECT_DATABASE_FAIL + e.getCause());
         finalResponse.put(Constants.ERROR, Constants.CONNECT_DATABASE_FAIL);

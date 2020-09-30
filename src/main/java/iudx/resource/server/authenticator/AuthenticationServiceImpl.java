@@ -1,22 +1,5 @@
 package iudx.resource.server.authenticator;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.WebClientOptions;
-import io.vertx.ext.web.client.predicate.ResponsePredicate;
-import static iudx.resource.server.databroker.util.Constants.ENTITIES;
-import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
@@ -28,10 +11,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
+import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import iudx.resource.server.databroker.util.Util;
-import iudx.resource.server.authenticator.Constants.*;
 
 /**
  * The Authentication Service Implementation.
@@ -80,7 +76,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   /**
    * {@inheritDoc}
    */
-  // ToDo: API based auth flow.
   @Override
   public AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
       Handler<AsyncResult<JsonObject>> handler) {
@@ -304,93 +299,99 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     HashMap<String, Boolean> result = new HashMap<>();
     if (Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
       List<Future> catResponses = new ArrayList<>();
-      WebClientOptions options =
-          new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
-      WebClient catWebClient = WebClient.create(vertxObj, options);
-      for (Object rID : requestIDs) {
-        String resourceID = (String) rID;
-        String[] idComponents = resourceID.split("/");
-        if (idComponents.length < 4) {
-          continue;
+      Promise prom = Promise.promise();
+      catResponses.add(prom.future());
+      // Check if the resource is already fetched in the cache
+      String resID = requestIDs.getString(0);
+      if (catrIDCache.contains(resID)) {
+        result.put(resID, catrIDCache.get(resID).equalsIgnoreCase("OPEN"));
+        prom.complete();
+      } else {
+        WebClientOptions options =
+            new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
+        WebClient catWebClient = WebClient.create(vertxObj, options);
+        for (Object rID : requestIDs) {
+          String resourceID = (String) rID;
+          String[] idComponents = resourceID.split("/");
+          if (idComponents.length < 4) {
+            continue;
+          }
+          String groupID = (idComponents.length == 4) ? resourceID
+              : String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
+
+          String catHost = config.getString("catServerHost");
+          int catPort = Integer.parseInt(config.getString("catServerPort"));
+          String catPath = Constants.CAT_RSG_PATH;
+          LOGGER.debug("Info: Host " + catHost + " Port " + catPort + " Path " + catPath);
+          // Check if resourceID is available
+          catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
+              .addQueryParam("value", "[[" + resourceID + "]]").addQueryParam("filter", "[id]")
+              .expect(ResponsePredicate.JSON).send(httpResponserIDAsyncResult -> {
+                if (httpResponserIDAsyncResult.failed()) {
+                  result.put(resourceID, false);
+                  prom.fail("Not Found");
+                  return;
+                }
+                HttpResponse<Buffer> rIDResponse = httpResponserIDAsyncResult.result();
+                JsonObject rIDResponseBody = rIDResponse.bodyAsJsonObject();
+
+                if (rIDResponse.statusCode() != HttpStatus.SC_OK) {
+                  LOGGER.debug("Info: Catalogue Query failed");
+                  result.put(resourceID, false);
+                  prom.fail("Not Found");
+                  return;
+                } else if (!rIDResponseBody.getString("status").equals("success")) {
+                  LOGGER.debug("Info: Catalogue Query failed");
+                  result.put(resourceID, false);
+                  prom.fail("Not Found");
+                  return;
+                } else if (rIDResponseBody.getInteger("totalHits") == 0) {
+                  LOGGER.debug("Info: Resource ID invalid : Catalogue item Not Found");
+                  result.put(resourceID, false);
+                  prom.fail("Not Found");
+                  return;
+                } else {
+                  LOGGER.debug("Info: Resource ID valid : Catalogue item Found");
+                  catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
+                      .addQueryParam("value", "[[" + groupID + "]]")
+                      .addQueryParam("filter", "[accessPolicy]").expect(ResponsePredicate.JSON)
+                      .send(httpResponseAsyncResult -> {
+                        if (httpResponseAsyncResult.failed()) {
+                          result.put(resourceID, false);
+                          prom.fail("Not Found");
+                          return;
+                        }
+                        HttpResponse<Buffer> response = httpResponseAsyncResult.result();
+                        if (response.statusCode() != HttpStatus.SC_OK) {
+                          result.put(resourceID, false);
+                          prom.fail("Not Found");
+                          return;
+                        }
+                        JsonObject responseBody = response.bodyAsJsonObject();
+                        if (!responseBody.getString("status").equals("success")) {
+                          result.put(resourceID, false);
+                          prom.fail("Not Found");
+                          return;
+                        }
+                        String resourceACL = "SECURE";
+                        try {
+                          resourceACL = responseBody.getJsonArray("results").getJsonObject(0)
+                              .getString("accessPolicy");
+                          result.put(resourceID, resourceACL.equals("OPEN"));
+                          catCache.put(groupID, resourceACL);
+                          catrIDCache.put(resourceID, resourceACL);
+                          LOGGER.debug("Info: Group ID valid : Catalogue item Found");
+                        } catch (IndexOutOfBoundsException ignored) {
+                          LOGGER.error(ignored.getMessage());
+                          LOGGER.debug(
+                              "Info: Group ID invalid : Empty response in results from Catalogue");
+                        }
+                        prom.complete();
+                      });
+                }
+              });
         }
-        String groupID = (idComponents.length == 4) ? resourceID
-            : String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
-        Promise prom = Promise.promise();
-        catResponses.add(prom.future());
-
-        String catHost = config.getString("catServerHost");
-        int catPort = Integer.parseInt(config.getString("catServerPort"));
-        String catPath = Constants.CAT_RSG_PATH;
-        LOGGER.debug("Info: Host " + catHost + " Port " + catPort + " Path " + catPath);
-        // Check if resourceID is available
-        catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
-            .addQueryParam("value", "[[" + resourceID + "]]").addQueryParam("filter", "[id]")
-            .expect(ResponsePredicate.JSON).send(httpResponserIDAsyncResult -> {
-              if (httpResponserIDAsyncResult.failed()) {
-                result.put(resourceID, false);
-                prom.fail("Not Found");
-                return;
-              }
-              HttpResponse<Buffer> rIDResponse = httpResponserIDAsyncResult.result();
-              JsonObject rIDResponseBody = rIDResponse.bodyAsJsonObject();
-
-              if (rIDResponse.statusCode() != HttpStatus.SC_OK) {
-                LOGGER.debug("Info: Catalogue Query failed");
-                result.put(resourceID, false);
-                prom.fail("Not Found");
-                return;
-              } else if (!rIDResponseBody.getString("status").equals("success")) {
-                LOGGER.debug("Info: Catalogue Query failed");
-                result.put(resourceID, false);
-                prom.fail("Not Found");
-                return;
-              } else if (rIDResponseBody.getInteger("totalHits") == 0) {
-                LOGGER.debug("Info: Resource ID invalid : Catalogue item Not Found");
-                result.put(resourceID, false);
-                prom.fail("Not Found");
-                return;
-              } else {
-                LOGGER.debug("Info: Resource ID valid : Catalogue item Found");
-                catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
-                    .addQueryParam("value", "[[" + groupID + "]]")
-                    .addQueryParam("filter", "[accessPolicy]").expect(ResponsePredicate.JSON)
-                    .send(httpResponseAsyncResult -> {
-                      if (httpResponseAsyncResult.failed()) {
-                        result.put(resourceID, false);
-                        prom.fail("Not Found");
-                        return;
-                      }
-                      HttpResponse<Buffer> response = httpResponseAsyncResult.result();
-                      if (response.statusCode() != HttpStatus.SC_OK) {
-                        result.put(resourceID, false);
-                        prom.fail("Not Found");
-                        return;
-                      }
-                      JsonObject responseBody = response.bodyAsJsonObject();
-                      if (!responseBody.getString("status").equals("success")) {
-                        result.put(resourceID, false);
-                        prom.fail("Not Found");
-                        return;
-                      }
-                      String resourceACL = "SECURE";
-                      try {
-                        resourceACL = responseBody.getJsonArray("results").getJsonObject(0)
-                            .getString("accessPolicy");
-                        result.put(resourceID, resourceACL.equals("OPEN"));
-                        catCache.put(groupID, resourceACL);
-                        catrIDCache.put(resourceID, resourceACL);
-                        LOGGER.debug("Info: Group ID valid : Catalogue item Found");
-                      } catch (IndexOutOfBoundsException ignored) {
-                        LOGGER.error(ignored.getMessage());
-                        LOGGER.debug(
-                            "Info: Group ID invalid : Empty response in results from Catalogue");
-                      }
-                      prom.complete();
-                    });
-              }
-            });
       }
-
       CompositeFuture.all(catResponses).onSuccess(compositeFuture -> promise.complete(result))
           .onFailure(failedhandler -> {
             LOGGER.debug("Info: TIP / Cat Failed");
@@ -425,9 +426,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       JsonObject response = new JsonObject();
       LOGGER.info(Constants.OPEN_ENDPOINTS);
 
-      // 1. Check with catalogue if resource is open or secure.
-      // 2. If open respond success.
-      // 3. If closed, check if auth response has access to the requested resource.
+      // 1.1. Check with catalogue if resource is open or secure.
+      // 1.2. If open respond success.
+      // 1.3. If closed, check if auth response has access to the requested resource.
 
       LOGGER.debug("Info: TIP response is " + result);
 

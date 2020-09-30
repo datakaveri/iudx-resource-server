@@ -1,5 +1,8 @@
 {
     "version": "1.0",
+    "zookeepers": [ "zookeeper" ],
+    "clusterId": "iudx-rs-cluster",
+    "host": "server",
     "modules": [
         {
             "id": "iudx.resource.server.database.DatabaseVerticle",

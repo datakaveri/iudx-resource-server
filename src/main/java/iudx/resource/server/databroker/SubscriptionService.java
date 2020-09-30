@@ -3,8 +3,6 @@ package iudx.resource.server.databroker;
 import static iudx.resource.server.databroker.util.Constants.*;
 import static iudx.resource.server.databroker.util.Util.*;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -12,10 +10,8 @@ import io.vertx.core.json.JsonObject;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Tuple;
 import iudx.resource.server.databroker.util.Constants;
 import iudx.resource.server.databroker.util.Util;
 
@@ -126,10 +122,6 @@ public class SubscriptionService {
                           } else if (totalBindSuccess == totalBindCount) {
                             registerStreamingSubscriptionResponse.put(Constants.USER_NAME,
                                 streamingUserName);
-                            /*
-                             * APIKEY should be equal to password generated. For testing use
-                             * Constants.APIKEY_TEST_EXAMPLE
-                             */
                             registerStreamingSubscriptionResponse.put(Constants.APIKEY,
                                 apiKey);
                             registerStreamingSubscriptionResponse.put(Constants.ID,
@@ -734,7 +726,6 @@ public class SubscriptionService {
     return promise.future();
   }
 
-  // TODO : doubt in method as handler/promise always completed or passed, it never fails. why?
   Future<JsonObject> deleteCallbackSubscription(JsonObject request) {
     LOGGER.debug("Info : SubscriptionService#deleteCallbackSubscription() started");
     Promise<JsonObject> promise = Promise.promise();

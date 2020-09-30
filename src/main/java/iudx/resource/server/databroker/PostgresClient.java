@@ -11,8 +11,6 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.Tuple;
-import iudx.resource.server.databroker.util.Constants;
 
 public class PostgresClient {
   private static final Logger LOGGER = LogManager.getLogger(PostgresClient.class);
