@@ -179,12 +179,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.route().handler(BodyHandler.create());
     router.route().handler(new AuthHandler());
 
-    /*
-     * router.errorHandler(500, errorHandler -> { LOGGER.debug("error" + errorHandler);
-     * LOGGER.debug("error" + errorHandler.failure()); LOGGER.debug("ex" +
-     * errorHandler.getBodyAsString()); });
-     */
-
     /* NGSI-LD api endpoints */
     router.get(NGSILD_ENTITIES_URL).handler(this::handleEntitiesQuery);
     router
@@ -263,7 +257,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     server.requestHandler(router).listen(port);
 
     /* Get a handler for the Service Discovery interface. */
-
 
     database = DatabaseService.createProxy(vertx, DATABASE_SERVICE_ADDRESS);
 
@@ -350,7 +343,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     });
   }
 
-  // TODO: complete method
   /**
    * this method is used to handle all entities queries from post endpoint.
    * 
@@ -1399,12 +1391,6 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param response response object
    * @param responseType Http status for response
    * @param isBodyRequired body is required or not for response
-   */
-
-  /*
-   * private void handleResponse(HttpServerResponse response, JsonObject json, int statusCode) {
-   * response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(statusCode)
-   * .end(generateResponse(json).toString()); }
    */
 
   private void handleSuccessResponse(HttpServerResponse response, int statusCode, String result) {

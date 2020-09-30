@@ -958,7 +958,6 @@ public class RabbitClient {
 
         } else if (reply.result().statusCode() == HttpStatus.SC_OK) {
           // user exists , So something useful can be done here
-          // TODO : Need to get the "apiKey"
           /* Handle the response if a user exists */
           JsonObject readDbResponse = new JsonObject();
           Future<JsonObject> getUserApiKey = getUserInDb(shaUsername);
@@ -1210,8 +1209,8 @@ public class RabbitClient {
     return promise.future();
   }
 
-  /*
-   * helper method which bind registered exchange with predefined queues
+  /**
+   * Helper method which bind registered exchange with predefined queues
    * 
    * @param adaptorID which is a String object
    * 

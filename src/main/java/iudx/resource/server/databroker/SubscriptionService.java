@@ -122,10 +122,6 @@ public class SubscriptionService {
                           } else if (totalBindSuccess == totalBindCount) {
                             registerStreamingSubscriptionResponse.put(Constants.USER_NAME,
                                 streamingUserName);
-                            /*
-                             * APIKEY should be equal to password generated. For testing use
-                             * Constants.APIKEY_TEST_EXAMPLE
-                             */
                             registerStreamingSubscriptionResponse.put(Constants.APIKEY,
                                 apiKey);
                             registerStreamingSubscriptionResponse.put(Constants.ID,
@@ -730,7 +726,6 @@ public class SubscriptionService {
     return promise.future();
   }
 
-  // TODO : doubt in method as handler/promise always completed or passed, it never fails. why?
   Future<JsonObject> deleteCallbackSubscription(JsonObject request) {
     LOGGER.debug("Info : SubscriptionService#deleteCallbackSubscription() started");
     Promise<JsonObject> promise = Promise.promise();

@@ -76,7 +76,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   /**
    * {@inheritDoc}
    */
-  // ToDo: API based auth flow.
   @Override
   public AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
       Handler<AsyncResult<JsonObject>> handler) {
@@ -427,9 +426,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       JsonObject response = new JsonObject();
       LOGGER.info(Constants.OPEN_ENDPOINTS);
 
-      // 1. Check with catalogue if resource is open or secure.
-      // 2. If open respond success.
-      // 3. If closed, check if auth response has access to the requested resource.
+      // 1.1. Check with catalogue if resource is open or secure.
+      // 1.2. If open respond success.
+      // 1.3. If closed, check if auth response has access to the requested resource.
 
       LOGGER.debug("Info: TIP response is " + result);
 
