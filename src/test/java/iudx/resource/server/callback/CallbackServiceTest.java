@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -238,48 +239,6 @@ public class CallbackServiceTest {
     });
   }
 
-
-  @Test
-  @Order(5)
-  @DisplayName("Testing query callback database")
-  void successQueryCallBackDataBase(VertxTestContext testContext) {
-
-    JsonObject request = new JsonObject();
-    request.put(Constants.TABLE_NAME, "registercallback");
-
-    JsonObject expected = new JsonObject();
-    expected.put(Constants.SUCCESS, Constants.CACHE_UPDATE_SUCCESS);
-
-    callback.queryCallBackDataBase(request, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        assertEquals(expected, response);
-      }
-      testContext.completeNow();
-    });
-  }
-
-  @Test
-  @Order(6)
-  @DisplayName("Testing query callback database when table name is incorrect")
-  void failQueryCallBackDataBase(Vertx vertx, VertxTestContext testContext) {
-
-    JsonObject request = new JsonObject();
-    request.put(Constants.TABLE_NAME, "registercallback__test");
-
-    JsonObject expected = new JsonObject();
-    expected.put(Constants.ERROR, Constants.EXECUTE_QUERY_FAIL);
-
-    callback.queryCallBackDataBase(request, handler -> {
-      if (handler.failed()) {
-        String response = handler.cause().getMessage();
-        assertTrue(expected.toString().equals(response));
-        testContext.completeNow();
-      } else {
-        testContext.failed();
-      }
-    });
-  }
 
   @Test
   @Order(7)

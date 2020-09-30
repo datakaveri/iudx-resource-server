@@ -78,7 +78,7 @@ public class AuthenticationServiceTest {
         return;
       }
       JsonObject result = asyncResult.result();
-      if (result.getString("status").equals("error")) {
+      if (result.containsKey("status")) {
         testContext.failNow(new Throwable("Unexpected result"));
         return;
       }
@@ -101,7 +101,7 @@ public class AuthenticationServiceTest {
         return;
       }
       JsonObject result = asyncResult.result();
-      if (result.getString("status").equals("error")) {
+      if (result.containsKey("status")) {
         testContext.failNow(new Throwable("Unexpected result"));
         return;
       }
@@ -115,7 +115,7 @@ public class AuthenticationServiceTest {
           return;
         }
         JsonObject result2 = asyncResult2.result();
-        if (result2.getString("status").equals("error")) {
+        if (result.containsKey("status")) {
           testContext.failNow(new Throwable("Unexpected result"));
           return;
         }
@@ -129,24 +129,20 @@ public class AuthenticationServiceTest {
   @DisplayName("Test expired token for failure")
   public void testExpiredToken(VertxTestContext testContext) {
     JsonObject request = new JsonObject().put("ids", new JsonArray()
-        .add("datakaveri.org/1022f4c20542abd5087107c0b6de4cb3130c5b7b/example.com/test-providers"));
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"));
     JsonObject authInfo =
         new JsonObject().put("token", authConfig.getString("testExpiredAuthToken"))
             .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(0));
     authenticationService.tokenInterospect(request, authInfo, asyncResult -> {
       if (asyncResult.failed()) {
-        logger.error("Unexpected failure");
+        logger.info("Expired token TIP failed properly");
+        testContext.completeNow();
+        testContext.failNow(asyncResult.cause());
+        return;
+      } else {
         testContext.failNow(asyncResult.cause());
         return;
       }
-      JsonObject result = asyncResult.result();
-      if (!result.getString("status").equals("error")) {
-        testContext.failNow(new Throwable("Unexpected success result for expired token"));
-        return;
-      }
-      logger.info("Expired token TIP failed properly");
-      logger.info(result.getString("message"));
-      testContext.completeNow();
     });
   }
 
@@ -157,14 +153,14 @@ public class AuthenticationServiceTest {
     String catHost = authConfig.getString("catServerHost");
     String catPath = Constants.CAT_RSG_PATH;
     String groupID =
-        "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc/rs.iudx.org.in/aqm-bosch-climo";
+        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood";
 
     WebClientOptions options = new WebClientOptions();
     options.setTrustAll(true).setVerifyHost(false).setSsl(true);
     WebClient client = WebClient.create(vertx, options);
     client.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
         .addQueryParam("value", "[[" + groupID + "]]")
-        .addQueryParam("filter", "[resourceAuthControlLevel]").expect(ResponsePredicate.JSON)
+        .addQueryParam("filter", "[accessPolicy]").expect(ResponsePredicate.JSON)
         .send(httpResponseAsyncResult -> {
           if (httpResponseAsyncResult.failed()) {
             testContext.failNow(httpResponseAsyncResult.cause());
@@ -181,7 +177,7 @@ public class AuthenticationServiceTest {
             return;
           }
           String resourceACL = responseBody.getJsonArray("results").getJsonObject(0)
-              .getString("resourceAuthControlLevel");
+              .getString("accessPolicy");
           if (!resourceACL.equals("OPEN")) {
             testContext.failNow(new Throwable(response.bodyAsString()));
             return;

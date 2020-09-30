@@ -59,6 +59,7 @@ public class ApiServerVerticleTest {
   private static String qparamGreaterEqual;
   private static String qparamLessEqual;
   private static String authToken;
+  private static String invalidauthToken;
   private static String entityId;
 
 
@@ -96,6 +97,7 @@ public class ApiServerVerticleTest {
     qparamGreaterEqual = apiConfig.getString("qparamGreaterEquals");
     qparamLessEqual = apiConfig.getString("qparamLessEquals");
     authToken = apiConfig.getString("authToken");
+    invalidauthToken = apiConfig.getString("invalidauthToken");
 
 
     publicToken = "public";
@@ -521,7 +523,7 @@ public class ApiServerVerticleTest {
     json.put(Constants.JSON_NAME, streamingSubscriptionAliasName);
     json.put(Constants.JSON_TYPE, Constants.SUBSCRIPTION);
     json.put(Constants.JSON_ENTITIES, entities);
-    client.post(PORT, BASE_URL, apiUrl)
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, invalidauthToken)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
         .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
@@ -568,7 +570,7 @@ public class ApiServerVerticleTest {
   @DisplayName("/subscription endpoint to get a subscription without token in header")
   public void testGetStreamingSubscription401(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
-    client.get(PORT, BASE_URL, apiUrl)
+    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, invalidauthToken)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage()).send(handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
@@ -648,7 +650,7 @@ public class ApiServerVerticleTest {
     JsonArray appendEntities = new JsonArray();
     appendEntities.add(testId);
     json.put(Constants.JSON_ENTITIES, appendEntities);
-    client.patch(PORT, BASE_URL, apiUrl)
+    client.patch(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, invalidauthToken)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
         .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
@@ -703,7 +705,7 @@ public class ApiServerVerticleTest {
     JsonArray appendEntities = new JsonArray();
     appendEntities.add(testId);
     json.put(Constants.JSON_ENTITIES, appendEntities);
-    client.put(PORT, BASE_URL, apiUrl)
+    client.put(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, invalidauthToken)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage())
         .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
@@ -852,7 +854,7 @@ public class ApiServerVerticleTest {
   public void testDeleteSubs401(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
     System.out.println("subs  ID :" + subscriptionId);
-    client.delete(PORT, BASE_URL, apiUrl)
+    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, invalidauthToken)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.getMessage()).send(handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
@@ -902,7 +904,7 @@ public class ApiServerVerticleTest {
     json.put(Constants.JSON_PASSWORD, "password");
     json.put(Constants.JSON_TYPE, Constants.SUBSCRIPTION);
     json.put(Constants.JSON_ENTITIES, entities);
-    client.post(PORT, BASE_URL, apiUrl)
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, invalidauthToken)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage())
         .sendJsonObject(json, handler -> {
           if (handler.succeeded()) {
@@ -984,7 +986,7 @@ public class ApiServerVerticleTest {
   @DisplayName("/subscription endpoint to get a callback subscription without token")
   public void testGetCallbackSubscription401(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + callbackSubscriptionId;
-    client.get(PORT, BASE_URL, apiUrl)
+    client.get(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, invalidauthToken)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.CALLBACK.getMessage()).send(handler -> {
           if (handler.succeeded()) {
             JsonObject response = handler.result().bodyAsJsonObject();
@@ -1399,7 +1401,7 @@ public class ApiServerVerticleTest {
     JsonObject requestJson = new JsonObject();
     requestJson.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
     requestJson.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
-    client.post(PORT, BASE_URL, apiUrl).sendJsonObject(requestJson, handler -> {
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, invalidauthToken).sendJsonObject(requestJson, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result().bodyAsJsonObject();
         assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
