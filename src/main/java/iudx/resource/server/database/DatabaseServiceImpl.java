@@ -74,16 +74,6 @@ public class DatabaseServiceImpl implements DatabaseService {
       return null;
     }
 
-    // TODO: Need to automate the Index flow using the instanceID field.
-    // Need to populate a HashMap containing the instanceID and the indexName
-    // We need to discuss if we need to have a single index or an index per group to
-    // avoid any dependency
-    // String resourceGroup = "";
-    // request.getJsonArray("id").getString(0).split("/")[3];
-
-    // String resourceServer = request.getJsonArray(ID).getString(0).split("/")[0];
-    // LOGGER.debug("Info: Resource Server instanceID is " + resourceServer);
-
     if (request.getJsonArray(ID).getString(0).split("/").length != 5) {
       LOGGER.error("Malformed ID: " + request.getJsonArray(ID).getString(0));
       responseBuilder =

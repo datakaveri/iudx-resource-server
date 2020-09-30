@@ -1,17 +1,16 @@
 package iudx.resource.server.authenticator;
 
+import static iudx.resource.server.authenticator.Constants.KEYSTORE_PASSWORD;
+import static iudx.resource.server.authenticator.Constants.KEYSTORE_PATH;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.VertxOptions;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.serviceproxy.ServiceBinder;
-import java.io.FileInputStream;
-import static iudx.resource.server.authenticator.Constants.*;
 
 /**
  * The Authentication Verticle.

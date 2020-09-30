@@ -3,7 +3,6 @@ package iudx.resource.server.databroker.util;
 import static iudx.resource.server.databroker.util.Constants.DETAIL;
 import static iudx.resource.server.databroker.util.Constants.TITLE;
 import static iudx.resource.server.databroker.util.Constants.TYPE;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.function.BinaryOperator;

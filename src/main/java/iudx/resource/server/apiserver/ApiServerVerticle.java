@@ -1,19 +1,65 @@
 package iudx.resource.server.apiserver;
 
 
-import static iudx.resource.server.apiserver.util.Constants.*;
-import static iudx.resource.server.apiserver.util.Util.*;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
+import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
+import static iudx.resource.server.apiserver.util.Constants.APP_NAME_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.EXCHANGE_ID;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_ACCEPT;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_ALLOW_ORIGIN;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_LENGTH;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_HOST;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_ORIGIN;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_REFERER;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
+import static iudx.resource.server.apiserver.util.Constants.IUDXQUERY_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_ADAPTER_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_BIND_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_EXCHANGE_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_QUEUE_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_UNBIND_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_VHOST_URL;
+import static iudx.resource.server.apiserver.util.Constants.JSON_ALIAS;
+import static iudx.resource.server.apiserver.util.Constants.JSON_CONSUMER;
+import static iudx.resource.server.apiserver.util.Constants.JSON_COUNT;
+import static iudx.resource.server.apiserver.util.Constants.JSON_DOMAIN;
+import static iudx.resource.server.apiserver.util.Constants.JSON_EXCHANGE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.JSON_INSTANCEID;
+import static iudx.resource.server.apiserver.util.Constants.JSON_NAME;
+import static iudx.resource.server.apiserver.util.Constants.JSON_PROVIDER;
+import static iudx.resource.server.apiserver.util.Constants.JSON_QUEUE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.JSON_RESOURCE_GROUP;
+import static iudx.resource.server.apiserver.util.Constants.JSON_RESOURCE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.JSON_RESOURCE_SERVER;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_USERSHA;
+import static iudx.resource.server.apiserver.util.Constants.JSON_VHOST;
+import static iudx.resource.server.apiserver.util.Constants.JSON_VHOST_ID;
+import static iudx.resource.server.apiserver.util.Constants.MIME_APPLICATION_JSON;
+import static iudx.resource.server.apiserver.util.Constants.MIME_TEXT_HTML;
+import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_EXCHANGE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_NAME;
+import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_PARAM;
+import static iudx.resource.server.apiserver.util.Constants.MSG_PARAM_DECODE_ERROR;
+import static iudx.resource.server.apiserver.util.Constants.MSG_SUB_TYPE_NOT_FOUND;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_ENTITIES_URL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_QUERY_PATH;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_SUBSCRIPTION_URL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
+import static iudx.resource.server.apiserver.util.Constants.ROUTE_DOC;
+import static iudx.resource.server.apiserver.util.Constants.ROUTE_STATIC_SPEC;
+import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
+import static iudx.resource.server.apiserver.util.Constants.SUB_TYPE;
+import static iudx.resource.server.apiserver.util.Util.toUriFunction;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
@@ -24,17 +70,14 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.DecodeException;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
-import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -81,8 +124,6 @@ public class ApiServerVerticle extends AbstractVerticle {
   private static final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
   private static final String BROKER_SERVICE_ADDRESS = "iudx.rs.broker.service";
 
-  private ClusterManager mgr;
-  private VertxOptions options;
   private HttpServer server;
   private Router router;
   private final int port = 8443;
@@ -1150,7 +1191,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);
     String resourceServer = request.getParam(JSON_RESOURCE_SERVER);
     String adapterId = domain + "/" + usersha + "/" + resourceServer + "/" + resourceGroup;
-    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     Future<JsonObject> brokerResult = managementApi.deleteAdapter(adapterId, databroker);
     brokerResult.onComplete(brokerResultHandler -> {
       if (brokerResultHandler.succeeded()) {
@@ -1178,7 +1218,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);
     String resourceServer = request.getParam(JSON_RESOURCE_SERVER);
     String adapterId = domain + "/" + usersha + "/" + resourceServer + "/" + resourceGroup;
-    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     Future<JsonObject> brokerResult = managementApi.getAdapterDetails(adapterId, databroker);
     brokerResult.onComplete(brokerResultHandler -> {
       if (brokerResultHandler.succeeded()) {
