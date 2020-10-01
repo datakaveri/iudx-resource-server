@@ -7,7 +7,7 @@ networks:
 
 services:
 
-  server:
+  prod:
     image: iudx/rs-depl:latest
     environment:
       - HOSTNAME=server
@@ -17,6 +17,7 @@ services:
       - ./configs/config-depl.json:/usr/share/app/configs/config.json
       - ./docs/:/usr/share/app/docs
       - ./configs/keystore.jks:/usr/share/app/configs/keystore.jks
+      - /tmp/iudx/:/tmp/iudx/
     depends_on:
       - "zookeeper"
     ports:
@@ -40,6 +41,7 @@ services:
       - ./configs/config-dev.json:/usr/share/app/configs/config.json
       - ./configs/keystore.jks:/usr/share/app/configs/keystore.jks
       - ./docs/:/usr/share/app/docs
+      - /tmp/iudx/:/tmp/iudx/
     ports:
       - "8443:8443"
       - "9000:9000"
