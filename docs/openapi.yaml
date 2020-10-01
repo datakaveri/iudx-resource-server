@@ -142,6 +142,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/entityresponse'
+        204:
+          description: 'Empty Response'
 
         400:
           content:
@@ -260,6 +262,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/entityresponse'
+        204:
+          description: 'Empty Response'
 
         400:
           content:
@@ -349,6 +353,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/entityresponse'
+        204:
+          description: 'Empty Response'
 
         400:
           content:
@@ -438,6 +444,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/entityresponse'
+        204:
+          description: 'Empty Response'
 
         400:
           content:
@@ -712,8 +720,8 @@ paths:
               $ref: '#/components/schemas/createastreamingsubscriptionrequest'
         required: true
       responses:
-        200:
-          description: ''
+        201:
+          description: 'Successful query'
           content:
             application/json:
               schema:
@@ -731,6 +739,9 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
+
+        409:
+          description: 'Already exist'
 
       description: |
         Register Subscription API allows a subscriber to register an streaming subscription with IUDX Resource Server. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
@@ -850,7 +861,7 @@ paths:
               $ref: '#/components/schemas/appendstreamingsubscriptionrequest'
         required: true
       responses:
-        200:
+        201:
           description: 'Successful query'
           content:
             application/json:
@@ -921,7 +932,7 @@ paths:
               $ref: '#/components/schemas/updatestreamingsubscriptionrequest'
         required: true
       responses:
-        200:
+        201:
           description: 'Successful query'
           content:
             application/json:
@@ -1681,7 +1692,7 @@ components:
         type: 200
         title: success
         detail: Subscription deleted
-        
+	        
     standardBadRequestErrorResponse:
       title: standardBadRequestErrorResponse
       properties:
