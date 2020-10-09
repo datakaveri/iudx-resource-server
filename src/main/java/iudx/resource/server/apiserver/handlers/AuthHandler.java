@@ -24,11 +24,16 @@ public class AuthHandler implements Handler<RoutingContext> {
 
   private static final Logger LOGGER = LogManager.getLogger(AuthHandler.class);
 
-  private final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
+  private static final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
   private final String AUTH_INFO = "authInfo";
   private final List<String> noAuthRequired = bypassEndpoint;
-  private AuthenticationService authenticator;
+  private static AuthenticationService authenticator;
   private HttpServerRequest request;
+  
+  public static AuthHandler create(Vertx vertx) {
+    authenticator = AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
+    return new AuthHandler();
+  }
 
   @Override
   public void handle(RoutingContext context) {
@@ -63,8 +68,6 @@ public class AuthHandler implements Handler<RoutingContext> {
     requestJson.put(IDS, new JsonArray().add(id));
     
     LOGGER.debug("request" + requestJson);
-    Vertx vertx = context.vertx();
-    authenticator = AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
     authenticator.tokenInterospect(requestJson, authInfo, authHandler -> {
       if (authHandler.succeeded()) {
         LOGGER.debug("Auth info : " + authHandler.result());
