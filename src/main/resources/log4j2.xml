@@ -29,10 +29,10 @@
             <appender-ref ref="ConsoleAppender" />
 			<appender-ref ref="RollingFile" />
         </logger>
-        <logger name="com.hazelcast" level="ERROR" additivity="false">
+        <logger name="com.hazelcast" level="DEBUG" additivity="false">
             <appender-ref ref="ConsoleAppender" />
         </logger>
-        <logger name="io.netty" level="ERROR" additivity="false">
+        <logger name="io.netty" level="DEBUG" additivity="false">
             <appender-ref ref="ConsoleAppender" />
         </logger>
     </Loggers>
