@@ -1436,6 +1436,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         .withTitle(ResponseType.fromCode(type).getMessage()).withMessage(message).build().toJson();
 
   }
+
   /**
    * validate if name passes the regex test for IUDX queue,exchage name.
    * 
@@ -1466,9 +1467,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     MultiMap queryParams = null;
     try {
       queryParams = MultiMap.caseInsensitiveMultiMap();
+      // Internally + sign is dropped and treated as space, replacing + with %2B does the trick of
+      // not dropping +
+      String uri = routingContext.request().uri().toString().replaceAll("\\+", "%2B");
       Map<String, List<String>> decodedParams =
-          new QueryStringDecoder(routingContext.request().uri(), HttpConstants.DEFAULT_CHARSET,
-              true, 1024, true).parameters();
+          new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET, true, 1024, true).parameters();
       for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
         queryParams.add(entry.getKey(), entry.getValue());
       }
