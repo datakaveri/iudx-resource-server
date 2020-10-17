@@ -4,11 +4,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import static iudx.resource.server.database.Constants.*;
@@ -134,21 +131,14 @@ public class QueryDecoder {
       match = true;
       String timeRelation = request.getString(REQ_TIMEREL);
       String time = request.getString(TIME_KEY);
+      
+      /* check if the time is valid based on ISO 8601 format. */
 
-      /* check if the time is valid based on the format. Supports both UTC and IST. */
       try {
-        DateFormat formatTimeUtc = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        DateFormat formatTimeIst = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        formatTimeUtc.setTimeZone(TimeZone.getTimeZone("UTC"));
-        formatTimeIst.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
-        Date parsedDateTimeUtc = formatTimeUtc.parse(time);
-        Date parsedDateTimeIst = formatTimeIst.parse(time);
-
-        LOGGER.debug("Info: Requested date: #UTC- " + formatTimeUtc.format(parsedDateTimeUtc)
-            + "\n#IST- " + formatTimeIst.format(parsedDateTimeIst));
-
-      } catch (ParseException e) {
-        LOGGER.error("Fail: " + INVALID_DATE + ";" + e.getMessage());
+        ZonedDateTime zdt = ZonedDateTime.parse(time);
+        LOGGER.debug("Parsed time: " + zdt.toString());
+      } catch (DateTimeParseException e) {
+        LOGGER.error("Invalid Date exception: " + e.getMessage());
         return new JsonObject().put(ERROR, INVALID_DATE);
       }
 
