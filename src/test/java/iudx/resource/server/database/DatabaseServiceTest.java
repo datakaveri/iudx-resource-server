@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.text.ParseException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Properties;
@@ -503,6 +504,30 @@ public class DatabaseServiceTest {
       testContext.completeNow();
     })));
   }
+
+  @Test
+  @DisplayName("Testing Temporal Queries (Before) with IST date format")
+  void searchBeforeTemporalIST(VertxTestContext testContext) throws ParseException {
+    JsonObject request =
+        new JsonObject()
+            .put("id",
+                new JsonArray().add(
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+            .put("searchType", "temporalSearch_").put("timerel", "before")
+            .put("time","2020-10-19T10:00:00+05:30");
+
+    ZonedDateTime start = ZonedDateTime.parse("2020-10-19T10:00:00+05:30");
+    logger.info("### start date: " + start);
+
+    dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
+      ZonedDateTime resDate = ZonedDateTime.parse(response.getJsonArray("results")
+          .getJsonObject(6).getString("observationDateTime"));
+      logger.info("#### response Date " + resDate);
+      assertTrue(resDate.isBefore(start));
+      testContext.completeNow();
+    })));
+  }
+
   @Test
   @DisplayName("Testing Temporal Exceptions (invalid date)")
   void searchTemporalInvalidDate(VertxTestContext testContext){

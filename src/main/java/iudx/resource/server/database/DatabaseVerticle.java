@@ -21,7 +21,6 @@ import org.apache.logging.log4j.LogManager;
 
 public class DatabaseVerticle extends AbstractVerticle {
 
-  private static final Logger LOGGER = LogManager.getLogger(DatabaseVerticle.class);
   private DatabaseService database;
   private ElasticClient client;
   private String databaseIP;
