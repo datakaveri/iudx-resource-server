@@ -4,6 +4,7 @@
 config.properties
 /configs/
 
+
 ### STS ###
 .apt_generated
 .classpath
