@@ -63,18 +63,26 @@ public class AuthenticationServiceImpl implements AuthenticationService {
    * Cache/'s will hold at-most 1000 objects and only for a duration of TIP_CACHE_TIMEOUT_AMOUNT
    * from the last access to object
    */
-  // Cache for all token.
-  // what if token is revoked ?
-  private final Cache<String, JsonObject> tipCache = CacheBuilder.newBuilder().maximumSize(1000)
-      .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
-  // resourceGroupCache will contains ACL info about all resource group in a resource server
-  private final Cache<String, String> resourceGroupCache =
-      CacheBuilder.newBuilder().maximumSize(1000)
-          .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
-  // resourceIdCache will contains info about resources available(& their ACL) in resource server.
-  // what if resource id ACL is changed ?
-  private final Cache<String, String> resourceIdCache = CacheBuilder.newBuilder().maximumSize(1000)
-      .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
+  //Cache for all token.
+  //what if token is revoked ?
+  private final Cache<String, JsonObject> tipCache = CacheBuilder
+      .newBuilder()
+      .maximumSize(1000)
+      .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
+      .build();
+  //resourceGroupCache will contains ACL info about all resource group in a resource server
+  private final Cache<String, String> resourceGroupCache = CacheBuilder
+      .newBuilder()
+      .maximumSize(1000)
+      .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
+      .build();
+  //resourceIdCache will contains info about resources available(& their ACL) in resource server.
+  //what if resource id ACL is changed ?
+  private final Cache<String, String> resourceIdCache = CacheBuilder
+      .newBuilder()
+      .maximumSize(1000)
+      .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
+      .build();
 
   /**
    * This is a constructor which is used by the DataBroker Verticle to instantiate a RabbitMQ
@@ -88,6 +96,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     webClient = client;
     vertxObj = vertx;
     this.config = config;
+    
 
     catHost = config.getString("catServerHost");
     catPort = Integer.parseInt(config.getString("catServerPort"));
@@ -151,6 +160,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 JsonObject res = (JsonObject) json;
                 LOGGER.debug("cat id res: " + res.getString("id"));
                 resourceIdCache.put(res.getString("id"), resourceGroupCache.getIfPresent(key));
+
               });
             } else if (handler.failed()) {
               LOGGER.error(handler.cause());
@@ -233,7 +243,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         handler.handle(Future.failedFuture(result.toString()));
         return this;
       } else {
-        if (Constants.CLOSED_ENDPOINTS.contains(requestEndpoint)) {
+         if (Constants.CLOSED_ENDPOINTS.contains(requestEndpoint)) {
           tokenInterospectionResultContainer responseContainer =
               new tokenInterospectionResultContainer();
           Future<JsonObject> tipResponseFut = retrieveTipResponse(token);
@@ -353,7 +363,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     JsonObject cacheResponse = tipCache.getIfPresent(token);
     if (cacheResponse == null) {
       LOGGER.debug("Cache miss calling auth server");
-      // cache miss
+      //cache miss
       // call cat-server only when token not found in cache.
       JsonObject body = new JsonObject();
       body.put("token", token);
@@ -438,7 +448,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           String catPath = Constants.CAT_RSG_PATH;
           LOGGER.debug("Info: Host " + catHost + " Port " + catPort + " Path " + catPath);
           // Check if resourceID is available
-          catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
+          webClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
               .addQueryParam("value", "[[" + resourceID + "]]").addQueryParam("filter", "[id]")
               .expect(ResponsePredicate.JSON).send(httpResponserIDAsyncResult -> {
                 if (httpResponserIDAsyncResult.failed()) {
@@ -466,7 +476,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                   return;
                 } else {
                   LOGGER.debug("Info: Resource ID valid : Catalogue item Found");
-                  catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
+                  webClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
                       .addQueryParam("value", "[[" + groupID + "]]")
                       .addQueryParam("filter", "[accessPolicy]").expect(ResponsePredicate.JSON)
                       .send(httpResponseAsyncResult -> {
@@ -513,7 +523,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     return promise.future();
   }
-
 
   private Future<HashMap<String, Boolean>> isOpenResource1(JsonArray requestIDs,
       String requestEndpoint) {
