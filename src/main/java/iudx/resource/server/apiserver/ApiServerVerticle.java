@@ -87,6 +87,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private DatabaseService database;
   private DataBrokerService databroker;
   private AuthenticationService authenticator;
+  private final QueryMapper queryMapper = new QueryMapper();
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
@@ -308,7 +309,6 @@ public class ApiServerVerticle extends AbstractVerticle {
           ids.add(toUriFunction.apply(pathId));
           ngsildquery.setId(ids);
         }
-        QueryMapper queryMapper = new QueryMapper();
         // create json
         JsonObject json = queryMapper.toJson(ngsildquery, false);
         /* HTTP request instance/host details */
@@ -367,7 +367,6 @@ public class ApiServerVerticle extends AbstractVerticle {
       if (validationHandler.succeeded()) {
         // parse query params
         NGSILDQueryParams ngsildquery = new NGSILDQueryParams(requestJson);
-        QueryMapper queryMapper = new QueryMapper();
         JsonObject json = queryMapper.toJson(ngsildquery, requestJson.containsKey("temporalQ"));
         String instanceID = request.getHeader(HEADER_HOST);
         json.put(JSON_INSTANCEID, instanceID);
@@ -429,7 +428,6 @@ public class ApiServerVerticle extends AbstractVerticle {
       if (validationHandler.succeeded()) {
         // parse query params
         NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
-        QueryMapper queryMapper = new QueryMapper();
         // create json
         JsonObject json = queryMapper.toJson(ngsildquery, true);
         json.put(JSON_INSTANCEID, instanceID);
@@ -1443,7 +1441,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         .withTitle(ResponseType.fromCode(type).getMessage()).withMessage(message).build().toJson();
 
   }
-
   /**
    * validate if name passes the regex test for IUDX queue,exchage name.
    * 
@@ -1474,11 +1471,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     MultiMap queryParams = null;
     try {
       queryParams = MultiMap.caseInsensitiveMultiMap();
-      // Internally + sign is dropped and treated as space, replacing + with %2B does the trick of
-      // not dropping +
-      String uri = routingContext.request().uri().toString().replaceAll("\\+", "%2B");
+      //Internally + sign is dropped and treated as space, replacing + with %2B do the trick 
+      String uri=routingContext.request().uri().toString().replaceAll("\\+", "%2B");
       Map<String, List<String>> decodedParams =
-          new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET, true, 1024, true).parameters();
+          new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET,
+              true, 1024, true).parameters();
       for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
         queryParams.add(entry.getKey(), entry.getValue());
       }
