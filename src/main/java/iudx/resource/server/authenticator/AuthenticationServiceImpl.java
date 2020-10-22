@@ -27,6 +27,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import iudx.resource.server.databroker.util.Util;
 
@@ -58,7 +59,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private String resourceServerId;
   private WebClient catWebClient;
 
-
   /**
    * Cache/'s will hold at-most 1000 objects and only for a duration of TIP_CACHE_TIMEOUT_AMOUNT
    * from the last access to object
@@ -88,15 +88,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     webClient = client;
     vertxObj = vertx;
     this.config = config;
-    
+
     catHost = config.getString("catServerHost");
     catPort = Integer.parseInt(config.getString("catServerPort"));
     catPath = Constants.CAT_RSG_PATH;
-    resourceServerId=config.getString("resourceServerId");
-    
-    populateCatCache(client).compose(res->populateCatResourceIdCache(client));
-    // populateCatCache(client).compose(res->populateCatResourceIdCache(client));
-    LOGGER.debug("catcache size : " + resourceGroupCache.size() + " catrSize : " + resourceIdCache.size());
+    resourceServerId = config.getString("resourceServerId");
+
+    WebClientOptions options =
+        new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
+    catWebClient = WebClient.create(vertxObj, options);
+
+
+    populateCatCache(client).compose(res -> populateCatResourceIdCache(client));
+    LOGGER.debug(
+        "catcache size : " + resourceGroupCache.size() + " catrSize : " + resourceIdCache.size());
 
     catCacheTimerId = vertx.setPeriodic(TimeUnit.DAYS.toMillis(1), handler -> {
       populateCatCache(webClient);
@@ -105,6 +110,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     catCacheResTimerid = vertx.setPeriodic(TimeUnit.DAYS.toMillis(1), handler -> {
       populateCatResourceIdCache(webClient);
     });
+
+
   }
 
   // populate all resource groups available in resource server with access policy
@@ -430,7 +437,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           String catPath = Constants.CAT_RSG_PATH;
           LOGGER.debug("Info: Host " + catHost + " Port " + catPort + " Path " + catPath);
           // Check if resourceID is available
-          webClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
+          catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
               .addQueryParam("value", "[[" + resourceID + "]]").addQueryParam("filter", "[id]")
               .expect(ResponsePredicate.JSON).send(httpResponserIDAsyncResult -> {
                 if (httpResponserIDAsyncResult.failed()) {
@@ -458,7 +465,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                   return;
                 } else {
                   LOGGER.debug("Info: Resource ID valid : Catalogue item Found");
-                  webClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
+                  catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
                       .addQueryParam("value", "[[" + groupID + "]]")
                       .addQueryParam("filter", "[accessPolicy]").expect(ResponsePredicate.JSON)
                       .send(httpResponseAsyncResult -> {
@@ -546,7 +553,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             LOGGER.error("cat response failed for Id : (" + rId + ")" + handler.getCause());
             result.put(rId, false);
             promise.fail("Not Found " + rId);
-
           });
         }
       }

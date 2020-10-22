@@ -87,7 +87,6 @@ public class ApiServerVerticle extends AbstractVerticle {
   private DatabaseService database;
   private DataBrokerService databroker;
   private AuthenticationService authenticator;
-  private final QueryMapper queryMapper = new QueryMapper();
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
@@ -368,6 +367,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       if (validationHandler.succeeded()) {
         // parse query params
         NGSILDQueryParams ngsildquery = new NGSILDQueryParams(requestJson);
+        QueryMapper queryMapper = new QueryMapper();
         JsonObject json = queryMapper.toJson(ngsildquery, requestJson.containsKey("temporalQ"));
         String instanceID = request.getHeader(HEADER_HOST);
         json.put(JSON_INSTANCEID, instanceID);
