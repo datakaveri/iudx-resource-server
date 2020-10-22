@@ -65,7 +65,12 @@ public class AuthHandler implements Handler<RoutingContext> {
     LOGGER.debug("Info :" + context.request().path().split("/").length);
     String id = getId(context.request().path(), path, context);
     authInfo.put(ID, id);
-    requestJson.put(IDS, new JsonArray().add(id));
+    JsonArray ids=new JsonArray();
+    String[] idArray=id.split(",");
+    for(String i:idArray) {
+      ids.add(i);
+    }
+    requestJson.put(IDS,ids);
     
     LOGGER.debug("request" + requestJson);
     authenticator.tokenInterospect(requestJson, authInfo, authHandler -> {

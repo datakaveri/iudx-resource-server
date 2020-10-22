@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +27,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import iudx.resource.server.databroker.util.Util;
 
@@ -49,36 +52,29 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private JsonObject config;
   private long catCacheTimerId;
   private long catCacheResTimerid;
-  
+
   private static String catHost;
   private static int catPort;;
   private static String catPath;
   private String resourceServerId;
+  private WebClient catWebClient;
 
   /**
    * Cache/'s will hold at-most 1000 objects and only for a duration of TIP_CACHE_TIMEOUT_AMOUNT
    * from the last access to object
    */
-  //Cache for all token.
-  //what if token is revoked ?
-  private final Cache<String, JsonObject> tipCache = CacheBuilder
-      .newBuilder()
-      .maximumSize(1000)
-      .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
-      .build();
-  //resourceGroupCache will contains ACL info about all resource group in a resource server
-  private final Cache<String, String> resourceGroupCache = CacheBuilder
-      .newBuilder()
-      .maximumSize(1000)
-      .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
-      .build();
-  //resourceIdCache will contains info about resources available(& their ACL) in resource server.
-  //what if resource id ACL is changed ?
-  private final Cache<String, String> resourceIdCache = CacheBuilder
-      .newBuilder()
-      .maximumSize(1000)
-      .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
-      .build();
+  // Cache for all token.
+  // what if token is revoked ?
+  private final Cache<String, JsonObject> tipCache = CacheBuilder.newBuilder().maximumSize(1000)
+      .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
+  // resourceGroupCache will contains ACL info about all resource group in a resource server
+  private final Cache<String, String> resourceGroupCache =
+      CacheBuilder.newBuilder().maximumSize(1000)
+          .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
+  // resourceIdCache will contains info about resources available(& their ACL) in resource server.
+  // what if resource id ACL is changed ?
+  private final Cache<String, String> resourceIdCache = CacheBuilder.newBuilder().maximumSize(1000)
+      .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
 
   /**
    * This is a constructor which is used by the DataBroker Verticle to instantiate a RabbitMQ
@@ -92,15 +88,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     webClient = client;
     vertxObj = vertx;
     this.config = config;
-    
+
     catHost = config.getString("catServerHost");
     catPort = Integer.parseInt(config.getString("catServerPort"));
     catPath = Constants.CAT_RSG_PATH;
-    resourceServerId=config.getString("resourceServerId");
-    
-    populateCatCache(client).compose(res->populateCatResourceIdCache(client));
-    // populateCatCache(client).compose(res->populateCatResourceIdCache(client));
-    LOGGER.debug("catcache size : " + resourceGroupCache.size() + " catrSize : " + resourceIdCache.size());
+    resourceServerId = config.getString("resourceServerId");
+
+    WebClientOptions options =
+        new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
+    catWebClient = WebClient.create(vertxObj, options);
+
+
+    populateCatCache(client).compose(res -> populateCatResourceIdCache(client));
+    LOGGER.debug(
+        "catcache size : " + resourceGroupCache.size() + " catrSize : " + resourceIdCache.size());
 
     catCacheTimerId = vertx.setPeriodic(TimeUnit.DAYS.toMillis(1), handler -> {
       populateCatCache(webClient);
@@ -109,20 +110,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     catCacheResTimerid = vertx.setPeriodic(TimeUnit.DAYS.toMillis(1), handler -> {
       populateCatResourceIdCache(webClient);
     });
+
+
   }
 
   // populate all resource groups available in resource server with access policy
   private Future<Void> populateCatCache(WebClient client) {
     LOGGER.debug("Info : starting populateCatCache()");
     Promise<Void> promise = Promise.promise();
-    client.get(catPort, catHost, catPath).addQueryParam("property", "[resourceServer]")
-        .addQueryParam("value",resourceServerId)
-        .expect(ResponsePredicate.JSON).send(handler -> {
+    LOGGER.info("cat client" + catWebClient);
+    catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[resourceServer]")
+        .addQueryParam("value", resourceServerId).expect(ResponsePredicate.JSON).send(handler -> {
           if (handler.succeeded()) {
             JsonArray response = handler.result().bodyAsJsonObject().getJsonArray("results");
             response.forEach(json -> {
               JsonObject res = (JsonObject) json;
-              LOGGER.debug("cat id cat: "+res.getString("id"));
+              LOGGER.debug("cat id cat: " + res.getString("id"));
               resourceGroupCache.put(res.getString("id"), res.getString("accessPolicy"));
             });
           } else if (handler.failed()) {
@@ -140,13 +143,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     Promise<Void> promise = Promise.promise();
     // for every key call cat to get all resources and their ACL(?)/itemstatus
     resourceGroupCache.asMap().forEach((key, value) -> {
-      client.get(catPort, catHost, catPath).addQueryParam("id", key)
+      catWebClient.get(catPort, catHost, catPath).addQueryParam("id", key)
           .addQueryParam("rel", "resource").expect(ResponsePredicate.JSON).send(handler -> {
             if (handler.succeeded()) {
               JsonArray response = handler.result().bodyAsJsonObject().getJsonArray("results");
               response.forEach(json -> {
                 JsonObject res = (JsonObject) json;
-                LOGGER.debug("cat id res: "+res.getString("id"));
+                LOGGER.debug("cat id res: " + res.getString("id"));
                 resourceGroupCache.put(res.getString("id"), res.getString("itemStatus"));
               });
             } else if (handler.failed()) {
@@ -241,6 +244,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           JsonObject result = new JsonObject();
           result.put("status", "error");
           result.put("message", throwable.getMessage());
+          LOGGER.debug("RESULT : "+result);
           handler.handle(Future.failedFuture(result.toString()));
         }).onSuccess(compositeFuture -> {
           JsonObject tipResponse = compositeFuture.resultAt(0);
@@ -303,7 +307,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
     JsonObject cacheResponse = tipCache.getIfPresent(token);
     if (cacheResponse == null) {
-      //cache miss
+      // cache miss
       // call cat-server only when token not found in cache.
       JsonObject body = new JsonObject();
       body.put("token", token);
@@ -387,7 +391,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           String catPath = Constants.CAT_RSG_PATH;
           LOGGER.debug("Info: Host " + catHost + " Port " + catPort + " Path " + catPath);
           // Check if resourceID is available
-          webClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
+          catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
               .addQueryParam("value", "[[" + resourceID + "]]").addQueryParam("filter", "[id]")
               .expect(ResponsePredicate.JSON).send(httpResponserIDAsyncResult -> {
                 if (httpResponserIDAsyncResult.failed()) {
@@ -415,7 +419,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                   return;
                 } else {
                   LOGGER.debug("Info: Resource ID valid : Catalogue item Found");
-                  webClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
+                  catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
                       .addQueryParam("value", "[[" + groupID + "]]")
                       .addQueryParam("filter", "[accessPolicy]").expect(ResponsePredicate.JSON)
                       .send(httpResponseAsyncResult -> {
@@ -469,38 +473,58 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     LOGGER.debug("isOpenResource1() started");
     Promise<HashMap<String, Boolean>> promise = Promise.promise();
     HashMap<String, Boolean> result = new HashMap<>();
-    if (Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
-      requestIDs.forEach(id -> {
-        String rId = (String) id;
+    final int requestIdSize = requestIDs.size();
+    final AtomicInteger counter = new AtomicInteger();
+
+    if (Constants.OPEN_ENDPOINTS.contains(requestEndpoint) && requestIDs.size() > 0) {
+      Iterator<Object> itr = requestIDs.iterator();
+      while (itr.hasNext()) {
+        String rId = (String) itr.next();
+        LOGGER.debug("Id to check from cat : " + rId);
         String ACL = resourceIdCache.getIfPresent(rId);
         if (ACL != null) {
           result.put(rId, ACL.equalsIgnoreCase("OPEN"));
+          counter.getAndIncrement();
+          doComplete(promise, counter.intValue(), requestIdSize, result);
         } else {
-          //cache miss
+          // cache miss
           String[] idComponents = rId.split("/");
           if (idComponents.length < 4) {
-            return;
+            continue;
           }
           String groupId = (idComponents.length == 4) ? rId
               : String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
-
+          // 1. check group accessPolicy.
+          // 2. check resource exist, if exist set accessPolicy to group accessPolicy. else fail
           Future<String> groupACLFuture = getGroupAccessPolicy(groupId);
           groupACLFuture.compose(groupACLResult -> {
             String groupPolicy = (String) groupACLResult;
             return isResourceExist(rId, groupPolicy);
           }).onSuccess(handler -> {
             result.put(rId, resourceIdCache.getIfPresent(rId).equalsIgnoreCase("OPEN"));
-          }).onFailure(handler->{
-            LOGGER.error("cat response failed for Id : ("+rId+")" +handler.getCause());
+            counter.getAndIncrement();
+            doComplete(promise, counter.intValue(), requestIdSize, result);
+          }).onFailure(handler -> {
+            LOGGER.error("cat response failed for Id : (" + rId + ")" + handler.getCause());
             result.put(rId, false);
+            //counter.getAndIncrement();
+            //doComplete(promise, counter.intValue(), requestIdSize, result);
+            promise.fail("Not Found "+rId);
           });
         }
-      });
+      }
     } else {
       result.put("Closed End Point", true);
       promise.complete(result);
     }
     return promise.future();
+  }
+
+
+  private <T> void doComplete(Promise<T> promise, int counter, int size, T result) {
+    if (counter == size) {
+      promise.complete(result);
+    }
   }
 
   private Future<String> getGroupAccessPolicy(String groupId) {
@@ -512,7 +536,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       promise.complete(groupACL);
     } else {
       LOGGER.debug("Info : cache miss");
-      webClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
+      catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
           .addQueryParam("value", "[[" + groupId + "]]").addQueryParam("filter", "[accessPolicy]")
           .expect(ResponsePredicate.JSON).send(httpResponseAsyncResult -> {
             if (httpResponseAsyncResult.failed()) {
@@ -558,24 +582,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       promise.complete(true);
     } else {
       LOGGER.debug("Info : Cache miss : call cat server");
-      webClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
+      catWebClient.get(catPort, catHost, catPath).addQueryParam("property", "[id]")
           .addQueryParam("value", "[[" + id + "]]").addQueryParam("filter", "[id]")
           .expect(ResponsePredicate.JSON).send(responseHandler -> {
             if (responseHandler.failed()) {
               promise.fail("false");
             }
             HttpResponse<Buffer> response = responseHandler.result();
+            JsonObject responseBody = response.bodyAsJsonObject();
             if (response.statusCode() != HttpStatus.SC_OK) {
               promise.fail("false");
-              return;
-            }
-            JsonObject responseBody = response.bodyAsJsonObject();
-            if (!responseBody.getString("status").equals("success")) {
+            }else if (!responseBody.getString("status").equals("success")) {
               promise.fail("Not Found");
               return;
+            } else if (responseBody.getInteger("totalHits") == 0) {
+              LOGGER.debug("Info: Resource ID invalid : Catalogue item Not Found");
+              promise.fail("Not Found");
+            } else {
+              LOGGER.debug("is Exist response : " + responseBody);
+              resourceIdCache.put(id, groupACL);
+              promise.complete(true);
             }
-            resourceIdCache.put(id, groupACL);
-            promise.complete(true);
           });
     }
     return promise.future();
