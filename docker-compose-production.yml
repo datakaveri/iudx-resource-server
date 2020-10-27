@@ -21,7 +21,7 @@ services:
     depends_on:
       - "zookeeper"
     ports:
-      - "443:8443"
+      - "80:80"
       - "9000:9000"
     restart: on-failure
     networks: 
@@ -43,7 +43,7 @@ services:
       - ./docs/:/usr/share/app/docs
       - /tmp/iudx/:/tmp/iudx/
     ports:
-      - "8443:8443"
+      - "8080:80"
       - "9000:9000"
     restart: on-failure
     networks: 
