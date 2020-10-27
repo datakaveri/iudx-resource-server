@@ -126,7 +126,8 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   private HttpServer server;
   private Router router;
-  private final int port = 8443;
+  private final int port = 80;
+  private boolean isSSL;
   private String keystore;
   private String keystorePassword;
   private ManagementApi managementApi;
@@ -139,7 +140,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
    * configuration, obtains a proxy for the Event bus services exposed through service discovery,
-   * start an HTTPs server at port 8443.
+   * start an HTTPs server at port 8443 or an HTTP server at port 8080.
    * 
    * @throws Exception which is a startup exception TODO Need to add documentation for all the
    * 
@@ -241,19 +242,35 @@ public class ApiServerVerticle extends AbstractVerticle {
       HttpServerResponse response = routingContext.response();
       response.sendFile("docs/apidoc.html");
     });
+    
+    /* Read ssl configuration. */
+    isSSL = config().getBoolean("ssl");
+    HttpServerOptions serverOptions = new HttpServerOptions();
+    
+    if (isSSL) {
+      LOGGER.debug("Info: Starting HTTPs server");
 
-    /* Read the configuration and set the HTTPs server properties. */
+      /* Read the configuration and set the HTTPs server properties. */
+      
+      keystore = config().getString("keystore");
+      keystorePassword = config().getString("keystorePassword");
 
-    keystore = config().getString("keystore");
-    keystorePassword = config().getString("keystorePassword");
+      /* Setup the HTTPs server properties, APIs and port. */
 
+      serverOptions.setSsl(true)
+          .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword));
+      
+    } else {
+      LOGGER.debug("Info: Starting HTTP server");
 
-    /* Setup the HTTPs server properties, APIs and port. */
+      /* Setup the HTTP server properties, APIs and port. */
 
-    server = vertx.createHttpServer(
-        new HttpServerOptions().setSsl(true).setCompressionSupported(true).setCompressionLevel(5)
-            .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword)));
+      serverOptions.setSsl(false);
 
+    }
+
+    serverOptions.setCompressionSupported(true).setCompressionLevel(5);
+    server = vertx.createHttpServer(serverOptions);
     server.requestHandler(router).listen(port);
 
     /* Get a handler for the Service Discovery interface. */
