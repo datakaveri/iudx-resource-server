@@ -269,7 +269,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             result.put("status", "error");
             result.put("message", failure.getMessage());
             LOGGER.debug("RESULT : " + failure.getCause());
-
           });
         } else {
           // Based on API perform TIP.
