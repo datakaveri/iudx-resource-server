@@ -269,7 +269,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             JsonObject result = new JsonObject();
             result.put("status", "error");
             result.put("message", failure.getMessage());
-            LOGGER.debug("RESULT : " + result);
+            LOGGER.debug("RESULT : " + failure.getCause());
           });
         } else {
           // Based on API perform TIP.
@@ -669,7 +669,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private Future<Boolean> isItemExist(String itemId) {
     LOGGER.debug("isItemExist() started");
     Promise<Boolean> promise = Promise.promise();
-    String id = itemId.replace("*", "test");
+    String id = itemId.replace("/*", "");
     LOGGER.info("id : " + id);
     catWebClient.get(catPort, catHost, "/iudx/cat/v1/item").addQueryParam("id", id)
         .expect(ResponsePredicate.JSON).send(responseHandler -> {
@@ -771,7 +771,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String adapterID = providerID.substring(0, providerID.lastIndexOf("/"));
         String[] id = providerID.split("/");
         String providerSHA = id[0] + "/" + id[1];
-        LOGGER.debug("Info: Success :: Provider SHA is " + providerSHA +"method : "+requestMethod);
+        LOGGER
+            .debug("Info: Success :: Provider SHA is " + providerSHA + "method : " + requestMethod);
         if (requestMethod.equalsIgnoreCase("POST")) {
           String resourceGroup = userRequest.getString("resourceGroup");
           String resourceServer = userRequest.getString("resourceServer");
@@ -790,7 +791,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           }
         } else {
           String requestId = authenticationInfo.getString("id");
-          LOGGER.debug("id : "+requestId);
+          LOGGER.debug("id : " + requestId);
           if (requestId.contains(adapterID)) {
             LOGGER.info(
                 "Success :: Has access to " + requestEndpoint + " API and Adapter " + requestId);
