@@ -99,9 +99,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     catWebClient = WebClient.create(vertxObj, options);
 
 
-    populateCatCache(client).compose(res -> populateCatResourceIdCache(client));
-    LOGGER.debug(
-        "catcache size : " + resourceGroupCache.size() + " catrSize : " + resourceIdCache.size());
+    Future<Boolean> groupCacheFuture = populateCatCache(client);
+    groupCacheFuture.onComplete(handler -> {
+      populateCatResourceIdCache(client);
+    });
 
     catCacheTimerId = vertx.setPeriodic(TimeUnit.DAYS.toMillis(1), handler -> {
       populateCatCache(webClient);
@@ -110,7 +111,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     catCacheResTimerid = vertx.setPeriodic(TimeUnit.DAYS.toMillis(1), handler -> {
       populateCatResourceIdCache(webClient);
     });
-
 
   }
 
