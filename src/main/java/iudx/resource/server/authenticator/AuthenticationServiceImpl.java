@@ -104,8 +104,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     groupCacheFuture.onComplete(handler -> {
       populateCatResourceIdCache(client);
     });
-
-
     catCacheTimerId = vertx.setPeriodic(TimeUnit.DAYS.toMillis(1), handler -> {
       populateCatCache(webClient);
     });
@@ -113,7 +111,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     catCacheResTimerid = vertx.setPeriodic(TimeUnit.DAYS.toMillis(1), handler -> {
       populateCatResourceIdCache(webClient);
     });
-
 
   }
 
@@ -272,6 +269,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             result.put("status", "error");
             result.put("message", failure.getMessage());
             LOGGER.debug("RESULT : " + failure.getCause());
+
           });
         } else {
           // Based on API perform TIP.
@@ -535,6 +533,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           doComplete(promise, counter.intValue(), requestIdSize, result);
         } else {
           // cache miss
+          LOGGER.debug("Cache miss calling cat server");
           String[] idComponents = rId.split("/");
           if (idComponents.length < 4) {
             continue;
