@@ -74,66 +74,88 @@ paths:
         description: IUDX Auth token to process the request for secure entity
         schema:
           type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
       
       - name: id
         in: query
-        description: 'ID of the IUDX entity. This can be obtained from the IUDX catalogue server.'
+        description: 'ID of the IUDX resource-entity. This can be obtained from the IUDX catalogue server.'
         required: true
         schema:
           type: string
+          maxLength: 512
+
       - name: geoproperty
         in: query
         description: 'Name of the property if the query is on a geospatial property.'
         schema:
           type: string
+          enum: [location]
       - name: georel
         in: query
         description: 'Type of geoquery, for e.g, within, near, outside.'
         schema:
           type: string
+          enum: [within, contains, intersects]
+
       - name: geometry
         in: query
         description: 'Geometry of the geo-query, for e.g, linstring, bbox, polygon.'
         schema:
           type: string
+          enum: [Point, Polygon, bbox, LineString]
+
       - name: coordinates
         in: query
         description: 'Coordinates for the specific query type. For e.g, [[1,2], [3,4]]. Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array.'
         schema:
           type: array
+          minItems: 1
+          maxItems: 10
           items:
             type: number
           format: double
+          
       - name: timerel
         in: query
         description: 'Type of the temporal-query, for e.g, during, before, after.'
         schema:
           type: string
+          enum: [during, before, after]
+
       - name: time
         in: query
         description: 'Start time for the temporal-query in ISO8601 format.'
         schema:
           type: string
+          
       - name: endtime
         in: query
         description: 'End time for the temporal-query in ISO8601 format. (Only applicable for timerel=during)'
         schema:
           type: string
+          
       - name: q
         in: query
         description: 'Query on a value of a resource attribute, for e.g, attribute > value, attribute < value, attribute >= value, attribute <= value'
         schema:
           type: string
+          maxLength: 512
+
       - name: attrs
         in: query
         description: 'List of attributes to be provided in response.'
         schema:
           type: string
+          maxLength: 512
+
       - name: options
         in: query
         description: 'Specifying options=count will provide the number of document hits for the query.'
         schema:
           type: string
+          enum: [count]
+
 
       responses:
         200:
@@ -201,18 +223,18 @@ paths:
         
         #### Geo Search
         Geo search accepts geojson based queries. The params and their accepted values are -
-          - geoproperty: Which geoproperty to query. Default is `location`.
-          - georel: Geo-relationship. One of `within`, `contains`, `disjoint`, `intersects`.
+          - geoproperty: Which geoproperty to query. Should be `location`.
+          - georel: Geo-relationship. One of `within`, `contains`, `intersects`.
           - geometry: GeoJson geometries. One of `Point`(point and circle), `Polygon`, `LineString`(for interseaction with points and polygons), `bbox`.
               - Point: Point and radius query
                   - coordinates: The center point of the circle, for e.g, `[73,13]` (lon and lat)
-                  - maxDistance: Radius from the center point in meters, for e.g `100`
+                  - maxDistance: Radius from the center point in meters, for e.g `100`. `minValue` : 1 and `maxValue` : 10000
                   - georel: `within`
               - Polygon: Polygon/Multi-Polygon query
-                  - coordinates: Coordinates of the polygon/s, for e.g, `[[[73,13],[73,12],[73,13]]]`.  Note, (lon and lat) and the first coordinate must be same as last.
+                  - coordinates: Coordinates of the polygon/s, for e.g, `[[[73,13],[73,12],[73,13]]]`.  Note, (lon and lat) and the first coordinate must be same as last. `minNumberOfCoOrdinates` : 1 and `maxnNumberOfCoOrdinates` : 10
                   - georel: `within`
               - LineString: Multi line string
-                  - coordinates: Coordinates of the multi-line, for e.g, `[[73,13],[74,15],[75,16]]`. 
+                  - coordinates: Coordinates of the multi-line, for e.g, `[[73,13],[74,15],[75,16]]`. `minNumberOfCoOrdinates` : 1 and `maxnNumberOfCoOrdinates` : 10
                   - georel: `intersects`
               - bbox: Bounding box
                   - coordinates: `[[top-left],[bottom-right]]`, `[[73,13],[74,12]]`. 
@@ -223,6 +245,9 @@ paths:
           - timerel: The time relation of the query. Should be either `during`, `before` or `after`.
           - time: Start time for the temporal query in `ISO 8601` format. 
           - endtime: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = during`. 
+          
+          The time difference between `time` and `endtime` should be less than `10 days`.
+          For `before` and `after` queries, `10 days` of data `before` or `after` the specified time will be provided.
       
         #### Attribute search
         Attribute search queries for a `quantitative` value of an attribute using an `operation` such as `<`, `>`, `<=` or `>=` 
@@ -232,7 +257,7 @@ paths:
         A combination of the above is allowed to make searches more  complex.
 
         #### Filters
-          - A subset of properties of returned documents can be filtered out. For e.g, `attrs=[id]` returns documents with only the `id` property retained in them.
+          - A subset of properties of returned documents can be filtered out. For e.g, `attrs=[id]` returns documents with only the `id` property retained in them. `minNumberOfAttributes` : 1 and `maxNumberOfAttributes` : 5 
 
       
   /ngsi-ld/v1/entities/{id}:
@@ -247,6 +272,9 @@ paths:
         description: IUDX Auth token to process the request for secure entity
         schema:
           type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
       
       - name: id
         in: path
@@ -254,6 +282,7 @@ paths:
         required: true
         schema:
           type: string
+          maxLength: 512
 
       responses:
         200:
@@ -308,6 +337,8 @@ paths:
         description: IUDX Auth token to process the request for secure entity
         schema:
           type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
 
       - name: id
         in: query
@@ -315,11 +346,13 @@ paths:
         required: true
         schema:
           type: string
+          maxLength: 512
       - name: timerel
         in: query
         description: 'Type of the temporal-query, for e.g, during, before, after.'
         schema:
           type: string
+          enum: [during, before, after]          
       - name: time
         in: query
         description: 'Start time for the temporal-query in ISO8601 format.'
@@ -335,16 +368,19 @@ paths:
         description: 'Query on a value of a resource attribute, for e.g, attribute > value, attribute < value, attribute >= value, attribute <= value'
         schema:
           type: string
+          maxLength: 512          
       - name: attrs
         in: query
         description: 'List of attributes to be provided in response.'
         schema:
           type: string
+          maxLength: 512          
       - name: options
         in: query
         description: 'Specifying options=count will provide the number of document hits for the query.'
         schema:
           type: string
+          enum: [count]          
 
       responses:
         200:
@@ -395,6 +431,31 @@ paths:
             https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&timerel=after&time=2020-06-01T14:20:01Z&options=count
 
       deprecated: false
+      description: |
+        Temporal resource search query. Searches for data published by entites that meet the
+        query criteria. The temporal/entities enpoint allows one to query an
+        entity by a temporal property, by an attribute query or by a combination of
+        both.
+        
+
+        #### Temporal search
+        Temporal search accepts time property based queries which are specified in ISO 8601 format. The params and their accepted values are -
+          - timerel: The time relation of the query. Should be either `during`, `before` or `after`.
+          - time: Start time for the temporal query in `ISO 8601` format. 
+          - endtime: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = during`. 
+          
+          The time difference between `time` and `endtime` should be less than `10 days`.
+          For `before` and `after` queries, `10 days` of data `before` or `after` the specified time will be provided.
+      
+        #### Attribute search
+        Attribute search queries for a `quantitative` value of an attribute using an `operation` such as `<`, `>`, `<=` or `>=` 
+          - `q=attribute-name>attribute-value`
+
+        #### Complex search
+        A combination of the above is allowed to make searches more  complex.
+
+        #### Filters
+          - A subset of properties of returned documents can be filtered out. For e.g, `attrs=[id]` returns documents with only the `id` property retained in them. `minNumberOfAttributes` : 1 and `maxNumberOfAttributes` : 5 
 
       
   /ngsi-ld/v1/entityOperations/query:
@@ -409,6 +470,9 @@ paths:
         description: IUDX Auth token to process the request for secure entity
         schema:
           type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+        
       
       requestBody:
         description: ''
@@ -469,37 +533,38 @@ paths:
           description: 'Resource not found'
 
       description: |
-        Complex resource search query. Searches for data published by entites that meet the
-        query criteria. The entitiesOperations/query enpoint allows one to query an
+        Generic resource search query. Searches for data published by entites that meet the
+        query criteria. The entities enpoint allows one to query an
         entity by its geo-location annotation, by a temporal property, by an attribute query or by a combination of
         all three.
         
         #### Geo Search
-        A Geo search should be enclosed within a `geoQ` JSON object.
         Geo search accepts geojson based queries. The params and their accepted values are -
-          - geoproperty: Which geoproperty to query. Default is `location`.
-          - georel: Geo-relationship. One of `within`, `contains`, `disjoint`, `intersects`.
+          - geoproperty: Which geoproperty to query. Should be `location`.
+          - georel: Geo-relationship. One of `within`, `contains`, `intersects`.
           - geometry: GeoJson geometries. One of `Point`(point and circle), `Polygon`, `LineString`(for interseaction with points and polygons), `bbox`.
               - Point: Point and radius query
                   - coordinates: The center point of the circle, for e.g, `[73,13]` (lon and lat)
-                  - maxDistance: Radius from the center point in meters, for e.g `100`
+                  - maxDistance: Radius from the center point in meters, for e.g `100`. `minValue` : 1 and `maxValue` : 10000
                   - georel: `within`
               - Polygon: Polygon/Multi-Polygon query
-                  - coordinates: Coordinates of the polygon/s, for e.g, `[[[73,13],[73,12],[73,13]]]`.  Note, (lon and lat) and the first coordinate must be same as last.
+                  - coordinates: Coordinates of the polygon/s, for e.g, `[[[73,13],[73,12],[73,13]]]`.  Note, (lon and lat) and the first coordinate must be same as last. `minNumberOfCoOrdinates` : 1 and `maxnNumberOfCoOrdinates` : 10
                   - georel: `within`
               - LineString: Multi line string
-                  - coordinates: Coordinates of the multi-line, for e.g, `[[73,13],[74,15],[75,16]]`. 
+                  - coordinates: Coordinates of the multi-line, for e.g, `[[73,13],[74,15],[75,16]]`. `minNumberOfCoOrdinates` : 1 and `maxnNumberOfCoOrdinates` : 10
                   - georel: `intersects`
               - bbox: Bounding box
                   - coordinates: `[[top-left],[bottom-right]]`, `[[73,13],[74,12]]`. 
                   - georel: `within`
 
         #### Temporal search
-        Temporal search accepts time property based queries which are specified in ISO 8601 format. 
-                A temporal search should be enclosed within a `temporalQ` JSON object. The params and their accepted values are -
+        Temporal search accepts time property based queries which are specified in ISO 8601 format. The params and their accepted values are -
           - timerel: The time relation of the query. Should be either `during`, `before` or `after`.
           - time: Start time for the temporal query in `ISO 8601` format. 
           - endtime: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = during`. 
+          
+          The time difference between `time` and `endtime` should be less than `10 days`.
+          For `before` and `after` queries, `10 days` of data `before` or `after` the specified time will be provided.
       
         #### Attribute search
         Attribute search queries for a `quantitative` value of an attribute using an `operation` such as `<`, `>`, `<=` or `>=` 
@@ -509,7 +574,7 @@ paths:
         A combination of the above is allowed to make searches more  complex.
 
         #### Filters
-          - A subset of properties of returned documents can be filtered out. For e.g, `attrs=[id]` returns documents with only the `id` property retained in them.
+          - A subset of properties of returned documents can be filtered out. For e.g, `attrs=[id]` returns documents with only the `id` property retained in them. `minNumberOfAttributes` : 1 and `maxNumberOfAttributes` : 5
 
       deprecated: false
 
@@ -527,6 +592,9 @@ paths:
         style: simple
         schema:
           type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+          
       requestBody:
         description: ''
         content:
@@ -580,6 +648,9 @@ paths:
         style: simple
         schema:
           type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+          
       - name: id
         in: path
         description: 'id of the adapter obtained from Register adapter.'
@@ -587,6 +658,7 @@ paths:
         style: simple
         schema:
           type: string
+          maxLength: 512          
       responses:
         200:
           content:
@@ -642,6 +714,9 @@ paths:
         style: simple
         schema:
           type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+          
       - name: id
         in: path
         description: 'id of the adapter obtained from Register adapter.'
@@ -649,6 +724,7 @@ paths:
         style: simple
         schema:
           type: string
+          maxLength: 512          
       responses:
         200:
           description: 'Successful query'
@@ -705,13 +781,17 @@ paths:
         style: simple
         schema:
           type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+          
       - name: options
         in: header
-        description: 'Type of subscription, for e.g. streaming (or) callback. Default value is callback'
+        description: 'Type of subscription, for e.g. streaming'
         required: true
         style: simple
         schema:
           type: string
+          enum: [streaming]
       requestBody:
         description: 'Successful query'
         content:
@@ -769,13 +849,17 @@ paths:
         style: simple
         schema:
           type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+          
       - name: options
         in: header
-        description: 'Type of subscription, for e.g. streaming (or) callback. Default value is callback'
+        description: 'Type of subscription, for e.g. streaming'
         required: true
         style: simple
         schema:
           type: string
+          enum: [streaming]
       - name: id
         in: path
         description: 'Subscription ID obtained during registration.'
@@ -783,6 +867,8 @@ paths:
         style: simple
         schema:
           type: string
+          maxLength: 512
+
       responses:
         200:
           description: 'Successful query'
@@ -839,13 +925,17 @@ paths:
         style: simple
         schema:
           type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+          
       - name: options
         in: header
-        description: 'Type of subscription, for e.g. streaming (or) callback. Default value is callback'
+        description: 'Type of subscription, for e.g. streaming'
         required: true
         style: simple
         schema:
           type: string
+          enum: [streaming]
       - name: id
         in: path
         description: 'Subscription ID obtained during registration.'
@@ -853,6 +943,7 @@ paths:
         style: simple
         schema:
           type: string
+          maxLength: 512          
       requestBody:
         description: ''
         content:
@@ -910,13 +1001,17 @@ paths:
         style: simple
         schema:
           type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+          
       - name: options
         in: header
-        description: 'Type of subscription, for e.g. streaming (or) callback. Default value is callback'
+        description: 'Type of subscription, for e.g. streaming'
         required: true
         style: simple
         schema:
           type: string
+          enum: [streaming]
       - name: id
         in: path
         description: 'Subscription ID obtained during registration.'
@@ -924,6 +1019,7 @@ paths:
         style: simple
         schema:
           type: string
+          maxLength: 512          
       requestBody:
         description: ''
         content:
@@ -976,11 +1072,13 @@ paths:
       parameters:
       - name: options
         in: header
-        description: 'Type of subscription, for e.g. streaming (or) callback. Default value is callback'
+        description: 'Type of subscription, for e.g. streaming'
         required: true
         style: simple
         schema:
           type: string
+          enum: [streaming]
+          
       - name: token
         in: header
         description: 'IUDX auth token for accessing the API'
@@ -988,6 +1086,9 @@ paths:
         style: simple
         schema:
           type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+          
       - name: id
         in: path
         description: 'Subscription ID obtained during registration.'
@@ -995,6 +1096,8 @@ paths:
         style: simple
         schema:
           type: string
+          maxLength: 512
+          
       responses:
         200:
           description: 'Successful query'
@@ -1051,10 +1154,15 @@ components:
       properties:
         name:
           type: string
+          maxLength: 512          
         type:
           type: string
+          enum: [subscription]
+
         entities:
           type: array
+          minItems: 1
+          maxItems: 5
           items:
             type: string
           description: ''
@@ -1073,10 +1181,17 @@ components:
       properties:
         name:
           type: string
+          maxLength: 512          
+          
         type:
           type: string
+          enum: [subscription]
+
         entities:
           type: array
+          minItems: 1
+          maxItems: 5
+
           items:
             type: string
           description: ''
@@ -1095,10 +1210,17 @@ components:
       properties:
         name:
           type: string
+          maxLength: 512          
+          
         type:
           type: string
+          enum: [subscription]
+
         entities:
           type: array
+          minItems: 1
+          maxItems: 5
+
           items:
             type: string
           description: ''
@@ -1143,6 +1265,7 @@ components:
       properties:
         id:
           type: string
+          maxLength: 512          
       example:
         id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
     GeoQ:
@@ -1156,15 +1279,20 @@ components:
       properties:
         geometry:
           type: string
+          enum: [Point, Polygon, bbox, LineString]          
         coordinates:
           type: array
+          minItems: 1
+          maxItems: 10
           items:
             type: number
           description: ''
         georel:
           type: string
+          enum: [within, contains, intersects]          
         geoproperty:
           type: string
+          enum: [location]          
       example:
         geometry: Point
         coordinates:
@@ -1395,17 +1523,19 @@ components:
       properties:
         timerel:
           type: string
+          enum: [during, before, after]          
         time:
           type: string
         endtime:
           type: string
         timeProperty:
           type: string
+          enum: [observationDateTime]
       example:
         timerel: during
         time: 2020-06-01T14:20:00Z
         endtime: 2020-06-03T15:00:00Z
-        timeProperty: timeProperty
+        timeProperty: observationDateTime
     time-beforerequest:
       title: time-beforerequest
       required:
@@ -1461,6 +1591,7 @@ components:
       properties:
         type:
           type: string
+          enum: [Query]
         entities:
           type: array
           items:
@@ -1472,6 +1603,7 @@ components:
           $ref: '#/components/schemas/TemporalQ'
         attrs:
           type: string
+          maxLength: 200
       example:
         type: Query
         entities:
@@ -1498,8 +1630,10 @@ components:
       properties:
         resourceGroup:
           type: string
+          maxLength: 50          
         resourceServer:
           type: string
+          maxLength: 50          
       example:
         resourceGroup: aqm
         resourceServer: example.com
@@ -1529,7 +1663,7 @@ components:
         title: success
         results: [
          { "id": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta",
-         "observationDateTime": 2020-06-01T14:20:00Z,
+         "observationDateTime": "2020-06-01T14:20:00Z",
          "trip_id": 23958368,
          "route_id": 14U
          }
@@ -1692,7 +1826,7 @@ components:
         type: 200
         title: success
         detail: Subscription deleted
-	        
+          
     standardBadRequestErrorResponse:
       title: standardBadRequestErrorResponse
       properties:
