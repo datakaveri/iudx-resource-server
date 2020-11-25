@@ -115,6 +115,14 @@ paths:
           items:
             type: number
           format: double
+      - name: maxDistance
+        description: 'Maximum distance from center point in meters'
+        schema:
+          type: number
+          minimum: 0
+          maximum: 100000
+        in: query
+        required: false
           
       - name: timerel
         in: query
@@ -1882,8 +1890,3 @@ components:
         type: 400
         title: Bad Request Data
         detail: Missing/Invalid parameters
-
-        
-
-
-
