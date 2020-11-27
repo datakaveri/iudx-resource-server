@@ -91,6 +91,8 @@ import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.response.RestResponse;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
+import iudx.resource.server.apiserver.validation.ValidationFailureHandler;
+import iudx.resource.server.apiserver.validation.HTTPRequestValidatiorsHandlersFactory;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
@@ -126,7 +128,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   private HttpServer server;
   private Router router;
-  private final int port = 80;
+  private final int port = 8443;
   private boolean isSSL;
   private String keystore;
   private String keystorePassword;
@@ -180,13 +182,24 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.route().handler(BodyHandler.create());
     router.route().handler(AuthHandler.create(vertx));
 
+    HTTPRequestValidatiorsHandlersFactory validators = new HTTPRequestValidatiorsHandlersFactory();
+    ValidationFailureHandler validationsFailureHandler=new ValidationFailureHandler();
+
     /* NGSI-LD api endpoints */
-    router.get(NGSILD_ENTITIES_URL).handler(this::handleEntitiesQuery);
+    router.get(NGSILD_ENTITIES_URL)
+        .handler(validators.getValidation4Context("ENTITY"))
+        .handler(this::handleEntitiesQuery)
+        .failureHandler(validationsFailureHandler);
     router
         .get(NGSILD_ENTITIES_URL + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
         .handler(this::handleEntitiesQuery);
     router.post(NGSILD_POST_QUERY_PATH).handler(this::handlePostEntitiesQuery);
-    router.get(NGSILD_TEMPORAL_URL).handler(this::handleTemporalQuery);
+    
+    router.get(NGSILD_TEMPORAL_URL)
+        .handler(validators.getValidation4Context("TEMPORAL"))
+        .handler(this::handleTemporalQuery)
+        .failureHandler(validationsFailureHandler);
+    
     router.post(NGSILD_SUBSCRIPTION_URL).handler(this::handleSubscriptions);
     // append sub
     router.patch(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
@@ -268,7 +281,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       serverOptions.setSsl(false);
     }
 
-    serverOptions.setCompressionSupported(true).setCompressionLevel(5);
+   // serverOptions.setCompressionSupported(true).setCompressionLevel(5);
     server = vertx.createHttpServer(serverOptions);
     server.requestHandler(router).listen(port);
 

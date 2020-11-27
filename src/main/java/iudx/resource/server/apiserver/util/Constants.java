@@ -1,6 +1,7 @@
 package iudx.resource.server.apiserver.util;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class Constants {
 
@@ -200,5 +201,12 @@ public class Constants {
 
   // results
   public static final String SUCCCESS = "success";
+  
+  //Validations
+  public static final int VALIDATION_ID_MIN_LEN=0;
+  public static final int VALIDATION_ID_MAX_LEN=512;
+  public static final String  VALIDATION_ID_PATTERN=".*";//TODO : create a regex for IUDX ID pattern
+  public static final int VALIDATION_MAX_ATTRS=5;
+  
 
 }
