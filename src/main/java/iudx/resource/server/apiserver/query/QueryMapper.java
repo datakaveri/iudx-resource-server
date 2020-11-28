@@ -1,17 +1,19 @@
 package iudx.resource.server.apiserver.query;
 
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import iudx.resource.server.apiserver.util.Constants;
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.api.validation.ValidationException;
+import iudx.resource.server.apiserver.util.Constants;
 
 /**
  * QueryMapper class to convert NGSILD query into json object for the purpose of information
- * exchange among different verticals.
- * TODO Need to add documentation.
+ * exchange among different verticals. TODO Need to add documentation.
  */
 public class QueryMapper {
 
@@ -77,6 +79,8 @@ public class QueryMapper {
         json.put(Constants.JSON_TIME, params.getTemporalRelation().getTime().toString());
         json.put(Constants.JSON_ENDTIME, params.getTemporalRelation().getEndTime().toString());
         json.put(Constants.JSON_TIMEREL, params.getTemporalRelation().getTemprel());
+        isValidTimeInterval(Constants.JSON_DURING, json.getString(Constants.JSON_TIME),
+            json.getString(Constants.JSON_ENDTIME));
       } else {
         json.put(Constants.JSON_TIME, params.getTemporalRelation().getTime().toString());
         json.put(Constants.JSON_TIMEREL, params.getTemporalRelation().getTemprel());
@@ -105,6 +109,29 @@ public class QueryMapper {
     json.put(Constants.JSON_SEARCH_TYPE, getSearchType());
     LOGGER.debug("Info : json " + json);
     return json;
+  }
+
+  /*
+   * check for a valid days interval for temporal queries
+   */
+  //TODO : decide how to enforce for before and after queries.
+  private void isValidTimeInterval(String timeRel, String time, String endTime) {
+    long totalDaysAllowed = 0;
+    if (timeRel.equalsIgnoreCase("during")) {
+      ZonedDateTime start = ZonedDateTime.parse(time);
+      ZonedDateTime end = ZonedDateTime.parse(endTime);
+      Duration duration = Duration.between(start, end);
+      totalDaysAllowed = duration.toDays();
+    } else if (timeRel.equalsIgnoreCase("after")) {
+      // how to enforce days duration for after and before,i.e here or DB
+    } else if (timeRel.equalsIgnoreCase("before")) {
+
+    }
+    if (totalDaysAllowed > Constants.VALIDATION_MAX_DAYS_INTERVAL_ALLOWED) {
+      ValidationException exception=new ValidationException("time interval greater than 10 days is not allowed");
+      exception.setParameterName("time-endtime");
+      throw exception;
+    }
   }
 
   private <T> T getOrDefault(T value, T def) {
