@@ -180,7 +180,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
     // router.route().handler(new TokenHandler());
     router.route().handler(BodyHandler.create());
-    router.route().handler(AuthHandler.create(vertx));
+    //router.route().handler(AuthHandler.create(vertx));
 
     HTTPRequestValidatiorsHandlersFactory validators = new HTTPRequestValidatiorsHandlersFactory();
     ValidationFailureHandler validationsFailureHandler=new ValidationFailureHandler();
@@ -190,10 +190,17 @@ public class ApiServerVerticle extends AbstractVerticle {
         .handler(validators.getValidation4Context("ENTITY"))
         .handler(this::handleEntitiesQuery)
         .failureHandler(validationsFailureHandler);
+    
     router
         .get(NGSILD_ENTITIES_URL + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
-        .handler(this::handleEntitiesQuery);
-    router.post(NGSILD_POST_QUERY_PATH).handler(this::handlePostEntitiesQuery);
+        .handler(validators.getValidation4Context("LATEST"))
+        .handler(this::handleEntitiesQuery)
+        .failureHandler(validationsFailureHandler);
+    
+    router.post(NGSILD_POST_QUERY_PATH)
+        .handler(validators.getValidation4Context("POST"))
+        .handler(this::handlePostEntitiesQuery)
+        .failureHandler(validationsFailureHandler);
     
     router.get(NGSILD_TEMPORAL_URL)
         .handler(validators.getValidation4Context("TEMPORAL"))
