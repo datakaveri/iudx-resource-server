@@ -12,12 +12,12 @@ import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_Q;
 import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME;
 import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEREL;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import io.vertx.core.json.JsonObject;
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
 import io.vertx.ext.web.api.validation.HTTPRequestValidationHandler;
 import io.vertx.ext.web.api.validation.ParameterTypeValidator;
 import iudx.resource.server.apiserver.validation.types.AttrsTypeValidator;
@@ -122,30 +122,30 @@ public class HTTPRequestValidatiorsHandlersFactory {
   }
 
   private HTTPRequestValidationHandler getPostRequestValidations() {
-    HTTPRequestValidationHandler validator=null;
-    String  jsonSchema = null;
-    
-    try {     
-      jsonSchema=loadJson();
-    }catch(Exception ex) {
+    HTTPRequestValidationHandler validator = null;
+    String jsonSchema = null;
+
+    try {
+      jsonSchema = loadJson();
+    } catch (Exception ex) {
       LOGGER.error(ex);
       return validator;
     }
-    validator=HTTPRequestValidationHandler.create().addJsonBodySchema(jsonSchema);
+    validator = HTTPRequestValidationHandler.create().addJsonBodySchema(jsonSchema);
     return validator;
   }
-  
-  
+
+
   private String loadJson() {
-    String jsonStr=null;
-    try {
-        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        jsonStr = new String(Files.readAllBytes(Paths.get(classloader.getResource("post_request_json.json").getPath())));
+    String jsonStr = null;
+    try (InputStream inputStream =
+        getClass().getClassLoader().getResourceAsStream("post_request_schema.json")) {
+      jsonStr = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
     } catch (IOException e) {
-        e.printStackTrace();
-        return jsonStr;
+      LOGGER.error(e);
+      return jsonStr;
     }
     return jsonStr;
-}
+  }
 
 }
