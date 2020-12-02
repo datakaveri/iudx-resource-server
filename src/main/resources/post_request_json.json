@@ -43,20 +43,66 @@
 					"type": "string",
 					"default": "",
 					"pattern": "^.*$",
-					"enum":["point","Point","polygon","Polygon","LineString","linestring"]
+					"enum":["point","Point","polygon","Polygon","LineString","linestring","bbox"]
 				},
 				"coordinates": {
-					"$id": "#root/geoQ/coordinates", 
-					"title": "Coordinates", 
-					"type": "array",
-					"default": [],
-					"items":{
-						"$id": "#root/geoQ/coordinates/items", 
-						"title": "Items", 
-						"type": "number",
-						"default": 0.0
-					}
-				},
+				"anyOf":[
+                    {
+                        "$id": "#root/geoQ/coordinates", 
+                        "title": "Coordinates", 
+                        "type": "array",
+                        "default": [],
+                        "items":{
+                            "$id": "#root/geoQ/coordinates/items", 
+                            "title": "Items", 
+                            "type": "number",
+                            "default": 0.0
+                        }
+                    },
+                    {
+                        "$id": "#root/geoQ/coordinates",
+                        "title": "Coordinates",
+                        "type": "array",
+                        "default": [],
+                        "items": {
+                            "$id": "#root/geoQ/coordinates/items",
+                            "title": "Items",
+                            "type": "array",
+                            "default": [],
+                            "items": {
+                                "$id": "#root/geoQ/coordinates/items/items",
+                                "title": "Items",
+                                "type": "array",
+                                "default": [],
+                                "items": {
+                                    "$id": "#root/geoQ/coordinates/items/items/items",
+                                    "title": "Items",
+                                    "type": "number",
+                                    "default": 0.0
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "$id": "#root/geoQ/coordinates",
+                        "title": "Coordinates",
+                        "type": "array",
+                        "default": [],
+                        "items": {
+                            "$id": "#root/geoQ/coordinates/items",
+                            "title": "Items",
+                            "type": "array",
+                            "default": [],
+                            "items": {
+                                "$id": "#root/geoQ/coordinates/items/items",
+                                "title": "Items",
+                                "type": "number",
+                                "default": 0.0
+                            }
+                        }
+                    }
+                   ]
+                  },
 				"georel": {
 					"$id": "#root/geoQ/georel", 
 					"title": "Georel", 

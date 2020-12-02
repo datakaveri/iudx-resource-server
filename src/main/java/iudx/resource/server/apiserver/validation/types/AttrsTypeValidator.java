@@ -7,12 +7,14 @@ import io.vertx.ext.web.api.validation.ParameterTypeValidator;
 
 public class AttrsTypeValidator {
   private static final Logger LOGGER = LogManager.getLogger(AttrsTypeValidator.class);
-  
-  private  Integer maxAttrsItems = VALIDATION_MAX_ATTRS;
 
-  public  ParameterTypeValidator create() {
+  private Integer maxAttrsItems = VALIDATION_MAX_ATTRS;
+
+  public ParameterTypeValidator create() {
     LOGGER.debug("creating ParameterTypeValidator for attrs ");
-    ParameterTypeValidator attrsTypeValidator=ParameterTypeValidator.createStringTypeValidator(".*", 1, 200, "");
-    return ParameterTypeValidator.createArrayTypeValidator(attrsTypeValidator, "csv", maxAttrsItems, 1);
+    ParameterTypeValidator attrsTypeValidator =
+        ParameterTypeValidator.createStringTypeValidator(".*", 1, 200, "");
+    return ParameterTypeValidator.createArrayTypeValidator(attrsTypeValidator, "csv", maxAttrsItems,
+        1);
   }
 }

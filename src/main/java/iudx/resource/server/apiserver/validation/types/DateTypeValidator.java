@@ -20,10 +20,12 @@ public class DateTypeValidator {
 
 
     private boolean isValidDate(String value) {
+      String dateString = value.trim().replaceAll("\\s", "+");//since + is treated as space in uri params
       try {
-        //ZonedDateTime.parse(value); //TODO : validate date -time for UTC and IST
+        ZonedDateTime.parse(dateString);
         return true;
       } catch (DateTimeParseException e) {
+        System.out.println(e);
         return false;
       }
     }

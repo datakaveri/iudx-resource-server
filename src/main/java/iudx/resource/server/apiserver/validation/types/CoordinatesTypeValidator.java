@@ -1,11 +1,14 @@
 package iudx.resource.server.apiserver.validation.types;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.ext.web.api.RequestParameter;
 import io.vertx.ext.web.api.validation.ParameterTypeValidator;
 import io.vertx.ext.web.api.validation.ValidationException;
+
+import static iudx.resource.server.apiserver.util.Constants.*;
 
 // TODO : A better way to validate coordinates,
 // current method works but not very efficient,
@@ -18,7 +21,6 @@ public class CoordinatesTypeValidator {
       "^(\\+|-)?(?:90(?:(?:\\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\\.[0-9]{1,6})?))$";
   private static final String LONGITUDE_PATTERN =
       "^(\\+|-)?(?:180(?:(?:\\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\\.[0-9]{1,6})?))$";
-
 
 
   public ParameterTypeValidator create() {
@@ -46,14 +48,17 @@ public class CoordinatesTypeValidator {
       }
       return true;
     }
+    
+    private boolean isPricisonLengthAllowed(String value) {
+      return (new BigDecimal(value).scale() > VALIDATION_COORDINATE_PRECISION_ALLOWED);
+    }
 
     private boolean isValidCoordinates(String value) {
       String coordinates = value.replaceAll("\\[", "").replaceAll("\\]", "");
       String[] coordinatesArray = coordinates.split(",");
       boolean checkLongitudeFlag = false;
       for (String coordinate : coordinatesArray) {
-        // check for length of coordinate must not be greater than 10 ###.######
-        if (coordinate.length() > 10) {
+        if (isPricisonLengthAllowed(coordinate)) {
           throw ValidationException.ValidationExceptionFactory
               .generateNotMatchValidationException("invalid coordinate" + coordinate);
         }
@@ -71,7 +76,7 @@ public class CoordinatesTypeValidator {
     public RequestParameter isValid(String value) throws ValidationException {
       if (!isValidCoordinates(value)) {
         throw ValidationException.ValidationExceptionFactory
-            .generateNotMatchValidationException("invalid coordinate" + value);
+            .generateNotMatchValidationException("invalid coordinate (only 6 digits allowed a) " + value);
       }
       return RequestParameter.create(value);
 
