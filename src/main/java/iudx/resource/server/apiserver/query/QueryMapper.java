@@ -76,8 +76,10 @@ public class QueryMapper {
         && params.getTemporalRelation().getTime() != null) {
       isTemporal = true;
       if (params.getTemporalRelation().getTemprel().equalsIgnoreCase(Constants.JSON_DURING)) {
-        json.put(Constants.JSON_TIME, params.getTemporalRelation().getTime().toString());
-        json.put(Constants.JSON_ENDTIME, params.getTemporalRelation().getEndTime().toString());
+        LOGGER.debug("Info : inside during ");
+
+        json.put(Constants.JSON_TIME, params.getTemporalRelation().getTime());
+        json.put(Constants.JSON_ENDTIME, params.getTemporalRelation().getEndTime());
         json.put(Constants.JSON_TIMEREL, params.getTemporalRelation().getTemprel());
         isValidTimeInterval(Constants.JSON_DURING, json.getString(Constants.JSON_TIME),
             json.getString(Constants.JSON_ENDTIME));
@@ -114,10 +116,21 @@ public class QueryMapper {
   /*
    * check for a valid days interval for temporal queries
    */
-  //TODO : decide how to enforce for before and after queries.
+  // TODO : decide how to enforce for before and after queries.
   private void isValidTimeInterval(String timeRel, String time, String endTime) {
     long totalDaysAllowed = 0;
-    if (timeRel.equalsIgnoreCase("during")) {
+    if (timeRel.equalsIgnoreCase(Constants.JSON_DURING)) {
+      LOGGER.debug("Info : inside isValidTimeInterval ");
+      LOGGER.debug("Info : inside isValidTimeInterval time : " + time.isBlank());
+      LOGGER.debug("Info : inside isValidTimeInterval endTime : " + endTime);
+      if (isNullorEmpty(time) || isNullorEmpty(endTime)) {
+        ValidationException exception =
+            new ValidationException("time and endTime both are mandatory for during Query.");
+        exception.setParameterName("time/endtime");
+        throw exception;
+      }
+
+      LOGGER.debug("Info : inside isValidTimeInterval after check");
       ZonedDateTime start = ZonedDateTime.parse(time);
       ZonedDateTime end = ZonedDateTime.parse(endTime);
       Duration duration = Duration.between(start, end);
@@ -128,11 +141,19 @@ public class QueryMapper {
 
     }
     if (totalDaysAllowed > Constants.VALIDATION_MAX_DAYS_INTERVAL_ALLOWED) {
-      ValidationException exception=new ValidationException("time interval greater than 10 days is not allowed");
+      ValidationException exception =
+          new ValidationException("time interval greater than 10 days is not allowed");
       exception.setParameterName("time-endtime");
       throw exception;
     }
   }
+
+  private boolean isNullorEmpty(String value) {
+    if (value != null && !value.isEmpty())
+      return false;
+    return true;
+  }
+
 
   private <T> T getOrDefault(T value, T def) {
     return (value == null) ? def : value;

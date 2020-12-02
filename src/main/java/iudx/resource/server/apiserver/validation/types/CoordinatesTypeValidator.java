@@ -1,16 +1,20 @@
 package iudx.resource.server.apiserver.validation.types;
 
+import static iudx.resource.server.apiserver.util.Constants.*;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.util.List;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.ext.web.api.RequestParameter;
 import io.vertx.ext.web.api.validation.ParameterTypeValidator;
 import io.vertx.ext.web.api.validation.ValidationException;
 
-import static iudx.resource.server.apiserver.util.Constants.*;
-
-// TODO : A better way to validate coordinates,
+// TODO : find a better way to validate coordinates,
 // current method works but not very efficient,
 // it assumes in a , separated array odd index value will be a longitude and,
 // even index value will be a latitude
@@ -19,8 +23,9 @@ public class CoordinatesTypeValidator {
 
   private static final String LATITUDE_PATTERN =
       "^(\\+|-)?(?:90(?:(?:\\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\\.[0-9]{1,6})?))$";
-  private static final String LONGITUDE_PATTERN =
+  private  static final String LONGITUDE_PATTERN =
       "^(\\+|-)?(?:180(?:(?:\\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\\.[0-9]{1,6})?))$";
+  private final int allowedMaxCoordinates = VALIDATION_ALLOWED_COORDINATES;
 
 
   public ParameterTypeValidator create() {
@@ -48,7 +53,7 @@ public class CoordinatesTypeValidator {
       }
       return true;
     }
-    
+
     private boolean isPricisonLengthAllowed(String value) {
       return (new BigDecimal(value).scale() > VALIDATION_COORDINATE_PRECISION_ALLOWED);
     }
@@ -72,23 +77,65 @@ public class CoordinatesTypeValidator {
       return true;
     }
 
+    private String getProbableGeomType(String coords) {
+      String geom = null;
+      if (coords.startsWith("[[[")) {
+        geom = "polygon";
+      } else if (coords.startsWith("[[")) {
+        geom = "line";
+      } else if (coords.startsWith("[")) {
+        geom = "point";
+      }
+      return geom;
+    }
+
+    private boolean isValidCoordinateCount(String coordinates) {
+      String geom = getProbableGeomType(coordinates);
+      List<String> coordinatesList = getCoordinatesValues(coordinates);
+      if (geom.equalsIgnoreCase("point")) {
+        if (coordinatesList.size()!= 2) {
+          throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
+              "Invalid coordinates given for point");
+        }
+      } else if (geom.equalsIgnoreCase("polygon")) {
+        if (coordinatesList.size() > allowedMaxCoordinates*2) {
+          return false;
+        }
+      } else {
+        if (coordinatesList.size() > allowedMaxCoordinates*2) {
+          return false;
+        }
+        // TODO : handle for line and bbox (since line and bbox share same [[][]] structure )
+        return true;
+      }
+      return true;
+    }
+
+    private List<String> getCoordinatesValues(String coordinates) {
+      Pattern pattern = Pattern.compile("[\\w]+[^\\,]*(?:\\.*[\\w])");
+      Matcher matcher = pattern.matcher(coordinates);
+      List<String> coordinatesValues =
+          matcher.results().map(MatchResult::group).collect(Collectors.toList());
+      return coordinatesValues;
+    }
+
     @Override
     public RequestParameter isValid(String value) throws ValidationException {
-      if (!isValidCoordinates(value)) {
+      if (value.isBlank()) {
         throw ValidationException.ValidationExceptionFactory
-            .generateNotMatchValidationException("invalid coordinate (only 6 digits allowed a) " + value);
+            .generateNotMatchValidationException("Empty value not allowed for parameter.");
+      }
+      if (!isValidCoordinateCount(value)) {
+        throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
+            "Invalid numbers of coordinates supplied (Only 10 coordinates allowed for polygon and line & 1 coordinate for point)");
+      }
+      if (!isValidCoordinates(value)) {
+        throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
+            "invalid coordinate (only 6 digits allowed a) " + value);
       }
       return RequestParameter.create(value);
 
     }
 
   }
-
-  public static void main(String[] args) {
-    String coordinates =
-        "[[[72.719,90],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]";
-    ParameterTypeValidator test = new CoordinatesTypeValidator().create();
-    System.out.println(test.isValid(coordinates) + "");
-  }
-
 }

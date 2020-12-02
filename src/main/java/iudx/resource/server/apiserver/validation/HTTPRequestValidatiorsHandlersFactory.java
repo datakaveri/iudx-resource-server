@@ -83,6 +83,8 @@ public class HTTPRequestValidatiorsHandlersFactory {
         .addQueryParamWithCustomTypeValidator(NGSILDQUERY_Q, qTypeValidator, false, false)
         .addQueryParamWithCustomTypeValidator(NGSILDQUERY_MAXDISTANCE, distanceTypeValidator, false,
             false)
+        .addQueryParamWithCustomTypeValidator("maxDistance", distanceTypeValidator, false,
+            false)
         .addQueryParamWithCustomTypeValidator("options", optionsTypeValidator, false, false)
         .addQueryParamWithCustomTypeValidator(NGSILDQUERY_COORDINATES, coordinatesTypeValidator,
             false, false);
@@ -102,7 +104,18 @@ public class HTTPRequestValidatiorsHandlersFactory {
             .addQueryParamWithCustomTypeValidator(NGSILDQUERY_TIME, dateTypeValidator, false, false)
             .addQueryParamWithCustomTypeValidator(NGSILDQUERY_ENDTIME, dateTypeValidator, false,
                 false)
-            .addQueryParamWithCustomTypeValidator("options", optionsTypeValidator, false, false);
+            .addQueryParamWithCustomTypeValidator("options", optionsTypeValidator, false, false)
+            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_GEOREL, georelTypeValidator, false, false)
+            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_GEOMETRY, geometryTypeValidator, false,
+                false)
+            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_GEOPROPERTY, geoPropertyValidator, false,
+                false)
+            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_MAXDISTANCE, distanceTypeValidator, false,
+                false)
+            .addQueryParamWithCustomTypeValidator("maxDistance", distanceTypeValidator, false,
+                false)
+            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_COORDINATES, coordinatesTypeValidator,
+                false, false);
     return validator;
   }
 

@@ -209,6 +209,8 @@ public class Constants {
   public static final int VALIDATION_MAX_ATTRS=5;
   public static final int VALIDATION_MAX_DAYS_INTERVAL_ALLOWED=10;
   public static final int VALIDATION_COORDINATE_PRECISION_ALLOWED=6;
+  public static final int VALIDATIONS_MAX_ATTR_LENGTH=100;
+  public static final int VALIDATION_ALLOWED_COORDINATES=10;
   
 
 }

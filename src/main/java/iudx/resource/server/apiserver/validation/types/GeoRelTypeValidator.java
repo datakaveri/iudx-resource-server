@@ -10,7 +10,7 @@ import io.vertx.ext.web.api.validation.ValidationException;
 public class GeoRelTypeValidator {
   private static final Logger LOGGER = LogManager.getLogger(GeoRelTypeValidator.class);
 
-  private List<Object> allowedValues = List.of("within", "intersect", "near");
+  private List<String> allowedValues = List.of("within", "intersect", "near");
 
   public ParameterTypeValidator create() {
     ParameterTypeValidator geoRelTypeValidator = new GeoRelValidator();
@@ -21,8 +21,11 @@ public class GeoRelTypeValidator {
   class GeoRelValidator implements ParameterTypeValidator {
     @Override
     public RequestParameter isValid(String value) throws ValidationException {
+      if(value.isBlank()) {
+        throw ValidationException.ValidationExceptionFactory
+        .generateNotMatchValidationException("Empty value not allowed for parameter.");
+      }
       String[] geoRelationValues = value.split(";");
-      LOGGER.info("georel[0] :" + geoRelationValues[0]);
       if (!allowedValues.contains(geoRelationValues[0])) {
         throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
             "Value " + value + " " + "in not inside enum list " + allowedValues.toString());
