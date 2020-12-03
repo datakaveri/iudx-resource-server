@@ -51,7 +51,7 @@ public class QTypeValidator {
       }
       if (!isValidOperator(qJson.getString(JSON_OPERATOR))) {
         throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
-            "Not a valid OPerator in <<q>> query, only " + allowedOperators + "  allowed");
+            "Not a valid Operator in <<q>> query, only " + allowedOperators + "  allowed");
       }
       if (!isValidValue(qJson.getString(JSON_VALUE))) {
         throw ValidationException.ValidationExceptionFactory
