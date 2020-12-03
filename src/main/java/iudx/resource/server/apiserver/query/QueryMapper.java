@@ -50,7 +50,7 @@ public class QueryMapper {
       LOGGER.debug("Info : json " + json);
     }
     if (params.getGeoRel() != null
-        && (params.getCoordinates() != null || params.getGeometry() != null)) {
+        && params.getCoordinates() != null && params.getGeometry() != null) {
       isGeoSearch = true;
       if (params.getGeometry().equalsIgnoreCase(Constants.GEOM_POINT)
           && params.getGeoRel().getRelation().equals(Constants.JSON_NEAR)
