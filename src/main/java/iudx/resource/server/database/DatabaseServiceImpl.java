@@ -30,9 +30,11 @@ public class DatabaseServiceImpl implements DatabaseService {
   private JsonObject query;
   private QueryDecoder queryDecoder = new QueryDecoder();
   private ResponseBuilder responseBuilder;
+  private String timeLimit;
 
-  public DatabaseServiceImpl(ElasticClient client) {
+  public DatabaseServiceImpl(ElasticClient client, String timeLimit) {
     this.client = client;
+    this.timeLimit = timeLimit;
   }
 
   /**
@@ -48,6 +50,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     LOGGER.debug("Info: searchQuery;" + request.toString());
 
     request.put(SEARCH_KEY, true);
+    request.put(TIME_LIMIT, timeLimit);
     // TODO : only for testing comment after testing.
     request.put("isTest", true);
 
@@ -140,6 +143,8 @@ public class DatabaseServiceImpl implements DatabaseService {
     LOGGER.debug("Info: countQuery;" + request.toString());
 
     request.put(SEARCH_KEY, false);
+    request.put(TIME_LIMIT, timeLimit);
+
 
     if (!request.containsKey(ID)) {
       LOGGER.debug("Info: " + ID_NOT_FOUND);

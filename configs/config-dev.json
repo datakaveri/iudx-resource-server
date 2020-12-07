@@ -10,7 +10,8 @@
             "databaseIP": "localhost.database",
             "databasePort": 1234,
             "dbUser": "",
-            "dbPassword": ""
+            "dbPassword": "",
+            "timeLimit": ""
         },
         {
             "id": "iudx.resource.server.authenticator.AuthenticationVerticle",

@@ -29,6 +29,11 @@ public class QueryDecoder {
     JsonArray id = request.getJsonArray(ID);
     JsonArray filterQuery = new JsonArray();
     String queryGeoShape = null;
+    
+    // Time Object (for limiting query based on time parameters) instantiated to null;
+    JsonObject timeObject = null;
+    String timeLimit = request.getString(TIME_LIMIT).split(",")[1];
+    int numDays = Integer.valueOf(request.getString(TIME_LIMIT).split(",")[2]);
 
     JsonObject boolObject = new JsonObject().put(BOOL_KEY, new JsonObject());
     filterQuery.add(new JsonObject(
@@ -131,11 +136,12 @@ public class QueryDecoder {
       match = true;
       String timeRelation = request.getString(REQ_TIMEREL);
       String time = request.getString(TIME_KEY);
+      ZonedDateTime zdt;
       
       /* check if the time is valid based on ISO 8601 format. */
 
       try {
-        ZonedDateTime zdt = ZonedDateTime.parse(time);
+        zdt = ZonedDateTime.parse(time);
         LOGGER.debug("Parsed time: " + zdt.toString());
       } catch (DateTimeParseException e) {
         LOGGER.error("Invalid Date exception: " + e.getMessage());
@@ -150,20 +156,35 @@ public class QueryDecoder {
             TIME_QUERY.replace("$1", GREATER_THAN_EQ).replace("$2\"", time.concat(endTemp));
 
       } else if (BEFORE.equalsIgnoreCase(timeRelation)) {
-        rangeTimeQuery = TIME_QUERY.replace("$1", LESS_THAN).replace("$2", time);
+        zdt = ZonedDateTime.parse(time);
+        // subtract numDays to limit the query computation
+        String startTime = zdt.minusDays(numDays).toString();
+        LOGGER.debug("###### StartTime: " + startTime);
+        String startTemp = "\",\"gte\":" + "\"" + startTime + "\"";
+        rangeTimeQuery = TIME_QUERY.replace("$1", LESS_THAN_EQ).replace("$2\"", time.concat(startTemp));
 
       } else if (AFTER.equalsIgnoreCase(timeRelation)) {
-        rangeTimeQuery = TIME_QUERY.replace("$1", GREATER_THAN).replace("$2", time);
-
+        // add numDays to limit the query computation
+        zdt = ZonedDateTime.parse(time).plusDays(numDays);
+        ZonedDateTime currentTime = ZonedDateTime.now();
+        String endTime;
+        // Verify if endTime < currentTime
+        long difference = zdt.compareTo(currentTime);
+        if (difference > 0) {
+          endTime = currentTime.toString();
+        } else {
+          endTime = zdt.toString();
+        }
+        String endTemp = "\",\"lte\":" + "\"" + endTime + "\"";
+        rangeTimeQuery = TIME_QUERY.replace("$1", GREATER_THAN_EQ).replace("$2\"", time.concat(endTemp));
       } else if (TEQUALS.equalsIgnoreCase(timeRelation)) {
         rangeTimeQuery = TERM_QUERY.replace("$1", TIME_FIELD_DB).replace("$2", time);
-
       } else {
         return new JsonObject().put(ERROR, MISSING_TEMPORAL_FIELDS);
-
       }
       System.out.println(rangeTimeQuery);
-      filterQuery.add(new JsonObject(rangeTimeQuery));
+      timeObject = new JsonObject(rangeTimeQuery);
+      filterQuery.add(timeObject);
     }
 
     /* Attribute Search */
@@ -255,6 +276,35 @@ public class QueryDecoder {
       return new JsonObject().put(ERROR, INVALID_SEARCH);
     } else {
       /* return fully formed elastic query */
+
+      /* To append a time component to existing queries (Geo, Attribute, Response Filter) for limiting the query response
+      * Please update the config files accordingly while deploying
+      * USAGE:
+      * For production-
+      * timeLimit="production,<value in months/days/hours>"
+      * eg. timeLimit="production,30" for 30 days of data from now.
+      * For testing-
+      * timeLimit="test,<value of date in ISO 8601 date format>,<value in days>"
+      * eg. timeLimit="test,2020-09-22T00:00:00Z,30"
+      * */
+
+      if (timeObject == null) {
+        String timeLimitString="";
+        if(request.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(PROD_INSTANCE)) {
+          timeLimitString = TIME_QUERY.replace("$1", LESS_THAN_EQ).replace("$2", "now-"
+                  + timeLimit + "d/d");
+        } else if (request.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(TEST_INSTANCE)) {
+          String endTime = request.getString(TIME_LIMIT).split(",")[1];
+          ZonedDateTime endTimeZ = ZonedDateTime.parse(endTime);
+          ZonedDateTime startTime = endTimeZ.minusDays(numDays);
+          String startTemp = "\",\"gte\":" + "\"" + startTime + "\"";
+          timeLimitString = TIME_QUERY.replace("$1", LESS_THAN_EQ).replace("$2\"",
+                  endTime.concat(startTemp));
+        }
+        timeObject = new JsonObject(timeLimitString);
+        filterQuery.add(timeObject);
+        LOGGER.debug("#######TIME COMPONENT ATTACHED: " + filterQuery.toString());
+      }
       boolObject.getJsonObject(BOOL_KEY).put(FILTER_KEY, filterQuery);
       return elasticQuery.put(QUERY_KEY, boolObject);
     }
