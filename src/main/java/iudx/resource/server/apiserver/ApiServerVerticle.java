@@ -92,6 +92,7 @@ import iudx.resource.server.apiserver.response.RestResponse;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.validation.ValidationFailureHandler;
+import iudx.resource.server.apiserver.validation.Handlers.HeadersHandler;
 import iudx.resource.server.apiserver.validation.HTTPRequestValidatiorsHandlersFactory;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.DatabaseService;
@@ -178,7 +179,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     router = Router.router(vertx);
     router.route().handler(
         CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
-    // router.route().handler(new TokenHandler());
+    //router.route().handler(HeadersHandler.create());
     router.route().handler(BodyHandler.create());
     //router.route().handler(AuthHandler.create(vertx));
 
@@ -320,6 +321,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     // get query paramaters
     MultiMap params = getQueryParams(routingContext, response).get();
+    MultiMap headerParams=request.headers();
     // validate request parameters
     Future<Boolean> validationResult = Validator.validate(params);
     validationResult.onComplete(validationHandler -> {
@@ -391,6 +393,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = routingContext.getBodyAsJson();
     LOGGER.debug("Info: request Json :: ;" + requestJson);
     HttpServerResponse response = routingContext.response();
+    MultiMap headerParams=request.headers();
     // validate request parameters
     Future<Boolean> validationResult = Validator.validate(requestJson);
     validationResult.onComplete(validationHandler -> {
@@ -452,6 +455,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String instanceID = request.getHeader(HEADER_HOST);
     // get query parameters
     MultiMap params = getQueryParams(routingContext, response).get();
+    MultiMap headerParams=request.headers();
     // validate request params
     Future<Boolean> validationResult = Validator.validate(params);
     validationResult.onComplete(validationHandler -> {

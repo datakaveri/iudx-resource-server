@@ -49,28 +49,35 @@ public class QueryMapper {
       json.put(Constants.JSON_ATTRIBUTE_FILTER, jsonArray);
       LOGGER.debug("Info : json " + json);
     }
-    if (params.getGeoRel() != null
-        && params.getCoordinates() != null && params.getGeometry() != null) {
-      isGeoSearch = true;
-      if (params.getGeometry().equalsIgnoreCase(Constants.GEOM_POINT)
-          && params.getGeoRel().getRelation().equals(Constants.JSON_NEAR)
-          && params.getGeoRel().getMaxDistance() != null) {
-        String[] coords = params.getCoordinates().replaceAll("\\[|\\]", "").split(",");
-        json.put(Constants.JSON_LAT, Double.parseDouble(coords[0]));
-        json.put(Constants.JSON_LON, Double.parseDouble(coords[1]));
-        json.put(Constants.JSON_RADIUS, params.getGeoRel().getMaxDistance());
-      } else {
-        json.put(Constants.JSON_GEOMETRY, params.getGeometry());
-        json.put(Constants.JSON_COORDINATES, params.getCoordinates());
-        json.put(Constants.JSON_GEOREL,
-            getOrDefault(params.getGeoRel().getRelation(), Constants.JSON_WITHIN));
-        if (params.getGeoRel().getMaxDistance() != null) {
-          json.put(Constants.JSON_MAXDISTANCE, params.getGeoRel().getMaxDistance());
-        } else if (params.getGeoRel().getMinDistance() != null) {
-          json.put(Constants.JSON_MINDISTANCE, params.getGeoRel().getMinDistance());
+    if (isGeoQuery(params)) {
+      if (params.getGeoRel().getRelation() != null && params.getCoordinates() != null
+          && params.getGeometry() != null && params.getGeoProperty() != null) {
+        isGeoSearch = true;
+        if (params.getGeometry().equalsIgnoreCase(Constants.GEOM_POINT)
+            && params.getGeoRel().getRelation().equals(Constants.JSON_NEAR)
+            && params.getGeoRel().getMaxDistance() != null) {
+          String[] coords = params.getCoordinates().replaceAll("\\[|\\]", "").split(",");
+          json.put(Constants.JSON_LAT, Double.parseDouble(coords[0]));
+          json.put(Constants.JSON_LON, Double.parseDouble(coords[1]));
+          json.put(Constants.JSON_RADIUS, params.getGeoRel().getMaxDistance());
+        } else {
+          json.put(Constants.JSON_GEOMETRY, params.getGeometry());
+          json.put(Constants.JSON_COORDINATES, params.getCoordinates());
+          json.put(Constants.JSON_GEOREL,
+              getOrDefault(params.getGeoRel().getRelation(), Constants.JSON_WITHIN));
+          if (params.getGeoRel().getMaxDistance() != null) {
+            json.put(Constants.JSON_MAXDISTANCE, params.getGeoRel().getMaxDistance());
+          } else if (params.getGeoRel().getMinDistance() != null) {
+            json.put(Constants.JSON_MINDISTANCE, params.getGeoRel().getMinDistance());
+          }
         }
+        LOGGER.debug("Info : json " + json);
+      } else {
+        ValidationException exception = new ValidationException(
+            "incomplete geo-query geoproperty, geometry, georel, coordinates all are mandatory. ");
+        exception.setParameterName("geometry, georel, coordinates, geoproperty");
+        throw exception;
       }
-      LOGGER.debug("Info : json " + json);
     }
     if (isTemporal && params.getTemporalRelation().getTemprel() != null
         && params.getTemporalRelation().getTime() != null) {
@@ -146,6 +153,12 @@ public class QueryMapper {
       exception.setParameterName("time-endtime");
       throw exception;
     }
+  }
+
+  private boolean isGeoQuery(NGSILDQueryParams params) {
+    LOGGER.debug("georel "+params.getGeoRel()+" relation : "+params.getGeoRel().getRelation());
+    return params.getGeoRel().getRelation() != null || params.getCoordinates() != null
+        || params.getGeometry() != null || params.getGeoProperty() != null;
   }
 
   private boolean isNullorEmpty(String value) {

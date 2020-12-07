@@ -23,6 +23,11 @@ public class GeoPropertyTypeValidator {
   class GeoPropertyValidator implements ParameterTypeValidator {
     @Override
     public RequestParameter isValid(String value) throws ValidationException {
+      if(value.isBlank()) {
+        throw ValidationException.ValidationExceptionFactory
+        .generateNotMatchValidationException("Empty/Null value not allowed.");
+
+      }
       if (!allowedValues.contains(value)) {
         throw ValidationException.ValidationExceptionFactory
             .generateNotMatchValidationException("Only location is allowed for geoproperty");

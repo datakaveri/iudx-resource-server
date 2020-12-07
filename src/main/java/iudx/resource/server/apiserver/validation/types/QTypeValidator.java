@@ -44,6 +44,10 @@ public class QTypeValidator {
 
     @Override
     public RequestParameter isValid(String value) throws ValidationException {
+      if(value.isBlank()) {
+        throw ValidationException.ValidationExceptionFactory
+        .generateNotMatchValidationException("Empty value not allowed for parameter.");
+      }
       JsonObject qJson = getQueryTerms(value);
       if (!isValidAttribute(qJson.getString(JSON_ATTRIBUTE))) {
         throw ValidationException.ValidationExceptionFactory
