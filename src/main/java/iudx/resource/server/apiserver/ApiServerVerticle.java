@@ -92,7 +92,6 @@ import iudx.resource.server.apiserver.response.RestResponse;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.validation.ValidationFailureHandler;
-import iudx.resource.server.apiserver.validation.Handlers.HeadersHandler;
 import iudx.resource.server.apiserver.validation.HTTPRequestValidatiorsHandlersFactory;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.DatabaseService;
