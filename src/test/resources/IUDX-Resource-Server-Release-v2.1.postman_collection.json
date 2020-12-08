@@ -18597,8 +18597,8 @@
 								"id": "75437d22-123e-45ab-9467-62248ff89a13",
 								"exec": [
 									"// Test the response code",
-									"pm.test(\"response is 200 (OK)\", function () {",
-									"    pm.response.to.have.status(200);",
+									"pm.test(\"response is 400 (Bad request)\", function () {",
+									"    pm.response.to.have.status(400);",
 									"});",
 									"",
 									"// Test the response header",
@@ -18609,12 +18609,8 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
-									"    const resultsjsonData = body.results[0];",
-									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\");",
-									"    pm.expect(resultsjsonData).to.have.property(\"speed\", 22.8);",
-									"});",
-									""
+									"    pm.expect(body).to.have.property(\"title\", \"Bad Request\");",
+									"});"
 								],
 								"type": "text/javascript"
 							}
