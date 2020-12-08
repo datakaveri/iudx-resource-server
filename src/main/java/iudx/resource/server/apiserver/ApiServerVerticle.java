@@ -1,58 +1,7 @@
 package iudx.resource.server.apiserver;
 
 
-import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
-import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
-import static iudx.resource.server.apiserver.util.Constants.APP_NAME_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.EXCHANGE_ID;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_ACCEPT;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_ALLOW_ORIGIN;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_LENGTH;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_HOST;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_ORIGIN;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_REFERER;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
-import static iudx.resource.server.apiserver.util.Constants.IUDXQUERY_OPTIONS;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_ADAPTER_URL;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_BIND_URL;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_EXCHANGE_URL;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_QUEUE_URL;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_UNBIND_URL;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_VHOST_URL;
-import static iudx.resource.server.apiserver.util.Constants.JSON_ALIAS;
-import static iudx.resource.server.apiserver.util.Constants.JSON_CONSUMER;
-import static iudx.resource.server.apiserver.util.Constants.JSON_COUNT;
-import static iudx.resource.server.apiserver.util.Constants.JSON_DOMAIN;
-import static iudx.resource.server.apiserver.util.Constants.JSON_EXCHANGE_NAME;
-import static iudx.resource.server.apiserver.util.Constants.JSON_INSTANCEID;
-import static iudx.resource.server.apiserver.util.Constants.JSON_NAME;
-import static iudx.resource.server.apiserver.util.Constants.JSON_PROVIDER;
-import static iudx.resource.server.apiserver.util.Constants.JSON_QUEUE_NAME;
-import static iudx.resource.server.apiserver.util.Constants.JSON_RESOURCE_GROUP;
-import static iudx.resource.server.apiserver.util.Constants.JSON_RESOURCE_NAME;
-import static iudx.resource.server.apiserver.util.Constants.JSON_RESOURCE_SERVER;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.JSON_USERSHA;
-import static iudx.resource.server.apiserver.util.Constants.JSON_VHOST;
-import static iudx.resource.server.apiserver.util.Constants.JSON_VHOST_ID;
-import static iudx.resource.server.apiserver.util.Constants.MIME_APPLICATION_JSON;
-import static iudx.resource.server.apiserver.util.Constants.MIME_TEXT_HTML;
-import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_EXCHANGE_NAME;
-import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_NAME;
-import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_PARAM;
-import static iudx.resource.server.apiserver.util.Constants.MSG_PARAM_DECODE_ERROR;
-import static iudx.resource.server.apiserver.util.Constants.MSG_SUB_TYPE_NOT_FOUND;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_ENTITIES_URL;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_QUERY_PATH;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_SUBSCRIPTION_URL;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
-import static iudx.resource.server.apiserver.util.Constants.ROUTE_DOC;
-import static iudx.resource.server.apiserver.util.Constants.ROUTE_STATIC_SPEC;
-import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
-import static iudx.resource.server.apiserver.util.Constants.SUB_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Util.toUriFunction;
 import java.net.URI;
 import java.util.ArrayList;
@@ -92,7 +41,6 @@ import iudx.resource.server.apiserver.response.RestResponse;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.validation.ValidationFailureHandler;
-import iudx.resource.server.apiserver.validation.Handlers.HeadersHandler;
 import iudx.resource.server.apiserver.validation.HTTPRequestValidatiorsHandlersFactory;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.DatabaseService;
@@ -189,65 +137,84 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* NGSI-LD api endpoints */
     router.get(NGSILD_ENTITIES_URL)
         .handler(validators.getValidation4Context("ENTITY"))
+        .handler(AuthHandler.create(vertx))
         .handler(this::handleEntitiesQuery)
         .failureHandler(validationsFailureHandler);
     
     router
         .get(NGSILD_ENTITIES_URL + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
         .handler(validators.getValidation4Context("LATEST"))
+        .handler(AuthHandler.create(vertx))
         .handler(this::handleEntitiesQuery)
         .failureHandler(validationsFailureHandler);
     
     router.post(NGSILD_POST_QUERY_PATH)
+        .consumes(APPLICATION_JSON)
         .handler(validators.getValidation4Context("POST"))
+        .handler(AuthHandler.create(vertx))
         .handler(this::handlePostEntitiesQuery)
         .failureHandler(validationsFailureHandler);
     
     router.get(NGSILD_TEMPORAL_URL)
         .handler(validators.getValidation4Context("TEMPORAL"))
+        .handler(AuthHandler.create(vertx))
         .handler(this::handleTemporalQuery)
         .failureHandler(validationsFailureHandler);
     
-    router.post(NGSILD_SUBSCRIPTION_URL).handler(this::handleSubscriptions);
+    router.post(NGSILD_SUBSCRIPTION_URL)
+        .handler(AuthHandler.create(vertx))
+        .handler(this::handleSubscriptions);
     // append sub
     router.patch(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
+        .handler(AuthHandler.create(vertx))
         .handler(this::appendSubscription);
     // update sub
     router.put(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
+        .handler(AuthHandler.create(vertx))
         .handler(this::updateSubscription);
     // get sub
-    router.get(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias").handler(this::getSubscription);
+    router.get(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
+        .handler(AuthHandler.create(vertx))
+        .handler(this::getSubscription);
     // delete sub
     router.delete(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
+        .handler(AuthHandler.create(vertx))
         .handler(this::deleteSubscription);
 
     /* Management Api endpoints */
     // Exchange
-    router.post(IUDX_MANAGEMENT_EXCHANGE_URL).handler(this::createExchange);
-    router.delete(IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId").handler(this::deleteExchange);
-    router.get(IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId").handler(this::getExchangeDetails);
+    router.post(IUDX_MANAGEMENT_EXCHANGE_URL).handler(AuthHandler.create(vertx)).handler(this::createExchange);
+    router.delete(IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId").handler(AuthHandler.create(vertx)).handler(this::deleteExchange);
+    router.get(IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId").handler(AuthHandler.create(vertx)).handler(this::getExchangeDetails);
     // Queue
-    router.post(IUDX_MANAGEMENT_QUEUE_URL).handler(this::createQueue);
-    router.delete(IUDX_MANAGEMENT_QUEUE_URL + "/:queueId").handler(this::deleteQueue);
-    router.get(IUDX_MANAGEMENT_QUEUE_URL + "/:queueId").handler(this::getQueueDetails);
+    router.post(IUDX_MANAGEMENT_QUEUE_URL).handler(AuthHandler.create(vertx)).handler(this::createQueue);
+    router.delete(IUDX_MANAGEMENT_QUEUE_URL + "/:queueId").handler(AuthHandler.create(vertx)).handler(this::deleteQueue);
+    router.get(IUDX_MANAGEMENT_QUEUE_URL + "/:queueId").handler(AuthHandler.create(vertx)).handler(this::getQueueDetails);
     // bind
-    router.post(IUDX_MANAGEMENT_BIND_URL).handler(this::bindQueue2Exchange);
+    router.post(IUDX_MANAGEMENT_BIND_URL).handler(AuthHandler.create(vertx)).handler(this::bindQueue2Exchange);
     // unbind
-    router.post(IUDX_MANAGEMENT_UNBIND_URL).handler(this::unbindQueue2Exchange);
+    router.post(IUDX_MANAGEMENT_UNBIND_URL).handler(AuthHandler.create(vertx)).handler(this::unbindQueue2Exchange);
     // vHost
-    router.post(IUDX_MANAGEMENT_VHOST_URL).handler(this::createVHost);
-    router.delete(IUDX_MANAGEMENT_VHOST_URL + "/:vhostId").handler(this::deleteVHost);
+    router.post(IUDX_MANAGEMENT_VHOST_URL).handler(AuthHandler.create(vertx)).handler(this::createVHost);
+    router.delete(IUDX_MANAGEMENT_VHOST_URL + "/:vhostId").handler(AuthHandler.create(vertx)).handler(this::deleteVHost);
     // adapter
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/register").handler(this::registerAdapter);
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/register").handler(AuthHandler.create(vertx)).handler(this::registerAdapter);
     router.delete(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSHA/:resourceServer/:resourceGroup")
+        .handler(AuthHandler.create(vertx))
         .handler(this::deleteAdapter);
     router.get(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSHA/:resourceServer/:resourceGroup")
+        .handler(AuthHandler.create(vertx))
         .handler(this::getAdapterDetails);
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat").handler(this::publishHeartbeat);
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat").handler(AuthHandler.create(vertx)).handler(this::publishHeartbeat);
     router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/downstreamissue")
+        .handler(AuthHandler.create(vertx))
         .handler(this::publishDownstreamIssue);
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/dataissue").handler(this::publishDataIssue);
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/entities").handler(this::publishDataFromAdapter);
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/dataissue")
+        .handler(AuthHandler.create(vertx))
+        .handler(this::publishDataIssue);
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/entities")
+        .handler(AuthHandler.create(vertx))
+        .handler(this::publishDataFromAdapter);
 
     /**
      * Documentation routes
