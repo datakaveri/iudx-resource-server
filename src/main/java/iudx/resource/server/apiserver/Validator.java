@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import static iudx.resource.server.apiserver.util.Constants.*;
+
 /**
  * This class is used to validate NGSI-LD request and request parameters.
  *
@@ -18,30 +20,38 @@ import java.util.Set;
 public class Validator {
 
   private static Set<String> validParams = new HashSet<String>();
+  private static Set<String> validHeaders=new HashSet<String>();
 
   static {
-    validParams.add(Constants.NGSILDQUERY_TYPE);
-    validParams.add(Constants.NGSILDQUERY_ID);
-    validParams.add(Constants.NGSILDQUERY_IDPATTERN);
-    validParams.add(Constants.NGSILDQUERY_ATTRIBUTE);
-    validParams.add(Constants.NGSILDQUERY_Q);
-    validParams.add(Constants.NGSILDQUERY_GEOREL);
-    validParams.add(Constants.NGSILDQUERY_GEOMETRY);
-    validParams.add(Constants.NGSILDQUERY_COORDINATES);
-    validParams.add(Constants.NGSILDQUERY_GEOPROPERTY);
-    validParams.add(Constants.NGSILDQUERY_TIMEPROPERTY);
-    validParams.add(Constants.NGSILDQUERY_TIME);
-    validParams.add(Constants.NGSILDQUERY_TIMEREL);
-    validParams.add(Constants.NGSILDQUERY_TIME);
-    validParams.add(Constants.NGSILDQUERY_ENDTIME);
-    validParams.add(Constants.NGSILDQUERY_ENTITIES);
-    validParams.add(Constants.NGSILDQUERY_GEOQ);
-    validParams.add(Constants.NGSILDQUERY_TEMPORALQ);
+    validParams.add(NGSILDQUERY_TYPE);
+    validParams.add(NGSILDQUERY_ID);
+    validParams.add(NGSILDQUERY_IDPATTERN);
+    validParams.add(NGSILDQUERY_ATTRIBUTE);
+    validParams.add(NGSILDQUERY_Q);
+    validParams.add(NGSILDQUERY_GEOREL);
+    validParams.add(NGSILDQUERY_GEOMETRY);
+    validParams.add(NGSILDQUERY_COORDINATES);
+    validParams.add(NGSILDQUERY_GEOPROPERTY);
+    validParams.add(NGSILDQUERY_TIMEPROPERTY);
+    validParams.add(NGSILDQUERY_TIME);
+    validParams.add(NGSILDQUERY_TIMEREL);
+    validParams.add(NGSILDQUERY_TIME);
+    validParams.add(NGSILDQUERY_ENDTIME);
+    validParams.add(NGSILDQUERY_ENTITIES);
+    validParams.add(NGSILDQUERY_GEOQ);
+    validParams.add(NGSILDQUERY_TEMPORALQ);
     // Need to check with the timeProperty in Post Query property for NGSI-LD release v1.3.1
-    validParams.add(Constants.NGSILDQUERY_TIME_PROPERTY);
+    validParams.add(NGSILDQUERY_TIME_PROPERTY);
     
     //for IUDX count query
-    validParams.add(Constants.IUDXQUERY_OPTIONS);
+    validParams.add(IUDXQUERY_OPTIONS);
+  }
+  
+  static {
+    validHeaders.add(HEADER_OPTIONS);
+    validHeaders.add(HEADER_TOKEN);
+    validHeaders.add("User-Agent");
+    validHeaders.add("Content-Type");
   }
 
   /**
@@ -60,6 +70,18 @@ public class Validator {
     }
     return true;
   }
+  
+  
+  private static boolean validateHeader(MultiMap headerMap) {
+    final List<Entry<String, String>> entries = headerMap.entries();
+    for (final Entry<String, String> entry : entries) {
+      System.out.println(entry.getKey());
+      /*
+       * if (!validHeaders.contains(entry.getKey())) { return false; }
+       */
+    }
+    return true;
+  }
 
   /**
    * validate request parameters.
@@ -72,7 +94,7 @@ public class Validator {
     if (validateParams(paramsMap)) {
       promise.complete(true);
     } else {
-      promise.fail(Constants.MSG_INVALID_PARAM);
+      promise.fail(MSG_INVALID_PARAM);
     }
     return promise.future();
   }
@@ -109,7 +131,7 @@ public class Validator {
     if (validateParams(paramsMap)) {
       promise.complete(true);
     } else {
-      promise.fail(Constants.MSG_INVALID_PARAM);
+      promise.fail(MSG_INVALID_PARAM);
     }
     return promise.future();
   }

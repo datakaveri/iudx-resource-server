@@ -72,7 +72,7 @@
         },
         {
             "id": "iudx.resource.server.apiserver.ApiServerVerticle",
-            "ssl": false,            
+            "ssl": true,            
             "keystore": "configs/keystore.jks",
             "keystorePassword": "",
             "rsAdmin": "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc",

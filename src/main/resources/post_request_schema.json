@@ -1,0 +1,189 @@
+{
+	"type": "object",
+	"properties": {
+		"type": {
+			"$id": "#root/type", 
+			"title": "Type", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"entities": {
+			"$id": "#root/entities", 
+			"title": "Entities", 
+			"type": "array",
+			"default": [],
+			"items":{
+				"$id": "#root/entities/items", 
+				"title": "Items", 
+				"type": "object",
+				"properties": {
+					"id": {
+						"$id": "#root/entities/items/id", 
+						"title": "Id", 
+						"type": "string",
+						"default": "",
+						"pattern": "^.*$",
+						"maxLength":512
+					}
+				},
+				"required":["id"],
+				"additionalProperties":false
+			}
+
+		},
+		"geoQ": {
+			"$id": "#root/geoQ", 
+			"title": "Geoq", 
+			"type": "object",
+			"properties": {
+				"geometry": {
+					"$id": "#root/geoQ/geometry", 
+					"title": "Geometry", 
+					"type": "string",
+					"default": "",
+					"pattern": "^.*$",
+					"enum":["point","Point","polygon","Polygon","LineString","linestring","bbox"]
+				},
+				"coordinates": {
+				"anyOf":[
+                    {
+                        "$id": "#root/geoQ/coordinates", 
+                        "title": "Coordinates", 
+                        "type": "array",
+                        "default": [],
+                        "items":{
+                            "$id": "#root/geoQ/coordinates/items", 
+                            "title": "Items", 
+                            "type": "number",
+                            "default": 0.0
+                        }
+                    },
+                    {
+                        "$id": "#root/geoQ/coordinates",
+                        "title": "Coordinates",
+                        "type": "array",
+                        "default": [],
+                        "items": {
+                            "$id": "#root/geoQ/coordinates/items",
+                            "title": "Items",
+                            "type": "array",
+                            "default": [],
+                            "items": {
+                                "$id": "#root/geoQ/coordinates/items/items",
+                                "title": "Items",
+                                "type": "array",
+                                "default": [],
+                                "items": {
+                                    "$id": "#root/geoQ/coordinates/items/items/items",
+                                    "title": "Items",
+                                    "type": "number",
+                                    "default": 0.0
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "$id": "#root/geoQ/coordinates",
+                        "title": "Coordinates",
+                        "type": "array",
+                        "default": [],
+                        "items": {
+                            "$id": "#root/geoQ/coordinates/items",
+                            "title": "Items",
+                            "type": "array",
+                            "default": [],
+                            "items": {
+                                "$id": "#root/geoQ/coordinates/items/items",
+                                "title": "Items",
+                                "type": "number",
+                                "default": 0.0
+                            }
+                        }
+                    }
+                   ]
+                  },
+				"georel": {
+					"$id": "#root/geoQ/georel", 
+					"title": "Georel", 
+					"type": "string",
+					"default": "",
+					"pattern": "^.*$"
+					
+				},
+				"geoproperty": {
+					"$id": "#root/geoQ/geoproperty", 
+					"title": "Geoproperty", 
+					"type": "string",
+					"default": "",
+					"pattern": "^.*$",
+					"enum":["location"]
+				}
+			},
+			"additionalProperties":false
+		}
+,
+		"temporalQ": {
+			"$id": "#root/temporalQ", 
+			"title": "Temporalq", 
+			"type": "object",
+			"properties": {
+				"timerel": {
+					"$id": "#root/temporalQ/timerel", 
+					"title": "Timerel", 
+					"type": "string",
+					"default": "",
+					"pattern": "^.*$",
+					"enum":["after","before","during","between"]
+				},
+				"time": {
+					"$id": "#root/temporalQ/time", 
+					"title": "Time", 
+					"type": "string",
+					"default": "",
+					"pattern": "^.*$"
+				},
+				"endtime": {
+					"$id": "#root/temporalQ/endtime", 
+					"title": "Endtime", 
+					"type": "string",
+					"default": "",
+					"pattern": "^.*$"
+				},
+				"timeProperty": {
+					"$id": "#root/temporalQ/timeProperty", 
+					"title": "Timeproperty", 
+					"type": "string",
+					"default": "",
+					"pattern": "^.*$"
+				}
+			},
+			"additionalProperties":false
+		}
+,
+		"q": {
+			"$id": "#root/q", 
+			"title": "Q", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"options": {
+			"$id": "#root/options", 
+			"title": "Options", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$",
+			"enum":"count"
+		},
+		"attrs": {
+			"$id": "#root/attrs", 
+			"title": "attrs", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$"
+		}
+	},
+	"required":["entities"],
+	"additionalProperties":false
+}
