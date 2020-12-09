@@ -84,8 +84,7 @@ public class ApiServerVerticleTest {
     // get test params from config
     testId = apiConfig.getString("resourceID");
     entityId = "iudx.org/cb03444a83e7d71f9b0894b1ae650d6b/rs.test.iudx.org.in/aqm-bosch-climo";
-    entities = new JsonArray()
-        .add(entityId + "/*");
+    entities = new JsonArray().add(entityId + "/*");
     circleCoords = apiConfig.getString("circleCoords");
     polygonCoords = apiConfig.getString("polygonCoords");
     bboxCoords = apiConfig.getString("bboxCoords");
@@ -139,7 +138,7 @@ public class ApiServerVerticleTest {
     client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
         .addQueryParam(Constants.NGSILDQUERY_GEOREL, "near;maxDistance=1000")
         .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "point")
-        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
         .addQueryParam(Constants.NGSILDQUERY_COORDINATES, circleCoords).send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
@@ -158,9 +157,8 @@ public class ApiServerVerticleTest {
     client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
         .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
         .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "polygon")
-        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
-        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, polygonCoords)
-        .send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, polygonCoords).send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -178,9 +176,8 @@ public class ApiServerVerticleTest {
     client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
         .addQueryParam(Constants.NGSILDQUERY_GEOREL, "intersects")
         .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "linestring")
-        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
-        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, lineCoords)
-        .send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, lineCoords).send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -215,9 +212,8 @@ public class ApiServerVerticleTest {
     client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
         .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
         .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "bbox")
-        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
-        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, bboxCoords)
-        .send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, bboxCoords).send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -236,9 +232,8 @@ public class ApiServerVerticleTest {
         .addQueryParam(Constants.NGSILDQUERY_ATTRIBUTE, "latitude,longitude,resource-id")
         .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
         .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "polygon")
-        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
-        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, polygonCoords)
-        .send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, polygonCoords).send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -392,7 +387,7 @@ public class ApiServerVerticleTest {
         .addQueryParam(Constants.NGSILDQUERY_TIME, endTime)
         .addQueryParam(Constants.NGSILDQUERY_GEOREL, "near;maxDistance=1000")
         .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "point")
-        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
         .addQueryParam(Constants.NGSILDQUERY_COORDINATES, circleCoords)
         .addQueryParam(Constants.NGSILDQUERY_ATTRIBUTE, "latitude,longitude,resource-id")
         .send(handler -> {
@@ -413,7 +408,7 @@ public class ApiServerVerticleTest {
     client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
         .addQueryParam(Constants.NGSILDQUERY_GEOREL, "near;maxDistance=100")
         .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "point")
-        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
         .addQueryParam(Constants.NGSILDQUERY_COORDINATES, circleCoords)
         .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
           if (handler.succeeded()) {
@@ -433,10 +428,9 @@ public class ApiServerVerticleTest {
     client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
         .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
         .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "polygon")
-        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
         .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT)
-        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, polygonCoords)
-        .send(handler -> {
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, polygonCoords).send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.Ok.getCode(), handler.result().statusCode());
             testContext.completeNow();
@@ -454,7 +448,7 @@ public class ApiServerVerticleTest {
     client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
         .addQueryParam(Constants.NGSILDQUERY_GEOREL, "intersects")
         .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "linestring")
-        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
         .addQueryParam(Constants.NGSILDQUERY_COORDINATES, lineCoords)
         .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
           if (handler.succeeded()) {
@@ -474,7 +468,7 @@ public class ApiServerVerticleTest {
     client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
         .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
         .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "bbox")
-        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoJsonLocation")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
         .addQueryParam(Constants.NGSILDQUERY_COORDINATES, bboxCoords)
         .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
           if (handler.succeeded()) {
@@ -487,6 +481,410 @@ public class ApiServerVerticleTest {
   }
 
 
+  @Test
+  @Order(21)
+  @DisplayName("/entities endpoint for invalid id validation (more than 100 char as resource id)")
+  public void testValidation4Id(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    String id = testId
+        + "S43sdliE9W4Gtaq0vZvBvZ9OBAwvWcJxFHatpa3Qh5IhnEJfj6C4pJTejBAtYoDbOWuA8cjX2N9THEG7KzovWkDi"
+        + "koJU2dnxvzndxkdPfIQdM0LoMKO3SHiNrktEb27m4qTft4WjthUmMHFUa9eeFtOpDUcqJ4x5pLWxBbIFGDTFe3w8g"
+        + "UWNZZQ762OwyCbzJfixtYCorFp6Odfq7hPRg2N07nRrL8SxCqjtlS1ywftFJ3RMdkHrlNSTAQo881vkluBu8ggTUc"
+        + "BG6tCGCoVldJ3CTSiTZuM265UYBrxIUdBFGhchb2jcCGomlsvb6q6Qo1HBzicLLbHQ23sdpQ6gqJH1l0uOsnd0ZSa"
+        + "yCusFd0YrroGXuYxII5Dk84XVNIEgrd4SyF6FYoWHcKLlZN3snexLP0atKhmnInEwYh6hgAMuYmkaogsbMxzPJa5y"
+        + "nPynKqv2D8ByegALqyx7kRvjma08uUGbh6Zu75FrI8mKl2kJcfgjR5cpk1gJqDECyNkF";
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, id)
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "bbox")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, bboxCoords)
+        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(22)
+  @DisplayName("/entities endpoint for invalid number of attrs attributes (more than 6)")
+  public void testValidationInvalidAttrsCount(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "bbox")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, bboxCoords)
+        .addQueryParam(Constants.NGSILDQUERY_ATTRIBUTE,
+            "temprature,speed,location,observationSpace,abc,xyz,wxy")
+        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(23)
+  @DisplayName("/entities endpoint for invalid attrs attributes (Empty)")
+  public void testValidationEmptyAttrsCount(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "bbox")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, bboxCoords)
+        .addQueryParam(Constants.NGSILDQUERY_ATTRIBUTE, " ")
+        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(24)
+  @DisplayName("/entities endpoint for invalid attrs attributes (exceed max char limit)")
+  public void testValidationAttrsCharLimit(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "bbox")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, bboxCoords)
+        .addQueryParam(Constants.NGSILDQUERY_ATTRIBUTE,
+            "S43sdliE9W4Gtaq0vZvBvZ9OBAwvWcJxFHatpa3Qh5IhnEJfj6C4pJTejBAtYoDbOWuA8cjX2N9THEG7KzovWkDi\"\n"
+                + "        + \"koJU2dnxvzndxkdPfIQdM0LoMKO3SHiNrktEb27m4qTft4WjthUmMHFUa9eeFtOpDUcqJ4x5pLWxBbIFGDTFe3w8g\"\n"
+                + "        + \"UWNZZQ762OwyCbzJfixtYCorFp6Odfq7hPRg2N07nRrL8SxCqjtlS1ywftFJ3RMdkHrlNSTAQo881vkluBu8ggTUc\"\n")
+        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(25)
+  @DisplayName("/entities endpoint for invalid georel attributes")
+  public void testValidationInvalidGeoRel(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within123")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "bbox")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, bboxCoords)
+        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(26)
+  @DisplayName("/entities endpoint for invalid georel attributes (Empty)")
+  public void testValidationEmptyGeoRel(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, " ")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "bbox")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, bboxCoords)
+        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(27)
+  @DisplayName("/entities endpoint for invalid geometry")
+  public void testValidationInvalidGeometry(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "ellipse")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, bboxCoords)
+        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(28)
+  @DisplayName("/entities endpoint for invalid geometry (Empty)")
+  public void testValidationEmptyGeometry(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, " ")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, bboxCoords)
+        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(29)
+  @DisplayName("/entities endpoint for invalid geoproperty")
+  public void testValidationInvalidGeoProperty(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "within")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "geoLocation")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, bboxCoords)
+        .addQueryParam(Constants.IUDXQUERY_OPTIONS, Constants.JSON_COUNT).send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            assertTrue(response.containsKey(Constants.JSON_TYPE));
+            assertTrue(response.containsKey(Constants.JSON_TITLE));
+            assertTrue(response.containsKey(Constants.JSON_DETAIL));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(30)
+  @DisplayName("/entities endpoint for invalid coordinates")
+  public void testValidationInvalidCoordinates(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "near;maxdistance=10")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "point")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, "[21.178,72.834,32.8978]")
+        .send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(31)
+  @DisplayName("/entities endpoint for invalid coordinates (precision)")
+  public void testValidationInvalidCoordinatesPrecision(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "near;maxdistance=10")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "point")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES, "[21.178,72.834328978]").send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+
+  @Test
+  @Order(31)
+  @DisplayName("/entities endpoint for invalid coordinates (count > maxlimit)")
+  public void testValidationInvalidCoordinatesCount(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_GEOREL, "within")
+        .addQueryParam(Constants.NGSILDQUERY_GEOMETRY, "polygon")
+        .addQueryParam(Constants.NGSILDQUERY_GEOPROPERTY, "location")
+        .addQueryParam(Constants.NGSILDQUERY_COORDINATES,
+            "[[[72.77463,21.206658],[72.778072,21.198336],"
+            + "[72.767257,21.193855],[72.772064,21.177849],"
+            + "[72.788372,21.186492],[72.804851,21.176728],"
+            + "[72.817039,21.188733],[72.817382,21.198336],"
+            + "[72.802619,21.208418],[72.799358,21.211779],"
+            + "[72.790431,21.208098],[72.783565,21.209219],"
+            + "[72.774639,21.206658]]]")
+        .send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+  
+  @Test
+  @Order(32)
+  @DisplayName("/entities for attribute query (invalid operator)")
+  public void testValidationsAttributeQueryInvalidOperator(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_Q, "attributeName</20.5").send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+  
+  @Test
+  @Order(33)
+  @DisplayName("/entities for attribute query (invalid Value)")
+  public void testValidationsAttributeQueryInvalidValue(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_ENTITIES_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_Q, "attributeName</abc").send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+  }
+  
+  @Test
+  @Order(34)
+  @DisplayName("/temporal/entities for invalid timerel")
+  public void testValidationInvalidTimeRel(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_TEMPORAL_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_TIMEREL, "almost")
+        .addQueryParam(Constants.NGSILDQUERY_TIME, time)
+        .addQueryParam(Constants.NGSILDQUERY_ENDTIME, endTime).send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+
+  }
+  
+  @Test
+  @Order(35)
+  @DisplayName("/temporal/entities for invalid timerel (Empty)")
+  public void testValidationEmptyTimeRel(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_TEMPORAL_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_TIMEREL, " ")
+        .addQueryParam(Constants.NGSILDQUERY_TIME, time)
+        .addQueryParam(Constants.NGSILDQUERY_ENDTIME, endTime).send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+
+  }
+  
+  @Test
+  @Order(36)
+  @DisplayName("/temporal/entities for invalid time (Empty)")
+  public void testValidationEmptyTime(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_TEMPORAL_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_TIMEREL, "during")
+        .addQueryParam(Constants.NGSILDQUERY_TIME, time)
+        .addQueryParam(Constants.NGSILDQUERY_ENDTIME, endTime).send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+
+  }
+  
+  @Test
+  @Order(36)
+  @DisplayName("/temporal/entities for invalid time interval(duration > 10)")
+  public void testValidationTimeDuration(Vertx vertx, VertxTestContext testContext) {
+    String apiUrl = Constants.NGSILD_TEMPORAL_URL;
+    client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
+        .addQueryParam(Constants.NGSILDQUERY_TIMEREL, "during")
+        .addQueryParam(Constants.NGSILDQUERY_TIME, "2020-09-01T14:20:00Z")
+        .addQueryParam(Constants.NGSILDQUERY_ENDTIME, "2020-09-19T14:20:00Z").send(handler -> {
+          if (handler.succeeded()) {
+            assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
+
+  }
+  
 
   /** Subscription API test **/
 
@@ -1230,17 +1628,16 @@ public class ApiServerVerticleTest {
   @DisplayName(" management api /queue to delete a queue")
   public void testDeleteQueue(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_QUEUE_URL + "/" + queueName;
-    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, authToken)
-        .send(ar -> {
-          if (ar.succeeded()) {
-            JsonObject res = ar.result().bodyAsJsonObject();
-            assertEquals(ResponseType.Ok.getCode(), ar.result().statusCode());
-            assertEquals(res.getString(Constants.JSON_QUEUE), queueName);
-            testContext.completeNow();
-          } else if (ar.failed()) {
-            testContext.failNow(ar.cause());
-          }
-        });
+    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, authToken).send(ar -> {
+      if (ar.succeeded()) {
+        JsonObject res = ar.result().bodyAsJsonObject();
+        assertEquals(ResponseType.Ok.getCode(), ar.result().statusCode());
+        assertEquals(res.getString(Constants.JSON_QUEUE), queueName);
+        testContext.completeNow();
+      } else if (ar.failed()) {
+        testContext.failNow(ar.cause());
+      }
+    });
   }
 
   @Test
@@ -1248,22 +1645,21 @@ public class ApiServerVerticleTest {
   @DisplayName(" management api /queue to delete a queue when no queue exist")
   public void testDeleteQueue404(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_QUEUE_URL + "/" + queueName;
-    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, authToken)
-        .send(ar -> {
-          if (ar.succeeded()) {
-            JsonObject res = ar.result().bodyAsJsonObject();
-            assertEquals(ResponseType.ResourceNotFound.getCode(), ar.result().statusCode());
-            /*
-             * assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NOT_FOUND);
-             * assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
-             * assertEquals(res.getString(Constants.JSON_DETAIL),
-             * Constants.MSG_FAILURE_QUEUE_NOT_EXIST);
-             */
-            testContext.completeNow();
-          } else if (ar.failed()) {
-            testContext.failNow(ar.cause());
-          }
-        });
+    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, authToken).send(ar -> {
+      if (ar.succeeded()) {
+        JsonObject res = ar.result().bodyAsJsonObject();
+        assertEquals(ResponseType.ResourceNotFound.getCode(), ar.result().statusCode());
+        /*
+         * assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NOT_FOUND);
+         * assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
+         * assertEquals(res.getString(Constants.JSON_DETAIL),
+         * Constants.MSG_FAILURE_QUEUE_NOT_EXIST);
+         */
+        testContext.completeNow();
+      } else if (ar.failed()) {
+        testContext.failNow(ar.cause());
+      }
+    });
   }
 
   @Test
@@ -1271,17 +1667,16 @@ public class ApiServerVerticleTest {
   @DisplayName(" management api /exchange to delete a exchange")
   public void testDeleteExchange(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_EXCHANGE_URL + "/" + exchangeName;
-    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, authToken)
-        .send(ar -> {
-          if (ar.succeeded()) {
-            JsonObject res = ar.result().bodyAsJsonObject();
-            assertEquals(ResponseType.Ok.getCode(), ar.result().statusCode());
-            assertEquals(res.getString(Constants.JSON_EXCHANGE), exchangeName);
-            testContext.completeNow();
-          } else if (ar.failed()) {
-            testContext.failNow(ar.cause());
-          }
-        });
+    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, authToken).send(ar -> {
+      if (ar.succeeded()) {
+        JsonObject res = ar.result().bodyAsJsonObject();
+        assertEquals(ResponseType.Ok.getCode(), ar.result().statusCode());
+        assertEquals(res.getString(Constants.JSON_EXCHANGE), exchangeName);
+        testContext.completeNow();
+      } else if (ar.failed()) {
+        testContext.failNow(ar.cause());
+      }
+    });
   }
 
   @Test
@@ -1289,23 +1684,22 @@ public class ApiServerVerticleTest {
   @DisplayName(" management api /exchange to delete a exchange when no exchange exist")
   public void testDeleteExchange404(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_EXCHANGE_URL + "/" + exchangeName;
-    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, authToken)
-        .send(ar -> {
-          if (ar.succeeded()) {
-            JsonObject res = ar.result().bodyAsJsonObject();
-            assertEquals(ResponseType.ResourceNotFound.getCode(), ar.result().statusCode());
-            /*
-             * assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NOT_FOUND);
-             * assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
-             * assertEquals(res.getString(Constants.JSON_DETAIL),
-             * Constants.MSG_FAILURE_EXCHANGE_NOT_FOUND);
-             */
-            testContext.completeNow();
-          } else if (ar.failed()) {
-            testContext.failNow(ar.cause());
+    client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, authToken).send(ar -> {
+      if (ar.succeeded()) {
+        JsonObject res = ar.result().bodyAsJsonObject();
+        assertEquals(ResponseType.ResourceNotFound.getCode(), ar.result().statusCode());
+        /*
+         * assertEquals(res.getInteger(Constants.JSON_TYPE), HttpStatus.SC_NOT_FOUND);
+         * assertEquals(res.getString(Constants.JSON_TITLE), Constants.MSG_FAILURE);
+         * assertEquals(res.getString(Constants.JSON_DETAIL),
+         * Constants.MSG_FAILURE_EXCHANGE_NOT_FOUND);
+         */
+        testContext.completeNow();
+      } else if (ar.failed()) {
+        testContext.failNow(ar.cause());
 
-          }
-        });
+      }
+    });
   }
 
   @Test
@@ -1401,18 +1795,20 @@ public class ApiServerVerticleTest {
     JsonObject requestJson = new JsonObject();
     requestJson.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
     requestJson.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
-    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, invalidauthToken).sendJsonObject(requestJson, handler -> {
-      if (handler.succeeded()) {
-        JsonObject result = handler.result().bodyAsJsonObject();
-        assertEquals(ResponseType.AuthenticationFailure.getCode(), handler.result().statusCode());
-        assertTrue(result.containsKey(Constants.JSON_TYPE));
-        assertTrue(result.containsKey(Constants.JSON_TITLE));
-        assertTrue(result.containsKey(Constants.JSON_DETAIL));
-        testContext.completeNow();
-      } else if (handler.failed()) {
-        testContext.failNow(handler.cause());
-      }
-    });
+    client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, invalidauthToken)
+        .sendJsonObject(requestJson, handler -> {
+          if (handler.succeeded()) {
+            JsonObject result = handler.result().bodyAsJsonObject();
+            assertEquals(ResponseType.AuthenticationFailure.getCode(),
+                handler.result().statusCode());
+            assertTrue(result.containsKey(Constants.JSON_TYPE));
+            assertTrue(result.containsKey(Constants.JSON_TITLE));
+            assertTrue(result.containsKey(Constants.JSON_DETAIL));
+            testContext.completeNow();
+          } else if (handler.failed()) {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   // @Test
