@@ -88,8 +88,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     webClient = client;
     vertxObj = vertx;
     this.config = config;
-
-
     catHost = config.getString("catServerHost");
     catPort = Integer.parseInt(config.getString("catServerPort"));
     catPath = Constants.CAT_RSG_PATH;
