@@ -25,7 +25,7 @@ public class DateTypeValidator {
         ZonedDateTime.parse(dateString);
         return true;
       } catch (DateTimeParseException e) {
-        System.out.println(e);
+        //System.out.println(e);
         return false;
       }
     }

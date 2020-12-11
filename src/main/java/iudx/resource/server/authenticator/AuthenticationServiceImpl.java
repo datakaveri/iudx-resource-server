@@ -80,7 +80,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   public AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
       Handler<AsyncResult<JsonObject>> handler) {
 
-    System.out.println(authenticationInfo);
+    //System.out.println(authenticationInfo);
     String token = authenticationInfo.getString("token");
     String requestEndpoint = authenticationInfo.getString("apiEndpoint");
 
@@ -495,9 +495,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (requestMethod.equalsIgnoreCase("POST")) {
           String resourceGroup = userRequest.getString("resourceGroup");
           String resourceServer = userRequest.getString("resourceServer");
-          System.out.println(providerID);
-          System.out.println(resourceGroup);
-          System.out.println(resourceServer);
+          //System.out.println(providerID);
+          //System.out.println(resourceGroup);
+          //System.out.println(resourceServer);
           if (providerID.contains(resourceServer + "/" + resourceGroup)) {
             LOGGER.info(
                 "Success :: Has access to " + requestEndpoint + " API and Adapter " + adapterID);

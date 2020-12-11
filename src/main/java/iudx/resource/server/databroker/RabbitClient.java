@@ -69,7 +69,7 @@ public class RabbitClient {
           JsonObject responseJson = new JsonObject();
           HttpResponse<Buffer> response = requestHandler.result();
           int statusCode = response.statusCode();
-          System.out.println(statusCode);
+          //System.out.println(statusCode);
           if (statusCode == HttpStatus.SC_CREATED) {
             responseJson.put(EXCHANGE, exchangeName);
           } else if (statusCode == HttpStatus.SC_NO_CONTENT) {
@@ -694,7 +694,7 @@ public class RabbitClient {
   public Future<JsonObject> registerAdaptor_V1(JsonObject request, String vhost) {
     LOGGER.debug("Info : RabbitClient#registerAdaptor() started");
     Promise<JsonObject> promise = Promise.promise();
-    System.out.println(request.toString());
+    //System.out.println(request.toString());
     /* Get the ID and userName from the request */
     String id = request.getString("resourceGroup");
     String resourceServer = request.getString("resourceServer");
@@ -864,7 +864,7 @@ public class RabbitClient {
     LOGGER.debug("Info : RabbitClient#deleteAdapter() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
-    System.out.println(json.toString());
+    //System.out.println(json.toString());
     Future<JsonObject> result = getExchange(json, vhost);
     result.onComplete(resultHandler -> {
       if (resultHandler.succeeded()) {
@@ -1064,7 +1064,7 @@ public class RabbitClient {
     JsonObject response = new JsonObject();
 
     String query = INSERT_DATABROKER_USER.replace("$1", shaUsername).replace("$2", password);
-    System.out.println(query);
+    //System.out.println(query);
 
     // Check in DB, get username and password
     pgSQLClient.executeAsync(query).onComplete(db -> {
