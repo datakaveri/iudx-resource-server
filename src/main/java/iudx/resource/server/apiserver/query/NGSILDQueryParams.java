@@ -157,7 +157,7 @@ public class NGSILDQueryParams {
 
     NGSILDQueryParams ng = new NGSILDQueryParams(json);
     QueryMapper qm = new QueryMapper();
-    System.out.println(qm.toJson(ng, true));
+    //System.out.println(qm.toJson(ng, true));
   }
 
   private void create(JsonObject requestJson) {
@@ -204,7 +204,7 @@ public class NGSILDQueryParams {
           this.id = new ArrayList<URI>();
           this.idPattern = new ArrayList<String>();
           JsonObject entity = (JsonObject) iter.next();
-          System.out.println(entity);
+          //System.out.println(entity);
           String id = entity.getString("id");
           String idPattern = entity.getString("idPattern");
           if (id != null) {

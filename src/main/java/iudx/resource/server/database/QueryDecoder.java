@@ -2,8 +2,8 @@ package iudx.resource.server.database;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -12,7 +12,7 @@ import static iudx.resource.server.database.Constants.*;
 
 public class QueryDecoder {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(QueryDecoder.class);
+  private static final Logger LOGGER = LogManager.getLogger(QueryDecoder.class);
 
   /**
    * Decodes and constructs ElasticSearch Search/Count query based on the parameters passed in the
@@ -162,7 +162,7 @@ public class QueryDecoder {
         return new JsonObject().put(ERROR, MISSING_TEMPORAL_FIELDS);
 
       }
-      System.out.println(rangeTimeQuery);
+      //System.out.println(rangeTimeQuery);
       filterQuery.add(new JsonObject(rangeTimeQuery));
     }
 
