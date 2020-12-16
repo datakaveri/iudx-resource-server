@@ -10,7 +10,8 @@
             "databaseIP": "tasks.elasticsearch",
             "databasePort": 1,
             "dbUser": "",
-            "dbPassword": ""
+            "dbPassword": "",
+            "timeLimit": ""
         },
         {
             "id": "iudx.resource.server.authenticator.AuthenticationVerticle",

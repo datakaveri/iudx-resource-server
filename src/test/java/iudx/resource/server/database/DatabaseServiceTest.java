@@ -35,6 +35,7 @@ public class DatabaseServiceTest {
   private static String databaseIP, user, password;
   private static int databasePort;
   private static Configuration config;
+  private static String timeLimit;
   
   /* TODO Need to update params to use contants */
   @BeforeAll
@@ -50,11 +51,12 @@ public class DatabaseServiceTest {
     databasePort = dbConfig.getInteger("databasePort");
     user = dbConfig.getString("dbUser");
     password = dbConfig.getString("dbPassword");
+    timeLimit = dbConfig.getString("timeLimit");
 
-    logger.debug("Info : DB creds " + databaseIP + ", " + databasePort + ", " + user + ", " + password);
+    logger.debug("Info : DB creds " + databaseIP + ", " + databasePort + ", " + user + ", " + password + ", " + timeLimit);
 
     client = new ElasticClient(databaseIP, databasePort, user, password);
-    dbService = new DatabaseServiceImpl(client);
+    dbService = new DatabaseServiceImpl(client, timeLimit);
     testContext.completeNow();
     
   }
@@ -367,7 +369,7 @@ public class DatabaseServiceTest {
         .put("radius", 500);
 
     dbService.countQuery(request, testContext.succeeding(response-> testContext.verify(()->{
-      assertEquals(1555,response.getJsonArray("results").getJsonObject(0).getInteger("count"));
+      assertEquals(1457,response.getJsonArray("results").getJsonObject(0).getInteger("count"));
       testContext.completeNow();
     })));
   }
@@ -459,7 +461,7 @@ public class DatabaseServiceTest {
         .put("geoproperty", "location").put("searchType","geoSearch_");
 
     dbService.countQuery(request, testContext.succeeding(response-> testContext.verify(()->{
-      assertEquals(62857, response.getJsonArray("results").getJsonObject(0).getInteger("count"));
+      assertEquals(58191, response.getJsonArray("results").getJsonObject(0).getInteger("count"));
       testContext.completeNow();
     })));
   }
@@ -500,7 +502,7 @@ public class DatabaseServiceTest {
         .put("geoproperty", "location").put("searchType","geoSearch_");
 
     dbService.countQuery(request, testContext.succeeding(response-> testContext.verify(()->{
-      assertEquals(33517,response.getJsonArray("results").getJsonObject(0).getInteger("count"));
+      assertEquals(30970,response.getJsonArray("results").getJsonObject(0).getInteger("count"));
       testContext.completeNow();
     })));
   }
@@ -514,7 +516,7 @@ public class DatabaseServiceTest {
                 new JsonArray().add(
                     "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("searchType", "temporalSearch_").put("timerel", "before")
-            .put("time","2020-10-19T10:00:00+05:30");
+            .put("time","2020-09-29T10:00:00+05:30");
 
     ZonedDateTime start = ZonedDateTime.parse("2020-10-19T10:00:00+05:30");
     logger.info("### start date: " + start);
@@ -557,7 +559,7 @@ public class DatabaseServiceTest {
         .put("geoproperty", "location").put("searchType","geoSearch_");
 
     dbService.countQuery(request, testContext.succeeding(response-> testContext.verify(()->{
-      assertEquals(405,response.getJsonArray("results").getJsonObject(0).getInteger("count"));
+      assertEquals(369,response.getJsonArray("results").getJsonObject(0).getInteger("count"));
       testContext.completeNow();
     })));
   }

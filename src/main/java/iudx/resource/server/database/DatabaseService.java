@@ -56,8 +56,8 @@ public interface DatabaseService {
    */
 
   @GenIgnore
-  static DatabaseService create(ElasticClient client) {
-    return new DatabaseServiceImpl(client);
+  static DatabaseService create(ElasticClient client, String timeLimit) {
+    return new DatabaseServiceImpl(client, timeLimit);
   }
 
   /**

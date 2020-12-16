@@ -26,6 +26,7 @@ public class DatabaseVerticle extends AbstractVerticle {
   private String databaseIP;
   private String user;
   private String password;
+  private String timeLimit;
   private int databasePort;
   private static final String DATABASE_SERVICE_ADDRESS = "iudx.rs.database.service";
 
@@ -44,9 +45,10 @@ public class DatabaseVerticle extends AbstractVerticle {
     databasePort = config().getInteger("databasePort");
     user = config().getString("dbUser");
     password = config().getString("dbPassword");
+    timeLimit = config().getString("timeLimit");
 
     client = new ElasticClient(databaseIP, databasePort, user, password);    
-    database = new DatabaseServiceImpl(client);
+    database = new DatabaseServiceImpl(client, timeLimit);
 
     new ServiceBinder(vertx).setAddress(DATABASE_SERVICE_ADDRESS)
         .register(DatabaseService.class, database);

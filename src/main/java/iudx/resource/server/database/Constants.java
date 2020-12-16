@@ -5,6 +5,8 @@ public class Constants {
   static final String SEARCH_TYPE = "searchType";
   static final String ID = "id";
   static final String RESOURCE_ID_KEY = "id";
+  static final String PROD_INSTANCE = "production";
+  static final String TEST_INSTANCE = "test";
   /* Database */
   static final String GEO_KEY = "location";
   static final String GEO_CIRCLE = "circle";
@@ -53,6 +55,7 @@ public class Constants {
   static final String AFTER = "after";
   static final String BEFORE = "before";
   static final String TEQUALS = "tequals";
+  static final String TIME_LIMIT = "timeLimit";
   /* Geo-Spatial */
   static final String LAT = "lat";
   static final String LON = "lon";
