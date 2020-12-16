@@ -58,7 +58,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   private String resourceServerId;
   private WebClient catWebClient;
 
-
   /**
    * Cache/'s will hold at-most 1000 objects and only for a duration of TIP_CACHE_TIMEOUT_AMOUNT
    * from the last access to object
@@ -88,7 +87,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     webClient = client;
     vertxObj = vertx;
     this.config = config;
-
     catHost = config.getString("catServerHost");
     catPort = Integer.parseInt(config.getString("catServerPort"));
     catPath = Constants.CAT_RSG_PATH;
@@ -103,11 +101,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     groupCacheFuture.onComplete(handler -> {
       populateCatResourceIdCache(client);
     });
-
     catCacheTimerId = vertx.setPeriodic(TimeUnit.DAYS.toMillis(1), handler -> {
       populateCatCache(webClient);
     });
-
     catCacheResTimerid = vertx.setPeriodic(TimeUnit.DAYS.toMillis(1), handler -> {
       populateCatResourceIdCache(webClient);
     });
