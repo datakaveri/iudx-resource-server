@@ -44,7 +44,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
             .setPassword(config.getString(KEYSTORE_PASSWORD)));
     return WebClient.create(vertxObj, webClientOptions);
   }
-
+  
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
    * service with the Event bus against an address, publishes the service with the service discovery

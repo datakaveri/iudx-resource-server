@@ -13,6 +13,7 @@ import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.configuration.Configuration;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -122,6 +123,143 @@ public class AuthenticationServiceTest {
         logger.info("Happy path test with caching success");
         testContext.completeNow();
       });
+    });
+  }
+  
+  @Test
+  @DisplayName("Test valid token(token for entities) with invalid path(/subscription)")
+  public void testInvalidPathAccess(VertxTestContext testContext) {
+    JsonObject request=new JsonObject().put("ids", new JsonArray()
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/alias"));;
+    JsonObject authInfo =
+        new JsonObject()
+            .put("token", authConfig.getString("testAuthToken"))
+            .put("apiEndpoint", Constants.CLOSED_ENDPOINTS.get(1));
+    authenticationService.tokenInterospect(request, authInfo, handler->{
+      if(handler.failed()) {
+        testContext.completeNow();
+      }else {
+        testContext.failNow(handler.cause());
+      }
+    });
+  }
+  
+  @Test
+  @DisplayName("Test secure item with invalid token")
+  public void testSecureItemAccessInvalidToken(VertxTestContext testContext) {
+    JsonObject request=new JsonObject().put("ids", new JsonArray()
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"));;
+    JsonObject authInfo =
+        new JsonObject()
+            .put("token", authConfig.getString("testExpiredAuthToken"))
+            .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(1));
+    authenticationService.tokenInterospect(request, authInfo, handler->{
+      if(handler.failed()) {
+        String response=handler.cause().getMessage();
+        assertTrue(response.contains("Invalid 'token'"));
+        testContext.completeNow();
+      }else {
+        testContext.failNow(handler.cause());
+      }
+    });
+  }
+  
+  @Test
+  @DisplayName("Test secure item with valid token")
+  public void testSecureItemAccessValidToken(VertxTestContext testContext) {
+    JsonObject request=new JsonObject().put("ids", new JsonArray()
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"));;
+    JsonObject authInfo =
+        new JsonObject()
+            .put("token", authConfig.getString("testAuthToken"))
+            .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(1));
+    authenticationService.tokenInterospect(request, authInfo, handler->{
+      if(handler.failed()) {
+        testContext.failNow(handler.cause());
+      }else {
+        testContext.completeNow();
+      }
+    });
+  }
+  
+  @Test
+  @DisplayName("Test secure+open item with invalid token")
+  public void testSecureAndValidItemAccessInValidToken(VertxTestContext testContext) {
+    JsonObject request=new JsonObject().put("ids", new JsonArray()
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta")
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"));
+    JsonObject authInfo =
+        new JsonObject()
+            .put("token", authConfig.getString("testExpiredAuthToken"))
+            .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(1));
+    authenticationService.tokenInterospect(request, authInfo, handler->{
+      if(handler.failed()) {
+        String result=handler.cause().getMessage();
+        assertTrue(result.contains("Invalid 'token'"));
+        testContext.completeNow();
+      }else {
+        testContext.failNow(handler.cause());
+      }
+    });
+  }
+  
+  @Test
+  @DisplayName("Test secure+open item with valid token")
+  public void testSecureAndValidItemAccessValidToken(VertxTestContext testContext) {
+    JsonObject request=new JsonObject().put("ids", new JsonArray()
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta")
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"));
+    JsonObject authInfo =
+        new JsonObject()
+            .put("token", authConfig.getString("testAuthToken"))
+            .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(1));
+    authenticationService.tokenInterospect(request, authInfo, handler->{
+      if(handler.succeeded()) {
+        testContext.completeNow();
+      }else {
+        testContext.failNow(handler.cause());
+      }
+    });
+  }
+  
+  
+  @Test
+  @DisplayName("Test invalid(not found in cat server) secure item")
+  public void testInvalidSecureItem(VertxTestContext testContext) {
+    JsonObject request=new JsonObject().put("ids", new JsonArray()
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta_invalid"));;
+    JsonObject authInfo =
+        new JsonObject()
+            .put("token", authConfig.getString("testAuthToken"))
+            .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(1));
+    authenticationService.tokenInterospect(request, authInfo, handler->{
+      if(handler.failed()) {
+        String response=handler.cause().getMessage();
+        assertTrue(response.contains("Not Found"));
+        testContext.completeNow();
+      }else {
+        testContext.failNow(handler.cause());
+      }
+    });
+  }
+  
+  @Test
+  @DisplayName("Test invalid(not found in cat server) open item")
+  public void testInvalidOpenItem(VertxTestContext testContext) {
+    JsonObject request=new JsonObject().put("ids", new JsonArray()
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055_invalid"));;
+    JsonObject authInfo =
+        new JsonObject()
+            .put("token", authConfig.getString("testAuthToken"))
+            .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(1));
+    authenticationService.tokenInterospect(request, authInfo, handler->{
+      if(handler.failed()) {
+        String response=handler.cause().getMessage();
+        assertTrue(response.contains("Not Found"));
+        testContext.completeNow();
+      }else {
+        testContext.failNow(handler.cause());
+      }
     });
   }
 
