@@ -63,7 +63,7 @@ public class Validator {
   private static boolean validateParams(MultiMap parameterMap) {
     final List<Entry<String, String>> entries = parameterMap.entries();
     for (final Entry<String, String> entry : entries) {
-      System.out.println(entry.getKey());
+      //System.out.println(entry.getKey());
       if (!validParams.contains(entry.getKey())) {
         return false;
       }
@@ -75,7 +75,7 @@ public class Validator {
   private static boolean validateHeader(MultiMap headerMap) {
     final List<Entry<String, String>> entries = headerMap.entries();
     for (final Entry<String, String> entry : entries) {
-      System.out.println(entry.getKey());
+      //System.out.println(entry.getKey());
       /*
        * if (!validHeaders.contains(entry.getKey())) { return false; }
        */
