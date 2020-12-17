@@ -77,8 +77,8 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   private HttpServer server;
   private Router router;
-  private final int port = 8443;
-  private boolean isSSL;
+  private int port = 8443;
+  private boolean isSSL,isProduction;
   private String keystore;
   private String keystorePassword;
   private ManagementApi managementApi;
@@ -233,6 +233,10 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     /* Read ssl configuration. */
     isSSL = config().getBoolean("ssl");
+
+    /* Read server deployment configuration. */
+    isProduction = config().getBoolean("production");
+    
     HttpServerOptions serverOptions = new HttpServerOptions();
 
     if (isSSL) {
@@ -254,6 +258,11 @@ public class ApiServerVerticle extends AbstractVerticle {
       /* Setup the HTTP server properties, APIs and port. */
 
       serverOptions.setSsl(false);
+      if(isProduction) {
+    	  port = 80;
+      } else {
+    	  port = 8080;
+      }
     }
 
    // serverOptions.setCompressionSupported(true).setCompressionLevel(5);
