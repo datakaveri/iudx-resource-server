@@ -39,7 +39,7 @@ pipeline {
           docker.withRegistry( registryUri, registryCredential ) {
             devImage.push()
             deplImage.push()
-            testImage.push()
+            //testImage.push()
           }
         }
       }
