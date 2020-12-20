@@ -1,8 +1,8 @@
 version: '3.7'
 
 networks:
-  rs-net:
-    driver: bridge
+  overlay-net:
+    external: true
 
 services:
 
@@ -20,7 +20,7 @@ services:
       - "9000:9000"
     restart: on-failure
     networks: 
-      - rs-net
+      - overlay-net
     logging:
          driver: "json-file"
          options:
@@ -42,7 +42,7 @@ services:
       - "9000:9000"
     restart: on-failure
     networks: 
-      - rs-net
+      - overlay-net
     logging:
          driver: "json-file"
          options:
@@ -65,7 +65,7 @@ services:
     command: bash -c "docker/runTests.sh && cp -r target /tmp/test"
 
     networks: 
-      - rs-net
+      - overlay-net
     logging:
          driver: "json-file"
          options:
@@ -77,4 +77,4 @@ services:
     expose: 
       - "2181"
     networks:
-      - rs-net
+      - overlay-net
