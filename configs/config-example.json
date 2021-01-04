@@ -11,7 +11,8 @@
             "databasePort": 1234,
             "dbUser": "",
             "dbPassword": "",
-            "timeLimit": "production,30"
+            "resourceServerId":"",
+            "timeLimit": "production,<date in ISO format>,<number of days>"
         },
         {
             "id": "iudx.resource.server.authenticator.AuthenticationVerticle",
@@ -24,6 +25,7 @@
             "testResourceID": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
             "catServerHost": "localhost.catalogue",
             "catServerPort": "1234",
+            "resourceServerId":"<id-of-rs-in-catalogue>",            
             "serverMode": "testing"
         },
         {
@@ -73,6 +75,7 @@
         {
             "id": "iudx.resource.server.apiserver.ApiServerVerticle",
             "ssl": false,
+            "production": true,
             "keystore": "configs/keystore.jks",
             "keystorePassword": "",
             "rsAdmin": "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc",

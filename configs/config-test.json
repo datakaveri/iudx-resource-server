@@ -11,6 +11,7 @@
             "databasePort": 1,
             "dbUser": "",
             "dbPassword": "",
+            "resourceServerId":"<id-of-rs-in-catalogue>",            
             "timeLimit": ""
         },
         {
@@ -72,7 +73,8 @@
         },
         {
             "id": "iudx.resource.server.apiserver.ApiServerVerticle",
-            "ssl": true,            
+            "ssl": true, 
+            "production": true,           
             "keystore": "configs/keystore.jks",
             "keystorePassword": "",
             "rsAdmin": "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc",
