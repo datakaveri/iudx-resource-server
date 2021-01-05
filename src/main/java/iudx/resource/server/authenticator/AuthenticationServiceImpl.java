@@ -530,7 +530,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
           LOGGER.debug("Cache miss calling cat server");
           String[] idComponents = rId.split("/");
           if (idComponents.length < 4) {
-            continue;
+            promise.fail("Not Found " + rId);
           }
           String groupId = (idComponents.length == 4) ? rId
               : String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
@@ -609,11 +609,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                   responseBody.getJsonArray("results").getJsonObject(0).getString("accessPolicy");
               resourceGroupCache.put(groupId, resourceACL);
               LOGGER.debug("Info: Group ID valid : Catalogue item Found");
-            } catch (IndexOutOfBoundsException ignored) {
+              promise.complete(resourceACL);
+            } catch (Exception ignored) {
               LOGGER.error(ignored.getMessage());
               LOGGER.debug("Info: Group ID invalid : Empty response in results from Catalogue");
+              promise.fail("Resource not found");
             }
-            promise.complete(resourceACL);
           });
     }
     return promise.future();
