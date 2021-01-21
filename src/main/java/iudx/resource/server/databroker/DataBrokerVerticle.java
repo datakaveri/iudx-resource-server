@@ -3,6 +3,7 @@ package iudx.resource.server.databroker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -45,6 +46,8 @@ public class DataBrokerVerticle extends AbstractVerticle {
   private int networkRecoveryInterval;
   private WebClient webClient;
   private WebClientOptions webConfig;
+  private ServiceBinder binder;
+  private MessageConsumer<JsonObject> consumer;
   /* Database Properties */
   private String databaseIP;
   private int databasePort;
@@ -154,14 +157,22 @@ public class DataBrokerVerticle extends AbstractVerticle {
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
     rabbitClient =
         new RabbitClient(vertx, config, rabbitWebClient, pgClient);
-
+	binder = new ServiceBinder(vertx);
     databroker = new DataBrokerServiceImpl(rabbitClient, pgClient, dataBrokerVhost);
 
 
     /* Publish the Data Broker service with the Event Bus against an address. */
 
-    new ServiceBinder(vertx).setAddress(BROKER_SERVICE_ADDRESS)
+    consumer=binder.setAddress(BROKER_SERVICE_ADDRESS)
       .register(DataBrokerService.class, databroker);
 
   }
+
+
+  @Override
+  public void stop() {
+	binder.unregister(consumer);
+	System.out.println("verticle stopped");
+  }
 }
+

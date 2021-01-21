@@ -1,6 +1,7 @@
 package iudx.resource.server.callback;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,6 +31,8 @@ public class CallbackVerticle extends AbstractVerticle {
   private CallbackService callback;
   private WebClient webClient;
   private WebClientOptions webConfig;
+  private ServiceBinder binder;
+  private MessageConsumer<JsonObject> consumer;
   /* Database Properties */
   private String databaseIP;
   private int databasePort;
@@ -113,13 +116,21 @@ public class CallbackVerticle extends AbstractVerticle {
     propObj.put("callbackpoolSize", poolSize);
 
     /* Call the callback constructor with the RabbitMQ client. */
+	binder = new ServiceBinder(vertx);    
     callback = new CallbackServiceImpl(client, webClient, propObj, vertx);
 
     /* Publish the Callback service with the Event Bus against an address. */
 
-    new ServiceBinder(vertx).setAddress(CALLBACK_SERVICE_ADDRESS)
+    consumer = binder.setAddress(CALLBACK_SERVICE_ADDRESS)
       .register(CallbackService.class, callback);
 
     LOGGER.info("Callback Verticle started");
   }
+
+  @Override
+  public void stop() {
+	binder.unregister(consumer);
+	System.out.println("verticle stopped");
+  }
 }
+

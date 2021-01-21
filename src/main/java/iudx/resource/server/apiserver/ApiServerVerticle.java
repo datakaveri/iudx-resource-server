@@ -1501,4 +1501,12 @@ public class ApiServerVerticle extends AbstractVerticle {
     return Optional.of(queryParams);
   }
 
+
+
+  @Override
+  public void stop() {
+	System.out.println("Stopping an API server");
+  }
 }
+
+
