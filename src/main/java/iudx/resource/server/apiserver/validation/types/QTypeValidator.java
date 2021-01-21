@@ -57,10 +57,13 @@ public class QTypeValidator {
         throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
             "Not a valid Operator in <<q>> query, only " + allowedOperators + "  allowed");
       }
-      if (!isValidValue(qJson.getString(JSON_VALUE))) {
-        throw ValidationException.ValidationExceptionFactory
-            .generateNotMatchValidationException("Not a valid Float value in <<q>> query");
-      }
+      //NOTE : committed till filter work is not completed.
+      // Now value is not restricted to only float
+      /*
+       * if (!isValidValue(qJson.getString(JSON_VALUE))) { throw
+       * ValidationException.ValidationExceptionFactory
+       * .generateNotMatchValidationException("Not a valid Float value in <<q>> query"); }
+       */
       return RequestParameter.create(value);
     }
   }
