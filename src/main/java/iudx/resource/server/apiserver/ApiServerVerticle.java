@@ -1505,7 +1505,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   @Override
   public void stop() {
-	System.out.println("Stopping an API server");
+	LOGGER.info("Stopping the API server");
   }
 }
 

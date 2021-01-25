@@ -157,13 +157,14 @@ public class DataBrokerVerticle extends AbstractVerticle {
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
     rabbitClient =
         new RabbitClient(vertx, config, rabbitWebClient, pgClient);
-	binder = new ServiceBinder(vertx);
+    binder = new ServiceBinder(vertx);
     databroker = new DataBrokerServiceImpl(rabbitClient, pgClient, dataBrokerVhost);
 
 
     /* Publish the Data Broker service with the Event Bus against an address. */
 
-    consumer=binder.setAddress(BROKER_SERVICE_ADDRESS)
+    consumer =
+        binder.setAddress(BROKER_SERVICE_ADDRESS)
       .register(DataBrokerService.class, databroker);
 
   }
@@ -171,8 +172,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
   @Override
   public void stop() {
-	binder.unregister(consumer);
-	System.out.println("verticle stopped");
+    binder.unregister(consumer);
   }
 }
 

@@ -57,20 +57,19 @@ public class AuthenticationVerticle extends AbstractVerticle {
 
   @Override
   public void start() throws Exception {
-	binder = new ServiceBinder(vertx);
+    binder = new ServiceBinder(vertx);
     authentication = new AuthenticationServiceImpl(vertx, createWebClient(vertx, config()), config());
 
     /* Publish the Authentication service with the Event Bus against an address. */
 
-    consumer=binder.setAddress(AUTH_SERVICE_ADDRESS)
+    consumer = binder.setAddress(AUTH_SERVICE_ADDRESS)
       .register(AuthenticationService.class, authentication);
   }
 
   @Override
   public void stop() {
 	binder.unregister(consumer);
-	System.out.println("verticle stopped");
   }
- }
+}
 
 

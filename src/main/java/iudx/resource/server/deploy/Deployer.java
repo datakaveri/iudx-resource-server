@@ -41,6 +41,7 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
 
 public class Deployer {
   private static final Logger LOGGER = LogManager.getLogger(Deployer.class);
@@ -142,74 +143,68 @@ public class Deployer {
 
   }
 
-	public static void gracefulShutdown() {
-		Set <String> deployIDSet=vertx.deploymentIDs();
-		System.out.println("number of verticles being undeployed are:"+ deployIDSet.size());
-		CountDownLatch latch_verticles = new CountDownLatch(deployIDSet.size()); 
-		CountDownLatch latch_cluster = new CountDownLatch(1); 
-		CountDownLatch latch_vertx = new CountDownLatch(1);
-		for (String deploymentID : deployIDSet) {
-			vertx.undeploy(deploymentID, handler -> {
-			if (handler.succeeded()) {
-				LOGGER.info(deploymentID+" verticle  successfully Undeployed");
-				latch_verticles.countDown();
-			} else {
-				LOGGER.error(deploymentID+ "Undeploy failed!");
-			}
+  public static void gracefulShutdown() {
+    Set<String> deployIDSet = vertx.deploymentIDs();
+    Logger LOGGER = LogManager.getLogger(Deployer.class);
+    LOGGER.info("Shutting down the application");
+    CountDownLatch latch_verticles = new CountDownLatch(deployIDSet.size());
+    CountDownLatch latch_cluster = new CountDownLatch(1);
+    CountDownLatch latch_vertx = new CountDownLatch(1);
+    LOGGER.debug("number of verticles being undeployed are:" + deployIDSet.size());
+    for (String deploymentID : deployIDSet) {
+      vertx.undeploy(deploymentID, handler -> {
+        if (handler.succeeded()) {
+          LOGGER.debug(deploymentID + " verticle  successfully Undeployed");
+          latch_verticles.countDown();
+        } else {
+          LOGGER.warn(deploymentID + "Undeploy failed!");
+        }
 
-		});
-			
-		
-		}
-		try { 
-			latch_verticles.await(5, TimeUnit.SECONDS);
-			mgr.leave(handler->{
-				if(handler.succeeded()){							
-					System.out.println("Hazelcast succesfully left:"+handler.result());
-					latch_cluster.countDown();
-									
-				}
-				else
-				{
-					
-				System.out.println("Error while hazelcast leaving:"+handler.cause());
-				}
-			});
-		}
-		catch(Exception e) {
-				e.printStackTrace();
-		}
+      });
+    }
 
-		try {
-			latch_cluster.await(5, TimeUnit.SECONDS);
-			System.out.println("Closing vertx");		
-			vertx.close(handler->{
-				if(handler.succeeded()){
-					System.out.println("vertx closed succesfully:"+handler.result());
-					latch_vertx.countDown();		
-				}
-				else
-				{
-					System.out.println("Error vertx didn't close properly, reason:"+ handler.cause());
-					
-				}
-			});
-			
+    try {
+      latch_verticles.await(5, TimeUnit.SECONDS);
+      LOGGER.info("All the verticles undeployed");
+      mgr.leave(handler -> {
+        if (handler.succeeded()) {
+          LOGGER.info("Hazelcast succesfully left:");
+          latch_cluster.countDown();
 
-		} 
-		catch(Exception e) {
-			e.printStackTrace();
-		}
+        } else {
+          LOGGER.warn("Error while hazelcast leaving, reason:" + handler.cause());
+        }
+      });
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 
-		try {
-			latch_vertx.await(5, TimeUnit.SECONDS);
-		}
-		
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		
-	}
+    try {
+      latch_cluster.await(5, TimeUnit.SECONDS);
+      vertx.close(handler -> {
+        if (handler.succeeded()) {
+          LOGGER.info("vertx closed succesfully");
+          latch_vertx.countDown();
+        } else {
+          LOGGER.warn("Vertx didn't close properly, reason:" + handler.cause());
+        }
+      });
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    try {
+      latch_vertx.await(5, TimeUnit.SECONDS);
+      // then shut down log4j
+      if( LogManager.getContext() instanceof LoggerContext ) {
+        LOGGER.debug("Shutting down log4j2");
+        LogManager.shutdown((LoggerContext) LogManager.getContext());
+      } else
+        LOGGER.warn("Unable to shutdown log4j2");
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 
   public static void main(String[] args) {
     CLI cli = CLI.create("IUDX Rs").setSummary("A CLI to deploy the resource")
@@ -218,22 +213,22 @@ public class Deployer {
         .addOption(new Option().setLongName("config").setShortName("c")
             .setRequired(true).setDescription("configuration file"))
         .addOption(new Option().setLongName("host").setShortName("i").setRequired(true)
-				.setDescription("public host"));;
+            .setDescription("public host"));;
 
     StringBuilder usageString = new StringBuilder();
     cli.usage(usageString);
     CommandLine commandLine = cli.parse(Arrays.asList(args), false);
     if (commandLine.isValid() && !commandLine.isFlagEnabled("help")) {
       String configPath = commandLine.getOptionValue("config");
-	  String host = commandLine.getOptionValue("host");
+      String host = commandLine.getOptionValue("host");
       deploy(configPath,host);
-	  Runtime.getRuntime().addShutdownHook(new Thread(() -> gracefulShutdown()));		
-
+      Runtime.getRuntime().addShutdownHook(new Thread(() -> gracefulShutdown()));
     } else {
       LOGGER.info(usageString);
     }
   }
 
 }
+
 
 

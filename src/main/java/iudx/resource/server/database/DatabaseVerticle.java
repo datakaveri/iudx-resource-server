@@ -52,10 +52,11 @@ public class DatabaseVerticle extends AbstractVerticle {
     timeLimit = config().getString("timeLimit");
 
     client = new ElasticClient(databaseIP, databasePort, user, password); 
-	binder = new ServiceBinder(vertx);
+    binder = new ServiceBinder(vertx);
     database = new DatabaseServiceImpl(client, timeLimit);
 
-    consumer=binder.setAddress(DATABASE_SERVICE_ADDRESS)
+    consumer =
+        binder.setAddress(DATABASE_SERVICE_ADDRESS)
         .register(DatabaseService.class, database);
   }
 
@@ -63,7 +64,6 @@ public class DatabaseVerticle extends AbstractVerticle {
   @Override
   public void stop() {
 	binder.unregister(consumer);
-	System.out.println("verticle stopped");
   }
- }
+}
 

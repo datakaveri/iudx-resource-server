@@ -116,12 +116,13 @@ public class CallbackVerticle extends AbstractVerticle {
     propObj.put("callbackpoolSize", poolSize);
 
     /* Call the callback constructor with the RabbitMQ client. */
-	binder = new ServiceBinder(vertx);    
+    binder = new ServiceBinder(vertx);
     callback = new CallbackServiceImpl(client, webClient, propObj, vertx);
 
     /* Publish the Callback service with the Event Bus against an address. */
 
-    consumer = binder.setAddress(CALLBACK_SERVICE_ADDRESS)
+    consumer =
+        binder.setAddress(CALLBACK_SERVICE_ADDRESS)
       .register(CallbackService.class, callback);
 
     LOGGER.info("Callback Verticle started");
@@ -130,7 +131,6 @@ public class CallbackVerticle extends AbstractVerticle {
   @Override
   public void stop() {
 	binder.unregister(consumer);
-	System.out.println("verticle stopped");
   }
 }
 
