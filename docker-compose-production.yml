@@ -10,14 +10,12 @@ services:
   prod:
     image: iudx/rs-depl:latest
     environment:
-      - HOSTNAME=server
-      - ZOOKEEPER=zookeeper
       - RS_URL=https://rs.iudx.org.in
+      - LOG_LEVEL=INFO
     volumes:
       - ./configs/config-depl.json:/usr/share/app/configs/config.json
       - ./docs/:/usr/share/app/docs
       - ./configs/keystore.jks:/usr/share/app/configs/keystore.jks
-      - /tmp/iudx/:/tmp/iudx/
     depends_on:
       - "zookeeper"
     ports:
@@ -31,17 +29,17 @@ services:
          options:
              max-file: "5"
              max-size: "100m"
-    command: "java -jar ./fatjar.jar -c configs/config.json"
+    command: bash -c "exec java -jar ./fatjar.jar  --host $$(hostname) -c configs/config.json"
 
   dev:
     image: iudx/rs-dev:latest
     environment:
       - RS_URL=https://rs.iudx.org.in
+      - LOG_LEVEL=INFO
     volumes:
       - ./configs/config-dev.json:/usr/share/app/configs/config.json
       - ./configs/keystore.jks:/usr/share/app/configs/keystore.jks
       - ./docs/:/usr/share/app/docs
-      - /tmp/iudx/:/tmp/iudx/
     ports:
       - "8080:80"
       - "9000:9000"
@@ -53,7 +51,7 @@ services:
          options:
              max-file: "5"
              max-size: "100m"
-    command: "java -jar ./fatjar.jar -c configs/config.json"
+    command: bash -c "exec java -jar ./fatjar.jar  --host $$(hostname) -c configs/config.json"
 
   zookeeper:
     image: zookeeper:latest

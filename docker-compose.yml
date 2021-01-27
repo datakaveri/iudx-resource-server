@@ -9,8 +9,6 @@ services:
   prod:
     image: iudx/rs-depl:latest
     environment:
-      - HOSTNAME=server
-      - ZOOKEEPER=zookeeper
       - RS_URL=https://rs.iudx.org.in
       - LOG_LEVEL=INFO
     volumes:
@@ -28,7 +26,7 @@ services:
          options:
              max-file: "5"
              max-size: "100m"
-    command: "java -jar ./fatjar.jar -c configs/config.json"
+    command: bash -c "exec java  -jar ./fatjar.jar  --host $$(hostname) -c configs/config.json"
 
   dev:
     image: iudx/rs-dev:latest
@@ -50,7 +48,7 @@ services:
          options:
              max-file: "5"
              max-size: "100m"
-    command: "java -jar ./fatjar.jar -c configs/config.json"
+    command: bash -c "exec java -jar ./fatjar.jar  --host $$(hostname) -c configs/config.json"
 
   zookeeper:
     image: zookeeper:latest

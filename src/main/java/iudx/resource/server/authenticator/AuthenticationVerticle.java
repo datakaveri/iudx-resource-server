@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.client.WebClient;
@@ -29,7 +30,8 @@ public class AuthenticationVerticle extends AbstractVerticle {
   private static final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
   private static final Logger LOGGER = LogManager.getLogger(AuthenticationVerticle.class);
   private AuthenticationService authentication;
-
+  private ServiceBinder binder;
+  private MessageConsumer<JsonObject> consumer;
   static WebClient createWebClient(Vertx vertx, JsonObject config) {
     return createWebClient(vertx, config, false);
   }
@@ -55,12 +57,19 @@ public class AuthenticationVerticle extends AbstractVerticle {
 
   @Override
   public void start() throws Exception {
-
+    binder = new ServiceBinder(vertx);
     authentication = new AuthenticationServiceImpl(vertx, createWebClient(vertx, config()), config());
 
     /* Publish the Authentication service with the Event Bus against an address. */
 
-    new ServiceBinder(vertx).setAddress(AUTH_SERVICE_ADDRESS)
+    consumer = binder.setAddress(AUTH_SERVICE_ADDRESS)
       .register(AuthenticationService.class, authentication);
   }
+
+  @Override
+  public void stop() {
+	binder.unregister(consumer);
+  }
 }
+
+

@@ -1,6 +1,8 @@
 package iudx.resource.server.database;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceBinder;
 import java.io.InputStream;
 import java.util.Properties;
@@ -29,6 +31,8 @@ public class DatabaseVerticle extends AbstractVerticle {
   private String timeLimit;
   private int databasePort;
   private static final String DATABASE_SERVICE_ADDRESS = "iudx.rs.database.service";
+  private ServiceBinder binder;
+  private MessageConsumer<JsonObject> consumer;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
@@ -47,10 +51,19 @@ public class DatabaseVerticle extends AbstractVerticle {
     password = config().getString("dbPassword");
     timeLimit = config().getString("timeLimit");
 
-    client = new ElasticClient(databaseIP, databasePort, user, password);    
+    client = new ElasticClient(databaseIP, databasePort, user, password); 
+    binder = new ServiceBinder(vertx);
     database = new DatabaseServiceImpl(client, timeLimit);
 
-    new ServiceBinder(vertx).setAddress(DATABASE_SERVICE_ADDRESS)
+    consumer =
+        binder.setAddress(DATABASE_SERVICE_ADDRESS)
         .register(DatabaseService.class, database);
   }
+
+
+  @Override
+  public void stop() {
+	binder.unregister(consumer);
+  }
 }
+
