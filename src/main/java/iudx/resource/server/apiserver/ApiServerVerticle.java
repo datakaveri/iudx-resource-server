@@ -29,6 +29,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.api.validation.ValidationException;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import iudx.resource.server.apiserver.handlers.AuthHandler;
@@ -78,7 +79,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private HttpServer server;
   private Router router;
   private int port = 8443;
-  private boolean isSSL,isProduction;
+  private boolean isSSL, isProduction;
   private String keystore;
   private String keystorePassword;
   private ManagementApi managementApi;
@@ -127,93 +128,86 @@ public class ApiServerVerticle extends AbstractVerticle {
     router = Router.router(vertx);
     router.route().handler(
         CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
-    //router.route().handler(HeadersHandler.create());
+    // router.route().handler(HeadersHandler.create());
     router.route().handler(BodyHandler.create());
-    //router.route().handler(AuthHandler.create(vertx));
+    // router.route().handler(AuthHandler.create(vertx));
 
     HTTPRequestValidatiorsHandlersFactory validators = new HTTPRequestValidatiorsHandlersFactory();
-    ValidationFailureHandler validationsFailureHandler=new ValidationFailureHandler();
+    ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
 
     /* NGSI-LD api endpoints */
-    router.get(NGSILD_ENTITIES_URL)
-        .handler(validators.getValidation4Context("ENTITY"))
-        .handler(AuthHandler.create(vertx))
-        .handler(this::handleEntitiesQuery)
-        .failureHandler(validationsFailureHandler);
-    
+    router.get(NGSILD_ENTITIES_URL).handler(validators.getValidation4Context("ENTITY"))
+          .handler(AuthHandler.create(vertx)).handler(this::handleEntitiesQuery)
+          .failureHandler(validationsFailureHandler);
+
     router
         .get(NGSILD_ENTITIES_URL + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
-        .handler(validators.getValidation4Context("LATEST"))
-        .handler(AuthHandler.create(vertx))
-        .handler(this::handleEntitiesQuery)
+        .handler(validators.getValidation4Context("LATEST")).handler(AuthHandler.create(vertx))
+        .handler(this::handleEntitiesQuery).failureHandler(validationsFailureHandler);
+
+    router.post(NGSILD_POST_QUERY_PATH).consumes(APPLICATION_JSON)
+        .handler(validators.getValidation4Context("POST")).handler(AuthHandler.create(vertx))
+        .handler(this::handlePostEntitiesQuery).failureHandler(validationsFailureHandler);
+
+    router.get(NGSILD_TEMPORAL_URL).handler(validators.getValidation4Context("TEMPORAL"))
+        .handler(AuthHandler.create(vertx)).handler(this::handleTemporalQuery)
         .failureHandler(validationsFailureHandler);
-    
-    router.post(NGSILD_POST_QUERY_PATH)
-        .consumes(APPLICATION_JSON)
-        .handler(validators.getValidation4Context("POST"))
-        .handler(AuthHandler.create(vertx))
-        .handler(this::handlePostEntitiesQuery)
-        .failureHandler(validationsFailureHandler);
-    
-    router.get(NGSILD_TEMPORAL_URL)
-        .handler(validators.getValidation4Context("TEMPORAL"))
-        .handler(AuthHandler.create(vertx))
-        .handler(this::handleTemporalQuery)
-        .failureHandler(validationsFailureHandler);
-    
-    router.post(NGSILD_SUBSCRIPTION_URL)
-        .handler(AuthHandler.create(vertx))
+
+    router.post(NGSILD_SUBSCRIPTION_URL).handler(AuthHandler.create(vertx))
         .handler(this::handleSubscriptions);
     // append sub
     router.patch(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
-        .handler(AuthHandler.create(vertx))
-        .handler(this::appendSubscription);
+        .handler(AuthHandler.create(vertx)).handler(this::appendSubscription);
     // update sub
     router.put(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
-        .handler(AuthHandler.create(vertx))
-        .handler(this::updateSubscription);
+        .handler(AuthHandler.create(vertx)).handler(this::updateSubscription);
     // get sub
     router.get(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
-        .handler(AuthHandler.create(vertx))
-        .handler(this::getSubscription);
+        .handler(AuthHandler.create(vertx)).handler(this::getSubscription);
     // delete sub
     router.delete(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
-        .handler(AuthHandler.create(vertx))
-        .handler(this::deleteSubscription);
+        .handler(AuthHandler.create(vertx)).handler(this::deleteSubscription);
 
     /* Management Api endpoints */
     // Exchange
-    router.post(IUDX_MANAGEMENT_EXCHANGE_URL).handler(AuthHandler.create(vertx)).handler(this::createExchange);
-    router.delete(IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId").handler(AuthHandler.create(vertx)).handler(this::deleteExchange);
-    router.get(IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId").handler(AuthHandler.create(vertx)).handler(this::getExchangeDetails);
+    router.post(IUDX_MANAGEMENT_EXCHANGE_URL).handler(AuthHandler.create(vertx))
+        .handler(this::createExchange);
+    router.delete(IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId").handler(AuthHandler.create(vertx))
+        .handler(this::deleteExchange);
+    router.get(IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId").handler(AuthHandler.create(vertx))
+        .handler(this::getExchangeDetails);
     // Queue
-    router.post(IUDX_MANAGEMENT_QUEUE_URL).handler(AuthHandler.create(vertx)).handler(this::createQueue);
-    router.delete(IUDX_MANAGEMENT_QUEUE_URL + "/:queueId").handler(AuthHandler.create(vertx)).handler(this::deleteQueue);
-    router.get(IUDX_MANAGEMENT_QUEUE_URL + "/:queueId").handler(AuthHandler.create(vertx)).handler(this::getQueueDetails);
+    router.post(IUDX_MANAGEMENT_QUEUE_URL).handler(AuthHandler.create(vertx))
+        .handler(this::createQueue);
+    router.delete(IUDX_MANAGEMENT_QUEUE_URL + "/:queueId").handler(AuthHandler.create(vertx))
+        .handler(this::deleteQueue);
+    router.get(IUDX_MANAGEMENT_QUEUE_URL + "/:queueId").handler(AuthHandler.create(vertx))
+        .handler(this::getQueueDetails);
     // bind
-    router.post(IUDX_MANAGEMENT_BIND_URL).handler(AuthHandler.create(vertx)).handler(this::bindQueue2Exchange);
+    router.post(IUDX_MANAGEMENT_BIND_URL).handler(AuthHandler.create(vertx))
+        .handler(this::bindQueue2Exchange);
     // unbind
-    router.post(IUDX_MANAGEMENT_UNBIND_URL).handler(AuthHandler.create(vertx)).handler(this::unbindQueue2Exchange);
+    router.post(IUDX_MANAGEMENT_UNBIND_URL).handler(AuthHandler.create(vertx))
+        .handler(this::unbindQueue2Exchange);
     // vHost
-    router.post(IUDX_MANAGEMENT_VHOST_URL).handler(AuthHandler.create(vertx)).handler(this::createVHost);
-    router.delete(IUDX_MANAGEMENT_VHOST_URL + "/:vhostId").handler(AuthHandler.create(vertx)).handler(this::deleteVHost);
+    router.post(IUDX_MANAGEMENT_VHOST_URL).handler(AuthHandler.create(vertx))
+        .handler(this::createVHost);
+    router.delete(IUDX_MANAGEMENT_VHOST_URL + "/:vhostId").handler(AuthHandler.create(vertx))
+        .handler(this::deleteVHost);
     // adapter
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/register").handler(AuthHandler.create(vertx)).handler(this::registerAdapter);
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/register").handler(AuthHandler.create(vertx))
+        .handler(this::registerAdapter);
     router.delete(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSHA/:resourceServer/:resourceGroup")
-        .handler(AuthHandler.create(vertx))
-        .handler(this::deleteAdapter);
+        .handler(AuthHandler.create(vertx)).handler(this::deleteAdapter);
     router.get(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSHA/:resourceServer/:resourceGroup")
-        .handler(AuthHandler.create(vertx))
-        .handler(this::getAdapterDetails);
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat").handler(AuthHandler.create(vertx)).handler(this::publishHeartbeat);
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/downstreamissue")
-        .handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx)).handler(this::getAdapterDetails);
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat").handler(AuthHandler.create(vertx))
+        .handler(this::publishHeartbeat);
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/downstreamissue").handler(AuthHandler.create(vertx))
         .handler(this::publishDownstreamIssue);
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/dataissue")
-        .handler(AuthHandler.create(vertx))
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/dataissue").handler(AuthHandler.create(vertx))
         .handler(this::publishDataIssue);
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/entities")
-        .handler(AuthHandler.create(vertx))
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/entities").handler(AuthHandler.create(vertx))
         .handler(this::publishDataFromAdapter);
 
     /**
@@ -236,7 +230,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     /* Read server deployment configuration. */
     isProduction = config().getBoolean("production");
-    
+
     HttpServerOptions serverOptions = new HttpServerOptions();
 
     if (isSSL) {
@@ -258,14 +252,14 @@ public class ApiServerVerticle extends AbstractVerticle {
       /* Setup the HTTP server properties, APIs and port. */
 
       serverOptions.setSsl(false);
-      if(isProduction) {
-    	  port = 80;
+      if (isProduction) {
+        port = 80;
       } else {
-    	  port = 8080;
+        port = 8080;
       }
     }
 
-   // serverOptions.setCompressionSupported(true).setCompressionLevel(5);
+    // serverOptions.setCompressionSupported(true).setCompressionLevel(5);
     server = vertx.createHttpServer(serverOptions);
     server.requestHandler(router).listen(port);
 
@@ -297,7 +291,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     // get query paramaters
     MultiMap params = getQueryParams(routingContext, response).get();
-    MultiMap headerParams=request.headers();
+    MultiMap headerParams = request.headers();
     // validate request parameters
     Future<Boolean> validationResult = Validator.validate(params);
     validationResult.onComplete(validationHandler -> {
@@ -311,6 +305,12 @@ public class ApiServerVerticle extends AbstractVerticle {
             + resourceName;
         // parse query params
         NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
+        if (isTemporalParamsPresent(ngsildquery)) {
+          ValidationException ex =
+              new ValidationException("Temporal parameters are not allowed in entities query.");
+          ex.setParameterName("[timerel,time or endtime]");
+          routingContext.fail(ex);
+        }
         LOGGER.debug("Info : PathId " + pathId);
         if (!pathId.contains("null")) {
           List<URI> ids = new ArrayList<>();
@@ -369,7 +369,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = routingContext.getBodyAsJson();
     LOGGER.debug("Info: request Json :: ;" + requestJson);
     HttpServerResponse response = routingContext.response();
-    MultiMap headerParams=request.headers();
+    MultiMap headerParams = request.headers();
     // validate request parameters
     Future<Boolean> validationResult = Validator.validate(requestJson);
     validationResult.onComplete(validationHandler -> {
@@ -431,7 +431,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String instanceID = request.getHeader(HEADER_HOST);
     // get query parameters
     MultiMap params = getQueryParams(routingContext, response).get();
-    MultiMap headerParams=request.headers();
+    MultiMap headerParams = request.headers();
     // validate request params
     Future<Boolean> validationResult = Validator.validate(params);
     validationResult.onComplete(validationHandler -> {
@@ -1452,6 +1452,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         .withTitle(ResponseType.fromCode(type).getMessage()).withMessage(message).build().toJson();
 
   }
+
   /**
    * validate if name passes the regex test for IUDX queue,exchage name.
    * 
@@ -1482,11 +1483,10 @@ public class ApiServerVerticle extends AbstractVerticle {
     MultiMap queryParams = null;
     try {
       queryParams = MultiMap.caseInsensitiveMultiMap();
-      //Internally + sign is dropped and treated as space, replacing + with %2B do the trick 
-      String uri=routingContext.request().uri().toString().replaceAll("\\+", "%2B");
+      // Internally + sign is dropped and treated as space, replacing + with %2B do the trick
+      String uri = routingContext.request().uri().toString().replaceAll("\\+", "%2B");
       Map<String, List<String>> decodedParams =
-          new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET,
-              true, 1024, true).parameters();
+          new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET, true, 1024, true).parameters();
       for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
         queryParams.add(entry.getKey(), entry.getValue());
       }
@@ -1501,11 +1501,16 @@ public class ApiServerVerticle extends AbstractVerticle {
     return Optional.of(queryParams);
   }
 
-
-
   @Override
   public void stop() {
 	LOGGER.info("Stopping the API server");
+  }
+  
+  private boolean isTemporalParamsPresent(NGSILDQueryParams ngsildquery) {
+    return ngsildquery.getTemporalRelation().getTemprel() != null
+        || ngsildquery.getTemporalRelation().getTime() != null
+        ||ngsildquery.getTemporalRelation().getEndTime()!=null;
+
   }
 }
 
