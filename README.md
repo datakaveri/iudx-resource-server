@@ -1,5 +1,7 @@
-![IUDX](./docs/iudx.png)
 [![Build Status](http://128.199.18.230:8080/buildStatus/icon?job=iudx+RS+pipeline)](http://128.199.18.230:8080/job/iudx%20RS%20pipeline/lastBuild/testReport/)
+
+![IUDX](./docs/iudx.png)
+
 # iudx-resource-server
 The resource server is [IUDXs](https://iudx.org.in) data discovery, data publication and data subscription portal.
 It allows data providers to publish their data *resources* in accordance to the IUDX vocabulary annotated meta-data document,  data subscribers to query and subscribe for data *resources* as per the consent of the provider.
