@@ -80,7 +80,7 @@ services:
       - WORKSPACE
     volumes:
       - ./src/:/usr/share/app/src
-      - ./configs/config-test.json:/usr/share/app/configs/config-test.json
+      - /root/configs/cat-config-test.json:/usr/share/app/configs/config-test.json
       - ./configs/keystore.jks:/usr/share/app/configs/keystore.jks
       - ./docker/runTests.sh:/usr/share/app/docker/runTests.sh
       - ${WORKSPACE}:/tmp/test
