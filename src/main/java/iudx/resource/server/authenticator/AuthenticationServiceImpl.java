@@ -65,15 +65,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   // Cache for all token.
   // what if token is revoked ?
   private final Cache<String, JsonObject> tipCache = CacheBuilder.newBuilder().maximumSize(1000)
-      .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
+      .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
   // resourceGroupCache will contains ACL info about all resource group in a resource server
   private final Cache<String, String> resourceGroupCache =
       CacheBuilder.newBuilder().maximumSize(1000)
-          .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
+          .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
   // resourceIdCache will contains info about resources available(& their ACL) in resource server.
   // what if resource id ACL is changed ?
   private final Cache<String, String> resourceIdCache = CacheBuilder.newBuilder().maximumSize(1000)
-      .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
+      .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
 
   /**
    * This is a constructor which is used by the DataBroker Verticle to instantiate a RabbitMQ
@@ -367,7 +367,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             }
             JsonObject responseBody = response.bodyAsJsonObject();
             String cacheExpiry = Instant.now(Clock.systemUTC())
-                .plus(Constants.TIP_CACHE_TIMEOUT_AMOUNT, Constants.TIP_CACHE_TIMEOUT_UNIT)
+                .plus(Constants.CACHE_TIMEOUT_AMOUNT, Constants.TIP_CACHE_TIMEOUT_UNIT)
                 .toString();
             responseBody.put("cache-expiry", cacheExpiry);
             tipCache.put(token, responseBody);

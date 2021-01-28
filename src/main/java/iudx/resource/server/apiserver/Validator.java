@@ -5,6 +5,8 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.api.validation.ValidationException;
+import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.apiserver.util.Constants;
 import java.util.HashSet;
 import java.util.List;
@@ -20,7 +22,12 @@ import static iudx.resource.server.apiserver.util.Constants.*;
 public class Validator {
 
   private static Set<String> validParams = new HashSet<String>();
-  private static Set<String> validHeaders=new HashSet<String>();
+  private static Set<String> validHeaders = new HashSet<String>();
+  private CatalogueService catalogueService;
+
+  public Validator(CatalogueService catalogueService) {
+    this.catalogueService = catalogueService;
+  }
 
   static {
     validParams.add(NGSILDQUERY_TYPE);
@@ -42,11 +49,11 @@ public class Validator {
     validParams.add(NGSILDQUERY_TEMPORALQ);
     // Need to check with the timeProperty in Post Query property for NGSI-LD release v1.3.1
     validParams.add(NGSILDQUERY_TIME_PROPERTY);
-    
-    //for IUDX count query
+
+    // for IUDX count query
     validParams.add(IUDXQUERY_OPTIONS);
   }
-  
+
   static {
     validHeaders.add(HEADER_OPTIONS);
     validHeaders.add(HEADER_TOKEN);
@@ -58,24 +65,24 @@ public class Validator {
    * Validate a http request.
    * 
    * @param parameterMap parameters map of request query
-   * @param response     HttpServerResponse object
+   * @param response HttpServerResponse object
    */
-  private static boolean validateParams(MultiMap parameterMap) {
+  private boolean validateParams(MultiMap parameterMap) {
     final List<Entry<String, String>> entries = parameterMap.entries();
     for (final Entry<String, String> entry : entries) {
-      //System.out.println(entry.getKey());
+      // System.out.println(entry.getKey());
       if (!validParams.contains(entry.getKey())) {
         return false;
       }
     }
     return true;
   }
-  
-  
-  private static boolean validateHeader(MultiMap headerMap) {
+
+
+  private boolean validateHeader(MultiMap headerMap) {
     final List<Entry<String, String>> entries = headerMap.entries();
     for (final Entry<String, String> entry : entries) {
-      //System.out.println(entry.getKey());
+      // System.out.println(entry.getKey());
       /*
        * if (!validHeaders.contains(entry.getKey())) { return false; }
        */
@@ -89,10 +96,14 @@ public class Validator {
    * @param paramsMap map of request parameters
    * @return Future future JsonObject
    */
-  public static Future<Boolean> validate(MultiMap paramsMap) {
+  public Future<Boolean> validate(MultiMap paramsMap) {
     Promise<Boolean> promise = Promise.promise();
     if (validateParams(paramsMap)) {
-      promise.complete(true);
+      if (isValidQueryWithFilters(paramsMap)) {
+        promise.complete(true);
+      } else {
+        promise.fail("Item doesn't support some filters.");
+      }
     } else {
       promise.fail(MSG_INVALID_PARAM);
     }
@@ -105,7 +116,7 @@ public class Validator {
    * @param JsonObject requestJson of request parameters
    * @return Future future JsonObject
    */
-  public static Future<Boolean> validate(JsonObject requestJson) {
+  public Future<Boolean> validate(JsonObject requestJson) {
     Promise<Boolean> promise = Promise.promise();
     MultiMap paramsMap = MultiMap.caseInsensitiveMultiMap();
 
@@ -134,5 +145,47 @@ public class Validator {
       promise.fail(MSG_INVALID_PARAM);
     }
     return promise.future();
+  }
+
+
+  private Boolean isValidQueryWithFilters(MultiMap paramsMap) {
+    List<String> filters=catalogueService.getApplicableFilters(paramsMap.get("id"));
+    if(isTemporalQuery(paramsMap) && !filters.contains("TEMPORAL")) {
+      //temporal not allowed in rs group/item
+      ValidationException ex=new ValidationException("Temporal parameters are not supported by RS group/Item.");
+      ex.setParameterName("timerel, time, endtime, timeproperty");
+      throw ex;
+    }
+    if(isSpatialQuery(paramsMap) && !filters.contains("SPATIAL")) {
+      //spatial not allowed for rs group/item.
+      ValidationException ex=new ValidationException("Spatial parameters are not supported by RS group/Item.");
+      ex.setParameterName("georel, geometry, geoproperty, coordinates");
+      throw ex;
+    }
+    if(isAttributeQuery(paramsMap) && !filters.contains("ATTR")) {
+      //attribute query not allowed for rs group/item.
+      ValidationException ex=new ValidationException("Attribute parameters are not supported by RS group/Item.");
+      ex.setParameterName("attr");
+      throw ex;
+    }
+    return true;
+  }
+
+
+  private Boolean isTemporalQuery(MultiMap params) {
+    return params.contains(NGSILDQUERY_TIMEREL) || params.contains(NGSILDQUERY_TIME)
+        || params.contains(NGSILDQUERY_ENDTIME) || params.contains(NGSILDQUERY_TIME_PROPERTY);
+
+  }
+  
+  private Boolean isSpatialQuery(MultiMap params) {
+    return params.contains(NGSILDQUERY_GEOREL) || params.contains(NGSILDQUERY_GEOMETRY)
+        || params.contains(NGSILDQUERY_GEOPROPERTY) || params.contains(NGSILDQUERY_COORDINATES);
+
+  }
+  
+  private Boolean isAttributeQuery(MultiMap params) {
+    return params.contains(NGSILDQUERY_ATTRIBUTE);
+
   }
 }

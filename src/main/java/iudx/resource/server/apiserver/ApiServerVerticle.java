@@ -39,6 +39,7 @@ import iudx.resource.server.apiserver.query.NGSILDQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.response.RestResponse;
+import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.validation.ValidationFailureHandler;
@@ -84,10 +85,12 @@ public class ApiServerVerticle extends AbstractVerticle {
   private String keystorePassword;
   private ManagementApi managementApi;
   private SubscriptionService subsService;
+  private CatalogueService catalogueService;
 
   private DatabaseService database;
   private DataBrokerService databroker;
   private AuthenticationService authenticator;
+  private Validator validator;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
@@ -137,8 +140,8 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     /* NGSI-LD api endpoints */
     router.get(NGSILD_ENTITIES_URL).handler(validators.getValidation4Context("ENTITY"))
-          .handler(AuthHandler.create(vertx)).handler(this::handleEntitiesQuery)
-          .failureHandler(validationsFailureHandler);
+        .handler(AuthHandler.create(vertx)).handler(this::handleEntitiesQuery)
+        .failureHandler(validationsFailureHandler);
 
     router
         .get(NGSILD_ENTITIES_URL + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
@@ -274,6 +277,9 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     managementApi = new ManagementApiImpl();
     subsService = new SubscriptionService();
+    catalogueService = new CatalogueService(vertx, config());
+    validator = new Validator(catalogueService);
+
   }
 
   /**
@@ -293,7 +299,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     MultiMap params = getQueryParams(routingContext, response).get();
     MultiMap headerParams = request.headers();
     // validate request parameters
-    Future<Boolean> validationResult = Validator.validate(params);
+    Future<Boolean> validationResult = validator.validate(params);
     validationResult.onComplete(validationHandler -> {
       if (validationHandler.succeeded()) {
         String domain = request.getParam(JSON_DOMAIN);
@@ -320,6 +326,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         // create json
         QueryMapper queryMapper = new QueryMapper();
         JsonObject json = queryMapper.toJson(ngsildquery, false);
+        json.put("applicableFilters",
+            catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0)));
         /* HTTP request instance/host details */
         String instanceID = request.getHeader(HEADER_HOST);
         json.put(JSON_INSTANCEID, instanceID);
@@ -371,13 +379,15 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerResponse response = routingContext.response();
     MultiMap headerParams = request.headers();
     // validate request parameters
-    Future<Boolean> validationResult = Validator.validate(requestJson);
+    Future<Boolean> validationResult = validator.validate(requestJson);
     validationResult.onComplete(validationHandler -> {
       if (validationHandler.succeeded()) {
         // parse query params
         NGSILDQueryParams ngsildquery = new NGSILDQueryParams(requestJson);
         QueryMapper queryMapper = new QueryMapper();
         JsonObject json = queryMapper.toJson(ngsildquery, requestJson.containsKey("temporalQ"));
+        json.put("applicableFilters",
+            catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0)));
         String instanceID = request.getHeader(HEADER_HOST);
         json.put(JSON_INSTANCEID, instanceID);
         requestJson.put("ids", json.getJsonArray("id"));
@@ -433,7 +443,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     MultiMap params = getQueryParams(routingContext, response).get();
     MultiMap headerParams = request.headers();
     // validate request params
-    Future<Boolean> validationResult = Validator.validate(params);
+    Future<Boolean> validationResult = validator.validate(params);
     validationResult.onComplete(validationHandler -> {
       if (validationHandler.succeeded()) {
         // parse query params
@@ -441,6 +451,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         // create json
         QueryMapper queryMapper = new QueryMapper();
         JsonObject json = queryMapper.toJson(ngsildquery, true);
+        json.put("applicableFilters",
+            catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0)));
         json.put(JSON_INSTANCEID, instanceID);
         LOGGER.debug("Info: IUDX temporal json query;" + json);
         /* HTTP request body as Json */

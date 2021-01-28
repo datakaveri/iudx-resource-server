@@ -22,9 +22,10 @@ public class Constants {
   public static final String ADAPTER_ENDPOINT = "/iudx/v1/adapter";
   public static final String SUBSCRIPTION_ENDPOINT = "/ngsi-ld/v1/subscription";
   public static final String MANAGEMENT_ENDPOINT = "/management/*";
-  public static final long TIP_CACHE_TIMEOUT_AMOUNT = 30;
+  public static final long CACHE_TIMEOUT_AMOUNT = 30;
   public static final ChronoUnit TIP_CACHE_TIMEOUT_UNIT = ChronoUnit.MINUTES;
   public static final String CAT_RSG_PATH = "/iudx/cat/v1/search";
+  public static final String CAT_ITEM_PATH = "/iudx/cat/v1/item";
   public static final String SERVER_MODE = "serverMode";
   public static final String JSON_CONSUMER = "consumer"; 
   public static final String JSON_PROVIDER = "provider"; 
