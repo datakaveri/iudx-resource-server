@@ -300,7 +300,7 @@ public class QueryDecoder {
         String timeLimitString = "";
         if (request.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(PROD_INSTANCE)) {
           timeLimitString =
-              TIME_QUERY.replace("$1", LESS_THAN_EQ).replace("$2", "now-" + timeLimit + "d/d");
+              TIME_QUERY.replace("$1", GREATER_THAN_EQ).replace("$2", "now-" + timeLimit + "d/d");
         } else if (request.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(TEST_INSTANCE)) {
           String endTime = request.getString(TIME_LIMIT).split(",")[1];
           ZonedDateTime endTimeZ = ZonedDateTime.parse(endTime);
