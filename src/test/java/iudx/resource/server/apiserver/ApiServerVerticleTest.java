@@ -854,7 +854,7 @@ public class ApiServerVerticleTest {
     String apiUrl = Constants.NGSILD_TEMPORAL_URL;
     client.get(PORT, BASE_URL, apiUrl).addQueryParam(Constants.NGSILDQUERY_ID, testId)
         .addQueryParam(Constants.NGSILDQUERY_TIMEREL, "during")
-        .addQueryParam(Constants.NGSILDQUERY_TIME, time)
+        .addQueryParam(Constants.NGSILDQUERY_TIME, "")
         .addQueryParam(Constants.NGSILDQUERY_ENDTIME, endTime).send(handler -> {
           if (handler.succeeded()) {
             assertEquals(ResponseType.BadRequestData.getCode(), handler.result().statusCode());

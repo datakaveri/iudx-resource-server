@@ -66,7 +66,8 @@ public class QueryMapperTest {
     map.add(Constants.NGSILDQUERY_ATTRIBUTE, "attr1");
     map.add(Constants.NGSILDQUERY_GEOREL, "near;maxdistance=360");
     map.add(Constants.NGSILDQUERY_GEOMETRY, "point");
-    map.add(Constants.NGSILDQUERY_COORDINATES, "[8.684628009796143,49.406062179606515]");
+    map.add(Constants.NGSILDQUERY_GEOPROPERTY,"location");
+    map.add(Constants.NGSILDQUERY_COORDINATES, "[8.68462,49.40606]");
     NGSILDQueryParams params = new NGSILDQueryParams(map);
 
     JsonObject json = qm.toJson(params, false);
@@ -88,8 +89,9 @@ public class QueryMapperTest {
     map.add(Constants.NGSILDQUERY_ATTRIBUTE, "attr1,attr2");
     map.add(Constants.NGSILDQUERY_GEOREL, "within");
     map.add(Constants.NGSILDQUERY_GEOMETRY, "Polygon");
+    map.add(Constants.NGSILDQUERY_GEOPROPERTY,"location");
     map.add(Constants.NGSILDQUERY_COORDINATES,
-        "[[[8.684628009796143,49.406062179606515],[8.685507774353027,49.4062262372493],[8.68545413017273,49.40634491690448],[8.684579730033875,49.40617736907259],[8.684628009796143,49.406062179606515]]]");
+        "[[[8.68462,49.40606],[8.68550,49.40622],[8.68545,49.40634],[8.68457,49.40617],[8.68462,49.40606]]]");
     NGSILDQueryParams params = new NGSILDQueryParams(map);
 
     JsonObject json = qm.toJson(params, false);
