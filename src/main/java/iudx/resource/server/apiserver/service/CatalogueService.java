@@ -50,9 +50,9 @@ public class CatalogueService {
     WebClientOptions options =
         new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
     catWebClient = WebClient.create(vertx, options);
-    // populateCache();
+    populateCache();
     cacheTimerid = vertx.setPeriodic(TimeUnit.DAYS.toMillis(1), handler -> {
-      // populateCache();
+       populateCache();
     });
   }
 
