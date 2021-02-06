@@ -99,11 +99,13 @@ public class Validator {
   public Future<Boolean> validate(MultiMap paramsMap) {
     Promise<Boolean> promise = Promise.promise();
     if (validateParams(paramsMap)) {
-      if (isValidQueryWithFilters(paramsMap)) {
-        promise.complete(true);
-      } else {
-        promise.fail("Item doesn't support some filters.");
-      }
+      isValidQueryWithFilters(paramsMap).onComplete(handler -> {
+        if (handler.succeeded()) {
+          promise.complete(true);
+        } else {
+          promise.fail(handler.cause().getMessage());
+        }
+      });
     } else {
       promise.fail(MSG_INVALID_PARAM);
     }
@@ -148,27 +150,31 @@ public class Validator {
   }
 
 
-  private Boolean isValidQueryWithFilters(MultiMap paramsMap) {
-    List<String> filters=catalogueService.getApplicableFilters(paramsMap.get("id"));
-    if(isTemporalQuery(paramsMap) && !filters.contains("TEMPORAL")) {
-      //temporal not allowed in rs group/item
-      ValidationException ex=new ValidationException("Temporal parameters are not supported by RS group/Item.");
-      ex.setParameterName("timerel, time, endtime, timeproperty");
-      throw ex;
-    }
-    if(isSpatialQuery(paramsMap) && !filters.contains("SPATIAL")) {
-      //spatial not allowed for rs group/item.
-      ValidationException ex=new ValidationException("Spatial parameters are not supported by RS group/Item.");
-      ex.setParameterName("georel, geometry, geoproperty, coordinates");
-      throw ex;
-    }
-    if(isAttributeQuery(paramsMap) && !filters.contains("ATTR")) {
-      //attribute query not allowed for rs group/item.
-      ValidationException ex=new ValidationException("Attribute parameters are not supported by RS group/Item.");
-      ex.setParameterName("attr");
-      throw ex;
-    }
-    return true;
+  private Future<Boolean> isValidQueryWithFilters(MultiMap paramsMap) {
+    Promise<Boolean> promise = Promise.promise();
+    Future<List<String>> filtersFuture = catalogueService.getApplicableFilters(paramsMap.get("id"));
+    filtersFuture.onComplete(handler -> {
+      if (handler.succeeded()) {
+        List<String> filters = filtersFuture.result();
+        System.out.println("!@!#!32 : " + filters);
+        if (isTemporalQuery(paramsMap) && !filters.contains("TEMPORAL")) {
+          promise.fail("Temporal parameters are not supported by RS group/Item.");
+          return;
+        }
+        if (isSpatialQuery(paramsMap) && !filters.contains("SPATIAL")) {
+          promise.fail("Spatial parameters are not supported by RS group/Item.");
+          return;
+        }
+        if (isAttributeQuery(paramsMap) && !filters.contains("ATTR")) {
+          promise.fail("Attribute parameters are not supported by RS group/Item.");
+          return;
+        }
+        promise.complete(true);
+      } else {
+        promise.fail("fail to get filters for validation");
+      }
+    });
+    return promise.future();
   }
 
 
@@ -177,13 +183,13 @@ public class Validator {
         || params.contains(NGSILDQUERY_ENDTIME) || params.contains(NGSILDQUERY_TIME_PROPERTY);
 
   }
-  
+
   private Boolean isSpatialQuery(MultiMap params) {
     return params.contains(NGSILDQUERY_GEOREL) || params.contains(NGSILDQUERY_GEOMETRY)
         || params.contains(NGSILDQUERY_GEOPROPERTY) || params.contains(NGSILDQUERY_COORDINATES);
 
   }
-  
+
   private Boolean isAttributeQuery(MultiMap params) {
     return params.contains(NGSILDQUERY_ATTRIBUTE);
 

@@ -326,8 +326,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         // create json
         QueryMapper queryMapper = new QueryMapper();
         JsonObject json = queryMapper.toJson(ngsildquery, false);
-        json.put("applicableFilters",
-            catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0)));
+        Future<List<String>> filtersFuture =
+            catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
         /* HTTP request instance/host details */
         String instanceID = request.getHeader(HEADER_HOST);
         json.put(JSON_INSTANCEID, instanceID);
@@ -335,32 +335,22 @@ public class ApiServerVerticle extends AbstractVerticle {
         /* HTTP request body as Json */
         JsonObject requestBody = new JsonObject();
         requestBody.put("ids", json.getJsonArray("id"));
-        if (json.containsKey(IUDXQUERY_OPTIONS)
-            && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
-          database.countQuery(json, handler -> {
-            if (handler.succeeded()) {
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  handler.result().toString());
-            } else if (handler.failed()) {
-              processBackendResponse(response, handler.cause().getMessage());
+        filtersFuture.onComplete(filtersHandler -> {
+          if (filtersHandler.succeeded()) {
+            json.put("applicableFilters", filtersHandler.result());
+            if (json.containsKey(IUDXQUERY_OPTIONS)
+                && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
+              executeCountQuery(json, response);
+            } else {
+              executeSearchQuery(json, response);
             }
-          });
-        } else {
-          // call database vertical for seaarch
-          database.searchQuery(json, handler -> {
-            if (handler.succeeded()) {
-              LOGGER.info("Success: Search Query success");
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  handler.result().toString());
-            } else if (handler.failed()) {
-              LOGGER.error("Fail: Search Query failed");
-              processBackendResponse(response, handler.cause().getMessage());
-            }
-          });
-        }
+          } else {
+            LOGGER.error("catalogue item/group doesn't have filters.");
+          }
+        });
       } else if (validationHandler.failed()) {
         LOGGER.error("Fail: Validation failed");
-        handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_PARAM);
+        handleResponse(response, ResponseType.BadRequestData, validationHandler.cause().getMessage());
       }
     });
   }
@@ -386,40 +376,66 @@ public class ApiServerVerticle extends AbstractVerticle {
         NGSILDQueryParams ngsildquery = new NGSILDQueryParams(requestJson);
         QueryMapper queryMapper = new QueryMapper();
         JsonObject json = queryMapper.toJson(ngsildquery, requestJson.containsKey("temporalQ"));
-        json.put("applicableFilters",
-            catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0)));
+        Future<List<String>> filtersFuture =
+            catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
         String instanceID = request.getHeader(HEADER_HOST);
         json.put(JSON_INSTANCEID, instanceID);
         requestJson.put("ids", json.getJsonArray("id"));
         LOGGER.debug("Info: IUDX query json : ;" + json);
-        if (json.containsKey(IUDXQUERY_OPTIONS)
-            && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
-          database.countQuery(json, handler -> {
-            if (handler.succeeded()) {
-              LOGGER.info("Success: Count Success");
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  handler.result().toString());
-            } else if (handler.failed()) {
-              LOGGER.error("Fail: Count Fail");
-              processBackendResponse(response, handler.cause().getMessage());
+        filtersFuture.onComplete(filtersHandler -> {
+          if (filtersHandler.succeeded()) {
+            json.put("applicableFilters", filtersHandler.result());
+            if (json.containsKey(IUDXQUERY_OPTIONS)
+                && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
+              executeCountQuery(json, response);
+            } else {
+              executeSearchQuery(json, response);
             }
-          });
-        } else {
-          // call database vertical for search
-          database.searchQuery(json, handler -> {
-            if (handler.succeeded()) {
-              LOGGER.info("Success: Search Success");
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  handler.result().toString());
-            } else if (handler.failed()) {
-              LOGGER.error("Fail: Search Fail");
-              processBackendResponse(response, handler.cause().getMessage());
-            }
-          });
-        }
+          } else {
+            LOGGER.error("catalogue item/group doesn't have filters.");
+          }
+        });
       } else if (validationHandler.failed()) {
         LOGGER.error("Fail: Bad request");
-        handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_PARAM);
+        handleResponse(response, ResponseType.BadRequestData, validationHandler.cause().getMessage());
+      }
+    });
+  }
+
+  /**
+   * Execute a count query in DB
+   * 
+   * @param json valid json query
+   * @param response
+   */
+  private void executeCountQuery(JsonObject json, HttpServerResponse response) {
+    database.countQuery(json, handler -> {
+      if (handler.succeeded()) {
+        LOGGER.info("Success: Count Success");
+        handleSuccessResponse(response, ResponseType.Ok.getCode(),
+            handler.result().toString());
+      } else if (handler.failed()) {
+        LOGGER.error("Fail: Count Fail");
+        processBackendResponse(response, handler.cause().getMessage());
+      }
+    });
+  }
+
+  /**
+   * Execute a search query in DB
+   * 
+   * @param json valid json query
+   * @param response
+   */
+  private void executeSearchQuery(JsonObject json, HttpServerResponse response) {
+    database.searchQuery(json, handler -> {
+      if (handler.succeeded()) {
+        LOGGER.info("Success: Search Success");
+        handleSuccessResponse(response, ResponseType.Ok.getCode(),
+            handler.result().toString());
+      } else if (handler.failed()) {
+        LOGGER.error("Fail: Search Fail");
+        processBackendResponse(response, handler.cause().getMessage());
       }
     });
   }
@@ -451,39 +467,29 @@ public class ApiServerVerticle extends AbstractVerticle {
         // create json
         QueryMapper queryMapper = new QueryMapper();
         JsonObject json = queryMapper.toJson(ngsildquery, true);
-        json.put("applicableFilters",
-            catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0)));
+        Future<List<String>> filtersFuture =
+            catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
         json.put(JSON_INSTANCEID, instanceID);
         LOGGER.debug("Info: IUDX temporal json query;" + json);
         /* HTTP request body as Json */
         JsonObject requestBody = new JsonObject();
         requestBody.put("ids", json.getJsonArray("id"));
-        if (json.containsKey(IUDXQUERY_OPTIONS)
-            && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
-          database.countQuery(json, handler -> {
-            if (handler.succeeded()) {
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  handler.result().toString());
-            } else if (handler.failed()) {
-              processBackendResponse(response, handler.cause().getMessage());
+        filtersFuture.onComplete(filtersHandler -> {
+          if (filtersHandler.succeeded()) {
+            json.put("applicableFilters", filtersHandler.result());
+            if (json.containsKey(IUDXQUERY_OPTIONS)
+                && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
+              executeCountQuery(json, response);
+            } else {
+              executeSearchQuery(json, response);
             }
-          });
-        } else {
-          // call database vertical for normal seaarch
-          database.searchQuery(json, handler -> {
-            if (handler.succeeded()) {
-              LOGGER.info("Success: Temporal query");
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  handler.result().toString());
-            } else if (handler.failed()) {
-              LOGGER.error("Fail: Temporal query");
-              processBackendResponse(response, handler.cause().getMessage());
-            }
-          });
-        }
+          } else {
+            LOGGER.error("catalogue item/group doesn't have filters.");
+          }
+        });
       } else if (validationHandler.failed()) {
         LOGGER.error("Fail: Bad request;");
-        handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_PARAM);
+        handleResponse(response, ResponseType.BadRequestData, validationHandler.cause().getMessage());
       }
     });
 
@@ -1515,13 +1521,13 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   @Override
   public void stop() {
-	LOGGER.info("Stopping the API server");
+    LOGGER.info("Stopping the API server");
   }
-  
+
   private boolean isTemporalParamsPresent(NGSILDQueryParams ngsildquery) {
     return ngsildquery.getTemporalRelation().getTemprel() != null
         || ngsildquery.getTemporalRelation().getTime() != null
-        ||ngsildquery.getTemporalRelation().getEndTime()!=null;
+        || ngsildquery.getTemporalRelation().getEndTime() != null;
 
   }
 }
