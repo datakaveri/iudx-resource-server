@@ -694,7 +694,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     LOGGER.debug("Info: requested endpoint :" + requestEndpoint);
     
     //TODO : check for validation placement.
-    if(!result.getJsonArray("apis").contains(requestEndpoint)) {
+    if(!result.getJsonObject("request").getJsonArray("apis").contains(requestEndpoint)) {
       promise.fail("Info: Failure :: No access to " + requestEndpoint);
     }
 
