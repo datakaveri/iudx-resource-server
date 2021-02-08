@@ -27,6 +27,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Coordinates;
 import org.wololo.geojson.Geometry;
 import org.wololo.jts2geojson.GeoJSONReader;
 import io.vertx.core.Future;
@@ -171,11 +173,14 @@ public class Validator {
       }
 
     });
-    if (validateParams(paramsMap)) {
-      promise.complete(true);
-    } else {
-      promise.fail(MSG_INVALID_PARAM);
-    }
+    
+    validate(paramsMap).onComplete(handler->{
+      if(handler.succeeded()) {
+        promise.complete(true);
+      }else {
+        promise.fail(handler.cause().getMessage());
+      }
+    });
     return promise.future();
   }
 
@@ -255,11 +260,15 @@ public class Validator {
     try {
       GeoJSONReader reader = new GeoJSONReader();
       org.locationtech.jts.geom.Geometry geom = reader.read(geoJson);
-      isValid = geom.isValid();
+      boolean  coordsCount=false;
+      if(("Polygon").equalsIgnoreCase(geom.getGeometryType())) {
+        Coordinate[] coords=geom.getCoordinates();
+        coordsCount=coords.length<11;
+      }
+      isValid = geom.isValid() && coordsCount;
     } catch (Exception ex) {
-      LOGGER.error("Invalid geom/coordinates passed for point");
+      LOGGER.error("Invalid geom/coordinates passed");
     }
     return isValid;
   }
-
 }

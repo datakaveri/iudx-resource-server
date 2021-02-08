@@ -32,18 +32,16 @@ tags:
 - name: Spatial Entities
   x-displayName: "Spatial Search"
   description: |
-        A Spatial Search is used by IUDX Data *Consumers* for querying a resource using a <b>valid IUDX</b> `id`, `spatial` and `attribute` parameters. <br/> If the resource is a <b> protected resource </b> a <b> valid IUDX Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .
+        A Spatial Search is used by IUDX Data *Consumers* for querying a resource using a <b>valid IUDX</b> `id`, `spatial` and `attribute` parameters. <br/> If the resource is a <b> protected resource </b> a <b> valid IUDX Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b>. <br/> You can use this API to make a `spatial` or `attribute` or `complex : spatial+attribute` query.
 - name: Temporal Entities
   x-displayName: "Temporal and Complex Search"
   description: |
-    Discover data of a resource using the id of the resource along with temporal and attribute queries.
-    These apis are intended to be used by IUDX Data *Consumers*.
+        A Temporal Search is used by IUDX Data *Consumers* for querying a resource using a <b>valid IUDX</b> `id`, `temporal`, `spatial` and `attribute` parameters. <br/> If the resource is a <b> protected resource </b> a <b> valid IUDX Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b>. <br/>In order to use this API, a `temporal` parameter is <b>mandatory</b>. <br/> You can use this API to make a `temporal` or `complex : temporal+spatial` or `complex : temporal+attribute` or `complex : temporal+spatial+attribute` query. <br/> If you are looking for an `attribute` only query refer the <b>Spatial Search</b> `/entities` endpoint.
 
 - name: Entities Post Query
   x-displayName: "Complex Search (Post Query)"
   description: |
-    Discover data of a resource  using the id of the resource along with geo-based, temporal and attribute queries using HTTPs POST method. Intended to be used for complex queries.
-    These apis are intended to be used by IUDX Data *Consumers*.
+        A Complex Search (Post Query) is an HTTP POST API and is used by IUDX Data *Consumers*. <br/>This API is used for querying a resource using a <b>valid IUDX</b> `id`, `temporal`, `spatial` and `attribute` parameters. <br/> If the resource is a <b> protected resource </b> a <b> valid IUDX Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b>. <br/> You can use this API to make a `temporal` or `spatial` or `attribute` or `complex : temporal+spatial` or `complex : temporal+attribute` or `complex : spatial+attribute` or `complex : temporal+spatial+attribute` query.
 
 - name: Data Adaptor
   x-displayName: "Data Adaptor"
@@ -120,7 +118,7 @@ paths:
             https://rs.iudx.org.in/ngsi-ld/v1/entities/suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta
 
       description: |
-        The <b> Latest Data API </b> is used to get the latest (last published) data of a resource. <br /> It uses the <b> IUDX ID </b> a.k.a `id` to query the resource server. <br />  To get data for a <b> protected resource<b>  a <b> valid IUDX Auth token<b>  is mandatory. 
+        The <b> Latest Data API </b> is used to get the latest (last published) data of a resource. <br /> It uses the <b> IUDX ID </b> a.k.a `id` to query the resource server. <br />  To get data for a <b> protected resource</b>  a <b> valid IUDX Auth token</b>  is mandatory.  <br/> The `/entities` end point follwed by `id` as a <b>path parameter</b> is used to get the latest data.
 
       deprecated: false
 
@@ -201,7 +199,7 @@ paths:
 
       - name: options
         in: query
-        description: 'The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a spatial query. <br/> It should be used along with the <b> valid spatial query</b>. <br/> It <b>cannot</b> be used along with a <b>attrs</b> filter. The value should be equal to `count` and it is <b>case sensitive</b>'
+        description: 'The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a query. <br/> It should be used along with the <b> valid </b> `spatial`, `attribute` or `complex` queries. <br/> It <b>cannot</b> be used along with a <b>attrs</b> filter. The value should be equal to `count` and it is <b>case sensitive</b>'
         schema:
           type: string
           enum: [count]
@@ -260,7 +258,7 @@ paths:
           
       deprecated: false
       description: |
-        The <b>entities</b> end point allows a consumer to query on data published based on a <b>spatial</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid IUDX ID </b> of the resource.     These apis are intended to be used by IUDX Data *Consumers*.
+        The `/entities` end point allows a consumer to query on data published based on a <b>spatial</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid IUDX </b> `id` of the resource. These apis are intended to be used by IUDX Data *Consumers*.
 
           - <b>Allowed Search Operations</b>: 
               - <b> Spatial (Geo) Search : </b> which queries the geo property of the resource.
@@ -315,6 +313,13 @@ paths:
           - A subset of properties of returned documents can be filtered out. This is an option parameter. <br/>For e.g, `attrs=[id]` returns documents with only the `id` property retained in them. 
           - `minNumberOfAttributes` : 1 and `maxNumberOfAttributes` : 5 
 
+        #### Options
+          - The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a query. 
+          - It should be used along with the <b> valid </b> `spatial`, `attribute` or `complex` queries. 
+          - It <b>cannot</b> be used along with a <b>attrs</b> filter. 
+          - The value should be equal to `count` and it is <b>case sensitive</b>
+
+
   /ngsi-ld/v1/temporal/entities:
     get:
       tags:
@@ -341,17 +346,19 @@ paths:
       - name: timerel
         in: query
         description: 'The temporal relation type of <b>timerel</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> If the relation is <b> during </b> it should be always accomodated with a <b> time </b> and <b> endtime </b> property.  <br/> If the relation is <b> before </b> or <b> after </b>it should be always accomodated <b> only</b> with a <b> time </b> property.'
+        required: true
         schema:
           type: string
           enum: [during, before, after]          
       - name: time
         in: query
         description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
+        required: true
         schema:
           type: string
       - name: endtime
         in: query
-        description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
+        description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query. <br/>If <b>timerel</b> is `during` time and endtime are mandatory'
         schema:
           type: string
 
@@ -472,49 +479,74 @@ paths:
 
       deprecated: false
       description: |
-        Temporal resource search query. Searches for data published by entites that meet the
-        query criteria. The temporal/entities enpoint allows one to query an
-        entity by a temporal property, by an attribute query or by a combination of
-        both.        
+        The `/temporal/entities` end point allows a consumer to query on data published based on a <b>spatial</b>, <b>temporal</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid IUDX</b> `id`  of the resource and a `temporal` parameter. These apis are intended to be used by IUDX Data *Consumers*.
+
+          - <b>Allowed Search Operations</b>: 
+              - <b> Temporal Search : </b> which queries the temporal property of the resource.
+              - <b> Spatial (Geo) Search : </b> which queries the geo property of the resource.
+              - <b> Attribute Search : </b> which queries the valid attributes as per the data descriptor.
+              - <b> Complex Search : </b> which queries using the combination of the above three.
 
         #### Temporal search
         Temporal search accepts time property based queries which are specified in ISO 8601 format. The params and their accepted values are -
-          - timerel: The time relation of the query. Should be either `during`, `before` or `after`.
-          - time: Start time for the temporal query in `ISO 8601` format. 
-          - endtime: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = during`. 
-          
-          The time difference between `time` and `endtime` should be less than `10 days`.
-          For `before` and `after` queries, `10 days` of data `before` or `after` the specified time will be provided.
+          - <b>timerel</b>: The time relation of the query. Should be either `during`, `before` or `after`.
+          - <b>time</b>: Start time for the temporal query in `ISO 8601` format. 
+          - <b>endtime</b>: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = during`. 
+          - Note, The time difference between `time` and `endtime` should be less than `10 days`. For `before` and `after` queries, `10 days` of data `before` or `after` the specified time will be provided.
 
-        
-        #### Geo Search
-        Geo search accepts geojson based queries. The params and their accepted values are -
-          - geoproperty: Which geoproperty to query. Should be `location`.
-          - georel: Geo-relationship. One of `within`, `contains`, `intersects`.
-          - geometry: GeoJson geometries. One of `Point`(point and circle), `Polygon`, `LineString`(for interseaction with points and polygons), `bbox`.
-              - Point: Point and radius query
-                  - coordinates: The center point of the circle, for e.g, `[73,13]` (lon and lat)
-                  - maxDistance: Radius from the center point in meters, for e.g `100`. `minValue` : 1 and `maxValue` : 10000
-                  - georel: `within`
-              - Polygon: Polygon/Multi-Polygon query
-                  - coordinates: Coordinates of the polygon/s, for e.g, `[[[73,13],[73,12],[73,13]]]`.  Note, (lon and lat) and the first coordinate must be same as last. `minNumberOfCoOrdinates` : 1 and `maxnNumberOfCoOrdinates` : 10
-                  - georel: `within`
-              - LineString: Multi line string
-                  - coordinates: Coordinates of the multi-line, for e.g, `[[73,13],[74,15],[75,16]]`. `minNumberOfCoOrdinates` : 1 and `maxnNumberOfCoOrdinates` : 10
-                  - georel: `intersects`
-              - bbox: Bounding box
-                  - coordinates: `[[top-left],[bottom-right]]`, `[[73,13],[74,12]]`. 
-                  - georel: `within`
       
+        #### Spatial (Geo) Search
+        Geo search accepts geojson based queries. The params and their accepted values are briefed below -
+          - <b>geoproperty</b>: 
+              - Specifies the name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>.
+              - The current version of the API <b> mandates </b> it to be equal to `location`
+          - <b>georel</b>:   
+              - Specifies the spatial relationship to be queried.
+              - The relation type of <b>geoquery</b> can be <b>one of</b> `near;maxdistance=<distance_in_meters>`, `within`, `intersects`.
+              - The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property.
+              - Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields.
+              - The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.
+              - The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.
+
+          - <b>geometry</b>:  
+              - Specifies the GeoJson geometries. 
+              - Should be One of `Point`(equivalent for a circle), `Polygon`, `LineString`, `bbox`.
+              - <b>Point</b>: Point and radius query
+                  - coordinates: Specifies the  center point of the circle, for e.g, `[73,13]`. <br/>Note, format is [longitude, latitude]
+                  - maxDistance: Specifies the Radius from the center point in meters, for e.g `100`. `maxValue` : 10000
+                  - georel: In this version of IUDX API, the allowed relationship search for a circle is `near` with a `maxdistance` in meters specified. This will be equivalent to a `within` query. Format is `near;maxdistance=<distance_in_meters>` 
+              - <b>Polygon</b>: Polygon/Multi-Polygon query
+                  - coordinates: Specifies the  coordinates of the polygon, for e.g, `[[[73,13],[73,12],[73,13]]]`.  <br/>Note, format is [longitude, latitude] and the first coordinate must be same as last. 
+                  - `minNumberOfCoOrdinates` : 4 and `maxnNumberOfCoOrdinates` : 10
+                  - georel: `within`, `intersects`
+              - <b>LineString</b>: Multi line string
+                  - coordinates: Specifies the coordinates of the multi-line, for e.g, `[[73,13],[74,15],[75,16]]`. <br/>Note, format is [longitude, latitude]
+                  - `minNumberOfCoOrdinates` : 2 and `maxnNumberOfCoOrdinates` : 10
+                  - georel:  `within`, `intersects`
+              - <b>bbox</b>: Bounding box
+                  - coordinates: `[[top-left],[bottom-right]]`. e.g, `[[73,13],[74,12]]`. <br/>Note, format is [longitude, latitude].
+                  - georel:  `within`, `intersects`
+
         #### Attribute search
-        Attribute search queries for a `quantitative` value of an attribute using an `operation` such as `<`, `>`, `<=` or `>=` 
-          - `q=attribute-name>attribute-value`
+        The attribute query is used for querying <b> allowed quantitative</b> properties. 
+          - Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`==` operators. 
+          - For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value and attribute == value. 
+          - Allowed values for all operators is double. 
+          - For the operator `==` if the query is on `id` then the only value allowed is an `IUDX ID` of a resource. 
+          - e.g, `q=attribute-name>attribute-value`
 
         #### Complex search
         A combination of the above is allowed to make searches more  complex.
 
         #### Filters
-          - A subset of properties of returned documents can be filtered out. For e.g, `attrs=[id]` returns documents with only the `id` property retained in them. `minNumberOfAttributes` : 1 and `maxNumberOfAttributes` : 5  
+          - A subset of properties of returned documents can be filtered out. This is an option parameter. <br/>For e.g, `attrs=[id]` returns documents with only the `id` property retained in them. 
+          - `minNumberOfAttributes` : 1 and `maxNumberOfAttributes` : 5 
+
+        #### Options
+          - The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a query. 
+          - It should be used along with the <b> valid </b> `temporal`, or `complex` queries. 
+          - It <b>cannot</b> be used along with a <b>attrs</b> filter. 
+          - The value should be equal to `count` and it is <b>case sensitive</b>
      
   /ngsi-ld/v1/entityOperations/query:
     post:
@@ -590,48 +622,74 @@ paths:
           description: 'Resource not found'
 
       description: |
-        Generic resource search query. Searches for data published by entites that meet the
-        query criteria. The entities enpoint allows one to query an
-        entity by its geo-location annotation, by a temporal property, by an attribute query or by a combination of
-        all three.
-        
-        #### Geo Search
-        Geo search accepts geojson based queries. The params and their accepted values are -
-          - geoproperty: Which geoproperty to query. Should be `location`.
-          - georel: Geo-relationship. One of `within`, `contains`, `intersects`.
-          - geometry: GeoJson geometries. One of `Point`(point and circle), `Polygon`, `LineString`(for interseaction with points and polygons), `bbox`.
-              - Point: Point and radius query
-                  - coordinates: The center point of the circle, for e.g, `[73,13]` (lon and lat)
-                  - maxDistance: Radius from the center point in meters, for e.g `100`. `minValue` : 1 and `maxValue` : 10000
-                  - georel: `within`
-              - Polygon: Polygon/Multi-Polygon query
-                  - coordinates: Coordinates of the polygon/s, for e.g, `[[[73,13],[73,12],[73,13]]]`.  Note, (lon and lat) and the first coordinate must be same as last. `minNumberOfCoOrdinates` : 1 and `maxnNumberOfCoOrdinates` : 10
-                  - georel: `within`
-              - LineString: Multi line string
-                  - coordinates: Coordinates of the multi-line, for e.g, `[[73,13],[74,15],[75,16]]`. `minNumberOfCoOrdinates` : 1 and `maxnNumberOfCoOrdinates` : 10
-                  - georel: `intersects`
-              - bbox: Bounding box
-                  - coordinates: `[[top-left],[bottom-right]]`, `[[73,13],[74,12]]`. 
-                  - georel: `within`
+        The `/entityOperations/query` end point allows a consumer to query on data published based on a <b>spatial</b>, <b>temporal</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid IUDX</b> `id` of the resource within the `entities` json object as per the schema. These apis are intended to be used by IUDX Data *Consumers*.
+
+          - <b>Allowed Search Operations</b>: 
+              - <b> Temporal Search : </b> which queries the temporal property of the resource.
+              - <b> Spatial (Geo) Search : </b> which queries the geo property of the resource.
+              - <b> Attribute Search : </b> which queries the valid attributes as per the data descriptor.
+              - <b> Complex Search : </b> which queries using the combination of the above three.
 
         #### Temporal search
         Temporal search accepts time property based queries which are specified in ISO 8601 format. The params and their accepted values are -
-          - timerel: The time relation of the query. Should be either `during`, `before` or `after`.
-          - time: Start time for the temporal query in `ISO 8601` format. 
-          - endtime: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = during`. 
-          
-          The time difference between `time` and `endtime` should be less than `10 days`.
-          For `before` and `after` queries, `10 days` of data `before` or `after` the specified time will be provided.
+          - <b>timerel</b>: The time relation of the query. Should be either `during`, `before` or `after`.
+          - <b>time</b>: Start time for the temporal query in `ISO 8601` format. 
+          - <b>endtime</b>: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = during`. 
+          - Note, The time difference between `time` and `endtime` should be less than `10 days`. For `before` and `after` queries, `10 days` of data `before` or `after` the specified time will be provided.
+
       
+        #### Spatial (Geo) Search
+        Geo search accepts geojson based queries. The params and their accepted values are briefed below -
+          - <b>geoproperty</b>: 
+              - Specifies the name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>.
+              - The current version of the API <b> mandates </b> it to be equal to `location`
+          - <b>georel</b>:   
+              - Specifies the spatial relationship to be queried.
+              - The relation type of <b>geoquery</b> can be <b>one of</b> `near;maxdistance=<distance_in_meters>`, `within`, `intersects`.
+              - The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property.
+              - Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields.
+              - The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.
+              - The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.
+
+          - <b>geometry</b>:  
+              - Specifies the GeoJson geometries. 
+              - Should be One of `Point`(equivalent for a circle), `Polygon`, `LineString`, `bbox`.
+              - <b>Point</b>: Point and radius query
+                  - coordinates: Specifies the  center point of the circle, for e.g, `[73,13]`. <br/>Note, format is [longitude, latitude]
+                  - maxDistance: Specifies the Radius from the center point in meters, for e.g `100`. `maxValue` : 10000
+                  - georel: In this version of IUDX API, the allowed relationship search for a circle is `near` with a `maxdistance` in meters specified. This will be equivalent to a `within` query. Format is `near;maxdistance=<distance_in_meters>` 
+              - <b>Polygon</b>: Polygon/Multi-Polygon query
+                  - coordinates: Specifies the  coordinates of the polygon, for e.g, `[[[73,13],[73,12],[73,13]]]`.  <br/>Note, format is [longitude, latitude] and the first coordinate must be same as last. 
+                  - `minNumberOfCoOrdinates` : 4 and `maxnNumberOfCoOrdinates` : 10
+                  - georel: `within`, `intersects`
+              - <b>LineString</b>: Multi line string
+                  - coordinates: Specifies the coordinates of the multi-line, for e.g, `[[73,13],[74,15],[75,16]]`. <br/>Note, format is [longitude, latitude]
+                  - `minNumberOfCoOrdinates` : 2 and `maxnNumberOfCoOrdinates` : 10
+                  - georel:  `within`, `intersects`
+              - <b>bbox</b>: Bounding box
+                  - coordinates: `[[top-left],[bottom-right]]`. e.g, `[[73,13],[74,12]]`. <br/>Note, format is [longitude, latitude].
+                  - georel:  `within`, `intersects`
+
         #### Attribute search
-        Attribute search queries for a `quantitative` value of an attribute using an `operation` such as `<`, `>`, `<=` or `>=` 
-          - `q=attribute-name>attribute-value`
+        The attribute query is used for querying <b> allowed quantitative</b> properties. 
+          - Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`==` operators. 
+          - For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value and attribute == value. 
+          - Allowed values for all operators is double. 
+          - For the operator `==` if the query is on `id` then the only value allowed is an `IUDX ID` of a resource. 
+          - e.g, `q=attribute-name>attribute-value`
 
         #### Complex search
         A combination of the above is allowed to make searches more  complex.
 
         #### Filters
-          - A subset of properties of returned documents can be filtered out. For e.g, `attrs=[id]` returns documents with only the `id` property retained in them. `minNumberOfAttributes` : 1 and `maxNumberOfAttributes` : 5
+          - A subset of properties of returned documents can be filtered out. This is an option parameter. <br/>For e.g, `attrs=[id]` returns documents with only the `id` property retained in them. 
+          - `minNumberOfAttributes` : 1 and `maxNumberOfAttributes` : 5 
+
+        #### Options
+          - The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a query. 
+          - It should be used along with the <b> valid </b> `temporal`, or `complex` queries. 
+          - It <b>cannot</b> be used along with a <b>attrs</b> filter. 
+          - The value should be equal to `count` and it is <b>case sensitive</b>
 
       deprecated: false
 
@@ -1322,7 +1380,8 @@ components:
       properties:
         id:
           type: string
-          maxLength: 512          
+          maxLength: 512
+          description: 'A <b> valid IUDX ID </b> of the resource.  <br/> If the resource is a <b> protected resource </b> a <b> valid IUDX Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .'     
       example:
         id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
     GeoQ:
@@ -1336,20 +1395,23 @@ components:
       properties:
         geometry:
           type: string
-          enum: [Point, Polygon, bbox, LineString]          
+          enum: [Point (or) point, Polygon (or) polygon, bbox, LineString (or) linestring]
+          description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b>'          
         coordinates:
           type: array
           minItems: 1
           maxItems: 10
           items:
             type: number
-          description: ''
+          description: 'he coordinates for a specific geometry query type. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array.'
         georel:
           type: string
-          enum: [within, contains, intersects]          
+          enum: [within, contains, intersects]
+          description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'          
         geoproperty:
           type: string
           enum: [location]          
+          description: 'Name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
       example:
         geometry: Point
         coordinates:
@@ -1580,11 +1642,14 @@ components:
       properties:
         timerel:
           type: string
-          enum: [during, before, after]          
+          enum: [during, before, after]    
+          description: 'The temporal relation type of <b>timerel</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> If the relation is <b> during </b> it should be always accomodated with a <b> time </b> and <b> endtime </b> property.  <br/> If the relation is <b> before </b> or <b> after </b>it should be always accomodated <b> only</b> with a <b> time </b> property.'      
         time:
           type: string
+          description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
         endtime:
           type: string
+          description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query. <br/>If <b>timerel</b> is `during` time and endtime are mandatory'
         timeProperty:
           type: string
           enum: [observationDateTime]
@@ -1658,9 +1723,19 @@ components:
           $ref: '#/components/schemas/GeoQ'
         temporalQ:
           $ref: '#/components/schemas/TemporalQ'
+        q:
+          type: string
+          maxLength: 512
+          description: 'The attribute query is used for querying <b> allowed quantitative</b> properties. <br/> Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`==` operators. <br/> For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value and attribute == value. <br/> Allowed values for all operators is double. <br/> For the operator `==` if the query is on `id` then the only value allowed is an `IUDX ID` of a resource.'
         attrs:
           type: string
-          maxLength: 200
+          maxLength: 512
+          description: 'The attrs parameter is used as an <b>application filter</b>. <br/> This is an optional parameter. It can be used to provide the list of attributes which the consumer expects to be responded by the server. <br/> The consumer is expected to provide <b>only</b> the attributes available in the <b>data descriptor</b> of the item in the IUDX Catalogue. <br/> Minimum of 1 and a Maximum of 5 attributes can be provided in a comma separated fashion.'
+        options:
+          type: string
+          enum: [count]
+          description: 'The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a spatial query. <br/> It should be used along with the <b> valid temporal query</b> or a <b> valid complex query</b>. <br/> It <b>cannot</b> be used along with a <b>attrs</b> filter. The value should be equal to `count` and it is <b>case sensitive</b>'
+
       example:
         type: Query
         entities:
