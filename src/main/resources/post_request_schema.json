@@ -184,6 +184,6 @@
 			"pattern": "^.*$"
 		}
 	},
-	"required":["entities"],
+	"required":["entities","type"],
 	"additionalProperties":false
 }
