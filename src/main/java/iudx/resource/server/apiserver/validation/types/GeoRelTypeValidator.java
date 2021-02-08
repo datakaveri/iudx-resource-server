@@ -10,7 +10,7 @@ import io.vertx.ext.web.api.validation.ValidationException;
 public class GeoRelTypeValidator {
   private static final Logger LOGGER = LogManager.getLogger(GeoRelTypeValidator.class);
 
-  private List<String> allowedValues = List.of("within", "intersect", "near");
+  private List<String> allowedValues = List.of("within", "intersects", "near");
 
   public ParameterTypeValidator create() {
     ParameterTypeValidator geoRelTypeValidator = new GeoRelValidator();
