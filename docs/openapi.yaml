@@ -120,7 +120,7 @@ paths:
             https://rs.iudx.org.in/ngsi-ld/v1/entities/suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta
 
       description: |
-        The <b> Latest Data API </b> is used to get the latest (last published) data of a resource. <br /> It uses the <b> IUDX ID </b> a.k.a `id` to query the resource server. <br />  To get data for a <b> protected resource<b>  a <b> valid IUDX Auth token<b>  is mandatory. 
+        The <b> Latest Data API </b> is used to get the latest (last published) data of a resource. <br /> It uses the <b> IUDX ID </b> a.k.a `id` to query the resource server. <br />  To get data for a <b> protected resource</b>  a <b> valid IUDX Auth token</b>  is mandatory.  <br/> The `/entities` end point follwed by `id` as a <b>path parameter</b> is used to get the latest data.
 
       deprecated: false
 
@@ -260,7 +260,7 @@ paths:
           
       deprecated: false
       description: |
-        The <b>entities</b> end point allows a consumer to query on data published based on a <b>spatial</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid IUDX ID </b> of the resource.     These apis are intended to be used by IUDX Data *Consumers*.
+        The `/entities` end point allows a consumer to query on data published based on a <b>spatial</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid IUDX ID </b> of the resource.     These apis are intended to be used by IUDX Data *Consumers*.
 
           - <b>Allowed Search Operations</b>: 
               - <b> Spatial (Geo) Search : </b> which queries the geo property of the resource.
@@ -476,6 +476,12 @@ paths:
         query criteria. The temporal/entities enpoint allows one to query an
         entity by a temporal property, by an attribute query or by a combination of
         both.        
+        The `/temporal/entities` end point allows a consumer to query on data published based on a <b>spatial</b>, <b>temporal</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid IUDX ID </b> of the resource.     These apis are intended to be used by IUDX Data *Consumers*.
+
+          - <b>Allowed Search Operations</b>: 
+              - <b> Spatial (Geo) Search : </b> which queries the geo property of the resource.
+              - <b> Attribute Search : </b> which queries the valid attributes as per the data descriptor.
+              - <b> Complex Search : </b> which queries using the combination of the above two.
 
         #### Temporal search
         Temporal search accepts time property based queries which are specified in ISO 8601 format. The params and their accepted values are -
