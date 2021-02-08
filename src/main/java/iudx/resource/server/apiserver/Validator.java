@@ -260,12 +260,14 @@ public class Validator {
     try {
       GeoJSONReader reader = new GeoJSONReader();
       org.locationtech.jts.geom.Geometry geom = reader.read(geoJson);
-      boolean  coordsCount=false;
+      boolean  isValidNosCoords=false;
+      boolean isPolygon=false;
       if(("Polygon").equalsIgnoreCase(geom.getGeometryType())) {
+        isPolygon=true;
         Coordinate[] coords=geom.getCoordinates();
-        coordsCount=coords.length<11;
+        isValidNosCoords=coords.length<11;
       }
-      isValid = geom.isValid() && coordsCount;
+      isValid = geom.isValid() && (isPolygon?isValidNosCoords:true);
     } catch (Exception ex) {
       LOGGER.error("Invalid geom/coordinates passed");
     }
