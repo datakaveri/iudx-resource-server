@@ -99,9 +99,9 @@ public class HTTPRequestValidatiorsHandlersFactory {
             .addQueryParamWithCustomTypeValidator(NGSILDQUERY_ATTRIBUTE, attributeTypeValidator,
                 false, false)
             .addQueryParamWithCustomTypeValidator(NGSILDQUERY_Q, qTypeValidator, false, false)
-            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_TIMEREL, timeRelTypeValidator, false,
+            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_TIMEREL, timeRelTypeValidator, true,
                 false)
-            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_TIME, dateTypeValidator, false, false)
+            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_TIME, dateTypeValidator, true, false)
             .addQueryParamWithCustomTypeValidator(NGSILDQUERY_ENDTIME, dateTypeValidator, false,
                 false)
             .addQueryParamWithCustomTypeValidator("options", optionsTypeValidator, false, false)

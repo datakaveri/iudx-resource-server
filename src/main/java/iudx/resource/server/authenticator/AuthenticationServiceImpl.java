@@ -164,7 +164,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   public AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
       Handler<AsyncResult<JsonObject>> handler) {
 
-    //System.out.println(authenticationInfo);
+    // System.out.println(authenticationInfo);
     String token = authenticationInfo.getString("token");
     String requestEndpoint = authenticationInfo.getString("apiEndpoint");
 
@@ -229,7 +229,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         handler.handle(Future.failedFuture(result.toString()));
         return this;
       } else {
-         if (Constants.CLOSED_ENDPOINTS.contains(requestEndpoint)) {
+        if (Constants.CLOSED_ENDPOINTS.contains(requestEndpoint)) {
           tokenInterospectionResultContainer responseContainer =
               new tokenInterospectionResultContainer();
           Future<JsonObject> tipResponseFut = retrieveTipResponse(token);
@@ -348,7 +348,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     JsonObject cacheResponse = tipCache.getIfPresent(token);
     if (cacheResponse == null) {
       LOGGER.debug("Cache miss calling auth server");
-      //cache miss
+      // cache miss
       // call cat-server only when token not found in cache.
       JsonObject body = new JsonObject();
       body.put("token", token);
@@ -692,13 +692,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     String requestMethod = authenticationInfo.getString("method");
 
     LOGGER.debug("Info: requested endpoint :" + requestEndpoint);
-    
-    //TODO : check for validation placement.
-    //get first json  inside "request" jsonArray and check for "apis" array.
-    JsonObject tipRequestResponseObject=result.getJsonArray("request").getJsonObject(0);
-    if(!tipRequestResponseObject.getJsonArray("apis").contains(requestEndpoint)) {
-      promise.fail("Info: Failure :: No access to " + requestEndpoint);
-    }
 
     // 1. Check the API requested.
     if (Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
@@ -738,7 +731,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } else {
           // Check if the token has access to the requestedID
           LOGGER.debug("Info: Catalogue item is SECURE");
-          if (requestedGroupID.equalsIgnoreCase(allowedGroupID)) {
+
+          // TODO : check for validation placement.
+          // get first json inside "request" jsonArray and check for "apis" array.
+          boolean allowedEndpoint=false;
+          JsonObject tipRequestResponseObject = result.getJsonArray("request").getJsonObject(0);
+          if (tipRequestResponseObject != null
+              && tipRequestResponseObject.getJsonArray("apis").contains(requestEndpoint)) {
+            allowedEndpoint=true;
+          }
+
+          if (requestedGroupID.equalsIgnoreCase(allowedGroupID) && allowedEndpoint) {
             LOGGER.debug("Info: Catalogue item is SECURE and User has ACCESS");
             response.put(Constants.JSON_CONSUMER, result.getString(Constants.JSON_CONSUMER));
             promise.complete(response);
@@ -775,9 +778,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (requestMethod.equalsIgnoreCase("POST")) {
           String resourceGroup = userRequest.getString("resourceGroup");
           String resourceServer = userRequest.getString("resourceServer");
-          //System.out.println(providerID);
-          //System.out.println(resourceGroup);
-          //System.out.println(resourceServer);
+          // System.out.println(providerID);
+          // System.out.println(resourceGroup);
+          // System.out.println(resourceServer);
           if (providerID.contains(resourceServer + "/" + resourceGroup)) {
             LOGGER.info(
                 "Success :: Has access to " + requestEndpoint + " API and Adapter " + adapterID);
