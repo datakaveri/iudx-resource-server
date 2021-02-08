@@ -731,24 +731,32 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } else {
           // Check if the token has access to the requestedID
           LOGGER.debug("Info: Catalogue item is SECURE");
-
-          // TODO : check for validation placement.
-          // get first json inside "request" jsonArray and check for "apis" array.
+          
           boolean allowedEndpoint=false;
-          JsonObject tipRequestResponseObject = result.getJsonArray("request").getJsonObject(0);
-          if (tipRequestResponseObject != null
-              && tipRequestResponseObject.getJsonArray("apis").contains(requestEndpoint)) {
-            allowedEndpoint=true;
-          }
-
-          if (requestedGroupID.equalsIgnoreCase(allowedGroupID) && allowedEndpoint) {
-            LOGGER.debug("Info: Catalogue item is SECURE and User has ACCESS");
-            response.put(Constants.JSON_CONSUMER, result.getString(Constants.JSON_CONSUMER));
-            promise.complete(response);
-          } else {
-            LOGGER.debug("Info: Catalogue item is SECURE and User does not have ACCESS");
+          
+          if (result.equals(Constants.JSON_PUBLIC_TIP_RESPONSE)) {
+            LOGGER.debug("Info: Catalogue item is SECURE and User did not provide any token");
             response.put(Constants.JSON_CONSUMER, result.getString(Constants.JSON_PUBLIC_CONSUMER));
             promise.fail(response.toString());
+          } else {
+
+            // TODO : check for validation placement.
+            // get first json inside "request" jsonArray and check for "apis" array.
+            JsonObject tipRequestResponseObject = result.getJsonArray("request").getJsonObject(0);
+            if (tipRequestResponseObject != null
+                && tipRequestResponseObject.getJsonArray("apis").contains(requestEndpoint)) {
+              allowedEndpoint = true;
+            }
+            if (requestedGroupID.equalsIgnoreCase(allowedGroupID) && allowedEndpoint) {
+              LOGGER.debug("Info: Catalogue item is SECURE and User has ACCESS");
+              response.put(Constants.JSON_CONSUMER, result.getString(Constants.JSON_CONSUMER));
+              promise.complete(response);
+            } else {
+              LOGGER.debug("Info: Catalogue item is SECURE and User does not have ACCESS");
+              response.put(Constants.JSON_CONSUMER,
+                  result.getString(Constants.JSON_PUBLIC_CONSUMER));
+              promise.fail(response.toString());
+            }
           }
         }
       }
