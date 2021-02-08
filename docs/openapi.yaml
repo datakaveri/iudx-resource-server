@@ -472,16 +472,13 @@ paths:
 
       deprecated: false
       description: |
-        Temporal resource search query. Searches for data published by entites that meet the
-        query criteria. The temporal/entities enpoint allows one to query an
-        entity by a temporal property, by an attribute query or by a combination of
-        both.        
         The `/temporal/entities` end point allows a consumer to query on data published based on a <b>spatial</b>, <b>temporal</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid IUDX ID </b> of the resource.     These apis are intended to be used by IUDX Data *Consumers*.
 
           - <b>Allowed Search Operations</b>: 
+              - <b> Temporal Search : </b> which queries the temporal property of the resource.
               - <b> Spatial (Geo) Search : </b> which queries the geo property of the resource.
               - <b> Attribute Search : </b> which queries the valid attributes as per the data descriptor.
-              - <b> Complex Search : </b> which queries using the combination of the above two.
+              - <b> Complex Search : </b> which queries using the combination of the above three.
 
         #### Temporal search
         Temporal search accepts time property based queries which are specified in ISO 8601 format. The params and their accepted values are -
@@ -492,35 +489,53 @@ paths:
           The time difference between `time` and `endtime` should be less than `10 days`.
           For `before` and `after` queries, `10 days` of data `before` or `after` the specified time will be provided.
 
-        
-        #### Geo Search
-        Geo search accepts geojson based queries. The params and their accepted values are -
-          - geoproperty: Which geoproperty to query. Should be `location`.
-          - georel: Geo-relationship. One of `within`, `contains`, `intersects`.
-          - geometry: GeoJson geometries. One of `Point`(point and circle), `Polygon`, `LineString`(for interseaction with points and polygons), `bbox`.
-              - Point: Point and radius query
-                  - coordinates: The center point of the circle, for e.g, `[73,13]` (lon and lat)
-                  - maxDistance: Radius from the center point in meters, for e.g `100`. `minValue` : 1 and `maxValue` : 10000
-                  - georel: `within`
-              - Polygon: Polygon/Multi-Polygon query
-                  - coordinates: Coordinates of the polygon/s, for e.g, `[[[73,13],[73,12],[73,13]]]`.  Note, (lon and lat) and the first coordinate must be same as last. `minNumberOfCoOrdinates` : 1 and `maxnNumberOfCoOrdinates` : 10
-                  - georel: `within`
-              - LineString: Multi line string
-                  - coordinates: Coordinates of the multi-line, for e.g, `[[73,13],[74,15],[75,16]]`. `minNumberOfCoOrdinates` : 1 and `maxnNumberOfCoOrdinates` : 10
-                  - georel: `intersects`
-              - bbox: Bounding box
-                  - coordinates: `[[top-left],[bottom-right]]`, `[[73,13],[74,12]]`. 
-                  - georel: `within`
       
+        #### Spatial (Geo) Search
+        Geo search accepts geojson based queries. The params and their accepted values are briefed below -
+          - <b>geoproperty</b>: 
+              - Specifies the name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>.
+              - The current version of the API <b> mandates </b> it to be equal to `location`
+          - <b>georel</b>:   
+              - Specifies the spatial relationship to be queried.
+              - The relation type of <b>geoquery</b> can be <b>one of</b> `near;maxdistance=<distance_in_meters>`, `within`, `intersects`.
+              - The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property.
+              - Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields.
+              - The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.
+              - The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.
+
+          - <b>geometry</b>:  
+              - Specifies the GeoJson geometries. 
+              - Should be One of `Point`(equivalent for a circle), `Polygon`, `LineString`, `bbox`.
+              - <b>Point</b>: Point and radius query
+                  - coordinates: Specifies the  center point of the circle, for e.g, `[73,13]`. <br/>Note, format is [longitude, latitude]
+                  - maxDistance: Specifies the Radius from the center point in meters, for e.g `100`. `maxValue` : 10000
+                  - georel: In this version of IUDX API, the allowed relationship search for a circle is `near` with a `maxdistance` in meters specified. This will be equivalent to a `within` query. Format is `near;maxdistance=<distance_in_meters>` 
+              - <b>Polygon</b>: Polygon/Multi-Polygon query
+                  - coordinates: Specifies the  coordinates of the polygon, for e.g, `[[[73,13],[73,12],[73,13]]]`.  <br/>Note, format is [longitude, latitude] and the first coordinate must be same as last. 
+                  - `minNumberOfCoOrdinates` : 4 and `maxnNumberOfCoOrdinates` : 10
+                  - georel: `within`, `intersects`
+              - <b>LineString</b>: Multi line string
+                  - coordinates: Specifies the coordinates of the multi-line, for e.g, `[[73,13],[74,15],[75,16]]`. <br/>Note, format is [longitude, latitude]
+                  - `minNumberOfCoOrdinates` : 2 and `maxnNumberOfCoOrdinates` : 10
+                  - georel:  `within`, `intersects`
+              - <b>bbox</b>: Bounding box
+                  - coordinates: `[[top-left],[bottom-right]]`. e.g, `[[73,13],[74,12]]`. <br/>Note, format is [longitude, latitude].
+                  - georel:  `within`, `intersects`
+
         #### Attribute search
-        Attribute search queries for a `quantitative` value of an attribute using an `operation` such as `<`, `>`, `<=` or `>=` 
-          - `q=attribute-name>attribute-value`
+        The attribute query is used for querying <b> allowed quantitative</b> properties. 
+          - Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`==` operators. 
+          - For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value and attribute == value. 
+          - Allowed values for all operators is double. 
+          - For the operator `==` if the query is on `id` then the only value allowed is an `IUDX ID` of a resource. 
+          - e.g, `q=attribute-name>attribute-value`
 
         #### Complex search
         A combination of the above is allowed to make searches more  complex.
 
         #### Filters
-          - A subset of properties of returned documents can be filtered out. For e.g, `attrs=[id]` returns documents with only the `id` property retained in them. `minNumberOfAttributes` : 1 and `maxNumberOfAttributes` : 5  
+          - A subset of properties of returned documents can be filtered out. This is an option parameter. <br/>For e.g, `attrs=[id]` returns documents with only the `id` property retained in them. 
+          - `minNumberOfAttributes` : 1 and `maxNumberOfAttributes` : 5 
      
   /ngsi-ld/v1/entityOperations/query:
     post:
