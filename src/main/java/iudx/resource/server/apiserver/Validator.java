@@ -1,25 +1,48 @@
 package iudx.resource.server.apiserver;
 
+import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
+import static iudx.resource.server.apiserver.util.Constants.IUDXQUERY_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_PARAM;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ATTRIBUTE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_COORDINATES;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ENDTIME;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ENTITIES;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOMETRY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOPROPERTY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOQ;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOREL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ID;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_IDPATTERN;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_Q;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TEMPORALQ;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEPROPERTY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEREL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME_PROPERTY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TYPE;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.wololo.geojson.Geometry;
+import org.wololo.jts2geojson.GeoJSONReader;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.api.validation.ValidationException;
 import iudx.resource.server.apiserver.service.CatalogueService;
-import iudx.resource.server.apiserver.util.Constants;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import static iudx.resource.server.apiserver.util.Constants.*;
 
 /**
  * This class is used to validate NGSI-LD request and request parameters.
  *
  */
 public class Validator {
+
+  private static final Logger LOGGER = LogManager.getLogger(Validator.class);
 
   private static Set<String> validParams = new HashSet<String>();
   private static Set<String> validHeaders = new HashSet<String>();
@@ -101,7 +124,14 @@ public class Validator {
     if (validateParams(paramsMap)) {
       isValidQueryWithFilters(paramsMap).onComplete(handler -> {
         if (handler.succeeded()) {
-          promise.complete(true);
+          // validation for geometry and coordinates.
+          String geom = paramsMap.get(NGSILDQUERY_GEOMETRY);
+          String coords = paramsMap.get(NGSILDQUERY_COORDINATES);
+          if (geom != null && coords != null && !isValidCoordinatesForGeometry(geom, coords)) {
+            promise.fail("Invalid geometry coordinates.");
+          } else {
+            promise.complete(true);
+          }
         } else {
           promise.fail(handler.cause().getMessage());
         }
@@ -156,7 +186,6 @@ public class Validator {
     filtersFuture.onComplete(handler -> {
       if (handler.succeeded()) {
         List<String> filters = filtersFuture.result();
-        System.out.println("!@!#!32 : " + filters);
         if (isTemporalQuery(paramsMap) && !filters.contains("TEMPORAL")) {
           promise.fail("Temporal parameters are not supported by RS group/Item.");
           return;
@@ -194,4 +223,43 @@ public class Validator {
     return params.contains(NGSILDQUERY_ATTRIBUTE);
 
   }
+
+  private boolean isValidCoordinatesForGeometry(String geom, String coordinates) {
+    JsonObject json = new JsonObject();
+    json.put("coordinates", new JsonArray(coordinates));
+    if (geom.equalsIgnoreCase("point")) {
+      json.put("type", "Point");
+      return isValidCoordinates(json.toString());
+    } else if (geom.equalsIgnoreCase("polygon")) {
+      json.put("type", "Polygon");
+      return isValidCoordinates(json.toString());
+    } else if (geom.equalsIgnoreCase("linestring")) {
+      json.put("type", "LineString");
+      return isValidCoordinates(json.toString());
+    } else if (geom.equalsIgnoreCase("bbox")) {
+      // NOTE : since bbox is not completely supported by jts2geojson, an alternative to check 2
+      // coordinates and validate as a linestring
+      String[] bboxEdges = coordinates.replaceAll("\\[", "").replaceAll("\\]", "").split(",");
+      if (bboxEdges.length != 4) {
+        return false;
+      }
+      json.put("type", "LineString");
+      return isValidCoordinates(json.toString());
+    } else {
+      return false;
+    }
+  }
+
+  private boolean isValidCoordinates(String geoJson) {
+    boolean isValid = false;
+    try {
+      GeoJSONReader reader = new GeoJSONReader();
+      org.locationtech.jts.geom.Geometry geom = reader.read(geoJson);
+      isValid = geom.isValid();
+    } catch (Exception ex) {
+      LOGGER.error("Invalid geom/coordinates passed for point");
+    }
+    return isValid;
+  }
+
 }
