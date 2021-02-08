@@ -32,12 +32,11 @@ tags:
 - name: Spatial Entities
   x-displayName: "Spatial Search"
   description: |
-        A Spatial Search is used by IUDX Data *Consumers* for querying a resource using a <b>valid IUDX</b> `id`, `spatial` and `attribute` parameters. <br/> If the resource is a <b> protected resource </b> a <b> valid IUDX Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .
+        A Spatial Search is used by IUDX Data *Consumers* for querying a resource using a <b>valid IUDX</b> `id`, `spatial` and `attribute` parameters. <br/> If the resource is a <b> protected resource </b> a <b> valid IUDX Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b>. <br/> You can use this API to make a `spatial` or `attribute` or `complex : spatial+attribute` query.
 - name: Temporal Entities
   x-displayName: "Temporal and Complex Search"
   description: |
-    Discover data of a resource using the id of the resource along with temporal and attribute queries.
-    These apis are intended to be used by IUDX Data *Consumers*.
+        A Temporal Search is used by IUDX Data *Consumers* for querying a resource using a <b>valid IUDX</b> `id`, `temporal`, `spatial` and `attribute` parameters. <br/> If the resource is a <b> protected resource </b> a <b> valid IUDX Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b>. <br/>In order to use this API, a `temporal` parameter is <b>mandatory</b>. <br/> You can use this API to make a `temporal` or `complex : temporal+spatial` or `complex : temporal+attribute` or `complex : temporal+spatial+attribute` query. <br/> If you are looking for an `attribute` only query refer the <b>Spatial Search</b> `/entities` endpoint.
 
 - name: Entities Post Query
   x-displayName: "Complex Search (Post Query)"
@@ -201,7 +200,7 @@ paths:
 
       - name: options
         in: query
-        description: 'The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a spatial query. <br/> It should be used along with the <b> valid spatial query</b>. <br/> It <b>cannot</b> be used along with a <b>attrs</b> filter. The value should be equal to `count` and it is <b>case sensitive</b>'
+        description: 'The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a query. <br/> It should be used along with the <b> valid </b> `spatial`, `attribute` or `complex` queries. <br/> It <b>cannot</b> be used along with a <b>attrs</b> filter. The value should be equal to `count` and it is <b>case sensitive</b>'
         schema:
           type: string
           enum: [count]
@@ -260,7 +259,7 @@ paths:
           
       deprecated: false
       description: |
-        The `/entities` end point allows a consumer to query on data published based on a <b>spatial</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid IUDX ID </b> of the resource.     These apis are intended to be used by IUDX Data *Consumers*.
+        The `/entities` end point allows a consumer to query on data published based on a <b>spatial</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid IUDX </b> `id` of the resource. These apis are intended to be used by IUDX Data *Consumers*.
 
           - <b>Allowed Search Operations</b>: 
               - <b> Spatial (Geo) Search : </b> which queries the geo property of the resource.
@@ -315,6 +314,13 @@ paths:
           - A subset of properties of returned documents can be filtered out. This is an option parameter. <br/>For e.g, `attrs=[id]` returns documents with only the `id` property retained in them. 
           - `minNumberOfAttributes` : 1 and `maxNumberOfAttributes` : 5 
 
+        #### Options
+          - The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a query. 
+          - It should be used along with the <b> valid </b> `spatial`, `attribute` or `complex` queries. 
+          - It <b>cannot</b> be used along with a <b>attrs</b> filter. 
+          - The value should be equal to `count` and it is <b>case sensitive</b>
+
+
   /ngsi-ld/v1/temporal/entities:
     get:
       tags:
@@ -341,17 +347,19 @@ paths:
       - name: timerel
         in: query
         description: 'The temporal relation type of <b>timerel</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> If the relation is <b> during </b> it should be always accomodated with a <b> time </b> and <b> endtime </b> property.  <br/> If the relation is <b> before </b> or <b> after </b>it should be always accomodated <b> only</b> with a <b> time </b> property.'
+        required: true
         schema:
           type: string
           enum: [during, before, after]          
       - name: time
         in: query
         description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
+        required: true
         schema:
           type: string
       - name: endtime
         in: query
-        description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
+        description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query. <br/>If <b>timerel</b> is `during` time and endtime are mandatory'
         schema:
           type: string
 
@@ -472,7 +480,7 @@ paths:
 
       deprecated: false
       description: |
-        The `/temporal/entities` end point allows a consumer to query on data published based on a <b>spatial</b>, <b>temporal</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid IUDX ID </b> of the resource.     These apis are intended to be used by IUDX Data *Consumers*.
+        The `/temporal/entities` end point allows a consumer to query on data published based on a <b>spatial</b>, <b>temporal</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid IUDX</b> `id`  of the resource and a `temporal` parameter. These apis are intended to be used by IUDX Data *Consumers*.
 
           - <b>Allowed Search Operations</b>: 
               - <b> Temporal Search : </b> which queries the temporal property of the resource.
@@ -482,12 +490,10 @@ paths:
 
         #### Temporal search
         Temporal search accepts time property based queries which are specified in ISO 8601 format. The params and their accepted values are -
-          - timerel: The time relation of the query. Should be either `during`, `before` or `after`.
-          - time: Start time for the temporal query in `ISO 8601` format. 
-          - endtime: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = during`. 
-          
-          The time difference between `time` and `endtime` should be less than `10 days`.
-          For `before` and `after` queries, `10 days` of data `before` or `after` the specified time will be provided.
+          - <b>timerel</b>: The time relation of the query. Should be either `during`, `before` or `after`.
+          - <b>time</b>: Start time for the temporal query in `ISO 8601` format. 
+          - <b>endtime</b>: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = during`. 
+          - Note, The time difference between `time` and `endtime` should be less than `10 days`. For `before` and `after` queries, `10 days` of data `before` or `after` the specified time will be provided.
 
       
         #### Spatial (Geo) Search
@@ -536,6 +542,12 @@ paths:
         #### Filters
           - A subset of properties of returned documents can be filtered out. This is an option parameter. <br/>For e.g, `attrs=[id]` returns documents with only the `id` property retained in them. 
           - `minNumberOfAttributes` : 1 and `maxNumberOfAttributes` : 5 
+
+        #### Options
+          - The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a query. 
+          - It should be used along with the <b> valid </b> `temporal`, or `complex` queries. 
+          - It <b>cannot</b> be used along with a <b>attrs</b> filter. 
+          - The value should be equal to `count` and it is <b>case sensitive</b>
      
   /ngsi-ld/v1/entityOperations/query:
     post:
