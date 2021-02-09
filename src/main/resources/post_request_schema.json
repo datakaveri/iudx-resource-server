@@ -3,7 +3,8 @@
 	"properties": {
 		"type": {
 			"$id": "#root/type", 
-			"title": "Type", 
+			"title": "Type",
+			"maxLength":512, 
 			"type": "string",
 			"default": "",
 			"pattern": "^.*$"
@@ -108,6 +109,7 @@
 					"$id": "#root/geoQ/georel", 
 					"title": "Georel", 
 					"type": "string",
+					"maxLength":512,
 					"default": "",
 					"pattern": "^.*$"
 					
@@ -141,6 +143,7 @@
 					"$id": "#root/temporalQ/time", 
 					"title": "Time", 
 					"type": "string",
+					"format":"date-time",
 					"default": "",
 					"pattern": "^.*$"
 				},
@@ -148,12 +151,14 @@
 					"$id": "#root/temporalQ/endtime", 
 					"title": "Endtime", 
 					"type": "string",
+					"format":"date-time",
 					"default": "",
 					"pattern": "^.*$"
 				},
 				"timeProperty": {
 					"$id": "#root/temporalQ/timeProperty", 
-					"title": "Timeproperty", 
+					"title": "Timeproperty",
+					"maxLength":512, 
 					"type": "string",
 					"default": "",
 					"pattern": "^.*$"
@@ -166,6 +171,7 @@
 			"$id": "#root/q", 
 			"title": "Q", 
 			"type": "string",
+			"maxLength":512,
 			"default": "",
 			"pattern": "^.*$"
 		},
@@ -179,7 +185,8 @@
 		},
 		"attrs": {
 			"$id": "#root/attrs", 
-			"title": "attrs", 
+			"title": "attrs",
+			"maxLength":512, 
 			"type": "string",
 			"default": "",
 			"pattern": "^.*$"
