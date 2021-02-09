@@ -52,6 +52,7 @@
                         "title": "Coordinates", 
                         "type": "array",
                         "default": [],
+                        "maxItems":2,
                         "items":{
                             "$id": "#root/geoQ/coordinates/items", 
                             "title": "Items", 
@@ -184,6 +185,6 @@
 			"pattern": "^.*$"
 		}
 	},
-	"required":["entities"],
+	"required":["entities","type"],
 	"additionalProperties":false
 }

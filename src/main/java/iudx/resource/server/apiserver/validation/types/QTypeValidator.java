@@ -2,6 +2,8 @@ package iudx.resource.server.apiserver.validation.types;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.JsonObject;
@@ -16,6 +18,8 @@ public class QTypeValidator {
   private static final Logger LOGGER = LogManager.getLogger(QTypeValidator.class);
 
   List<String> allowedOperators = List.of(">", "==", "<", "!=", "<=", ">=");
+  //TODO : put valid regex for IUDX id
+  private final String idRegex = ".*";
 
   public ParameterTypeValidator create() {
     ParameterTypeValidator qTypeValidator = new QValidator();
@@ -42,12 +46,28 @@ public class QTypeValidator {
       }
     }
 
+    private boolean isValidID(JsonObject json) {
+      if (json.containsKey("id")) {
+        String id = json.getString(JSON_VALUE);
+        Pattern pattern = Pattern.compile(idRegex);
+        Matcher matcher = pattern.matcher(id);
+        return matcher.matches();
+      } else {
+        return true;
+      }
+    }
+
     @Override
     public RequestParameter isValid(String value) throws ValidationException {
-      if(value.isBlank()) {
+      if (value.isBlank()) {
         throw ValidationException.ValidationExceptionFactory
-        .generateNotMatchValidationException("Empty value not allowed for parameter.");
+            .generateNotMatchValidationException("Empty value not allowed for parameter.");
       }
+      if (value.length() > 512) {
+        throw ValidationException.ValidationExceptionFactory
+            .generateNotMatchValidationException("Exceeding max length(512 characters) criteria ");
+      }
+
       JsonObject qJson = getQueryTerms(value);
       if (!isValidAttribute(qJson.getString(JSON_ATTRIBUTE))) {
         throw ValidationException.ValidationExceptionFactory
@@ -57,7 +77,13 @@ public class QTypeValidator {
         throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
             "Not a valid Operator in <<q>> query, only " + allowedOperators + "  allowed");
       }
-      //NOTE : committed till filter work is not completed.
+
+      if (!isValidID(qJson)) {
+        throw ValidationException.ValidationExceptionFactory
+            .generateNotMatchValidationException("Not a valid id query");
+      }
+
+      // NOTE : committed till filter work is not completed.
       // Now value is not restricted to only float
       /*
        * if (!isValidValue(qJson.getString(JSON_VALUE))) { throw

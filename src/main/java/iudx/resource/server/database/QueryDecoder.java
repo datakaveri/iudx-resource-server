@@ -296,7 +296,8 @@ public class QueryDecoder {
        * timeLimit="test,2020-09-22T00:00:00Z,30"
        */
 
-      if (timeObject == null) {
+      //check whether request object contains TEMPORAL in applicableFilters array.
+      if (timeObject==null && request.getJsonArray("applicableFilters").contains("TEMPORAL")) {
         String timeLimitString = "";
         if (request.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(PROD_INSTANCE)) {
           timeLimitString =
@@ -308,7 +309,9 @@ public class QueryDecoder {
           String startTemp = "\",\"gte\":" + "\"" + startTime + "\"";
           timeLimitString =
               TIME_QUERY.replace("$1", LESS_THAN_EQ).replace("$2\"", endTime.concat(startTemp));
+          System.out.println(timeLimitString);
         }
+        System.out.println("time limit : "+timeLimitString);
         timeObject = new JsonObject(timeLimitString);
         filterQuery.add(timeObject);
         LOGGER.debug("#######TIME COMPONENT ATTACHED: " + filterQuery.toString());

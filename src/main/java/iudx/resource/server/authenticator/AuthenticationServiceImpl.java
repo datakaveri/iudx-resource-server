@@ -65,15 +65,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   // Cache for all token.
   // what if token is revoked ?
   private final Cache<String, JsonObject> tipCache = CacheBuilder.newBuilder().maximumSize(1000)
-      .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
+      .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
   // resourceGroupCache will contains ACL info about all resource group in a resource server
   private final Cache<String, String> resourceGroupCache =
       CacheBuilder.newBuilder().maximumSize(1000)
-          .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
+          .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
   // resourceIdCache will contains info about resources available(& their ACL) in resource server.
   // what if resource id ACL is changed ?
   private final Cache<String, String> resourceIdCache = CacheBuilder.newBuilder().maximumSize(1000)
-      .expireAfterAccess(Constants.TIP_CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
+      .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
 
   /**
    * This is a constructor which is used by the DataBroker Verticle to instantiate a RabbitMQ
@@ -164,7 +164,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   public AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
       Handler<AsyncResult<JsonObject>> handler) {
 
-    //System.out.println(authenticationInfo);
+    // System.out.println(authenticationInfo);
     String token = authenticationInfo.getString("token");
     String requestEndpoint = authenticationInfo.getString("apiEndpoint");
 
@@ -229,7 +229,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         handler.handle(Future.failedFuture(result.toString()));
         return this;
       } else {
-         if (Constants.CLOSED_ENDPOINTS.contains(requestEndpoint)) {
+        if (Constants.CLOSED_ENDPOINTS.contains(requestEndpoint)) {
           tokenInterospectionResultContainer responseContainer =
               new tokenInterospectionResultContainer();
           Future<JsonObject> tipResponseFut = retrieveTipResponse(token);
@@ -348,7 +348,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     JsonObject cacheResponse = tipCache.getIfPresent(token);
     if (cacheResponse == null) {
       LOGGER.debug("Cache miss calling auth server");
-      //cache miss
+      // cache miss
       // call cat-server only when token not found in cache.
       JsonObject body = new JsonObject();
       body.put("token", token);
@@ -367,7 +367,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             }
             JsonObject responseBody = response.bodyAsJsonObject();
             String cacheExpiry = Instant.now(Clock.systemUTC())
-                .plus(Constants.TIP_CACHE_TIMEOUT_AMOUNT, Constants.TIP_CACHE_TIMEOUT_UNIT)
+                .plus(Constants.CACHE_TIMEOUT_AMOUNT, Constants.TIP_CACHE_TIMEOUT_UNIT)
                 .toString();
             responseBody.put("cache-expiry", cacheExpiry);
             tipCache.put(token, responseBody);
@@ -731,14 +731,32 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         } else {
           // Check if the token has access to the requestedID
           LOGGER.debug("Info: Catalogue item is SECURE");
-          if (requestedGroupID.equalsIgnoreCase(allowedGroupID)) {
-            LOGGER.debug("Info: Catalogue item is SECURE and User has ACCESS");
-            response.put(Constants.JSON_CONSUMER, result.getString(Constants.JSON_CONSUMER));
-            promise.complete(response);
-          } else {
-            LOGGER.debug("Info: Catalogue item is SECURE and User does not have ACCESS");
+          
+          boolean allowedEndpoint=false;
+          
+          if (result.equals(Constants.JSON_PUBLIC_TIP_RESPONSE)) {
+            LOGGER.debug("Info: Catalogue item is SECURE and User did not provide any token");
             response.put(Constants.JSON_CONSUMER, result.getString(Constants.JSON_PUBLIC_CONSUMER));
             promise.fail(response.toString());
+          } else {
+
+            // TODO : check for validation placement.
+            // get first json inside "request" jsonArray and check for "apis" array.
+            JsonObject tipRequestResponseObject = result.getJsonArray("request").getJsonObject(0);
+            if (tipRequestResponseObject != null
+                && tipRequestResponseObject.getJsonArray("apis").contains(requestEndpoint)) {
+              allowedEndpoint = true;
+            }
+            if (requestedGroupID.equalsIgnoreCase(allowedGroupID) && allowedEndpoint) {
+              LOGGER.debug("Info: Catalogue item is SECURE and User has ACCESS");
+              response.put(Constants.JSON_CONSUMER, result.getString(Constants.JSON_CONSUMER));
+              promise.complete(response);
+            } else {
+              LOGGER.debug("Info: Catalogue item is SECURE and User does not have ACCESS");
+              response.put(Constants.JSON_CONSUMER,
+                  result.getString(Constants.JSON_PUBLIC_CONSUMER));
+              promise.fail(response.toString());
+            }
           }
         }
       }
@@ -768,9 +786,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (requestMethod.equalsIgnoreCase("POST")) {
           String resourceGroup = userRequest.getString("resourceGroup");
           String resourceServer = userRequest.getString("resourceServer");
-          //System.out.println(providerID);
-          //System.out.println(resourceGroup);
-          //System.out.println(resourceServer);
+          // System.out.println(providerID);
+          // System.out.println(resourceGroup);
+          // System.out.println(resourceServer);
           if (providerID.contains(resourceServer + "/" + resourceGroup)) {
             LOGGER.info(
                 "Success :: Has access to " + requestEndpoint + " API and Adapter " + adapterID);
