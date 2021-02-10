@@ -1548,7 +1548,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     } catch (IllegalArgumentException ex) {
       response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(ResponseType.BadRequestData.getCode())
-          .end(generateResponse(ResponseType.BadRequestData, MSG_PARAM_DECODE_ERROR).toString());
+          .end(generateResponse(ResponseType.BadRequestData, MSG_BAD_QUERY).toString());
 
 
     }
