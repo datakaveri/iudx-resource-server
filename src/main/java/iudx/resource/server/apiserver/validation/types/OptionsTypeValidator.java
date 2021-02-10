@@ -22,7 +22,7 @@ public class OptionsTypeValidator {
 
     @Override
     public RequestParameter isValid(String value) throws ValidationException {
-      if(!value.equalsIgnoreCase("count")) {
+      if(!value.equals("count")) {
         throw ValidationException.ValidationExceptionFactory
         .generateNotMatchValidationException("count is only allowed value for options parameter");
       }
