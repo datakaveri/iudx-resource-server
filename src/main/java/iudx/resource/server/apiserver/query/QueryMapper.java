@@ -138,10 +138,17 @@ public class QueryMapper {
       }
 
       LOGGER.debug("Info : inside isValidTimeInterval after check");
-      ZonedDateTime start = ZonedDateTime.parse(time);
-      ZonedDateTime end = ZonedDateTime.parse(endTime);
-      Duration duration = Duration.between(start, end);
-      totalDaysAllowed = duration.toDays();
+      try {
+        ZonedDateTime start = ZonedDateTime.parse(time);
+        ZonedDateTime end = ZonedDateTime.parse(endTime);
+        Duration duration = Duration.between(start, end);
+        totalDaysAllowed = duration.toDays();
+      } catch (Exception ex) {
+        ValidationException exception =
+            new ValidationException("Invalid time format");
+        exception.setParameterName("time/endtime");
+        throw exception;
+      }
     } else if (timeRel.equalsIgnoreCase("after")) {
       // how to enforce days duration for after and before,i.e here or DB
     } else if (timeRel.equalsIgnoreCase("before")) {
@@ -156,7 +163,8 @@ public class QueryMapper {
   }
 
   private boolean isGeoQuery(NGSILDQueryParams params) {
-    LOGGER.debug("georel "+params.getGeoRel()+" relation : "+params.getGeoRel().getRelation());
+    LOGGER
+        .debug("georel " + params.getGeoRel() + " relation : " + params.getGeoRel().getRelation());
     return params.getGeoRel().getRelation() != null || params.getCoordinates() != null
         || params.getGeometry() != null || params.getGeoProperty() != null;
   }

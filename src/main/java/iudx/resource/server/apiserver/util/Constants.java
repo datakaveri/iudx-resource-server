@@ -198,6 +198,7 @@ public class Constants {
   public static final String MSG_EXCHANGE_EXIST = "Exchange already exists";
   public static final String MSG_SUB_TYPE_NOT_FOUND = "Subscription type not present in body";
   public static final String MSG_SUB_INVALID_TOKEN = "Invalid/no token found in header";
+  public static final String MSG_BAD_QUERY="Bad query";
 
   // results
   public static final String SUCCCESS = "success";

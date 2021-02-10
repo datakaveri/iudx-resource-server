@@ -264,7 +264,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       }
     }
 
-    // serverOptions.setCompressionSupported(true).setCompressionLevel(5);
+    serverOptions.setCompressionSupported(true).setCompressionLevel(5);
     server = vertx.createHttpServer(serverOptions);
     server.requestHandler(router).listen(port);
 
@@ -1548,7 +1548,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     } catch (IllegalArgumentException ex) {
       response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(ResponseType.BadRequestData.getCode())
-          .end(generateResponse(ResponseType.BadRequestData, MSG_PARAM_DECODE_ERROR).toString());
+          .end(generateResponse(ResponseType.BadRequestData, MSG_BAD_QUERY).toString());
 
 
     }
