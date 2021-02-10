@@ -264,7 +264,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       }
     }
 
-    // serverOptions.setCompressionSupported(true).setCompressionLevel(5);
+    serverOptions.setCompressionSupported(true).setCompressionLevel(5);
     server = vertx.createHttpServer(serverOptions);
     server.requestHandler(router).listen(port);
 
