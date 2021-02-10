@@ -8,7 +8,7 @@ import java.util.stream.Stream;
  */
 public enum ResponseType {
   Ok(200, "Ok"), Created(201, "created"), NoContent(204, "Already Exist"), 
-  AuthenticationFailure(401, "Invalid credentials"), BadRequestData(400, "Bad Request Data"),
+  AuthenticationFailure(401, "Invalid credentials"), BadRequestData(400, "Bad Request"),
   TooComplexQuery(403, "Too complex query"), TooManyResults(403, "Too many results"),
   NotFound(404, "Not Found"), ResourceNotFound(404, "Resource not found"),
   MethodNotAllowed(405, "Method not allowed"), AlreadyExists(409, "Already exists"),
