@@ -18,32 +18,50 @@ pipeline {
         }
       }
     }
-    stage('Run Tests'){
+    // stage('Run Tests'){
+    //   steps{
+    //     script{
+    //       sh 'docker-compose up test'
+    //     }
+    //   }
+    // }
+    // stage('Capture Test results'){
+    //   steps{
+    //     xunit (
+    //             thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
+    //             tools: [ JUnit(pattern: 'target/surefire-reports/*Test.xml') ]
+    //     )
+    //   }
+    // }
+    stage('Run Jmeter Performance Tests'){
       steps{
         script{
-          sh 'docker-compose up test'
+          sh 'docker-compose -f docker-compose-production.yml up -d rs'
+          sh 'sleep 45'
+          sh 'rm -rf Jmeter/LatestData ; mkdir -p LatestData ; /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/LatestData.jmx -l Jmeter/LatestData/JmeterTest.jtl -e -o Jmeter/LatestData/'
+          sh 'rm -rf Jmeter/TemporalCount ; mkdir -p TemporalCount ; /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/TemporalCount.jmx -l Jmeter/TemporalCount/JmeterTest.jtl -e -o Jmeter/TemporalCount/'
+          sh 'rm -rf Jmeter/TemporalSearch ; mkdir -p TemporalSearch ; /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/TemporalSearch.jmx -l Jmeter/TemporalSearch/JmeterTest.jtl -e -o Jmeter/TemporalSearch/'
+          sh 'docker-compose down'
         }
       }
     }
-    stage('Capture Test results'){
+    stage('Capture Jmeter report'){
       steps{
-        xunit (
-                thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
-                tools: [ JUnit(pattern: 'target/surefire-reports/*Test.xml') ]
-        )
+        perfReport filterRegex: '', sourceDataFiles: 'Jmeter/**/*.jtl'
       }
     }
-    stage('Push Image') {
-      steps{
-        script {
-          docker.withRegistry( registryUri, registryCredential ) {
-            devImage.push()
-            deplImage.push()
-            testImage.push()
-          }
-        }
-      }
-    }
+
+    // stage('Push Image') {
+    //   steps{
+    //     script {
+    //       docker.withRegistry( registryUri, registryCredential ) {
+    //         devImage.push()
+    //         deplImage.push()
+    //         testImage.push()
+    //       }
+    //     }
+    //   }
+    // }
     // stage('Remove Unused docker image') {
     //  steps{
     //    sh "docker rmi dockerhub.iudx.io/jenkins/catalogue-dev"
