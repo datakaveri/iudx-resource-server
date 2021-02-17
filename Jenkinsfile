@@ -47,7 +47,7 @@ pipeline {
     }
     stage('Capture Jmeter report'){
       steps{
-        perfReport filterRegex: '', sourceDataFiles: 'Jmeter/**/*.jtl'
+        perfReport filterRegex: '', sourceDataFiles: 'Jmeter/LatestData/*.jtl;Jmeter/TemporalCount/*.jtl;Jmeter/TemporalSearch/*.jtl'
       }
     }
 
