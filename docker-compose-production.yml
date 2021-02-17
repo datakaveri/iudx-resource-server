@@ -7,7 +7,7 @@ networks:
 
 services:
 
-  prod:
+  rs:
     image: dockerhub.iudx.io/jenkins/resource-depl
     environment:
       - RS_URL=https://rs.iudx.org.in
