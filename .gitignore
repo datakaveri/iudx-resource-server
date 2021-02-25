@@ -2,9 +2,10 @@
 !.mvn/wrapper/maven-wrapper.jar
 ### IUDX ###
 config.properties
-/configs/
-
-
+configs/
+secrets/
+.*.env
+docker-compose.temp.yml
 ### STS ###
 .apt_generated
 .classpath
