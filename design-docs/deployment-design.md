@@ -1,4 +1,4 @@
-# Design
+# Deploymemnt Design
 ## Four ways of deploying the resource server using docker & docker-swarm:
 ### 1) Non-Clustered and 2) Clustered one resource-server container
 - At any given time only one service is up, hence only one service in compose-file and everything is named as rs/cat
