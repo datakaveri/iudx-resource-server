@@ -1,58 +1,15 @@
 version: '3.7'
-
-networks:
-  rs-net:
-    driver: bridge
-
 services:
-
-  prod:
-    image: iudx/rs-depl:latest
-    environment:
-      - RS_URL=https://rs.iudx.org.in
-      - LOG_LEVEL=INFO
+  rs:
+    env_file:
+      - ./.rs-api.env
     volumes:
-      - ./configs/config-depl.json:/usr/share/app/configs/config.json
       - ./docs/:/usr/share/app/docs
-      - ./configs/keystore.jks:/usr/share/app/configs/keystore.jks
-    ports:
-      - "443:8443"
-      - "9000:9000"
+      - ./secrets/credentials/keystore.jks:/usr/share/app/secrets/credentials/keystore.jks
     restart: on-failure
-    networks: 
-      - rs-net
     logging:
-         driver: "json-file"
-         options:
-             max-file: "5"
-             max-size: "100m"
-    command: bash -c "exec java  -jar ./fatjar.jar  --host $$(hostname) -c configs/config.json"
-
-  dev:
-    image: iudx/rs-dev:latest
-    environment:
-      - RS_URL=https://rs.iudx.org.in
-      - LOG_LEVEL=DEBUG
-    volumes:
-      - ./configs/config-dev.json:/usr/share/app/configs/config.json
-      - ./configs/keystore.jks:/usr/share/app/configs/keystore.jks
-      - ./docs/:/usr/share/app/docs
-    ports:
-      - "8443:8443"
-      - "9000:9000"
-    restart: on-failure
-    networks: 
-      - rs-net
-    logging:
-         driver: "json-file"
-         options:
-             max-file: "5"
-             max-size: "100m"
-    command: bash -c "exec java -jar ./fatjar.jar  --host $$(hostname) -c configs/config.json"
-
-  zookeeper:
-    image: zookeeper:latest
-    expose: 
-      - "2181"
-    networks:
-      - rs-net
+       driver: "json-file"
+       options:
+          max-file: "3"
+          max-size: "5m"
+    command: bash -c "exec java $$RS_JAVA_OPTS  -jar ./fatjar.jar  --host $$(hostname) -c secrets/credentials/all-verticles-configs/config.json"

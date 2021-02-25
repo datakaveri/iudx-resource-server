@@ -17,6 +17,7 @@
 		<exec.mainClass>iudx.resource.server.deploy.Deployer</exec.mainClass>
 		<exec.mainClassDev>iudx.resource.server.deploy.DeployerDev
 		</exec.mainClassDev>
+		<config-dev.file>config-dev.json</config-dev.file>
 	</properties>
 
 	<dependencyManagement>
@@ -286,7 +287,7 @@
 								<argument>{project.build.directory}/${project.artifactId}-dev-${project.version}-fat.jar
 								</argument>
 								<argument>-c</argument>
-								<argument>./configs/config-dev.json</argument>
+								<argument>./secrets/credentials/all-verticles-configs/${config-dev.file}</argument>
 							</arguments>
 						</configuration>
 					</execution>
