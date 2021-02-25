@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -704,19 +705,30 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
       LOGGER.debug("Info: TIP response is " + result);
 
-      String allowedID = result.getJsonArray("request").getJsonObject(0).getString("id");
-      String allowedGroupID = allowedID.substring(0, allowedID.lastIndexOf("/"));
+      // String allowedID = result.getJsonArray("request").getJsonObject(0).getString("id");
+      // String allowedGroupID = allowedID.substring(0, allowedID.lastIndexOf("/"));
 
-      LOGGER.debug("Info: allowedID is " + allowedID);
-      LOGGER.debug("Info: allowedGroupID is " + allowedGroupID);
+      List<String> allowedIds = extractAllowedIds(result);
+      List<String> allowedGroupIds = allowedIds.stream()
+          .map(id -> id.substring(0, id.lastIndexOf("/")))
+          .collect(Collectors.toList());
+
+      LOGGER.debug("Info: allowedID is " + allowedIds);
+      LOGGER.debug("Info: allowedGroupID is " + allowedGroupIds);
 
       LOGGER.debug("Info: userRequest is " + userRequest);
 
-      String requestedID = userRequest.getJsonArray("ids").getString(0);
-      String requestedGroupID = requestedID.substring(0, requestedID.lastIndexOf("/"));
+      // String requestedID = userRequest.getJsonArray("ids").getString(0);
+      // String requestedGroupID = requestedID.substring(0, requestedID.lastIndexOf("/"));
 
-      LOGGER.debug("Info: requestedID is " + requestedID);
-      LOGGER.debug("Info: requestedGroupID is " + requestedGroupID);
+      List<String> requestedIds =
+          iudx.resource.server.apiserver.util.Util.toList(userRequest.getJsonArray("ids"));
+      List<String> requestedGroupIds = requestedIds.stream()
+          .map(id -> id.substring(0, id.lastIndexOf("/")))
+          .collect(Collectors.toList());
+
+      LOGGER.debug("Info: requestedID is " + requestedIds);
+      LOGGER.debug("Info: requestedGroupID is " + requestedGroupIds);
 
       // Check if resource is available in Catalogue
       if (catResponse.isEmpty()) {
@@ -724,16 +736,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         response.put("item", "Not Found");
         promise.fail(response.toString());
       } else {
-        if (catResponse.get(requestedID)) {
+        if (catResponse.get(requestedIds.get(0))) {// getting first id since current API don't allow
+                                                   // multiple id's
           LOGGER.debug("Info: Catalogue item is OPEN");
           response.put(Constants.JSON_CONSUMER, result.getString(Constants.JSON_CONSUMER));
           promise.complete(response);
         } else {
           // Check if the token has access to the requestedID
           LOGGER.debug("Info: Catalogue item is SECURE");
-          
-          boolean allowedEndpoint=false;
-          
+
+          boolean allowedEndpoint = false;
+
           if (result.equals(Constants.JSON_PUBLIC_TIP_RESPONSE)) {
             LOGGER.debug("Info: Catalogue item is SECURE and User did not provide any token");
             response.put(Constants.JSON_CONSUMER, result.getString(Constants.JSON_PUBLIC_CONSUMER));
@@ -747,7 +760,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 && tipRequestResponseObject.getJsonArray("apis").contains(requestEndpoint)) {
               allowedEndpoint = true;
             }
-            if (requestedGroupID.equalsIgnoreCase(allowedGroupID) && allowedEndpoint) {
+            if (isAllowed(allowedGroupIds, requestedGroupIds) && allowedEndpoint) {
               LOGGER.debug("Info: Catalogue item is SECURE and User has ACCESS");
               response.put(Constants.JSON_CONSUMER, result.getString(Constants.JSON_CONSUMER));
               promise.complete(response);
@@ -918,5 +931,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       }
     }
     return promise.future();
+  }
+
+  private List<String> extractAllowedIds(JsonObject json) {
+    List<String> allowedIds = new ArrayList<String>();
+    json.getJsonArray("request").forEach(requestJson -> {
+      JsonObject idJson = (JsonObject) requestJson;
+      allowedIds.add(idJson.getString("id"));
+    });
+    return allowedIds;
+  }
+
+  /**
+   * Check if there is a item in <allowed> for every <requested> item
+   * 
+   * @param allowed List of allowed items
+   * @param requested List of requested items
+   * @return True : even if a single entry from allowed matched with any entry in requested. False :
+   *         if there is no id found in allowed for any of requested id.
+   */
+  private boolean isAllowed(List<String> allowed, List<String> requested) {
+    return requested.stream().anyMatch(item -> allowed.contains(item));
+
   }
 }
