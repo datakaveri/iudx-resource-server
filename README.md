@@ -47,7 +47,7 @@ The api docs can be found [here](https://rs.iudx.org.in/apis).
 #### Note
 1. DO NOT ADD actual config with credentials to `examples-credentials-enviroment/` directory (even in your local git clone!). 
 2. If you would like to add your own config with differnt name than config-dev.json and config-depl.json, place in the `secrets/credentials/all-verticles-configs/` and follow the note sections of docker based and maven based setup.
-3. Update all approriate configs in `examples-credentials-enviroment/` ONLY when there is addition of new config parameter options.
+3. Update all appropriate configs in `examples-credentials-enviroment/` ONLY when there is addition of new config parameter options.
 ### Docker based
 1. Please refer [here](readme/docker-based-deployment.md).
 

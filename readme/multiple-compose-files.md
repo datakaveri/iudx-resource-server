@@ -50,7 +50,7 @@
             - overlay-net
 
         ```
-- Command to bring up the resource server container is :
+   - Command to bring up the resource server container is :
         ```sh
         docker-compose -f docker-compose.yml -f docker-compose.temp.yml up -d 
         ```
