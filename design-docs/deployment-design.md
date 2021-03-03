@@ -6,6 +6,7 @@
   1. Non-clustered vertx, local devlopment - docker-compose.dev.yml
   2. Clustered vertx - docker-compose.depl.yml
 - A base docker-compose file that contains configuration common to both way of setup/deployment - env file,logging, command
+- Use of non-git versioned/local directory called "secrets" to store the configs/credentials.
 - Usage of multiple-compose files and its purpose, refer [here](https://docs.docker.com/compose/extends/).
 ### 3) Clustered one resource-server container using docker stack
 - Docker stack facilitates centralised place of deployment i.e. from swarm manager node.
