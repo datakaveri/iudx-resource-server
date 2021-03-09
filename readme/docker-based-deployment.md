@@ -1,3 +1,4 @@
+# Docker based installation
 1. Install docker and docker-compose
 2. Build the images 
    ```sh
@@ -6,7 +7,7 @@
 3. There are four ways of setting/deploying the resource server using docker:
    1. Non-Clustered setup with all verticles running in a single container: 
    - This needs no hazelcast, zookeeper, the deployment can be done on non-swarm too and suitable for development environment.
-   - This makes use of iudx/rs-dev:latest image and config-dev.json present at `secrets/credentials/config-dev.json`
+   - This makes use of iudx/rs-dev:latest image and config-dev.json present at `secrets/config-dev.json`
    ```sh 
    # Command to bring up the non-clustered resource-server container
    docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
@@ -17,7 +18,7 @@
    - This needs following things:
       - Docker swarm and overlay network having a name 'overlay-net'. Refer [here](https://github.com/datakaveri/iudx-deployment/tree/master/docs/swarm-setup.md)
       - zookeeper running in Docker swarm and in the overlay network named 'overlay-net'. Refer [here](https://github.com/datakaveri/iudx-deployment/tree/master/single-node/zookeeper)
-   - This makes use of iudx/rs-depl:latest image and config-depl.json present at `secrets/credentials/config-depl.json`
+   - This makes use of iudx/rs-depl:latest image and config-depl.json present at `secrets/config-depl.json`
    - This is suitable for production/testing environment single node-setup.
      ```sh 
      # Command to bring up the clustered one resource-container

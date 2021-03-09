@@ -36,17 +36,17 @@ The api docs can be found [here](https://rs.iudx.org.in/apis).
    - Populate secrets directory with following structure in the present directory:
       ```sh
       secrets/
-      └── credentials
-         ├── all-verticles-configs
-         │   ├── config-depl.json (needed for clustered vertx setup all verticles  in one container)
-         │   └── config-dev.json (needed for non-clustered vertx setup all verticles in one container/maven based setup)
-         ├── keystore.jks
-         └── one-verticle-configs (needed for clustered vertx in multi-container)
+      ├── all-verticles-configs (directory)
+      │   ├── config-depl.json (needed for clustered vertx setup all verticles  in one container)
+      │   ├── config-dev.json (needed for non-clustered vertx setup all verticles in one container/maven based setup
+      │  
+      ├── keystore.jks
+      └── one-verticle-configs (directory, needed for clustered vertx in multi-container)
       ``` 
 3. Populate .rs-api.env environment file based on template in `example-credentials-environment/example-evironment-file(.rs-api.env)` in the present directory
 #### Note
 1. DO NOT ADD actual config with credentials to `examples-credentials-enviroment/` directory (even in your local git clone!). 
-2. If you would like to add your own config with differnt name than config-dev.json and config-depl.json, place in the `secrets/credentials/all-verticles-configs/` and follow the note sections of docker based and maven based setup.
+2. If you would like to add your own config with differnt name than config-dev.json and config-depl.json, place in the `secrets/all-verticles-configs/` and follow the note sections of docker based and maven based setup.
 3. Update all appropriate configs in `examples-credentials-enviroment/` ONLY when there is addition of new config parameter options.
 ### Docker based
 1. Please refer [here](readme/docker-based-deployment.md).
@@ -59,8 +59,8 @@ The api docs can be found [here](https://rs.iudx.org.in/apis).
    ```
 #### Note
 1. Privileged access maybe required to bring up the http server at port 80. 
-2. Maven based setup by default uses `secrets/credentials/all-verticles-configs/config-dev.json` and is non-clustered setup of verticles.
-3. If you want to use a different named config called `config-x`, need to place it at `secrets/credentials/all-verticles-configs/config-x.json` and use following command to bring it up:
+2. Maven based setup by default uses `secrets/all-verticles-configs/config-dev.json` and is non-clustered setup of verticles.
+3. If you want to use a different named config called `config-x`, need to place it at `secrets/all-verticles-configs/config-x.json` and use following command to bring it up:
    ```sh
    mvn clean compile  exec:java@resource-server -Dconfig-dev.file=config-x.json
    ```

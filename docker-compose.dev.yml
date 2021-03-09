@@ -6,7 +6,7 @@ services:
   rs:
     image: iudx/rs-dev:latest
     volumes:
-      - ./secrets/credentials/all-verticles-configs/config-dev.json:/usr/share/app/secrets/credentials/all-verticles-configs/config.json
+      - ./secrets/all-verticles-configs/config-dev.json:/usr/share/app/secrets/all-verticles-configs/config.json
     ports:
       - "8080:80"
     networks: 

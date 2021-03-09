@@ -5,11 +5,11 @@ services:
       - ./.rs-api.env
     volumes:
       - ./docs/:/usr/share/app/docs
-      - ./secrets/credentials/keystore.jks:/usr/share/app/secrets/credentials/keystore.jks
+      - ./secrets/keystore.jks:/usr/share/app/secrets/keystore.jks
     restart: on-failure
     logging:
        driver: "json-file"
        options:
           max-file: "3"
           max-size: "5m"
-    command: bash -c "exec java $$RS_JAVA_OPTS  -jar ./fatjar.jar  --host $$(hostname) -c secrets/credentials/all-verticles-configs/config.json"
+    command: bash -c "exec java $$RS_JAVA_OPTS  -jar ./fatjar.jar  --host $$(hostname) -c secrets/all-verticles-configs/config.json"

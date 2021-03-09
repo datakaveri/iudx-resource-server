@@ -1,4 +1,7 @@
 # Deploymemnt Design
+## Main principles:
+- Deploy the resource server in a secure fashion.
+- To not edit the docker-compose/deployment files unnecessarily, i.e., git is the only source of truth.
 ## Four ways of deploying the resource server using docker & docker-swarm:
 ### 1) Non-Clustered and 2) Clustered one resource-server container
 - At any given time only one service is up, hence only one service in compose-file and everything is named as rs/cat
@@ -6,7 +9,8 @@
   1. Non-clustered vertx, local devlopment - docker-compose.dev.yml
   2. Clustered vertx - docker-compose.depl.yml
 - A base docker-compose file that contains configuration common to both way of setup/deployment - env file,logging, command
-- Use of non-git versioned/local directory called "secrets" to store the configs/credentials.
+- Use of non-git versioned/local directory called "secrets" to store the configs or credentials.
+- Usage of environment file called '.rs-api.env' to adjust the environment variables such as LOG_LEVEL, java options etc.  without editing the variables in the compose files.
 - Usage of multiple-compose files and its purpose, refer [here](https://docs.docker.com/compose/extends/).
 ### 3) Clustered one resource-server container using docker stack
 - Docker stack facilitates centralised place of deployment i.e. from swarm manager node.

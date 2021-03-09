@@ -1,0 +1,21 @@
+{
+    "version": "1.0",
+    "zookeepers": [ "zookeeper" ],
+    "clusterId": "iudx-rs-cluster",
+    "modules": [
+	    {
+            "id": "iudx.resource.server.authenticator.AuthenticationVerticle",
+            "verticleInstances": 1,
+            "keystore": "secrets/keystore.jks",
+            "keystorePassword": "xyz",
+            "authServerHost": "w.x.y.z",
+            "testAuthToken": "auth.iudx.io.test/vasanth.rajaraman@datakaveri.org/3e3e4a3dcc5c956e4aee0a654458c",
+            "testExpiredAuthToken": "auth.iudx.io.test/bryan.robert@datakaveri.org/8c968d28545ee41c863ba52502bfd874",
+            "testResourceID": "iudx.test/22dw2324223ee333/surat-xyz/FZ067",
+            "catServerHost": "w.x.y.z",
+            "catServerPort": "4455",
+            "resourceServerId":"iudx.test/22dw2324223ee333/surat-xyz/FZ067",
+            "serverMode": "production"
+        }
+    ]
+}

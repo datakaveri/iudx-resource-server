@@ -1,15 +1,15 @@
 # Multiple Compose files overriding examples
 ## Use different config file i.e. config-x.json than the standard two
   -  The secrets directory structure will be :
-     ```sh
-     secrets/
-     └── credentials
+        ```sh
+        secrets/
         ├── all-verticles-configs
-        │   ├── config-depl.json
-        │   ├── config-dev.json
-        │   └── config-x.json
+        │   ├── config-depl.json
+        │   ├── config-dev.json
+        │   └── config-x.json
         ├── keystore.jks
-     ```
+        └── one-verticle-configs
+        ```
    - Create a non-git versioned named `docker-compose.temp.yml` file with following contents:
         ```sh 
         version: '3.7'
@@ -20,7 +20,7 @@
         rs:
             image: iudx/rs-dev:latest
             volumes:
-            - ./secrets/credentials/all-verticles-configs/config-x.json:/usr/share/app/secrets/credentials/all-verticles-configs/config.json
+            - ./secrets/all-verticles-configs/config-x.json:/usr/share/app/secrets/all-verticles-configs/config.json
             ports:
             - "8080:80"
             networks: 
@@ -42,7 +42,7 @@
         rs:
             image: iudx/rs-depl:latest
             volumes:
-            - ./secrets/credentials/all-verticles-configs/config-depl.json:/usr/share/app/secrets/credentials/all-verticles-configs/config.json
+            - ./secrets/all-verticles-configs/config-depl.json:/usr/share/app/secrets/all-verticles-configs/config.json
             ports:
             - "80:80"
             - "9000:9000"

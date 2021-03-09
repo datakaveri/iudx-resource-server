@@ -3,7 +3,9 @@
 ### IUDX ###
 config.properties
 configs/
-secrets/
+secrets/all-verticles-configs/*.json
+secrets/one-verticle-configs/*.json
+secrets/*.jks
 .*.env
 docker-compose.temp.yml
 ### STS ###
