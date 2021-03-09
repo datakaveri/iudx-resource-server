@@ -755,12 +755,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             // TODO : check for validation placement.
             // get first json inside "request" jsonArray and check for "apis" array.
-            JsonObject tipRequestResponseObject = result.getJsonArray("request").getJsonObject(0);
-            if (tipRequestResponseObject != null
-                && tipRequestResponseObject.getJsonArray("apis").contains(requestEndpoint)) {
-              allowedEndpoint = true;
-            }
-            if (isAllowed(allowedGroupIds, requestedGroupIds) && allowedEndpoint) {
+            /*
+             * JsonObject tipRequestResponseObject =
+             * result.getJsonArray("request").getJsonObject(0); if (tipRequestResponseObject != null
+             * && tipRequestResponseObject.getJsonArray("apis").contains(requestEndpoint)) {
+             * allowedEndpoint = true; }
+             */
+            JsonArray tipResponseRequestArray = result.getJsonArray("request");
+            allowedEndpoint =
+                isAllowedAPIEndpoint(requestEndpoint, tipResponseRequestArray, requestedGroupIds);
+
+            if (isAllowedId(allowedGroupIds, requestedGroupIds) && allowedEndpoint) {
               LOGGER.debug("Info: Catalogue item is SECURE and User has ACCESS");
               response.put(Constants.JSON_CONSUMER, result.getString(Constants.JSON_CONSUMER));
               promise.complete(response);
@@ -950,8 +955,26 @@ public class AuthenticationServiceImpl implements AuthenticationService {
    * @return True : even if a single entry from allowed matched with any entry in requested. False :
    *         if there is no id found in allowed for any of requested id.
    */
-  private boolean isAllowed(List<String> allowed, List<String> requested) {
+  private boolean isAllowedId(List<String> allowed, List<String> requested) {
     return requested.stream().anyMatch(item -> allowed.contains(item));
 
+  }
+
+  private boolean isAllowedAPIEndpoint(String requestedEndpoint, JsonArray tipResponseRequestArray,
+      List<String> requestedGroupIds) {
+    if (tipResponseRequestArray != null) {
+      for (int i = 0; i < tipResponseRequestArray.size(); i++) {
+        JsonObject json = tipResponseRequestArray.getJsonObject(i);
+        String id = json.getString("id");
+        JsonArray allowedApis = json.getJsonArray("apis");
+        String allowedGroupId = id.substring(0, id.lastIndexOf("/"));
+        if (requestedGroupIds.contains(allowedGroupId)) {
+          if (!allowedApis.contains(requestedEndpoint)) {
+            return false;
+          }
+        }
+      }
+    }
+    return true;
   }
 }
