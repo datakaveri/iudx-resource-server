@@ -1,0 +1,17 @@
+{
+    "version": "1.0",
+    "zookeepers": [ "zookeeper" ],
+    "clusterId": "iudx-rs-cluster",
+    "modules": [
+	           {
+            "id": "iudx.resource.server.database.DatabaseVerticle",
+            "verticleInstances": 1,
+            "databaseIP": "w.x.y.z",
+            "databasePort": 8928,
+            "dbUser": "test-user",
+            "dbPassword": "test-user",
+            "timeLimit": "production,2020-09-22T00:00:00Z,10"
+
+        }
+    ]
+}

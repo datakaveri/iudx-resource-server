@@ -1,0 +1,18 @@
+{
+    "version": "1.0",
+    "zookeepers": [ "zookeeper" ],
+    "clusterId": "iudx-rs-cluster",
+    "modules": [ 
+	    {
+	    "id": "iudx.resource.server.apiserver.ApiServerVerticle",
+            "ssl": false,
+            "production": true,
+            "keystore": "secrets/keystore.jks",
+            "keystorePassword": "xyz",
+            "rsAdmin": "datakaveri.org/f7dde044eee8122b5c87dce6e7ad64f3266afa4c",
+            "verticleInstances": 1,
+            "catServerHost":"w.x.y.z",
+            "catServerPort":"4455"
+          }
+    ]
+}

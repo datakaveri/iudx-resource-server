@@ -1,0 +1,86 @@
+{
+    "version": "1.0",
+    "zookeepers": [ "zookeeper" ],
+    "clusterId": "iudx-rs-cluster",
+    "modules": [
+        {
+            "id": "iudx.resource.server.database.DatabaseVerticle",
+            "verticleInstances": 1,
+            "databaseIP": "w.x.y.z",
+            "databasePort": 8928,
+            "dbUser": "test-user",
+            "dbPassword": "test-user",
+            "timeLimit": "production,2020-09-22T00:00:00Z,10"
+
+        },
+	    {
+            "id": "iudx.resource.server.authenticator.AuthenticationVerticle",
+            "verticleInstances": 1,
+            "keystore": "secrets/keystore.jks",
+            "keystorePassword": "xyz",
+            "authServerHost": "w.x.y.z",
+            "testAuthToken": "auth.iudx.io.test/vasanth.rajaraman@datakaveri.org/3e3e4a3dbb5c956e4aee0a654458c",
+            "testExpiredAuthToken": "auth.iudx.io.test/bryan.robert@datakaveri.org/8c968d28545ee41c863ba52502bfd874",
+            "testResourceID": "iudx.test/22dw2324223ee333/surat-xyz/FZ067",
+            "catServerHost": "w.x.y.z",
+            "catServerPort": "4455",
+            "resourceServerId":"iudx.test/22dw2324223ee333/surat-xyz/FZ067",
+            "serverMode": "production"
+        },
+        {
+            "id": "iudx.resource.server.databroker.DataBrokerVerticle",
+            "verticleInstances": 1,
+            "dataBrokerIP": "w.x.y.z",
+            "dataBrokerPort": "9464",
+            "dataBrokerVhost": "test",
+            "dataBrokerUserName": "guest-test",
+            "dataBrokerPassword": "guest-test",
+            "dataBrokerManagementPort": "",
+            "connectionTimeout": "6000",
+            "requestedHeartbeat": "60",
+            "handshakeTimeout": "6000",
+            "requestedChannelMax": "5",
+            "networkRecoveryInterval": "500",
+            "automaticRecoveryEnabled": "true",
+            "callbackDatabaseIP": "w.x.y.z",
+            "callbackDatabasePort": "6896",
+            "callbackDatabaseName": "test",
+            "callbackDatabaseUserName": "test-user",
+            "callbackDatabasePassword": "test-user",
+            "callbackpoolSize": "25"
+    },
+    {
+        "id": "iudx.resource.server.callback.CallbackVerticle",
+        "verticleInstances": 1,
+        "dataBrokerIP": "w.x.y.z",
+        "dataBrokerPort": "9464",
+        "dataBrokerVhost": "test",
+        "dataBrokerUserName": "guest-test",
+        "dataBrokerPassword": "guest-test",
+        "dataBrokerManagementPort": "",
+        "connectionTimeout": "6000",
+        "requestedHeartbeat": "60",
+        "handshakeTimeout": "6000",
+        "requestedChannelMax": "5",
+        "networkRecoveryInterval": "500",
+        "automaticRecoveryEnabled": "true",
+        "callbackDatabaseIP": "w.x.y.z",
+        "callbackDatabasePort": "6896",
+        "callbackDatabaseName": "test",
+        "callbackDatabaseUserName": "test-user",
+        "callbackDatabasePassword": "test-user",
+        "callbackpoolSize": "25"
+    },
+    {
+	    "id": "iudx.resource.server.apiserver.ApiServerVerticle",
+            "ssl": false,
+            "production": true,
+            "keystore": "secrets/keystore.jks",
+            "keystorePassword": "xyz",
+            "rsAdmin": "datakaveri.org/f7dde044eee8122b5c87dce6e7ad64f3266afa4c",
+            "verticleInstances": 1,
+            "catServerHost":"w.x.y.z",
+            "catServerPort":"4455"
+          }
+    ]
+}

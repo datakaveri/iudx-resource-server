@@ -1,0 +1,29 @@
+{
+    "version": "1.0",
+    "zookeepers": [ "zookeeper" ],
+    "clusterId": "iudx-rs-cluster",
+    "modules": [
+	            {
+                        "id": "iudx.resource.server.databroker.DataBrokerVerticle",
+                        "verticleInstances": 1,
+                        "dataBrokerIP": "w.x.y.z",
+                        "dataBrokerPort": "9464",
+                        "dataBrokerVhost": "test",
+                        "dataBrokerUserName": "guest-test",
+                        "dataBrokerPassword": "guest-test",
+                        "dataBrokerManagementPort": "",
+                        "connectionTimeout": "6000",
+                        "requestedHeartbeat": "60",
+                        "handshakeTimeout": "6000",
+                        "requestedChannelMax": "5",
+                        "networkRecoveryInterval": "500",
+                        "automaticRecoveryEnabled": "true",
+                        "callbackDatabaseIP": "w.x.y.z",
+                        "callbackDatabasePort": "6896",
+                        "callbackDatabaseName": "test",
+                        "callbackDatabaseUserName": "test-user",
+                        "callbackDatabasePassword": "test-user",
+                        "callbackpoolSize": "25"
+                }
+    ]
+}

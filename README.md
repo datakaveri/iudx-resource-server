@@ -25,25 +25,45 @@ The api docs can be found [here](https://rs.iudx.org.in/apis).
 ## Get Started
 
 ### Prerequisite - Make configuration
-Make a config file based on the template in `./configs/config-example.json` 
-- Generate a certificate using Lets Encrypt or other methods
-- Make a Java Keystore File and mention its path and password in the appropriate sections
-- Modify the database url and associated credentials in the appropriate sections
-
+1. Clone this repo and change directory:
+   ```sh 
+   git clone https://github.com/datakaveri/iudx-resource-server.git && cd iudx-resource-server
+   ```
+2. Make a config file based on the template in `example-credentials-environment/all-verticles-configs/config-dev.json` for non-clustered vertx and  `example-credentials-environment/all-verticles-configs/config-depl.json` for clustered vertx using hazelcast, zookeeper.
+   - Generate a certificate using Lets Encrypt or other methods
+   - Make a Java Keystore File and mention its path and password in the appropriate sections
+   - Modify the database url and associated credentials in the appropriate sections
+   - Populate secrets directory with following structure in the present directory:
+      ```sh
+      secrets/
+      ├── all-verticles-configs (directory)
+      │   ├── config-depl.json (needed for clustered vertx setup all verticles  in one container)
+      │   ├── config-dev.json (needed for non-clustered vertx setup all verticles in one container/maven based setup
+      │  
+      ├── keystore.jks
+      └── one-verticle-configs (directory, needed for clustered vertx in multi-container)
+      ``` 
+3. Populate .rs-api.env environment file based on template in `example-credentials-environment/example-evironment-file(.rs-api.env)` in the present directory
+#### Note
+1. DO NOT ADD actual config with credentials to `examples-credentials-enviroment/` directory (even in your local git clone!). 
+2. If you would like to add your own config with differnt name than config-dev.json and config-depl.json, place in the `secrets/all-verticles-configs/` and follow the note sections of docker based and maven based setup.
+3. Update all appropriate configs in `examples-credentials-enviroment/` ONLY when there is addition of new config parameter options.
 ### Docker based
-1. Install docker and docker-compose
-2. Clone this repo
-3. Build the images 
-   ` ./docker/build.sh`
-4. Modify the `docker-compose.yml` file to map the config file you just created
-5. Start the server in production (prod) or development (dev) mode using docker-compose 
-   ` docker-compose up prod `
-
+1. Please refer [here](readme/docker-based-deployment.md).
 
 ### Maven based
 1. Install java 13 and maven
 2. Use the maven exec plugin based starter to start the server 
-   `mvn clean compile exec:java@resource-server`
+   ```sh 
+   mvn clean compile exec:java@resource-server
+   ```
+#### Note
+1. Privileged access maybe required to bring up the http server at port 80. 
+2. Maven based setup by default uses `secrets/all-verticles-configs/config-dev.json` and is non-clustered setup of verticles.
+3. If you want to use a different named config called `config-x`, need to place it at `secrets/all-verticles-configs/config-x.json` and use following command to bring it up:
+   ```sh
+   mvn clean compile  exec:java@resource-server -Dconfig-dev.file=config-x.json
+   ```
 
 ### Testing
 
