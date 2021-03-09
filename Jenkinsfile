@@ -38,18 +38,18 @@ pipeline {
         script{
           sh 'docker-compose -f docker-compose-production.yml up -d rs'
           sh 'sleep 45'
-          sh 'rm -rf Jmeter/LatestData ; mkdir -p Jmeter/LatestData ; /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/LatestData.jmx -l Jmeter/LatestData/latestData.jtl -e -o Jmeter/LatestData/'
-          sh 'rm -rf Jmeter/TemporalCount ; mkdir -p Jmeter/TemporalCount ; /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/TemporalCount.jmx -l Jmeter/TemporalCount/temporalCount.jtl -e -o Jmeter/TemporalCount/'
-          sh 'rm -rf Jmeter/TemporalSearch ; mkdir -p Jmeter/TemporalSearch ; /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/TemporalSearch.jmx -l Jmeter/TemporalSearch/temporalSearch.jtl -e -o Jmeter/TemporalSearch/'
-          //sh 'rm -rf Jmeter/report ; mkdir -p Jmeter/report ; /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/Resourceserver.jmx -l Jmeter/report/JmeterTest.jtl -e -o Jmeter/report/'
+          //sh 'rm -rf Jmeter/LatestData ; mkdir -p Jmeter/LatestData ; /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/LatestData.jmx -l Jmeter/LatestData/latestData.jtl -e -o Jmeter/LatestData/'
+          //sh 'rm -rf Jmeter/TemporalCount ; mkdir -p Jmeter/TemporalCount ; /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/TemporalCount.jmx -l Jmeter/TemporalCount/temporalCount.jtl -e -o Jmeter/TemporalCount/'
+          //sh 'rm -rf Jmeter/TemporalSearch ; mkdir -p Jmeter/TemporalSearch ; /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/TemporalSearch.jmx -l Jmeter/TemporalSearch/temporalSearch.jtl -e -o Jmeter/TemporalSearch/'
+          sh 'rm -rf Jmeter/report ; mkdir -p Jmeter/report ; /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/Resourceserver.jmx -l Jmeter/report/JmeterTest.jtl -e -o Jmeter/report/'
           sh 'docker-compose down'
         }
       }
     }
     stage('Capture Jmeter report'){
       steps{
-        perfReport filterRegex: '', sourceDataFiles: 'Jmeter/LatestData/*.jtl;Jmeter/TemporalCount/*.jtl;Jmeter/TemporalSearch/*.jtl'
-        //perfReport filterRegex: '', sourceDataFiles: 'Jmeter/report/*.jtl'
+        //perfReport filterRegex: '', sourceDataFiles: 'Jmeter/LatestData/*.jtl;Jmeter/TemporalCount/*.jtl;Jmeter/TemporalSearch/*.jtl'
+        perfReport filterRegex: '', sourceDataFiles: 'Jmeter/report/*.jtl'
       }
     }
 
