@@ -42,7 +42,7 @@ pipeline {
           //sh 'rm -rf Jmeter/TemporalCount ; mkdir -p Jmeter/TemporalCount ; /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/TemporalCount.jmx -l Jmeter/TemporalCount/temporalCount.jtl -e -o Jmeter/TemporalCount/'
           //sh 'rm -rf Jmeter/TemporalSearch ; mkdir -p Jmeter/TemporalSearch ; /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/TemporalSearch.jmx -l Jmeter/TemporalSearch/temporalSearch.jtl -e -o Jmeter/TemporalSearch/'
           sh 'rm -rf Jmeter/report ; mkdir -p Jmeter/report ; /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/ResourceServer.jmx -l Jmeter/report/JmeterTest.jtl -e -o Jmeter/report/'
-          sh 'docker-compose down'
+          //sh 'docker-compose down'
         }
       }
     }
