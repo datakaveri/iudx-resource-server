@@ -506,7 +506,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">authtest.iudx.io/vasanth.rajaraman@datakaveri.org/ab4250b61a488eefb00022a546bc6ff4</stringProp>
+                <stringProp name="Header.value">authtest.iudx.io/vasanth.rajaraman@datakaveri.org/3be2266c54a7546e2b34f7a641dbbce3</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:34:08.257</stringProp>
@@ -538,7 +538,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">authtest.iudx.io/vasanth.rajaraman@datakaveri.org/ab4250b61a488eefb00022a546bc6ff4</stringProp>
+                <stringProp name="Header.value">authtest.iudx.io/vasanth.rajaraman@datakaveri.org/3be2266c54a7546e2b34f7a641dbbce3</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:33:16.199</stringProp>
