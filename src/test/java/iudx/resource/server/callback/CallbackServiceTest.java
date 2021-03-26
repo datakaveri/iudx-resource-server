@@ -30,6 +30,10 @@ import iudx.resource.server.configuration.Configuration;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+/**
+ *@Disabled test cases disabled for current release.
+ */
+@Disabled 
 public class CallbackServiceTest {
 
   static CallbackService callback;

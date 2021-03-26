@@ -1121,7 +1121,7 @@ public class RabbitClient {
    **/
   private Future<JsonObject> setTopicPermissions(String vhost, String adaptorID, String userID) {
     LOGGER.debug("Info : RabbitClient#setTopicPermissions() started");
-    String url = "/api/topic-permissions/" + vhost + "/" + encodeValue(userID);
+    String url = "/api/permissions/" + vhost + "/" + encodeValue(userID);
     JsonObject param = new JsonObject();
     // set all mandatory fields
     param.put(EXCHANGE, adaptorID);
