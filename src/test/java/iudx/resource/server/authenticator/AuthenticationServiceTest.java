@@ -134,7 +134,9 @@ public class AuthenticationServiceTest {
     JsonObject authInfo =
         new JsonObject()
             .put("token", authConfig.getString("testAuthToken"))
-            .put("apiEndpoint", Constants.CLOSED_ENDPOINTS.get(1));
+            .put("apiEndpoint", Constants.CLOSED_ENDPOINTS.get(1))
+            .put("method","GET")
+            .put("id","iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/alias");
     authenticationService.tokenInterospect(request, authInfo, handler->{
       if(handler.failed()) {
         testContext.completeNow();

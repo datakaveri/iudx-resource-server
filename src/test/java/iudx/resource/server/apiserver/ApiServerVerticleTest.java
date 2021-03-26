@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -29,6 +30,11 @@ import iudx.resource.server.configuration.Configuration;
 /* TODO : Need to update End to End Adaptor testing */
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+/**
+ *@deprecated  As of current release, API test cases moved to Integration pipeline}
+ */
+@Deprecated
+@Disabled
 public class ApiServerVerticleTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(ApiServerVerticleTest.class);
   private static final int PORT = 8443;

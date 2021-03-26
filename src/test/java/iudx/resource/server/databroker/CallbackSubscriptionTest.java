@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -33,6 +34,10 @@ import iudx.resource.server.databroker.util.Constants;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(OrderAnnotation.class)
+/**
+ *@Disabled test cases disabled for current release.
+ */
+@Disabled 
 public class CallbackSubscriptionTest {
 
   static DataBrokerService databroker;

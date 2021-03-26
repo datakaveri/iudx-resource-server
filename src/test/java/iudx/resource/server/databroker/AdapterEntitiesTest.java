@@ -237,7 +237,7 @@ public class AdapterEntitiesTest {
     expected.put(Constants.TYPE, 200);
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, Constants.EXCHANGE_FOUND);
-
+System.out.println(id);
     databroker.getExchange(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -256,7 +256,7 @@ public class AdapterEntitiesTest {
     JsonObject request = new JsonObject();
     request.put(Constants.ID, id);
     request.put("exchangeName", id);// TODO : discuss conflict between impl and test code
-
+    System.out.println("request: "+request);
     JsonObject expected = new JsonObject();
     JsonArray adaptorLogs_entities = new JsonArray();
     JsonArray database_entities = new JsonArray();
@@ -397,7 +397,8 @@ public class AdapterEntitiesTest {
     JsonObject request = new JsonObject();
     request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
     request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
-    request.put(Constants.CONSUMER, Constants.CONSUMER_TEST_EXAMPLE);
+    request.put(Constants.CONSUMER, consumer);
+    request.put(JSON_PROVIDER, provider);
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.DETAILS, Constants.EXCHANGE_EXISTS);
@@ -431,8 +432,11 @@ public class AdapterEntitiesTest {
         JsonObject response = handler.result();
         logger.info("inside test - DeleteAdaptor response is : " + response);
         assertEquals(ResponseType.Ok.getCode(), handler.result().getInteger(Constants.TYPE));
+        testContext.completeNow();
+      }else {
+        testContext.failNow(handler.cause());
       }
-      testContext.completeNow();
+      
     });
   }
 
