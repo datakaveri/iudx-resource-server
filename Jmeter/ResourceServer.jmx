@@ -35,9 +35,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&amp;q=referenceLevel%3E15.0&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -62,9 +62,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&amp;q=referenceLevel%3E15.0</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -89,9 +89,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&amp;q=referenceLevel%3E15.0&amp;attrs=id,currentLevel,referenceLevel</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -116,9 +116,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=within&amp;geometry=bbox&amp;coordinates=[[72.8296,21.2],[72.8297,21.15]]</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -137,7 +137,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">authtest.iudx.io/vasanth.rajaraman@datakaveri.org/e5d0a3c556dd02a36331b8861ced8533</stringProp>
+                <stringProp name="Header.value">${__P(token)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T22:49:35.811</stringProp>
@@ -148,9 +148,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=within&amp;geometry=bbox&amp;coordinates=[[72.8296,21.2],[72.8297,21.15]]&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -169,7 +169,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">authtest.iudx.io/vasanth.rajaraman@datakaveri.org/e5d0a3c556dd02a36331b8861ced8533</stringProp>
+                <stringProp name="Header.value">${__P(token)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:10:57.241</stringProp>
@@ -201,9 +201,9 @@
               </elementProp>
             </collectionProp>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entityOperations/query</stringProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
@@ -222,7 +222,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">authtest.iudx.io/vasanth.rajaraman@datakaveri.org/e5d0a3c556dd02a36331b8861ced8533</stringProp>
+                <stringProp name="Header.value">${__P(token)}</stringProp>
               </elementProp>
               <elementProp name="Content-Type" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
@@ -237,9 +237,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=near;maxdistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -258,7 +258,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">authtest.iudx.io/vasanth.rajaraman@datakaveri.org/e5d0a3c556dd02a36331b8861ced8533</stringProp>
+                <stringProp name="Header.value">${__P(token)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T22:40:36.73</stringProp>
@@ -269,9 +269,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=near;maxDistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -290,7 +290,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">authtest.iudx.io/vasanth.rajaraman@datakaveri.org/e5d0a3c556dd02a36331b8861ced8533</stringProp>
+                <stringProp name="Header.value">${__P(token)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:09:25.404</stringProp>
@@ -321,9 +321,9 @@
               </elementProp>
             </collectionProp>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entityOperations/query</stringProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
@@ -342,7 +342,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">authtest.iudx.io/vasanth.rajaraman@datakaveri.org/e5d0a3c556dd02a36331b8861ced8533</stringProp>
+                <stringProp name="Header.value">${__P(token)}</stringProp>
               </elementProp>
               <elementProp name="Content-Type" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
@@ -357,9 +357,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=intersects&amp;geometry=linestring&amp;coordinates=[[72.842,21.2],[72.923,20.8]]&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -378,7 +378,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">authtest.iudx.io/vasanth.rajaraman@datakaveri.org/e5d0a3c556dd02a36331b8861ced8533</stringProp>
+                <stringProp name="Header.value">${__P(token)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:12:08.113</stringProp>
@@ -389,9 +389,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=within&amp;geometry=Polygon&amp;coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -410,7 +410,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">authtest.iudx.io/vasanth.rajaraman@datakaveri.org/e5d0a3c556dd02a36331b8861ced8533</stringProp>
+                <stringProp name="Header.value">${__P(token)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T22:48:36.441</stringProp>
@@ -421,9 +421,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=within&amp;geometry=Polygon&amp;coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -442,7 +442,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">authtest.iudx.io/vasanth.rajaraman@datakaveri.org/e5d0a3c556dd02a36331b8861ced8533</stringProp>
+                <stringProp name="Header.value">${__P(token)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-22T13:47:35.613</stringProp>
@@ -453,9 +453,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -474,7 +474,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">authtest.iudx.io/vasanth.rajaraman@datakaveri.org/e5d0a3c556dd02a36331b8861ced8533</stringProp>
+                <stringProp name="Header.value">${__P(token)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T22:38:50.443</stringProp>
@@ -485,9 +485,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=near;maxDistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;timerel=before&amp;time=2020-10-19T14:00:00Z&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -506,7 +506,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">authtest.iudx.io/vasanth.rajaraman@datakaveri.org/e5d0a3c556dd02a36331b8861ced8533</stringProp>
+                <stringProp name="Header.value">${__P(token)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:34:08.257</stringProp>
@@ -517,9 +517,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=near;maxDistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;timerel=before&amp;time=2020-10-19T14:00:00Z&amp;attrs=id,location,speed</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -538,7 +538,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">authtest.iudx.io/vasanth.rajaraman@datakaveri.org/e5d0a3c556dd02a36331b8861ced8533</stringProp>
+                <stringProp name="Header.value">${__P(token)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:33:16.199</stringProp>
@@ -549,9 +549,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&amp;timerel=during&amp;time=2020-10-18T14:20:00Z&amp;endtime=2020-10-28T14:20:00Z</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -576,9 +576,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&amp;timerel=during&amp;time=2020-10-18T14:20:00Z&amp;endtime=2020-10-28T14:20:00Z&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -603,9 +603,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -630,9 +630,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&amp;timerel=during&amp;time=2020-10-18T14:20:00Z&amp;endtime=2020-10-19T14:20:00Z</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -657,9 +657,9 @@
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" enabled="true">
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
-          <stringProp name="HTTPSampler.domain">rs.iudx.io</stringProp>
+          <stringProp name="HTTPSampler.domain">localhost</stringProp>
           <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.protocol">http</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&amp;timerel=during&amp;time=2020-10-18T14:20:00Z&amp;endtime=2020-10-19T14:20:00Z&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
