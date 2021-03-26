@@ -32,6 +32,11 @@ pipeline {
                 tools: [ JUnit(pattern: 'target/surefire-reports/*Test.xml') ]
         )
       }
+      post{
+        failure{
+          error "Test failure. Stopping pipeline execution!"
+        }
+      }
     }
     stage('Run Jmeter Performance Tests'){
       steps{
