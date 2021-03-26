@@ -30,12 +30,6 @@ public class QueryDecoder {
     JsonArray filterQuery = new JsonArray();
     String queryGeoShape = null;
 
-    // Time Object (for limiting query based on time parameters) instantiated to
-    // null;
-    JsonObject timeObject = null;
-    String timeLimit = request.getString(TIME_LIMIT).split(",")[1];
-    int numDays = Integer.valueOf(request.getString(TIME_LIMIT).split(",")[2]);
-
     JsonObject boolObject = new JsonObject().put(BOOL_KEY, new JsonObject());
     filterQuery
         .add(new JsonObject(TERMS_QUERY.replace("$1", RESOURCE_ID_KEY).replace("$2", id.encode())));
@@ -47,23 +41,70 @@ public class QueryDecoder {
 
     /* Latest Search */
     if (LATEST_SEARCH.equalsIgnoreCase(searchType)) {
-      JsonArray sourceFilter = null;
-      if (request.containsKey(RESPONSE_ATTRS)) {
-        sourceFilter = request.getJsonArray(RESPONSE_ATTRS);
+//      JsonArray sourceFilter = null;
+//      if (request.containsKey(RESPONSE_ATTRS)) {
+//        sourceFilter = request.getJsonArray(RESPONSE_ATTRS);
+//      }
+//      JsonObject latestQuery = new JsonObject();
+//      JsonArray docs = new JsonArray();
+//      for (Object o : id) {
+//        String resourceString = (String) o;
+//        String sha1String = DigestUtils.sha1Hex(resourceString);
+//        JsonObject json = new JsonObject().put(DOC_ID, sha1String);
+//        if (sourceFilter != null) {
+//          json.put(SOURCE_FILTER_KEY, sourceFilter);
+//        }
+//        docs.add(json);
+//      }
+//      return latestQuery.put(DOCS_KEY, docs);
+
+      // Redis Latest
+
+      LOGGER.debug("******In LatestSearch Redis");
+      String resourceId = id.getString(0);
+      String options = request.getString(OPTIONS);
+      String resourceGroup = resourceId.split("/")[3];
+      resourceGroup = resourceGroup.replace("-","_");
+      if (!request.containsKey(ATTRIBUTE_LIST)) {
+        return new JsonObject().put(ERROR, ATTRIBUTE_LIST_NOT_FOUND);
       }
-      JsonObject latestQuery = new JsonObject();
-      JsonArray docs = new JsonArray();
-      for (Object o : id) {
-        String resourceString = (String) o;
-        String sha1String = DigestUtils.sha1Hex(resourceString);
-        JsonObject json = new JsonObject().put(DOC_ID, sha1String);
-        if (sourceFilter != null) {
-          json.put(SOURCE_FILTER_KEY, sourceFilter);
-        }
-        docs.add(json);
-      }
-      return latestQuery.put(DOCS_KEY, docs);
+      JsonObject attributeList = request.getJsonObject(ATTRIBUTE_LIST);
+
+      // SHA1 generator
+      String sha1String = DigestUtils.sha1Hex(resourceId);
+      LOGGER.debug("Generated SHA1: "+sha1String);
+      // read attributeList from request
+      String pathParam;
+      //id query
+
+      // if (ID.equalsIgnoreCase(options)) {
+        if (!attributeList.containsKey(resourceGroup))
+          // aqm/flood type sensor
+          pathParam = resourceGroup.concat("._").concat(sha1String).concat(DEFAULT_ATTRIBUTE);
+        else
+          // itms type sensor
+          pathParam = resourceGroup.concat("._").concat(sha1String).concat(attributeList.getString(resourceGroup));
+        LOGGER.debug("PathParam: "+pathParam);
+        return new JsonObject().put(KEY, resourceGroup).put(PATH_PARAM, pathParam);
+      //}
+      // group query
+
+//      else if (GROUP.equalsIgnoreCase(options)) {
+//        pathParam = ".".concat(resourceGroup);
+//        LOGGER.debug("PathParam: "+pathParam);
+//        return new JsonObject().put(KEY, resourceGroup).put(PATH_PARAM, pathParam);
+//      }
+//      else {
+//        // failed query
+//        return new JsonObject().put(ERROR, INVALID_LATEST_QUERY);
+//      }
     }
+
+    // Time Object (for limiting query based on time parameters) instantiated to
+    // null;
+    JsonObject timeObject = null;
+      String timeLimit = request.getString(TIME_LIMIT).split(",")[1];
+    int numDays = Integer.valueOf(request.getString(TIME_LIMIT).split(",")[2]);
 
     /* Geo-Spatial Search */
     if (searchType.matches(GEOSEARCH_REGEX)) {
