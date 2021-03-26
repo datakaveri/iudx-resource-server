@@ -11,7 +11,14 @@
             "databasePort": 123,
             "dbUser": "",
             "dbPassword": "",
-             "timeLimit": "test,2020-10-22T00:00:00Z,30"
+            "timeLimit": "test,2020-10-22T00:00:00Z,30",
+            "resourceServerId":"",
+            "timeLimit": "",
+            "redisHost": "",
+            "redisPort": 1234,
+            "redisUser": "",
+            "redisPassword": "",
+            "attributeList": ""
         },
         {
             "id": "iudx.resource.server.authenticator.AuthenticationVerticle",

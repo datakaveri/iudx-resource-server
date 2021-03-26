@@ -127,5 +127,20 @@ public class Constants {
   static final String RANGE_QUERY = "{\"range\":{\"$1\":{\"$2\":$3}}}";
   static final String RANGE_QUERY_BW = "{\"range\":{\"$1\":{\"$2\":$3,\"$4\":$5}}}";
   public static final String MUST_NOT_QUERY = "{\"must_not\":[$1]}";
-
+  /* Latest Data Params */
+  static final String OPTIONS_NOT_FOUND = "options not found";
+  static final String OPTIONS = "options";
+  static final String EMPTY_OPTIONS = "options is empty";
+  static final String LATEST_DATA_SERVICE_ADDRESS = "iudx.rs.latest.service";
+  static final String ATTRIBUTE_LIST = "attributeList";
+  static final String DEFAULT_ATTRIBUTE = "_d";
+  static final String KEY = "key";
+  static final String PATH_PARAM = "pathParam";
+  static final String GROUP = "group";
+  static final String INVALID_LATEST_QUERY = "invalid latest params";
+  static final String ATTRIBUTE_LIST_NOT_FOUND = "key [attributeList] not found";
+  static final String REDIS_ERROR = "Redis Error!";
+  static final String INVALID_OPTIONS = "invalid options for latest";
+  // needs modification depending on the actual error returned from Redis
+  static final String ID_NOT_PRESENT = "id not present in Redis";
 }
