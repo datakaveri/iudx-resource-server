@@ -8,6 +8,9 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.reactivex.core.Vertx;
 import iudx.resource.server.configuration.Configuration;
+import iudx.resource.server.database.latest.LatestDataService;
+import iudx.resource.server.database.latest.LatestDataServiceImpl;
+import iudx.resource.server.database.latest.RedisClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -34,7 +37,7 @@ public class LatestServiceTest {
     static void startVertx(Vertx vertx, VertxTestContext testContext) {
         vertxObj = vertx;
         config = new Configuration();
-        JsonObject redisConfig = config.configLoader(0, vertx);
+        JsonObject redisConfig = config.configLoader(5, vertx);
 
         /* Read the configuration and set the rabbitMQ server properties. */
         /* Configuration setup */
