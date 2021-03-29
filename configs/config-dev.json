@@ -2,12 +2,13 @@
     "version": "1.0",
     "zookeepers": [ "zookeeper" ],
     "clusterId": "iudx-rs-cluster",
+    "host": "server",
     "modules": [
         {
             "id": "iudx.resource.server.database.DatabaseVerticle",
             "verticleInstances": 2,
             "databaseIP": "",
-            "databasePort": "",
+            "databasePort": 123,
             "dbUser": "",
             "dbPassword": "",
             "resourceServerId":"",
@@ -20,16 +21,17 @@
         },
         {
             "id": "iudx.resource.server.authenticator.AuthenticationVerticle",
-            "verticleInstances": 2,
+            "verticleInstances": 1,
             "keystore": "configs/keystore.jks",
             "keystorePassword": "",
             "authServerHost": "",
-            "testAuthToken": "auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/214a3c1d83b5c9c89e4a2e0a654458ce",
-            "testExpiredAuthToken": "auth.iudx.org.in/bryan.robert@datakaveri.org/9cc9682858fb41c863ba52502bfd8743",
-            "testResourceID": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+            "testAuthToken": "",
+            "testExpiredAuthToken": "",
+            "testResourceID": "",
             "catServerHost": "",
             "catServerPort": "",
-            "serverMode": "testing"
+            "serverMode": "production",
+            "resourceServerId":""
         },
         {
             "id": "iudx.resource.server.databroker.DataBrokerVerticle",
@@ -46,11 +48,11 @@
             "requestedChannelMax": "5",
             "networkRecoveryInterval": "500",
             "automaticRecoveryEnabled": "true",
-            "callbackDatabaseIP": "139.59.80.176",
-            "callbackDatabasePort": "5432",
-            "callbackDatabaseName": "iudx",
-            "callbackDatabaseUserName": "iudx_user",
-            "callbackDatabasePassword": "iudx@123",
+            "callbackDatabaseIP": "",
+            "callbackDatabasePort": "",
+            "callbackDatabaseName": "",
+            "callbackDatabaseUserName": "",
+            "callbackDatabasePassword": "",
             "callbackpoolSize": "25"
         },
         {
@@ -68,21 +70,23 @@
             "requestedChannelMax": "5",
             "networkRecoveryInterval": "500",
             "automaticRecoveryEnabled": "true",
-            "callbackDatabaseIP": "139.59.80.176",
-            "callbackDatabasePort": "5432",
-            "callbackDatabaseName": "iudx",
-            "callbackDatabaseUserName": "iudx_user",
-            "callbackDatabasePassword": "iudx@123",
+            "callbackDatabaseIP": "",
+            "callbackDatabasePort": "",
+            "callbackDatabaseName": "",
+            "callbackDatabaseUserName": "",
+            "callbackDatabasePassword": "",
             "callbackpoolSize": "25"
         },
         {
             "id": "iudx.resource.server.apiserver.ApiServerVerticle",
-            "ssl": true,
-            "keystore": "configs/keystore.jks",
+            "ssl":true,
             "production": true,
+            "keystore": "configs/keystore.jks",
             "keystorePassword": "",
-            "rsAdmin": "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc",
-            "verticleInstances": 2
+            "rsAdmin": "",
+            "verticleInstances": 2,
+            "catServerHost": "",
+            "catServerPort": ""
 
         }
     ]
