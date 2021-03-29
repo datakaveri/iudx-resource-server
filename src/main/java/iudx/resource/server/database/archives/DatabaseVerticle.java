@@ -1,4 +1,4 @@
-package iudx.resource.server.database;
+package iudx.resource.server.database.archives;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -10,7 +10,7 @@ import io.vertx.serviceproxy.ServiceBinder;
  * <h1>Database Verticle</h1>
  * <p>
  * The Database Verticle implementation in the the IUDX Resource Server exposes the
- * {@link iudx.resource.server.database.DatabaseService} over the Vert.x Event Bus.
+ * {@link iudx.resource.server.database.archives.DatabaseService} over the Vert.x Event Bus.
  * </p>
  *
  * @version 1.0

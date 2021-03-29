@@ -1,16 +1,20 @@
-package iudx.resource.server.database;
+package iudx.resource.server.database.latest;
 
-import com.redislabs.modules.rejson.Path;
-import io.vertx.core.*;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.redis.client.*;
+import static iudx.resource.server.database.archives.Constants.*;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import java.util.Map;
 import com.redislabs.modules.rejson.JReJSON;
-
-import static iudx.resource.server.database.Constants.*;
+import com.redislabs.modules.rejson.Path;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.rxjava.redis.client.RedisAPI;
+import iudx.resource.server.database.archives.ResponseBuilder;
 
 public class RedisClient {
     // private Redis redisClient;

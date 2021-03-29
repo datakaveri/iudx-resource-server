@@ -1,4 +1,4 @@
-package iudx.resource.server.database;
+package iudx.resource.server.database.latest;
 
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
@@ -51,6 +51,6 @@ public interface LatestDataService {
 
     @GenIgnore
     static LatestDataService createProxy(Vertx vertx, String address) {
-        return new iudx.resource.server.database.LatestDataServiceVertxEBProxy(vertx, address);
+        return new LatestDataServiceVertxEBProxy(vertx, address);
     }
 }

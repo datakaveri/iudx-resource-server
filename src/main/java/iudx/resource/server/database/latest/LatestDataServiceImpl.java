@@ -1,21 +1,29 @@
-package iudx.resource.server.database;
+package iudx.resource.server.database.latest;
 
+import static iudx.resource.server.database.archives.Constants.ATTRIBUTE_LIST;
+import static iudx.resource.server.database.archives.Constants.EMPTY_RESOURCE_ID;
+import static iudx.resource.server.database.archives.Constants.ERROR;
+import static iudx.resource.server.database.archives.Constants.FAILED;
+import static iudx.resource.server.database.archives.Constants.ID;
+import static iudx.resource.server.database.archives.Constants.ID_NOT_FOUND;
+import static iudx.resource.server.database.archives.Constants.KEY;
+import static iudx.resource.server.database.archives.Constants.PATH_PARAM;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import static iudx.resource.server.database.Constants.*;
-import static iudx.resource.server.database.Constants.EMPTY_RESOURCE_ID;
+import iudx.resource.server.database.archives.DatabaseServiceImpl;
+import iudx.resource.server.database.archives.QueryDecoder;
+import iudx.resource.server.database.archives.ResponseBuilder;
 
 /**
  * The LatestData Service Implementation.
  * <h1>LatestData Service Implementation</h1>
  * <p>
  * The LatestData Service implementation in the IUDX Resource Server implements the definitions of the
- * {@link iudx.resource.server.database.LatestDataService}.
+ * {@link iudx.resource.server.database.latest.LatestDataService}.
  * </p>
  *
  * @version 1.0
