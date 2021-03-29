@@ -142,5 +142,5 @@ public class Constants {
   public static final String REDIS_ERROR = "Redis Error!";
   public static final String INVALID_OPTIONS = "invalid options for latest";
   // needs modification depending on the actual error returned from Redis
-  public static final String ID_NOT_PRESENT = "id not present in Redis";
+  public static final String ID_NOT_PRESENT = "Not found";
 }

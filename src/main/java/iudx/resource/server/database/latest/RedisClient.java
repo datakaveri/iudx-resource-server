@@ -67,7 +67,7 @@ public class RedisClient {
             else {
                 LOGGER.error("Redis Error: " + resultRedis.cause());
                 resultRedis.cause().printStackTrace();
-                responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(500)
+                responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204)
                         .setMessage(resultRedis.cause().getLocalizedMessage());
                 searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
             }

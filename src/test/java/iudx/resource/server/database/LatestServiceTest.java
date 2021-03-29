@@ -258,7 +258,7 @@ public class LatestServiceTest {
                         .put("searchType", "latestSearch");
 
         latestService.getLatestData(request, testContext.failing(response -> testContext.verify(() -> {
-            assertEquals("id not present in Redis", new JsonObject(response.getMessage())
+            assertEquals("Not found", new JsonObject(response.getMessage())
                     .getString("detail"));
             testContext.completeNow();
         })));
