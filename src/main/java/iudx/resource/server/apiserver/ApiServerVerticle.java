@@ -47,7 +47,7 @@ import iudx.resource.server.apiserver.util.Constants;
 import iudx.resource.server.apiserver.validation.ValidationFailureHandler;
 import iudx.resource.server.apiserver.validation.HTTPRequestValidatiorsHandlersFactory;
 import iudx.resource.server.authenticator.AuthenticationService;
-import iudx.resource.server.database.DatabaseService;
+import iudx.resource.server.database.archives.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
 
 
