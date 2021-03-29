@@ -28,7 +28,7 @@ pipeline {
     stage('Capture Test results'){
       steps{
         xunit (
-                thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
+                thresholds: [ skipped(failureThreshold: '3'), failed(failureThreshold: '0') ],
                 tools: [ JUnit(pattern: 'target/surefire-reports/*Test.xml') ]
         )
       }
@@ -53,23 +53,15 @@ pipeline {
         perfReport filterRegex: '', sourceDataFiles: 'Jmeter/report/*.jtl'
       }
     }
-
-    // stage('Push Image') {
-    //   steps{
-    //     script {
-    //       docker.withRegistry( registryUri, registryCredential ) {
-    //         devImage.push()
-    //         deplImage.push()
-    //         testImage.push()
-    //       }
-    //     }
-    //   }
-    // }
-    // stage('Remove Unused docker image') {
-    //  steps{
-    //    sh "docker rmi dockerhub.iudx.io/jenkins/catalogue-dev"
-    //    sh "docker rmi dockerhub.iudx.io/jenkins/catalogue-depl"
-    //  }
-    //}
+    stage('Push Image') {
+      steps{
+        script {
+          docker.withRegistry( registryUri, registryCredential ) {
+            devImage.push()
+            deplImage.push()
+          }
+        }
+      }
+    }
   }
 }
