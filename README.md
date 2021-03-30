@@ -1,4 +1,4 @@
-[![Build Status](http://128.199.18.230:8080/job/iudx%20RS%20(master)%20pipeline/badge/icon)](http://128.199.18.230:8080/job/iudx%20RS%20(master)%20pipeline/lastBuild/testReport/)
+[![Build Status](https://jenkins.iudx.io/job/iudx%20RS%20(master)%20pipeline/badge/icon)](https://jenkins.iudx.io/job/iudx%20RS%20(master)%20pipeline/lastBuild/testReport/)
 
 ![IUDX](./docs/iudx.png)
 
