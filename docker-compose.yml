@@ -3,6 +3,7 @@ version: '3.7'
 networks:
   overlay-net:
     external: true
+    driver: overlay
 
 services:
 
