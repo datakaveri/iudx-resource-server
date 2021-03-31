@@ -5,26 +5,24 @@
     "host": "server",
     "modules": [
         {
-            "id": "iudx.resource.server.database.DatabaseVerticle",
+            "id": "iudx.resource.server.database.archives.DatabaseVerticle",
             "verticleInstances": 2,
             "databaseIP": "",
-            "databasePort": 123,
+            "databasePort": 12345,
             "dbUser": "",
             "dbPassword": "",
             "resourceServerId":"",            
-            "timeLimit": "test,2020-10-22T00:00:00Z,30",
+            "timeLimit": "",
             
             "testIdOpen":"",
             "testIdSecure":"",
-            "temporalStartDate":"2020-10-18T20:45:00+05:30",
-            "temporalEndDate":"2020-10-19T20:45:00+05:30"
-            
-            
+            "temporalStartDate":"",
+            "temporalEndDate":""                      
         },
         {
             "id": "iudx.resource.server.authenticator.AuthenticationVerticle",
             "verticleInstances": 2,
-            "keystore": "configs/keystore.jks",
+            "keystore": "",
             "keystorePassword": "",
             "authServerHost": "",
             "testAuthToken": "",
@@ -32,8 +30,8 @@
             "testResourceID": "",
             "catServerHost": "",
             "catServerPort": "",
-            "serverMode": "production",
-            "resourceServerId":"[[datakaveri.org/27e503da0bdda6efae3a52b3ef423c1f9005657a/rs.iudx.org.in]]"
+            "serverMode": "",
+            "resourceServerId":""
         },
         {
             "id": "iudx.resource.server.databroker.DataBrokerVerticle",
@@ -44,18 +42,18 @@
             "dataBrokerUserName": "",
             "dataBrokerPassword": "",
             "dataBrokerManagementPort": "",
-            "connectionTimeout": "6000",
-            "requestedHeartbeat": "60",
-            "handshakeTimeout": "6000",
-            "requestedChannelMax": "5",
-            "networkRecoveryInterval": "500",
-            "automaticRecoveryEnabled": "true",
+            "connectionTimeout": "",
+            "requestedHeartbeat": "",
+            "handshakeTimeout": "",
+            "requestedChannelMax": "",
+            "networkRecoveryInterval": "",
+            "automaticRecoveryEnabled": "",
             "callbackDatabaseIP": "",
             "callbackDatabasePort": "",
             "callbackDatabaseName": "",
             "callbackDatabaseUserName": "",
             "callbackDatabasePassword": "",
-            "callbackpoolSize": "25",
+            "callbackpoolSize": "",
             
             "testResourceGroup":"",
             "testResourceServer":"",
@@ -71,24 +69,24 @@
             "dataBrokerUserName": "",
             "dataBrokerPassword": "",
             "dataBrokerManagementPort": "",
-            "connectionTimeout": "6000",
-            "requestedHeartbeat": "60",
-            "handshakeTimeout": "6000",
-            "requestedChannelMax": "5",
-            "networkRecoveryInterval": "500",
-            "automaticRecoveryEnabled": "true",
+            "connectionTimeout": "",
+            "requestedHeartbeat": "",
+            "handshakeTimeout": "",
+            "requestedChannelMax": "",
+            "networkRecoveryInterval": "",
+            "automaticRecoveryEnabled": "",
             "callbackDatabaseIP": "",
             "callbackDatabasePort": "",
             "callbackDatabaseName": "",
             "callbackDatabaseUserName": "",
             "callbackDatabasePassword": "",
-            "callbackpoolSize": "25"
+            "callbackpoolSize": ""
         },
         {
             "id": "iudx.resource.server.apiserver.ApiServerVerticle",
             "ssl": true, 
             "production": true,           
-            "keystore": "configs/keystore.jks",
+            "keystore": "",
             "keystorePassword": "",
             "rsAdmin": "",
             "verticleInstances": 2,
@@ -101,11 +99,20 @@
             "lineCoords":"",
             "temporalTime":"",
             "temporalEndTime":"",
-            "qparamGreaterThan":"speed>30",
-            "qparamLessThan":"speed<500",
-            "qparamGreaterEquals":"speed>=30",
-            "qparamLessEquals":"speed<=50"
+            "qparamGreaterThan":"",
+            "qparamLessThan":"",
+            "qparamGreaterEquals":"",
+            "qparamLessEquals":""
 
+        },
+        {
+            "id": "iudx.resource.server.database.latest.LatestVerticle",
+            "verticleInstances": 2,
+            "redisHost": "",
+            "redisPort": 12345,
+            "redisUser": "",
+            "redisPassword": "",
+            "attributeList": {"key":"value"}                        
         }
     ]
 }
