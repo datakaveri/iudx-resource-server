@@ -1,9 +1,8 @@
-package iudx.resource.server.database;
+package iudx.resource.server.database.archives;
 
+import static iudx.resource.server.database.archives.Constants.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
-import static iudx.resource.server.database.Constants.*;
 
 public class ResponseBuilder {
 
@@ -12,12 +11,12 @@ public class ResponseBuilder {
 
   /** Initialise the object with Success or Failure. */
 
-  ResponseBuilder(String status) {
+  public ResponseBuilder(String status) {
     this.status = status;
     response = new JsonObject();
   }
 
-  ResponseBuilder setTypeAndTitle(int statusCode) {
+  public ResponseBuilder setTypeAndTitle(int statusCode) {
     response.put(ERROR_TYPE, statusCode);
     if (SUCCESS.equalsIgnoreCase(status)) {
       response.put(TITLE, SUCCESS);
@@ -29,14 +28,14 @@ public class ResponseBuilder {
 
   /** Successful Database Request with responses > 0. */
 
-  ResponseBuilder setMessage(JsonArray results) {
+  public ResponseBuilder setMessage(JsonArray results) {
     response.put(RESULTS, results);
     return this;
   }
 
   /** Overloaded methods for Error messages. */
 
-  ResponseBuilder setMessage(String error) {
+  public ResponseBuilder setMessage(String error) {
     response.put(DETAIL, error);
     return this;
   }
@@ -59,7 +58,7 @@ public class ResponseBuilder {
     return this;
   }
 
-  JsonObject getResponse() {
+  public JsonObject getResponse() {
     return response;
   }
 }
