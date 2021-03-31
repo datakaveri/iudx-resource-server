@@ -78,14 +78,15 @@ public class QueryDecoder {
       //id query
 
       // if (ID.equalsIgnoreCase(options)) {
-        if (!attributeList.containsKey(resourceGroup))
-          // aqm/flood type sensor
-          pathParam = resourceGroup.concat("._").concat(sha1String).concat(DEFAULT_ATTRIBUTE);
-        else
-          // itms type sensor
-          pathParam = resourceGroup.concat("._").concat(sha1String).concat(attributeList.getString(resourceGroup));
-        LOGGER.debug("PathParam: "+pathParam);
-        return new JsonObject().put(KEY, resourceGroup).put(PATH_PARAM, pathParam);
+//        if (!attributeList.containsKey(resourceGroup))
+//          // aqm/flood type sensor
+//          pathParam = resourceGroup.concat("._").concat(sha1String).concat(DEFAULT_ATTRIBUTE);
+//        else
+//          // itms type sensor
+//          pathParam = resourceGroup.concat("._").concat(sha1String).concat(attributeList.getString(resourceGroup));
+      pathParam = resourceGroup.concat("._").concat(sha1String).concat(DEFAULT_ATTRIBUTE);
+      LOGGER.debug("PathParam: "+pathParam);
+      return new JsonObject().put(KEY, resourceGroup).put(PATH_PARAM, pathParam);
       //}
       // group query
 

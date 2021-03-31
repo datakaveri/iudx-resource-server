@@ -4,7 +4,6 @@ import com.redislabs.modules.rejson.Path;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.redis.client.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.Map;
@@ -16,7 +15,7 @@ public class RedisClient {
     // private Redis redisClient;
     private ResponseBuilder responseBuilder;
     private static final Logger LOGGER = LogManager.getLogger(RedisClient.class);
-    private RedisAPI redis;
+    // private RedisAPI redis;
     private Vertx vertx;
     private JReJSON client;
 

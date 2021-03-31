@@ -26,7 +26,7 @@ public class LatestServiceTest {
     private static int port;
     private static Configuration config;
     private static JsonObject attributeList;
-    private static String connectionString;
+    // private static String connectionString;
 
     /* TODO Need to update params to use contants */
     @BeforeAll
@@ -70,8 +70,8 @@ public class LatestServiceTest {
      * */
 
     @Test
-    @DisplayName("Testing Latest Data at resource level")
-    void searchLatestResource(VertxTestContext testContext) {
+    @DisplayName("Testing Latest Data at resource level- flood")
+    void searchLatestResourceflood(VertxTestContext testContext) {
         String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/" +
                     "rs.iudx.io/pune-env-flood/FWR018";
         JsonObject request =
@@ -87,6 +87,30 @@ public class LatestServiceTest {
                 assertEquals(id, handler.result().getJsonArray("results").getJsonObject(0)
                     .getString("id"));
             testContext.completeNow();
+            } else {
+                testContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("Testing Latest Data at resource level- itms")
+    void searchLatestResourceItms(VertxTestContext testContext) {
+        String id = "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information" +
+                "/surat-itms-live-eta";
+        JsonObject request =
+                new JsonObject()
+                        .put("id",
+                                new JsonArray().add(id))
+                        //.put("options", "id")
+                        .put("searchType","latestSearch");
+
+        latestService.getLatestData(request, handler -> {
+            if(handler.succeeded()) {
+                logger.debug("Got the data!");
+                assertEquals(id, handler.result().getJsonArray("results").getJsonObject(0)
+                        .getString("id"));
+                testContext.completeNow();
             } else {
                 testContext.failNow(handler.cause());
             }
