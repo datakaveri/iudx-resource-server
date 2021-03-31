@@ -1,14 +1,13 @@
-package iudx.resource.server.database;
+package iudx.resource.server.database.archives;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import static iudx.resource.server.database.archives.Constants.*;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import org.apache.commons.codec.digest.DigestUtils;
-
-import static iudx.resource.server.database.Constants.*;
 
 public class QueryDecoder {
 

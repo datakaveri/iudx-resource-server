@@ -1,22 +1,26 @@
-package iudx.resource.server.database;
+package iudx.resource.server.database.latest;
 
-import com.redislabs.modules.rejson.Path;
-import io.vertx.core.*;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import iudx.resource.server.database.archives.ResponseBuilder;
+import static iudx.resource.server.database.archives.Constants.*;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import java.util.Map;
 import com.redislabs.modules.rejson.JReJSON;
-
-import static iudx.resource.server.database.Constants.*;
+import com.redislabs.modules.rejson.Path;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.rxjava.redis.client.RedisAPI;
+import iudx.resource.server.database.archives.ResponseBuilder;
 
 public class RedisClient {
     // private Redis redisClient;
     private ResponseBuilder responseBuilder;
     private static final Logger LOGGER = LogManager.getLogger(RedisClient.class);
-    // private RedisAPI redis;
+    private RedisAPI redis;
     private Vertx vertx;
     private JReJSON client;
 
@@ -63,7 +67,7 @@ public class RedisClient {
             else {
                 LOGGER.error("Redis Error: " + resultRedis.cause());
                 resultRedis.cause().printStackTrace();
-                responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(500)
+                responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204)
                         .setMessage(resultRedis.cause().getLocalizedMessage());
                 searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
             }

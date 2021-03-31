@@ -5,13 +5,12 @@
     "host": "server",
     "modules": [
         {
-            "id": "iudx.resource.server.database.DatabaseVerticle",
+            "id": "iudx.resource.server.database.archives.DatabaseVerticle",
             "verticleInstances": 2,
             "databaseIP": "",
             "databasePort": 123,
             "dbUser": "",
             "dbPassword": "",
-            "timeLimit": "test,2020-10-22T00:00:00Z,30",
             "resourceServerId":"",
             "timeLimit": "",
             "redisHost": "",
@@ -89,6 +88,14 @@
             "catServerHost": "",
             "catServerPort": ""
 
+        },
+        {
+            "id": "iudx.resource.server.database.latest.LatestVerticle",
+            "redisHost": "",
+            "redisPort": 1234,
+            "redisUser": "",
+            "redisPassword": "",
+            "attributeList": {"itms-info": "some-attr"}
         }
     ]
 }
