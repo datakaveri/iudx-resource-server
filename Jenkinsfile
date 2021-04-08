@@ -40,7 +40,7 @@ pipeline {
     }
     stage ('test token generation'){
       steps {
-        sh 'authtoken=$(. /var/lib/jenkins/iudx/rs/generateToken.sh; echo "$authtoken"'  
+        sh 'authtoken=$(. /var/lib/jenkins/iudx/rs/generateToken.sh); echo "$authtoken"'  
       }
     }
     stage('Run Jmeter Performance Tests'){
