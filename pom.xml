@@ -89,6 +89,12 @@
 			<artifactId>vertx-junit5</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
+			<version>5.5.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-unit</artifactId>
 			<scope>test</scope>
@@ -158,11 +164,11 @@
 			<artifactId>jts2geojson</artifactId>
 			<version>0.14.1</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>io.vertx</groupId>-->
-<!--			<artifactId>vertx-redis-client</artifactId>-->
-<!--			<version>3.9.0</version>-->
-<!--		</dependency>-->
+		<!-- <dependency> -->
+		<!-- <groupId>io.vertx</groupId> -->
+		<!-- <artifactId>vertx-redis-client</artifactId> -->
+		<!-- <version>3.9.0</version> -->
+		<!-- </dependency> -->
 
 		<dependency>
 			<groupId>com.redislabs</groupId>
@@ -175,6 +181,53 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.6</version>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>post-unit-test</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<dataFile>target/jacoco.exec</dataFile>
+							<outputDirectory>target/jacoco-site</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<systemPropertyVariables>
+						<jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
+					</systemPropertyVariables>
+					<excludes>
+						<!-- classes are excluded since they are not testable or don't add 
+							any value if test cases are written. -->
+						<!-- ApiServerVerticle testing is covered in integration for now. -->
+						<exclude>iudx/resource/server/apiserver/ApiServerVerticle.class</exclude>
+						<exclude>**/*VertxEBProxy.class</exclude>
+						<exclude>**/Constants.class</exclude>
+						<exclude>**/*VertxProxyHandler.class</exclude>
+						<exclude>**/*Verticle.class</exclude>
+						<exclude>iudx/resource/server/deploy/*.class</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
@@ -315,9 +368,9 @@
 				<configuration>
 					<source>11</source>
 					<target>11</target>
-						<annotationProcessors>
-							<annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
-						</annotationProcessors>
+					<annotationProcessors>
+						<annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
+					</annotationProcessors>
 				</configuration>
 			</plugin>
 		</plugins>

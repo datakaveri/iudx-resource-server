@@ -65,7 +65,7 @@ public class QTypeValidator {
       }
       if (value.length() > 512) {
         throw ValidationException.ValidationExceptionFactory
-            .generateNotMatchValidationException("Exceeding max length(512 characters) criteria ");
+            .generateNotMatchValidationException("Exceeding max length(512 characters) criteria");
       }
 
       JsonObject qJson = getQueryTerms(value);
@@ -75,7 +75,7 @@ public class QTypeValidator {
       }
       if (!isValidOperator(qJson.getString(JSON_OPERATOR))) {
         throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
-            "Not a valid Operator in <<q>> query, only " + allowedOperators + "  allowed");
+            "Not a valid Operator in <<q>> query");
       }
 
       if (!isValidID(qJson)) {

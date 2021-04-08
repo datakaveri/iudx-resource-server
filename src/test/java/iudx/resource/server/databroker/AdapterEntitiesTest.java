@@ -1,7 +1,6 @@
 package iudx.resource.server.databroker;
 
 
-import static iudx.resource.server.apiserver.util.Constants.JSON_CONSUMER;
 import static iudx.resource.server.apiserver.util.Constants.JSON_PROVIDER;
 import static iudx.resource.server.databroker.util.Constants.APIKEY;
 import static iudx.resource.server.databroker.util.Constants.PORT;
@@ -10,12 +9,11 @@ import static iudx.resource.server.databroker.util.Constants.USER_NAME;
 import static iudx.resource.server.databroker.util.Constants.VHOST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -39,6 +37,7 @@ import io.vertx.sqlclient.PoolOptions;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.databroker.util.Constants;
+import iudx.resource.server.databroker.util.Util;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -69,7 +68,7 @@ public class AdapterEntitiesTest {
   private static String consumer;
   private static String provider;
 
-  private static String id, anotherid;
+  private static String id, anotherid,userName2Delete;
   private static String anotherProvider;
   /* Database Properties */
   private static String databaseIP;
@@ -189,8 +188,8 @@ public class AdapterEntitiesTest {
     
     resourceGroup = brokerConfig.getString("testResourceGroup");
     resourceServer = brokerConfig.getString("testResourceServer");
-    consumer = brokerConfig.getString("testConsumer");
-    provider = brokerConfig.getString("testProvider");
+    consumer = brokerConfig.getString("testAdapterConsumer")+UUID.randomUUID().toString();
+    provider = brokerConfig.getString("testAdapterProvider")+UUID.randomUUID().toString();
     testContext.completeNow();
 
   }
@@ -215,12 +214,14 @@ public class AdapterEntitiesTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         logger.info("inside  successRegisterAdaptor - RegisteAdaptor response is : " + response);
-        id = response.getString(Constants.ID);
         assertTrue(response.containsKey(USER_NAME));
         assertTrue(response.containsKey(APIKEY));
         assertTrue(response.containsKey(URL));
         assertTrue(response.containsKey(PORT));
         assertTrue(response.containsKey(VHOST));
+        
+        id = response.getString(Constants.ID);
+        userName2Delete=response.getString(USER_NAME);
         // assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -310,7 +311,7 @@ System.out.println(id);
     anotherProvider = Constants.USER_NAME_TEST_EXAMPLE;
 
     JsonObject request = new JsonObject();
-    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup + "_1");
+    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
     request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
     request.put(Constants.CONSUMER, consumer);
     request.put(JSON_PROVIDER, anotherProvider);
@@ -483,6 +484,21 @@ System.out.println(id);
       }
       testContext.completeNow();
     });
+  }
+  
+  @AfterAll
+  static void cleanUp() {
+    if(userName2Delete!=null) {
+      String url="/api/users/"+Util.encodeValue(userName2Delete);
+      rabbitMQWebClient.requestAsync(Constants.REQUEST_DELETE, url).onComplete(handler->{
+        if(handler.succeeded()) {
+          logger.info(userName2Delete + " deleted");
+        }else {
+          logger.info(userName2Delete+" deletion failed");
+        }
+      });
+    }
+   
   }
 
 

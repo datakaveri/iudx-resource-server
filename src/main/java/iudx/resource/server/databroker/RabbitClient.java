@@ -69,7 +69,7 @@ public class RabbitClient {
           JsonObject responseJson = new JsonObject();
           HttpResponse<Buffer> response = requestHandler.result();
           int statusCode = response.statusCode();
-          //System.out.println(statusCode);
+          // System.out.println(statusCode);
           if (statusCode == HttpStatus.SC_CREATED) {
             responseJson.put(EXCHANGE, exchangeName);
           } else if (statusCode == HttpStatus.SC_NO_CONTENT) {
@@ -260,13 +260,13 @@ public class RabbitClient {
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
       String queueName = request.getString("queueName");
-      String url = "/api/queues/" + vhost + "/" + Util.encodeValue(queueName);//"durable":true
+      String url = "/api/queues/" + vhost + "/" + Util.encodeValue(queueName);// "durable":true
       JsonObject configProp = new JsonObject();
       JsonObject arguments = new JsonObject();
       arguments.put(Constants.X_MESSAGE_TTL_NAME, Constants.X_MESSAGE_TTL_VALUE)
           .put(Constants.X_MAXLENGTH_NAME, Constants.X_MAXLENGTH_VALUE)
           .put(Constants.X_QUEUE_MODE_NAME, Constants.X_QUEUE_MODE_VALUE);
-      configProp.put(Constants.X_QUEUE_TYPE,true);
+      configProp.put(Constants.X_QUEUE_TYPE, true);
       configProp.put(Constants.X_QUEUE_ARGUMENTS, arguments);
       webClient.requestAsync(REQUEST_PUT, url, configProp).onComplete(ar -> {
         if (ar.succeeded()) {
@@ -647,7 +647,7 @@ public class RabbitClient {
               requestParams.userId);
         }).compose(topicPermissionsResult -> {
           LOGGER.debug("Success : topic permissions set.");
-          return queueBinding(requestParams.adaptorId);
+          return queueBinding(requestParams.adaptorId, vhost);
         }).onSuccess(success -> {
           LOGGER.debug("Success : queue bindings done.");
           JsonObject response = new JsonObject()
@@ -694,7 +694,7 @@ public class RabbitClient {
   public Future<JsonObject> registerAdaptor_V1(JsonObject request, String vhost) {
     LOGGER.debug("Info : RabbitClient#registerAdaptor() started");
     Promise<JsonObject> promise = Promise.promise();
-    //System.out.println(request.toString());
+    // System.out.println(request.toString());
     /* Get the ID and userName from the request */
     String id = request.getString("resourceGroup");
     String resourceServer = request.getString("resourceServer");
@@ -753,7 +753,7 @@ public class RabbitClient {
                             LOGGER.debug("Success : Write permission set on topic for exchange "
                                 + obj.getString("exchange"));
                             /* Bind the exchange with the database and adaptorLogs queue */
-                            Future<JsonObject> queueBindFuture = queueBinding(adaptorID);
+                            Future<JsonObject> queueBindFuture = queueBinding(adaptorID, vhost);
                             queueBindFuture.onComplete(res -> {
                               if (res.succeeded()) {
                                 LOGGER.debug(
@@ -864,14 +864,15 @@ public class RabbitClient {
     LOGGER.debug("Info : RabbitClient#deleteAdapter() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
-    //System.out.println(json.toString());
+    // System.out.println(json.toString());
     Future<JsonObject> result = getExchange(json, vhost);
     result.onComplete(resultHandler -> {
       if (resultHandler.succeeded()) {
         int status = resultHandler.result().getInteger("type");
         if (status == 200) {
           String exchangeID = json.getString("id");
-          client.exchangeDelete(exchangeID, rh -> {
+          String url = "/api/exchanges/" + vhost + "/" + encodeValue(exchangeID);
+          webClient.requestAsync(REQUEST_DELETE, url).onComplete(rh -> {
             if (rh.succeeded()) {
               LOGGER.debug("Info : " + exchangeID + " adaptor deleted successfully");
               finalResponse.mergeIn(getResponseJson(200, "success", "adaptor deleted"));
@@ -1064,7 +1065,7 @@ public class RabbitClient {
     JsonObject response = new JsonObject();
 
     String query = INSERT_DATABROKER_USER.replace("$1", shaUsername).replace("$2", password);
-    //System.out.println(query);
+    // System.out.println(query);
 
     // Check in DB, get username and password
     pgSQLClient.executeAsync(query).onComplete(db -> {
@@ -1216,16 +1217,18 @@ public class RabbitClient {
    * 
    * @return response which is a Future object of promise of Json type
    */
-  Future<JsonObject> queueBinding(String adaptorID) {
+  Future<JsonObject> queueBinding(String adaptorID, String vhost) {
     LOGGER.info("RabbitClient#queueBinding() method started");
     Promise<JsonObject> promise = Promise.promise();
     String topics = adaptorID + DATA_WILDCARD_ROUTINGKEY;
-    bindQueue(QUEUE_DATA, adaptorID, topics)
-        .compose(queueDataResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + HEARTBEAT))
+    bindQueue(QUEUE_DATA, adaptorID, topics, vhost)
+        .compose(queueDataResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + HEARTBEAT,
+            vhost))
         .compose(
-            heartBeatResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + DATA_ISSUE))
+            heartBeatResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + DATA_ISSUE,
+                vhost))
         .compose(dataIssueResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID,
-            adaptorID + DOWNSTREAM_ISSUE))
+            adaptorID + DOWNSTREAM_ISSUE, vhost))
         .onSuccess(successHandler -> {
           JsonObject response = new JsonObject();
           response.mergeIn(getResponseJson(SUCCESS_CODE, "Queue_Database",
@@ -1240,15 +1243,20 @@ public class RabbitClient {
     return promise.future();
   }
 
-  Future<Void> bindQueue(String data, String adaptorID, String topics) {
+  Future<Void> bindQueue(String queue, String adaptorID, String topics, String vhost) {
     LOGGER.debug("Info : RabbitClient#bindQueue() started");
-    LOGGER.debug("Info : data : " + data + " adaptorID : " + adaptorID + " topics : " + topics);
+    LOGGER.debug("Info : data : " + queue + " adaptorID : " + adaptorID + " topics : " + topics);
     Promise<Void> promise = Promise.promise();
-    client.queueBind(data, adaptorID, topics, handler -> {
+    String url =
+        "/api/bindings/" + vhost + "/e/" + encodeValue(adaptorID) + "/q/" + encodeValue(queue);
+    JsonObject bindRequest = new JsonObject();
+    bindRequest.put("routing_key", topics);
+
+    webClient.requestAsync(REQUEST_POST, url, bindRequest).onComplete(handler -> {
       if (handler.succeeded()) {
         promise.complete();
       } else {
-        LOGGER.error("Error : Queue" + data + " binding error : " + handler.cause());
+        LOGGER.error("Error : Queue" + queue + " binding error : " + handler.cause());
         promise.fail(handler.cause());
       }
     });

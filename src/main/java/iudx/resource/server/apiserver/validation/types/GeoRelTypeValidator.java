@@ -28,7 +28,7 @@ public class GeoRelTypeValidator {
       String[] geoRelationValues = value.split(";");
       if (!allowedValues.contains(geoRelationValues[0])) {
         throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
-            "Value " + value + " " + "in not inside enum list " + allowedValues.toString());
+            "Value " + value + " " + "is not allowed");
 
       }
       return RequestParameter.create(value);

@@ -28,7 +28,7 @@ public class TimeRelTypeValidator {
       }
       if (!allowedValues.contains(value)) {
         throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
-            "Value " + value + " " + "in not inside enum list " + allowedValues.toString());
+            "Value " + value + " " + "is not allowed");
 
       }
       return RequestParameter.create(value);
