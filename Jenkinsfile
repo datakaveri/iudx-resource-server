@@ -49,6 +49,7 @@ pipeline {
        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information"
     ]
 }\' | grep -o \'authdev[^"]*\' | awk \'{print $1}\')
+echo "token is - $authtoken"
 /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/ResourceServer.jmx -l Jmeter/report/JmeterTest.jtl -e -o Jmeter/report/ -Jtoken=$authtoken'''
           //'authtoken=$(. /var/lib/jenkins/iudx/rs/generateToken.sh).execute()
           //'/var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/ResourceServer.jmx -l Jmeter/report/JmeterTest.jtl -e -o Jmeter/report/ -Jtoken=$authtoken'.execute()
