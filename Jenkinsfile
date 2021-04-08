@@ -44,7 +44,7 @@ pipeline {
           sh 'rm -rf Jmeter/report ; mkdir -p Jmeter/report'
           sh 'docker-compose -f docker-compose-production.yml up -d rs'
           sh 'sleep 45'
-          sh '''authtest=$(curl --silent --location --request POST \'https://authdev.iudx.io/auth/v1/token\' --cert /var/lib/jenkins/iudx/rs/cert.pem --key /var/lib/jenkins/iudx/rs/privkey.pem --header \'Content-Type: application/json\' --data-raw \'{
+          sh '''authtoken=$(curl --silent --location --request POST \'https://authdev.iudx.io/auth/v1/token\' --cert /var/lib/jenkins/iudx/rs/cert.pem --key /var/lib/jenkins/iudx/rs/privkey.pem --header \'Content-Type: application/json\' --data-raw \'{
     "request": [
        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information"
     ]
