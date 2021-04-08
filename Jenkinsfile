@@ -44,9 +44,8 @@ pipeline {
           sh 'rm -rf Jmeter/report ; mkdir -p Jmeter/report'
           sh 'docker-compose -f docker-compose-production.yml up -d rs'
           sh 'sleep 45'
-          sh '''authtoken=$(. /var/lib/jenkins/iudx/rs/generateToken.sh) ;
-          /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/ResourceServer.jmx -l Jmeter/report/JmeterTest.jtl -e -o Jmeter/report/ -Jtoken=$authtoken
-          '''
+          'authtoken=$(. /var/lib/jenkins/iudx/rs/generateToken.sh).execute()
+          '/var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/ResourceServer.jmx -l Jmeter/report/JmeterTest.jtl -e -o Jmeter/report/ -Jtoken=$authtoken'.execute()
           //sh 'authtoken=$(sh /var/lib/jenkins/iudx/rs/generateToken.sh); rm -rf Jmeter/report ; mkdir -p Jmeter/report ; /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/ResourceServer.jmx -l Jmeter/report/JmeterTest.jtl -e -o Jmeter/report/ -Jtoken=$authtoken'
           sh 'docker-compose down'
         }
