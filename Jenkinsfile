@@ -50,12 +50,14 @@ pipeline {
           sh 'docker-compose -f docker-compose-production.yml up -d rs'
           sh 'sleep 45'
           sh '''
+          set +x
           authtoken=$(curl --silent --location --request POST \'https://authdev.iudx.io/auth/v1/token\' --cert /var/lib/jenkins/iudx/rs/cert.pem --key /var/lib/jenkins/iudx/rs/privkey.pem --header \'Content-Type: application/json\' --data-raw \'{
     "request": [
        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information"
     ]
 }\' | grep -o \'authdev[^"]*\' | awk \'{print $1}\')
 /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/ResourceServer.jmx -l Jmeter/report/JmeterTest.jtl -e -o Jmeter/report/ -Jtoken=$authtoken
+set -x
 '''
           sh 'docker-compose down'
         }
