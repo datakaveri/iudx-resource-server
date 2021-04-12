@@ -12,10 +12,11 @@ public class IDTypeValidator {
 
   private static final Logger LOGGER = LogManager.getLogger(IDTypeValidator.class);
 
-  private String pattern =
-      "^[a-zA-Z0-9.]+/+[a-zA-Z0-9.]+/+[a-zA-Z.]+/+[a-zA-Z-_.]+/+[a-zA-Z0-9-_.]+$";
   private Integer minLength = VALIDATION_ID_MIN_LEN;
   private Integer maxLength = VALIDATION_ID_MAX_LEN;
+  private static final Pattern regexIDPattern =
+      Pattern.compile(
+          "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z.]{4,100}/{1}[a-zA-Z-_.]{4,100}/{1}[a-zA-Z0-9-_.]{4,100}$");
 
 
   public ParameterTypeValidator create() {
@@ -28,7 +29,7 @@ public class IDTypeValidator {
 
 
     public boolean isvalidIUDXId(String value) {
-      return Pattern.compile(pattern).matcher(value).matches();
+      return regexIDPattern.matcher(value).matches();
     }
 
     @Override

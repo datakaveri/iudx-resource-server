@@ -10,15 +10,14 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.api.RequestParameter;
 import io.vertx.ext.web.api.validation.ParameterTypeValidator;
 import io.vertx.ext.web.api.validation.ValidationException;
-
-
+import iudx.resource.server.apiserver.util.Constants;
 import static iudx.resource.server.apiserver.util.Constants.*;
 
 public class QTypeValidator {
   private static final Logger LOGGER = LogManager.getLogger(QTypeValidator.class);
 
   List<String> allowedOperators = List.of(">", "==", "<", "!=", "<=", ">=");
-  //TODO : put valid regex for IUDX id
+  // TODO : put valid regex for IUDX id
   private final String idRegex = ".*";
 
   public ParameterTypeValidator create() {
@@ -98,27 +97,35 @@ public class QTypeValidator {
     JsonObject json = new JsonObject();
     int length = queryTerms.length();
     List<Character> allowedSpecialCharacter = Arrays.asList('>', '=', '<', '!');
+    List<String> allowedOperators = Arrays.asList(">", "=", "<", ">=", "<=", "==", "!=");
     int startIndex = 0;
     boolean specialCharFound = false;
     for (int i = 0; i < length; i++) {
       Character c = queryTerms.charAt(i);
       if (!(Character.isLetter(c) || Character.isDigit(c)) && !specialCharFound) {
         if (allowedSpecialCharacter.contains(c)) {
-          json.put(JSON_ATTRIBUTE, queryTerms.substring(startIndex, i));
+          json.put(Constants.JSON_ATTRIBUTE, queryTerms.substring(startIndex, i));
           startIndex = i;
           specialCharFound = true;
         } else {
           LOGGER.info("Ignore " + c.toString());
+          throw ValidationException.ValidationExceptionFactory
+              .generateNotMatchValidationException("Operator not allowed.");
         }
       } else {
         if (specialCharFound && (Character.isLetter(c) || Character.isDigit(c))) {
-          json.put(JSON_OPERATOR, queryTerms.substring(startIndex, i));
-          json.put(JSON_VALUE, queryTerms.substring(i));
+          json.put(Constants.JSON_OPERATOR, queryTerms.substring(startIndex, i));
+          json.put(Constants.JSON_VALUE, queryTerms.substring(i));
           break;
         }
       }
 
     }
+    if (!allowedOperators.contains(json.getString(Constants.JSON_OPERATOR))) {
+      throw ValidationException.ValidationExceptionFactory
+          .generateNotMatchValidationException("Operator not allowed.");
+    }
     return json;
   }
+
 }

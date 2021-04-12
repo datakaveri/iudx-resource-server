@@ -30,9 +30,12 @@ public class QTypeValidatorTest {
         Arguments.of("","Empty value not allowed for parameter."),
         Arguments.of("    ","Empty value not allowed for parameter."),
         Arguments.of(RandomStringUtils.random(600),"Exceeding max length(512 characters) criteria"),
-        Arguments.of("referenceLevel<>15.0", "Not a valid Operator in <<q>> query"),
-        Arguments.of("referenceLevel>>15.0", "Not a valid Operator in <<q>> query"),
-        Arguments.of("referenceLevel===15.0", "Not a valid Operator in <<q>> query"));
+        Arguments.of("referenceLevel<>15.0", "Operator not allowed."),
+        Arguments.of("referenceLevel>>15.0", "Operator not allowed."),
+        Arguments.of("referenceLevel===15.0", "Operator not allowed."),
+        Arguments.of("referenceLevel+15.0", "Operator not allowed."),
+        Arguments.of("referenceLevel/15.0", "Operator not allowed."),
+        Arguments.of("referenceLevel*15.0", "Operator not allowed."));
   }
 
 

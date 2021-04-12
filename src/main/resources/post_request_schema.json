@@ -24,7 +24,7 @@
 						"title": "Id", 
 						"type": "string",
 						"default": "",
-						"pattern": "^.*$",
+						"pattern": "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z.]{4,100}/{1}[a-zA-Z-_.]{4,100}/{1}[a-zA-Z0-9-_.]{4,100}$",
 						"maxLength":512
 					}
 				},
