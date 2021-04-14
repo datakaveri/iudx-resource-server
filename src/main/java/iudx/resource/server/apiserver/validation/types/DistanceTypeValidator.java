@@ -22,7 +22,7 @@ public class DistanceTypeValidator {
           throw ValidationException.ValidationExceptionFactory
               .generateNotMatchValidationException("Invalid integer value (Integer overflow).");
         }
-        if (distanceValue > 1000.0) {
+        if (distanceValue > 1000.0 || distanceValue<1) {
           return false;
         }
       } catch (NumberFormatException ex) {
@@ -41,7 +41,7 @@ public class DistanceTypeValidator {
       if (!isValidDistance(value)) {
         throw ValidationException.ValidationExceptionFactory
             .generateNotMatchValidationException(
-                "Distance greater than " + allowedDistance + " not allowed");
+                "Distance outside (1,1000)m range not allowed");
       }
       return RequestParameter.create(value);
     }

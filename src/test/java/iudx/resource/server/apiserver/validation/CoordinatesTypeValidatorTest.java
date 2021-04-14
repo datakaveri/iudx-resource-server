@@ -74,7 +74,7 @@ public class CoordinatesTypeValidatorTest {
   @ParameterizedTest
   @MethodSource("invalidValues")
   @Description("coordinates type parameter invalid values.")
-  public void testInvalidDateTypeValue(String value, String result, Vertx vertx,
+  public void testInvalidCoordinatesTypeValue(String value, String result, Vertx vertx,
       VertxTestContext testContext) {
     ValidationException ex = assertThrows(ValidationException.class, () -> {
       coordinatesTypeValidator.isValid(value);

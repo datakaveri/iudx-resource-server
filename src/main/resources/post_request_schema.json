@@ -7,7 +7,8 @@
 			"maxLength":512, 
 			"type": "string",
 			"default": "",
-			"pattern": "^.*$"
+			"pattern": "^.*$",
+			"enum":["Query"]
 		},
 		"entities": {
 			"$id": "#root/entities", 
@@ -109,6 +110,7 @@
 					"$id": "#root/geoQ/georel", 
 					"title": "Georel", 
 					"type": "string",
+					"minLength":1,
 					"maxLength":512,
 					"default": "",
 					"pattern": "^.*$"
@@ -161,7 +163,8 @@
 					"maxLength":512, 
 					"type": "string",
 					"default": "",
-					"pattern": "^.*$"
+					"pattern": "^.*$",
+					"enum":["observationDateTime"]
 				}
 			},
 			"additionalProperties":false
@@ -171,6 +174,7 @@
 			"$id": "#root/q", 
 			"title": "Q", 
 			"type": "string",
+			"minLength":1,
 			"maxLength":512,
 			"default": "",
 			"pattern": "^.*$"
@@ -188,6 +192,7 @@
 			"title": "attrs",
 			"maxLength":512, 
 			"type": "string",
+			"minLength":1,
 			"default": "",
 			"pattern": "^.*$"
 		}

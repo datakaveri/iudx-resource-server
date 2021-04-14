@@ -33,7 +33,7 @@ public class DistanceTypeValidatorTest {
   static Stream<Arguments> allowedValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
-        Arguments.of("0.1"),
+        Arguments.of("1"),
         Arguments.of("500"));
   }
 
@@ -57,7 +57,8 @@ public class DistanceTypeValidatorTest {
         Arguments.of(";--AND XYZ=XYZ","Number format error ( not a valid distance)"),
         Arguments.of(random600Id,"Number format error ( not a valid distance)"),
         Arguments.of("%c2/_as=","Number format error ( not a valid distance)"),
-        Arguments.of("5000","Distance greater than 1000.0 not allowed"),
+        Arguments.of("5000","Distance outside (1,1000)m range not allowed"),
+        Arguments.of("-1","Distance outside (1,1000)m range not allowed"),
         Arguments.of("3147483646","Invalid integer value (Integer overflow)."),
         Arguments.of("3147483647","Invalid integer value (Integer overflow)."));
   }
