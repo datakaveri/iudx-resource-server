@@ -9,8 +9,8 @@ pipeline {
   }
   agent any
   stages {
+    node('master || slave1') {
     stage('Building images') {
-      node('master || slave1') {
       steps{
      //   script {
           devImage = docker.build( devRegistry, "-f ./docker/dev.dockerfile .")
