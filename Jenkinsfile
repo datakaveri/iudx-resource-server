@@ -9,15 +9,15 @@ pipeline {
   }
   agent any
   stages {
-    node('master || slave1') {
     stage('Building images') {
       steps{
-     //   script {
+        node('master || slave1') {
+        script {
           devImage = docker.build( devRegistry, "-f ./docker/dev.dockerfile .")
           deplImage = docker.build( deplRegistry, "-f ./docker/depl.dockerfile .")
           testImage = docker.build( testRegistry, "-f ./docker/test.dockerfile .")
-       // }
-      }
+        }
+        }
       }
     }
     stage('Run Tests'){
