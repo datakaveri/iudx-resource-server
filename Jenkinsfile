@@ -7,7 +7,11 @@ pipeline {
     registryUri = 'https://dockerhub.iudx.io'
     registryCredential = 'docker-jenkins'
   }
-  agent any
+  agent { 
+        node {
+            label 'master || slave1' 
+        }
+    }
   stages {
     stage('Building images') {
       steps{
