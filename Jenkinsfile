@@ -15,12 +15,12 @@ pipeline {
   stages {
     stage('Building images') {
       steps{
-        node('master || slave1') {
+        //node('master || slave1') {
         script {
           devImage = docker.build( devRegistry, "-f ./docker/dev.dockerfile .")
           deplImage = docker.build( deplRegistry, "-f ./docker/depl.dockerfile .")
           testImage = docker.build( testRegistry, "-f ./docker/test.dockerfile .")
-        }
+        //}
         }
       }
     }
