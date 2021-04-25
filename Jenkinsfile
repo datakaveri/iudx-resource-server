@@ -52,12 +52,17 @@ pipeline {
         //sh 'authtoken=$(. /var/lib/jenkins/iudx/rs/generateToken.sh); echo "$authtoken"'  
       //}
     //}
-    stage('Run Jmeter Performance Tests'){
+    stage('Run rs server for performance testing'){
       steps{
         script{
-          sh 'rm -rf Jmeter/report ; mkdir -p Jmeter/report'
           sh 'docker-compose -f docker-compose-production.yml up -d rs'
           sh 'sleep 45'
+        }}}
+    stage('Run Jmeter Performance Tests'){
+      steps{
+        node('master') {
+        script{
+          sh 'rm -rf /var/lib/jenkins/iudx/rs/Jmeter/report ; mkdir -p /var/lib/jenkins/iudx/rs/Jmeter/report'
           sh '''
           set +x
           authtoken=$(curl --silent --location --request POST \'https://authdev.iudx.io/auth/v1/token\' --cert /var/lib/jenkins/iudx/rs/cert.pem --key /var/lib/jenkins/iudx/rs/privkey.pem --header \'Content-Type: application/json\' --data-raw \'{
@@ -65,16 +70,17 @@ pipeline {
        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information"
     ]
 }\' | grep -o \'authdev[^"]*\' | awk \'{print $1}\')
-/var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t Jmeter/ResourceServer.jmx -l Jmeter/report/JmeterTest.jtl -e -o Jmeter/report/ -Jtoken=$authtoken
+/var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t /var/lib/jenkins/iudx/rs/Jmeter/ResourceServer.jmx -l /var/lib/jenkins/iudx/rs/Jmeter/report/JmeterTest.jtl -e -o /var/lib/jenkins/iudx/rs/Jmeter/report/ -Jtoken=$authtoken
 set -x
 '''
-          sh 'docker-compose down'
+          //sh 'docker-compose down'
         }
       }
     }
+    }
     stage('Capture Jmeter report'){
       steps{
-        perfReport filterRegex: '', sourceDataFiles: 'Jmeter/report/*.jtl'
+        perfReport filterRegex: '', sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'
       }
     }
     stage('Push Image') {
