@@ -55,6 +55,7 @@ pipeline {
     stage('Run rs server for performance testing'){
       steps{
         script{
+          sh 'scp Jmeter/ResourceServer.jmx root@128.199.18.230:/var/lib/jenkins/iudx/rs/Jmeter/'
           sh 'docker-compose -f docker-compose-production.yml up -d rs'
           sh 'sleep 45'
         }}}
@@ -80,7 +81,9 @@ set -x
     }
     stage('Capture Jmeter report'){
       steps{
-        perfReport filterRegex: '', sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'
+        node('master') {
+          perfReport filterRegex: '', sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'
+        }
       }
     }
     stage('Push Image') {
