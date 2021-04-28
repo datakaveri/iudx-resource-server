@@ -56,6 +56,7 @@ pipeline {
       steps{
         script{
           sh 'scp Jmeter/ResourceServer.jmx root@128.199.18.230:/var/lib/jenkins/iudx/rs/Jmeter/'
+          sh 'scp src/test/resources/IUDX-Resource-Server-Release-v2.1.postman_collection.json root@128.199.18.230:/var/lib/jenkins/iudx/rs/Newman/'
           sh 'docker-compose -f docker-compose-production.yml up -d rs'
           sh 'sleep 45'
         }}}
@@ -83,6 +84,15 @@ set -x
       steps{
         node('master') {
           perfReport filterRegex: '', sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'
+        }
+      }
+    }
+    stage('Run newman collection'){
+      steps{
+        node('master') {
+          script{
+            sh 'newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Release-v2.1.postman_collection.json -e <postman-environment> --insecure -r htmlextra --reporter-htmlextra-export'
+          }
         }
       }
     }
