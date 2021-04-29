@@ -98,8 +98,8 @@ set -x
         }
       }
       post{
-        node('master') {
         always{
+          node('master') {
           sh 'hostname'
         }
         }}
