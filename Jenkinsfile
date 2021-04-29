@@ -98,10 +98,11 @@ set -x
         }
       }
       post{
+        node('master') {
         always{
           sh 'hostname'
         }
-      }
+        }}
     }
     stage('Push Image') {
       steps{
