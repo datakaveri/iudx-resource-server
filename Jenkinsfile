@@ -91,7 +91,7 @@ set -x
       steps{
         node('master') {
           script{
-            sh 'rm -rf /var/lib/jenkins/iudx/rs/Newman/report.html'
+            sh 'rm -rf /var/lib/jenkins/iudx/rs/Newman/report/report.html'
             sh 'newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Release-v2.1.postman_collection.json -e /var/lib/jenkins/iudx/rs/Newman/postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html'
           }
         }
