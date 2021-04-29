@@ -98,7 +98,7 @@ set -x
       }
       post{
         always{
-          publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/rs/Newman/', reportFiles: 'report.html', reportName: 'Newman Report', reportTitles: ''])
+          publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
         }
       }
     }
