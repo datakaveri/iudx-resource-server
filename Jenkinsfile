@@ -91,8 +91,10 @@ set -x
       steps{
         node('master') {
           script{
+            catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
             sh 'rm -rf /var/lib/jenkins/iudx/rs/Newman/report/report.html'
             sh 'newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Release-v2.1.postman_collection.json -e /var/lib/jenkins/iudx/rs/Newman/postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html'
+            }
           }
         }
       }
@@ -102,10 +104,17 @@ set -x
             stash includes: '/var/lib/jenkins/iudx/rs/Newman/report/report.html', name: 'Newman report'
             sh 'hostname'
           }
-          unstash 'Newman report'
-          publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
-          sh 'hostname'
         }
+      }
+    }
+    stage('Publish newman report'){
+      steps{
+        sh 'mkdir report'
+        dir('report/'){
+          unstash 'Newman report'
+        }
+        publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: './report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
+        sh 'hostname'
       }
     }
     stage('Push Image') {
