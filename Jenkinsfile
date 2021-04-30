@@ -99,10 +99,14 @@ set -x
       post{
         always{
           node('master') {
+            stash includes: '/var/lib/jenkins/iudx/rs/Newman/report/report.html', name: 'Newman report'
+            sh 'hostname'
+          }
+          unstash 'Newman report'
           publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
           sh 'hostname'
         }
-        }}
+      }
     }
     stage('Push Image') {
       steps{
