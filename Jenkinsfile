@@ -101,7 +101,7 @@ set -x
       post{
         always{
           node('master') {
-            sh 'scp /var/lib/jenkins/iudx/rs/Newman/report/report.html root@139.59.72.254:$WORKSPACE'
+            sh 'scp /var/lib/jenkins/iudx/rs/Newman/report/report.html root@139.59.72.254:/var/lib/jenkins/iudx/rs/Newman/report/'
             //stash includes: '/var/lib/jenkins/iudx/rs/Newman/report/report.html', name: 'Newman report'
             sh 'hostname'
           }
