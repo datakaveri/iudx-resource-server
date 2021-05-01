@@ -101,7 +101,8 @@ set -x
       post{
         always{
           node('master') {
-            stash includes: '/var/lib/jenkins/iudx/rs/Newman/report/report.html', name: 'Newman report'
+            sh 'scp /var/lib/jenkins/iudx/rs/Newman/report/report.html root@139.59.72.254:$WORKSPACE'
+            //stash includes: '/var/lib/jenkins/iudx/rs/Newman/report/report.html', name: 'Newman report'
             sh 'hostname'
           }
         }
@@ -109,11 +110,11 @@ set -x
     }
     stage('Publish newman report'){
       steps{
-        sh 'mkdir report'
-        dir('report/'){
-          unstash 'Newman report'
-        }
-        publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: './report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
+        //sh 'mkdir report'
+        //dir('report/'){
+        //  unstash 'Newman report'
+        //}
+        publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: './', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
         sh 'hostname'
       }
     }
