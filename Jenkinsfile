@@ -114,8 +114,10 @@ set -x
         publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
       }
       post{
-        sh 'docker-compose down'
-      }
+        always{
+          sh 'docker-compose down'
+        }
+      } 
     }
     stage('Push Image') {
       steps{
