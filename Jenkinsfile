@@ -111,12 +111,10 @@ set -x
     }
     stage('Publish newman report'){
       steps{
-        //sh 'mkdir report'
-        //dir('report/'){
-        //  unstash 'Newman report'
-        //}
         publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
-        sh 'hostname'
+      }
+      post{
+        sh 'docker-compose down'
       }
     }
     stage('Push Image') {
