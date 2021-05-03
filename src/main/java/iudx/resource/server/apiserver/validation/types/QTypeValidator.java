@@ -18,7 +18,10 @@ public class QTypeValidator {
 
   List<String> allowedOperators = List.of(">", "==", "<", "!=", "<=", ">=");
   // TODO : put valid regex for IUDX id
-  private final String idRegex = ".*";
+  private static final Pattern regexIDPattern =
+      Pattern.compile(
+          "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z.]{4,100}/{1}[a-zA-Z-_.]{4,100}/{1}[a-zA-Z0-9-_.]{4,100}$");
+  private static final String qAttributeRegex = "^[a-zA-Z0-9_]{1,100}+$";
 
   public ParameterTypeValidator create() {
     ParameterTypeValidator qTypeValidator = new QValidator();
@@ -48,12 +51,15 @@ public class QTypeValidator {
     private boolean isValidID(JsonObject json) {
       if (json.containsKey("id")) {
         String id = json.getString(JSON_VALUE);
-        Pattern pattern = Pattern.compile(idRegex);
-        Matcher matcher = pattern.matcher(id);
+        Matcher matcher = regexIDPattern.matcher(id);
         return matcher.matches();
       } else {
         return true;
       }
+    }
+
+    private boolean isValidAttributeValue(String value) {
+      return qAttributeRegex.matches(value);
     }
 
     @Override
@@ -62,6 +68,7 @@ public class QTypeValidator {
         throw ValidationException.ValidationExceptionFactory
             .generateNotMatchValidationException("Empty value not allowed for parameter.");
       }
+
       if (value.length() > 512) {
         throw ValidationException.ValidationExceptionFactory
             .generateNotMatchValidationException("Exceeding max length(512 characters) criteria");
@@ -84,11 +91,12 @@ public class QTypeValidator {
 
       // NOTE : committed till filter work is not completed.
       // Now value is not restricted to only float
-      /*
-       * if (!isValidValue(qJson.getString(JSON_VALUE))) { throw
-       * ValidationException.ValidationExceptionFactory
-       * .generateNotMatchValidationException("Not a valid Float value in <<q>> query"); }
-       */
+
+//      if (!isValidAttributeValue(qJson.getString(JSON_VALUE))) {
+//        throw ValidationException.ValidationExceptionFactory
+//            .generateNotMatchValidationException("Not a valid attribute value in <<q>> query");
+//      }
+
       return RequestParameter.create(value);
     }
   }
@@ -97,6 +105,7 @@ public class QTypeValidator {
     JsonObject json = new JsonObject();
     int length = queryTerms.length();
     List<Character> allowedSpecialCharacter = Arrays.asList('>', '=', '<', '!');
+    List<Character> allowedSpecialCharAttribValue=Arrays.asList('_','-');
     List<String> allowedOperators = Arrays.asList(">", "=", "<", ">=", "<=", "==", "!=");
     int startIndex = 0;
     boolean specialCharFound = false;
@@ -107,7 +116,9 @@ public class QTypeValidator {
           json.put(Constants.JSON_ATTRIBUTE, queryTerms.substring(startIndex, i));
           startIndex = i;
           specialCharFound = true;
-        } else {
+        }else if(allowedSpecialCharAttribValue.contains(c)) {
+          //do nothing
+        }else {
           LOGGER.info("Ignore " + c.toString());
           throw ValidationException.ValidationExceptionFactory
               .generateNotMatchValidationException("Operator not allowed.");

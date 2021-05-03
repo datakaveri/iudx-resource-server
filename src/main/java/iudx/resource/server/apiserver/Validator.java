@@ -183,10 +183,8 @@ public class Validator {
     String q = paramsMap.get(NGSILDQUERY_Q);
     String coordinates = paramsMap.get(NGSILDQUERY_COORDINATES);
     String geoRel = paramsMap.get(NGSILDQUERY_GEOREL);
-    LOGGER.info("geoRel :: " + geoRel);
     String[] georelArray = geoRel != null ? geoRel.split(";") : null;
 
-    LOGGER.info("array :: " + georelArray);
 
     boolean validation =
         !isValidValue(attrs, attrsValidator)
@@ -285,6 +283,7 @@ public class Validator {
   private boolean isValidCoordinates(String geoJson) {
     boolean isValid = false;
     try {
+      System.out.println("geo json : "+geoJson);
       GeoJSONReader reader = new GeoJSONReader();
       org.locationtech.jts.geom.Geometry geom = reader.read(geoJson);
       boolean isValidNosCoords = false;

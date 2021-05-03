@@ -24,7 +24,7 @@ public class QTypeValidatorTest {
 
   private ParameterTypeValidator qTypeValidator;
 
-  static Stream<Arguments> values() {
+  static Stream<Arguments> invalidValues() {
     // Add any invalid value which will throw error.
     return Stream.of(
         Arguments.of("","Empty value not allowed for parameter."),
@@ -35,7 +35,9 @@ public class QTypeValidatorTest {
         Arguments.of("referenceLevel===15.0", "Operator not allowed."),
         Arguments.of("referenceLevel+15.0", "Operator not allowed."),
         Arguments.of("referenceLevel/15.0", "Operator not allowed."),
-        Arguments.of("referenceLevel*15.0", "Operator not allowed."));
+        Arguments.of("referenceLevel*15.0", "Operator not allowed."),
+        Arguments.of("reference_Level$>15.0", "Operator not allowed."),
+        Arguments.of("reference$Level>15.0", "Operator not allowed."));
   }
 
 
@@ -46,7 +48,7 @@ public class QTypeValidatorTest {
   }
 
   @ParameterizedTest
-  @MethodSource("values")
+  @MethodSource("invalidValues")
   @Description("q parameter type failure for different invalid values.")
   public void testInvalidQTypeValue(String value, String result, Vertx vertx,
       VertxTestContext testContext) {
@@ -57,11 +59,19 @@ public class QTypeValidatorTest {
     testContext.completeNow();
   }
   
-  @Test
+  static Stream<Arguments> validValues() {
+    return Stream.of(
+        Arguments.of("referenceLevel>15.0"),
+        Arguments.of("reference_Level>15.0"),
+        Arguments.of("id==iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"));
+  }
+  
+  @ParameterizedTest
+  @MethodSource("validValues")
   @Description("success for valid q query")
-  public void testValidQValue(Vertx vertx,VertxTestContext testContext) {
-    RequestParameter result=qTypeValidator.isValid("referenceLevel>15.0");
-    assertEquals("referenceLevel>15.0", result.getString());
+  public void testValidQValue(String value,Vertx vertx,VertxTestContext testContext) {
+    RequestParameter result=qTypeValidator.isValid(value);
+    assertEquals(value, result.getString());
     testContext.completeNow();
   }
 

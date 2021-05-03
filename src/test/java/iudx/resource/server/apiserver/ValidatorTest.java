@@ -158,9 +158,12 @@ public class ValidatorTest {
   static Stream<Arguments> invalidAttrsValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
+        Arguments.of("", "Empty value not allowed for parameter."),
+        Arguments.of("  ", "Empty value not allowed for parameter."),
         Arguments.of("refrenceLeval,Co2,NO2,SO2,CO,ABC", "More than 5 attributes are not allowed."),
         Arguments.of(RandomStringUtils.random(102) + ",refrenceLeval,Co2,NO2,SO2",
-            "One of the attribute exceeds allowed characters(only 100 characters allowed)."));
+            "One of the attribute exceeds allowed characters(only 100 characters allowed)."),
+        Arguments.of("refrence$Leval,Co2,NO2,SO2","Invalid attribute value."));
   }
 
 
@@ -184,13 +187,17 @@ public class ValidatorTest {
   static Stream<Arguments> invalidQValues() {
     // Add any invalid value which will throw error.
     return Stream.of(
+        Arguments.of(""),
+        Arguments.of("    "),
         Arguments.of(RandomStringUtils.random(600)),
         Arguments.of("referenceLevel<>15.0"),
         Arguments.of("referenceLevel>>15.0"),
         Arguments.of("referenceLevel===15.0"),
         Arguments.of("referenceLevel+15.0"),
         Arguments.of("referenceLevel/15.0"),
-        Arguments.of("referenceLevel*15.0"));
+        Arguments.of("referenceLevel*15.0"),
+        Arguments.of("reference_Level$>15.0"),
+        Arguments.of("reference$Level>15.0"));
   }
 
 

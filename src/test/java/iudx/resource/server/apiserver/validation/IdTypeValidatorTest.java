@@ -67,7 +67,11 @@ public class IdTypeValidatorTest {
             "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/"
                 + random600Id,
             "Value exceed max character limit."),
-        Arguments.of("%2cX%2c", "Invalid id."));
+        Arguments.of("%2cX%2c", "Invalid id."),
+        Arguments.of("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta$", "Invalid id."),
+        Arguments.of("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information$/surat-itms-live-eta", "Invalid id."),
+        Arguments.of("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io$/surat-itms-realtime-information/surat-itms-live-eta", "Invalid id."),
+        Arguments.of("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86$/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta", "Invalid id."));
   }
   
   @ParameterizedTest

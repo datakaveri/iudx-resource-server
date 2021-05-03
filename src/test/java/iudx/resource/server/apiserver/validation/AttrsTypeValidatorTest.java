@@ -51,7 +51,9 @@ public class AttrsTypeValidatorTest {
         Arguments.of("  ", "Empty value not allowed for parameter."),
         Arguments.of("refrenceLeval,Co2,NO2,SO2,CO,ABC", "More than 5 attributes are not allowed."),
         Arguments.of(RandomStringUtils.random(102) + ",refrenceLeval,Co2,NO2,SO2",
-            "One of the attribute exceeds allowed characters(only 100 characters allowed)."));
+            "One of the attribute exceeds allowed characters(only 100 characters allowed)."),
+        Arguments.of("refrence$Leval,Co2,NO2,SO2","Invalid attribute value."),
+        Arguments.of("refrenceLeval,Co2,NO2,S*&O2","Invalid attribute value."));
   }
 
   @ParameterizedTest
