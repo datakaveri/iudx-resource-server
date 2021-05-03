@@ -113,6 +113,7 @@ set -x
       }
       post{
         always{
+          sh 'hostname'
           //sh 'docker-compose down --remove-orphans'
         }
       } 
