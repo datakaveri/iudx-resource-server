@@ -13,7 +13,7 @@ services:
       - RS_URL=https://rs.iudx.org.in
       - LOG_LEVEL=INFO
     volumes:
-      - /root/configs/rs-config-depl.json:/usr/share/app/configs/config.json
+      - /root/configs/rs-config-test.json:/usr/share/app/configs/config.json
       - ./docs/:/usr/share/app/docs
       - ./configs/keystore.jks:/usr/share/app/configs/keystore.jks
     depends_on:
