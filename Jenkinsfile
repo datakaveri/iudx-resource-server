@@ -91,10 +91,10 @@ set -x
       steps{
         node('master') {
           script{
-            catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+            //catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
               sh 'rm -rf /var/lib/jenkins/iudx/rs/Newman/report/report.html'
               sh 'newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Release-v2.1.postman_collection.json -e /var/lib/jenkins/iudx/rs/Newman/postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html'
-            }
+            //}
           }
         }
       }
@@ -102,23 +102,15 @@ set -x
         always{
           node('master') {
             publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
-            //sh 'scp -i /var/lib/jenkins/iudx/.ssh/id_rsa /var/lib/jenkins/iudx/rs/Newman/report/report.html root@139.59.72.254:/var/lib/jenkins/iudx/rs/Newman/report/'
           }
         }
       }
     }
 
-    stage('Publish newman report'){
+    stage('Clean up'){
       steps{
-        sh 'hostname'
-        //publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
+        sh 'docker-compose down --remove-orphans'
       }
-      post{
-        always{
-          sh 'hostname'
-          //sh 'docker-compose down --remove-orphans'
-        }
-      } 
     }
 
     stage('Push Images') {
