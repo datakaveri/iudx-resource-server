@@ -101,7 +101,8 @@ set -x
       post{
         always{
           node('master') {
-            sh 'scp -i /var/lib/jenkins/iudx/.ssh/id_rsa /var/lib/jenkins/iudx/rs/Newman/report/report.html root@139.59.72.254:/var/lib/jenkins/iudx/rs/Newman/report/'
+            publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
+            //sh 'scp -i /var/lib/jenkins/iudx/.ssh/id_rsa /var/lib/jenkins/iudx/rs/Newman/report/report.html root@139.59.72.254:/var/lib/jenkins/iudx/rs/Newman/report/'
           }
         }
       }
@@ -109,7 +110,8 @@ set -x
 
     stage('Publish newman report'){
       steps{
-        publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
+        sh 'hostname'
+        //publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
       }
       post{
         always{
