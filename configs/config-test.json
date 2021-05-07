@@ -58,7 +58,10 @@
             "testResourceGroup":"",
             "testResourceServer":"",
             "testConsumer":"",
-            "testProvider":""
+            "testProvider":"",
+            
+            "testAdapterConsumer":"",
+            "testAdapterProvider":""
         },
         {
             "id": "iudx.resource.server.callback.CallbackVerticle",

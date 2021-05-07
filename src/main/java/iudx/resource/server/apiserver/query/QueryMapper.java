@@ -74,7 +74,7 @@ public class QueryMapper {
         LOGGER.debug("Info : json " + json);
       } else {
         ValidationException exception = new ValidationException(
-            "incomplete geo-query geoproperty, geometry, georel, coordinates all are mandatory. ");
+            "incomplete geo-query geoproperty, geometry, georel, coordinates all are mandatory.");
         exception.setParameterName("geometry, georel, coordinates, geoproperty");
         throw exception;
       }
@@ -203,6 +203,7 @@ public class QueryMapper {
     JsonObject json = new JsonObject();
     int length = queryTerms.length();
     List<Character> allowedSpecialCharacter = Arrays.asList('>', '=', '<', '!');
+    List<String> allowedOperators=Arrays.asList(">","=","<",">=","<=","==","!=");
     int startIndex = 0;
     boolean specialCharFound = false;
     for (int i = 0; i < length; i++) {
@@ -214,6 +215,8 @@ public class QueryMapper {
           specialCharFound = true;
         } else {
           LOGGER.info("Ignore " + c.toString());
+          throw ValidationException.ValidationExceptionFactory
+              .generateNotMatchValidationException("Operator not allowed.");
         }
       } else {
         if (specialCharFound && (Character.isLetter(c) || Character.isDigit(c))) {
@@ -223,6 +226,10 @@ public class QueryMapper {
         }
       }
 
+    }
+    if(!allowedOperators.contains(json.getString(Constants.JSON_OPERATOR))) {
+      throw ValidationException.ValidationExceptionFactory
+      .generateNotMatchValidationException("Operator not allowed.");
     }
     return json;
   }

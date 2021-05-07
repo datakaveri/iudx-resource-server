@@ -35,7 +35,7 @@ public class DateTypeValidator {
     public RequestParameter isValid(String value) throws ValidationException {
       if(value.isBlank()) {
         throw ValidationException.ValidationExceptionFactory
-        .generateNotMatchValidationException("Empty values are not allowed in parameter.");
+        .generateNotMatchValidationException("Empty value not allowed for parameter.");
       }
       if (!isValidDate(value)) {
         throw ValidationException.ValidationExceptionFactory

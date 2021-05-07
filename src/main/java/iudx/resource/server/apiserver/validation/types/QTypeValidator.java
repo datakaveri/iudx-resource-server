@@ -10,16 +10,18 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.api.RequestParameter;
 import io.vertx.ext.web.api.validation.ParameterTypeValidator;
 import io.vertx.ext.web.api.validation.ValidationException;
-
-
+import iudx.resource.server.apiserver.util.Constants;
 import static iudx.resource.server.apiserver.util.Constants.*;
 
 public class QTypeValidator {
   private static final Logger LOGGER = LogManager.getLogger(QTypeValidator.class);
 
   List<String> allowedOperators = List.of(">", "==", "<", "!=", "<=", ">=");
-  //TODO : put valid regex for IUDX id
-  private final String idRegex = ".*";
+  // TODO : put valid regex for IUDX id
+  private static final Pattern regexIDPattern =
+      Pattern.compile(
+          "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z.]{4,100}/{1}[a-zA-Z-_.]{4,100}/{1}[a-zA-Z0-9-_.]{4,100}$");
+  private static final String qAttributeRegex = "^[a-zA-Z0-9_]{1,100}+$";
 
   public ParameterTypeValidator create() {
     ParameterTypeValidator qTypeValidator = new QValidator();
@@ -49,12 +51,15 @@ public class QTypeValidator {
     private boolean isValidID(JsonObject json) {
       if (json.containsKey("id")) {
         String id = json.getString(JSON_VALUE);
-        Pattern pattern = Pattern.compile(idRegex);
-        Matcher matcher = pattern.matcher(id);
+        Matcher matcher = regexIDPattern.matcher(id);
         return matcher.matches();
       } else {
         return true;
       }
+    }
+
+    private boolean isValidAttributeValue(String value) {
+      return qAttributeRegex.matches(value);
     }
 
     @Override
@@ -63,9 +68,10 @@ public class QTypeValidator {
         throw ValidationException.ValidationExceptionFactory
             .generateNotMatchValidationException("Empty value not allowed for parameter.");
       }
+
       if (value.length() > 512) {
         throw ValidationException.ValidationExceptionFactory
-            .generateNotMatchValidationException("Exceeding max length(512 characters) criteria ");
+            .generateNotMatchValidationException("Exceeding max length(512 characters) criteria");
       }
 
       JsonObject qJson = getQueryTerms(value);
@@ -75,7 +81,7 @@ public class QTypeValidator {
       }
       if (!isValidOperator(qJson.getString(JSON_OPERATOR))) {
         throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
-            "Not a valid Operator in <<q>> query, only " + allowedOperators + "  allowed");
+            "Not a valid Operator in <<q>> query");
       }
 
       if (!isValidID(qJson)) {
@@ -85,11 +91,12 @@ public class QTypeValidator {
 
       // NOTE : committed till filter work is not completed.
       // Now value is not restricted to only float
-      /*
-       * if (!isValidValue(qJson.getString(JSON_VALUE))) { throw
-       * ValidationException.ValidationExceptionFactory
-       * .generateNotMatchValidationException("Not a valid Float value in <<q>> query"); }
-       */
+
+//      if (!isValidAttributeValue(qJson.getString(JSON_VALUE))) {
+//        throw ValidationException.ValidationExceptionFactory
+//            .generateNotMatchValidationException("Not a valid attribute value in <<q>> query");
+//      }
+
       return RequestParameter.create(value);
     }
   }
@@ -98,27 +105,38 @@ public class QTypeValidator {
     JsonObject json = new JsonObject();
     int length = queryTerms.length();
     List<Character> allowedSpecialCharacter = Arrays.asList('>', '=', '<', '!');
+    List<Character> allowedSpecialCharAttribValue=Arrays.asList('_','-');
+    List<String> allowedOperators = Arrays.asList(">", "=", "<", ">=", "<=", "==", "!=");
     int startIndex = 0;
     boolean specialCharFound = false;
     for (int i = 0; i < length; i++) {
       Character c = queryTerms.charAt(i);
       if (!(Character.isLetter(c) || Character.isDigit(c)) && !specialCharFound) {
         if (allowedSpecialCharacter.contains(c)) {
-          json.put(JSON_ATTRIBUTE, queryTerms.substring(startIndex, i));
+          json.put(Constants.JSON_ATTRIBUTE, queryTerms.substring(startIndex, i));
           startIndex = i;
           specialCharFound = true;
-        } else {
+        }else if(allowedSpecialCharAttribValue.contains(c)) {
+          //do nothing
+        }else {
           LOGGER.info("Ignore " + c.toString());
+          throw ValidationException.ValidationExceptionFactory
+              .generateNotMatchValidationException("Operator not allowed.");
         }
       } else {
         if (specialCharFound && (Character.isLetter(c) || Character.isDigit(c))) {
-          json.put(JSON_OPERATOR, queryTerms.substring(startIndex, i));
-          json.put(JSON_VALUE, queryTerms.substring(i));
+          json.put(Constants.JSON_OPERATOR, queryTerms.substring(startIndex, i));
+          json.put(Constants.JSON_VALUE, queryTerms.substring(i));
           break;
         }
       }
 
     }
+    if (!allowedOperators.contains(json.getString(Constants.JSON_OPERATOR))) {
+      throw ValidationException.ValidationExceptionFactory
+          .generateNotMatchValidationException("Operator not allowed.");
+    }
     return json;
   }
+
 }

@@ -23,9 +23,10 @@ public class CoordinatesTypeValidator {
 
   private static final String LATITUDE_PATTERN =
       "^(\\+|-)?(?:90(?:(?:\\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\\.[0-9]{1,6})?))$";
-  private  static final String LONGITUDE_PATTERN =
+  private static final String LONGITUDE_PATTERN =
       "^(\\+|-)?(?:180(?:(?:\\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\\.[0-9]{1,6})?))$";
   private final int allowedMaxCoordinates = VALIDATION_ALLOWED_COORDINATES;
+  private static final Pattern pattern = Pattern.compile("[\\w]+[^\\,]*(?:\\.*[\\w])");
 
 
   public ParameterTypeValidator create() {
@@ -63,16 +64,17 @@ public class CoordinatesTypeValidator {
       String[] coordinatesArray = coordinates.split(",");
       boolean checkLongitudeFlag = false;
       for (String coordinate : coordinatesArray) {
-        if (isPricisonLengthAllowed(coordinate)) {
-          throw ValidationException.ValidationExceptionFactory
-              .generateNotMatchValidationException("invalid coordinate" + coordinate);
-        }
+
         if (checkLongitudeFlag) {
           isValidLatitude(coordinate);
         } else {
           isValidLongitude(coordinate);
         }
         checkLongitudeFlag = !checkLongitudeFlag;
+        if (isPricisonLengthAllowed(coordinate)) {
+          throw ValidationException.ValidationExceptionFactory
+              .generateNotMatchValidationException("invalid coordinate (only 6 digits to precision allowed)");
+        }
       }
       return true;
     }
@@ -93,16 +95,16 @@ public class CoordinatesTypeValidator {
       String geom = getProbableGeomType(coordinates);
       List<String> coordinatesList = getCoordinatesValues(coordinates);
       if (geom.equalsIgnoreCase("point")) {
-        if (coordinatesList.size()!= 2) {
+        if (coordinatesList.size() != 2) {
           throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
-              "Invalid coordinates given for point");
+              "Invalid number of coordinates given for point");
         }
       } else if (geom.equalsIgnoreCase("polygon")) {
-        if (coordinatesList.size() > allowedMaxCoordinates*2) {
+        if (coordinatesList.size() > allowedMaxCoordinates * 2) {
           return false;
         }
       } else {
-        if (coordinatesList.size() > allowedMaxCoordinates*2) {
+        if (coordinatesList.size() > allowedMaxCoordinates * 2) {
           return false;
         }
         // TODO : handle for line and bbox (since line and bbox share same [[][]] structure )
@@ -112,10 +114,11 @@ public class CoordinatesTypeValidator {
     }
 
     private List<String> getCoordinatesValues(String coordinates) {
-      Pattern pattern = Pattern.compile("[\\w]+[^\\,]*(?:\\.*[\\w])");
       Matcher matcher = pattern.matcher(coordinates);
       List<String> coordinatesValues =
-          matcher.results().map(MatchResult::group).collect(Collectors.toList());
+          matcher.results()
+          .map(MatchResult::group)
+          .collect(Collectors.toList());
       return coordinatesValues;
     }
 
@@ -131,7 +134,7 @@ public class CoordinatesTypeValidator {
       }
       if (!isValidCoordinates(value)) {
         throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
-            "invalid coordinate (only 6 digits allowed a) " + value);
+            "invalid coordinate (only 6 digits to precision allowed)");
       }
       return RequestParameter.create(value);
 

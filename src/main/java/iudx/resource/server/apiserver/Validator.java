@@ -1,9 +1,14 @@
 package iudx.resource.server.apiserver;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,7 +19,15 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.api.RequestParameter;
+import io.vertx.ext.web.api.validation.ParameterTypeValidator;
+import io.vertx.ext.web.api.validation.ValidationException;
 import iudx.resource.server.apiserver.service.CatalogueService;
+import iudx.resource.server.apiserver.validation.types.AttrsTypeValidator;
+import iudx.resource.server.apiserver.validation.types.CoordinatesTypeValidator;
+import iudx.resource.server.apiserver.validation.types.DistanceTypeValidator;
+import iudx.resource.server.apiserver.validation.types.GeoRelTypeValidator;
+import iudx.resource.server.apiserver.validation.types.QTypeValidator;
 
 /**
  * This class is used to validate NGSI-LD request and request parameters.
@@ -28,8 +41,20 @@ public class Validator {
   private static Set<String> validHeaders = new HashSet<String>();
   private CatalogueService catalogueService;
 
+  private static final Pattern pattern = Pattern.compile("[\\w]+[^\\,]*(?:\\.*[\\w])");
+  private ParameterTypeValidator coordinateValidator;
+  private ParameterTypeValidator attrsValidator;
+  private ParameterTypeValidator qtypeValidator;
+  private ParameterTypeValidator geoRelTypeValidator;
+  private ParameterTypeValidator distanceTypeValidator;
+
   public Validator(CatalogueService catalogueService) {
     this.catalogueService = catalogueService;
+    this.coordinateValidator = new CoordinatesTypeValidator().create();
+    this.attrsValidator = new AttrsTypeValidator().create();
+    this.qtypeValidator = new QTypeValidator().create();
+    this.geoRelTypeValidator = new GeoRelTypeValidator().create();
+    this.distanceTypeValidator = new DistanceTypeValidator().create();
   }
 
   static {
@@ -107,7 +132,9 @@ public class Validator {
           // validation for geometry and coordinates.
           String geom = paramsMap.get(NGSILDQUERY_GEOMETRY);
           String coords = paramsMap.get(NGSILDQUERY_COORDINATES);
+
           if (geom != null && coords != null && !isValidCoordinatesForGeometry(geom, coords)) {
+            System.out.println("fail");
             promise.fail(MSG_BAD_QUERY);
           } else {
             promise.complete(true);
@@ -151,12 +178,29 @@ public class Validator {
       }
 
     });
-    
-    validate(paramsMap).onComplete(handler->{
-      if(handler.succeeded()) {
+
+    String attrs = paramsMap.get(NGSILDQUERY_ATTRIBUTE);
+    String q = paramsMap.get(NGSILDQUERY_Q);
+    String coordinates = paramsMap.get(NGSILDQUERY_COORDINATES);
+    String geoRel = paramsMap.get(NGSILDQUERY_GEOREL);
+    String[] georelArray = geoRel != null ? geoRel.split(";") : null;
+
+
+    boolean validation =
+        !isValidValue(attrs, attrsValidator)
+            || !isValidValue(q, qtypeValidator)
+            || !isValidValue(coordinates, coordinateValidator)
+            || !isValidValue(georelArray != null ? georelArray[0] : null, geoRelTypeValidator)
+            || !((georelArray != null && georelArray.length == 2)
+                ? isValidDistance(georelArray[1], distanceTypeValidator)
+                : isValidDistance(null, distanceTypeValidator));
+
+
+    validate(paramsMap).onComplete(handler -> {
+      if (handler.succeeded() && !validation) {
         promise.complete(true);
-      }else {
-        promise.fail(handler.cause().getMessage());
+      } else {
+        promise.fail(MSG_BAD_QUERY);
       }
     });
     return promise.future();
@@ -208,6 +252,9 @@ public class Validator {
   }
 
   private boolean isValidCoordinatesForGeometry(String geom, String coordinates) {
+    if (geom == null && coordinates == null) {
+      return true;
+    }
     JsonObject json = new JsonObject();
     json.put("coordinates", new JsonArray(coordinates));
     if (geom.equalsIgnoreCase("point")) {
@@ -236,19 +283,54 @@ public class Validator {
   private boolean isValidCoordinates(String geoJson) {
     boolean isValid = false;
     try {
+      System.out.println("geo json : "+geoJson);
       GeoJSONReader reader = new GeoJSONReader();
       org.locationtech.jts.geom.Geometry geom = reader.read(geoJson);
-      boolean  isValidNosCoords=false;
-      boolean isPolygon=false;
-      if(("Polygon").equalsIgnoreCase(geom.getGeometryType())) {
-        isPolygon=true;
-        Coordinate[] coords=geom.getCoordinates();
-        isValidNosCoords=coords.length<11;
+      boolean isValidNosCoords = false;
+      boolean isPolygon = false;
+      if (("Polygon").equalsIgnoreCase(geom.getGeometryType())) {
+        isPolygon = true;
+        Coordinate[] coords = geom.getCoordinates();
+        isValidNosCoords = coords.length < 11;
       }
-      isValid = geom.isValid() && (isPolygon?isValidNosCoords:true);
+      isValid = geom.isValid() && (isPolygon ? isValidNosCoords : true);
     } catch (Exception ex) {
       LOGGER.error("Invalid geom/coordinates passed");
     }
     return isValid;
   }
+
+  private boolean isValidValue(String value, ParameterTypeValidator validator) {
+    if (value == null) {
+      return true;
+    }
+    try {
+      validator.isValid(value);
+    } catch (Exception ex) {
+      LOGGER.info("value :" + value);
+      LOGGER.error(ex);
+      return false;
+    }
+    return true;
+  }
+
+  private boolean isValidDistance(String value, ParameterTypeValidator validator) {
+    if (value == null) {
+      return true;
+    }
+    try {
+      String[] distanceArray = value.split("=");
+      if (distanceArray.length == 2) {
+        String distanceValue = distanceArray[1];
+        validator.isValid(distanceValue);
+      } else {
+        return false;
+      }
+    } catch (Exception ex) {
+      LOGGER.error(ex);
+      return false;
+    }
+    return true;
+  }
+
 }
