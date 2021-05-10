@@ -1,4 +1,4 @@
-package iudx.resource.server.database.archives;
+package iudx.resource.server.database;
 
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;

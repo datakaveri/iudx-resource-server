@@ -47,8 +47,7 @@ import iudx.resource.server.apiserver.util.Constants;
 import iudx.resource.server.apiserver.validation.ValidationFailureHandler;
 import iudx.resource.server.apiserver.validation.HTTPRequestValidatiorsHandlersFactory;
 import iudx.resource.server.authenticator.AuthenticationService;
-import iudx.resource.server.database.archives.DatabaseService;
-import iudx.resource.server.database.latest.LatestDataService;
+import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
 
 
@@ -79,7 +78,6 @@ public class ApiServerVerticle extends AbstractVerticle {
   private static final String DATABASE_SERVICE_ADDRESS = "iudx.rs.database.service";
   private static final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
   private static final String BROKER_SERVICE_ADDRESS = "iudx.rs.broker.service";
-  private static final String LATEST_SEARCH_ADDRESS = "iudx.rs.latest.service";
 
   private HttpServer server;
   private Router router;
@@ -95,8 +93,6 @@ public class ApiServerVerticle extends AbstractVerticle {
   private DataBrokerService databroker;
   private AuthenticationService authenticator;
   private Validator validator;
-  
-  private LatestDataService latestDataService;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
@@ -280,7 +276,6 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     databroker = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
 
-    latestDataService = LatestDataService.createProxy(vertx, LATEST_SEARCH_ADDRESS);
 
     managementApi = new ManagementApiImpl();
     subsService = new SubscriptionService();
@@ -324,7 +319,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     filtersFuture.onComplete(filtersHandler -> {
       if (filtersHandler.succeeded()) {
         json.put("applicableFilters", filtersHandler.result());
-        executeLatestSearchQuery(json, response);
+        executeSearchQuery(json, response);
       } else {
         LOGGER.error("catalogue item/group doesn't have filters.");
         handleResponse(response, ResponseType.BadRequestData,
@@ -480,19 +475,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     });
   }
 
-  private void executeLatestSearchQuery(JsonObject json, HttpServerResponse response) {
-    latestDataService.getLatestData(json, handler -> {
-      if (handler.succeeded()) {
-        LOGGER.info("Latest data search succeeded");
-        handleSuccessResponse(response, ResponseType.Ok.getCode(),handler.result().toString());
-      } else {
-        LOGGER.error("Fail: Search Fail");
-        processBackendResponse(response, handler.cause().getMessage());
-      }
-    });
-  }
-  
-  
   /**
    * This method is used to handler all temporal NGSI-LD queries for endpoint
    * /ngsi-ld/v1/temporal/**.

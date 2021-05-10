@@ -6,7 +6,7 @@ import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import iudx.resource.server.apiserver.util.Constants;
-import iudx.resource.server.database.archives.DatabaseService;
+import iudx.resource.server.database.DatabaseService;
 import iudx.resource.server.databroker.DataBrokerService;
 
 /**

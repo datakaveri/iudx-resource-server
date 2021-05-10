@@ -1,4 +1,4 @@
-package iudx.resource.server.database.archives;
+package iudx.resource.server.database;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -6,7 +6,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import static iudx.resource.server.database.archives.Constants.*;
 import java.io.IOException;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -20,6 +19,8 @@ import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseListener;
 import org.elasticsearch.client.RestClient;
+
+import static iudx.resource.server.database.Constants.*;
 
 public class ElasticClient {
 

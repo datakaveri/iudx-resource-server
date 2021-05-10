@@ -8,9 +8,6 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.core.logging.Logger;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.configuration.Configuration;
-import iudx.resource.server.database.archives.DatabaseService;
-import iudx.resource.server.database.archives.DatabaseServiceImpl;
-import iudx.resource.server.database.archives.ElasticClient;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -23,7 +20,6 @@ import java.util.Properties;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -848,10 +844,12 @@ public class DatabaseServiceTest {
 
   @Test
   @DisplayName("Testing Latest Search")
-  @Disabled
   void latestSearch(VertxTestContext testContext) {
     JsonObject request = new JsonObject().put("id", new JsonArray()
-        .add("datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR018"))
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013")
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR020")
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx"
+            + ".io/pune-env-flood/FWR064"))
         .put("searchType", "latestSearch");
     JsonArray id = request.getJsonArray("id");
     JsonArray idFromResponse = new JsonArray();
@@ -867,10 +865,12 @@ public class DatabaseServiceTest {
 
   @Test
   @DisplayName("Testing Latest Search with Response Filter")
-  @Disabled
   void latestSearchFiltered(VertxTestContext testContext) {
     JsonObject request = new JsonObject().put("id", new JsonArray()
-        .add("datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR018"))
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013")
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR020")
+        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx"
+            + ".io/pune-env-flood/FWR064"))
         .put("searchType", "latestSearch")
         .put("attrs", new JsonArray().add("id")
             .add("observationDateTime"));

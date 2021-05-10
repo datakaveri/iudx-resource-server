@@ -1,22 +1,22 @@
-package iudx.resource.server.database.archives;
+package iudx.resource.server.database;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-import static iudx.resource.server.database.archives.Constants.*;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import static iudx.resource.server.database.Constants.*;
 
 /**
  * The Database Service Implementation.
  * <h1>Database Service Implementation</h1>
  * <p>
  * The Database Service implementation in the IUDX Resource Server implements the definitions of the
- * {@link iudx.resource.server.database.archives.DatabaseService}.
+ * {@link iudx.resource.server.database.DatabaseService}.
  * </p>
  * 
  * @version 1.0
