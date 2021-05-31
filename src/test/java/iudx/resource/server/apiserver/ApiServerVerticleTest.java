@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -74,14 +73,13 @@ public class ApiServerVerticleTest {
   ApiServerVerticleTest() {}
 
   @BeforeAll
-  public static void setup(Vertx vertx, io.vertx.reactivex.core.Vertx vertx2,
-      VertxTestContext testContext) {
+  public static void setup(Vertx vertx,VertxTestContext testContext) {
     WebClientOptions clientOptions =
         new WebClientOptions().setSsl(true).setVerifyHost(false).setTrustAll(true);
     client = WebClient.create(vertx, clientOptions);
 
     config = new Configuration();
-    JsonObject apiConfig = config.configLoader(4, vertx2);
+    JsonObject apiConfig = config.configLoader(4, vertx);
     exchangeName = UUID.randomUUID().toString().replaceAll("-", "");
     queueName = UUID.randomUUID().toString().replaceAll("-", "");
     vhost = UUID.randomUUID().toString().replaceAll("-", "");

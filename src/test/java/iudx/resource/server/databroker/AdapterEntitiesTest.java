@@ -68,7 +68,7 @@ public class AdapterEntitiesTest {
   private static String consumer;
   private static String provider;
 
-  private static String id, anotherid,userName2Delete;
+  private static String id, anotherid, userName2Delete;
   private static String anotherProvider;
   /* Database Properties */
   private static String databaseIP;
@@ -89,12 +89,11 @@ public class AdapterEntitiesTest {
 
   @BeforeAll
   @DisplayName("Initialize the Databroker class with web client and rabbitmq client")
-  static void startVertx(Vertx vertx, io.vertx.reactivex.core.Vertx vertx2,
-      VertxTestContext testContext) {
+  static void startVertx(Vertx vertx, VertxTestContext testContext) {
 
     /* Read the configuration and set the rabbitMQ server properties. */
     appConfig = new Configuration();
-    JsonObject brokerConfig = appConfig.configLoader(2, vertx2);
+    JsonObject brokerConfig = appConfig.configLoader(2, vertx);
 
     try {
 
@@ -150,7 +149,7 @@ public class AdapterEntitiesTest {
     /* Create a RabbitMQ Clinet with the configuration and vertx cluster instance. */
     client = RabbitMQClient.create(vertx, config);
     /* Create a Vertx Web Client with the configuration and vertx cluster instance. */
-    
+
     webClient = WebClient.create(vertx, webConfig);
 
     /* Set Connection Object */
@@ -178,18 +177,18 @@ public class AdapterEntitiesTest {
     propObj.put("databaseUserName", databaseUserName);
     propObj.put("databasePassword", databasePassword);
     propObj.put("databasePoolSize", poolSize);
-    
+
     /* Call the databroker constructor with the RabbitMQ client Vertx web client. */
 
     rabbitMQWebClient = new RabbitWebClient(vertx, webConfig, propObj);
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
     rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient, pgClient);
     databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, dataBrokerVhost);
-    
+
     resourceGroup = brokerConfig.getString("testResourceGroup");
     resourceServer = brokerConfig.getString("testResourceServer");
-    consumer = brokerConfig.getString("testAdapterConsumer")+UUID.randomUUID().toString();
-    provider = brokerConfig.getString("testAdapterProvider")+UUID.randomUUID().toString();
+    consumer = brokerConfig.getString("testAdapterConsumer") + UUID.randomUUID().toString();
+    provider = brokerConfig.getString("testAdapterProvider") + UUID.randomUUID().toString();
     testContext.completeNow();
 
   }
@@ -219,9 +218,9 @@ public class AdapterEntitiesTest {
         assertTrue(response.containsKey(URL));
         assertTrue(response.containsKey(PORT));
         assertTrue(response.containsKey(VHOST));
-        
+
         id = response.getString(Constants.ID);
-        userName2Delete=response.getString(USER_NAME);
+        userName2Delete = response.getString(USER_NAME);
         // assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -238,7 +237,7 @@ public class AdapterEntitiesTest {
     expected.put(Constants.TYPE, 200);
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, Constants.EXCHANGE_FOUND);
-System.out.println(id);
+    System.out.println(id);
     databroker.getExchange(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -257,7 +256,7 @@ System.out.println(id);
     JsonObject request = new JsonObject();
     request.put(Constants.ID, id);
     request.put("exchangeName", id);// TODO : discuss conflict between impl and test code
-    System.out.println("request: "+request);
+    System.out.println("request: " + request);
     JsonObject expected = new JsonObject();
     JsonArray adaptorLogs_entities = new JsonArray();
     JsonArray database_entities = new JsonArray();
@@ -434,10 +433,10 @@ System.out.println(id);
         logger.info("inside test - DeleteAdaptor response is : " + response);
         assertEquals(ResponseType.Ok.getCode(), handler.result().getInteger(Constants.TYPE));
         testContext.completeNow();
-      }else {
+      } else {
         testContext.failNow(handler.cause());
       }
-      
+
     });
   }
 
@@ -485,20 +484,20 @@ System.out.println(id);
       testContext.completeNow();
     });
   }
-  
+
   @AfterAll
   static void cleanUp() {
-    if(userName2Delete!=null) {
-      String url="/api/users/"+Util.encodeValue(userName2Delete);
-      rabbitMQWebClient.requestAsync(Constants.REQUEST_DELETE, url).onComplete(handler->{
-        if(handler.succeeded()) {
+    if (userName2Delete != null) {
+      String url = "/api/users/" + Util.encodeValue(userName2Delete);
+      rabbitMQWebClient.requestAsync(Constants.REQUEST_DELETE, url).onComplete(handler -> {
+        if (handler.succeeded()) {
           logger.info(userName2Delete + " deleted");
-        }else {
-          logger.info(userName2Delete+" deletion failed");
+        } else {
+          logger.info(userName2Delete + " deletion failed");
         }
       });
     }
-   
+
   }
 
 

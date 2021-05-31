@@ -31,9 +31,9 @@ import iudx.resource.server.configuration.Configuration;
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 /**
- *@Disabled test cases disabled for current release.
+ * @Disabled test cases disabled for current release.
  */
-@Disabled 
+@Disabled
 public class CallbackServiceTest {
 
   static CallbackService callback;
@@ -72,14 +72,13 @@ public class CallbackServiceTest {
 
   @BeforeAll
   @DisplayName("Deploy a verticle")
-  static void startVertx(Vertx vertx, io.vertx.reactivex.core.Vertx vertx2,
-      VertxTestContext testContext) {
+  static void startVertx(Vertx vertx,VertxTestContext testContext) {
 
     vertxObj = vertx;
 
     /* Read the configuration and set the rabbitMQ server properties. */
     appConfig = new Configuration();
-    JsonObject callbackConfig = appConfig.configLoader(3, vertx2);
+    JsonObject callbackConfig = appConfig.configLoader(3, vertx);
 
     try {
 

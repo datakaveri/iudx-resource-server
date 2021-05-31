@@ -3,6 +3,7 @@ package iudx.resource.server.databroker;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
@@ -711,7 +712,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         resourceGroupId = resourceGroupId.substring(0, resourceGroupId.lastIndexOf("/"));
         LOGGER.debug("Info : resourceGroupId  " + resourceGroupId);
         LOGGER.debug("Info : routingKey  " + routingKey);
-        webClient.getRabbitMQClient().basicPublish(resourceGroupId, routingKey, json,
+        Buffer buffer=Buffer.buffer(json.toString());
+        webClient.getRabbitMQClient().basicPublish(resourceGroupId, routingKey, buffer,
             resultHandler -> {
           if (resultHandler.succeeded()) {
             finalResponse.put(STATUS, HttpStatus.SC_OK);
@@ -759,7 +761,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                       // routingKey matched. now publish message
                       JsonObject message = new JsonObject();
                       message.put("body", request.toString());
-                      webClient.getRabbitMQClient().basicPublish(adaptor, routingKey, message,
+                      Buffer buffer=Buffer.buffer(message.toString());
+                      webClient.getRabbitMQClient().basicPublish(adaptor, routingKey, buffer,
                           resultHandler -> {
                         if (resultHandler.succeeded()) {
                           LOGGER.info("publishHeartbeat - message published to queue [ " + queueName

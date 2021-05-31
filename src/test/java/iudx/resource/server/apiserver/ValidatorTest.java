@@ -35,11 +35,10 @@ public class ValidatorTest {
 
 
   @BeforeEach
-  public void setup(Vertx vertx, io.vertx.reactivex.core.Vertx vertx2,
-      VertxTestContext testContext) {
+  public void setup(Vertx vertx,VertxTestContext testContext) {
 
     configuration = new Configuration();
-    config = configuration.configLoader(1, vertx2);
+    config = configuration.configLoader(1, vertx);
 
     catalogueService = new CatalogueService(vertx, config);
     validator = new Validator(catalogueService);

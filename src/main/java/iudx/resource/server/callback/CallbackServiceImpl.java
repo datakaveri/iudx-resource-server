@@ -289,7 +289,7 @@ public class CallbackServiceImpl implements CallbackService {
                   }
 
                   /* Get routingKey and currentMessageData from Message */
-                  routingKey = message.envelope().routingKey();
+                  routingKey = message.envelope().getRoutingKey();
                   currentBodyJsonObj = new JsonObject(message.body().toString());
 
                   JsonObject callBackJsonObj = null;
@@ -298,7 +298,7 @@ public class CallbackServiceImpl implements CallbackService {
                   callBackJsonObj = pgCache.get(routingKey);
 
                   LOGGER.info(
-                      Constants.ROUTING_KEY + Constants.COLON + message.envelope().routingKey());
+                      Constants.ROUTING_KEY + Constants.COLON + message.envelope().getRoutingKey());
                   LOGGER.info(Constants.MESSAGE + Constants.COLON + currentBodyJsonObj);
 
                   /* Creating Request Object */

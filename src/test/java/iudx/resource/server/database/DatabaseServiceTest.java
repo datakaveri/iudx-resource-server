@@ -1,25 +1,13 @@
 package iudx.resource.server.database;
 
-import io.vertx.reactivex.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.core.logging.Logger;
-import io.vertx.junit5.VertxTestContext;
-import iudx.resource.server.configuration.Configuration;
-import iudx.resource.server.database.archives.DatabaseService;
-import iudx.resource.server.database.archives.DatabaseServiceImpl;
-import iudx.resource.server.database.archives.ElasticClient;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.text.ParseException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,8 +15,17 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.configuration.Configuration;
+import iudx.resource.server.database.archives.DatabaseService;
+import iudx.resource.server.database.archives.DatabaseServiceImpl;
+import iudx.resource.server.database.archives.ElasticClient;
 
 @ExtendWith({VertxExtension.class})
 public class DatabaseServiceTest {
@@ -51,7 +48,7 @@ public class DatabaseServiceTest {
   @BeforeAll
   @DisplayName("Deploying Verticle")
   static void startVertx(Vertx vertx, VertxTestContext testContext) {
-    vertxObj = vertx;
+    vertxObj=vertx;
     config = new Configuration();
     JsonObject dbConfig = config.configLoader(0, vertx);
 
