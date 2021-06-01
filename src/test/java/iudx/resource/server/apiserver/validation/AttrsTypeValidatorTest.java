@@ -1,7 +1,7 @@
 package iudx.resource.server.apiserver.validation;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,9 +11,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
-import io.vertx.ext.web.api.RequestParameter;
-import io.vertx.ext.web.api.validation.ParameterTypeValidator;
-import io.vertx.ext.web.api.validation.ValidationException;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.apiserver.validation.types.AttrsTypeValidator;
@@ -21,50 +18,49 @@ import iudx.resource.server.apiserver.validation.types.AttrsTypeValidator;
 @ExtendWith(VertxExtension.class)
 public class AttrsTypeValidatorTest {
 
-  private ParameterTypeValidator attrsTypevalidator;
+  private AttrsTypeValidator attrsTypevalidator;
 
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
-    attrsTypevalidator = new AttrsTypeValidator().create();
     testContext.completeNow();
   }
 
   static Stream<Arguments> allowedValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
-        Arguments.of("refrenceLeval,Co2,NO2,SO2,CO"));
+        Arguments.of("refrenceLeval,Co2,NO2,SO2,CO", true),
+        Arguments.of(null, false),
+        Arguments.of(" ", false));
   }
 
   @ParameterizedTest
   @MethodSource("allowedValues")
   @Description("Attrs type parameter allowed values.")
-  public void testValidAttrsTypeValue(String value, Vertx vertx, VertxTestContext testContext) {
-    RequestParameter result = attrsTypevalidator.isValid(value);
-    assertEquals(value, result.getString());
+  public void testValidAttrsTypeValue(String value, boolean required, Vertx vertx,
+      VertxTestContext testContext) {
+    attrsTypevalidator = new AttrsTypeValidator(value, required);
+    assertTrue(attrsTypevalidator.isValid());
     testContext.completeNow();
   }
 
   static Stream<Arguments> invalidValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
-        Arguments.of("", "Empty value not allowed for parameter."),
-        Arguments.of("  ", "Empty value not allowed for parameter."),
-        Arguments.of("refrenceLeval,Co2,NO2,SO2,CO,ABC", "More than 5 attributes are not allowed."),
-        Arguments.of(RandomStringUtils.random(102) + ",refrenceLeval,Co2,NO2,SO2",
-            "One of the attribute exceeds allowed characters(only 100 characters allowed)."),
-        Arguments.of("refrence$Leval,Co2,NO2,SO2","Invalid attribute value."),
-        Arguments.of("refrenceLeval,Co2,NO2,S*&O2","Invalid attribute value."));
+        Arguments.of("", true),
+        Arguments.of("  ", true),
+        Arguments.of("refrenceLeval,Co2,NO2,SO2,CO,ABC", true),
+        Arguments.of(RandomStringUtils.random(102) + ",refrenceLeval,Co2,NO2,SO2",true),
+        Arguments.of("refrence$Leval,Co2,NO2,SO2", true),
+        Arguments.of("refrenceLeval,Co2,NO2,S*&O2", true));
   }
 
   @ParameterizedTest
   @MethodSource("invalidValues")
   @Description("Attrs type parameter invalid values.")
-  public void testInvalidAttrsTypeValue(String value, String result, Vertx vertx,
+  public void testInvalidAttrsTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    ValidationException ex = assertThrows(ValidationException.class, () -> {
-      attrsTypevalidator.isValid(value);
-    });
-    assertEquals(result, ex.getMessage());
+    attrsTypevalidator = new AttrsTypeValidator(value, required);
+    assertFalse(attrsTypevalidator.isValid());
     testContext.completeNow();
   }
 

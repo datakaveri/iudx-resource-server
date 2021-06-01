@@ -69,7 +69,7 @@ public class LatestServiceTest {
    * resource-id query resource-group aqm rg flood rg itms
    */
 
-  @Test
+  //@Test
   @DisplayName("Testing Latest Data at resource level- flood")
   void searchLatestResourceflood(VertxTestContext testContext) {
     String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/" +
@@ -93,7 +93,7 @@ public class LatestServiceTest {
     });
   }
 
-  @Test
+  //@Test
   @DisplayName("Testing Latest Data at resource level- itms")
   void searchLatestResourceItms(VertxTestContext testContext) {
     String id =

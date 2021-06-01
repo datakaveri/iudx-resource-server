@@ -3,35 +3,47 @@ package iudx.resource.server.apiserver.validation.types;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import io.vertx.ext.web.api.RequestParameter;
-import io.vertx.ext.web.api.validation.ParameterTypeValidator;
-import io.vertx.ext.web.api.validation.ValidationException;
 
-public class GeometryTypeValidator {
-private static final Logger LOGGER = LogManager.getLogger(GeometryTypeValidator.class);
-  
-  private List<Object> allowedValues=List.of("Point","point","Polygon","polygon","LineString","linestring","bbox");
-  
-  public ParameterTypeValidator create() {
-    ParameterTypeValidator geometryTypeValidator=new GeomTypeValidator();
-    return geometryTypeValidator;
+public class GeometryTypeValidator implements Validator {
+  private static final Logger LOGGER = LogManager.getLogger(GeometryTypeValidator.class);
+
+  private List<Object> allowedValues =
+      List.of("Point", "point", "Polygon", "polygon", "LineString", "linestring", "bbox");
+
+  private String value;
+  private boolean required;
+
+  public GeometryTypeValidator(String value, boolean required) {
+    this.value = value;
+    this.required = required;
   }
-  
-  class GeomTypeValidator implements ParameterTypeValidator {
 
-    @Override
-    public RequestParameter isValid(String value) throws ValidationException {
-     if(value.isBlank()) {
-       throw ValidationException.ValidationExceptionFactory
-       .generateNotMatchValidationException("Empty value not allowed for parameter.");
-     }
-     if(!allowedValues.contains(value)) {
-       throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
-           "Value " + value + " " + "is not allowed");
-     }
-      return RequestParameter.create(value);
+  @Override
+  public boolean isValid() {
+    LOGGER.debug("value : " + value + "required : " + required);
+    if (required && (value == null || value.isBlank())) {
+      LOGGER.error("Validation error : null or blank value for required mandatory field");
+      return false;
+    } else {
+      if (value == null || value.isBlank()) {
+        return true;
+      }
     }
-    
+    if (!allowedValues.contains(value)) {
+      LOGGER.error("Validation error : Value " + value + " " + "is not allowed");
+      return false;
+    }
+    return true;
+  }
+
+  @Override
+  public int failureCode() {
+    return 400;
+  }
+
+  @Override
+  public String failureMessage() {
+    return "Invalid geom type";
   }
 
 }

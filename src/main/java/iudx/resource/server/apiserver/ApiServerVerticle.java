@@ -34,6 +34,7 @@ import io.vertx.ext.web.api.validation.ValidationException;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import iudx.resource.server.apiserver.handlers.AuthHandler;
+import iudx.resource.server.apiserver.handlers.ValidationHandler;
 import iudx.resource.server.apiserver.management.ManagementApi;
 import iudx.resource.server.apiserver.management.ManagementApiImpl;
 import iudx.resource.server.apiserver.query.NGSILDQueryParams;
@@ -44,8 +45,9 @@ import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.util.Constants;
+import iudx.resource.server.apiserver.util.RequestType;
 import iudx.resource.server.apiserver.validation.ValidationFailureHandler;
-import iudx.resource.server.apiserver.validation.HTTPRequestValidatiorsHandlersFactory;
+import iudx.resource.server.apiserver.validation.ValidatorsHandlersFactory;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.archives.DatabaseService;
 import iudx.resource.server.database.latest.LatestDataService;
@@ -94,7 +96,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private DatabaseService database;
   private DataBrokerService databroker;
   private AuthenticationService authenticator;
-  private Validator validator;
+  private ParamsValidator validator;
   
   private LatestDataService latestDataService;
 
@@ -141,24 +143,31 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.route().handler(BodyHandler.create());
     // router.route().handler(AuthHandler.create(vertx));
 
-    HTTPRequestValidatiorsHandlersFactory validators = new HTTPRequestValidatiorsHandlersFactory();
+    ValidatorsHandlersFactory validators = new ValidatorsHandlersFactory();
     ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
 
     /* NGSI-LD api endpoints */
-    router.get(NGSILD_ENTITIES_URL).handler(validators.getValidation4Context("ENTITY"))
+    ValidationHandler entityValidationHandler=new ValidationHandler(RequestType.ENTITY);
+    router.get(NGSILD_ENTITIES_URL)
+        .handler(entityValidationHandler)
         .handler(AuthHandler.create(vertx)).handler(this::handleEntitiesQuery)
         .failureHandler(validationsFailureHandler);
 
+    ValidationHandler latestValidationHandler=new ValidationHandler(RequestType.LATEST);
     router
         .get(NGSILD_ENTITIES_URL + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
-        .handler(validators.getValidation4Context("LATEST")).handler(AuthHandler.create(vertx))
+        .handler(latestValidationHandler)
+        .handler(AuthHandler.create(vertx))
         .handler(this::handleLatestEntitiesQuery).failureHandler(validationsFailureHandler);
 
+    ValidationHandler postValidationHandler=new ValidationHandler(RequestType.POST);
     router.post(NGSILD_POST_QUERY_PATH).consumes(APPLICATION_JSON)
-        .handler(validators.getValidation4Context("POST")).handler(AuthHandler.create(vertx))
+        .handler(postValidationHandler).handler(AuthHandler.create(vertx))
         .handler(this::handlePostEntitiesQuery).failureHandler(validationsFailureHandler);
 
-    router.get(NGSILD_TEMPORAL_URL).handler(validators.getValidation4Context("TEMPORAL"))
+    ValidationHandler temporalValidationHandler=new ValidationHandler(RequestType.TEMPORAL);
+    router.get(NGSILD_TEMPORAL_URL)
+        .handler(temporalValidationHandler)
         .handler(AuthHandler.create(vertx)).handler(this::handleTemporalQuery)
         .failureHandler(validationsFailureHandler);
 
@@ -285,7 +294,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     managementApi = new ManagementApiImpl();
     subsService = new SubscriptionService();
     catalogueService = new CatalogueService(vertx, config());
-    validator = new Validator(catalogueService);
+    validator = new ParamsValidator(catalogueService);
 
   }
 

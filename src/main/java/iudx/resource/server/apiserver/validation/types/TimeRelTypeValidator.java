@@ -3,35 +3,48 @@ package iudx.resource.server.apiserver.validation.types;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import io.vertx.ext.web.api.RequestParameter;
-import io.vertx.ext.web.api.validation.ParameterTypeValidator;
-import io.vertx.ext.web.api.validation.ValidationException;
 
-public class TimeRelTypeValidator {
+public class TimeRelTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(GeoRelTypeValidator.class);
 
-  private List<Object> allowedValues = List.of("after", "before", "during","between");
+  private List<Object> allowedValues = List.of("after", "before", "during", "between");
 
-  public ParameterTypeValidator create() {
-    ParameterTypeValidator timeRelValidator=new TimeRelValidator();
-    return timeRelValidator;
+  private String value;
+  private boolean required;
+
+  public TimeRelTypeValidator(String value, boolean required) {
+    this.value = value;
+    this.required = required;
   }
-  
-  
-  class TimeRelValidator implements ParameterTypeValidator {
-    @Override
-    public RequestParameter isValid(String value) throws ValidationException {
-      if(value.isBlank()) {
-        throw ValidationException.ValidationExceptionFactory
-        .generateNotMatchValidationException("Empty value not allowed for parameter.");
-      }
-      if (!allowedValues.contains(value)) {
-        throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
-            "Value " + value + " " + "is not allowed");
 
+  @Override
+  public boolean isValid() {
+    LOGGER.debug("value : " + value + "required : " + required);
+    if (required && (value == null || value.isBlank())) {
+      LOGGER.error("Validation error : null or blank value for required mandatory field");
+      return false;
+    } else {
+      if (value == null || value.isBlank()) {
+        return true;
       }
-      return RequestParameter.create(value);
     }
+    if (!allowedValues.contains(value)) {
+      LOGGER.error("Validation error : Value " + value + " " + "is not allowed");
+      return false;
+    }
+    return true;
+  }
+
+
+  @Override
+  public int failureCode() {
+    return 400;
+  }
+
+
+  @Override
+  public String failureMessage() {
+    return "Invalid time relation";
   }
 }

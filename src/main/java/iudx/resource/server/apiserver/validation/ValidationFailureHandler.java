@@ -16,10 +16,9 @@ public class ValidationFailureHandler implements Handler<RoutingContext>{
   public void handle(RoutingContext context) {
     Throwable failure = context.failure();
     LOGGER.error("error :"+failure);
-    if (failure instanceof ValidationException) { 
+    if (failure instanceof RuntimeException) { 
       // Something went wrong during validation!
-      String failedParameter=((ValidationException) failure).parameterName();
-      LOGGER.error("error :" +failure.getMessage()+" param : "+failedParameter);
+      LOGGER.error("error :" +failure.getMessage());
       String validationErrorMessage = MSG_BAD_QUERY;
       context.response()
         .putHeader(CONTENT_TYPE, APPLICATION_JSON)

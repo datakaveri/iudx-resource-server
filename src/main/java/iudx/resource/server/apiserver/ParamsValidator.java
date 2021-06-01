@@ -28,33 +28,24 @@ import iudx.resource.server.apiserver.validation.types.CoordinatesTypeValidator;
 import iudx.resource.server.apiserver.validation.types.DistanceTypeValidator;
 import iudx.resource.server.apiserver.validation.types.GeoRelTypeValidator;
 import iudx.resource.server.apiserver.validation.types.QTypeValidator;
+import iudx.resource.server.apiserver.validation.types.Validator;
 
 /**
  * This class is used to validate NGSI-LD request and request parameters.
  *
  */
-public class Validator {
+public class ParamsValidator {
 
-  private static final Logger LOGGER = LogManager.getLogger(Validator.class);
+  private static final Logger LOGGER = LogManager.getLogger(ParamsValidator.class);
 
   private static Set<String> validParams = new HashSet<String>();
   private static Set<String> validHeaders = new HashSet<String>();
   private CatalogueService catalogueService;
 
   private static final Pattern pattern = Pattern.compile("[\\w]+[^\\,]*(?:\\.*[\\w])");
-  private ParameterTypeValidator coordinateValidator;
-  private ParameterTypeValidator attrsValidator;
-  private ParameterTypeValidator qtypeValidator;
-  private ParameterTypeValidator geoRelTypeValidator;
-  private ParameterTypeValidator distanceTypeValidator;
 
-  public Validator(CatalogueService catalogueService) {
+  public ParamsValidator(CatalogueService catalogueService) {
     this.catalogueService = catalogueService;
-    this.coordinateValidator = new CoordinatesTypeValidator().create();
-    this.attrsValidator = new AttrsTypeValidator().create();
-    this.qtypeValidator = new QTypeValidator().create();
-    this.geoRelTypeValidator = new GeoRelTypeValidator().create();
-    this.distanceTypeValidator = new DistanceTypeValidator().create();
   }
 
   static {
@@ -186,18 +177,28 @@ public class Validator {
     String[] georelArray = geoRel != null ? geoRel.split(";") : null;
 
 
-    boolean validation =
-        !isValidValue(attrs, attrsValidator)
-            || !isValidValue(q, qtypeValidator)
-            || !isValidValue(coordinates, coordinateValidator)
-            || !isValidValue(georelArray != null ? georelArray[0] : null, geoRelTypeValidator)
-            || !((georelArray != null && georelArray.length == 2)
-                ? isValidDistance(georelArray[1], distanceTypeValidator)
-                : isValidDistance(null, distanceTypeValidator));
+//    boolean validation =
+//        !isValidValue(attrs, attrsValidator)
+//            || !isValidValue(q, qtypeValidator)
+//            || !isValidValue(coordinates, coordinateValidator)
+//            || !isValidValue(georelArray != null ? georelArray[0] : null, geoRelTypeValidator)
+//            || !((georelArray != null && georelArray.length == 2)
+//                ? isValidDistance(georelArray[1], distanceTypeValidator)
+//                : isValidDistance(null, distanceTypeValidator));
 
+
+    boolean validations1 =
+        !(new AttrsTypeValidator(attrs, false).isValid())
+            || !(new QTypeValidator(q, false).isValid())
+            || !(new CoordinatesTypeValidator(coordinates, false).isValid())
+            || !(new GeoRelTypeValidator(georelArray != null ? georelArray[0] : null, false)
+                .isValid())
+            || !((georelArray != null && georelArray.length == 2)
+                ? isValidDistance(georelArray[1])
+                : isValidDistance(null));
 
     validate(paramsMap).onComplete(handler -> {
-      if (handler.succeeded() && !validation) {
+      if (handler.succeeded() && !validations1) {
         promise.complete(true);
       } else {
         promise.fail(MSG_BAD_QUERY);
@@ -283,7 +284,7 @@ public class Validator {
   private boolean isValidCoordinates(String geoJson) {
     boolean isValid = false;
     try {
-      System.out.println("geo json : "+geoJson);
+      System.out.println("geo json : " + geoJson);
       GeoJSONReader reader = new GeoJSONReader();
       org.locationtech.jts.geom.Geometry geom = reader.read(geoJson);
       boolean isValidNosCoords = false;
@@ -314,15 +315,17 @@ public class Validator {
     return true;
   }
 
-  private boolean isValidDistance(String value, ParameterTypeValidator validator) {
+  private boolean isValidDistance(String value) {
     if (value == null) {
       return true;
     }
+    Validator validator;
     try {
       String[] distanceArray = value.split("=");
       if (distanceArray.length == 2) {
         String distanceValue = distanceArray[1];
-        validator.isValid(distanceValue);
+        validator = new DistanceTypeValidator(distanceValue, false);
+        return validator.isValid();
       } else {
         return false;
       }
@@ -330,7 +333,6 @@ public class Validator {
       LOGGER.error(ex);
       return false;
     }
-    return true;
   }
 
 }

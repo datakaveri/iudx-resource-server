@@ -1,25 +1,20 @@
 package iudx.resource.server.apiserver.validation.types;
 
-import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import io.vertx.ext.web.api.RequestParameter;
-import io.vertx.ext.web.api.validation.ParameterTypeValidator;
-import io.vertx.ext.web.api.validation.ValidationException;
 
-public class GeoRelTypeValidator implements Validator {
-  private static final Logger LOGGER = LogManager.getLogger(GeoRelTypeValidator.class);
-
-  private List<String> allowedValues = List.of("within", "intersects", "near");
-
+public class StringTypeValidator implements Validator{
+  private static final Logger LOGGER = LogManager.getLogger(StringTypeValidator.class);
+  
   private String value;
   private boolean required;
 
-  public GeoRelTypeValidator(String value, boolean required) {
+  public StringTypeValidator(String value, boolean required) {
     this.value = value;
     this.required = required;
   }
-
+  
+  
   @Override
   public boolean isValid() {
     LOGGER.debug("value : " + value + "required : " + required);
@@ -31,23 +26,21 @@ public class GeoRelTypeValidator implements Validator {
         return true;
       }
     }
-    String[] geoRelationValues = value.split(";");
-    if (!allowedValues.contains(geoRelationValues[0])) {
-      LOGGER.error("Validation error : Value " + value + " " + "is not allowed");
+    if(value.length()>100) {
+      LOGGER.error("Validation error : length >100 not allowed");
       return false;
     }
     return true;
   }
-
 
   @Override
   public int failureCode() {
     return 400;
   }
 
-
   @Override
   public String failureMessage() {
-    return "Invalid geo realation";
+    return "Invalid string";
   }
+
 }
