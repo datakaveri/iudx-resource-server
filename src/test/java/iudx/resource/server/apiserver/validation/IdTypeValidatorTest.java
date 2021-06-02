@@ -34,8 +34,7 @@ public class IdTypeValidatorTest {
         Arguments.of(
             "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055",
             true),
-        Arguments.of(null, false),
-        Arguments.of(" ", false));
+        Arguments.of(null, false));
   }
 
   @ParameterizedTest

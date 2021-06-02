@@ -1,15 +1,11 @@
 package iudx.resource.server.apiserver;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.Set;
+import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
@@ -19,9 +15,6 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.api.RequestParameter;
-import io.vertx.ext.web.api.validation.ParameterTypeValidator;
-import io.vertx.ext.web.api.validation.ValidationException;
 import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.apiserver.validation.types.AttrsTypeValidator;
 import iudx.resource.server.apiserver.validation.types.CoordinatesTypeValidator;
@@ -299,20 +292,6 @@ public class ParamsValidator {
       LOGGER.error("Invalid geom/coordinates passed");
     }
     return isValid;
-  }
-
-  private boolean isValidValue(String value, ParameterTypeValidator validator) {
-    if (value == null) {
-      return true;
-    }
-    try {
-      validator.isValid(value);
-    } catch (Exception ex) {
-      LOGGER.info("value :" + value);
-      LOGGER.error(ex);
-      return false;
-    }
-    return true;
   }
 
   private boolean isValidDistance(String value) {

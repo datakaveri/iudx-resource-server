@@ -30,7 +30,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.api.validation.ValidationException;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import iudx.resource.server.apiserver.handlers.AuthHandler;
@@ -147,25 +146,25 @@ public class ApiServerVerticle extends AbstractVerticle {
     ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
 
     /* NGSI-LD api endpoints */
-    ValidationHandler entityValidationHandler=new ValidationHandler(RequestType.ENTITY);
+    ValidationHandler entityValidationHandler=new ValidationHandler(vertx,RequestType.ENTITY);
     router.get(NGSILD_ENTITIES_URL)
         .handler(entityValidationHandler)
         .handler(AuthHandler.create(vertx)).handler(this::handleEntitiesQuery)
         .failureHandler(validationsFailureHandler);
 
-    ValidationHandler latestValidationHandler=new ValidationHandler(RequestType.LATEST);
+    ValidationHandler latestValidationHandler=new ValidationHandler(vertx,RequestType.LATEST);
     router
         .get(NGSILD_ENTITIES_URL + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
         .handler(latestValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::handleLatestEntitiesQuery).failureHandler(validationsFailureHandler);
 
-    ValidationHandler postValidationHandler=new ValidationHandler(RequestType.POST);
+    ValidationHandler postValidationHandler=new ValidationHandler(vertx,RequestType.POST);
     router.post(NGSILD_POST_QUERY_PATH).consumes(APPLICATION_JSON)
         .handler(postValidationHandler).handler(AuthHandler.create(vertx))
         .handler(this::handlePostEntitiesQuery).failureHandler(validationsFailureHandler);
 
-    ValidationHandler temporalValidationHandler=new ValidationHandler(RequestType.TEMPORAL);
+    ValidationHandler temporalValidationHandler=new ValidationHandler(vertx,RequestType.TEMPORAL);
     router.get(NGSILD_TEMPORAL_URL)
         .handler(temporalValidationHandler)
         .handler(AuthHandler.create(vertx)).handler(this::handleTemporalQuery)
@@ -310,9 +309,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     // get query paramaters
     MultiMap params = getQueryParams(routingContext, response).get();
     if (!params.isEmpty()) {
-      ValidationException ex =
-          new ValidationException("Query parameters are not allowed with latest query");
-      ex.setParameterName("[Query parameters]");
+      RuntimeException ex =
+          new RuntimeException("Query parameters are not allowed with latest query");
       routingContext.fail(ex);
     }
     String domain = request.getParam(JSON_DOMAIN);
@@ -365,9 +363,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         // parse query params
         NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
         if (isTemporalParamsPresent(ngsildquery)) {
-          ValidationException ex =
-              new ValidationException("Temporal parameters are not allowed in entities query.");
-          ex.setParameterName("[timerel,time or endtime]");
+          RuntimeException ex =
+              new RuntimeException("Temporal parameters are not allowed in entities query.");
           routingContext.fail(ex);
         }
         // create json

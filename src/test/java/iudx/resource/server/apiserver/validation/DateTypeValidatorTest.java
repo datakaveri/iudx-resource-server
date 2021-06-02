@@ -28,8 +28,7 @@ public class DateTypeValidatorTest {
     return Stream.of(
         Arguments.of("2020-10-18T14:20:00Z", true),
         Arguments.of("2020-10-18T20:45:00+05:30", true),
-        Arguments.of(null, false),
-        Arguments.of(" ", false));
+        Arguments.of(null, false));
   }
 
   @ParameterizedTest

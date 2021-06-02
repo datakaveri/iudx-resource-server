@@ -34,8 +34,7 @@ public class GeometryTypeValidatorTest {
         Arguments.of("LineString", true),
         Arguments.of("linestring", true),
         Arguments.of("bbox", true),
-        Arguments.of(null, false),
-        Arguments.of(" ", false));
+        Arguments.of(null, false));
   }
 
   @ParameterizedTest

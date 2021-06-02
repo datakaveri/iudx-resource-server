@@ -2,9 +2,6 @@ package iudx.resource.server.apiserver.validation.types;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import io.vertx.ext.web.api.RequestParameter;
-import io.vertx.ext.web.api.validation.ParameterTypeValidator;
-import io.vertx.ext.web.api.validation.ValidationException;
 
 public class OptionsTypeValidator implements Validator {
 
@@ -25,8 +22,12 @@ public class OptionsTypeValidator implements Validator {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
       return false;
     } else {
-      if (value == null || value.isBlank()) {
+      if (value == null ) {
         return true;
+      }
+      if(value.isBlank()) {
+        LOGGER.error("Validation error :  blank value for passed");
+        return false;
       }
     }
     if (!value.equals("count")) {

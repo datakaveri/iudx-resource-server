@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import io.vertx.ext.web.api.validation.ValidationException;
 
 // TODO : find a better way to validate coordinates,
 // current method works but not very efficient,
@@ -93,6 +92,10 @@ public class CoordinatesTypeValidator implements Validator {
   }
 
   private boolean isValidCoordinates(String value) {
+    if (!value.startsWith("[") || !value.endsWith("]")) {
+      LOGGER.error("Validation error :  invalid coordinate format");
+      return false;
+    }
     String coordinates = value.replaceAll("\\[", "").replaceAll("\\]", "");
     String[] coordinatesArray = coordinates.split(",");
     boolean checkLongitudeFlag = false;

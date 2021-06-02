@@ -101,8 +101,12 @@ public class QTypeValidator implements Validator {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
       return false;
     } else {
-      if (value == null || value.isBlank()) {
+      if (value == null) {
         return true;
+      }
+      if (value.isBlank()) {
+        LOGGER.error("Validation error :  blank value for passed");
+        return false;
       }
     }
     if (value.length() > 512) {

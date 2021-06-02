@@ -29,8 +29,7 @@ public class GeoPropertyTypeValidatorTest {
     return Stream.of(
         Arguments.of("location", true),
         Arguments.of("Location", true),
-        Arguments.of(null, false),
-        Arguments.of(" ", false));
+        Arguments.of(null, false));
   }
 
   @ParameterizedTest

@@ -29,8 +29,7 @@ public class AttrsTypeValidatorTest {
     // Add any valid value which will pass successfully.
     return Stream.of(
         Arguments.of("refrenceLeval,Co2,NO2,SO2,CO", true),
-        Arguments.of(null, false),
-        Arguments.of(" ", false));
+        Arguments.of(null, false));
   }
 
   @ParameterizedTest

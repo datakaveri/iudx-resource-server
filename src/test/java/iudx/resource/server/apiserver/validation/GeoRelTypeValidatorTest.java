@@ -31,8 +31,7 @@ public class GeoRelTypeValidatorTest {
         Arguments.of("within", true),
         Arguments.of("intersects", true),
         Arguments.of("near", true),
-        Arguments.of(null, false),
-        Arguments.of(" ", false));
+        Arguments.of(null, false));
   }
 
 

@@ -8,7 +8,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.api.validation.ValidationException;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.AfterEach;
@@ -163,7 +162,7 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_TIMEPROPERTY, "obserVationTimeRel");
     NGSILDQueryParams params = new NGSILDQueryParams(map);
 
-    ValidationException ex = assertThrows(ValidationException.class, () -> {
+    RuntimeException ex = assertThrows(RuntimeException.class, () -> {
       qm.toJson(params, true);
     });
     assertEquals("Invalid time format", ex.getMessage());
@@ -207,7 +206,7 @@ public class QueryMapperTest {
   @Description("coordinates type parameter invalid values.")
   public void testInvalidQTermValue(String value, String result, Vertx vertx,
       VertxTestContext testContext) {
-    ValidationException ex = assertThrows(ValidationException.class, () -> {
+    RuntimeException ex = assertThrows(RuntimeException.class, () -> {
       qm.getQueryTerms(value);
     });
     assertEquals(result, ex.getMessage());
@@ -223,7 +222,7 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_TIMEREL, "during");
     map.add(NGSILDQUERY_TIME, "2020-01-23T14:20:00Z");
     NGSILDQueryParams params = new NGSILDQueryParams(map);
-    ValidationException ex = assertThrows(ValidationException.class, () -> {
+    RuntimeException ex = assertThrows(RuntimeException.class, () -> {
       qm.toJson(params, true);
     });
     assertEquals("time and endTime both are mandatory for during Query.", ex.getMessage());
@@ -240,7 +239,7 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_TIME, "2020-01-13T14:20:00Z");
     map.add(NGSILDQUERY_ENDTIME, "2020-01-30T14:40:00Z");
     NGSILDQueryParams params = new NGSILDQueryParams(map);
-    ValidationException ex = assertThrows(ValidationException.class, () -> {
+    RuntimeException ex = assertThrows(RuntimeException.class, () -> {
       qm.toJson(params, true);
     });
     assertEquals("time interval greater than 10 days is not allowed", ex.getMessage());
@@ -260,7 +259,7 @@ public class QueryMapperTest {
 
     NGSILDQueryParams params = new NGSILDQueryParams(map);
 
-    ValidationException ex = assertThrows(ValidationException.class, () -> {
+    RuntimeException ex = assertThrows(RuntimeException.class, () -> {
       qm.toJson(params, true);
     });
     assertEquals(

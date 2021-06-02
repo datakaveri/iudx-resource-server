@@ -9,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import iudx.resource.server.apiserver.util.RequestType;
@@ -21,9 +22,11 @@ public class ValidationHandler implements Handler<RoutingContext>{
   private static final Logger LOGGER = LogManager.getLogger(ValidationHandler.class);
 
   private RequestType requestType;
+  private Vertx vertx;
 
 
-  public ValidationHandler(RequestType apiRequestType) {
+  public ValidationHandler(Vertx vertx,RequestType apiRequestType) {
+    this.vertx=vertx;
     this.requestType = apiRequestType;
   }
 
@@ -32,22 +35,23 @@ public class ValidationHandler implements Handler<RoutingContext>{
     ValidatorsHandlersFactory validationFactory = new ValidatorsHandlersFactory();
     MultiMap parameters = context.request().params();
     MultiMap headers = context.request().headers();
+    JsonObject body=context.getBodyAsJson();
     Map<String,String> pathParams=context.pathParams();
     parameters.addAll(pathParams);
     
     List<Validator> validations = null;
     switch (requestType) {
       case ENTITY:
-        validations = validationFactory.build(requestType, parameters, headers);
+        validations = validationFactory.build(vertx,requestType, parameters, headers,body);
         break;
       case TEMPORAL:
-        validations = validationFactory.build(requestType, parameters, headers);
+        validations = validationFactory.build(vertx,requestType, parameters, headers,body);
         break;
       case LATEST:
-        validations = validationFactory.build(requestType, parameters, headers);
+        validations = validationFactory.build(vertx,requestType, parameters, headers,body);
         break;
       case POST:
-        validations = validationFactory.build(requestType, parameters, headers);
+        validations = validationFactory.build(vertx,requestType, parameters, headers,body);
         break;
       default:
         break;

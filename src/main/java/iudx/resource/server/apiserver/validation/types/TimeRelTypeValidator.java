@@ -12,10 +12,12 @@ public class TimeRelTypeValidator implements Validator {
 
   private String value;
   private boolean required;
+  private boolean allowedEmpty;
 
-  public TimeRelTypeValidator(String value, boolean required) {
+  public TimeRelTypeValidator(String value, boolean required, boolean allowedEmpty) {
     this.value = value;
     this.required = required;
+    this.allowedEmpty = allowedEmpty;
   }
 
   @Override
@@ -25,8 +27,12 @@ public class TimeRelTypeValidator implements Validator {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
       return false;
     } else {
-      if (value == null || value.isBlank()) {
+      if (value == null) {
         return true;
+      }
+      if (value.isBlank()) {
+        LOGGER.error("Validation error :  blank value for passed");
+        return false;
       }
     }
     if (!allowedValues.contains(value)) {

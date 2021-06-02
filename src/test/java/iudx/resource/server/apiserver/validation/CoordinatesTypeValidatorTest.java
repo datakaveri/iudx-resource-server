@@ -33,8 +33,7 @@ public class CoordinatesTypeValidatorTest {
             true),
         Arguments.of("[[72.8296,21.2],[72.8297,21.15]]", true),
         Arguments.of("[[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20]]", true),
-        Arguments.of(null, false),
-        Arguments.of(" ", false));
+        Arguments.of(null, false));
   }
 
 

@@ -29,8 +29,7 @@ public class DistanceTypeValidatorTest {
     return Stream.of(
         Arguments.of("1", true),
         Arguments.of("500", true),
-        Arguments.of(null, false),
-        Arguments.of(" ", false));
+        Arguments.of(null, false));
   }
 
   @ParameterizedTest

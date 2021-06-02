@@ -30,9 +30,7 @@ public class TimeRelTypeValidatorTest {
         Arguments.of("after", true),
         Arguments.of("before", true),
         Arguments.of("during", true),
-        Arguments.of("between", true),
-        Arguments.of(null, false),
-        Arguments.of(" ", false));
+        Arguments.of("between", true));
   }
 
   @ParameterizedTest
@@ -40,7 +38,7 @@ public class TimeRelTypeValidatorTest {
   @Description("timerel parameter allowed values.")
   public void testValidTimeRelValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    timeRelTypeValidator = new TimeRelTypeValidator(value, required);
+    timeRelTypeValidator = new TimeRelTypeValidator(value, required,false);
     assertTrue(timeRelTypeValidator.isValid());
     testContext.completeNow();
   }
@@ -52,6 +50,8 @@ public class TimeRelTypeValidatorTest {
     return Stream.of(
         Arguments.of("",true),
         Arguments.of("  ",true),
+        Arguments.of("",false),
+        Arguments.of("  ",false),
         Arguments.of("around",true),
         Arguments.of("bypass",true),
         Arguments.of("1=1",true),
@@ -65,7 +65,7 @@ public class TimeRelTypeValidatorTest {
   @Description("timerel parameter invalid values.")
   public void testInvalidTimeRelValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    timeRelTypeValidator = new TimeRelTypeValidator(value, required);
+    timeRelTypeValidator = new TimeRelTypeValidator(value, required,false);
     assertFalse(timeRelTypeValidator.isValid());
     testContext.completeNow();
   }

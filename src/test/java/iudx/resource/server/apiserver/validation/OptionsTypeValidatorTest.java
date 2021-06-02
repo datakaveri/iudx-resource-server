@@ -59,21 +59,5 @@ public class OptionsTypeValidatorTest {
     assertTrue(optionsValidator.isValid());
     testContext.completeNow();
   }
-  
-  @Test
-  @Description("success for valid options")
-  public void testValidEmptyOptionsValue(Vertx vertx, VertxTestContext testContext) {
-    optionsValidator = new OptionsTypeValidator("  ", false);
-    assertTrue(optionsValidator.isValid());
-    testContext.completeNow();
-  }
-  
-  @Test
-  @Description("success for valid options")
-  public void testInvalidEmptyOptionsValue(Vertx vertx, VertxTestContext testContext) {
-    optionsValidator = new OptionsTypeValidator("  ", true);
-    assertFalse(optionsValidator.isValid());
-    testContext.completeNow();
-  }
 
 }
