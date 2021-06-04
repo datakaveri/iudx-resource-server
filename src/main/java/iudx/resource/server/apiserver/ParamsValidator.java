@@ -61,6 +61,8 @@ public class ParamsValidator {
     validParams.add(NGSILDQUERY_TEMPORALQ);
     // Need to check with the timeProperty in Post Query property for NGSI-LD release v1.3.1
     validParams.add(NGSILDQUERY_TIME_PROPERTY);
+    validParams.add(NGSILDQUERY_FROM);
+    validParams.add(NGSILDQUERY_SIZE);
 
     // for IUDX count query
     validParams.add(IUDXQUERY_OPTIONS);
@@ -170,14 +172,14 @@ public class ParamsValidator {
     String[] georelArray = geoRel != null ? geoRel.split(";") : null;
 
 
-//    boolean validation =
-//        !isValidValue(attrs, attrsValidator)
-//            || !isValidValue(q, qtypeValidator)
-//            || !isValidValue(coordinates, coordinateValidator)
-//            || !isValidValue(georelArray != null ? georelArray[0] : null, geoRelTypeValidator)
-//            || !((georelArray != null && georelArray.length == 2)
-//                ? isValidDistance(georelArray[1], distanceTypeValidator)
-//                : isValidDistance(null, distanceTypeValidator));
+    // boolean validation =
+    // !isValidValue(attrs, attrsValidator)
+    // || !isValidValue(q, qtypeValidator)
+    // || !isValidValue(coordinates, coordinateValidator)
+    // || !isValidValue(georelArray != null ? georelArray[0] : null, geoRelTypeValidator)
+    // || !((georelArray != null && georelArray.length == 2)
+    // ? isValidDistance(georelArray[1], distanceTypeValidator)
+    // : isValidDistance(null, distanceTypeValidator));
 
 
     boolean validations1 =

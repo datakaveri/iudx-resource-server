@@ -112,6 +112,12 @@ public class QueryMapper {
       json.put(Constants.IUDXQUERY_OPTIONS, params.getOptions());
       LOGGER.debug("Info : json " + json);
     }
+    if (params.getPageFrom() != null) {
+      json.put(Constants.NGSILDQUERY_FROM, params.getPageFrom());
+    }
+    if (params.getPageSize() != null) {
+      json.put(Constants.NGSILDQUERY_SIZE, params.getPageSize());
+    }
 
     json.put(Constants.JSON_SEARCH_TYPE, getSearchType());
     LOGGER.debug("Info : json " + json);
@@ -198,7 +204,7 @@ public class QueryMapper {
     JsonObject json = new JsonObject();
     int length = queryTerms.length();
     List<Character> allowedSpecialCharacter = Arrays.asList('>', '=', '<', '!');
-    List<String> allowedOperators=Arrays.asList(">","=","<",">=","<=","==","!=");
+    List<String> allowedOperators = Arrays.asList(">", "=", "<", ">=", "<=", "==", "!=");
     int startIndex = 0;
     boolean specialCharFound = false;
     for (int i = 0; i < length; i++) {
@@ -221,7 +227,7 @@ public class QueryMapper {
       }
 
     }
-    if(!allowedOperators.contains(json.getString(Constants.JSON_OPERATOR))) {
+    if (!allowedOperators.contains(json.getString(Constants.JSON_OPERATOR))) {
       throw new RuntimeException("Operator not allowed.");
     }
     return json;

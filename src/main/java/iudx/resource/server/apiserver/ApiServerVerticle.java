@@ -138,16 +138,16 @@ public class ApiServerVerticle extends AbstractVerticle {
     router = Router.router(vertx);
     router.route().handler(
         CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
-    
-    router.route().handler(requestHandler->{
+
+    router.route().handler(requestHandler -> {
       requestHandler.response()
-      .putHeader("Cache-Control", "no-cache, no-store,  must-revalidate,max-age=0")
-      .putHeader("Pragma", "no-cache")
-      .putHeader("Expires", "0")
-      .putHeader("X-Content-Type-Options", "nosniff");
+          .putHeader("Cache-Control", "no-cache, no-store,  must-revalidate,max-age=0")
+          .putHeader("Pragma", "no-cache")
+          .putHeader("Expires", "0")
+          .putHeader("X-Content-Type-Options", "nosniff");
       requestHandler.next();
     });
-    
+
     // router.route().handler(HeadersHandler.create());
     router.route().handler(BodyHandler.create());
     // router.route().handler(AuthHandler.create(vertx));
@@ -156,25 +156,26 @@ public class ApiServerVerticle extends AbstractVerticle {
     ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
 
     /* NGSI-LD api endpoints */
-    ValidationHandler entityValidationHandler=new ValidationHandler(vertx,RequestType.ENTITY);
+    ValidationHandler entityValidationHandler = new ValidationHandler(vertx, RequestType.ENTITY);
     router.get(NGSILD_ENTITIES_URL)
         .handler(entityValidationHandler)
         .handler(AuthHandler.create(vertx)).handler(this::handleEntitiesQuery)
         .failureHandler(validationsFailureHandler);
 
-    ValidationHandler latestValidationHandler=new ValidationHandler(vertx,RequestType.LATEST);
+    ValidationHandler latestValidationHandler = new ValidationHandler(vertx, RequestType.LATEST);
     router
         .get(NGSILD_ENTITIES_URL + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
         .handler(latestValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::handleLatestEntitiesQuery).failureHandler(validationsFailureHandler);
 
-    ValidationHandler postValidationHandler=new ValidationHandler(vertx,RequestType.POST);
+    ValidationHandler postValidationHandler = new ValidationHandler(vertx, RequestType.POST);
     router.post(NGSILD_POST_QUERY_PATH).consumes(APPLICATION_JSON)
         .handler(postValidationHandler).handler(AuthHandler.create(vertx))
         .handler(this::handlePostEntitiesQuery).failureHandler(validationsFailureHandler);
 
-    ValidationHandler temporalValidationHandler=new ValidationHandler(vertx,RequestType.TEMPORAL);
+    ValidationHandler temporalValidationHandler =
+        new ValidationHandler(vertx, RequestType.TEMPORAL);
     router.get(NGSILD_TEMPORAL_URL)
         .handler(temporalValidationHandler)
         .handler(AuthHandler.create(vertx)).handler(this::handleTemporalQuery)

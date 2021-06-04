@@ -1,16 +1,6 @@
 package iudx.resource.server.apiserver.validation;
 
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ATTRIBUTE;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_COORDINATES;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ENDTIME;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOMETRY;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOPROPERTY;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOREL;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ID;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_MAXDISTANCE;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_Q;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEREL;
+import static iudx.resource.server.apiserver.util.Constants.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -38,6 +28,8 @@ import iudx.resource.server.apiserver.validation.types.GeometryTypeValidator;
 import iudx.resource.server.apiserver.validation.types.IDTypeValidator;
 import iudx.resource.server.apiserver.validation.types.JsonSchemaTypeValidator;
 import iudx.resource.server.apiserver.validation.types.OptionsTypeValidator;
+import iudx.resource.server.apiserver.validation.types.PaginationFromTypeValidator;
+import iudx.resource.server.apiserver.validation.types.PaginationSizeTypeValidator;
 import iudx.resource.server.apiserver.validation.types.QTypeValidator;
 import iudx.resource.server.apiserver.validation.types.StringTypeValidator;
 import iudx.resource.server.apiserver.validation.types.TimeRelTypeValidator;
@@ -91,6 +83,10 @@ public class ValidatorsHandlersFactory {
     validators.add(new OptionsTypeValidator(parameters.get("options"), false));
     validators.add(new CoordinatesTypeValidator(parameters.get(NGSILDQUERY_COORDINATES), false));
 
+    // pagination optional fields
+    validators.add(new PaginationSizeTypeValidator(parameters.get(NGSILDQUERY_SIZE), false));
+    validators.add(new PaginationFromTypeValidator(parameters.get(NGSILDQUERY_FROM), false));
+
     return validators;
 
   }
@@ -114,6 +110,9 @@ public class ValidatorsHandlersFactory {
     validators.add(new DateTypeValidator(parameters.get(NGSILDQUERY_TIME), true));
     validators.add(new DateTypeValidator(parameters.get(NGSILDQUERY_ENDTIME), false));
 
+    // pagination optional fields
+    validators.add(new PaginationSizeTypeValidator(parameters.get(NGSILDQUERY_SIZE), false));
+    validators.add(new PaginationFromTypeValidator(parameters.get(NGSILDQUERY_FROM), false));
 
     return validators;
   }
