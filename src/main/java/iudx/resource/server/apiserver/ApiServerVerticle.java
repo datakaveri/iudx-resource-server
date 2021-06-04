@@ -96,7 +96,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private DataBrokerService databroker;
   private AuthenticationService authenticator;
   private ParamsValidator validator;
-  
+
   private LatestDataService latestDataService;
 
   /**
@@ -138,6 +138,16 @@ public class ApiServerVerticle extends AbstractVerticle {
     router = Router.router(vertx);
     router.route().handler(
         CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
+    
+    router.route().handler(requestHandler->{
+      requestHandler.response()
+      .putHeader("Cache-Control", "no-cache, no-store,  must-revalidate,max-age=0")
+      .putHeader("Pragma", "no-cache")
+      .putHeader("Expires", "0")
+      .putHeader("X-Content-Type-Options", "nosniff");
+      requestHandler.next();
+    });
+    
     // router.route().handler(HeadersHandler.create());
     router.route().handler(BodyHandler.create());
     // router.route().handler(AuthHandler.create(vertx));
@@ -321,7 +331,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String id = domain + "/" + userSha + "/" + resourceServer + "/" + resourceGroup + "/"
         + resourceName;
     JsonObject json = new JsonObject();
-    Future<List<String>> filtersFuture =catalogueService.getApplicableFilters(id);
+    Future<List<String>> filtersFuture = catalogueService.getApplicableFilters(id);
     /* HTTP request instance/host details */
     String instanceID = request.getHeader(HEADER_HOST);
     json.put(JSON_INSTANCEID, instanceID);
@@ -490,15 +500,15 @@ public class ApiServerVerticle extends AbstractVerticle {
     latestDataService.getLatestData(json, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("Latest data search succeeded");
-        handleSuccessResponse(response, ResponseType.Ok.getCode(),handler.result().toString());
+        handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
       } else {
         LOGGER.error("Fail: Search Fail");
         processBackendResponse(response, handler.cause().getMessage());
       }
     });
   }
-  
-  
+
+
   /**
    * This method is used to handler all temporal NGSI-LD queries for endpoint
    * /ngsi-ld/v1/temporal/**.
@@ -1566,9 +1576,9 @@ public class ApiServerVerticle extends AbstractVerticle {
       Map<String, List<String>> decodedParams =
           new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET, true, 1024, true).parameters();
       for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
+        LOGGER.debug("Info: param :" + entry.getKey() + " value : " + entry.getValue());
         queryParams.add(entry.getKey(), entry.getValue());
       }
-      LOGGER.debug("Info: Decoded multimap");
     } catch (IllegalArgumentException ex) {
       response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(ResponseType.BadRequestData.getCode())
