@@ -28,8 +28,8 @@ import iudx.resource.server.apiserver.validation.types.GeometryTypeValidator;
 import iudx.resource.server.apiserver.validation.types.IDTypeValidator;
 import iudx.resource.server.apiserver.validation.types.JsonSchemaTypeValidator;
 import iudx.resource.server.apiserver.validation.types.OptionsTypeValidator;
-import iudx.resource.server.apiserver.validation.types.PaginationFromTypeValidator;
-import iudx.resource.server.apiserver.validation.types.PaginationSizeTypeValidator;
+import iudx.resource.server.apiserver.validation.types.PaginationOffsetTypeValidator;
+import iudx.resource.server.apiserver.validation.types.PaginationLimitTypeValidator;
 import iudx.resource.server.apiserver.validation.types.QTypeValidator;
 import iudx.resource.server.apiserver.validation.types.StringTypeValidator;
 import iudx.resource.server.apiserver.validation.types.TimeRelTypeValidator;
@@ -84,8 +84,8 @@ public class ValidatorsHandlersFactory {
     validators.add(new CoordinatesTypeValidator(parameters.get(NGSILDQUERY_COORDINATES), false));
 
     // pagination optional fields
-    validators.add(new PaginationSizeTypeValidator(parameters.get(NGSILDQUERY_SIZE), false));
-    validators.add(new PaginationFromTypeValidator(parameters.get(NGSILDQUERY_FROM), false));
+    validators.add(new PaginationLimitTypeValidator(parameters.get(NGSILDQUERY_SIZE), false));
+    validators.add(new PaginationOffsetTypeValidator(parameters.get(NGSILDQUERY_FROM), false));
 
     return validators;
 
@@ -111,8 +111,8 @@ public class ValidatorsHandlersFactory {
     validators.add(new DateTypeValidator(parameters.get(NGSILDQUERY_ENDTIME), false));
 
     // pagination optional fields
-    validators.add(new PaginationSizeTypeValidator(parameters.get(NGSILDQUERY_SIZE), false));
-    validators.add(new PaginationFromTypeValidator(parameters.get(NGSILDQUERY_FROM), false));
+    validators.add(new PaginationLimitTypeValidator(parameters.get(NGSILDQUERY_SIZE), false));
+    validators.add(new PaginationOffsetTypeValidator(parameters.get(NGSILDQUERY_FROM), false));
 
     return validators;
   }

@@ -12,12 +12,12 @@ import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import iudx.resource.server.apiserver.validation.types.PaginationSizeTypeValidator;
+import iudx.resource.server.apiserver.validation.types.PaginationOffsetTypeValidator;
 
 @ExtendWith(VertxExtension.class)
-public class PaginationSizeTypeValidatorTest {
+public class PaginationOffsetTypeValidatorTest {
 
-private PaginationSizeTypeValidator paginationSizeTypeValidator;
+  private PaginationOffsetTypeValidator paginationOffsetTypeValidator;
   
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
@@ -30,18 +30,17 @@ private PaginationSizeTypeValidator paginationSizeTypeValidator;
         Arguments.of(null, false),
         Arguments.of("1000", false),
         Arguments.of("5000", false),
-        Arguments.of("7500", false),
-        Arguments.of("10000", false),
+        Arguments.of("2500", false),
         Arguments.of("0", false));
   }
   
   @ParameterizedTest
   @MethodSource("allowedValues")
-  @Description("pagination from type parameter allowed values.")
-  public void testValidFromTypeValue(String value, boolean required, Vertx vertx,
+  @Description("pagination offset type parameter allowed values.")
+  public void testValidOffsetTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    paginationSizeTypeValidator = new PaginationSizeTypeValidator(value, required);
-    assertTrue(paginationSizeTypeValidator.isValid());
+    paginationOffsetTypeValidator = new PaginationOffsetTypeValidator(value, required);
+    assertTrue(paginationOffsetTypeValidator.isValid());
     testContext.completeNow();
   }
   
@@ -50,7 +49,7 @@ private PaginationSizeTypeValidator paginationSizeTypeValidator;
     // Add any valid value which will pass successfully.
     return Stream.of(
         Arguments.of("-1", false),
-        Arguments.of("10001", false),
+        Arguments.of("50001", false),
         Arguments.of("   ", false),
         Arguments.of("7896541233568796313611634", false),
         Arguments.of("false", false),
@@ -59,11 +58,11 @@ private PaginationSizeTypeValidator paginationSizeTypeValidator;
   
   @ParameterizedTest
   @MethodSource("invalidValues")
-  @Description("pagination from type parameter invalid values.")
-  public void testInvalidFromTypeValue(String value, boolean required, Vertx vertx,
+  @Description("pagination offset type parameter invalid values.")
+  public void testInvalidOffsetTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    paginationSizeTypeValidator = new PaginationSizeTypeValidator(value, required);
-    assertFalse(paginationSizeTypeValidator.isValid());
+    paginationOffsetTypeValidator = new PaginationOffsetTypeValidator(value, required);
+    assertFalse(paginationOffsetTypeValidator.isValid());
     testContext.completeNow();
   }
 }

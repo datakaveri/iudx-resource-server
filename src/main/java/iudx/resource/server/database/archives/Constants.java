@@ -45,6 +45,7 @@ public class Constants {
   public static final String DOCS_KEY = "docs";
   public static final String SEARCH_REQ_PARAM = "/_search";
   public static final String COUNT_REQ_PARAM = "/_count";
+  public static final String COUNT_REQ_PARAM_WITHOUT_FILTER = "/_search?search_type=count";
   public static final String TIME_FIELD_DB = "observationDateTime";
   public static final String FROM_KEY = "from";
   /* Request Params */
@@ -83,6 +84,11 @@ public class Constants {
   public static final String EQUAL_OP = "==";
   public static final String NOT_EQUAL_OP = "!=";
   public static final String BETWEEN_OP = "<==>";
+  
+  /*pagination*/
+  public static final String PARAM_SIZE = "limit";
+  public static final String PARAM_FROM = "offset";
+  
   /* Errors */
   public static final String INVALID_OPERATOR = "Invalid operator";
   public static final String INVALID_SEARCH = "Invalid search request";

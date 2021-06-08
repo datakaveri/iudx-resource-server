@@ -12,12 +12,12 @@ import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import iudx.resource.server.apiserver.validation.types.PaginationFromTypeValidator;
+import iudx.resource.server.apiserver.validation.types.PaginationLimitTypeValidator;
 
 @ExtendWith(VertxExtension.class)
-public class PaginationFromTypeValidatorTest {
+public class PaginationLimitTypeValidatorTest {
 
-  private PaginationFromTypeValidator paginationFromTypeValidator;
+private PaginationLimitTypeValidator paginationLimitTypeValidator;
   
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
@@ -30,17 +30,18 @@ public class PaginationFromTypeValidatorTest {
         Arguments.of(null, false),
         Arguments.of("1000", false),
         Arguments.of("5000", false),
-        Arguments.of("2500", false),
+        Arguments.of("7500", false),
+        Arguments.of("10000", false),
         Arguments.of("0", false));
   }
   
   @ParameterizedTest
   @MethodSource("allowedValues")
-  @Description("pagination from type parameter allowed values.")
-  public void testValidFromTypeValue(String value, boolean required, Vertx vertx,
+  @Description("pagination limit type parameter allowed values.")
+  public void testValidLimitTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    paginationFromTypeValidator = new PaginationFromTypeValidator(value, required);
-    assertTrue(paginationFromTypeValidator.isValid());
+    paginationLimitTypeValidator = new PaginationLimitTypeValidator(value, required);
+    assertTrue(paginationLimitTypeValidator.isValid());
     testContext.completeNow();
   }
   
@@ -49,7 +50,7 @@ public class PaginationFromTypeValidatorTest {
     // Add any valid value which will pass successfully.
     return Stream.of(
         Arguments.of("-1", false),
-        Arguments.of("50001", false),
+        Arguments.of("10001", false),
         Arguments.of("   ", false),
         Arguments.of("7896541233568796313611634", false),
         Arguments.of("false", false),
@@ -58,11 +59,11 @@ public class PaginationFromTypeValidatorTest {
   
   @ParameterizedTest
   @MethodSource("invalidValues")
-  @Description("pagination from type parameter invalid values.")
-  public void testInvalidFromTypeValue(String value, boolean required, Vertx vertx,
+  @Description("pagination limit type parameter invalid values.")
+  public void testInvalidLimitTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    paginationFromTypeValidator = new PaginationFromTypeValidator(value, required);
-    assertFalse(paginationFromTypeValidator.isValid());
+    paginationLimitTypeValidator = new PaginationLimitTypeValidator(value, required);
+    assertFalse(paginationLimitTypeValidator.isValid());
     testContext.completeNow();
   }
 }

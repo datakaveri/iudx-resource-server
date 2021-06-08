@@ -117,13 +117,14 @@ public class DatabaseServiceImpl implements DatabaseService {
             }
           });
     } else {
-      String countQuery=COUNT_MATCH_ALL_QUERY;
       String countIndex = String.join("__", splitId);
       countIndex = countIndex.concat(COUNT_REQ_PARAM);
-      client.countAsync(countIndex, countQuery, countHandler -> {
+      JsonObject countQuery=query.copy();
+      countQuery.remove(SOURCE_FILTER_KEY);
+      client.countAsync(countIndex, countQuery.toString(), countHandler -> {
         if (countHandler.succeeded()) {
-          query.put(SIZE_KEY, getOrDefault(request, SIZE_KEY, DEFAULT_SIZE_VALUE));
-          query.put(FROM_KEY, getOrDefault(request, FROM_KEY, DEFAULT_FROM_VALUE));
+          query.put(SIZE_KEY, getOrDefault(request, PARAM_SIZE, DEFAULT_SIZE_VALUE));
+          query.put(FROM_KEY, getOrDefault(request, PARAM_FROM, DEFAULT_FROM_VALUE));
           JsonObject countJson = countHandler.result();
           LOGGER.debug("count json : " + countJson);
           int count = countJson.getJsonArray("results").getJsonObject(0).getInteger("count");
@@ -132,8 +133,8 @@ public class DatabaseServiceImpl implements DatabaseService {
                 if (searchRes.succeeded()) {
                   LOGGER.debug("Success: Successful DB request");
                   handler.handle(Future.succeededFuture(searchRes.result()
-                      .put(SIZE_KEY, query.getInteger(SIZE_KEY))
-                      .put(FROM_KEY, query.getInteger(FROM_KEY))
+                      .put(PARAM_SIZE, query.getInteger(SIZE_KEY))
+                      .put(PARAM_FROM, query.getInteger(FROM_KEY))
                       .put("totalHits", count)));
                 } else {
                   LOGGER.error("Fail: DB Request;" + searchRes.cause().getMessage());
