@@ -4,11 +4,8 @@ import static iudx.resource.server.apiserver.util.Constants.*;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import io.vertx.ext.web.api.RequestParameter;
-import io.vertx.ext.web.api.validation.ParameterTypeValidator;
-import io.vertx.ext.web.api.validation.ValidationException;
 
-public class IDTypeValidator {
+public class IDTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(IDTypeValidator.class);
 
@@ -19,36 +16,52 @@ public class IDTypeValidator {
           "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z.]{4,100}/{1}[a-zA-Z-_.]{4,100}/{1}[a-zA-Z0-9-_.]{4,100}$");
 
 
-  public ParameterTypeValidator create() {
-    LOGGER.debug("creating ParameterTypeValidator for ID ");
-    IDValidator idValidator = new IDValidator();
-    return idValidator;
+  private String value;
+  private boolean required;
+
+  public IDTypeValidator(String value, boolean required) {
+    this.value = value;
+    this.required = required;
   }
 
-  class IDValidator implements ParameterTypeValidator {
+  public boolean isvalidIUDXId(String value) {
+    return regexIDPattern.matcher(value).matches();
+  }
 
-
-    public boolean isvalidIUDXId(String value) {
-      return regexIDPattern.matcher(value).matches();
-    }
-
-    @Override
-    public RequestParameter isValid(String value) throws ValidationException {
+  @Override
+  public boolean isValid() {
+    LOGGER.debug("value : " + value + "required : " + required);
+    if (required && (value == null || value.isBlank())) {
+      LOGGER.error("Validation error : null or blank value for required mandatory field");
+      return false;
+    } else {
+      if (value == null) {
+        return true;
+      }
       if (value.isBlank()) {
-        throw ValidationException.ValidationExceptionFactory
-            .generateNotMatchValidationException("Empty value not allowed.");
+        LOGGER.error("Validation error :  blank value for passed");
+        return false;
       }
-      if (value.length() > maxLength) {
-        throw ValidationException.ValidationExceptionFactory
-            .generateNotMatchValidationException("Value exceed max character limit.");
-      }
-      if (!isvalidIUDXId(value)) {
-        throw ValidationException.ValidationExceptionFactory
-            .generateNotMatchValidationException("Invalid id.");
-      }
-
-      return RequestParameter.create(value);
     }
+    if (value.length() > maxLength) {
+      LOGGER.error("Validation error : Value exceed max character limit.");
+      return false;
+    }
+    if (!isvalidIUDXId(value)) {
+      LOGGER.error("Validation error : Invalid id.");
+      return false;
+    }
+    return true;
+  }
+
+  @Override
+  public int failureCode() {
+    return 400;
+  }
+
+  @Override
+  public String failureMessage() {
+    return "Invalid id.";
   }
 
 }

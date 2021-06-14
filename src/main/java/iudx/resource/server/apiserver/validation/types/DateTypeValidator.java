@@ -4,46 +4,57 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import io.vertx.ext.web.api.RequestParameter;
-import io.vertx.ext.web.api.validation.ParameterTypeValidator;
-import io.vertx.ext.web.api.validation.ValidationException;
 
-public class DateTypeValidator {
+public class DateTypeValidator implements Validator {
   private static final Logger LOGGER = LogManager.getLogger(DateTypeValidator.class);
 
-  public ParameterTypeValidator create() {
-    ParameterTypeValidator dateTypeValidator = new DateValidator();
-    return dateTypeValidator;
+
+  private String value;
+  private boolean required;
+
+  public DateTypeValidator(String value, boolean required) {
+    this.value = value;
+    this.required = required;
   }
 
-  class DateValidator implements ParameterTypeValidator {
+  private boolean isValidDate(String value) {
+    String dateString = value.trim().replaceAll("\\s", "+");// since + is treated as space in uri
+    // params
+    try {
+      ZonedDateTime.parse(dateString);
+      return true;
+    } catch (DateTimeParseException e) {
+      LOGGER.error("Validation error : Invalid Date format.");
+      return false;
+    }
+  }
 
-
-    private boolean isValidDate(String value) {
-      String dateString = value.trim().replaceAll("\\s", "+");//since + is treated as space in uri params
-      try {
-        ZonedDateTime.parse(dateString);
+  @Override
+  public boolean isValid() {
+    LOGGER.debug("value : " + value + "required : " + required);
+    if (required && (value == null || value.isBlank())) {
+      LOGGER.error("Validation error : null or blank value for required mandatory field");
+      return false;
+    } else {
+      if (value == null) {
         return true;
-      } catch (DateTimeParseException e) {
-        //System.out.println(e);
+      }
+      if (value.isBlank()) {
+        LOGGER.error("Validation error :  blank value for passed");
         return false;
       }
     }
+    return isValidDate(value);
+  }
 
+  @Override
+  public int failureCode() {
+    return 400;
+  }
 
-    @Override
-    public RequestParameter isValid(String value) throws ValidationException {
-      if(value.isBlank()) {
-        throw ValidationException.ValidationExceptionFactory
-        .generateNotMatchValidationException("Empty value not allowed for parameter.");
-      }
-      if (!isValidDate(value)) {
-        throw ValidationException.ValidationExceptionFactory
-            .generateNotMatchValidationException("Invalid Date format.");
-      }
-      return RequestParameter.create(value);
-    }
-
+  @Override
+  public String failureMessage() {
+    return "Invalid date";
   }
 
 }

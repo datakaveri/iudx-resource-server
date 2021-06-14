@@ -3,35 +3,48 @@ package iudx.resource.server.apiserver.validation.types;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import io.vertx.ext.web.api.RequestParameter;
-import io.vertx.ext.web.api.validation.ParameterTypeValidator;
-import io.vertx.ext.web.api.validation.ValidationException;
 
-public class GeoRelTypeValidator {
+public class GeoRelTypeValidator implements Validator {
   private static final Logger LOGGER = LogManager.getLogger(GeoRelTypeValidator.class);
 
   private List<String> allowedValues = List.of("within", "intersects", "near");
 
-  public ParameterTypeValidator create() {
-    ParameterTypeValidator geoRelTypeValidator = new GeoRelValidator();
-    return geoRelTypeValidator;
+  private String value;
+  private boolean required;
+
+  public GeoRelTypeValidator(String value, boolean required) {
+    this.value = value;
+    this.required = required;
+  }
+
+  @Override
+  public boolean isValid() {
+    LOGGER.debug("value : " + value + "required : " + required);
+    if (required && (value == null || value.isBlank())) {
+      LOGGER.error("Validation error : null or blank value for required mandatory field");
+      return false;
+    } else {
+      if (value == null || value.isBlank()) {
+        return true;
+      }
+    }
+    String[] geoRelationValues = value.split(";");
+    if (!allowedValues.contains(geoRelationValues[0])) {
+      LOGGER.error("Validation error : Value " + value + " " + "is not allowed");
+      return false;
+    }
+    return true;
   }
 
 
-  class GeoRelValidator implements ParameterTypeValidator {
-    @Override
-    public RequestParameter isValid(String value) throws ValidationException {
-      if(value.isBlank()) {
-        throw ValidationException.ValidationExceptionFactory
-        .generateNotMatchValidationException("Empty value not allowed for parameter.");
-      }
-      String[] geoRelationValues = value.split(";");
-      if (!allowedValues.contains(geoRelationValues[0])) {
-        throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
-            "Value " + value + " " + "is not allowed");
+  @Override
+  public int failureCode() {
+    return 400;
+  }
 
-      }
-      return RequestParameter.create(value);
-    }
+
+  @Override
+  public String failureMessage() {
+    return "Invalid geo realation";
   }
 }

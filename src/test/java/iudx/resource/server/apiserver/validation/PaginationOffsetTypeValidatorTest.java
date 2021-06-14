@@ -3,7 +3,6 @@ package iudx.resource.server.apiserver.validation;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,54 +12,57 @@ import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import iudx.resource.server.apiserver.validation.types.AttrsTypeValidator;
+import iudx.resource.server.apiserver.validation.types.PaginationOffsetTypeValidator;
 
 @ExtendWith(VertxExtension.class)
-public class AttrsTypeValidatorTest {
+public class PaginationOffsetTypeValidatorTest {
 
-  private AttrsTypeValidator attrsTypevalidator;
-
+  private PaginationOffsetTypeValidator paginationOffsetTypeValidator;
+  
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
     testContext.completeNow();
   }
-
+  
   static Stream<Arguments> allowedValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
-        Arguments.of("refrenceLeval,Co2,NO2,SO2,CO", true),
-        Arguments.of(null, false));
+        Arguments.of(null, false),
+        Arguments.of("1000", false),
+        Arguments.of("5000", false),
+        Arguments.of("2500", false),
+        Arguments.of("0", false));
   }
-
+  
   @ParameterizedTest
   @MethodSource("allowedValues")
-  @Description("Attrs type parameter allowed values.")
-  public void testValidAttrsTypeValue(String value, boolean required, Vertx vertx,
+  @Description("pagination offset type parameter allowed values.")
+  public void testValidOffsetTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    attrsTypevalidator = new AttrsTypeValidator(value, required);
-    assertTrue(attrsTypevalidator.isValid());
+    paginationOffsetTypeValidator = new PaginationOffsetTypeValidator(value, required);
+    assertTrue(paginationOffsetTypeValidator.isValid());
     testContext.completeNow();
   }
-
+  
+  
   static Stream<Arguments> invalidValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
-        Arguments.of("", true),
-        Arguments.of("  ", true),
-        Arguments.of("refrenceLeval,Co2,NO2,SO2,CO,ABC", true),
-        Arguments.of(RandomStringUtils.random(102) + ",refrenceLeval,Co2,NO2,SO2",true),
-        Arguments.of("refrence$Leval,Co2,NO2,SO2", true),
-        Arguments.of("refrenceLeval,Co2,NO2,S*&O2", true));
+        Arguments.of("-1", false),
+        Arguments.of("50001", false),
+        Arguments.of("   ", false),
+        Arguments.of("7896541233568796313611634", false),
+        Arguments.of("false", false),
+        Arguments.of("kajlksdjloasknfdlkanslodnmalsdasd", false));
   }
-
+  
   @ParameterizedTest
   @MethodSource("invalidValues")
-  @Description("Attrs type parameter invalid values.")
-  public void testInvalidAttrsTypeValue(String value, boolean required, Vertx vertx,
+  @Description("pagination offset type parameter invalid values.")
+  public void testInvalidOffsetTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    attrsTypevalidator = new AttrsTypeValidator(value, required);
-    assertFalse(attrsTypevalidator.isValid());
+    paginationOffsetTypeValidator = new PaginationOffsetTypeValidator(value, required);
+    assertFalse(paginationOffsetTypeValidator.isValid());
     testContext.completeNow();
   }
-
 }

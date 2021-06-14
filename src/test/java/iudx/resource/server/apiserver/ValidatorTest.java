@@ -31,18 +31,17 @@ public class ValidatorTest {
       "{\"type\": \"Query\",\"entities\": [{\"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"}],\"geoQ\": {\"geometry\": \"Point\",\"coordinates\": [21.178,72.834],\"georel\": \"near;maxDistance=1000\",\"geoproperty\": \"location\"},\"temporalQ\": {\"timerel\": \"during\",\"time\": \"2020-10-18T14:20:00Z\",\"endtime\": \"2020-10-19T14:20:00Z\",\"timeProperty\": \"observationDateTime\"},\"q\":\"speed>30.0\",\"attrs\":\"id,speed\"}");
 
   private CatalogueService catalogueService;
-  private Validator validator;
+  private ParamsValidator validator;
 
 
   @BeforeEach
-  public void setup(Vertx vertx, io.vertx.reactivex.core.Vertx vertx2,
-      VertxTestContext testContext) {
+  public void setup(Vertx vertx,VertxTestContext testContext) {
 
     configuration = new Configuration();
-    config = configuration.configLoader(1, vertx2);
+    config = configuration.configLoader(1, vertx);
 
     catalogueService = new CatalogueService(vertx, config);
-    validator = new Validator(catalogueService);
+    validator = new ParamsValidator(catalogueService);
 
     assertNotNull(catalogueService);
     assertNotNull(validator);
@@ -158,8 +157,6 @@ public class ValidatorTest {
   static Stream<Arguments> invalidAttrsValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
-        Arguments.of("", "Empty value not allowed for parameter."),
-        Arguments.of("  ", "Empty value not allowed for parameter."),
         Arguments.of("refrenceLeval,Co2,NO2,SO2,CO,ABC", "More than 5 attributes are not allowed."),
         Arguments.of(RandomStringUtils.random(102) + ",refrenceLeval,Co2,NO2,SO2",
             "One of the attribute exceeds allowed characters(only 100 characters allowed)."),
@@ -187,8 +184,6 @@ public class ValidatorTest {
   static Stream<Arguments> invalidQValues() {
     // Add any invalid value which will throw error.
     return Stream.of(
-        Arguments.of(""),
-        Arguments.of("    "),
         Arguments.of(RandomStringUtils.random(600)),
         Arguments.of("referenceLevel<>15.0"),
         Arguments.of("referenceLevel>>15.0"),

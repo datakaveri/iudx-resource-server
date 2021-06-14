@@ -30,10 +30,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.api.validation.ValidationException;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import iudx.resource.server.apiserver.handlers.AuthHandler;
+import iudx.resource.server.apiserver.handlers.ValidationHandler;
 import iudx.resource.server.apiserver.management.ManagementApi;
 import iudx.resource.server.apiserver.management.ManagementApiImpl;
 import iudx.resource.server.apiserver.query.NGSILDQueryParams;
@@ -44,8 +44,9 @@ import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.util.Constants;
+import iudx.resource.server.apiserver.util.RequestType;
 import iudx.resource.server.apiserver.validation.ValidationFailureHandler;
-import iudx.resource.server.apiserver.validation.HTTPRequestValidatiorsHandlersFactory;
+import iudx.resource.server.apiserver.validation.ValidatorsHandlersFactory;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.archives.DatabaseService;
 import iudx.resource.server.database.latest.LatestDataService;
@@ -94,8 +95,8 @@ public class ApiServerVerticle extends AbstractVerticle {
   private DatabaseService database;
   private DataBrokerService databroker;
   private AuthenticationService authenticator;
-  private Validator validator;
-  
+  private ParamsValidator validator;
+
   private LatestDataService latestDataService;
 
   /**
@@ -137,28 +138,46 @@ public class ApiServerVerticle extends AbstractVerticle {
     router = Router.router(vertx);
     router.route().handler(
         CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
+
+    router.route().handler(requestHandler -> {
+      requestHandler.response()
+          .putHeader("Cache-Control", "no-cache, no-store,  must-revalidate,max-age=0")
+          .putHeader("Pragma", "no-cache")
+          .putHeader("Expires", "0")
+          .putHeader("X-Content-Type-Options", "nosniff");
+      requestHandler.next();
+    });
+
     // router.route().handler(HeadersHandler.create());
     router.route().handler(BodyHandler.create());
     // router.route().handler(AuthHandler.create(vertx));
 
-    HTTPRequestValidatiorsHandlersFactory validators = new HTTPRequestValidatiorsHandlersFactory();
+    ValidatorsHandlersFactory validators = new ValidatorsHandlersFactory();
     ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
 
     /* NGSI-LD api endpoints */
-    router.get(NGSILD_ENTITIES_URL).handler(validators.getValidation4Context("ENTITY"))
+    ValidationHandler entityValidationHandler = new ValidationHandler(vertx, RequestType.ENTITY);
+    router.get(NGSILD_ENTITIES_URL)
+        .handler(entityValidationHandler)
         .handler(AuthHandler.create(vertx)).handler(this::handleEntitiesQuery)
         .failureHandler(validationsFailureHandler);
 
+    ValidationHandler latestValidationHandler = new ValidationHandler(vertx, RequestType.LATEST);
     router
         .get(NGSILD_ENTITIES_URL + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
-        .handler(validators.getValidation4Context("LATEST")).handler(AuthHandler.create(vertx))
+        .handler(latestValidationHandler)
+        .handler(AuthHandler.create(vertx))
         .handler(this::handleLatestEntitiesQuery).failureHandler(validationsFailureHandler);
 
+    ValidationHandler postValidationHandler = new ValidationHandler(vertx, RequestType.POST);
     router.post(NGSILD_POST_QUERY_PATH).consumes(APPLICATION_JSON)
-        .handler(validators.getValidation4Context("POST")).handler(AuthHandler.create(vertx))
+        .handler(postValidationHandler).handler(AuthHandler.create(vertx))
         .handler(this::handlePostEntitiesQuery).failureHandler(validationsFailureHandler);
 
-    router.get(NGSILD_TEMPORAL_URL).handler(validators.getValidation4Context("TEMPORAL"))
+    ValidationHandler temporalValidationHandler =
+        new ValidationHandler(vertx, RequestType.TEMPORAL);
+    router.get(NGSILD_TEMPORAL_URL)
+        .handler(temporalValidationHandler)
         .handler(AuthHandler.create(vertx)).handler(this::handleTemporalQuery)
         .failureHandler(validationsFailureHandler);
 
@@ -285,7 +304,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     managementApi = new ManagementApiImpl();
     subsService = new SubscriptionService();
     catalogueService = new CatalogueService(vertx, config());
-    validator = new Validator(catalogueService);
+    validator = new ParamsValidator(catalogueService);
 
   }
 
@@ -301,9 +320,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     // get query paramaters
     MultiMap params = getQueryParams(routingContext, response).get();
     if (!params.isEmpty()) {
-      ValidationException ex =
-          new ValidationException("Query parameters are not allowed with latest query");
-      ex.setParameterName("[Query parameters]");
+      RuntimeException ex =
+          new RuntimeException("Query parameters are not allowed with latest query");
       routingContext.fail(ex);
     }
     String domain = request.getParam(JSON_DOMAIN);
@@ -314,7 +332,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String id = domain + "/" + userSha + "/" + resourceServer + "/" + resourceGroup + "/"
         + resourceName;
     JsonObject json = new JsonObject();
-    Future<List<String>> filtersFuture =catalogueService.getApplicableFilters(id);
+    Future<List<String>> filtersFuture = catalogueService.getApplicableFilters(id);
     /* HTTP request instance/host details */
     String instanceID = request.getHeader(HEADER_HOST);
     json.put(JSON_INSTANCEID, instanceID);
@@ -356,9 +374,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         // parse query params
         NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
         if (isTemporalParamsPresent(ngsildquery)) {
-          ValidationException ex =
-              new ValidationException("Temporal parameters are not allowed in entities query.");
-          ex.setParameterName("[timerel,time or endtime]");
+          RuntimeException ex =
+              new RuntimeException("Temporal parameters are not allowed in entities query.");
           routingContext.fail(ex);
         }
         // create json
@@ -484,15 +501,15 @@ public class ApiServerVerticle extends AbstractVerticle {
     latestDataService.getLatestData(json, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("Latest data search succeeded");
-        handleSuccessResponse(response, ResponseType.Ok.getCode(),handler.result().toString());
+        handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
       } else {
         LOGGER.error("Fail: Search Fail");
         processBackendResponse(response, handler.cause().getMessage());
       }
     });
   }
-  
-  
+
+
   /**
    * This method is used to handler all temporal NGSI-LD queries for endpoint
    * /ngsi-ld/v1/temporal/**.
@@ -1560,9 +1577,9 @@ public class ApiServerVerticle extends AbstractVerticle {
       Map<String, List<String>> decodedParams =
           new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET, true, 1024, true).parameters();
       for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
+        LOGGER.debug("Info: param :" + entry.getKey() + " value : " + entry.getValue());
         queryParams.add(entry.getKey(), entry.getValue());
       }
-      LOGGER.debug("Info: Decoded multimap");
     } catch (IllegalArgumentException ex) {
       response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(ResponseType.BadRequestData.getCode())

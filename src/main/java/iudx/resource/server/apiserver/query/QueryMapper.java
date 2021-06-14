@@ -8,7 +8,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.api.validation.ValidationException;
 import iudx.resource.server.apiserver.util.Constants;
 
 /**
@@ -73,9 +72,8 @@ public class QueryMapper {
         }
         LOGGER.debug("Info : json " + json);
       } else {
-        ValidationException exception = new ValidationException(
+        RuntimeException exception = new RuntimeException(
             "incomplete geo-query geoproperty, geometry, georel, coordinates all are mandatory.");
-        exception.setParameterName("geometry, georel, coordinates, geoproperty");
         throw exception;
       }
     }
@@ -114,6 +112,12 @@ public class QueryMapper {
       json.put(Constants.IUDXQUERY_OPTIONS, params.getOptions());
       LOGGER.debug("Info : json " + json);
     }
+    if (params.getPageFrom() != null) {
+      json.put(Constants.NGSILDQUERY_FROM, params.getPageFrom());
+    }
+    if (params.getPageSize() != null) {
+      json.put(Constants.NGSILDQUERY_SIZE, params.getPageSize());
+    }
 
     json.put(Constants.JSON_SEARCH_TYPE, getSearchType());
     LOGGER.debug("Info : json " + json);
@@ -131,9 +135,8 @@ public class QueryMapper {
       LOGGER.debug("Info : inside isValidTimeInterval time : " + time.isBlank());
       LOGGER.debug("Info : inside isValidTimeInterval endTime : " + endTime);
       if (isNullorEmpty(time) || isNullorEmpty(endTime)) {
-        ValidationException exception =
-            new ValidationException("time and endTime both are mandatory for during Query.");
-        exception.setParameterName("time/endtime");
+        RuntimeException exception =
+            new RuntimeException("time and endTime both are mandatory for during Query.");
         throw exception;
       }
 
@@ -144,9 +147,8 @@ public class QueryMapper {
         Duration duration = Duration.between(start, end);
         totalDaysAllowed = duration.toDays();
       } catch (Exception ex) {
-        ValidationException exception =
-            new ValidationException("Invalid time format");
-        exception.setParameterName("time/endtime");
+        RuntimeException exception =
+            new RuntimeException("Invalid time format");
         throw exception;
       }
     } else if (timeRel.equalsIgnoreCase("after")) {
@@ -155,9 +157,8 @@ public class QueryMapper {
 
     }
     if (totalDaysAllowed > Constants.VALIDATION_MAX_DAYS_INTERVAL_ALLOWED) {
-      ValidationException exception =
-          new ValidationException("time interval greater than 10 days is not allowed");
-      exception.setParameterName("time-endtime");
+      RuntimeException exception =
+          new RuntimeException("time interval greater than 10 days is not allowed");
       throw exception;
     }
   }
@@ -203,7 +204,7 @@ public class QueryMapper {
     JsonObject json = new JsonObject();
     int length = queryTerms.length();
     List<Character> allowedSpecialCharacter = Arrays.asList('>', '=', '<', '!');
-    List<String> allowedOperators=Arrays.asList(">","=","<",">=","<=","==","!=");
+    List<String> allowedOperators = Arrays.asList(">", "=", "<", ">=", "<=", "==", "!=");
     int startIndex = 0;
     boolean specialCharFound = false;
     for (int i = 0; i < length; i++) {
@@ -215,8 +216,7 @@ public class QueryMapper {
           specialCharFound = true;
         } else {
           LOGGER.info("Ignore " + c.toString());
-          throw ValidationException.ValidationExceptionFactory
-              .generateNotMatchValidationException("Operator not allowed.");
+          throw new RuntimeException("Operator not allowed.");
         }
       } else {
         if (specialCharFound && (Character.isLetter(c) || Character.isDigit(c))) {
@@ -227,9 +227,8 @@ public class QueryMapper {
       }
 
     }
-    if(!allowedOperators.contains(json.getString(Constants.JSON_OPERATOR))) {
-      throw ValidationException.ValidationExceptionFactory
-      .generateNotMatchValidationException("Operator not allowed.");
+    if (!allowedOperators.contains(json.getString(Constants.JSON_OPERATOR))) {
+      throw new RuntimeException("Operator not allowed.");
     }
     return json;
   }

@@ -1,14 +1,12 @@
 package iudx.resource.server.databroker;
 
-import static org.junit.jupiter.api.Assertions.*;
-import java.io.FileInputStream;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -23,10 +21,10 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import io.vertx.rabbitmq.RabbitMQClient;
-import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
+import io.vertx.rabbitmq.RabbitMQClient;
+import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.PoolOptions;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.databroker.util.Constants;
@@ -35,9 +33,9 @@ import iudx.resource.server.databroker.util.Constants;
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(OrderAnnotation.class)
 /**
- *@Disabled test cases disabled for current release.
+ * @Disabled test cases disabled for current release.
  */
-@Disabled 
+@Disabled
 public class CallbackSubscriptionTest {
 
   static DataBrokerService databroker;
@@ -78,15 +76,14 @@ public class CallbackSubscriptionTest {
 
   @BeforeAll
   @DisplayName("Initialize the Databroker class with web client and rabbitmq client")
-  static void startVertx(Vertx vertx, io.vertx.reactivex.core.Vertx vertx2,
-      VertxTestContext testContext) {
+  static void startVertx(Vertx vertx, VertxTestContext testContext) {
 
     /* Read the configuration and set the rabbitMQ server properties. */
     properties = new Properties();
     inputstream = null;
 
     appConfig = new Configuration();
-    JsonObject callbackConfig = appConfig.configLoader(2, vertx2);
+    JsonObject callbackConfig = appConfig.configLoader(2, vertx);
 
     try {
 
@@ -171,7 +168,7 @@ public class CallbackSubscriptionTest {
     propObj.put("databasePoolSize", poolSize);
 
     /* Call the databroker constructor with the RabbitMQ client Vertx web client. */
-    
+
     rabbitMQWebClient = new RabbitWebClient(vertx, webConfig, propObj);
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
     rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient, pgClient);
@@ -315,7 +312,7 @@ public class CallbackSubscriptionTest {
         JsonObject response = handler.result();
         logger.info("successregisterCallbackSubscription response is : " + response);
         assertTrue(response.containsKey(Constants.SUBSCRIPTION_ID));
-        //assertEquals(expected, response);
+        // assertEquals(expected, response);
       }
       testContext.completeNow();
     });
@@ -369,7 +366,7 @@ public class CallbackSubscriptionTest {
         "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
 
     expected.put(Constants.ENTITIES, array);
- 
+
     JsonObject request = new JsonObject();
     request.put(Constants.NAME, "test-callback");
     request.put(Constants.CONSUMER, "pawan@google.org");
@@ -393,7 +390,8 @@ public class CallbackSubscriptionTest {
   @Test
   @DisplayName("Testing failure case : list callback subscription with not valid subscriptionid")
   @Order(8)
-  void failedlistCallbackSubscriptionNotvalidSubsciptionId(VertxTestContext testContext) throws InterruptedException {
+  void failedlistCallbackSubscriptionNotvalidSubsciptionId(VertxTestContext testContext)
+      throws InterruptedException {
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "Error in payload");
 
@@ -417,7 +415,7 @@ public class CallbackSubscriptionTest {
       testContext.completeNow();
     });
   }
-  
+
   @Test
   @DisplayName("Testing success case : register callback update subscription with valid data")
   @Order(9)
@@ -474,7 +472,7 @@ public class CallbackSubscriptionTest {
       testContext.completeNow();
     });
   }
-  
+
   @Test
   @DisplayName("Testing success case : delete callback subscription with valid data")
   @Order(11)
@@ -497,6 +495,6 @@ public class CallbackSubscriptionTest {
     });
   }
 
-  
+
 
 }

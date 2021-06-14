@@ -5,6 +5,7 @@ import static iudx.resource.server.databroker.util.Util.*;
 import java.time.OffsetDateTime;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.http.HttpStatus;
@@ -56,7 +57,7 @@ public class SubscriptionService {
           LOGGER.debug("success :: createUserIfNotExist " + result);
           String streamingUserName = result.getString("shaUsername");
           String apiKey = result.getString("apiKey");
-          
+
           JsonArray entitites = request.getJsonArray(ENTITIES);
           LOGGER.debug("Info : Request Access for " + entitites);
           LOGGER.debug("Info : No of bindings to do : " + entitites.size());
@@ -86,8 +87,9 @@ public class SubscriptionService {
                           rabbitClient.deleteQueue(requestjson, vhost);
                       resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                         if (resultHandlerDeletequeue.succeeded()) {
-                          promise.fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, INVALID_ROUTING_KEY)
-                              .toString());
+                          promise.fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA,
+                              INVALID_ROUTING_KEY)
+                                  .toString());
                         }
                       });
                     } else {
@@ -115,8 +117,9 @@ public class SubscriptionService {
                             resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                               if (resultHandlerDeletequeue.succeeded()) {
                                 promise
-                                    .fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, BINDING_FAILED)
-                                        .toString());
+                                    .fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA,
+                                        BINDING_FAILED)
+                                            .toString());
                               }
                             });
                           } else if (totalBindSuccess == totalBindCount) {
@@ -140,8 +143,9 @@ public class SubscriptionService {
                               rabbitClient.deleteQueue(requestjson, vhost);
                           resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                             if (resultHandlerDeletequeue.succeeded()) {
-                              promise.fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, BINDING_FAILED)
-                                  .toString());
+                              promise.fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA,
+                                  BINDING_FAILED)
+                                      .toString());
                             }
                           });
                         }
@@ -153,8 +157,9 @@ public class SubscriptionService {
                         rabbitClient.deleteQueue(requestjson, vhost);
                     resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                       if (resultHandlerDeletequeue.succeeded()) {
-                        promise.fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, INVALID_ROUTING_KEY)
-                            .toString());
+                        promise.fail(
+                            getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, INVALID_ROUTING_KEY)
+                                .toString());
                       }
                     });
                   }
@@ -552,8 +557,9 @@ public class SubscriptionService {
 
                             JsonObject jsonpg = new JsonObject();
                             jsonpg.put("body", publishjson.toString());
+                            Buffer messageBuffer = Buffer.buffer(jsonpg.toString());
                             rabbitClient.getRabbitMQClient().basicPublish(exchangename, routingkey,
-                                jsonpg, resultHandler -> {
+                                messageBuffer, resultHandler -> {
                                   if (resultHandler.succeeded()) {
                                     registerCallbackSubscriptionResponse.put("subscriptionID",
                                         subscriptionID);
@@ -678,9 +684,9 @@ public class SubscriptionService {
 
                       JsonObject jsonpg = new JsonObject();
                       jsonpg.put("body", publishjson.toString());
-
+                      Buffer messageBuffer = Buffer.buffer(jsonpg.toString());
                       rabbitClient.getRabbitMQClient().basicPublish(exchangename, routingkey,
-                          jsonpg, resultHandler -> {
+                          messageBuffer, resultHandler -> {
                             if (resultHandler.succeeded()) {
                               updateCallbackSubscriptionResponse.put("subscriptionID",
                                   subscriptionID);
@@ -761,7 +767,9 @@ public class SubscriptionService {
                 String routingkey = "delete";
                 JsonObject jsonpg = new JsonObject();
                 jsonpg.put("body", publishjson.toString());
-                rabbitClient.getRabbitMQClient().basicPublish(exchangename, routingkey, jsonpg,
+                Buffer messageBuffer = Buffer.buffer(jsonpg.toString());
+                rabbitClient.getRabbitMQClient().basicPublish(exchangename, routingkey,
+                    messageBuffer,
                     resultHandler -> {
                       if (resultHandler.succeeded()) {
                         deleteCallbackSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,

@@ -1,15 +1,16 @@
 package iudx.resource.server.database.archives;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonObject;
+
 import static iudx.resource.server.database.archives.Constants.*;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 
 /**
  * The Database Service Implementation.
@@ -89,9 +90,9 @@ public class DatabaseServiceImpl implements DatabaseService {
     List<String> splitId = new LinkedList<>(Arrays.asList(request.getJsonArray(ID)
         .getString(0).split("/")));
     splitId.remove(splitId.size() - 1);
-    String index = String.join("__", splitId);
-    index = index.concat(SEARCH_REQ_PARAM);
-    LOGGER.debug("Index name: " + index);
+    final String searchIndex = String.join("__", splitId).concat(SEARCH_REQ_PARAM);
+    // searchIndex = searchIndex.concat(SEARCH_REQ_PARAM);
+    LOGGER.debug("Index name: " + searchIndex);
 
     query = queryDecoder.queryDecoder(request);
     if (query.containsKey(ERROR)) {
@@ -116,16 +117,36 @@ public class DatabaseServiceImpl implements DatabaseService {
             }
           });
     } else {
-      client.searchAsync(index, FILTER_PATH_VAL, query.toString(),
-          searchRes -> {
-          if (searchRes.succeeded()) {
-            LOGGER.debug("Success: Successful DB request");
-            handler.handle(Future.succeededFuture(searchRes.result()));
-          } else {
-            LOGGER.error("Fail: DB Request;" + searchRes.cause().getMessage());
-            handler.handle(Future.failedFuture(searchRes.cause().getMessage()));
-          }
-        });
+      String countIndex = String.join("__", splitId);
+      countIndex = countIndex.concat(COUNT_REQ_PARAM);
+      JsonObject countQuery=query.copy();
+      countQuery.remove(SOURCE_FILTER_KEY);
+      client.countAsync(countIndex, countQuery.toString(), countHandler -> {
+        if (countHandler.succeeded()) {
+          query.put(SIZE_KEY, getOrDefault(request, PARAM_SIZE, DEFAULT_SIZE_VALUE));
+          query.put(FROM_KEY, getOrDefault(request, PARAM_FROM, DEFAULT_FROM_VALUE));
+          JsonObject countJson = countHandler.result();
+          LOGGER.debug("count json : " + countJson);
+          int count = countJson.getJsonArray("results").getJsonObject(0).getInteger("count");
+          client.searchAsync(searchIndex, FILTER_PATH_VAL, query.toString(),
+              searchRes -> {
+                if (searchRes.succeeded()) {
+                  LOGGER.debug("Success: Successful DB request");
+                  handler.handle(Future.succeededFuture(searchRes.result()
+                      .put(PARAM_SIZE, query.getInteger(SIZE_KEY))
+                      .put(PARAM_FROM, query.getInteger(FROM_KEY))
+                      .put("totalHits", count)));
+                } else {
+                  LOGGER.error("Fail: DB Request;" + searchRes.cause().getMessage());
+                  handler.handle(Future.failedFuture(searchRes.cause().getMessage()));
+                }
+              });
+        } else {
+          LOGGER.error("Fail: DB Request;" + countHandler.cause().getMessage());
+          handler.handle(Future.failedFuture(countHandler.cause().getMessage()));
+        }
+      });
+
     }
     return this;
   }
@@ -207,5 +228,13 @@ public class DatabaseServiceImpl implements DatabaseService {
       }
     });
     return this;
+  }
+
+  public int getOrDefault(JsonObject json, String key, int def) {
+    if (json.containsKey(key)) {
+      int value = Integer.parseInt(json.getString(key));
+      return value;
+    }
+    return def;
   }
 }

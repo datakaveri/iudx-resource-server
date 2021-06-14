@@ -13,14 +13,12 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.rxjava.redis.client.RedisAPI;
 import iudx.resource.server.database.archives.ResponseBuilder;
 
 public class RedisClient {
     // private Redis redisClient;
     private ResponseBuilder responseBuilder;
     private static final Logger LOGGER = LogManager.getLogger(RedisClient.class);
-    private RedisAPI redis;
     private Vertx vertx;
     private JReJSON client;
 

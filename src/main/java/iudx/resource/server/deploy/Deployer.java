@@ -127,7 +127,7 @@ public class Deployer {
     List<String> zookeepers = configuration.getJsonArray("zookeepers").getList();
     String clusterId = configuration.getString("clusterId");
     mgr = getClusterManager(host, zookeepers, clusterId);
-    EventBusOptions ebOptions = new EventBusOptions().setClustered(true).setHost(host);
+    EventBusOptions ebOptions = new EventBusOptions().setClusterPublicHost(host);
     VertxOptions options = new VertxOptions().setClusterManager(mgr).setEventBusOptions(ebOptions)
         .setMetricsOptions(getMetricsOptions());
 
@@ -163,21 +163,21 @@ public class Deployer {
       });
     }
 
-    try {
-      latch_verticles.await(5, TimeUnit.SECONDS);
-      LOGGER.info("All the verticles undeployed");
-      mgr.leave(handler -> {
-        if (handler.succeeded()) {
-          LOGGER.info("Hazelcast succesfully left:");
-          latch_cluster.countDown();
-
-        } else {
-          LOGGER.warn("Error while hazelcast leaving, reason:" + handler.cause());
-        }
-      });
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+//    try {
+//      latch_verticles.await(5, TimeUnit.SECONDS);
+//      LOGGER.info("All the verticles undeployed");
+//      mgr.leave(handler -> {
+//        if (handler.succeeded()) {
+//          LOGGER.info("Hazelcast succesfully left:");
+//          latch_cluster.countDown();
+//
+//        } else {
+//          LOGGER.warn("Error while hazelcast leaving, reason:" + handler.cause());
+//        }
+//      });
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//    }
 
     try {
       latch_cluster.await(5, TimeUnit.SECONDS);

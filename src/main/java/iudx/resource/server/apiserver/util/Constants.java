@@ -83,6 +83,8 @@ public class Constants {
   public static final String NGSILDQUERY_GEOQ = "geoQ";
   public static final String NGSILDQUERY_TEMPORALQ = "temporalQ";
   public static final String NGSILDQUERY_TIME_PROPERTY = "timeProperty";
+  public static final String NGSILDQUERY_FROM="offset";
+  public static final String NGSILDQUERY_SIZE="limit";
   
   // Header params
   public static final String HEADER_TOKEN = "token";

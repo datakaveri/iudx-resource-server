@@ -36,6 +36,8 @@ public class NGSILDQueryParams {
   private String geoProperty;
   private TemporalRelation temporalRelation;
   private String options;
+  private String pageFrom;
+  private String pageSize;
 
   public NGSILDQueryParams() {}
 
@@ -132,6 +134,14 @@ public class NGSILDQueryParams {
           this.options = entry.getValue();
           break;
         }
+        case NGSILDQUERY_SIZE: {
+          this.pageSize = entry.getValue();
+          break;
+        }
+        case NGSILDQUERY_FROM: {
+          this.pageFrom = entry.getValue();
+          break;
+        }
         default: {
           LOGGER.warn(MSG_INVALID_PARAM + ":" + entry.getKey());
           break;
@@ -147,17 +157,17 @@ public class NGSILDQueryParams {
             new JsonObject().put("timerel", "during").put("time", "2020-06-01T14:20:00Z")
                 .put("endtime", "2020-06-03T15:00:00Z").put("timeProperty", "timeProperty"))
         .put("geoQ",
-        new JsonObject()
-            .put("geometry", "point")
-            .put("coordinates", new JsonArray().add(25.319768).add(82.987988))
-            .put("georel", "near;maxDistance=1000")
-            .put("geoproperty", "geoJsonObject"))
-            .put("entities", new JsonArray().add(new JsonObject().put("id",
+            new JsonObject()
+                .put("geometry", "point")
+                .put("coordinates", new JsonArray().add(25.319768).add(82.987988))
+                .put("georel", "near;maxDistance=1000")
+                .put("geoproperty", "geoJsonObject"))
+        .put("entities", new JsonArray().add(new JsonObject().put("id",
             "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")));
 
     NGSILDQueryParams ng = new NGSILDQueryParams(json);
     QueryMapper qm = new QueryMapper();
-    //System.out.println(qm.toJson(ng, true));
+    // System.out.println(qm.toJson(ng, true));
   }
 
   private void create(JsonObject requestJson) {
@@ -204,7 +214,7 @@ public class NGSILDQueryParams {
           this.id = new ArrayList<URI>();
           this.idPattern = new ArrayList<String>();
           JsonObject entity = (JsonObject) iter.next();
-          //System.out.println(entity);
+          // System.out.println(entity);
           String id = entity.getString("id");
           String idPattern = entity.getString("idPattern");
           if (id != null) {
@@ -216,6 +226,10 @@ public class NGSILDQueryParams {
         }
       } else if (entry.getKey().equalsIgnoreCase(IUDXQUERY_OPTIONS)) {
         this.options = requestJson.getString(entry.getKey());
+      } else if (entry.getKey().equalsIgnoreCase(NGSILDQUERY_FROM)) {
+        this.pageFrom = requestJson.getString(entry.getKey());
+      } else if (entry.getKey().equalsIgnoreCase(NGSILDQUERY_SIZE)) {
+        this.pageSize = requestJson.getString(NGSILDQUERY_SIZE);
       }
     });
   }
@@ -318,6 +332,13 @@ public class NGSILDQueryParams {
     this.options = options;
   }
 
+  public String getPageFrom() {
+    return pageFrom;
+  }
+
+  public String getPageSize() {
+    return pageSize;
+  }
 
 
   @Override
