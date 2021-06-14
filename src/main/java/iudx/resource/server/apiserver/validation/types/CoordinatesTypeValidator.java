@@ -38,8 +38,13 @@ public class CoordinatesTypeValidator {
     private DecimalFormat df = new DecimalFormat("#.######");
 
     private boolean isValidLatitude(String latitude) {
-      Float latitudeValue = Float.parseFloat(latitude);
-      if (!df.format(latitudeValue).matches(LATITUDE_PATTERN)) {
+      try {
+        Float latitudeValue = Float.parseFloat(latitude);
+        if (!df.format(latitudeValue).matches(LATITUDE_PATTERN)) {
+          throw ValidationException.ValidationExceptionFactory
+              .generateNotMatchValidationException("invalid latitude value " + latitude);
+        }
+      } catch (Exception ex) {
         throw ValidationException.ValidationExceptionFactory
             .generateNotMatchValidationException("invalid latitude value " + latitude);
       }
@@ -47,8 +52,13 @@ public class CoordinatesTypeValidator {
     }
 
     private boolean isValidLongitude(String longitude) {
-      Float longitudeValue = Float.parseFloat(longitude);
-      if (!df.format(longitudeValue).matches(LONGITUDE_PATTERN)) {
+      try {
+        Float longitudeValue = Float.parseFloat(longitude);
+        if (!df.format(longitudeValue).matches(LONGITUDE_PATTERN)) {
+          throw ValidationException.ValidationExceptionFactory
+              .generateNotMatchValidationException("invalid longitude value " + longitude);
+        }
+      } catch (Exception ex) {
         throw ValidationException.ValidationExceptionFactory
             .generateNotMatchValidationException("invalid longitude value " + longitude);
       }
@@ -56,7 +66,14 @@ public class CoordinatesTypeValidator {
     }
 
     private boolean isPricisonLengthAllowed(String value) {
-      return (new BigDecimal(value).scale() > VALIDATION_COORDINATE_PRECISION_ALLOWED);
+      boolean result = false;
+      try {
+        result = (new BigDecimal(value).scale() > VALIDATION_COORDINATE_PRECISION_ALLOWED);
+      } catch (Exception ex) {
+        throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
+            "Invalid coordinate format.");
+      }
+      return result;
     }
 
     private boolean isValidCoordinates(String value) {
@@ -73,7 +90,8 @@ public class CoordinatesTypeValidator {
         checkLongitudeFlag = !checkLongitudeFlag;
         if (isPricisonLengthAllowed(coordinate)) {
           throw ValidationException.ValidationExceptionFactory
-              .generateNotMatchValidationException("invalid coordinate (only 6 digits to precision allowed)");
+              .generateNotMatchValidationException(
+                  "invalid coordinate (only 6 digits to precision allowed)");
         }
       }
       return true;
@@ -117,8 +135,8 @@ public class CoordinatesTypeValidator {
       Matcher matcher = pattern.matcher(coordinates);
       List<String> coordinatesValues =
           matcher.results()
-          .map(MatchResult::group)
-          .collect(Collectors.toList());
+              .map(MatchResult::group)
+              .collect(Collectors.toList());
       return coordinatesValues;
     }
 
