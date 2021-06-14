@@ -4,6 +4,7 @@ import static iudx.resource.server.apiserver.util.Constants.*;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import io.netty.handler.codec.TooLongFrameException;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -25,6 +26,12 @@ public class ValidationFailureHandler implements Handler<RoutingContext>{
         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
         .setStatusCode(HttpStatus.SC_BAD_REQUEST)
         .end(validationFailureReponse(validationErrorMessage).toString());
+    }
+    if (failure instanceof TooLongFrameException) {
+      context.response()
+      .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+      .setStatusCode(HttpStatus.SC_BAD_REQUEST)
+      .end(validationFailureReponse(MSG_BAD_QUERY).toString());
     }
     context.next();
     return;

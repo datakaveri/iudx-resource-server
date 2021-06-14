@@ -2,7 +2,7 @@ package iudx.resource.server.apiserver;
 
 
 import static iudx.resource.server.apiserver.util.Constants.*;
-import static iudx.resource.server.apiserver.util.Util.toUriFunction;
+import static iudx.resource.server.apiserver.util.Util.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.netty.handler.codec.http.HttpConstants;
@@ -44,6 +45,7 @@ import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.util.Constants;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 import iudx.resource.server.apiserver.validation.ValidationFailureHandler;
 import iudx.resource.server.apiserver.validation.HTTPRequestValidatiorsHandlersFactory;
 import iudx.resource.server.authenticator.AuthenticationService;
@@ -134,8 +136,28 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.route().handler(
         CorsHandler.create("*").allowedHeaders(allowedHeaders).allowedMethods(allowedMethods));
     // router.route().handler(HeadersHandler.create());
+    /** attach custom default messages in error handler **/
+    // attach custom http error responses to router
+    HttpStatusCode[] statusCodes = HttpStatusCode.values();
+    Stream.of(statusCodes).forEach(code -> {
+      router.errorHandler(code.getValue(), errorHandler -> {
+        HttpServerResponse response = errorHandler.response();
+        if (response.headWritten()) {
+          try {
+            response.close();
+          } catch (RuntimeException e) {
+            // ignore
+          }
+          return;
+        }
+        response
+            .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .setStatusCode(code.getValue())
+            .end(errorResponse(code));
+      });
+    });
+
     router.route().handler(BodyHandler.create());
-    // router.route().handler(AuthHandler.create(vertx));
 
     HTTPRequestValidatiorsHandlersFactory validators = new HTTPRequestValidatiorsHandlersFactory();
     ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
@@ -235,7 +257,6 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     /* Read server deployment configuration. */
     isProduction = config().getBoolean("production");
-
     HttpServerOptions serverOptions = new HttpServerOptions();
 
     if (isSSL) {
@@ -250,6 +271,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
       serverOptions.setSsl(true)
           .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword));
+      serverOptions.setMaxHeaderSize(64 * 1024);
 
     } else {
       LOGGER.debug("Info: Starting HTTP server");
@@ -267,7 +289,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     serverOptions.setCompressionSupported(true).setCompressionLevel(5);
     server = vertx.createHttpServer(serverOptions);
     server.requestHandler(router).listen(port);
-
+    
     /* Get a handler for the Service Discovery interface. */
 
     database = DatabaseService.createProxy(vertx, DATABASE_SERVICE_ADDRESS);
@@ -309,7 +331,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String id = domain + "/" + userSha + "/" + resourceServer + "/" + resourceGroup + "/"
         + resourceName;
     JsonObject json = new JsonObject();
-    Future<List<String>> filtersFuture =catalogueService.getApplicableFilters(id);
+    Future<List<String>> filtersFuture = catalogueService.getApplicableFilters(id);
     /* HTTP request instance/host details */
     String instanceID = request.getHeader(HEADER_HOST);
     json.put(JSON_INSTANCEID, instanceID);
