@@ -25,7 +25,8 @@ info:
     It enables *Subscribers* a.k.a [Streaming Consumer] of datasources to stream data using AMQP streaming protocol over TLS.
     
     # API HTTP Responses
-    The API may respond with certain 4xx and 5xx error codes related to API Gateway. It is expected to be addressed by the application.
+    Apart from the response codes specified in each API, the API server may respond with certain 4xx and 5xx error codes which are related to common API Gateway behaviours.
+    The application should address them accordingly.
     
 tags:
 - name: Latest Entity
