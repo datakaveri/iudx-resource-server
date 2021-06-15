@@ -16,12 +16,16 @@ info:
   title: "IUDX Resource Server APIs"
   version: 1.0.0
   description: |
+    # Introduction
     The Resource Server is IUDX's data store which allows publication, subscription and discovery of data.
     For search and discovery, it allows users to search through temporal, geo-based and attribute queries. 
     For publication and subscription, it allows users to use AMQP streaming protocol over TLS.
     It enables *Providers* of datasources to publish data as per the IUDX data descriptor.
     It enables *Consumers* of datasources to search and query for data using HTTPs APIs.
     It enables *Subscribers* a.k.a [Streaming Consumer] of datasources to stream data using AMQP streaming protocol over TLS.
+    
+    # API HTTP Responses
+    The API may respond with certain 4xx and 5xx error codes related to API Gateway. It is expected to be addressed by the application.
     
 tags:
 - name: Latest Entity
@@ -179,7 +183,7 @@ paths:
         schema:
           type: number
           minimum: 0
-          maximum: 10000
+          maximum: 1000
         in: query
         required: false
 
@@ -284,7 +288,7 @@ paths:
               - Should be One of `Point`(equivalent for a circle), `Polygon`, `LineString`, `bbox`.
               - <b>Point</b>: Point and radius query
                   - coordinates: Specifies the  center point of the circle, for e.g, `[73,13]`. <br/>Note, format is [longitude, latitude]
-                  - maxDistance: Specifies the Radius from the center point in meters, for e.g `100`. `maxValue` : 10000
+                  - maxDistance: Specifies the Radius from the center point in meters, for e.g `100`. `maxValue` : 1000
                   - georel: In this version of IUDX API, the allowed relationship search for a circle is `near` with a `maxdistance` in meters specified. This will be equivalent to a `within` query. Format is `near;maxdistance=<distance_in_meters>` 
               - <b>Polygon</b>: Polygon/Multi-Polygon query
                   - coordinates: Specifies the  coordinates of the polygon, for e.g, `[[[73,13],[73,12],[73,13]]]`.  <br/>Note, format is [longitude, latitude] and the first coordinate must be same as last. 
@@ -397,7 +401,7 @@ paths:
         schema:
           type: number
           minimum: 0
-          maximum: 10000
+          maximum: 1000
         in: query
         required: false
 
@@ -513,7 +517,7 @@ paths:
               - Should be One of `Point`(equivalent for a circle), `Polygon`, `LineString`, `bbox`.
               - <b>Point</b>: Point and radius query
                   - coordinates: Specifies the  center point of the circle, for e.g, `[73,13]`. <br/>Note, format is [longitude, latitude]
-                  - maxDistance: Specifies the Radius from the center point in meters, for e.g `100`. `maxValue` : 10000
+                  - maxDistance: Specifies the Radius from the center point in meters, for e.g `100`. `maxValue` : 1000
                   - georel: In this version of IUDX API, the allowed relationship search for a circle is `near` with a `maxdistance` in meters specified. This will be equivalent to a `within` query. Format is `near;maxdistance=<distance_in_meters>` 
               - <b>Polygon</b>: Polygon/Multi-Polygon query
                   - coordinates: Specifies the  coordinates of the polygon, for e.g, `[[[73,13],[73,12],[73,13]]]`.  <br/>Note, format is [longitude, latitude] and the first coordinate must be same as last. 
@@ -656,7 +660,7 @@ paths:
               - Should be One of `Point`(equivalent for a circle), `Polygon`, `LineString`, `bbox`.
               - <b>Point</b>: Point and radius query
                   - coordinates: Specifies the  center point of the circle, for e.g, `[73,13]`. <br/>Note, format is [longitude, latitude]
-                  - maxDistance: Specifies the Radius from the center point in meters, for e.g `100`. `maxValue` : 10000
+                  - maxDistance: Specifies the Radius from the center point in meters, for e.g `100`. `maxValue` : 1000
                   - georel: In this version of IUDX API, the allowed relationship search for a circle is `near` with a `maxdistance` in meters specified. This will be equivalent to a `within` query. Format is `near;maxdistance=<distance_in_meters>` 
               - <b>Polygon</b>: Polygon/Multi-Polygon query
                   - coordinates: Specifies the  coordinates of the polygon, for e.g, `[[[73,13],[73,12],[73,13]]]`.  <br/>Note, format is [longitude, latitude] and the first coordinate must be same as last. 
@@ -1775,7 +1779,7 @@ components:
       type: object
       properties:
         type:
-          type: string
+          type: integer
         title:
           type: string
         results:
@@ -1859,7 +1863,7 @@ components:
       type: object
       properties:
         type:
-          type: string
+          type: integer
         title:
           type: string
         detail:
@@ -1949,7 +1953,7 @@ components:
       type: object
       properties:
         type:
-          type: string
+          type: integer
         title:
           type: string
         detail:
@@ -1963,7 +1967,7 @@ components:
       title: standardBadRequestErrorResponse
       properties:
         type:
-          type: string
+          type: integer
         title:
           type: string
         detail:
@@ -1977,7 +1981,7 @@ components:
       title: standardInvalidTokenErrorResponse
       properties:
         type:
-          type: string
+          type: integer
         title:
           type: string
         detail:
@@ -1991,7 +1995,7 @@ components:
       title: standardResourceNotFoundErrorResponse
       properties:
         type:
-          type: string
+          type: integer
         title:
           type: string
         detail:
@@ -2005,7 +2009,7 @@ components:
       title: adapterBadRequestErrorResponse
       properties:
         type:
-          type: string
+          type: integer
         title:
           type: string
         detail:
