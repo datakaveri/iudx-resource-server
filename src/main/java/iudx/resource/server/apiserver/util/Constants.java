@@ -24,7 +24,8 @@ public class Constants {
   public static final String NGSILD_ENTITIES_URL = NGSILD_BASE_PATH + "/entities";
   public static final String NGSILD_TEMPORAL_URL = NGSILD_BASE_PATH + "/temporal/entities";
   public static final String NGSILD_SUBSCRIPTION_URL = NGSILD_BASE_PATH + "/subscription";
-  public static final String NGSILD_POST_QUERY_PATH = NGSILD_BASE_PATH + "/entityOperations/query";
+  public static final String NGSILD_POST_TEMPORAL_QUERY_PATH = NGSILD_BASE_PATH + "/temporal/entityOperations/query";
+  public static final String NGSILD_POST_ENTITIES_QUERY_PATH = NGSILD_BASE_PATH + "/entityOperations/query";
 
   // IUDX management endpoints
   public static final String IUDX_MANAGEMENT_URL = "/management";
@@ -47,7 +48,8 @@ public class Constants {
   // path regex
   public static final String ENTITITES_URL_REGEX = NGSILD_ENTITIES_URL + "(.*)";
   public static final String TEMPORAL_URL_REGEX = NGSILD_TEMPORAL_URL + "(.*)";
-  public static final String POST_QUERY_URL_REGEX = NGSILD_POST_QUERY_PATH + "(.*)";
+  public static final String TEMPORAL_POST_QUERY_URL_REGEX = NGSILD_POST_TEMPORAL_QUERY_PATH + "(.*)";
+  public static final String ENTITIES_POST_QUERY_URL_REGEX = NGSILD_POST_ENTITIES_QUERY_PATH + "(.*)";
   public static final String SUBSCRIPTION_URL_REGEX = NGSILD_SUBSCRIPTION_URL + "(.*)";
   public static final String ADAPTER_URL_REGEX = IUDX_MANAGEMENT_ADAPTER_URL + "(.*)";
   public static final String EXCHANGE_URL_REGEX = IUDX_MANAGEMENT_EXCHANGE_URL + "(.*)";

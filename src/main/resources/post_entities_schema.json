@@ -128,48 +128,6 @@
 			"additionalProperties":false
 		}
 ,
-		"temporalQ": {
-			"$id": "#root/temporalQ", 
-			"title": "Temporalq", 
-			"type": "object",
-			"properties": {
-				"timerel": {
-					"$id": "#root/temporalQ/timerel", 
-					"title": "Timerel", 
-					"type": "string",
-					"default": "",
-					"pattern": "^.*$",
-					"enum":["after","before","during","between"]
-				},
-				"time": {
-					"$id": "#root/temporalQ/time", 
-					"title": "Time", 
-					"type": "string",
-					"format":"date-time",
-					"default": "",
-					"pattern": "^.*$"
-				},
-				"endtime": {
-					"$id": "#root/temporalQ/endtime", 
-					"title": "Endtime", 
-					"type": "string",
-					"format":"date-time",
-					"default": "",
-					"pattern": "^.*$"
-				},
-				"timeProperty": {
-					"$id": "#root/temporalQ/timeProperty", 
-					"title": "Timeproperty",
-					"maxLength":512, 
-					"type": "string",
-					"default": "",
-					"pattern": "^.*$",
-					"enum":["observationDateTime"]
-				}
-			},
-			"additionalProperties":false
-		}
-,
 		"q": {
 			"$id": "#root/q", 
 			"title": "Q", 
@@ -195,7 +153,23 @@
 			"minLength":1,
 			"default": "",
 			"pattern": "^.*$"
-		}
+		},
+		"offset": {
+            "$id": "#root/offset", 
+            "title": "offset",
+            "type": "integer",
+            "minimum":0,
+            "maximum":50000,
+            "default":0
+        },
+        "limit":{
+            "$id": "#root/limit", 
+            "title": "limit",
+            "type": "integer",
+            "minimum":0,
+            "maximum":10000,
+            "default":5000
+        }
 	},
 	"required":["entities","type"],
 	"additionalProperties":false
