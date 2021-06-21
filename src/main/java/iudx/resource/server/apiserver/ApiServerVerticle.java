@@ -194,7 +194,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     ValidationHandler postTemporalValidationHandler = new ValidationHandler(vertx, RequestType.POST_TEMPORAL);
     router.post(NGSILD_POST_TEMPORAL_QUERY_PATH).consumes(APPLICATION_JSON)
         .handler(postTemporalValidationHandler)
-        //.handler(AuthHandler.create(vertx))TODO : remove after auth update for endpoint
+        .handler(AuthHandler.create(vertx))
         .handler(this::handlePostEntitiesQuery).failureHandler(validationsFailureHandler);
     
     ValidationHandler postEntitiesValidationHandler = new ValidationHandler(vertx, RequestType.POST_ENTITIES);
