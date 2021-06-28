@@ -29,6 +29,7 @@ import iudx.resource.server.apiserver.validation.types.GeoRelTypeValidator;
 import iudx.resource.server.apiserver.validation.types.GeometryTypeValidator;
 import iudx.resource.server.apiserver.validation.types.IDTypeValidator;
 import iudx.resource.server.apiserver.validation.types.JsonSchemaTypeValidator;
+import iudx.resource.server.apiserver.validation.types.OptionsHeaderValidator;
 import iudx.resource.server.apiserver.validation.types.OptionsTypeValidator;
 import iudx.resource.server.apiserver.validation.types.PaginationOffsetTypeValidator;
 import iudx.resource.server.apiserver.validation.types.PaginationLimitTypeValidator;
@@ -64,6 +65,9 @@ public class ValidatorsHandlersFactory {
         break;
       case POST_ENTITIES:
         validator = getEntitiesPostRequestValidator(vertx, body);
+      case SUBSCRIPTION:
+        validator = getSubscriptionsValidations(vertx, body, headers);
+        break;
       default:
         break;
     }
@@ -136,6 +140,7 @@ public class ValidatorsHandlersFactory {
     return validators;
   }
 
+<<<<<<< HEAD
 
   private static Map<String, String> jsonSchemaMap = new HashMap<>();
 
@@ -157,6 +162,16 @@ public class ValidatorsHandlersFactory {
 
 
   private List<Validator> getEntitiesPostRequestValidator(Vertx vertx, JsonObject body) {
+=======
+  private List<Validator> getSubscriptionsValidations(final Vertx vertx, final JsonObject body,
+      final MultiMap headers) {
+    List<Validator> validators = new ArrayList<>();
+    validators.add(new OptionsHeaderValidator(headers.get(HEADER_OPTIONS), false));
+    return validators;
+  }
+
+  private List<Validator> getPostRequestValidations(Vertx vertx, JsonObject body) {
+>>>>>>> subscription validation[only streaming allowed]
     List<Validator> validators = new ArrayList<>();
     SchemaRouter schemaRouter = SchemaRouter.create(vertx, new SchemaRouterOptions());
     SchemaParser schemaParser = SchemaParser.createOpenAPI3SchemaParser(schemaRouter);
