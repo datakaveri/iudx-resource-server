@@ -100,23 +100,23 @@ public class AdapterEntitiesTest {
 
 
       dataBrokerIP = brokerConfig.getString("dataBrokerIP");
-      dataBrokerPort = Integer.parseInt(brokerConfig.getString("dataBrokerPort"));
+      dataBrokerPort = brokerConfig.getInteger("dataBrokerPort");
       dataBrokerManagementPort =
-          Integer.parseInt(brokerConfig.getString("dataBrokerManagementPort"));
+          brokerConfig.getInteger("dataBrokerManagementPort");
       dataBrokerVhost = brokerConfig.getString("dataBrokerVhost");
       dataBrokerUserName = brokerConfig.getString("dataBrokerUserName");
       dataBrokerPassword = brokerConfig.getString("dataBrokerPassword");
-      connectionTimeout = Integer.parseInt(brokerConfig.getString("connectionTimeout"));
-      requestedHeartbeat = Integer.parseInt(brokerConfig.getString("requestedHeartbeat"));
-      handshakeTimeout = Integer.parseInt(brokerConfig.getString("handshakeTimeout"));
-      requestedChannelMax = Integer.parseInt(brokerConfig.getString("requestedChannelMax"));
-      networkRecoveryInterval = Integer.parseInt(brokerConfig.getString("networkRecoveryInterval"));
+      connectionTimeout = brokerConfig.getInteger("connectionTimeout");
+      requestedHeartbeat = brokerConfig.getInteger("requestedHeartbeat");
+      handshakeTimeout = brokerConfig.getInteger("handshakeTimeout");
+      requestedChannelMax = brokerConfig.getInteger("requestedChannelMax");
+      networkRecoveryInterval = brokerConfig.getInteger("networkRecoveryInterval");
       databaseIP = brokerConfig.getString("callbackDatabaseIP");
-      databasePort = Integer.parseInt(brokerConfig.getString("callbackDatabasePort"));
+      databasePort = brokerConfig.getInteger("callbackDatabasePort");
       databaseName = brokerConfig.getString("callbackDatabaseName");
       databaseUserName = brokerConfig.getString("callbackDatabaseUserName");
       databasePassword = brokerConfig.getString("callbackDatabasePassword");
-      poolSize = Integer.parseInt(brokerConfig.getString("callbackpoolSize"));
+      poolSize = brokerConfig.getInteger("callbackpoolSize");
 
     } catch (Exception ex) {
       logger.info(ex.toString());
