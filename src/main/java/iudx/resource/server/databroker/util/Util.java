@@ -70,7 +70,7 @@ public class Util {
   public static Predicate<String> isValidId=(id)->{
     if (id == null)
       return false;
-    Pattern allowedPattern = Pattern.compile("[^-_.a-z0-9 ]", Pattern.CASE_INSENSITIVE);
+    Pattern allowedPattern = Pattern.compile("[^-_.//a-zA-Z0-9 ]", Pattern.CASE_INSENSITIVE);
     Matcher isInvalid = allowedPattern.matcher(id);
     return !isInvalid.find();
   };
@@ -88,5 +88,9 @@ public class Util {
     json.put(TITLE, title);
     json.put(DETAIL, detail);
     return json;
+  }
+  
+  public static boolean isGroupId(String id) {
+    return id.split("/").length == 4;
   }
 }

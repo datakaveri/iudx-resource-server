@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
@@ -238,7 +239,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             responseContainer.tipResponse = tipResponse;
             LOGGER.debug("Info: TIP Response is : " + tipResponse);
             String id = tipResponse.getJsonArray("request").getJsonObject(0).getString("id");
-            return isOpenResource1(new JsonArray().add(id), requestEndpoint);
+            return isOpenResource1(request.getJsonArray("ids"), requestEndpoint);
           }).onSuccess(success -> {
 
             responseContainer.catResponse = success;
@@ -263,9 +264,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
              */
           }).onFailure(failure -> {
             JsonObject result = new JsonObject();
+            LOGGER.info("failure : "+failure.getMessage());
             result.put("status", "error");
             result.put("message", failure.getMessage());
-            LOGGER.debug("RESULT : " + failure.getCause());
+            handler.handle(Future.failedFuture(failure.getMessage()));
           });
         } else {
           // Based on API perform TIP.
@@ -554,16 +556,30 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       }
     } else {
       // process for /adapter or /subscription
-      LOGGER.debug("resource exist" + requestIDs.getString(0));
-      isItemExist(requestIDs.getString(0)).onComplete(handler -> {
-        if (handler.succeeded()) {
-          LOGGER.debug("item exist succeeded");
-          result.put("Closed End Point", true);
-          promise.complete(result);
-        } else {
-          LOGGER.error("cat response failed for Item : ");
-          result.put("Closed End Point", false);
-          promise.fail("Not Found ");
+//      LOGGER.debug("resource exist" + requestIDs.getString(0));
+//      isItemExist(requestIDs.getString(0)).onComplete(handler -> {
+//        if (handler.succeeded()) {
+//          LOGGER.debug("item exist succeeded");
+//          result.put("Closed End Point", true);
+//          promise.complete(result);
+//        } else {
+//          LOGGER.error("cat response failed for Item : ");
+//          result.put("Closed End Point", false);
+//          promise.fail("Not Found ");
+//        }
+//      });
+      
+      Iterator<Object> itr = requestIDs.iterator();
+      List<Future> futures=new ArrayList<Future>();
+      while (itr.hasNext()) {
+        String rId = (String) itr.next();
+        futures.add(isItemExist(rId));
+      }
+      CompositeFuture.all(futures).onComplete(handler->{
+        if(handler.succeeded()) {
+          promise.complete();
+        }else {
+          promise.fail("Not Found");
         }
       });
     }
@@ -783,6 +799,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       LOGGER.debug("Info: Requested access for " + requestEndpoint);
       JsonArray tipresult = result.getJsonArray("request");
       JsonObject tipresponse = tipresult.getJsonObject(0);
+      
       LOGGER.debug("Info: Allowed APIs " + tipresponse);
       JsonArray allowedAPIs = tipresponse.getJsonArray("apis");
       int total = allowedAPIs.size();
@@ -804,10 +821,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (requestMethod.equalsIgnoreCase("POST")) {
           String resourceGroup = userRequest.getString("resourceGroup");
           String resourceServer = userRequest.getString("resourceServer");
+          String entityId=userRequest.getJsonArray("entities").getString(0);
           // System.out.println(providerID);
           // System.out.println(resourceGroup);
           // System.out.println(resourceServer);
-          if (providerID.contains(resourceServer + "/" + resourceGroup)) {
+          
+          if (providerID.contains(entityId)) {
             LOGGER.info(
                 "Success :: Has access to " + requestEndpoint + " API and Adapter " + adapterID);
             result.put("provider", providerSHA);
@@ -977,4 +996,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
     return true;
   }
+  
+  private static <T> List<T> toList(JsonArray arr) {
+    if (arr == null) {
+      return null;
+    } else {
+      return (List<T>) arr.getList();
+    }
+  }
+
 }
