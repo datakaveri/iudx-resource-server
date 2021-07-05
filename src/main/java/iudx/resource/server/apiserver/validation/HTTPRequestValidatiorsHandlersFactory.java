@@ -27,6 +27,7 @@ import iudx.resource.server.apiserver.validation.types.DistanceTypeValidator;
 import iudx.resource.server.apiserver.validation.types.GeoPropertyTypeValidator;
 import iudx.resource.server.apiserver.validation.types.GeoRelTypeValidator;
 import iudx.resource.server.apiserver.validation.types.GeometryTypeValidator;
+import iudx.resource.server.apiserver.validation.types.HeaderTokenValidation;
 import iudx.resource.server.apiserver.validation.types.IDTypeValidator;
 import iudx.resource.server.apiserver.validation.types.OptionsTypeValidator;
 import iudx.resource.server.apiserver.validation.types.QTypeValidator;
@@ -67,6 +68,7 @@ public class HTTPRequestValidatiorsHandlersFactory {
       new CoordinatesTypeValidator().create();
   private final ParameterTypeValidator timeRelTypeValidator = new TimeRelTypeValidator().create();
   private final ParameterTypeValidator dateTypeValidator = new DateTypeValidator().create();
+  private final ParameterTypeValidator tokenTypeValidator = new HeaderTokenValidation().create();
 
 
 
@@ -87,7 +89,9 @@ public class HTTPRequestValidatiorsHandlersFactory {
             false)
         .addQueryParamWithCustomTypeValidator("options", optionsTypeValidator, false, false)
         .addQueryParamWithCustomTypeValidator(NGSILDQUERY_COORDINATES, coordinatesTypeValidator,
-            false, false);
+            false, false)
+        .addHeaderParamWithCustomTypeValidator("token", tokenTypeValidator, false, false);
+
     return validator;
 
   }
@@ -105,17 +109,22 @@ public class HTTPRequestValidatiorsHandlersFactory {
             .addQueryParamWithCustomTypeValidator(NGSILDQUERY_ENDTIME, dateTypeValidator, false,
                 false)
             .addQueryParamWithCustomTypeValidator("options", optionsTypeValidator, false, false)
-            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_GEOREL, georelTypeValidator, false, false)
-            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_GEOMETRY, geometryTypeValidator, false,
+            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_GEOREL, georelTypeValidator, false,
                 false)
-            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_GEOPROPERTY, geoPropertyValidator, false,
+            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_GEOMETRY, geometryTypeValidator,
+                false,
                 false)
-            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_MAXDISTANCE, distanceTypeValidator, false,
+            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_GEOPROPERTY, geoPropertyValidator,
+                false,
+                false)
+            .addQueryParamWithCustomTypeValidator(NGSILDQUERY_MAXDISTANCE, distanceTypeValidator,
+                false,
                 false)
             .addQueryParamWithCustomTypeValidator("maxDistance", distanceTypeValidator, false,
                 false)
             .addQueryParamWithCustomTypeValidator(NGSILDQUERY_COORDINATES, coordinatesTypeValidator,
-                false, false);
+                false, false)
+            .addHeaderParamWithCustomTypeValidator("token", tokenTypeValidator, false, false);
     return validator;
   }
 
@@ -129,7 +138,8 @@ public class HTTPRequestValidatiorsHandlersFactory {
         .addPathParamWithCustomTypeValidator("userSha", pathParamsTypeValidator, false)
         .addPathParamWithCustomTypeValidator("resourceServer", pathParamsTypeValidator, false)
         .addPathParamWithCustomTypeValidator("resourceGroup", pathParamsTypeValidator, false)
-        .addPathParamWithCustomTypeValidator("resourceName", pathParamsTypeValidator, false);
+        .addPathParamWithCustomTypeValidator("resourceName", pathParamsTypeValidator, false)
+        .addHeaderParamWithCustomTypeValidator("token", tokenTypeValidator, false, false);
 
     return validator;
   }
@@ -144,7 +154,8 @@ public class HTTPRequestValidatiorsHandlersFactory {
       LOGGER.error(ex);
       return validator;
     }
-    validator = HTTPRequestValidationHandler.create().addJsonBodySchema(jsonSchema);
+    validator = HTTPRequestValidationHandler.create().addJsonBodySchema(jsonSchema)
+        .addHeaderParamWithCustomTypeValidator("token", tokenTypeValidator, false, false);
     return validator;
   }
 

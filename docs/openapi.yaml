@@ -183,7 +183,7 @@ paths:
         description: 'The maximum distance to be queried from center point in meters. <br/> This is applicable and is <b>mandatory</b> for <b>point</b> geometry.<br/> It should be used along with relation <b>near</b>.'
         schema:
           type: number
-          minimum: 0
+          minimum: 1
           maximum: 1000
         in: query
         required: false
@@ -401,7 +401,7 @@ paths:
         description: 'The maximum distance to be queried from center point in meters. <br/> This is applicable and is <b>mandatory</b> for <b>point</b> geometry.<br/> It should be used along with relation <b>near</b>.'
         schema:
           type: number
-          minimum: 0
+          minimum: 1
           maximum: 1000
         in: query
         required: false
@@ -1784,7 +1784,7 @@ components:
         title:
           type: string
         results:
-          type: object
+          type: array
           properties:
             id:
               type: string
