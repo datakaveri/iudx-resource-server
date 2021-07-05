@@ -5,9 +5,10 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.function.Function;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class Util {
-  
+
   public static <T> List<T> toList(JsonArray arr) {
     if (arr == null) {
       return null;
@@ -15,7 +16,7 @@ public class Util {
       return (List<T>) arr.getList();
     }
   }
-  
+
 
   public static Function<String, URI> toUriFunction = (value) -> {
     URI uri = null;
@@ -26,5 +27,11 @@ public class Util {
     }
     return uri;
   };
+
+  public static String errorResponse(HttpStatusCode code) {
+    return new JsonObject().put("type", code.getValue())
+        .put("title", code.getDescription())
+        .put("title", code.getDescription()).toString();
+  }
 
 }

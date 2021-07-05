@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.google.common.base.Charsets;
@@ -57,9 +59,11 @@ public class ValidatorsHandlersFactory {
       case LATEST:
         validator = getLatestRequestValidations(parameters, headers);
         break;
-      case POST:
-        validator = getPostRequestValidations(vertx, body);
+      case POST_TEMPORAL:
+        validator = getTemporalPostRequestValidations(vertx, body);
         break;
+      case POST_ENTITIES:
+        validator = getEntitiesPostRequestValidator(vertx, body);
       default:
         break;
     }
@@ -132,14 +136,17 @@ public class ValidatorsHandlersFactory {
     return validators;
   }
 
-  private List<Validator> getPostRequestValidations(Vertx vertx, JsonObject body) {
+
+  private static Map<String, String> jsonSchemaMap = new HashMap<>();
+
+  private List<Validator> getTemporalPostRequestValidations(Vertx vertx, JsonObject body) {
     List<Validator> validators = new ArrayList<>();
     SchemaRouter schemaRouter = SchemaRouter.create(vertx, new SchemaRouterOptions());
     SchemaParser schemaParser = SchemaParser.createOpenAPI3SchemaParser(schemaRouter);
     String jsonSchema = null;
 
     try {
-      jsonSchema = loadJson();
+      jsonSchema = loadJson(RequestType.POST_TEMPORAL.getFilename());
       Schema schema = schemaParser.parse(new JsonObject(jsonSchema));
       validators.add(new JsonSchemaTypeValidator(body, true, schema));
     } catch (Exception ex) {
@@ -149,14 +156,36 @@ public class ValidatorsHandlersFactory {
   }
 
 
-  private String loadJson() {
+  private List<Validator> getEntitiesPostRequestValidator(Vertx vertx, JsonObject body) {
+    List<Validator> validators = new ArrayList<>();
+    SchemaRouter schemaRouter = SchemaRouter.create(vertx, new SchemaRouterOptions());
+    SchemaParser schemaParser = SchemaParser.createOpenAPI3SchemaParser(schemaRouter);
+    String jsonSchema = null;
+
+    try {
+      jsonSchema = loadJson(RequestType.POST_ENTITIES.getFilename());
+      Schema schema = schemaParser.parse(new JsonObject(jsonSchema));
+      validators.add(new JsonSchemaTypeValidator(body, true, schema));
+    } catch (Exception ex) {
+      LOGGER.error(ex);
+    }
+    return validators;
+  }
+
+
+  private String loadJson(String filename) {
     String jsonStr = null;
-    try (InputStream inputStream =
-        getClass().getClassLoader().getResourceAsStream("post_request_schema.json")) {
-      jsonStr = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
-    } catch (IOException e) {
-      LOGGER.error(e);
-      return jsonStr;
+    if (jsonSchemaMap.containsKey(filename)) {
+      jsonStr = jsonSchemaMap.get(filename);
+    } else {
+      try (InputStream inputStream =
+          getClass().getClassLoader().getResourceAsStream(filename)) {
+        jsonStr = CharStreams.toString(new InputStreamReader(inputStream, Charsets.UTF_8));
+        jsonSchemaMap.put(filename, jsonStr);
+      } catch (IOException e) {
+        LOGGER.error(e);
+        return jsonStr;
+      }
     }
     return jsonStr;
   }

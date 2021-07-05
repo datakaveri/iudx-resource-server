@@ -153,7 +153,12 @@ public class AuthHandler implements Handler<RoutingContext> {
         id = request.getParam("id");
         break;
       }
-      case NGSILD_POST_QUERY_PATH: {
+      case NGSILD_POST_TEMPORAL_QUERY_PATH: {
+        JsonObject body = context.getBodyAsJson();
+        id = body.getJsonArray("entities").getJsonObject(0).getString("id");
+        break;
+      }
+      case NGSILD_POST_ENTITIES_QUERY_PATH:{
         JsonObject body = context.getBodyAsJson();
         id = body.getJsonArray("entities").getJsonObject(0).getString("id");
         break;
@@ -178,8 +183,10 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = NGSILD_ENTITIES_URL;
     } else if (url.matches(TEMPORAL_URL_REGEX)) {
       path = NGSILD_TEMPORAL_URL;
-    } else if (url.matches(POST_QUERY_URL_REGEX)) {
-      path = NGSILD_POST_QUERY_PATH;
+    } else if (url.matches(TEMPORAL_POST_QUERY_URL_REGEX)) {
+      path = NGSILD_POST_TEMPORAL_QUERY_PATH;
+    }else if (url.matches(ENTITIES_POST_QUERY_URL_REGEX)) {
+      path = NGSILD_POST_ENTITIES_QUERY_PATH;
     } else if (url.matches(SUBSCRIPTION_URL_REGEX)) {
       path = NGSILD_SUBSCRIPTION_URL;
     } else if (url.matches(ADAPTER_URL_REGEX)) {
