@@ -61,10 +61,11 @@ public class ValidatorsHandlersFactory {
         validator = getLatestRequestValidations(parameters, headers);
         break;
       case POST_TEMPORAL:
-        validator = getTemporalPostRequestValidations(vertx, body);
+        validator = getPostRequestValidator(vertx, body,requestType);
         break;
       case POST_ENTITIES:
-        validator = getEntitiesPostRequestValidator(vertx, body);
+        validator = getPostRequestValidator(vertx, body,requestType);
+        break;
       case SUBSCRIPTION:
         validator = getSubscriptionsValidations(vertx, body, headers);
         break;
@@ -88,7 +89,7 @@ public class ValidatorsHandlersFactory {
     validators.add(new QTypeValidator(parameters.get(NGSILDQUERY_Q), false));
     validators.add(new DistanceTypeValidator(parameters.get(NGSILDQUERY_MAXDISTANCE), false));
     validators.add(new DistanceTypeValidator(parameters.get("maxDistance"), false));
-    validators.add(new OptionsTypeValidator(parameters.get("options"), false));
+    validators.add(new OptionsTypeValidator(parameters.get(IUDXQUERY_OPTIONS), false));
     validators.add(new CoordinatesTypeValidator(parameters.get(NGSILDQUERY_COORDINATES), false));
 
     // pagination optional fields
@@ -112,7 +113,7 @@ public class ValidatorsHandlersFactory {
     validators.add(new QTypeValidator(parameters.get(NGSILDQUERY_Q), false));
     validators.add(new DistanceTypeValidator(parameters.get(NGSILDQUERY_MAXDISTANCE), false));
     validators.add(new DistanceTypeValidator(parameters.get("maxDistance"), false));
-    validators.add(new OptionsTypeValidator(parameters.get("options"), false));
+    validators.add(new OptionsTypeValidator(parameters.get(IUDXQUERY_OPTIONS), false));
     validators.add(new CoordinatesTypeValidator(parameters.get(NGSILDQUERY_COORDINATES), false));
     validators.add(new TimeRelTypeValidator(parameters.get(NGSILDQUERY_TIMEREL), true, false));
     validators.add(new DateTypeValidator(parameters.get(NGSILDQUERY_TIME), true));
@@ -139,8 +140,15 @@ public class ValidatorsHandlersFactory {
 
     return validators;
   }
+  
 
-<<<<<<< HEAD
+  private List<Validator> getSubscriptionsValidations(final Vertx vertx, final JsonObject body,
+      final MultiMap headers) {
+    List<Validator> validators = new ArrayList<>();
+    validators.add(new OptionsHeaderValidator(headers.get(HEADER_OPTIONS), false));
+    return validators;
+  }
+
 
   private static Map<String, String> jsonSchemaMap = new HashMap<>();
 
@@ -161,24 +169,14 @@ public class ValidatorsHandlersFactory {
   }
 
 
-  private List<Validator> getEntitiesPostRequestValidator(Vertx vertx, JsonObject body) {
-=======
-  private List<Validator> getSubscriptionsValidations(final Vertx vertx, final JsonObject body,
-      final MultiMap headers) {
-    List<Validator> validators = new ArrayList<>();
-    validators.add(new OptionsHeaderValidator(headers.get(HEADER_OPTIONS), false));
-    return validators;
-  }
-
-  private List<Validator> getPostRequestValidations(Vertx vertx, JsonObject body) {
->>>>>>> subscription validation[only streaming allowed]
+  private List<Validator> getPostRequestValidator(Vertx vertx, JsonObject body,RequestType requestType) {
     List<Validator> validators = new ArrayList<>();
     SchemaRouter schemaRouter = SchemaRouter.create(vertx, new SchemaRouterOptions());
     SchemaParser schemaParser = SchemaParser.createOpenAPI3SchemaParser(schemaRouter);
     String jsonSchema = null;
 
     try {
-      jsonSchema = loadJson(RequestType.POST_ENTITIES.getFilename());
+      jsonSchema = loadJson(requestType.getFilename());
       Schema schema = schemaParser.parse(new JsonObject(jsonSchema));
       validators.add(new JsonSchemaTypeValidator(body, true, schema));
     } catch (Exception ex) {
