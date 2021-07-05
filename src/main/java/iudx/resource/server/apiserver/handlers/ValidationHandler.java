@@ -16,7 +16,7 @@ import iudx.resource.server.apiserver.util.RequestType;
 import iudx.resource.server.apiserver.validation.ValidatorsHandlersFactory;
 import iudx.resource.server.apiserver.validation.types.Validator;
 
-public class ValidationHandler implements Handler<RoutingContext>{
+public class ValidationHandler implements Handler<RoutingContext> {
 
 
   private static final Logger LOGGER = LogManager.getLogger(ValidationHandler.class);
@@ -25,8 +25,8 @@ public class ValidationHandler implements Handler<RoutingContext>{
   private Vertx vertx;
 
 
-  public ValidationHandler(Vertx vertx,RequestType apiRequestType) {
-    this.vertx=vertx;
+  public ValidationHandler(Vertx vertx, RequestType apiRequestType) {
+    this.vertx = vertx;
     this.requestType = apiRequestType;
   }
 
@@ -35,23 +35,26 @@ public class ValidationHandler implements Handler<RoutingContext>{
     ValidatorsHandlersFactory validationFactory = new ValidatorsHandlersFactory();
     MultiMap parameters = context.request().params();
     MultiMap headers = context.request().headers();
-    JsonObject body=context.getBodyAsJson();
-    Map<String,String> pathParams=context.pathParams();
+    JsonObject body = context.getBodyAsJson();
+    Map<String, String> pathParams = context.pathParams();
     parameters.addAll(pathParams);
-    
+
     List<Validator> validations = null;
     switch (requestType) {
       case ENTITY:
-        validations = validationFactory.build(vertx,requestType, parameters, headers,body);
+        validations = validationFactory.build(vertx, requestType, parameters, headers, body);
         break;
       case TEMPORAL:
-        validations = validationFactory.build(vertx,requestType, parameters, headers,body);
+        validations = validationFactory.build(vertx, requestType, parameters, headers, body);
         break;
       case LATEST:
-        validations = validationFactory.build(vertx,requestType, parameters, headers,body);
+        validations = validationFactory.build(vertx, requestType, parameters, headers, body);
         break;
-      case POST:
-        validations = validationFactory.build(vertx,requestType, parameters, headers,body);
+      case POST_TEMPORAL:
+        validations = validationFactory.build(vertx, requestType, parameters, headers, body);
+        break;
+      case POST_ENTITIES:
+        validations = validationFactory.build(vertx, requestType, parameters, headers, body);
         break;
       default:
         break;

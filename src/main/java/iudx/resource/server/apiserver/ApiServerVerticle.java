@@ -2,7 +2,7 @@ package iudx.resource.server.apiserver;
 
 
 import static iudx.resource.server.apiserver.util.Constants.*;
-import static iudx.resource.server.apiserver.util.Util.toUriFunction;
+import static iudx.resource.server.apiserver.util.Util.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.netty.handler.codec.http.HttpConstants;
@@ -44,6 +45,7 @@ import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.util.Constants;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 import iudx.resource.server.apiserver.util.RequestType;
 import iudx.resource.server.apiserver.validation.ValidationFailureHandler;
 import iudx.resource.server.apiserver.validation.ValidatorsHandlersFactory;
@@ -147,6 +149,26 @@ public class ApiServerVerticle extends AbstractVerticle {
           .putHeader("X-Content-Type-Options", "nosniff");
       requestHandler.next();
     });
+    
+  //attach custom http error responses to router
+    HttpStatusCode[] statusCodes = HttpStatusCode.values();
+    Stream.of(statusCodes).forEach(code -> {
+      router.errorHandler(code.getValue(), errorHandler -> {
+        HttpServerResponse response = errorHandler.response();
+        if (response.headWritten()) {
+          try {
+            response.close();
+          } catch (RuntimeException e) {
+            // ignore
+          }
+          return;
+        }
+        response
+            .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .setStatusCode(code.getValue())
+            .end(errorResponse(code));
+      });
+    });
 
     // router.route().handler(HeadersHandler.create());
     router.route().handler(BodyHandler.create());
@@ -169,9 +191,15 @@ public class ApiServerVerticle extends AbstractVerticle {
         .handler(AuthHandler.create(vertx))
         .handler(this::handleLatestEntitiesQuery).failureHandler(validationsFailureHandler);
 
-    ValidationHandler postValidationHandler = new ValidationHandler(vertx, RequestType.POST);
-    router.post(NGSILD_POST_QUERY_PATH).consumes(APPLICATION_JSON)
-        .handler(postValidationHandler).handler(AuthHandler.create(vertx))
+    ValidationHandler postTemporalValidationHandler = new ValidationHandler(vertx, RequestType.POST_TEMPORAL);
+    router.post(NGSILD_POST_TEMPORAL_QUERY_PATH).consumes(APPLICATION_JSON)
+        .handler(postTemporalValidationHandler)
+        .handler(AuthHandler.create(vertx))
+        .handler(this::handlePostEntitiesQuery).failureHandler(validationsFailureHandler);
+    
+    ValidationHandler postEntitiesValidationHandler = new ValidationHandler(vertx, RequestType.POST_ENTITIES);
+    router.post(NGSILD_POST_ENTITIES_QUERY_PATH).consumes(APPLICATION_JSON)
+        .handler(postEntitiesValidationHandler).handler(AuthHandler.create(vertx))
         .handler(this::handlePostEntitiesQuery).failureHandler(validationsFailureHandler);
 
     ValidationHandler temporalValidationHandler =

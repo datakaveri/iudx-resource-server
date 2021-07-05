@@ -1,0 +1,218 @@
+{
+	"type": "object",
+	"properties": {
+		"type": {
+			"$id": "#root/type", 
+			"title": "Type",
+			"maxLength":512, 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$",
+			"enum":["Query"]
+		},
+		"entities": {
+			"$id": "#root/entities", 
+			"title": "Entities", 
+			"type": "array",
+			"default": [],
+			"items":{
+				"$id": "#root/entities/items", 
+				"title": "Items", 
+				"type": "object",
+				"properties": {
+					"id": {
+						"$id": "#root/entities/items/id", 
+						"title": "Id", 
+						"type": "string",
+						"default": "",
+						"pattern": "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z.]{4,100}/{1}[a-zA-Z-_.]{4,100}/{1}[a-zA-Z0-9-_.]{4,100}$",
+						"maxLength":512
+					}
+				},
+				"required":["id"],
+				"additionalProperties":false
+			}
+
+		},
+		"geoQ": {
+			"$id": "#root/geoQ", 
+			"title": "Geoq", 
+			"type": "object",
+			"properties": {
+				"geometry": {
+					"$id": "#root/geoQ/geometry", 
+					"title": "Geometry", 
+					"type": "string",
+					"default": "",
+					"pattern": "^.*$",
+					"enum":["point","Point","polygon","Polygon","LineString","linestring","bbox"]
+				},
+				"coordinates": {
+				"anyOf":[
+                    {
+                        "$id": "#root/geoQ/coordinates", 
+                        "title": "Coordinates", 
+                        "type": "array",
+                        "default": [],
+                        "maxItems":2,
+                        "items":{
+                            "$id": "#root/geoQ/coordinates/items", 
+                            "title": "Items", 
+                            "type": "number",
+                            "default": 0.0
+                        }
+                    },
+                    {
+                        "$id": "#root/geoQ/coordinates",
+                        "title": "Coordinates",
+                        "type": "array",
+                        "default": [],
+                        "items": {
+                            "$id": "#root/geoQ/coordinates/items",
+                            "title": "Items",
+                            "type": "array",
+                            "default": [],
+                            "items": {
+                                "$id": "#root/geoQ/coordinates/items/items",
+                                "title": "Items",
+                                "type": "array",
+                                "default": [],
+                                "items": {
+                                    "$id": "#root/geoQ/coordinates/items/items/items",
+                                    "title": "Items",
+                                    "type": "number",
+                                    "default": 0.0
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "$id": "#root/geoQ/coordinates",
+                        "title": "Coordinates",
+                        "type": "array",
+                        "default": [],
+                        "items": {
+                            "$id": "#root/geoQ/coordinates/items",
+                            "title": "Items",
+                            "type": "array",
+                            "default": [],
+                            "items": {
+                                "$id": "#root/geoQ/coordinates/items/items",
+                                "title": "Items",
+                                "type": "number",
+                                "default": 0.0
+                            }
+                        }
+                    }
+                   ]
+                  },
+				"georel": {
+					"$id": "#root/geoQ/georel", 
+					"title": "Georel", 
+					"type": "string",
+					"minLength":1,
+					"maxLength":512,
+					"default": "",
+					"pattern": "^.*$"
+					
+				},
+				"geoproperty": {
+					"$id": "#root/geoQ/geoproperty", 
+					"title": "Geoproperty", 
+					"type": "string",
+					"default": "",
+					"pattern": "^.*$",
+					"enum":["location"]
+				}
+			},
+			"additionalProperties":false
+		}
+,
+		"temporalQ": {
+			"$id": "#root/temporalQ", 
+			"title": "Temporalq", 
+			"type": "object",
+			"properties": {
+				"timerel": {
+					"$id": "#root/temporalQ/timerel", 
+					"title": "Timerel", 
+					"type": "string",
+					"default": "",
+					"pattern": "^.*$",
+					"enum":["after","before","during","between"]
+				},
+				"time": {
+					"$id": "#root/temporalQ/time", 
+					"title": "Time", 
+					"type": "string",
+					"format":"date-time",
+					"default": "",
+					"pattern": "^.*$"
+				},
+				"endtime": {
+					"$id": "#root/temporalQ/endtime", 
+					"title": "Endtime", 
+					"type": "string",
+					"format":"date-time",
+					"default": "",
+					"pattern": "^.*$"
+				},
+				"timeProperty": {
+					"$id": "#root/temporalQ/timeProperty", 
+					"title": "Timeproperty",
+					"maxLength":512, 
+					"type": "string",
+					"default": "",
+					"pattern": "^.*$",
+					"enum":["observationDateTime"]
+				}
+			},
+			"additionalProperties":false
+		}
+,
+		"q": {
+			"$id": "#root/q", 
+			"title": "Q", 
+			"type": "string",
+			"minLength":1,
+			"maxLength":512,
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"options": {
+			"$id": "#root/options", 
+			"title": "Options", 
+			"type": "string",
+			"default": "",
+			"pattern": "^.*$",
+			"enum":["count"]
+		},
+		"attrs": {
+			"$id": "#root/attrs", 
+			"title": "attrs",
+			"maxLength":512, 
+			"type": "string",
+			"minLength":1,
+			"default": "",
+			"pattern": "^.*$"
+		},
+		"offset": {
+            "$id": "#root/offset", 
+            "title": "offset",
+            "type": "integer",
+            "minimum":0,
+            "maximum":50000,
+            "default":0
+        },
+        "limit":{
+            "$id": "#root/limit", 
+            "title": "limit",
+            "type": "integer",
+            "minimum":0,
+            "maximum":10000,
+            "default":5000
+        }
+	},
+	"required":["entities","type"],
+	"additionalProperties":false
+}
