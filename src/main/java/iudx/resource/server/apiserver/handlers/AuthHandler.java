@@ -71,7 +71,7 @@ public class AuthHandler implements Handler<RoutingContext> {
     for(String i:idArray) {
       ids.add(i);
     }
-    if(path.equals(IUDX_MANAGEMENT_ADAPTER_URL) && HttpMethod.POST.name().equalsIgnoreCase(API_METHOD)) {
+    if(path.equals(IUDX_MANAGEMENT_ADAPTER_URL) && HttpMethod.POST.name().equalsIgnoreCase(method)) {
       ids=requestJson.getJsonArray(JSON_ENTITIES);
     }
     requestJson.put(IDS,ids);
