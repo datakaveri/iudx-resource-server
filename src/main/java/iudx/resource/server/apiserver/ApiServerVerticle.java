@@ -330,6 +330,12 @@ public class ApiServerVerticle extends AbstractVerticle {
     String resourceName = request.getParam(JSON_RESOURCE_NAME);
     String id = domain + "/" + userSha + "/" + resourceServer + "/" + resourceGroup + "/"
         + resourceName;
+    if (id.length()>512) {
+      ValidationException ex =
+          new ValidationException("Length for id exceeds (512 characters).");
+      ex.setParameterName("[id]");
+      routingContext.fail(ex);
+    }
     JsonObject json = new JsonObject();
     Future<List<String>> filtersFuture = catalogueService.getApplicableFilters(id);
     /* HTTP request instance/host details */
