@@ -89,7 +89,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     vertxObj = vertx;
     this.config = config;
     catHost = config.getString("catServerHost");
-    catPort = Integer.parseInt(config.getString("catServerPort"));
+    catPort = config.getInteger("catServerPort");
     catPath = Constants.CAT_RSG_PATH;
     resourceServerId = config.getString("resourceServerId");
 
@@ -430,7 +430,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
               : String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
 
           String catHost = config.getString("catServerHost");
-          int catPort = Integer.parseInt(config.getString("catServerPort"));
+          int catPort = config.getInteger("catServerPort");
           String catPath = Constants.CAT_RSG_PATH;
           LOGGER.debug("Info: Host " + catHost + " Port " + catPort + " Path " + catPath);
           // Check if resourceID is available
@@ -625,7 +625,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     LOGGER.debug("isResourceExist() started");
     Promise<Boolean> promise = Promise.promise();
     String catHost = config.getString("catServerHost");
-    int catPort = Integer.parseInt(config.getString("catServerPort"));
+    int catPort = config.getInteger("catServerPort");
     String catPath = Constants.CAT_RSG_PATH;
     String resourceExist = resourceIdCache.getIfPresent(id);
     if (resourceExist != null) {

@@ -74,24 +74,24 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
     /* Read the configuration and set the rabbitMQ server properties. */
     dataBrokerIP = config().getString("dataBrokerIP");
-    dataBrokerPort = Integer.parseInt(config().getString("dataBrokerPort"));
+    dataBrokerPort = config().getInteger("dataBrokerPort");
     dataBrokerManagementPort =
-      Integer.parseInt(config().getString("dataBrokerManagementPort"));
+      config().getInteger("dataBrokerManagementPort");
     dataBrokerVhost = config().getString("dataBrokerVhost");
     dataBrokerUserName = config().getString("dataBrokerUserName");
     dataBrokerPassword = config().getString("dataBrokerPassword");
-    connectionTimeout = Integer.parseInt(config().getString("connectionTimeout"));
-    requestedHeartbeat = Integer.parseInt(config().getString("requestedHeartbeat"));
-    handshakeTimeout = Integer.parseInt(config().getString("handshakeTimeout"));
-    requestedChannelMax = Integer.parseInt(config().getString("requestedChannelMax"));
+    connectionTimeout = config().getInteger("connectionTimeout");
+    requestedHeartbeat = config().getInteger("requestedHeartbeat");
+    handshakeTimeout = config().getInteger("handshakeTimeout");
+    requestedChannelMax = config().getInteger("requestedChannelMax");
     networkRecoveryInterval =
-      Integer.parseInt(config().getString("networkRecoveryInterval"));
+      config().getInteger("networkRecoveryInterval");
     databaseIP = config().getString("callbackDatabaseIP");
-    databasePort = Integer.parseInt(config().getString("callbackDatabasePort"));
+    databasePort = config().getInteger("callbackDatabasePort");
     databaseName = config().getString("callbackDatabaseName");
     databaseUserName = config().getString("callbackDatabaseUserName");
     databasePassword = config().getString("callbackDatabasePassword");
-    poolSize = Integer.parseInt(config().getString("callbackpoolSize"));
+    poolSize = config().getInteger("callbackpoolSize");
 
     /* Configure the RabbitMQ Data Broker client with input from config files. */
 

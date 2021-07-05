@@ -297,7 +297,7 @@ public class AuthenticationServiceTest {
   @Test
   @DisplayName("Test CAT resource group ID API")
   public void testCatAPI(Vertx vertx, VertxTestContext testContext) {
-    int catPort = Integer.parseInt(authConfig.getString("catServerPort"));
+    int catPort = authConfig.getInteger("catServerPort");
     String catHost = authConfig.getString("catServerHost");
     String catPath = Constants.CAT_RSG_PATH;
     String groupID =
@@ -338,7 +338,7 @@ public class AuthenticationServiceTest {
   @Test
   @DisplayName("Test CAT resource group invalid ID API")
   public void testCatAPIWithInvalidID(Vertx vertx, VertxTestContext testContext) {
-    int catPort = Integer.parseInt(authConfig.getString("catServerPort"));
+    int catPort = authConfig.getInteger("catServerPort");
     String catHost = authConfig.getString("catServerHost");
     String catPath = Constants.CAT_RSG_PATH;
     String groupID =
