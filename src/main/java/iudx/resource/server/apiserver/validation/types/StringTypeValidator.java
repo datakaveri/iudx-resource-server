@@ -1,5 +1,6 @@
 package iudx.resource.server.apiserver.validation.types;
 
+import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -8,10 +9,12 @@ public class StringTypeValidator implements Validator{
   
   private String value;
   private boolean required;
+  private Pattern regexPattern;
 
-  public StringTypeValidator(String value, boolean required) {
+  public StringTypeValidator(String value, boolean required,Pattern regexPattern) {
     this.value = value;
     this.required = required;
+    this.regexPattern=regexPattern;
   }
   
   
@@ -30,10 +33,12 @@ public class StringTypeValidator implements Validator{
         return false;
       }
     }
-    if(value.length()>100) {
-      LOGGER.error("Validation error : length >100 not allowed");
+    
+    if(regexPattern!=null && !regexPattern.matcher(value).matches()) {
+      LOGGER.error("Validation error :  doesn't passed regex [ "+regexPattern.pattern() +" ] test");
       return false;
     }
+    
     return true;
   }
 
