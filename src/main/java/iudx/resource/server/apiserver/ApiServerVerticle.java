@@ -212,16 +212,16 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.post(NGSILD_SUBSCRIPTION_URL).handler(AuthHandler.create(vertx))
         .handler(this::handleSubscriptions);
     // append sub
-    router.patch(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
+    router.patch(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSha/:alias")
         .handler(AuthHandler.create(vertx)).handler(this::appendSubscription);
     // update sub
-    router.put(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
+    router.put(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSha/:alias")
         .handler(AuthHandler.create(vertx)).handler(this::updateSubscription);
     // get sub
-    router.get(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
+    router.get(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSha/:alias")
         .handler(AuthHandler.create(vertx)).handler(this::getSubscription);
     // delete sub
-    router.delete(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSHA/:alias")
+    router.delete(NGSILD_SUBSCRIPTION_URL + "/:domain/:userSha/:alias")
         .handler(AuthHandler.create(vertx)).handler(this::deleteSubscription);
 
     /* Management Api endpoints */
@@ -364,11 +364,12 @@ public class ApiServerVerticle extends AbstractVerticle {
           new RuntimeException("Query parameters are not allowed with latest query");
       routingContext.fail(ex);
     }
-    String domain = request.getParam(JSON_DOMAIN);
-    String userSha = request.getParam(JSON_USERSHA);
-    String resourceServer = request.getParam(JSON_RESOURCE_SERVER);
-    String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);
-    String resourceName = request.getParam(JSON_RESOURCE_NAME);
+    String domain = request.getParam(DOMAIN);
+    String userSha = request.getParam(USERSHA);
+    String resourceServer = request.getParam(RESOURCE_SERVER);
+    String resourceGroup = request.getParam(RESOURCE_GROUP);
+    String resourceName = request.getParam(RESOURCE_NAME);
+   
     String id = domain + "/" + userSha + "/" + resourceServer + "/" + resourceGroup + "/"
         + resourceName;
     JsonObject json = new JsonObject();
@@ -662,8 +663,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.debug("Info: appendSubscription method started");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String domain = request.getParam(JSON_DOMAIN);
-    String usersha = request.getParam(JSON_USERSHA);
+    String domain = request.getParam(DOMAIN);
+    String usersha = request.getParam(USERSHA);
     String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject requestJson = routingContext.getBodyAsJson();
@@ -712,8 +713,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.debug("Info: updateSubscription method started");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String domain = request.getParam(JSON_DOMAIN);
-    String usersha = request.getParam(JSON_USERSHA);
+    String domain = request.getParam(DOMAIN);
+    String usersha = request.getParam(USERSHA);
     String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject requestJson = routingContext.getBodyAsJson();
@@ -762,8 +763,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.debug("Info: getSubscription method started");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String domain = request.getParam(JSON_DOMAIN);
-    String usersha = request.getParam(JSON_USERSHA);
+    String domain = request.getParam(DOMAIN);
+    String usersha = request.getParam(USERSHA);
     String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject requestJson = new JsonObject();
@@ -807,8 +808,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.debug("Info: deleteSubscription method started;");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String domain = request.getParam(JSON_DOMAIN);
-    String usersha = request.getParam(JSON_USERSHA);
+    String domain = request.getParam(DOMAIN);
+    String usersha = request.getParam(USERSHA);
     String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + usersha + "/" + alias;
     JsonObject requestJson = new JsonObject();

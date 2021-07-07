@@ -2,6 +2,8 @@ package iudx.resource.server.apiserver.handlers;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,11 +28,12 @@ public class AuthHandler implements Handler<RoutingContext> {
   private static final Logger LOGGER = LogManager.getLogger(AuthHandler.class);
 
   private static final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
+  private static final Pattern regexIDPattern = ID_REGEX;
   private final String AUTH_INFO = "authInfo";
   private final List<String> noAuthRequired = bypassEndpoint;
   private static AuthenticationService authenticator;
   private HttpServerRequest request;
-  
+
   public static AuthHandler create(Vertx vertx) {
     authenticator = AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
     return new AuthHandler();
@@ -40,11 +43,11 @@ public class AuthHandler implements Handler<RoutingContext> {
   public void handle(RoutingContext context) {
     request = context.request();
     JsonObject requestJson = context.getBodyAsJson();
-    
-    if(requestJson == null) {
+
+    if (requestJson == null) {
       requestJson = new JsonObject();
     }
-    
+
     LOGGER.debug("Info : path " + request.path());
     // bypassing auth for RDocs
     if (noAuthRequired.contains(request.path())) {
@@ -64,18 +67,39 @@ public class AuthHandler implements Handler<RoutingContext> {
 
     LOGGER.debug("Info :" + context.request().path());
     LOGGER.debug("Info :" + context.request().path().split("/").length);
-    String id = getId(context.request().path(), path, context);
+
+    String pathId = getId4rmPath(context);
+    String paramId = getId4rmRequest();
+    String bodyId = getId4rmBody(context);
+
+    String id;
+    if (pathId!=null && !pathId.isBlank()) {
+      id = pathId;
+    } else {
+      if (paramId!=null && !paramId.isBlank()) {
+        id = paramId;
+      } else {
+        id = bodyId;
+      }
+    }
+    LOGGER.info("id : " + id);
+
     authInfo.put(ID, id);
-    JsonArray ids=new JsonArray();
-    String[] idArray=id.split(",");
-    for(String i:idArray) {
+    JsonArray ids = new JsonArray();
+    String[] idArray = id.split(",");
+    for (String i : idArray) {
       ids.add(i);
     }
+<<<<<<< HEAD
     if(path.equals(IUDX_MANAGEMENT_ADAPTER_URL) && HttpMethod.POST.name().equalsIgnoreCase(method)) {
       ids=requestJson.getJsonArray(JSON_ENTITIES);
     }
     requestJson.put(IDS,ids);
     
+=======
+    requestJson.put(IDS, ids);
+
+>>>>>>> path param id validation.
     LOGGER.debug("request" + requestJson);
     authenticator.tokenInterospect(requestJson, authInfo, authHandler -> {
       if (authHandler.succeeded()) {
@@ -95,7 +119,7 @@ public class AuthHandler implements Handler<RoutingContext> {
       LOGGER.error("Error : Item Not Found");
       final String payload = responseNotFoundJson().toString();
       ctx.response().putHeader(CONTENT_TYPE, APPLICATION_JSON)
-      .setStatusCode(ResponseType.fromCode(HttpStatus.SC_NOT_FOUND).getCode()).end(payload);
+          .setStatusCode(ResponseType.fromCode(HttpStatus.SC_NOT_FOUND).getCode()).end(payload);
     } else {
       LOGGER.error("Error : Authentication Failure");
       final String payload = responseUnauthorizedJson().toString();
@@ -121,6 +145,7 @@ public class AuthHandler implements Handler<RoutingContext> {
    * @param forPath endpoint called for
    * @return id extraced fro path if present
    */
+  @Deprecated
   private String getId(String path, String forPath, RoutingContext context) {
     String id = "";
     switch (forPath) {
@@ -145,7 +170,7 @@ public class AuthHandler implements Handler<RoutingContext> {
         break;
       }
       case NGSILD_ENTITIES_URL: {
-        if (path.split("/").length == 9) {
+        if (path.split("/").length >= 9) {
           id = path.replaceAll(NGSILD_ENTITIES_URL + "/", "");
           break;
         } else {
@@ -162,13 +187,77 @@ public class AuthHandler implements Handler<RoutingContext> {
         id = body.getJsonArray("entities").getJsonObject(0).getString("id");
         break;
       }
-      case NGSILD_POST_ENTITIES_QUERY_PATH:{
+      case NGSILD_POST_ENTITIES_QUERY_PATH: {
         JsonObject body = context.getBodyAsJson();
         id = body.getJsonArray("entities").getJsonObject(0).getString("id");
         break;
       }
       default: {
         id = "";
+      }
+    }
+    return id;
+  }
+
+  private String getId(RoutingContext context) {
+
+    String pathId = getId4rmPath(context);
+    String paramId = getId4rmRequest();
+    String bodyId = getId4rmBody(context);
+
+    String id;
+    if (!pathId.isBlank()) {
+      id = pathId;
+    } else {
+      if (!paramId.isBlank()) {
+        id = paramId;
+      } else {
+        id = bodyId;
+      }
+    }
+    return id;
+  }
+
+  private String getId4rmPath(RoutingContext context) {
+    StringBuilder id = new StringBuilder();
+    Map<String, String> pathParams = context.pathParams();
+    LOGGER.info("path params :" + pathParams);
+    if (!pathParams.isEmpty()) {
+      if (pathParams.containsKey(DOMAIN)
+          && pathParams.containsKey(USERSHA)
+          && pathParams.containsKey(RESOURCE_SERVER)
+          && pathParams.containsKey(RESOURCE_GROUP)) {
+
+        id.append(pathParams.get(DOMAIN));
+        id.append("/").append(pathParams.get(USERSHA));
+        id.append("/").append(pathParams.get(RESOURCE_SERVER));
+        id.append("/").append(pathParams.get(RESOURCE_GROUP));
+        LOGGER.info("id :" + id.toString());
+      }
+
+      if (pathParams.containsKey(RESOURCE_NAME)) {
+        id.append("/").append(pathParams.get(RESOURCE_NAME));
+      }
+    }
+
+    return id.toString();
+  }
+
+  private String getId4rmRequest() {
+    return request.getParam(ID);
+  }
+
+
+  private String getId4rmBody(RoutingContext context) {
+    JsonObject body = context.getBodyAsJson();
+    String id = null;
+    if (body != null) {
+      JsonArray array = body.getJsonArray(JSON_ENTITIES);
+      if (array != null) {
+        JsonObject json = array.getJsonObject(0);
+        if (json != null) {
+          id = json.getString(ID);
+        }
       }
     }
     return id;
@@ -189,7 +278,7 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = NGSILD_TEMPORAL_URL;
     } else if (url.matches(TEMPORAL_POST_QUERY_URL_REGEX)) {
       path = NGSILD_POST_TEMPORAL_QUERY_PATH;
-    }else if (url.matches(ENTITIES_POST_QUERY_URL_REGEX)) {
+    } else if (url.matches(ENTITIES_POST_QUERY_URL_REGEX)) {
       path = NGSILD_POST_ENTITIES_QUERY_PATH;
     } else if (url.matches(SUBSCRIPTION_URL_REGEX)) {
       path = NGSILD_SUBSCRIPTION_URL;

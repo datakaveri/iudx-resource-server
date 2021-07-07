@@ -129,14 +129,13 @@ public class ValidatorsHandlersFactory {
 
   private List<Validator> getLatestRequestValidations(final MultiMap parameters,
       final MultiMap headers) {
-
-
+    
     List<Validator> validators = new ArrayList<>();
-    validators.add(new StringTypeValidator(parameters.get("domain"), true));
-    validators.add(new StringTypeValidator(parameters.get("userSha"), true));
-    validators.add(new StringTypeValidator(parameters.get("resourceServer"), true));
-    validators.add(new StringTypeValidator(parameters.get("resourceGroup"), true));
-    validators.add(new StringTypeValidator(parameters.get("resourceName"), true));
+    validators.add(new StringTypeValidator(parameters.get("domain"), true,ID_DOMAIN_REGEX));
+    validators.add(new StringTypeValidator(parameters.get("userSha"), true,ID_USERSHA_REGEX));
+    validators.add(new StringTypeValidator(parameters.get("resourceServer"), true,ID_RS_REGEX));
+    validators.add(new StringTypeValidator(parameters.get("resourceGroup"), true,ID_RG_REGEX));
+    validators.add(new StringTypeValidator(parameters.get("resourceName"), true,ID_RN_REGEX));
 
     return validators;
   }

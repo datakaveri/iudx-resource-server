@@ -30,7 +30,7 @@ public class Util {
   public static String errorResponse(HttpStatusCode code) {
     return new JsonObject().put("type", code.getValue())
         .put("title", code.getDescription())
-        .put("title", code.getDescription()).toString();
+        .put("detail", code.getDescription()).toString();
   }
 
 }
