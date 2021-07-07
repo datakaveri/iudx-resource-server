@@ -15,17 +15,19 @@ public class Constants {
   public static final String API_METHOD = "method";
   public static final String ID = "id";
   public static final String IDS = "ids";
-  
+
   // config
   public static final String CONFIG_FILE = "config.properties";
-  
+
   // NGSI-LD endpoints
   public static final String NGSILD_BASE_PATH = "/ngsi-ld/v1";
   public static final String NGSILD_ENTITIES_URL = NGSILD_BASE_PATH + "/entities";
   public static final String NGSILD_TEMPORAL_URL = NGSILD_BASE_PATH + "/temporal/entities";
   public static final String NGSILD_SUBSCRIPTION_URL = NGSILD_BASE_PATH + "/subscription";
-  public static final String NGSILD_POST_TEMPORAL_QUERY_PATH = NGSILD_BASE_PATH + "/temporal/entityOperations/query";
-  public static final String NGSILD_POST_ENTITIES_QUERY_PATH = NGSILD_BASE_PATH + "/entityOperations/query";
+  public static final String NGSILD_POST_TEMPORAL_QUERY_PATH =
+      NGSILD_BASE_PATH + "/temporal/entityOperations/query";
+  public static final String NGSILD_POST_ENTITIES_QUERY_PATH =
+      NGSILD_BASE_PATH + "/entityOperations/query";
 
   // IUDX management endpoints
   public static final String IUDX_MANAGEMENT_URL = "/management";
@@ -48,8 +50,10 @@ public class Constants {
   // path regex
   public static final String ENTITITES_URL_REGEX = NGSILD_ENTITIES_URL + "(.*)";
   public static final String TEMPORAL_URL_REGEX = NGSILD_TEMPORAL_URL + "(.*)";
-  public static final String TEMPORAL_POST_QUERY_URL_REGEX = NGSILD_POST_TEMPORAL_QUERY_PATH + "(.*)";
-  public static final String ENTITIES_POST_QUERY_URL_REGEX = NGSILD_POST_ENTITIES_QUERY_PATH + "(.*)";
+  public static final String TEMPORAL_POST_QUERY_URL_REGEX =
+      NGSILD_POST_TEMPORAL_QUERY_PATH + "(.*)";
+  public static final String ENTITIES_POST_QUERY_URL_REGEX =
+      NGSILD_POST_ENTITIES_QUERY_PATH + "(.*)";
   public static final String SUBSCRIPTION_URL_REGEX = NGSILD_SUBSCRIPTION_URL + "(.*)";
   public static final String ADAPTER_URL_REGEX = IUDX_MANAGEMENT_ADAPTER_URL + "(.*)";
   public static final String EXCHANGE_URL_REGEX = IUDX_MANAGEMENT_EXCHANGE_URL + "(.*)";
@@ -85,9 +89,9 @@ public class Constants {
   public static final String NGSILDQUERY_GEOQ = "geoQ";
   public static final String NGSILDQUERY_TEMPORALQ = "temporalQ";
   public static final String NGSILDQUERY_TIME_PROPERTY = "timeProperty";
-  public static final String NGSILDQUERY_FROM="offset";
-  public static final String NGSILDQUERY_SIZE="limit";
-  
+  public static final String NGSILDQUERY_FROM = "offset";
+  public static final String NGSILDQUERY_SIZE = "limit";
+
   // Header params
   public static final String HEADER_TOKEN = "token";
   public static final String HEADER_HOST = "Host";
@@ -143,8 +147,8 @@ public class Constants {
   public static final String JSON_VHOST_NAME = "vHostName";
   public static final String JSON_VHOST = "vHost";
   public static final String JSON_VHOST_ID = "vhostId";
-  public static final String JSON_DOMAIN = "domain";
-  public static final String JSON_USERSHA = "userSHA";
+  public static final String DOMAIN = "domain";
+  public static final String USERSHA = "userSha";
   public static final String JSON_ALIAS = "alias";
   public static final String JSON_STREAMING_TYPE = "streaming";
   public static final String JSON_EXCHANGE = "exchange";
@@ -161,10 +165,10 @@ public class Constants {
   public static final String JSON_URL = "url";
   public static final String JSON_METHOD = "method";
   public static final String JSON_PASSWORD = "password";
-  public static final String JSON_RESOURCE_SERVER = "resourceServer";
-  public static final String JSON_RESOURCE_GROUP = "resourceGroup";
-  public static final String JSON_RESOURCE_NAME = "resourceName";
-  
+  public static final String RESOURCE_SERVER = "resourceServer";
+  public static final String RESOURCE_GROUP = "resourceGroup";
+  public static final String RESOURCE_NAME = "resourceName";
+
   // searchtype
   public static final String JSON_SEARCH_TYPE = "searchType";
   public static final String JSON_TEMPORAL_SEARCH = "temporalSearch_";
@@ -202,21 +206,33 @@ public class Constants {
   public static final String MSG_EXCHANGE_EXIST = "Exchange already exists";
   public static final String MSG_SUB_TYPE_NOT_FOUND = "Subscription type not present in body";
   public static final String MSG_SUB_INVALID_TOKEN = "Invalid/no token found in header";
-  public static final String MSG_BAD_QUERY="Bad query";
+  public static final String MSG_BAD_QUERY = "Bad query";
 
   // results
   public static final String SUCCCESS = "success";
-  
-  //Validations
-  public static final int VALIDATION_ID_MIN_LEN=0;
-  public static final int VALIDATION_ID_MAX_LEN=512;
-  public static final String  VALIDATION_ID_PATTERN=".*";//TODO : create a regex for IUDX ID pattern
-  public static final int VALIDATION_MAX_ATTRS=5;
-  public static final int VALIDATION_MAX_DAYS_INTERVAL_ALLOWED=10;
-  public static final int VALIDATION_COORDINATE_PRECISION_ALLOWED=6;
-  public static final int VALIDATIONS_MAX_ATTR_LENGTH=100;
-  public static final int VALIDATION_ALLOWED_COORDINATES=10;
-  public static final List<String> VALIDATION_ALLOWED_HEADERS=List.of("token","options");
-  
+
+  // Validations
+  public static final int VALIDATION_ID_MIN_LEN = 0;
+  public static final int VALIDATION_ID_MAX_LEN = 512;
+  public static final String VALIDATION_ID_PATTERN = ".*";// TODO : create a regex for IUDX ID
+                                                          // pattern
+  public static final int VALIDATION_MAX_ATTRS = 5;
+  public static final int VALIDATION_MAX_DAYS_INTERVAL_ALLOWED = 10;
+  public static final int VALIDATION_COORDINATE_PRECISION_ALLOWED = 6;
+  public static final int VALIDATIONS_MAX_ATTR_LENGTH = 100;
+  public static final int VALIDATION_ALLOWED_COORDINATES = 10;
+  public static final List<String> VALIDATION_ALLOWED_HEADERS = List.of("token", "options");
+
+  public static final Pattern ID_REGEX =
+      Pattern.compile(
+          "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z.]{4,100}/{1}[a-zA-Z-_.]{4,100}/{1}[a-zA-Z0-9-_.]{4,100}$");
+
+  public static final Pattern ID_DOMAIN_REGEX = Pattern.compile("^[a-zA-Z0-9.]{4,100}$");
+  public static final Pattern ID_USERSHA_REGEX = Pattern.compile("^[a-zA-Z0-9.]{4,100}$");
+  public static final Pattern ID_RS_REGEX = Pattern.compile("^[a-zA-Z.]{4,100}$");
+  public static final Pattern ID_RG_REGEX = Pattern.compile("^[a-zA-Z-_.]{4,100}$");
+  public static final Pattern ID_RN_REGEX = Pattern.compile("^[a-zA-Z0-9-_.]{4,100}$");
+
+
 
 }

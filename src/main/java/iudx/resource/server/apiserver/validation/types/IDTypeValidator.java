@@ -11,9 +11,7 @@ public class IDTypeValidator implements Validator {
 
   private Integer minLength = VALIDATION_ID_MIN_LEN;
   private Integer maxLength = VALIDATION_ID_MAX_LEN;
-  private static final Pattern regexIDPattern =
-      Pattern.compile(
-          "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z.]{4,100}/{1}[a-zA-Z-_.]{4,100}/{1}[a-zA-Z0-9-_.]{4,100}$");
+  private static final Pattern regexIDPattern =ID_REGEX;
 
 
   private String value;
