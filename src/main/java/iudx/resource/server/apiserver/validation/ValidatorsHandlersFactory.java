@@ -126,11 +126,11 @@ public class ValidatorsHandlersFactory {
       final MultiMap headers) {
     
     List<Validator> validators = new ArrayList<>();
-    validators.add(new StringTypeValidator(parameters.get("domain"), true,ID_DOMAIN_REGEX));
-    validators.add(new StringTypeValidator(parameters.get("userSha"), true,ID_USERSHA_REGEX));
-    validators.add(new StringTypeValidator(parameters.get("resourceServer"), true,ID_RS_REGEX));
-    validators.add(new StringTypeValidator(parameters.get("resourceGroup"), true,ID_RG_REGEX));
-    validators.add(new StringTypeValidator(parameters.get("resourceName"), true,ID_RN_REGEX));
+    validators.add(new StringTypeValidator(parameters.get(DOMAIN), true,ID_DOMAIN_REGEX));
+    validators.add(new StringTypeValidator(parameters.get(USERSHA), true,ID_USERSHA_REGEX));
+    validators.add(new StringTypeValidator(parameters.get(RESOURCE_SERVER), true,ID_RS_REGEX));
+    validators.add(new StringTypeValidator(parameters.get(RESOURCE_GROUP), true,ID_RG_REGEX));
+    validators.add(new StringTypeValidator(parameters.get(RESOURCE_NAME), true,ID_RN_REGEX));
 
     return validators;
   }
