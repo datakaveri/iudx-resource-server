@@ -2,9 +2,10 @@ package iudx.resource.server.apiserver;
 
 
 import static iudx.resource.server.apiserver.util.Constants.*;
-import static iudx.resource.server.apiserver.util.Util.*;
-import java.net.URI;
-import java.util.ArrayList;
+import static iudx.resource.server.apiserver.util.Util.errorResponse;
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
+import static iudx.resource.server.apiserver.util.HttpStatusCode.*;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import com.sun.nio.sctp.HandlerResult;
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
@@ -33,6 +35,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.apiserver.handlers.AuthHandler;
 import iudx.resource.server.apiserver.handlers.FailureHandler;
 import iudx.resource.server.apiserver.handlers.ValidationHandler;
@@ -41,11 +44,11 @@ import iudx.resource.server.apiserver.management.ManagementApiImpl;
 import iudx.resource.server.apiserver.query.NGSILDQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
+import iudx.resource.server.apiserver.response.ResponseUrn;
 import iudx.resource.server.apiserver.response.RestResponse;
 import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
-import iudx.resource.server.apiserver.util.Constants;
 import iudx.resource.server.apiserver.util.HttpStatusCode;
 import iudx.resource.server.apiserver.util.RequestType;
 import iudx.resource.server.apiserver.validation.ValidatorsHandlersFactory;
@@ -149,8 +152,8 @@ public class ApiServerVerticle extends AbstractVerticle {
           .putHeader("X-Content-Type-Options", "nosniff");
       requestHandler.next();
     });
-    
-  //attach custom http error responses to router
+
+    // attach custom http error responses to router
     HttpStatusCode[] statusCodes = HttpStatusCode.values();
     Stream.of(statusCodes).forEach(code -> {
       router.errorHandler(code.getValue(), errorHandler -> {
@@ -191,13 +194,15 @@ public class ApiServerVerticle extends AbstractVerticle {
         .handler(AuthHandler.create(vertx))
         .handler(this::handleLatestEntitiesQuery).failureHandler(validationsFailureHandler);
 
-    ValidationHandler postTemporalValidationHandler = new ValidationHandler(vertx, RequestType.POST_TEMPORAL);
+    ValidationHandler postTemporalValidationHandler =
+        new ValidationHandler(vertx, RequestType.POST_TEMPORAL);
     router.post(NGSILD_POST_TEMPORAL_QUERY_PATH).consumes(APPLICATION_JSON)
         .handler(postTemporalValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::handlePostEntitiesQuery).failureHandler(validationsFailureHandler);
-    
-    ValidationHandler postEntitiesValidationHandler = new ValidationHandler(vertx, RequestType.POST_ENTITIES);
+
+    ValidationHandler postEntitiesValidationHandler =
+        new ValidationHandler(vertx, RequestType.POST_ENTITIES);
     router.post(NGSILD_POST_ENTITIES_QUERY_PATH).consumes(APPLICATION_JSON)
         .handler(postEntitiesValidationHandler).handler(AuthHandler.create(vertx))
         .handler(this::handlePostEntitiesQuery).failureHandler(validationsFailureHandler);
@@ -386,8 +391,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         executeLatestSearchQuery(json, response);
       } else {
         LOGGER.error("catalogue item/group doesn't have filters.");
-        handleResponse(response, ResponseType.BadRequestData,
-            filtersHandler.cause().getMessage());
+        handleResponse(response, BAD_REQUEST, INVALID_PARAM, filtersHandler.cause().getMessage());
       }
     });
   }
@@ -415,8 +419,9 @@ public class ApiServerVerticle extends AbstractVerticle {
         // parse query params
         NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
         if (isTemporalParamsPresent(ngsildquery)) {
-          RuntimeException ex =
-              new RuntimeException("Temporal parameters are not allowed in entities query.");
+          DxRuntimeException ex =
+              new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_TEMPORAL_PARAM,
+                  "Temporal parameters are not allowed in entities query.");
           routingContext.fail(ex);
         }
         // create json
@@ -446,7 +451,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         });
       } else if (validationHandler.failed()) {
         LOGGER.error("Fail: Validation failed");
-        handleResponse(response, ResponseType.BadRequestData,
+        handleResponse(response, BAD_REQUEST, INVALID_PARAM,
             validationHandler.cause().getMessage());
       }
     });
@@ -494,8 +499,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         });
       } else if (validationHandler.failed()) {
         LOGGER.error("Fail: Bad request");
-        handleResponse(response, ResponseType.BadRequestData,
-            validationHandler.cause().getMessage());
+        handleResponse(response, BAD_REQUEST, INVALID_PARAM, validationHandler.cause().getMessage());
       }
     });
   }
@@ -552,8 +556,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
 
   /**
-   * This method is used to handler all temporal NGSI-LD queries for endpoint
-   * /ngsi-ld/v1/temporal/**.
+   * This method is used to handler all temporal NGSI-LD queries for endpoint /ngsi-ld/v1/temporal/**.
    * 
    * @param routingContext RoutingContext object
    * 
@@ -600,8 +603,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         });
       } else if (validationHandler.failed()) {
         LOGGER.error("Fail: Bad request;");
-        handleResponse(response, ResponseType.BadRequestData,
-            validationHandler.cause().getMessage());
+        handleResponse(response, BAD_REQUEST, INVALID_PARAM, validationHandler.cause().getMessage());
       }
     });
 
@@ -650,7 +652,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       });
     } else {
       LOGGER.error("Fail: Bad request");
-      handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND);
+      handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_SUB_TYPE_NOT_FOUND);
     }
   }
 
@@ -696,11 +698,11 @@ public class ApiServerVerticle extends AbstractVerticle {
         });
       } else {
         LOGGER.error("Fail: Bad request");
-        handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_NAME);
+        handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_INVALID_NAME);
       }
     } else {
       LOGGER.error("Fail: Bad request");
-      handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND);
+      handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_SUB_TYPE_NOT_FOUND);
     }
   }
 
@@ -744,11 +746,11 @@ public class ApiServerVerticle extends AbstractVerticle {
         });
       } else {
         LOGGER.error("Fail: Bad request");
-        handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_NAME);
+        handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_INVALID_NAME);
       }
     } else {
       LOGGER.error("Fail: Bad request");
-      handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND);
+      handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_SUB_TYPE_NOT_FOUND);
     }
 
 
@@ -795,7 +797,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       });
     } else {
       LOGGER.error("Fail: Bad request");
-      handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND);
+      handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_SUB_TYPE_NOT_FOUND);
     }
   }
 
@@ -836,7 +838,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         }
       });
     } else {
-      handleResponse(response, ResponseType.BadRequestData, MSG_SUB_TYPE_NOT_FOUND);
+      handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_SUB_TYPE_NOT_FOUND);
     }
   }
 
@@ -879,17 +881,17 @@ public class ApiServerVerticle extends AbstractVerticle {
               });
             } else {
               LOGGER.error("Fail: Unauthorized;" + validNameHandler.cause().getMessage());
-              handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_EXCHANGE_NAME);
+              handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_INVALID_EXCHANGE_NAME);
             }
           });
         } else if (authHandler.failed()) {
           LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, ResponseType.AuthenticationFailure);
+          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
         }
       });
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
 
   }
@@ -926,12 +928,12 @@ public class ApiServerVerticle extends AbstractVerticle {
           });
         } else if (authHandler.failed()) {
           LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, ResponseType.AuthenticationFailure);
+          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
         }
       });
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
 
   }
@@ -971,12 +973,12 @@ public class ApiServerVerticle extends AbstractVerticle {
           });
         } else if (authHandler.failed()) {
           LOGGER.error("Fail: Unauthorized" + authHandler.cause().getMessage());
-          handleResponse(response, ResponseType.AuthenticationFailure);
+          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
         }
       });
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
   }
 
@@ -1016,18 +1018,18 @@ public class ApiServerVerticle extends AbstractVerticle {
               });
             } else {
               LOGGER.error("Fail: Bad request");
-              handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_EXCHANGE_NAME);
+              handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_INVALID_EXCHANGE_NAME);
             }
 
           });
         } else if (authHandler.failed()) {
           LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, ResponseType.AuthenticationFailure);
+          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
         }
       });
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
   }
 
@@ -1064,12 +1066,12 @@ public class ApiServerVerticle extends AbstractVerticle {
           });
         } else if (authHandler.failed()) {
           LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, ResponseType.AuthenticationFailure);
+          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
         }
       });
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
   }
 
@@ -1106,12 +1108,12 @@ public class ApiServerVerticle extends AbstractVerticle {
           });
         } else {
           LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, ResponseType.AuthenticationFailure);
+          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
         }
       });
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
   }
 
@@ -1147,12 +1149,12 @@ public class ApiServerVerticle extends AbstractVerticle {
           });
         } else if (authHandler.failed()) {
           LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, ResponseType.AuthenticationFailure);
+          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
         }
       });
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
   }
 
@@ -1188,12 +1190,12 @@ public class ApiServerVerticle extends AbstractVerticle {
           });
         } else if (authHandler.failed()) {
           LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, ResponseType.AuthenticationFailure);
+          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
         }
       });
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
   }
 
@@ -1231,17 +1233,17 @@ public class ApiServerVerticle extends AbstractVerticle {
               });
             } else {
               LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-              handleResponse(response, ResponseType.BadRequestData, MSG_INVALID_EXCHANGE_NAME);
+              handleResponse(response, BAD_REQUEST,INVALID_PARAM,MSG_INVALID_EXCHANGE_NAME);
             }
           });
         } else if (authHandler.failed()) {
           LOGGER.error("Fail: Unauthorized");
-          handleResponse(response, ResponseType.AuthenticationFailure);
+          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
         }
       });
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
 
   }
@@ -1278,12 +1280,12 @@ public class ApiServerVerticle extends AbstractVerticle {
           });
         } else if (authHandler.failed()) {
           LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, ResponseType.AuthenticationFailure);
+          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
         }
       });
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
   }
 
@@ -1426,12 +1428,12 @@ public class ApiServerVerticle extends AbstractVerticle {
           });
         } else {
           LOGGER.debug("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, ResponseType.AuthenticationFailure);
+          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
         }
       });
     } else {
       LOGGER.info("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
   }
 
@@ -1468,12 +1470,12 @@ public class ApiServerVerticle extends AbstractVerticle {
           });
         } else {
           LOGGER.debug("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, ResponseType.AuthenticationFailure);
+          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
         }
       });
     } else {
       LOGGER.debug("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
   }
 
@@ -1508,11 +1510,11 @@ public class ApiServerVerticle extends AbstractVerticle {
           });
         } else {
           LOGGER.error(authHandler.cause());
-          handleResponse(response, ResponseType.AuthenticationFailure);
+          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
         }
       });
     } else {
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
   }
 
@@ -1548,12 +1550,12 @@ public class ApiServerVerticle extends AbstractVerticle {
           });
         } else {
           LOGGER.debug("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, ResponseType.AuthenticationFailure);
+          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
         }
       });
     } else {
       LOGGER.debug("Fail: Unauthorized");
-      handleResponse(response, ResponseType.AuthenticationFailure);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
   }
 
@@ -1574,40 +1576,49 @@ public class ApiServerVerticle extends AbstractVerticle {
     try {
       JsonObject json = new JsonObject(failureMessage);
       int type = json.getInteger(JSON_TYPE);
-      ResponseType responseType = ResponseType.fromCode(type);
-      response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(type)
-          .end(generateResponse(responseType).toString());
+      HttpStatusCode status = HttpStatusCode.getByValue(type);
+      ResponseUrn urn = ResponseUrn.fromCode(type + ""); // @TODO : remove +"" after other verticles
+                                                         // return urn in body
+      response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(type)
+          .end(generateResponse(status, urn).toString());
     } catch (DecodeException ex) {
-      LOGGER.error("ERROR : Expecting Json received else from backend service");
-      handleResponse(response, ResponseType.BadRequestData);
+      LOGGER.error("ERROR : Expecting Json from backend service [ jsonFormattingException ]");
+      handleResponse(response, HttpStatusCode.BAD_REQUEST, BACKING_SERVICE_FORMAT);
     }
 
   }
 
-  private void handleResponse(HttpServerResponse response, ResponseType responseType) {
-    response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(responseType.getCode())
-        .end(generateResponse(responseType).toString());
+  private void handleResponse(HttpServerResponse response, HttpStatusCode code, ResponseUrn urn) {
+    handleResponse(response, code, urn, code.getDescription());
   }
 
-  private void handleResponse(HttpServerResponse response, ResponseType responseType,
-      String message) {
-    response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(responseType.getCode())
-        .end(generateResponse(responseType, message).toString());
+  private void handleResponse(HttpServerResponse response, HttpStatusCode statusCode,
+      ResponseUrn urn, String message) {
+    response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+        .setStatusCode(statusCode.getValue())
+        .end(generateResponse(statusCode, urn, message).toString());
   }
 
-  private JsonObject generateResponse(ResponseType responseType) {
-    int type = responseType.getCode();
-    //@TODO : temp fix with ""+
-    return new RestResponse.Builder().withType(""+type)
-        .withTitle(ResponseType.fromCode(type).getMessage())
-        .withMessage(ResponseType.fromCode(type).getMessage()).build().toJson();
+  // private JsonObject generateResponse(ResponseType responseType) {
+  // int type = responseType.getCode();
+  // //@TODO : temp fix with ""+
+  // return new RestResponse.Builder().withType(""+type)
+  // .withTitle(ResponseType.fromCode(type).getMessage())
+  // .withMessage(ResponseType.fromCode(type).getMessage()).build().toJson();
+  // }
+
+  private JsonObject generateResponse(HttpStatusCode statusCode, ResponseUrn urn) {
+    return generateResponse(statusCode, urn, statusCode.getDescription());
   }
 
-  private JsonObject generateResponse(ResponseType responseType, String message) {
-    int type = responseType.getCode();
-  //@TODO : temp fix with ""+
-    return new RestResponse.Builder().withType(""+type)
-        .withTitle(ResponseType.fromCode(type).getMessage()).withMessage(message).build().toJson();
+  private JsonObject generateResponse(HttpStatusCode statusCode, ResponseUrn urn, String message) {
+    String type = urn.getUrn();
+    return new RestResponse.Builder()
+        .withType(type)
+        .withTitle(statusCode.getDescription())
+        .withMessage(message)
+        .build().toJson();
 
   }
 
@@ -1651,8 +1662,8 @@ public class ApiServerVerticle extends AbstractVerticle {
       }
     } catch (IllegalArgumentException ex) {
       response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-          .setStatusCode(ResponseType.BadRequestData.getCode())
-          .end(generateResponse(ResponseType.BadRequestData, MSG_BAD_QUERY).toString());
+          .setStatusCode(HttpStatusCode.BAD_REQUEST.getValue())
+          .end(generateResponse(HttpStatusCode.BAD_REQUEST, INVALID_PARAM).toString());
 
 
     }
