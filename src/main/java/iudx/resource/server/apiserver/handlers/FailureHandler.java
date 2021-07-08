@@ -23,6 +23,7 @@ public class FailureHandler implements Handler<RoutingContext> {
       DxRuntimeException exception = (DxRuntimeException) failure;
       LOGGER.error(exception.getUrn().getUrn() + " : " + exception.getMessage());
       HttpStatusCode code = HttpStatusCode.getByValue(exception.getStatusCode());
+      
       JsonObject response = new RestResponse.Builder()
           .withType(exception.getUrn().getUrn())
           .withTitle(code.getDescription())
