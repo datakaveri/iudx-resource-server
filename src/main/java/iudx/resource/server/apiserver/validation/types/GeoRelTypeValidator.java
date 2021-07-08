@@ -1,10 +1,14 @@
 package iudx.resource.server.apiserver.validation.types;
 
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+
 
 public class GeoRelTypeValidator implements Validator {
+
   private static final Logger LOGGER = LogManager.getLogger(GeoRelTypeValidator.class);
 
   private List<String> allowedValues = List.of("within", "intersects", "near");
@@ -19,10 +23,8 @@ public class GeoRelTypeValidator implements Validator {
 
   @Override
   public boolean isValid() {
-    LOGGER.debug("value : " + value + "required : " + required);
-    if (required && (value == null || value.isBlank())) {
-      LOGGER.error("Validation error : null or blank value for required mandatory field");
-      return false;
+    if (required && (value == null || value.isBlank())) {  
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_REL, failureMessage());
     } else {
       if (value == null || value.isBlank()) {
         return true;
@@ -30,8 +32,7 @@ public class GeoRelTypeValidator implements Validator {
     }
     String[] geoRelationValues = value.split(";");
     if (!allowedValues.contains(geoRelationValues[0])) {
-      LOGGER.error("Validation error : Value " + value + " " + "is not allowed");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_REL, failureMessage(value));
     }
     return true;
   }
@@ -45,6 +46,10 @@ public class GeoRelTypeValidator implements Validator {
 
   @Override
   public String failureMessage() {
-    return "Invalid geo realation";
+    return INVALID_GEO_REL.getMessage();
+  }
+
+  private String failureMessage(String value) {
+    return failureMessage() + "[" + value + "]";
   }
 }
