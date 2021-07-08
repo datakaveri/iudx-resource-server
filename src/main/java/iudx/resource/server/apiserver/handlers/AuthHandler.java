@@ -1,6 +1,8 @@
 package iudx.resource.server.apiserver.handlers;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
+
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -15,6 +17,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import iudx.resource.server.apiserver.response.ResponseType;
+import iudx.resource.server.apiserver.response.ResponseUrn;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 import iudx.resource.server.authenticator.AuthenticationService;
 
 
@@ -113,26 +117,28 @@ public class AuthHandler implements Handler<RoutingContext> {
   private void processAuthFailure(RoutingContext ctx, String result) {
     if (result.contains("Not Found")) {
       LOGGER.error("Error : Item Not Found");
-      final String payload = responseNotFoundJson().toString();
-      ctx.response().putHeader(CONTENT_TYPE, APPLICATION_JSON)
-          .setStatusCode(ResponseType.fromCode(HttpStatus.SC_NOT_FOUND).getCode()).end(payload);
+      HttpStatusCode statusCode = HttpStatusCode.getByValue(404);
+      ctx.response()
+         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+         .setStatusCode(statusCode.getValue())
+         .end(generateResponse(RESOURCE_NOT_FOUND, statusCode).toString());
     } else {
       LOGGER.error("Error : Authentication Failure");
-      final String payload = responseUnauthorizedJson().toString();
-      ctx.response().putHeader(CONTENT_TYPE, APPLICATION_JSON)
-          .setStatusCode(ResponseType.fromCode(HttpStatus.SC_UNAUTHORIZED).getCode()).end(payload);
+      HttpStatusCode statusCode = HttpStatusCode.getByValue(401);
+      ctx.response()
+          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(statusCode.getValue())
+          .end(generateResponse(INVALID_TOKEN, statusCode).toString());
     }
   }
-
-  private JsonObject responseUnauthorizedJson() {
-    return new JsonObject().put(JSON_TYPE, HttpStatus.SC_UNAUTHORIZED)
-        .put(JSON_TITLE, "Not Authorized").put(JSON_DETAIL, "Invalid credentials");
+  
+  private JsonObject generateResponse(ResponseUrn urn,HttpStatusCode statusCode) {
+    return new JsonObject()
+        .put(JSON_TYPE, urn.getUrn())
+        .put(JSON_TITLE, statusCode.getDescription())
+        .put(JSON_DETAIL, statusCode.getDescription());
   }
 
-  private JsonObject responseNotFoundJson() {
-    return new JsonObject().put(JSON_TYPE, HttpStatus.SC_NOT_FOUND)
-        .put(JSON_TITLE, "Not Found").put(JSON_DETAIL, "Resource Not Found");
-  }
 
   /**
    * extract id from path param

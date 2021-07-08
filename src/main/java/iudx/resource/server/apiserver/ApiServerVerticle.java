@@ -34,6 +34,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import iudx.resource.server.apiserver.handlers.AuthHandler;
+import iudx.resource.server.apiserver.handlers.FailureHandler;
 import iudx.resource.server.apiserver.handlers.ValidationHandler;
 import iudx.resource.server.apiserver.management.ManagementApi;
 import iudx.resource.server.apiserver.management.ManagementApiImpl;
@@ -47,7 +48,6 @@ import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.util.Constants;
 import iudx.resource.server.apiserver.util.HttpStatusCode;
 import iudx.resource.server.apiserver.util.RequestType;
-import iudx.resource.server.apiserver.validation.ValidationFailureHandler;
 import iudx.resource.server.apiserver.validation.ValidatorsHandlersFactory;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.archives.DatabaseService;
@@ -175,7 +175,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     // router.route().handler(AuthHandler.create(vertx));
 
     ValidatorsHandlersFactory validators = new ValidatorsHandlersFactory();
-    ValidationFailureHandler validationsFailureHandler = new ValidationFailureHandler();
+    FailureHandler validationsFailureHandler = new FailureHandler();
 
     /* NGSI-LD api endpoints */
     ValidationHandler entityValidationHandler = new ValidationHandler(vertx, RequestType.ENTITY);
@@ -1597,14 +1597,16 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   private JsonObject generateResponse(ResponseType responseType) {
     int type = responseType.getCode();
-    return new RestResponse.Builder().withType(type)
+    //@TODO : temp fix with ""+
+    return new RestResponse.Builder().withType(""+type)
         .withTitle(ResponseType.fromCode(type).getMessage())
         .withMessage(ResponseType.fromCode(type).getMessage()).build().toJson();
   }
 
   private JsonObject generateResponse(ResponseType responseType, String message) {
     int type = responseType.getCode();
-    return new RestResponse.Builder().withType(type)
+  //@TODO : temp fix with ""+
+    return new RestResponse.Builder().withType(""+type)
         .withTitle(ResponseType.fromCode(type).getMessage()).withMessage(message).build().toJson();
 
   }

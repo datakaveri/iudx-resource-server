@@ -9,11 +9,11 @@ import iudx.resource.server.apiserver.util.Constants;
  */
 public class RestResponse {
 
-  private int type;
+  private String type;
   private String title;
   private String detail;
 
-  private RestResponse(int type, String title, String message) {
+  private RestResponse(String type, String title, String message) {
     super();
     this.type = type;
     this.title = title;
@@ -38,14 +38,14 @@ public class RestResponse {
   }
 
   public static class Builder {
-    private int type;
+    private String type;
     private String title;
     private String message;
 
     public Builder() {
     }
 
-    public Builder withType(int type) {
+    public Builder withType(String type) {
       this.type = type;
       return this;
     }
