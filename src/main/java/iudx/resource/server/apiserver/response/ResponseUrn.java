@@ -8,7 +8,7 @@ public enum ResponseUrn {
   INVALID_PARAM("urn:dx:rs:invalidParamameter", "Invalid parameter passed"),
   INVALID_GEO_REL("urn:dx:rs:invalidGeoRel", "Invalid geo relation value"),
   INVALID_TEMPORAL_PARAM("urn:dx:rs:invalidTemporalParam", "Invalid temporal parameter"),
-  INVALIA_TEMPORAL_REL("urn:dx:rs:invalidTemporalRelationParam", "Invalid temporal param value"),
+  INVALID_TEMPORAL_REL("urn:dx:rs:invalidTemporalRelationParam", "Invalid temporal param value"),
   INVALID_TEMPORAL_DATE_FORMAT("urn:dx:rs:invalidTemporalDateFormat", "Invalid date format"),
   INVALID_GEO_PARAM("urn:dx:rs:invalidGeoParam", "Invalid geo param"),
   INVALID_GEO_VALUE("urn:dx:rs:invalidGeoValue", "Invalid geo param value"),
@@ -28,8 +28,12 @@ public enum ResponseUrn {
 
 
   // extra urn
-  BACKING_SERVICE_FORMAT("urn:dx:rs:backend", "format error from backing service [cat,auth etc.]"),
+  INVALID_ID_VALUE("urn:dx:rs:invalidIdValue", "Invalid id"),
+  INVALID_PAYLOAD_FORMAT("urn:dx:rs:invalidPayloadFormat", "Invalid json format in post request [schema mismatch]"),
+  INVALID_PARAM_VALUE("urn:dx:rs:invalidParamameterValue", "Invalid parameter value passed"),
 
+  BACKING_SERVICE_FORMAT("urn:dx:rs:backend", "format error from backing service [cat,auth etc.]"),
+  SCHEMA_READ_ERROR("urn:dx:rs:readError","Fail to read file"),
   YET_NOT_IMPLEMENTED("urn:dx:rs:general", "urn yet not implemented in backend verticle.");
 
 

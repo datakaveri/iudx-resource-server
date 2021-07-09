@@ -5,25 +5,27 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 
 
-public class GeoRelTypeValidator implements Validator {
+public final class GeoRelTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(GeoRelTypeValidator.class);
 
   private List<String> allowedValues = List.of("within", "intersects", "near");
 
-  private String value;
-  private boolean required;
+  private final String value;
+  private final boolean required;
 
-  public GeoRelTypeValidator(String value, boolean required) {
+  public GeoRelTypeValidator(final String value, final boolean required) {
     this.value = value;
     this.required = required;
   }
 
   @Override
   public boolean isValid() {
-    if (required && (value == null || value.isBlank())) {  
+    LOGGER.debug("value : " + value + "required : " + required);
+    if (required && (value == null || value.isBlank())) {
       throw new DxRuntimeException(failureCode(), INVALID_GEO_REL, failureMessage());
     } else {
       if (value == null || value.isBlank()) {
@@ -40,16 +42,12 @@ public class GeoRelTypeValidator implements Validator {
 
   @Override
   public int failureCode() {
-    return 400;
+    return HttpStatusCode.BAD_REQUEST.getValue();
   }
 
 
   @Override
   public String failureMessage() {
     return INVALID_GEO_REL.getMessage();
-  }
-
-  private String failureMessage(String value) {
-    return failureMessage() + "[" + value + "]";
   }
 }

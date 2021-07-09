@@ -1,11 +1,14 @@
 package iudx.resource.server.apiserver.validation.types;
 
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
 import static iudx.resource.server.apiserver.util.Constants.*;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 
-public class IDTypeValidator implements Validator {
+public final class IDTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(IDTypeValidator.class);
 
@@ -14,16 +17,16 @@ public class IDTypeValidator implements Validator {
   private static final Pattern regexIDPattern =ID_REGEX;
 
 
-  private String value;
-  private boolean required;
+  private final String value;
+  private final boolean required;
 
-  public IDTypeValidator(String value, boolean required) {
+  public IDTypeValidator(final String value, final boolean required) {
     this.value = value;
     this.required = required;
   }
 
-  public boolean isvalidIUDXId(String value) {
-    return regexIDPattern.matcher(value).matches();
+  public boolean isvalidIUDXId(final String value) {
+    return VALIDATION_ID_PATTERN.matcher(value).matches();
   }
 
   @Override
@@ -31,35 +34,35 @@ public class IDTypeValidator implements Validator {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_ID_VALUE, failureMessage());
     } else {
       if (value == null) {
         return true;
       }
       if (value.isBlank()) {
         LOGGER.error("Validation error :  blank value for passed");
-        return false;
+        throw new DxRuntimeException(failureCode(), INVALID_ID_VALUE, failureMessage(value));
       }
     }
-    if (value.length() > maxLength) {
+    if (value.length() > VALIDATION_ID_MAX_LEN) {
       LOGGER.error("Validation error : Value exceed max character limit.");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_ID_VALUE, failureMessage(value));
     }
     if (!isvalidIUDXId(value)) {
       LOGGER.error("Validation error : Invalid id.");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_ID_VALUE, failureMessage(value));
     }
     return true;
   }
 
   @Override
   public int failureCode() {
-    return 400;
+    return HttpStatusCode.BAD_REQUEST.getValue();
   }
 
   @Override
   public String failureMessage() {
-    return "Invalid id.";
+    return INVALID_ID_VALUE.getMessage();
   }
 
 }

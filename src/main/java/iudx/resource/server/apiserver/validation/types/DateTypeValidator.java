@@ -1,31 +1,34 @@
 package iudx.resource.server.apiserver.validation.types;
 
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
+
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 
-public class DateTypeValidator implements Validator {
+public final class DateTypeValidator implements Validator {
+  
   private static final Logger LOGGER = LogManager.getLogger(DateTypeValidator.class);
 
+  private final String value;
+  private final boolean required;
 
-  private String value;
-  private boolean required;
-
-  public DateTypeValidator(String value, boolean required) {
+  public DateTypeValidator(final String value, final boolean required) {
     this.value = value;
     this.required = required;
   }
 
-  private boolean isValidDate(String value) {
+  private boolean isValidDate(final String value) {
     String dateString = value.trim().replaceAll("\\s", "+");// since + is treated as space in uri
     // params
     try {
       ZonedDateTime.parse(dateString);
       return true;
     } catch (DateTimeParseException e) {
-      LOGGER.error("Validation error : Invalid Date format.");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE, failureMessage(value));
     }
   }
 
@@ -33,15 +36,13 @@ public class DateTypeValidator implements Validator {
   public boolean isValid() {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
-      LOGGER.error("Validation error : null or blank value for required mandatory field");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE, failureMessage());
     } else {
       if (value == null) {
         return true;
       }
       if (value.isBlank()) {
-        LOGGER.error("Validation error :  blank value for passed");
-        return false;
+        throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE, failureMessage(value));
       }
     }
     return isValidDate(value);
@@ -49,12 +50,12 @@ public class DateTypeValidator implements Validator {
 
   @Override
   public int failureCode() {
-    return 400;
+    return HttpStatusCode.BAD_REQUEST.getValue();
   }
 
   @Override
   public String failureMessage() {
-    return "Invalid date";
+    return INVALID_TEMPORAL_DATE_FORMAT.getMessage();
   }
 
 }
