@@ -6,6 +6,7 @@ import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
 import static iudx.resource.server.apiserver.util.HttpStatusCode.*;
 
+import iudx.resource.server.metering.MeteringService;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +67,7 @@ import iudx.resource.server.databroker.DataBrokerService;
  * The API Server verticle implements the IUDX Resource Server APIs. It handles the API requests
  * from the clients and interacts with the associated Service to respond.
  * </p>
- * 
+ *
  * @see io.vertx.core.Vertx
  * @see io.vertx.core.AbstractVerticle
  * @see io.vertx.core.http.HttpServer
@@ -87,7 +88,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private static final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
   private static final String BROKER_SERVICE_ADDRESS = "iudx.rs.broker.service";
   private static final String LATEST_SEARCH_ADDRESS = "iudx.rs.latest.service";
-
+  private static final String METERING_SERVICE_ADDRESS = "iudx.rs.metering.service";
   private HttpServer server;
   private Router router;
   private int port = 8443;
@@ -97,7 +98,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private ManagementApi managementApi;
   private SubscriptionService subsService;
   private CatalogueService catalogueService;
-
+  private MeteringService meteringService;
   private DatabaseService database;
   private DataBrokerService databroker;
   private AuthenticationService authenticator;
@@ -109,9 +110,9 @@ public class ApiServerVerticle extends AbstractVerticle {
    * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
    * configuration, obtains a proxy for the Event bus services exposed through service discovery,
    * start an HTTPs server at port 8443 or an HTTP server at port 8080.
-   * 
+   *
    * @throws Exception which is a startup exception TODO Need to add documentation for all the
-   * 
+   *
    */
 
   @Override
@@ -259,14 +260,14 @@ public class ApiServerVerticle extends AbstractVerticle {
     // adapter
     router.post(IUDX_MANAGEMENT_ADAPTER_URL).handler(AuthHandler.create(vertx))
         .handler(this::registerAdapter);
-    
+
     router
         .delete(IUDX_MANAGEMENT_ADAPTER_URL
             + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
         .handler(AuthHandler.create(vertx)).handler(this::deleteAdapter);
     router.delete(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSha/:resourceServer/:resourceGroup")
         .handler(AuthHandler.create(vertx)).handler(this::deleteAdapter);
-    
+
     router
         .get(IUDX_MANAGEMENT_ADAPTER_URL
             + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
@@ -274,7 +275,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     router
         .get(IUDX_MANAGEMENT_ADAPTER_URL+ "/:domain/:userSha/:resourceServer/:resourceGroup")
         .handler(AuthHandler.create(vertx)).handler(this::getAdapterDetails);
-    
+
     router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat").handler(AuthHandler.create(vertx))
         .handler(this::publishHeartbeat);
     router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/downstreamissue").handler(AuthHandler.create(vertx))
@@ -344,7 +345,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     authenticator = AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
 
     databroker = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
-
+    meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
     latestDataService = LatestDataService.createProxy(vertx, LATEST_SEARCH_ADDRESS);
 
     managementApi = new ManagementApiImpl();
@@ -375,7 +376,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String resourceServer = request.getParam(RESOURCE_SERVER);
     String resourceGroup = request.getParam(RESOURCE_GROUP);
     String resourceName = request.getParam(RESOURCE_NAME);
-   
+
     String id = domain + "/" + userSha + "/" + resourceServer + "/" + resourceGroup + "/"
         + resourceName;
     JsonObject json = new JsonObject();
@@ -399,7 +400,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * This method is used to handle all NGSI-LD queries for endpoint /ngsi-ld/v1/entities/**.
-   * 
+   *
    * @param routingContext RoutingContext Object
    */
   private void handleEntitiesQuery(RoutingContext routingContext) {
@@ -460,7 +461,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * this method is used to handle all entities queries from post endpoint.
-   * 
+   *
    * @param routingContext routingContext
    *
    */
@@ -507,7 +508,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * Execute a count query in DB
-   * 
+   *
    * @param json valid json query
    * @param response
    */
@@ -526,7 +527,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * Execute a search query in DB
-   * 
+   *
    * @param json valid json query
    * @param response
    */
@@ -558,9 +559,9 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * This method is used to handler all temporal NGSI-LD queries for endpoint /ngsi-ld/v1/temporal/**.
-   * 
+   *
    * @param routingContext RoutingContext object
-   * 
+   *
    */
   private void handleTemporalQuery(RoutingContext routingContext) {
     LOGGER.debug("Info: handleTemporalQuery method started.");
@@ -612,7 +613,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * Method used to handle all subscription requests.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void handleSubscriptions(RoutingContext routingContext) {
@@ -659,7 +660,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * handle append requests for subscription.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void appendSubscription(RoutingContext routingContext) {
@@ -709,7 +710,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * handle update subscription requests.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void updateSubscription(RoutingContext routingContext) {
@@ -759,7 +760,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * get a subscription by id.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void getSubscription(RoutingContext routingContext) {
@@ -804,7 +805,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * delete a subscription by id.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void deleteSubscription(RoutingContext routingContext) {
@@ -845,7 +846,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * Create a exchange in rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void createExchange(RoutingContext routingContext) {
@@ -899,7 +900,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * delete an exchange in rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void deleteExchange(RoutingContext routingContext) {
@@ -941,7 +942,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * get exchange details from rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void getExchangeDetails(RoutingContext routingContext) {
@@ -985,7 +986,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * create a queue in rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void createQueue(RoutingContext routingContext) {
@@ -1036,7 +1037,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * delete a queue in rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext.
    */
   private void deleteQueue(RoutingContext routingContext) {
@@ -1078,7 +1079,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * get queue details from rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void getQueueDetails(RoutingContext routingContext) {
@@ -1120,7 +1121,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * bind queue to exchange in rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void bindQueue2Exchange(RoutingContext routingContext) {
@@ -1161,7 +1162,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * unbind a queue from an exchange in rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void unbindQueue2Exchange(RoutingContext routingContext) {
@@ -1202,7 +1203,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * create a vhost in rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void createVHost(RoutingContext routingContext) {
@@ -1251,7 +1252,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * delete vhost from rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void deleteVHost(RoutingContext routingContext) {
@@ -1292,7 +1293,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * register a adapter in Rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void registerAdapter(RoutingContext routingContext) {
@@ -1324,7 +1325,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * delete a adapter in Rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   public void deleteAdapter(RoutingContext routingContext) {
@@ -1362,7 +1363,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * get Adapter details from Rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   public void getAdapterDetails(RoutingContext routingContext) {
@@ -1399,7 +1400,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * publish heartbeat details to Rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext Note: This is too frequent an operation to have info or
    *        error level logs
    */
@@ -1440,7 +1441,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * publish downstream issues to Rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext Note: This is too frequent an operation to have info or
    *        error level logs
    */
@@ -1482,7 +1483,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * publish data issue to Rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext Note: All logs are debug level only
    */
   public void publishDataIssue(RoutingContext routingContext) {
@@ -1521,7 +1522,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * publish data from adapter to rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext Note: All logs are debug level
    */
   public void publishDataFromAdapter(RoutingContext routingContext) {
@@ -1562,7 +1563,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * handle HTTP response.
-   * 
+   *
    * @param response response object
    * @param responseType Http status for response
    * @param isBodyRequired body is required or not for response
@@ -1579,7 +1580,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       int type = json.getInteger(JSON_TYPE);
       HttpStatusCode status = HttpStatusCode.getByValue(type);
       ResponseUrn urn = ResponseUrn.fromCode(type + ""); // @TODO : remove +"" after other verticles
-                                                         // return urn in body
+      // return urn in body
       response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(type)
           .end(generateResponse(status, urn).toString());
@@ -1595,7 +1596,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   private void handleResponse(HttpServerResponse response, HttpStatusCode statusCode,
-      ResponseUrn urn, String message) {
+                              ResponseUrn urn, String message) {
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
         .setStatusCode(statusCode.getValue())
         .end(generateResponse(statusCode, urn, message).toString());
@@ -1625,7 +1626,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * validate if name passes the regex test for IUDX queue,exchage name.
-   * 
+   *
    * @param name name(queue,exchange)
    * @return Future true if name matches the regex else false
    */
@@ -1643,13 +1644,13 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * Get the request query parameters delimited by <b>&</b>, <i><b>;</b>(semicolon) is considered as
    * part of the parameter</i>.
-   * 
+   *
    * @param routingContext RoutingContext Object
    * @param response HttpServerResponse
    * @return Optional Optional of Map
    */
   private Optional<MultiMap> getQueryParams(RoutingContext routingContext,
-      HttpServerResponse response) {
+                                            HttpServerResponse response) {
     MultiMap queryParams = null;
     try {
       queryParams = MultiMap.caseInsensitiveMultiMap();
@@ -1683,5 +1684,3 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   }
 }
-
-
