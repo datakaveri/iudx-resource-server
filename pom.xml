@@ -56,6 +56,13 @@
 			<artifactId>vertx-codegen</artifactId>
 			<classifier>processor</classifier>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>42.2.22</version>
+		</dependency>
+
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-service-proxy</artifactId>
@@ -68,6 +75,15 @@
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-service-discovery</artifactId>
 		</dependency>
+
+
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-jdbc-client</artifactId>
+			<version>4.1.1</version>
+		</dependency>
+
+
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-core</artifactId>
