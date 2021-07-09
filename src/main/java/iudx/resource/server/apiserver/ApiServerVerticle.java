@@ -75,7 +75,7 @@ import iudx.resource.server.databroker.DataBrokerService;
  * @see io.vertx.servicediscovery.ServiceDiscovery
  * @see io.vertx.servicediscovery.types.EventBusService
  * @see io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
- * @version 1.0 
+ * @version 1.0
  * @since 2020-05-31
  */
 

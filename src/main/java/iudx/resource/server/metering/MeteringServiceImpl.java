@@ -11,7 +11,6 @@ import static iudx.resource.server.metering.util.Constants.QUERY_KEY;
 import static iudx.resource.server.metering.util.Constants.START_TIME;
 import static iudx.resource.server.metering.util.Constants.SUCCESS;
 import static iudx.resource.server.metering.util.Constants.TIME_NOT_FOUND;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
