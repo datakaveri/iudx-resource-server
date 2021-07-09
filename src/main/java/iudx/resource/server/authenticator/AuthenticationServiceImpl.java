@@ -697,8 +697,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     // 1. Check the API requested.
     if (Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
       JsonObject response = new JsonObject();
-      LOGGER.info(Constants.OPEN_ENDPOINTS);
-
+      LOGGER.info(Constants.OPEN_ENDPOINTS); 
       // 1.1. Check with catalogue if resource is open or secure.
       // 1.2. If open respond success.
       // 1.3. If closed, check if auth response has access to the requested resource.

@@ -33,10 +33,10 @@ public class Constants {
   public static final String JSON_TEST_PROVIDER_SHA = "datakaveri.org/3ae88e7ba006938ffc38203d326b1711b892226d";
   public static final String JSON_IUDX_ADMIN_SHA = "datakaveri.org/27E503DA0BDDA6EFAE3A52B3EF423C1F9005657A";
   public static final JsonObject JSON_PUBLIC_TIP_RESPONSE =
-      new JsonObject().put("consumer", "public.data@iudx.org")
+      new JsonObject().put("consumer", "public.data1@iudx.org")
           .put("request",
               new JsonArray().add(new JsonObject().put("id", "iudx.org/public/server/group/*")))
           .put("apis", new JsonArray().add("/iudx/public"));
-  public static final String JSON_PUBLIC_CONSUMER = "public.data@iudx.org";
+  public static final String JSON_PUBLIC_CONSUMER = "public.data1@iudx.org";
   
 }

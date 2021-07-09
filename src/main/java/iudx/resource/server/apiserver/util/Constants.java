@@ -24,6 +24,7 @@ public class Constants {
   public static final String NGSILD_ENTITIES_URL = NGSILD_BASE_PATH + "/entities";
   public static final String NGSILD_TEMPORAL_URL = NGSILD_BASE_PATH + "/temporal/entities";
   public static final String NGSILD_SUBSCRIPTION_URL = NGSILD_BASE_PATH + "/subscription";
+//  public static final String METERING_DB_UPDATE_TEST_URL = NGSILD_BASE_PATH + "/metering_db_update";
   public static final String NGSILD_POST_QUERY_PATH = NGSILD_BASE_PATH + "/entityOperations/query";
 
   // IUDX management endpoints
