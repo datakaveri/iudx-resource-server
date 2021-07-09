@@ -1,20 +1,21 @@
 package iudx.resource.server.apiserver.validation.types;
 
-import java.util.List;
+import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 
-public class GeoPropertyTypeValidator implements Validator {
+public final class GeoPropertyTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(GeoPropertyTypeValidator.class);
 
-  private List<Object> allowedValues = List.of("location", "Location");
+  private final String value;
+  private final boolean required;
 
-
-  private String value;
-  private boolean required;
-
-  public GeoPropertyTypeValidator(String value, boolean required) {
+  public GeoPropertyTypeValidator(final String value, final boolean required) {
     this.value = value;
     this.required = required;
   }
@@ -23,20 +24,19 @@ public class GeoPropertyTypeValidator implements Validator {
   public boolean isValid() {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
-      LOGGER.error("Validation error : null or blank value for required mandatory field");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage());
     } else {
       if (value == null) {
         return true;
       }
       if (value.isBlank()) {
         LOGGER.error("Validation error :  blank value for passed");
-        return false;
+        throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
       }
     }
-    if (!allowedValues.contains(value)) {
+    if (!VALIDATION_ALLOWED_GEOPROPERTY.contains(value)) {
       LOGGER.error("Validation error : Only location is allowed for geoproperty");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
     }
     return true;
   }
@@ -44,12 +44,12 @@ public class GeoPropertyTypeValidator implements Validator {
 
   @Override
   public int failureCode() {
-    return 400;
+    return HttpStatusCode.BAD_REQUEST.getValue();
   }
 
 
   @Override
   public String failureMessage() {
-    return "Invalid geo property";
+    return INVALID_GEO_VALUE.getMessage();
   }
 }

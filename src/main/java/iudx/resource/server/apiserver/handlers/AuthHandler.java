@@ -93,7 +93,7 @@ public class AuthHandler implements Handler<RoutingContext> {
   private void processAuthFailure(RoutingContext ctx, String result) {
     if (result.contains("Not Found")) {
       LOGGER.error("Error : Item Not Found");
-      HttpStatusCode statusCode = HttpStatusCode.getByValue(400);
+      HttpStatusCode statusCode = HttpStatusCode.getByValue(404);
       ctx.response()
          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
          .setStatusCode(statusCode.getValue())
