@@ -7,6 +7,9 @@ public enum HttpStatusCode {
   SWITCHING_PROTOCOLS(101, "Switching Protocols"),
   PROCESSING(102, "Processing"),
   EARLY_HINTS(103, "Early Hints"),
+  
+  //2XX: codes
+  NO_CONTENT(204,"No Content"),
 
   //4xx: Client Error
   BAD_REQUEST(400, "Bad Request"),

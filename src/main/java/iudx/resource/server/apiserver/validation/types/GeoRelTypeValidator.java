@@ -28,8 +28,12 @@ public final class GeoRelTypeValidator implements Validator {
     if (required && (value == null || value.isBlank())) {
       throw new DxRuntimeException(failureCode(), INVALID_GEO_REL, failureMessage());
     } else {
-      if (value == null || value.isBlank()) {
+      if (value == null) {
         return true;
+      }
+      if (value.isBlank()) {
+        LOGGER.error("Validation error :  blank value for passed");
+        throw new DxRuntimeException(failureCode(), INVALID_GEO_REL, failureMessage(value));
       }
     }
     String[] geoRelationValues = value.split(";");
