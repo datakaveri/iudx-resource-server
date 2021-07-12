@@ -16,8 +16,8 @@
 							"script": {
 								"exec": [
 									"const responseJson=pm.response.json();",
-									"pm.environment.set(\"consumerToken\", responseJson.token);",
-									"pm.environment.set(\"adapterToken\", responseJson.token);",
+									"pm.globals.set(\"consumerToken\", responseJson.token);",
+									"pm.globals.set(\"adapterToken\", responseJson.token);",
 									""
 								],
 								"type": "text/javascript"
@@ -17330,7 +17330,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/ingestion/{{adapter_id}}-123",
+							"raw": "{{base_url}}/ngsi-ld/v1/ingestion/{{adapter_id_GL}}-123",
 							"host": [
 								"{{base_url}}"
 							],
@@ -17338,7 +17338,7 @@
 								"ngsi-ld",
 								"v1",
 								"ingestion",
-								"{{adapter_id}}-123"
+								"{{adapter_id_GL}}-123"
 							]
 						}
 					},
@@ -17381,7 +17381,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/ingestion/{{adapter_id}}",
+							"raw": "{{base_url}}/ngsi-ld/v1/ingestion/{{adapter_id_GL}}",
 							"host": [
 								"{{base_url}}"
 							],
@@ -17389,7 +17389,7 @@
 								"ngsi-ld",
 								"v1",
 								"ingestion",
-								"{{adapter_id}}"
+								"{{adapter_id_GL}}"
 							]
 						}
 					},
@@ -17486,7 +17486,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/ingestion/{{adapter_id}}",
+							"raw": "{{base_url}}/ngsi-ld/v1/ingestion/{{adapter_id_GL}}",
 							"host": [
 								"{{base_url}}"
 							],
@@ -17494,7 +17494,7 @@
 								"ngsi-ld",
 								"v1",
 								"ingestion",
-								"{{adapter_id}}"
+								"{{adapter_id_GL}}"
 							]
 						}
 					},
@@ -17537,7 +17537,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/ingestion/{{adapter_id}}",
+							"raw": "{{base_url}}/ngsi-ld/v1/ingestion/{{adapter_id_GL}}",
 							"host": [
 								"{{base_url}}"
 							],
@@ -17545,7 +17545,7 @@
 								"ngsi-ld",
 								"v1",
 								"ingestion",
-								"{{adapter_id}}"
+								"{{adapter_id_GL}}"
 							]
 						}
 					},
@@ -17564,8 +17564,8 @@
 							"script": {
 								"exec": [
 									"const responseJson=pm.response.json();",
-									"pm.environment.set(\"consumerToken\", responseJson.token);",
-									"pm.environment.set(\"adapterToken\", responseJson.token);"
+									"pm.globals.set(\"consumerToken\", responseJson.token);",
+									"pm.globals.set(\"adapterToken\", responseJson.token);"
 								],
 								"type": "text/javascript"
 							}
@@ -17638,7 +17638,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{adapterToken}}",
+								"value": "{{adapterToken_rl}}",
 								"type": "text"
 							}
 						],
@@ -17736,7 +17736,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{adapterToken}}"
+								"value": "{{adapterToken_rl}}"
 							}
 						],
 						"body": {
@@ -17941,7 +17941,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{adapterToken}}",
+								"value": "{{adapterToken_rl}}",
 								"type": "text"
 							}
 						],
@@ -17993,7 +17993,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{adapterToken}}"
+								"value": "{{adapterToken_rl}}"
 							}
 						],
 						"url": {
@@ -18097,7 +18097,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{adapterToken}}",
+								"value": "{{adapterToken_rl}}",
 								"type": "text"
 							}
 						],
@@ -18149,7 +18149,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{adapterToken}}"
+								"value": "{{adapterToken_rl}}"
 							}
 						],
 						"url": {
