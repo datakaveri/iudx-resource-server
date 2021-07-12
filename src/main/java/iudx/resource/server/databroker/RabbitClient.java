@@ -613,8 +613,9 @@ public class RabbitClient {
 
   public Future<JsonObject> registerAdapter(JsonObject request, String vhost) {
     LOGGER.debug("Info : RabbitClient#registerAdaptor() started");
+    LOGGER.debug("Request :"+request);
     Promise<JsonObject> promise = Promise.promise();
-
+    String id=request.getJsonArray("entities").getString(0);//getting first and only id
     AdaptorResultContainer requestParams = new AdaptorResultContainer();
     requestParams.vhost = vhost;
     requestParams.id = request.getString("resourceGroup");
@@ -625,11 +626,10 @@ public class RabbitClient {
         requestParams.userName.length());
     requestParams.userNameSha = getSha(requestParams.userName);
     requestParams.userId = requestParams.domain + "/" + requestParams.userNameSha;
-    requestParams.adaptorId =
-        requestParams.provider + "/" + requestParams.resourceServer + "/" + requestParams.id;
-
-    if (isValidId.test(requestParams.id)) {
-      if (requestParams.id != null && !requestParams.id.isEmpty() && !requestParams.id.isBlank()) {
+    requestParams.adaptorId =id;
+//        requestParams.provider + "/" + requestParams.resourceServer + "/" + requestParams.id;
+    if (isValidId.test(requestParams.adaptorId)) {
+      if (requestParams.adaptorId != null && !requestParams.adaptorId.isEmpty() && !requestParams.adaptorId.isBlank()) {
         Future<JsonObject> userCreationFuture = createUserIfNotExist(requestParams.userName, vhost);
         userCreationFuture.compose(userCreationResult -> {
           requestParams.apiKey = userCreationResult.getString("apiKey");
@@ -1220,7 +1220,14 @@ public class RabbitClient {
   Future<JsonObject> queueBinding(String adaptorID, String vhost) {
     LOGGER.info("RabbitClient#queueBinding() method started");
     Promise<JsonObject> promise = Promise.promise();
-    String topics = adaptorID + DATA_WILDCARD_ROUTINGKEY;
+    String topics;
+    
+    if(isGroupId(adaptorID)) {
+      topics = adaptorID + DATA_WILDCARD_ROUTINGKEY;
+    }else {
+      topics=adaptorID;
+    }
+    
     bindQueue(QUEUE_DATA, adaptorID, topics, vhost)
         .compose(queueDataResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + HEARTBEAT,
             vhost))

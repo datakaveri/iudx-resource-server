@@ -17,7 +17,6 @@ public class Util {
     }
   }
 
-
   public static Function<String, URI> toUriFunction = (value) -> {
     URI uri = null;
     try {

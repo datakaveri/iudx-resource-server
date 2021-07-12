@@ -38,27 +38,8 @@ public class ValidationHandler implements Handler<RoutingContext> {
     JsonObject body = context.getBodyAsJson();
     Map<String, String> pathParams = context.pathParams();
     parameters.addAll(pathParams);
-
-    List<Validator> validations = null;
-    switch (requestType) {
-      case ENTITY:
-        validations = validationFactory.build(vertx, requestType, parameters, headers, body);
-        break;
-      case TEMPORAL:
-        validations = validationFactory.build(vertx, requestType, parameters, headers, body);
-        break;
-      case LATEST:
-        validations = validationFactory.build(vertx, requestType, parameters, headers, body);
-        break;
-      case POST_TEMPORAL:
-        validations = validationFactory.build(vertx, requestType, parameters, headers, body);
-        break;
-      case POST_ENTITIES:
-        validations = validationFactory.build(vertx, requestType, parameters, headers, body);
-        break;
-      default:
-        break;
-    }
+    
+    List<Validator> validations = validationFactory.build(vertx,requestType, parameters, headers,body);
     for (Validator validator : Optional.ofNullable(validations).orElse(Collections.emptyList())) {
       LOGGER.debug("validator :" + validator.getClass().getName());
       if (!validator.isValid()) {

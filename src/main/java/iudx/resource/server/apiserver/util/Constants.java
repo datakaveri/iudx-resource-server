@@ -29,13 +29,13 @@ public class Constants {
 
   // IUDX management endpoints
   public static final String IUDX_MANAGEMENT_URL = "/management";
-  public static final String IUDX_ADAPTOR_URL = "/iudx/v1";
+  public static final String IUDX_ADAPTOR_URL = "/ngsi-ld/v1";
   public static final String IUDX_MANAGEMENT_EXCHANGE_URL = IUDX_MANAGEMENT_URL + "/exchange";
   public static final String IUDX_MANAGEMENT_QUEUE_URL = IUDX_MANAGEMENT_URL + "/queue";
   public static final String IUDX_MANAGEMENT_BIND_URL = IUDX_MANAGEMENT_URL + "/bind";
   public static final String IUDX_MANAGEMENT_UNBIND_URL = IUDX_MANAGEMENT_URL + "/unbind";
   public static final String IUDX_MANAGEMENT_VHOST_URL = IUDX_MANAGEMENT_URL + "/vhost";
-  public static final String IUDX_MANAGEMENT_ADAPTER_URL = IUDX_ADAPTOR_URL + "/adapter";
+  public static final String IUDX_MANAGEMENT_ADAPTER_URL = IUDX_ADAPTOR_URL + "/ingestion";
 
   /** API Documentation endpoint */
   public static final String ROUTE_STATIC_SPEC = "/apis/spec";
