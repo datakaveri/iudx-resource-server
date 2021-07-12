@@ -9,7 +9,7 @@ public interface Validator {
   String failureMessage();
 
   default String failureMessage(final String value) {
-    return failureMessage() + "[" + value + "]";
+    return failureMessage() + " [ " + value + " ] ";
   }
 
 }
