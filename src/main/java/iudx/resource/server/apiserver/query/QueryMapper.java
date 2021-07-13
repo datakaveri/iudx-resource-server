@@ -1,5 +1,7 @@
 package iudx.resource.server.apiserver.query;
 
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
+import static iudx.resource.server.apiserver.util.HttpStatusCode.*;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -8,6 +10,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.apiserver.response.ResponseUrn;
 import iudx.resource.server.apiserver.util.Constants;
 
 /**
@@ -72,9 +76,8 @@ public class QueryMapper {
         }
         LOGGER.debug("Info : json " + json);
       } else {
-        RuntimeException exception = new RuntimeException(
+        throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_GEO_PARAM,
             "incomplete geo-query geoproperty, geometry, georel, coordinates all are mandatory.");
-        throw exception;
       }
     }
     if (isTemporal && params.getTemporalRelation().getTemprel() != null
@@ -135,9 +138,8 @@ public class QueryMapper {
       LOGGER.debug("Info : inside isValidTimeInterval time : " + time.isBlank());
       LOGGER.debug("Info : inside isValidTimeInterval endTime : " + endTime);
       if (isNullorEmpty(time) || isNullorEmpty(endTime)) {
-        RuntimeException exception =
-            new RuntimeException("time and endTime both are mandatory for during Query.");
-        throw exception;
+        throw new DxRuntimeException(BAD_REQUEST.getValue(), ResponseUrn.INVALID_TEMPORAL_PARAM,
+            "time and endTime both are mandatory for during Query.");
       }
 
       LOGGER.debug("Info : inside isValidTimeInterval after check");
@@ -147,9 +149,9 @@ public class QueryMapper {
         Duration duration = Duration.between(start, end);
         totalDaysAllowed = duration.toDays();
       } catch (Exception ex) {
-        RuntimeException exception =
-            new RuntimeException("Invalid time format");
-        throw exception;
+        throw new DxRuntimeException(BAD_REQUEST.getValue(), ResponseUrn.INVALID_TEMPORAL_PARAM,
+            "time and endTime both are mandatory for during Query.");
+
       }
     } else if (timeRel.equalsIgnoreCase("after")) {
       // how to enforce days duration for after and before,i.e here or DB
@@ -157,9 +159,8 @@ public class QueryMapper {
 
     }
     if (totalDaysAllowed > Constants.VALIDATION_MAX_DAYS_INTERVAL_ALLOWED) {
-      RuntimeException exception =
-          new RuntimeException("time interval greater than 10 days is not allowed");
-      throw exception;
+      throw new DxRuntimeException(BAD_REQUEST.getValue(), ResponseUrn.INVALID_TEMPORAL_PARAM,
+          "time interval greater than 10 days is not allowed");
     }
   }
 
@@ -216,7 +217,7 @@ public class QueryMapper {
           specialCharFound = true;
         } else {
           LOGGER.info("Ignore " + c.toString());
-          throw new RuntimeException("Operator not allowed.");
+          throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_ATTR_PARAM, "Operator not allowed.");
         }
       } else {
         if (specialCharFound && (Character.isLetter(c) || Character.isDigit(c))) {
@@ -228,7 +229,7 @@ public class QueryMapper {
 
     }
     if (!allowedOperators.contains(json.getString(Constants.JSON_OPERATOR))) {
-      throw new RuntimeException("Operator not allowed.");
+      throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_ATTR_PARAM, "Operator not allowed.");
     }
     return json;
   }

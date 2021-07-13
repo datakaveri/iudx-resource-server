@@ -1,7 +1,8 @@
 package iudx.resource.server.apiserver.validation.types;
 
-import static iudx.resource.server.apiserver.util.Constants.VALIDATION_ALLOWED_COORDINATES;
-import static iudx.resource.server.apiserver.util.Constants.VALIDATION_COORDINATE_PRECISION_ALLOWED;
+import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
+
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.List;
@@ -11,12 +12,14 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 
 // TODO : find a better way to validate coordinates,
 // current method works but not very efficient,
 // it assumes in a , separated array odd index value will be a longitude and,
 // even index value will be a latitude
-public class CoordinatesTypeValidator implements Validator {
+public final class CoordinatesTypeValidator implements Validator {
   private static final Logger LOGGER = LogManager.getLogger(CoordinatesTypeValidator.class);
 
   private static final String LATITUDE_PATTERN =
@@ -28,45 +31,45 @@ public class CoordinatesTypeValidator implements Validator {
 
 
 
-  private String value;
-  private boolean required;
+  private final String value;
+  private final boolean required;
 
-  public CoordinatesTypeValidator(String value, boolean required) {
+  public CoordinatesTypeValidator(final String value, final boolean required) {
     this.value = value;
     this.required = required;
   }
 
   private DecimalFormat df = new DecimalFormat("#.######");
 
-  private boolean isValidLatitude(String latitude) {
+  private boolean isValidLatitude(final String latitude) {
     Float latitudeValue = Float.parseFloat(latitude);
     if (!df.format(latitudeValue).matches(LATITUDE_PATTERN)) {
       LOGGER.error("Validation error :  invalid latitude value " + latitude);
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
     }
     return true;
   }
 
-  private boolean isValidLongitude(String longitude) {
+  private boolean isValidLongitude(final String longitude) {
     Float longitudeValue = Float.parseFloat(longitude);
     if (!df.format(longitudeValue).matches(LONGITUDE_PATTERN)) {
       LOGGER.error("Validation error :  invalid longitude value " + longitude);
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
     }
     return true;
   }
 
-  private boolean isPricisonLengthAllowed(String value) {
+  private boolean isPricisonLengthAllowed(final String value) {
     return (new BigDecimal(value).scale() > VALIDATION_COORDINATE_PRECISION_ALLOWED);
   }
 
-  private boolean isValidCoordinateCount(String coordinates) {
+  private boolean isValidCoordinateCount(final String coordinates) {
     String geom = getProbableGeomType(coordinates);
     List<String> coordinatesList = getCoordinatesValues(coordinates);
     if (geom.equalsIgnoreCase("point")) {
       if (coordinatesList.size() != 2) {
         LOGGER.error("Validation error :  Invalid number of coordinates given for point");
-        return false;
+        throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
       }
     } else if (geom.equalsIgnoreCase("polygon")) {
       if (coordinatesList.size() > allowedMaxCoordinates * 2) {
@@ -82,7 +85,7 @@ public class CoordinatesTypeValidator implements Validator {
     return true;
   }
 
-  private List<String> getCoordinatesValues(String coordinates) {
+  private List<String> getCoordinatesValues(final String coordinates) {
     Matcher matcher = pattern.matcher(coordinates);
     List<String> coordinatesValues =
         matcher.results()
@@ -91,10 +94,10 @@ public class CoordinatesTypeValidator implements Validator {
     return coordinatesValues;
   }
 
-  private boolean isValidCoordinates(String value) {
+  private boolean isValidCoordinates(final String value) {
     if (!value.startsWith("[") || !value.endsWith("]")) {
       LOGGER.error("Validation error :  invalid coordinate format");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
     }
     String coordinates = value.replaceAll("\\[", "").replaceAll("\\]", "");
     String[] coordinatesArray = coordinates.split(",");
@@ -109,14 +112,13 @@ public class CoordinatesTypeValidator implements Validator {
       checkLongitudeFlag = !checkLongitudeFlag;
       if (isPricisonLengthAllowed(coordinate)) {
         LOGGER.error("Validation error :  invalid coordinate (only 6 digits to precision allowed)");
-        return false;
-
+        throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
       }
     }
     return true;
   }
 
-  private String getProbableGeomType(String coords) {
+  private String getProbableGeomType(final String coords) {
     String geom = null;
     if (coords.startsWith("[[[")) {
       geom = "polygon";
@@ -132,29 +134,28 @@ public class CoordinatesTypeValidator implements Validator {
   public boolean isValid() {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
-      LOGGER.error("Validation error : null or blank value for required mandatory field");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage());
     } else {
       if (value == null || value.isBlank()) {
         return true;
       }
     }
     if (!isValidCoordinates(value)) {
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage());
     }
     if (!isValidCoordinateCount(value)) {
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage());
     }
     return true;
   }
 
   @Override
   public int failureCode() {
-    return 400;
+    return HttpStatusCode.BAD_REQUEST.getValue();
   }
 
   @Override
   public String failureMessage() {
-    return "invalid coordinates";
+    return INVALID_GEO_VALUE.getMessage();
   }
 }

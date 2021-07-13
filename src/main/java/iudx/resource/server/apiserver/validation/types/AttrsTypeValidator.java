@@ -1,48 +1,48 @@
 package iudx.resource.server.apiserver.validation.types;
 
-import static iudx.resource.server.apiserver.util.Constants.VALIDATIONS_MAX_ATTR_LENGTH;
-import static iudx.resource.server.apiserver.util.Constants.VALIDATION_MAX_ATTRS;
+import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
+
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 
-public class AttrsTypeValidator implements Validator {
+public final class AttrsTypeValidator implements Validator {
+
   private static final Logger LOGGER = LogManager.getLogger(AttrsTypeValidator.class);
 
-  private Integer maxAttrsItems = VALIDATION_MAX_ATTRS;
-  private Integer maxAttrLength = VALIDATIONS_MAX_ATTR_LENGTH;
+  private final int maxAttrsItems = VALIDATION_MAX_ATTRS;
+  private final int maxAttrLength = VALIDATIONS_MAX_ATTR_LENGTH;
   private static final Pattern attrsValueRegex = Pattern.compile("^[a-zA-Z0-9_]+");
 
 
-  private String value;
-  private boolean required;
+  private final String value;
+  private final boolean required;
 
-  public AttrsTypeValidator(String value, boolean required) {
+  public AttrsTypeValidator(final String value, final boolean required) {
     this.value = value;
     this.required = required;
   }
 
-  private boolean isValidAttributesCount(String value) {
+  private boolean isValidAttributesCount(final String value) {
     String[] attrs = value.split(",");
     if (attrs.length > maxAttrsItems) {
-      LOGGER.error("Validation error : Invalid numbers of attrs passed [ " + value + " ]");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE, failureMessage(value));
     }
     return true;
   }
 
 
-  private boolean isValidAttributeValue(String value) {
+  private boolean isValidAttributeValue(final String value) {
     String[] attrs = value.split(",");
     for (String attr : attrs) {
       if (attr.length() > maxAttrLength) {
-        LOGGER.error(
-            "Validation error : One of the attribute exceeds allowed characters(only 100 characters allowed).");
-        return false;
+        throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE, failureMessage(value));
       }
       if (!attrsValueRegex.matcher(attr).matches()) {
-        LOGGER.error("Validation error : Invalid attribute value. [ " + value + " ]");
-        return false;
+        throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE, failureMessage(value));
       }
     }
     return true;
@@ -52,15 +52,13 @@ public class AttrsTypeValidator implements Validator {
   public boolean isValid() {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
-      LOGGER.error("Validation error : null or blank value for required mandatory field");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE, failureMessage());
     } else {
       if (value == null) {
         return true;
       }
       if (value.isBlank()) {
-        LOGGER.error("Validation error :  blank value for passed");
-        return false;
+        throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE, failureMessage(value));
       }
     }
     if (!isValidAttributesCount(value)) {
@@ -74,11 +72,11 @@ public class AttrsTypeValidator implements Validator {
 
   @Override
   public int failureCode() {
-    return 400;
+    return HttpStatusCode.BAD_REQUEST.getValue();
   }
 
   @Override
   public String failureMessage() {
-    return "Invalid attrs value";
+    return INVALID_ATTR_VALUE.getMessage();
   }
 }

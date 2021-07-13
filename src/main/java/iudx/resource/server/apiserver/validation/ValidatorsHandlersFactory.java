@@ -1,5 +1,6 @@
 package iudx.resource.server.apiserver.validation;
 
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
 import static iudx.resource.server.apiserver.util.Constants.*;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +20,8 @@ import io.vertx.json.schema.Schema;
 import io.vertx.json.schema.SchemaParser;
 import io.vertx.json.schema.SchemaRouter;
 import io.vertx.json.schema.SchemaRouterOptions;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 import iudx.resource.server.apiserver.util.RequestType;
 import iudx.resource.server.apiserver.validation.types.AttrsTypeValidator;
 import iudx.resource.server.apiserver.validation.types.CoordinatesTypeValidator;
@@ -110,7 +113,7 @@ public class ValidatorsHandlersFactory {
     validators.add(new DistanceTypeValidator(parameters.get("maxDistance"), false));
     validators.add(new OptionsTypeValidator(parameters.get("options"), false));
     validators.add(new CoordinatesTypeValidator(parameters.get(NGSILDQUERY_COORDINATES), false));
-    validators.add(new TimeRelTypeValidator(parameters.get(NGSILDQUERY_TIMEREL), true, false));
+    validators.add(new TimeRelTypeValidator(parameters.get(NGSILDQUERY_TIMEREL), true));
     validators.add(new DateTypeValidator(parameters.get(NGSILDQUERY_TIME), true));
     validators.add(new DateTypeValidator(parameters.get(NGSILDQUERY_ENDTIME), false));
 
@@ -148,9 +151,10 @@ public class ValidatorsHandlersFactory {
     try {
       jsonSchema = loadJson(RequestType.POST_TEMPORAL.getFilename());
       Schema schema = schemaParser.parse(new JsonObject(jsonSchema));
-      validators.add(new JsonSchemaTypeValidator(body, true, schema));
+      validators.add(new JsonSchemaTypeValidator(body, schema));
     } catch (Exception ex) {
       LOGGER.error(ex);
+      throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), SCHEMA_READ_ERROR);
     }
     return validators;
   }
@@ -165,9 +169,10 @@ public class ValidatorsHandlersFactory {
     try {
       jsonSchema = loadJson(RequestType.POST_ENTITIES.getFilename());
       Schema schema = schemaParser.parse(new JsonObject(jsonSchema));
-      validators.add(new JsonSchemaTypeValidator(body, true, schema));
+      validators.add(new JsonSchemaTypeValidator(body, schema));
     } catch (Exception ex) {
       LOGGER.error(ex);
+      throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), SCHEMA_READ_ERROR);
     }
     return validators;
   }
@@ -184,7 +189,7 @@ public class ValidatorsHandlersFactory {
         jsonSchemaMap.put(filename, jsonStr);
       } catch (IOException e) {
         LOGGER.error(e);
-        return jsonStr;
+        throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), SCHEMA_READ_ERROR); 
       }
     }
     return jsonStr;

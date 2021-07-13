@@ -1,35 +1,40 @@
 package iudx.resource.server.apiserver.validation.types;
 
+import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 
-public class DistanceTypeValidator implements Validator {
+public final class DistanceTypeValidator implements Validator {
+
   private static final Logger LOGGER = LogManager.getLogger(DistanceTypeValidator.class);
-  private double allowedDistance = 1000.0;
+  
+  private final String value;
+  private final boolean required;
 
-  private String value;
-  private boolean required;
-
-  public DistanceTypeValidator(String value, boolean required) {
+  public DistanceTypeValidator(final String value, final boolean required) {
     this.value = value;
     this.required = required;
   }
 
 
-  private boolean isValidDistance(String distance) {
+  private boolean isValidDistance(final String distance) {
     try {
       Double distanceValue = Double.parseDouble(distance);
       if (distanceValue > Integer.MAX_VALUE) {
         LOGGER.error("Validation error : Invalid integer value (Integer overflow).");
-        return false;
+        throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
       }
-      if (distanceValue > allowedDistance || distanceValue < 1) {
+      if (distanceValue > VALIDATION_ALLOWED_DIST || distanceValue < 1) {
         LOGGER.error("Validation error : Distance outside (1,1000)m range not allowed");
-        return false;
+        throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
       }
     } catch (NumberFormatException ex) {
       LOGGER.error("Validation error : Number format error ( not a valid distance)");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
     }
     return true;
   }
@@ -39,25 +44,26 @@ public class DistanceTypeValidator implements Validator {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage());
     } else {
       if (value == null) {
         return true;
       }
       if (value.isBlank()) {
         LOGGER.error("Validation error :  blank value for passed");
-        return false;
-      }    }
+        throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
+      }
+    }
     return isValidDistance(value);
   }
 
   @Override
   public int failureCode() {
-    return 400;
+    return HttpStatusCode.BAD_REQUEST.getValue();
   }
 
   @Override
   public String failureMessage() {
-    return "Invalid distance.";
+    return INVALID_GEO_VALUE.getMessage();
   }
 }
