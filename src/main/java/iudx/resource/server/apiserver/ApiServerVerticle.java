@@ -69,7 +69,7 @@ import iudx.resource.server.metering.MeteringService;
  * @see io.vertx.servicediscovery.ServiceDiscovery
  * @see io.vertx.servicediscovery.types.EventBusService
  * @see io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
- * @version 1.0
+ * @version 1.0 
  * @since 2020-05-31
  */
 
@@ -511,7 +511,85 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* db update for api request details.
      * */
     JsonObject context=createJson(routingContext);
-     meteringService.connect(context,handler->{
+ 
+//===================================================
+    
+    //Metering Service Call starts
+    
+    meteringService.readWithTime(context,handler->{
+   	 if(handler.succeeded()) {
+   		 LOGGER.info("Response after Success "+handler.result());
+   	 }
+   	 else {
+   		 LOGGER.error("Failed to read from DB");
+   	 }
+    });
+    
+    meteringService.readWithEmail(context,handler->{
+      	 if(handler.succeeded()) {
+      		 LOGGER.info("Response after Success "+handler.result());
+      	 }
+      	 else {
+      		 LOGGER.error("Failed to read from DB");
+      	 }
+       });
+    
+    meteringService.readWithResourceId(context,handler->{
+      	 if(handler.succeeded()) {
+      		 LOGGER.info("Response after Success "+handler.result());
+      	 }
+      	 else {
+      		 LOGGER.error("Failed to read from DB");
+      	 }
+       });
+    
+    meteringService.readWithEmailandTime(context,handler->{
+      	 if(handler.succeeded()) {
+      		 LOGGER.info("Response after Success"+handler.result());
+      	 }
+      	 else {
+      		 LOGGER.error("Failed to read from DB");
+      	 }
+       });
+    
+    meteringService.readWithEmailandResourceId(context,handler->{
+      	 if(handler.succeeded()) {
+      		 LOGGER.info("Response after Success"+handler.result());
+      	 }
+      	 else {
+      		 LOGGER.error("Failed to read from DB");
+      	 }
+       });
+   
+    meteringService.readWithTimeandResourceId(context,handler->{
+      	 if(handler.succeeded()) {
+      		 LOGGER.info("Response after Success"+handler.result());
+      	 }
+      	 else {
+      		 LOGGER.error("Failed to read from DB");
+      	 }
+       });
+    
+    meteringService.readWithTimeEmailandResourceId(context,handler->{
+      	 if(handler.succeeded()) {
+      		 LOGGER.info("Response after Success"+handler.result());
+      	 }
+      	 else {
+      		 LOGGER.error("Failed to read from DB");
+      	 }
+       });
+    
+  meteringService.writeInDatabase(context,handler->{
+	 if(handler.succeeded()) {
+		 LOGGER.info("Response after Success"+handler.result());
+	 }
+	 else {
+		 LOGGER.error("Failed to write from DB");
+	 }
+});
+
+    
+     meteringService.readFromDatabase(handler->{
     	 if(handler.succeeded()) {
     		 LOGGER.info("Response after Success"+handler.result());
     	 }
@@ -519,6 +597,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     		 LOGGER.error("Failed to connect to JDBC");
     	 }
      });
+
+  //Metering Service Call ends
+    
+ //==========================================================================================//
+     
 //    RequestMonitoring.updateDB(routingContext);
 //    RequestMonitoring.readDB();
 //    /* Handles HTTP response from server to client */
