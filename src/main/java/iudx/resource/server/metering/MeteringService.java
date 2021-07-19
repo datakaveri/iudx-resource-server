@@ -20,11 +20,39 @@ public interface MeteringService {
 //	      Handler<AsyncResult<JsonObject>> handler);
 //	
 	  @Fluent
-	  MeteringService connect(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+	  MeteringService readFromDatabase( Handler<AsyncResult<JsonObject>> handler);
+	  
+	  @Fluent
+	  MeteringService writeInDatabase(JsonObject request,Handler<AsyncResult<JsonObject>> handler);
+	  
+	  
+	  
+	  @Fluent
+	  MeteringService readWithTime(JsonObject request,Handler<AsyncResult<JsonObject>> handler);
+	  
+	  @Fluent
+	  MeteringService readWithEmail(JsonObject request,Handler<AsyncResult<JsonObject>> handler);
+	  
+	  @Fluent
+	  MeteringService readWithResourceId(JsonObject request,Handler<AsyncResult<JsonObject>> handler);
+	  
+	  @Fluent
+	  MeteringService readWithEmailandTime(JsonObject request,Handler<AsyncResult<JsonObject>> handler);
+	  
+	  @Fluent
+	  MeteringService readWithEmailandResourceId(JsonObject request,Handler<AsyncResult<JsonObject>> handler);
+
+	  @Fluent
+	  MeteringService readWithTimeandResourceId(JsonObject request,Handler<AsyncResult<JsonObject>> handler);
+
+	  @Fluent
+	  MeteringService readWithTimeEmailandResourceId(JsonObject request,Handler<AsyncResult<JsonObject>> handler);
+	  
 	@GenIgnore
 	static MeteringService createProxy(Vertx vertx, String address) {
 		return new MeteringServiceVertxEBProxy(vertx, address);
 	}
+
 
 	
 }
