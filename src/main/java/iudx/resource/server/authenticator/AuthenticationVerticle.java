@@ -3,18 +3,20 @@ package iudx.resource.server.authenticator;
 import static iudx.resource.server.authenticator.Constants.KEYSTORE_PASSWORD;
 import static iudx.resource.server.authenticator.Constants.KEYSTORE_PATH;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
+import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.serviceproxy.ServiceBinder;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * The Authentication Verticle.
@@ -67,12 +69,24 @@ public class AuthenticationVerticle extends AbstractVerticle {
 
 
     JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
-//    jwtAuthOptions.addPubSecKey(new PubSecKeyOptions()
-//        .setAlgorithm("RS256")
-//        .setBuffer("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjoVg6150oqh7csrGMsttu7r+s4YBkYDkKrg2v6Gd5NhJw9NKnFlojPnLPoDSlxpNpN2sWegexcsFdDdmtuMzTxQ3hnkFWHDDXsyfj2fKQwDjgcxg95nRaaI+/OGhWbEsGdt/A5jxg2f4Vp4VLTwCj7Ujq4hVx67vO/zbJ2k0cD2uz5T731tvqweC7H/Os+G8B1+PpH5e1jGkDPZohe4ERCEdwNcC9IAt1tPr/LKfh+84hOkE3i9mGG/LGUiJShtw7ia2jXTMb1JErlJsLJOjh+guz6OztQOICN//+rRA4AACB//+IeJ8mr/jN/dww+RfYyeAd/SId56ae8H4SE4HQQIDAQAB"));
+    jwtAuthOptions.addPubSecKey(
+        new PubSecKeyOptions()
+            .setAlgorithm("ES256")
+            .setBuffer("-----BEGIN PUBLIC KEY-----\n" +
+                "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8BKf2HZ3wt6wNf30SIsbyjYPkkTS\n" +
+                "GGyyM2/MGF/zYTZV9Z28hHwvZgSfnbsrF36BBKnWszlOYW0AieyAUKaKdg==\n" +
+                "-----END PUBLIC KEY-----\n" +
+                ""));
+    // jwtAuthOptions.setKeyStore(
+    // new KeyStoreOptions()
+    // .setPath(config().getString(KEYSTORE_PATH))
+    // .setPassword(config().getString(KEYSTORE_PASSWORD)));
+    //
+    jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
     JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
-    jwtAuthenticationService = new JwtAuthenticationServiceImpl(jwtAuth);
+    jwtAuthenticationService =
+        new JwtAuthenticationServiceImpl(vertx, jwtAuth, createWebClient(vertx, config()), config());
     /* Publish the Authentication service with the Event Bus against an address. */
 
     consumer = binder.setAddress(AUTH_SERVICE_ADDRESS)
