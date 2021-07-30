@@ -1328,6 +1328,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.debug("Info: deleteAdapter method starts;");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
+
     String domain = request.getParam(JSON_DOMAIN);
     String usersha = request.getParam(JSON_USERSHA);
     String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);

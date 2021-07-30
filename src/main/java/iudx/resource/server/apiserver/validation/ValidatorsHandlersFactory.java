@@ -145,6 +145,7 @@ public class ValidatorsHandlersFactory {
       final MultiMap headers) {
     List<Validator> validators = new ArrayList<>();
     validators.add(new OptionsHeaderValidator(headers.get(HEADER_OPTIONS), false));
+
     return validators;
   }
 
