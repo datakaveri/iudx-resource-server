@@ -1329,11 +1329,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
 
-    String domain = request.getParam(JSON_DOMAIN);
-    String usersha = request.getParam(JSON_USERSHA);
-    String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);
-    String resourceServer = request.getParam(JSON_RESOURCE_SERVER);
-    String resourceName = request.getParam(JSON_RESOURCE_NAME);
+    String domain = request.getParam(DOMAIN);
+    String usersha = request.getParam(USERSHA);
+    String resourceGroup = request.getParam(RESOURCE_GROUP);
+    String resourceServer = request.getParam(RESOURCE_SERVER);
+    String resourceName = request.getParam(RESOURCE_NAME);
 
     StringBuilder adapterIdBuilder = new StringBuilder();
     adapterIdBuilder.append(domain);
@@ -1366,11 +1366,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.info("getAdapterDetails method starts");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String domain = request.getParam(JSON_DOMAIN);
-    String usersha = request.getParam(JSON_USERSHA);
-    String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);
-    String resourceServer = request.getParam(JSON_RESOURCE_SERVER);
-    String resourceName = request.getParam(JSON_RESOURCE_NAME);
+    String domain = request.getParam(DOMAIN);
+    String usersha = request.getParam(USERSHA);
+    String resourceGroup = request.getParam(RESOURCE_GROUP);
+    String resourceServer = request.getParam(RESOURCE_SERVER);
+    String resourceName = request.getParam(RESOURCE_NAME);
 
     StringBuilder adapterIdBuilder = new StringBuilder();
     adapterIdBuilder.append(domain);
