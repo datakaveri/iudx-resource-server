@@ -1,5 +1,6 @@
 package iudx.resource.server.apiserver.service;
 
+import static iudx.resource.server.apiserver.util.Util.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -13,8 +14,10 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
@@ -189,12 +192,43 @@ public class CatalogueService {
     });
   }
   
-
-  private <T> List<T> toList(JsonArray arr) {
-    if (arr == null) {
-      return null;
-    } else {
-      return (List<T>) arr.getList();
-    }
+  public Future<Boolean> isItemExist(String id) {
+    LOGGER.debug("isItemExist() started");
+    Promise<Boolean> promise = Promise.promise();
+    LOGGER.info("id : " + id);
+    catWebClient.get(catPort, catHost, catItemPath).addQueryParam("id", id)
+        .expect(ResponsePredicate.JSON).send(responseHandler -> {
+          if (responseHandler.succeeded()) {
+            HttpResponse<Buffer> response = responseHandler.result();
+            JsonObject responseBody = response.bodyAsJsonObject();
+            if (responseBody.getString("status").equalsIgnoreCase("success")
+                && responseBody.getInteger("totalHits") > 0) {
+              promise.complete(true);
+            } else {
+              promise.fail(responseHandler.cause());
+            }
+          } else {
+            promise.fail(responseHandler.cause());
+          }
+        });
+    return promise.future();
   }
+  
+  public Future<Boolean> isItemExist(List<String> ids){
+    Promise<Boolean> promise = Promise.promise();
+    List<Future> futures=new ArrayList<Future>();
+    for(String id:ids) {
+      futures.add(isItemExist(id));
+    }
+    
+    CompositeFuture.all(futures).onComplete(handler->{
+      if(handler.succeeded()) {
+        promise.complete();
+      }else {
+        promise.fail(handler.cause());
+      }
+    });
+    return promise.future();
+  }
+  
 }

@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -69,6 +70,9 @@ public class AuthHandler implements Handler<RoutingContext> {
     String[] idArray=id.split(",");
     for(String i:idArray) {
       ids.add(i);
+    }
+    if(path.equals(IUDX_MANAGEMENT_ADAPTER_URL) && HttpMethod.POST.name().equalsIgnoreCase(method)) {
+      ids=requestJson.getJsonArray(JSON_ENTITIES);
     }
     requestJson.put(IDS,ids);
     

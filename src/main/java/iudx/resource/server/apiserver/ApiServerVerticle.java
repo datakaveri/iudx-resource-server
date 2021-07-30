@@ -251,12 +251,24 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.delete(IUDX_MANAGEMENT_VHOST_URL + "/:vhostId").handler(AuthHandler.create(vertx))
         .handler(this::deleteVHost);
     // adapter
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/register").handler(AuthHandler.create(vertx))
+    router.post(IUDX_MANAGEMENT_ADAPTER_URL).handler(AuthHandler.create(vertx))
         .handler(this::registerAdapter);
+    
+    router
+        .delete(IUDX_MANAGEMENT_ADAPTER_URL
+            + "/:domain/:userSHA/:resourceServer/:resourceGroup/:resourceName")
+        .handler(AuthHandler.create(vertx)).handler(this::deleteAdapter);
     router.delete(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSHA/:resourceServer/:resourceGroup")
         .handler(AuthHandler.create(vertx)).handler(this::deleteAdapter);
-    router.get(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSHA/:resourceServer/:resourceGroup")
+    
+    router
+        .get(IUDX_MANAGEMENT_ADAPTER_URL
+            + "/:domain/:userSHA/:resourceServer/:resourceGroup/:resourceName")
         .handler(AuthHandler.create(vertx)).handler(this::getAdapterDetails);
+    router
+        .get(IUDX_MANAGEMENT_ADAPTER_URL+ "/:domain/:userSHA/:resourceServer/:resourceGroup")
+        .handler(AuthHandler.create(vertx)).handler(this::getAdapterDetails);
+    
     router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat").handler(AuthHandler.create(vertx))
         .handler(this::publishHeartbeat);
     router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/downstreamissue").handler(AuthHandler.create(vertx))
@@ -1289,15 +1301,19 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     requestJson.put(JSON_CONSUMER, authInfo.getString(JSON_CONSUMER));
     requestJson.put(JSON_PROVIDER, authInfo.getString(JSON_PROVIDER));
+
+    // Future<Boolean>
+    // isCatItemsExist=catalogueService.isItemExist(toList(requestJson.getJsonArray(JSON_ENTITIES)));
     Future<JsonObject> brokerResult = managementApi.registerAdapter(requestJson, databroker);
-    brokerResult.onComplete(brokerResultHandler -> {
-      if (brokerResultHandler.succeeded()) {
+
+    brokerResult.onComplete(handler -> {
+      if (handler.succeeded()) {
         LOGGER.info("Success: Registering adapter");
         handleSuccessResponse(response, ResponseType.Created.getCode(),
-            brokerResultHandler.result().toString());
+            handler.result().toString());
       } else if (brokerResult.failed()) {
-        LOGGER.error("Fail: Bad request" + brokerResultHandler.cause().getMessage());
-        processBackendResponse(response, brokerResultHandler.cause().getMessage());
+        LOGGER.error("Fail: Bad request" + handler.cause().getMessage());
+        processBackendResponse(response, handler.cause().getMessage());
       }
     });
   }
@@ -1315,8 +1331,18 @@ public class ApiServerVerticle extends AbstractVerticle {
     String usersha = request.getParam(JSON_USERSHA);
     String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);
     String resourceServer = request.getParam(JSON_RESOURCE_SERVER);
-    String adapterId = domain + "/" + usersha + "/" + resourceServer + "/" + resourceGroup;
-    Future<JsonObject> brokerResult = managementApi.deleteAdapter(adapterId, databroker);
+    String resourceName = request.getParam(JSON_RESOURCE_NAME);
+
+    StringBuilder adapterIdBuilder = new StringBuilder();
+    adapterIdBuilder.append(domain);
+    adapterIdBuilder.append("/").append(usersha);
+    adapterIdBuilder.append("/").append(resourceServer);
+    adapterIdBuilder.append("/").append(resourceGroup);
+    if (resourceName != null) {
+      adapterIdBuilder.append("/").append(resourceName);
+    }
+    Future<JsonObject> brokerResult =
+        managementApi.deleteAdapter(adapterIdBuilder.toString(), databroker);
     brokerResult.onComplete(brokerResultHandler -> {
       if (brokerResultHandler.succeeded()) {
         LOGGER.info("Success: Deleting adapter");
@@ -1342,8 +1368,19 @@ public class ApiServerVerticle extends AbstractVerticle {
     String usersha = request.getParam(JSON_USERSHA);
     String resourceGroup = request.getParam(JSON_RESOURCE_GROUP);
     String resourceServer = request.getParam(JSON_RESOURCE_SERVER);
-    String adapterId = domain + "/" + usersha + "/" + resourceServer + "/" + resourceGroup;
-    Future<JsonObject> brokerResult = managementApi.getAdapterDetails(adapterId, databroker);
+    String resourceName = request.getParam(JSON_RESOURCE_NAME);
+
+    StringBuilder adapterIdBuilder = new StringBuilder();
+    adapterIdBuilder.append(domain);
+    adapterIdBuilder.append("/").append(usersha);
+    adapterIdBuilder.append("/").append(resourceServer);
+    adapterIdBuilder.append("/").append(resourceGroup);
+    if (resourceName != null) {
+      adapterIdBuilder.append("/").append(resourceName);
+    }
+
+    Future<JsonObject> brokerResult =
+        managementApi.getAdapterDetails(adapterIdBuilder.toString(), databroker);
     brokerResult.onComplete(brokerResultHandler -> {
       if (brokerResultHandler.succeeded()) {
         handleSuccessResponse(response, ResponseType.Ok.getCode(),

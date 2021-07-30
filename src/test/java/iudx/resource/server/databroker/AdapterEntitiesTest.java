@@ -12,6 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -23,8 +25,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
@@ -85,7 +85,7 @@ public class AdapterEntitiesTest {
   private static PostgresClient pgClient;
   private static Configuration appConfig;
 
-  private static final Logger logger = LoggerFactory.getLogger(AdapterEntitiesTest.class);
+  private static final Logger logger = LogManager.getLogger(AdapterEntitiesTest.class);
 
   @BeforeAll
   @DisplayName("Initialize the Databroker class with web client and rabbitmq client")
@@ -198,8 +198,7 @@ public class AdapterEntitiesTest {
   @Order(1)
   void successRegisterAdaptor(VertxTestContext testContext) {
     JsonObject request = new JsonObject();
-    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
-    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information"));
     request.put(Constants.CONSUMER, consumer);
     request.put(JSON_PROVIDER, provider);
 
@@ -310,8 +309,9 @@ public class AdapterEntitiesTest {
     anotherProvider = Constants.USER_NAME_TEST_EXAMPLE;
 
     JsonObject request = new JsonObject();
-    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
-    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+//    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
+//    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information1"));
     request.put(Constants.CONSUMER, consumer);
     request.put(JSON_PROVIDER, anotherProvider);
 
@@ -343,6 +343,7 @@ public class AdapterEntitiesTest {
   @Order(6)
   void successGetExchangeExistingUser(VertxTestContext testContext) throws InterruptedException {
     JsonObject request = new JsonObject();
+    logger.info("Exchange name :"+anotherid);
     request.put(Constants.ID, anotherid);
     JsonObject expected = new JsonObject();
     expected.put(Constants.TYPE, 200);
@@ -395,8 +396,9 @@ public class AdapterEntitiesTest {
       throws InterruptedException {
     Thread.sleep(1000);
     JsonObject request = new JsonObject();
-    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
-    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+//    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
+//    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information"));
     request.put(Constants.CONSUMER, consumer);
     request.put(JSON_PROVIDER, provider);
 
@@ -468,8 +470,9 @@ public class AdapterEntitiesTest {
   @Order(11)
   void failureRegisterInvalidAdaptorID(VertxTestContext testContext) throws InterruptedException {
     JsonObject request = new JsonObject();
-    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup + "+()*&");
-    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+//    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup + "+()*&");
+//    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information()*&"));
     request.put(Constants.CONSUMER, Constants.CONSUMER_TEST_EXAMPLE);
 
     JsonObject expected = new JsonObject();
@@ -485,16 +488,24 @@ public class AdapterEntitiesTest {
     });
   }
 
-  @AfterAll
-  static void cleanUp() {
+  @Test
+  @Order(11)
+  static void cleanUp(VertxTestContext testContext) {
+    
     if (userName2Delete != null) {
-      String url = "/api/users/" + Util.encodeValue(userName2Delete);
-      rabbitMQWebClient.requestAsync(Constants.REQUEST_DELETE, url).onComplete(handler -> {
+      logger.info("cleanup : delete user "+userName2Delete);
+      String url = "/api/users/bulk-delete";// + Util.encodeValue(userName2Delete);
+      JsonObject request=new JsonObject();
+      request.put("users", new JsonArray().add(userName2Delete));
+      
+      rabbitMQWebClient.requestAsync(Constants.REQUEST_DELETE, url,request).onComplete(handler -> {
         if (handler.succeeded()) {
           logger.info(userName2Delete + " deleted");
         } else {
+          logger.error(handler.cause());
           logger.info(userName2Delete + " deletion failed");
         }
+        testContext.completeNow();
       });
     }
 

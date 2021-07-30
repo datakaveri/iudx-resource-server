@@ -16,10 +16,10 @@ public class Constants {
       List.of("/ngsi-ld/v1/temporal/entities", "/ngsi-ld/v1/entities", "/ngsi-ld/v1/entityOperations/query","/ngsi-ld/v1/temporal/entityOperations/query");
   public static final String AUTH_TIP_PATH = "/auth/v1/token/introspect";
   public static final List<String> CLOSED_ENDPOINTS =
-      List.of("/iudx/v1/adapter", "/ngsi-ld/v1/subscription");
+      List.of("/ngsi-ld/v1/ingestion", "/ngsi-ld/v1/subscription");
   public static final List<String> MANAGEMENT_ENDPOINTS =
       List.of("/management/queue", "/management/exchange", "/management/vhost");
-  public static final String ADAPTER_ENDPOINT = "/iudx/v1/adapter";
+  public static final String ADAPTER_ENDPOINT = "/ngsi-ld/v1/ingestion";
   public static final String SUBSCRIPTION_ENDPOINT = "/ngsi-ld/v1/subscription";
   public static final String MANAGEMENT_ENDPOINT = "/management/*";
   public static final long CACHE_TIMEOUT_AMOUNT = 30;
