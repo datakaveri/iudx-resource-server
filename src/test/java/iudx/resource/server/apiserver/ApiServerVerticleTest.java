@@ -1797,8 +1797,8 @@ public class ApiServerVerticleTest {
   public void testAdapterRegistrationWithoutToken(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register";
     JsonObject requestJson = new JsonObject();
-    requestJson.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
-    requestJson.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    requestJson.put(Constants.RESOURCE_GROUP, resourceGroup);
+    requestJson.put(Constants.RESOURCE_SERVER, resourceServer);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, invalidauthToken)
         .sendJsonObject(requestJson, handler -> {
           if (handler.succeeded()) {
@@ -1821,8 +1821,8 @@ public class ApiServerVerticleTest {
   public void testRegisterAdapter(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register";
     JsonObject requestJson = new JsonObject();
-    requestJson.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
-    requestJson.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    requestJson.put(Constants.RESOURCE_GROUP, resourceGroup);
+    requestJson.put(Constants.RESOURCE_SERVER, resourceServer);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, authToken)
         .putHeader(Constants.HEADER_TOKEN, publicToken).sendJsonObject(requestJson, handler -> {
           if (handler.succeeded()) {
@@ -1846,8 +1846,8 @@ public class ApiServerVerticleTest {
   public void testRegisterAdapter400(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register";
     JsonObject requestJson = new JsonObject();
-    requestJson.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
-    requestJson.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    requestJson.put(Constants.RESOURCE_GROUP, resourceGroup);
+    requestJson.put(Constants.RESOURCE_SERVER, resourceServer);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, authToken)
         .putHeader(Constants.HEADER_TOKEN, publicToken).sendJsonObject(requestJson, handler -> {
           if (handler.succeeded()) {
