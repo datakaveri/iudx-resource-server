@@ -1,22 +1,24 @@
 package iudx.resource.server.apiserver.validation.types;
 
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.NoSyncValidationException;
 import io.vertx.json.schema.Schema;
 import io.vertx.json.schema.ValidationException;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 
-public class JsonSchemaTypeValidator implements Validator {
+public final class JsonSchemaTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(JsonSchemaTypeValidator.class);
-  private JsonObject value;
-  private boolean required;
-  private Schema schema;
 
-  public JsonSchemaTypeValidator(JsonObject value, boolean required, Schema schema) {
+  private final JsonObject value;
+  private final Schema schema;
+
+  public JsonSchemaTypeValidator(final JsonObject value, final Schema schema) {
     this.value = value;
-    this.required = required;
     this.schema = schema;
   }
 
@@ -26,22 +28,22 @@ public class JsonSchemaTypeValidator implements Validator {
       schema.validateSync(value);
     } catch (ValidationException e) {
       LOGGER.error("Validation error :" + e.getMessage());
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_PAYLOAD_FORMAT, failureMessage(value.toString()));
     } catch (NoSyncValidationException e) {
       LOGGER.error("Validation error :" + e.getMessage());
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_PAYLOAD_FORMAT, failureMessage(value.toString()));
     }
     return true;
   }
 
   @Override
   public int failureCode() {
-    return 400;
+    return HttpStatusCode.BAD_REQUEST.getValue();
   }
 
   @Override
   public String failureMessage() {
-    return "Json schema validation failed.";
+    return INVALID_PAYLOAD_FORMAT.getMessage();
   }
 
 }

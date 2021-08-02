@@ -1,23 +1,23 @@
 package iudx.resource.server.apiserver.validation.types;
 
-import java.util.List;
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
+import static iudx.resource.server.apiserver.util.Constants.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 
-public class TimeRelTypeValidator implements Validator {
+public final class TimeRelTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(GeoRelTypeValidator.class);
 
-  private List<Object> allowedValues = List.of("after", "before", "during", "between");
+  private final String value;
+  private final boolean required;
 
-  private String value;
-  private boolean required;
-  private boolean allowedEmpty;
-
-  public TimeRelTypeValidator(String value, boolean required, boolean allowedEmpty) {
+  public TimeRelTypeValidator(final String value, final boolean required) {
     this.value = value;
     this.required = required;
-    this.allowedEmpty = allowedEmpty;
   }
 
   @Override
@@ -25,19 +25,19 @@ public class TimeRelTypeValidator implements Validator {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_TEMPORAL_REL, failureMessage());
     } else {
       if (value == null) {
         return true;
       }
       if (value.isBlank()) {
         LOGGER.error("Validation error :  blank value for passed");
-        return false;
+        throw new DxRuntimeException(failureCode(), INVALID_TEMPORAL_REL, failureMessage(value));
       }
     }
-    if (!allowedValues.contains(value)) {
+    if (!VALIDATION_ALLOWED_TEMPORAL_REL.contains(value)) {
       LOGGER.error("Validation error : Value " + value + " " + "is not allowed");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_TEMPORAL_REL, failureMessage(value));
     }
     return true;
   }
@@ -45,12 +45,12 @@ public class TimeRelTypeValidator implements Validator {
 
   @Override
   public int failureCode() {
-    return 400;
+    return HttpStatusCode.BAD_REQUEST.getValue();
   }
 
 
   @Override
   public String failureMessage() {
-    return "Invalid time relation";
+    return INVALID_TEMPORAL_REL.getMessage();
   }
 }
