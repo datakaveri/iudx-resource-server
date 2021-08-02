@@ -23,4 +23,5 @@ public interface MeteringService {
 
   @Fluent
   MeteringService executeWriteQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
 }
