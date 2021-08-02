@@ -567,7 +567,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.debug("Info: handleTemporalQuery method started.");
     /* Handles HTTP request from client */
     HttpServerRequest request = routingContext.request();
-    /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
     /* HTTP request instance/host details */
     String instanceID = request.getHeader(HEADER_HOST);
