@@ -1,6 +1,7 @@
 package iudx.resource.server.authenticator;
 
 import static iudx.resource.server.authenticator.Constants.JSON_CONSUMER;
+import static iudx.resource.server.authenticator.Constants.OPEN_ENDPOINTS;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +52,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
       .build();
   // resourceIdCache will contains info about resources available(& their ACL) in resource server.
-  // what if resource id ACL is changed ?
   private final Cache<String, String> resourceIdCache = CacheBuilder
       .newBuilder()
       .maximumSize(1000)
@@ -76,9 +76,13 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   public AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
       Handler<AsyncResult<JsonObject>> handler) {
 
-    Future<JwtData> jwtDecodeFuture = decodeJwt(authenticationInfo.getString("token"));
-    // Future<Boolean> resorceExistFuture = isResourceExist(authenticationInfo.getString("id"));
-    Future<String> openResourceFuture = isOpenResource(authenticationInfo.getString("id"));
+    String endPoint = authenticationInfo.getString("apiEndpoint");
+    String id = authenticationInfo.getString("id");
+    String token = authenticationInfo.getString("token");
+
+    Future<JwtData> jwtDecodeFuture = decodeJwt(token);
+    Future<String> openResourceFuture = isOpenResource(id);
+
 
     ResultContainer result = new ResultContainer();
 
@@ -89,12 +93,12 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       return openResourceFuture;
     }).compose(openResourceHandler -> {
       result.isOpen = openResourceHandler.equalsIgnoreCase("OPEN");
-      if (result.isOpen) {
+      if (result.isOpen && OPEN_ENDPOINTS.contains(endPoint)) {
         JsonObject json = new JsonObject();
         json.put(JSON_CONSUMER, result.jwtData.getSub());
         handler.handle(Future.succeededFuture(json));
       }
-      return isValidId(result.jwtData, authenticationInfo.getString("id"));
+      return isValidId(result.jwtData, id);
     }).compose(validIdHandler -> {
       return validateAccess(result.jwtData, result.isResourceExist, authenticationInfo);
     }).onComplete(completeHandler -> {
@@ -136,13 +140,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
     return promise.future();
   }
-
-  private Future<Boolean> isResourceExist(String id) {
-    Promise<Boolean> promise = Promise.promise();
-    promise.complete(Boolean.TRUE);
-    return promise.future();
-  }
-
 
   private Future<String> isOpenResource(String id) {
     LOGGER.debug("isOpenResource() started");
