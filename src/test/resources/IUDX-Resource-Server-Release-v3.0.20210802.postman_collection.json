@@ -29,7 +29,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"request\": [\n\t\t\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information\"\n    ]\n}",
+							"raw": "{\n\t\"request\": [\n\t\t\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -341,7 +341,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxdistance=10&geometry=Point&coordinates=[21.178,72.834]",
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxdistance=10&geometry=Point&coordinates=[21.178,72.834]&offset=0&limit=10",
 							"host": [
 								"{{base_url}}"
 							],
@@ -370,6 +370,14 @@
 								{
 									"key": "coordinates",
 									"value": "[21.178,72.834]"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "10"
 								}
 							]
 						}
@@ -17564,8 +17572,8 @@
 							"script": {
 								"exec": [
 									"const responseJson=pm.response.json();",
-									"pm.globals.set(\"consumerToken\", responseJson.token);",
-									"pm.globals.set(\"adapterToken\", responseJson.token);"
+									"pm.globals.set(\"consumerToken_rl\", responseJson.token);",
+									"pm.globals.set(\"adapterToken_rl\", responseJson.token);"
 								],
 								"type": "text/javascript"
 							}

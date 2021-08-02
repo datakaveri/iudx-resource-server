@@ -13,7 +13,7 @@ public enum HttpStatusCode {
 
   //4xx: Client Error
   BAD_REQUEST(400, "Bad Request"),
-  UNAUTHORIZED(401, "Unauthorized"),
+  UNAUTHORIZED(401, "Not Authorized"),
   PAYMENT_REQUIRED(402, "Payment Required"),
   FORBIDDEN(403, "Forbidden"),
   NOT_FOUND(404, "Not Found"),

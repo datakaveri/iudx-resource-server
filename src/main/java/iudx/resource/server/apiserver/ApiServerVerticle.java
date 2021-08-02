@@ -1,9 +1,9 @@
 package iudx.resource.server.apiserver;
 
 
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
-import static iudx.resource.server.apiserver.response.ResponseUrn.*;
 import static iudx.resource.server.apiserver.util.HttpStatusCode.*;
 
 import java.util.HashSet;
@@ -13,9 +13,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import com.sun.nio.sctp.HandlerResult;
+
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
@@ -261,17 +262,17 @@ public class ApiServerVerticle extends AbstractVerticle {
     
     router
         .delete(IUDX_MANAGEMENT_ADAPTER_URL
-            + "/:domain/:userSHA/:resourceServer/:resourceGroup/:resourceName")
+            + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
         .handler(AuthHandler.create(vertx)).handler(this::deleteAdapter);
-    router.delete(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSHA/:resourceServer/:resourceGroup")
+    router.delete(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSha/:resourceServer/:resourceGroup")
         .handler(AuthHandler.create(vertx)).handler(this::deleteAdapter);
     
     router
         .get(IUDX_MANAGEMENT_ADAPTER_URL
-            + "/:domain/:userSHA/:resourceServer/:resourceGroup/:resourceName")
+            + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
         .handler(AuthHandler.create(vertx)).handler(this::getAdapterDetails);
     router
-        .get(IUDX_MANAGEMENT_ADAPTER_URL+ "/:domain/:userSHA/:resourceServer/:resourceGroup")
+        .get(IUDX_MANAGEMENT_ADAPTER_URL+ "/:domain/:userSha/:resourceServer/:resourceGroup")
         .handler(AuthHandler.create(vertx)).handler(this::getAdapterDetails);
     
     router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat").handler(AuthHandler.create(vertx))

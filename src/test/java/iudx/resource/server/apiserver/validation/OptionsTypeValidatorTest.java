@@ -1,18 +1,23 @@
 package iudx.resource.server.apiserver.validation;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.stream.Stream;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
 // import org.junit.jupiter.params.provider.MethodSource;
 import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.apiserver.validation.types.OptionsTypeValidator;
 
 @ExtendWith(VertxExtension.class)
@@ -40,7 +45,7 @@ public class OptionsTypeValidatorTest {
   public void testInvalidOptionsValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
     optionsValidator = new OptionsTypeValidator(value, required);
-    assertFalse(optionsValidator.isValid());
+    assertThrows(DxRuntimeException.class, () -> optionsValidator.isValid());
     testContext.completeNow();
   }
 

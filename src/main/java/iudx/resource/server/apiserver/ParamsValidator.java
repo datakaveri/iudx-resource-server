@@ -1,21 +1,27 @@
 package iudx.resource.server.apiserver;
 
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
 import static iudx.resource.server.apiserver.util.Constants.*;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.wololo.jts2geojson.GeoJSONReader;
+
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.apiserver.service.CatalogueService;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 import iudx.resource.server.apiserver.validation.types.AttrsTypeValidator;
 import iudx.resource.server.apiserver.validation.types.CoordinatesTypeValidator;
 import iudx.resource.server.apiserver.validation.types.DistanceTypeValidator;
@@ -267,7 +273,8 @@ public class ParamsValidator {
       // coordinates and validate as a linestring
       String[] bboxEdges = coordinates.replaceAll("\\[", "").replaceAll("\\]", "").split(",");
       if (bboxEdges.length != 4) {
-        return false;
+        throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), INVALID_GEO_PARAM,
+            INVALID_GEO_PARAM.getMessage());
       }
       json.put("type", "LineString");
       return isValidCoordinates(json.toString());
@@ -291,7 +298,8 @@ public class ParamsValidator {
       }
       isValid = geom.isValid() && (isPolygon ? isValidNosCoords : true);
     } catch (Exception ex) {
-      LOGGER.error("Invalid geom/coordinates passed");
+      throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), INVALID_GEO_PARAM,
+          INVALID_GEO_PARAM.getMessage());
     }
     return isValid;
   }
@@ -308,11 +316,14 @@ public class ParamsValidator {
         validator = new DistanceTypeValidator(distanceValue, false);
         return validator.isValid();
       } else {
-        return false;
+        // return false;
+        throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), INVALID_GEO_VALUE,
+            INVALID_GEO_VALUE.getMessage());
       }
     } catch (Exception ex) {
       LOGGER.error(ex);
-      return false;
+      throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), INVALID_GEO_VALUE,
+          INVALID_GEO_VALUE.getMessage());
     }
   }
 
