@@ -1,23 +1,6 @@
 package iudx.resource.server.apiserver.query;
 
-import static iudx.resource.server.apiserver.util.Constants.JSON_ATTRIBUTE;
-import static iudx.resource.server.apiserver.util.Constants.JSON_ATTR_QUERY;
-import static iudx.resource.server.apiserver.util.Constants.JSON_LAT;
-import static iudx.resource.server.apiserver.util.Constants.JSON_LON;
-import static iudx.resource.server.apiserver.util.Constants.JSON_OPERATOR;
-import static iudx.resource.server.apiserver.util.Constants.JSON_RADIUS;
-import static iudx.resource.server.apiserver.util.Constants.JSON_VALUE;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ATTRIBUTE;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_COORDINATES;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ENDTIME;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOMETRY;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOPROPERTY;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOREL;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ID;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_Q;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEPROPERTY;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEREL;
+import static iudx.resource.server.apiserver.util.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
