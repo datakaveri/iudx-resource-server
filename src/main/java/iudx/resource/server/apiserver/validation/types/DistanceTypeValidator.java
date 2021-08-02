@@ -1,10 +1,12 @@
 package iudx.resource.server.apiserver.validation.types;
 
-import static iudx.resource.server.apiserver.util.Constants.*;
-import static iudx.resource.server.apiserver.response.ResponseUrn.*;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_GEO_PARAM;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_GEO_VALUE;
+import static iudx.resource.server.apiserver.util.Constants.VALIDATION_ALLOWED_DIST;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.apiserver.util.HttpStatusCode;
 
@@ -44,7 +46,7 @@ public final class DistanceTypeValidator implements Validator {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
-      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage());
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_PARAM, failureMessage());
     } else {
       if (value == null) {
         return true;

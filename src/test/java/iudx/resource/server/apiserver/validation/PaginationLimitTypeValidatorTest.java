@@ -1,17 +1,21 @@
 package iudx.resource.server.apiserver.validation;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.stream.Stream;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.apiserver.validation.types.PaginationLimitTypeValidator;
 
 @ExtendWith(VertxExtension.class)
@@ -63,7 +67,7 @@ private PaginationLimitTypeValidator paginationLimitTypeValidator;
   public void testInvalidLimitTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
     paginationLimitTypeValidator = new PaginationLimitTypeValidator(value, required);
-    assertFalse(paginationLimitTypeValidator.isValid());
+    assertThrows(DxRuntimeException.class, () -> paginationLimitTypeValidator.isValid());
     testContext.completeNow();
   }
 }

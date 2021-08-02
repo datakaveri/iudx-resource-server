@@ -1,11 +1,18 @@
 package iudx.resource.server.apiserver;
 
 
-import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.util.Constants.MSG_BAD_QUERY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ATTRIBUTE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOREL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_Q;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.stream.Stream;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,11 +20,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.configuration.Configuration;
 
@@ -143,14 +152,16 @@ public class ValidatorTest {
 
     json.getJsonObject("geoQ").put("geometry", geom);
     json.getJsonObject("geoQ").put("coordinates", coords);
-    validator.validate(json).onComplete(handler -> {
-      if (handler.failed()) {
-        assertEquals(MSG_BAD_QUERY, handler.cause().getMessage());
-        testContext.completeNow();
-      } else {
-        testContext.failNow(new Throwable("Unexpected result"));
-      }
-    });
+    assertThrows(DxRuntimeException.class, () -> validator.validate(json));
+    testContext.completeNow();
+//    validator.validate(json).onComplete(handler -> {
+//      if (handler.failed()) {
+//        assertEquals(MSG_BAD_QUERY, handler.cause().getMessage());
+//        testContext.completeNow();
+//      } else {
+//        testContext.failNow(new Throwable("Unexpected result"));
+//      }
+//    });
   }
 
 
@@ -170,14 +181,16 @@ public class ValidatorTest {
   public void testInvalidAttrsTypeValue(String value, String result,Vertx vertx,
       VertxTestContext testContext) {
     json.put(NGSILDQUERY_ATTRIBUTE, value);
-    validator.validate(json).onComplete(handler -> {
-      if (handler.failed()) {
-        assertEquals(MSG_BAD_QUERY, handler.cause().getMessage());
-        testContext.completeNow();
-      } else {
-        testContext.failNow(new Throwable("Unexpected result"));
-      }
-    });
+    assertThrows(DxRuntimeException.class, () -> validator.validate(json));
+    testContext.completeNow();
+//    validator.validate(json).onComplete(handler -> {
+//      if (handler.failed()) {
+//        assertEquals(MSG_BAD_QUERY, handler.cause().getMessage());
+//        testContext.completeNow();
+//      } else {
+//        testContext.failNow(new Throwable("Unexpected result"));
+//      }
+//    });
   }
 
 
@@ -201,14 +214,16 @@ public class ValidatorTest {
   @Description("q type parameter invalid values.")
   public void testInvalidQTypeValue(String value, Vertx vertx, VertxTestContext testContext) {
     json.put(NGSILDQUERY_Q, value);
-    validator.validate(json).onComplete(handler -> {
-      if (handler.failed()) {
-        assertEquals(MSG_BAD_QUERY, handler.cause().getMessage());
-        testContext.completeNow();
-      } else {
-        testContext.failNow(new Throwable("Unexpected result"));
-      }
-    });
+    assertThrows(DxRuntimeException.class, () -> validator.validate(json));
+    testContext.completeNow();
+//    validator.validate(json).onComplete(handler -> {
+//      if (handler.failed()) {
+//        assertEquals(MSG_BAD_QUERY, handler.cause().getMessage());
+//        testContext.completeNow();
+//      } else {
+//        testContext.failNow(new Throwable("Unexpected result"));
+//      }
+//    });
   }
   
   
@@ -228,14 +243,16 @@ public class ValidatorTest {
   @Description("geoRel type parameter invalid values.")
   public void testInvalidGeoRelTypeValue(String value, Vertx vertx, VertxTestContext testContext) {
     json.getJsonObject("geoQ").put(NGSILDQUERY_GEOREL, value);
-    validator.validate(json).onComplete(handler -> {
-      if (handler.failed()) {
-        assertEquals(MSG_BAD_QUERY, handler.cause().getMessage());
-        testContext.completeNow();
-      } else {
-        testContext.failNow(new Throwable("Unexpected result"));
-      }
-    });
+    assertThrows(DxRuntimeException.class, () -> validator.validate(json));
+    testContext.completeNow();
+//    validator.validate(json).onComplete(handler -> {
+//      if (handler.failed()) {
+//        assertEquals(MSG_BAD_QUERY, handler.cause().getMessage());
+//        testContext.completeNow();
+//      } else {
+//        testContext.failNow(new Throwable("Unexpected result"));
+//      }
+//    });
   }
   
   static Stream<Arguments> validGeoRelValues() {

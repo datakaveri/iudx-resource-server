@@ -1,29 +1,33 @@
 package iudx.resource.server.apiserver.validation;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.stream.Stream;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.apiserver.validation.types.PaginationOffsetTypeValidator;
 
 @ExtendWith(VertxExtension.class)
 public class PaginationOffsetTypeValidatorTest {
 
   private PaginationOffsetTypeValidator paginationOffsetTypeValidator;
-  
+
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
     testContext.completeNow();
   }
-  
+
   static Stream<Arguments> allowedValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
@@ -33,7 +37,7 @@ public class PaginationOffsetTypeValidatorTest {
         Arguments.of("2500", false),
         Arguments.of("0", false));
   }
-  
+
   @ParameterizedTest
   @MethodSource("allowedValues")
   @Description("pagination offset type parameter allowed values.")
@@ -43,8 +47,8 @@ public class PaginationOffsetTypeValidatorTest {
     assertTrue(paginationOffsetTypeValidator.isValid());
     testContext.completeNow();
   }
-  
-  
+
+
   static Stream<Arguments> invalidValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
@@ -55,14 +59,14 @@ public class PaginationOffsetTypeValidatorTest {
         Arguments.of("false", false),
         Arguments.of("kajlksdjloasknfdlkanslodnmalsdasd", false));
   }
-  
+
   @ParameterizedTest
   @MethodSource("invalidValues")
   @Description("pagination offset type parameter invalid values.")
   public void testInvalidOffsetTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
     paginationOffsetTypeValidator = new PaginationOffsetTypeValidator(value, required);
-    assertFalse(paginationOffsetTypeValidator.isValid());
+    assertThrows(DxRuntimeException.class, () -> paginationOffsetTypeValidator.isValid());
     testContext.completeNow();
   }
 }

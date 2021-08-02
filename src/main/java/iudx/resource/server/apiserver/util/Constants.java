@@ -165,9 +165,9 @@ public class Constants {
   public static final String JSON_URL = "url";
   public static final String JSON_METHOD = "method";
   public static final String JSON_PASSWORD = "password";
-  public static final String JSON_RESOURCE_SERVER = "resourceServer";
-  public static final String JSON_RESOURCE_GROUP = "resourceGroup";
-  public static final String JSON_RESOURCE_NAME = "resourceName";
+  public static final String RESOURCE_SERVER = "resourceServer";
+  public static final String RESOURCE_GROUP = "resourceGroup";
+  public static final String RESOURCE_NAME = "resourceName";
 
   // searchtype
   public static final String JSON_SEARCH_TYPE = "searchType";

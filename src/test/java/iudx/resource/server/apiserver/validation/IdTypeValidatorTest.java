@@ -1,17 +1,22 @@
 package iudx.resource.server.apiserver.validation;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.stream.Stream;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.apiserver.validation.types.IDTypeValidator;
 
 @ExtendWith(VertxExtension.class)
@@ -87,7 +92,7 @@ public class IdTypeValidatorTest {
   public void testInvalidIDTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
     idTypeValidator = new IDTypeValidator(value, required);
-    assertFalse(idTypeValidator.isValid());
+    assertThrows(DxRuntimeException.class, () -> idTypeValidator.isValid());
     testContext.completeNow();
   }
 }

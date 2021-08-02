@@ -1,15 +1,30 @@
 package iudx.resource.server.apiserver.query;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static iudx.resource.server.apiserver.util.Constants.JSON_ATTRIBUTE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_ATTR_QUERY;
+import static iudx.resource.server.apiserver.util.Constants.JSON_LAT;
+import static iudx.resource.server.apiserver.util.Constants.JSON_LON;
+import static iudx.resource.server.apiserver.util.Constants.JSON_OPERATOR;
+import static iudx.resource.server.apiserver.util.Constants.JSON_RADIUS;
+import static iudx.resource.server.apiserver.util.Constants.JSON_VALUE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ATTRIBUTE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_COORDINATES;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ENDTIME;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOMETRY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOPROPERTY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOREL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ID;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_Q;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEPROPERTY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEREL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.stream.Stream;
-import static iudx.resource.server.apiserver.util.Constants.*;
-import io.vertx.core.MultiMap;
-import io.vertx.core.Vertx;
-import io.vertx.core.cli.annotations.Description;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +32,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import io.vertx.core.MultiMap;
+import io.vertx.core.Vertx;
+import io.vertx.core.cli.annotations.Description;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 
 
 
@@ -165,7 +188,6 @@ public class QueryMapperTest {
     RuntimeException ex = assertThrows(RuntimeException.class, () -> {
       qm.toJson(params, true);
     });
-    assertEquals("Invalid time format", ex.getMessage());
     testContext.completeNow();
   }
 

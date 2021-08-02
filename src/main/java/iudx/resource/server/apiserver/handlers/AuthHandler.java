@@ -1,14 +1,55 @@
 package iudx.resource.server.apiserver.handlers;
 
-import static iudx.resource.server.apiserver.util.Constants.*;
-import static iudx.resource.server.apiserver.response.ResponseUrn.*;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_TOKEN;
+import static iudx.resource.server.apiserver.response.ResponseUrn.RESOURCE_NOT_FOUND;
+import static iudx.resource.server.apiserver.util.Constants.ADAPTER_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
+import static iudx.resource.server.apiserver.util.Constants.API_METHOD;
+import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
+import static iudx.resource.server.apiserver.util.Constants.BIND_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.DOMAIN;
+import static iudx.resource.server.apiserver.util.Constants.ENTITIES_POST_QUERY_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.ENTITITES_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.EXCHANGE_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
+import static iudx.resource.server.apiserver.util.Constants.ID;
+import static iudx.resource.server.apiserver.util.Constants.IDS;
+import static iudx.resource.server.apiserver.util.Constants.ID_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_ADAPTER_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_BIND_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_EXCHANGE_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_QUEUE_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_UNBIND_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_VHOST_URL;
+import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
+import static iudx.resource.server.apiserver.util.Constants.JSON_ENTITIES;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_ENTITIES_URL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_ENTITIES_QUERY_PATH;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_TEMPORAL_QUERY_PATH;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_SUBSCRIPTION_URL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
+import static iudx.resource.server.apiserver.util.Constants.QUEUE_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
+import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.TEMPORAL_POST_QUERY_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.TEMPORAL_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.UNBIND_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.USERSHA;
+import static iudx.resource.server.apiserver.util.Constants.VHOST_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.bypassEndpoint;
 
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import org.apache.http.HttpStatus;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -16,7 +57,6 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.response.ResponseUrn;
 import iudx.resource.server.apiserver.util.HttpStatusCode;
 import iudx.resource.server.authenticator.AuthenticationService;
@@ -73,14 +113,17 @@ public class AuthHandler implements Handler<RoutingContext> {
     LOGGER.debug("Info :" + context.request().path().split("/").length);
 
     String pathId = getId4rmPath(context);
+    LOGGER.info("id from path : " + pathId);
     String paramId = getId4rmRequest();
-    String bodyId = getId4rmBody(context);
+    LOGGER.info("id from param : " + paramId);
+    String bodyId = getId4rmBody(context, path);
+    LOGGER.info("id from body : " + bodyId);
 
     String id;
-    if (pathId!=null && !pathId.isBlank()) {
+    if (pathId != null && !pathId.isBlank()) {
       id = pathId;
     } else {
-      if (paramId!=null && !paramId.isBlank()) {
+      if (paramId != null && !paramId.isBlank()) {
         id = paramId;
       } else {
         id = bodyId;
@@ -95,11 +138,11 @@ public class AuthHandler implements Handler<RoutingContext> {
       ids.add(i);
     }
 
-    if(path.equals(IUDX_MANAGEMENT_ADAPTER_URL) && HttpMethod.POST.name().equalsIgnoreCase(method)) {
-      ids=requestJson.getJsonArray(JSON_ENTITIES);
+    if (path.equals(IUDX_MANAGEMENT_ADAPTER_URL) && HttpMethod.POST.name().equalsIgnoreCase(method)) {
+      ids = requestJson.getJsonArray(JSON_ENTITIES);
     }
-    requestJson.put(IDS,ids);
-    
+    requestJson.put(IDS, ids);
+
     LOGGER.debug("request" + requestJson);
     authenticator.tokenInterospect(requestJson, authInfo, authHandler -> {
       if (authHandler.succeeded()) {
@@ -119,9 +162,9 @@ public class AuthHandler implements Handler<RoutingContext> {
       LOGGER.error("Error : Item Not Found");
       HttpStatusCode statusCode = HttpStatusCode.getByValue(404);
       ctx.response()
-         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-         .setStatusCode(statusCode.getValue())
-         .end(generateResponse(RESOURCE_NOT_FOUND, statusCode).toString());
+          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(statusCode.getValue())
+          .end(generateResponse(RESOURCE_NOT_FOUND, statusCode).toString());
     } else {
       LOGGER.error("Error : Authentication Failure");
       HttpStatusCode statusCode = HttpStatusCode.getByValue(401);
@@ -131,8 +174,8 @@ public class AuthHandler implements Handler<RoutingContext> {
           .end(generateResponse(INVALID_TOKEN, statusCode).toString());
     }
   }
-  
-  private JsonObject generateResponse(ResponseUrn urn,HttpStatusCode statusCode) {
+
+  private JsonObject generateResponse(ResponseUrn urn, HttpStatusCode statusCode) {
     return new JsonObject()
         .put(JSON_TYPE, urn.getUrn())
         .put(JSON_TITLE, statusCode.getDescription())
@@ -201,11 +244,13 @@ public class AuthHandler implements Handler<RoutingContext> {
     return id;
   }
 
-  private String getId(RoutingContext context) {
+  private String getId(RoutingContext context, String path) {
 
     String pathId = getId4rmPath(context);
+    LOGGER.info("id from path : " + pathId);
     String paramId = getId4rmRequest();
-    String bodyId = getId4rmBody(context);
+    LOGGER.info("id from param : " + paramId);
+    String bodyId = getId4rmBody(context, path);
 
     String id;
     if (!pathId.isBlank()) {
@@ -221,10 +266,11 @@ public class AuthHandler implements Handler<RoutingContext> {
   }
 
   private String getId4rmPath(RoutingContext context) {
-    StringBuilder id = new StringBuilder();
+    StringBuilder id = null;
     Map<String, String> pathParams = context.pathParams();
     LOGGER.info("path params :" + pathParams);
-    if (!pathParams.isEmpty()) {
+    if (pathParams != null && !pathParams.isEmpty()) {
+      id = new StringBuilder();
       if (pathParams.containsKey(DOMAIN)
           && pathParams.containsKey(USERSHA)
           && pathParams.containsKey(RESOURCE_SERVER)
@@ -241,8 +287,8 @@ public class AuthHandler implements Handler<RoutingContext> {
         id.append("/").append(pathParams.get(RESOURCE_NAME));
       }
     }
-
-    return id.toString();
+    LOGGER.info("id :" + id);
+    return id != null ? id.toString() : null;
   }
 
   private String getId4rmRequest() {
@@ -250,18 +296,23 @@ public class AuthHandler implements Handler<RoutingContext> {
   }
 
 
-  private String getId4rmBody(RoutingContext context) {
+  private String getId4rmBody(RoutingContext context, String api) {
     JsonObject body = context.getBodyAsJson();
     String id = null;
     if (body != null) {
       JsonArray array = body.getJsonArray(JSON_ENTITIES);
       if (array != null) {
-        JsonObject json = array.getJsonObject(0);
-        if (json != null) {
-          id = json.getString(ID);
+        if (api.matches(ADAPTER_URL_REGEX)) {
+          id = array.getString(0);
+        } else {
+          JsonObject json = array.getJsonObject(0);
+          if (json != null) {
+            id = json.getString(ID);
+          }
         }
       }
     }
+    LOGGER.info("id : " + id);
     return id;
   }
 

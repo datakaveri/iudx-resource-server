@@ -1,18 +1,22 @@
 package iudx.resource.server.apiserver.validation;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.stream.Stream;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.apiserver.validation.types.AttrsTypeValidator;
 
 @ExtendWith(VertxExtension.class)
@@ -48,7 +52,7 @@ public class AttrsTypeValidatorTest {
         Arguments.of("", true),
         Arguments.of("  ", true),
         Arguments.of("refrenceLeval,Co2,NO2,SO2,CO,ABC", true),
-        Arguments.of(RandomStringUtils.random(102) + ",refrenceLeval,Co2,NO2,SO2",true),
+        Arguments.of(RandomStringUtils.random(102) + ",refrenceLeval,Co2,NO2,SO2", true),
         Arguments.of("refrence$Leval,Co2,NO2,SO2", true),
         Arguments.of("refrenceLeval,Co2,NO2,S*&O2", true));
   }
@@ -59,7 +63,7 @@ public class AttrsTypeValidatorTest {
   public void testInvalidAttrsTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
     attrsTypevalidator = new AttrsTypeValidator(value, required);
-    assertFalse(attrsTypevalidator.isValid());
+    assertThrows(DxRuntimeException.class, () -> attrsTypevalidator.isValid());
     testContext.completeNow();
   }
 

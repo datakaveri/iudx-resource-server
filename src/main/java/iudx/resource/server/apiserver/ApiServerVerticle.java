@@ -1,10 +1,67 @@
 package iudx.resource.server.apiserver;
 
 
-import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.response.ResponseUrn.BACKING_SERVICE_FORMAT;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_PARAM;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_TEMPORAL_PARAM;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_TOKEN;
+import static iudx.resource.server.apiserver.response.ResponseUrn.MISSING_TOKEN;
+import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
+import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
+import static iudx.resource.server.apiserver.util.Constants.APP_NAME_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.DOMAIN;
+import static iudx.resource.server.apiserver.util.Constants.EXCHANGE_ID;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_ACCEPT;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_ALLOW_ORIGIN;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_LENGTH;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_HOST;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_ORIGIN;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_REFERER;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
+import static iudx.resource.server.apiserver.util.Constants.IUDXQUERY_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_ADAPTER_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_BIND_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_EXCHANGE_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_QUEUE_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_UNBIND_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_VHOST_URL;
+import static iudx.resource.server.apiserver.util.Constants.JSON_ALIAS;
+import static iudx.resource.server.apiserver.util.Constants.JSON_CONSUMER;
+import static iudx.resource.server.apiserver.util.Constants.JSON_COUNT;
+import static iudx.resource.server.apiserver.util.Constants.JSON_EXCHANGE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.JSON_ID;
+import static iudx.resource.server.apiserver.util.Constants.JSON_INSTANCEID;
+import static iudx.resource.server.apiserver.util.Constants.JSON_NAME;
+import static iudx.resource.server.apiserver.util.Constants.JSON_PROVIDER;
+import static iudx.resource.server.apiserver.util.Constants.JSON_QUEUE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.JSON_SEARCH_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_VHOST;
+import static iudx.resource.server.apiserver.util.Constants.JSON_VHOST_ID;
+import static iudx.resource.server.apiserver.util.Constants.MIME_APPLICATION_JSON;
+import static iudx.resource.server.apiserver.util.Constants.MIME_TEXT_HTML;
+import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_EXCHANGE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_NAME;
+import static iudx.resource.server.apiserver.util.Constants.MSG_SUB_TYPE_NOT_FOUND;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_ENTITIES_URL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_ENTITIES_QUERY_PATH;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_TEMPORAL_QUERY_PATH;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_SUBSCRIPTION_URL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
+import static iudx.resource.server.apiserver.util.Constants.ROUTE_DOC;
+import static iudx.resource.server.apiserver.util.Constants.ROUTE_STATIC_SPEC;
+import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
+import static iudx.resource.server.apiserver.util.Constants.SUB_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.USERSHA;
+import static iudx.resource.server.apiserver.util.HttpStatusCode.BAD_REQUEST;
+import static iudx.resource.server.apiserver.util.HttpStatusCode.UNAUTHORIZED;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
-import static iudx.resource.server.apiserver.response.ResponseUrn.*;
-import static iudx.resource.server.apiserver.util.HttpStatusCode.*;
 
 import java.util.HashSet;
 import java.util.List;
@@ -13,9 +70,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import com.sun.nio.sctp.HandlerResult;
+
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
@@ -261,17 +319,17 @@ public class ApiServerVerticle extends AbstractVerticle {
     
     router
         .delete(IUDX_MANAGEMENT_ADAPTER_URL
-            + "/:domain/:userSHA/:resourceServer/:resourceGroup/:resourceName")
+            + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
         .handler(AuthHandler.create(vertx)).handler(this::deleteAdapter);
-    router.delete(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSHA/:resourceServer/:resourceGroup")
+    router.delete(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSha/:resourceServer/:resourceGroup")
         .handler(AuthHandler.create(vertx)).handler(this::deleteAdapter);
     
     router
         .get(IUDX_MANAGEMENT_ADAPTER_URL
-            + "/:domain/:userSHA/:resourceServer/:resourceGroup/:resourceName")
+            + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
         .handler(AuthHandler.create(vertx)).handler(this::getAdapterDetails);
     router
-        .get(IUDX_MANAGEMENT_ADAPTER_URL+ "/:domain/:userSHA/:resourceServer/:resourceGroup")
+        .get(IUDX_MANAGEMENT_ADAPTER_URL+ "/:domain/:userSha/:resourceServer/:resourceGroup")
         .handler(AuthHandler.create(vertx)).handler(this::getAdapterDetails);
     
     router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat").handler(AuthHandler.create(vertx))
