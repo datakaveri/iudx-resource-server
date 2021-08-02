@@ -30,13 +30,6 @@ public class ResponseBuilder {
     }
     return this;
   }
-  //
-  //
-  //
-  //    public ResponseBuilder setMessage(JsonArray results) {
-  //        response.put(RESULTS, results);
-  //        return this;
-  //    }
 
   /** Overloaded methods for Error messages. */
   public ResponseBuilder setMessage(String error) {
@@ -44,35 +37,10 @@ public class ResponseBuilder {
     return this;
   }
 
-  //    ResponseBuilder setMessage(JsonObject error) {
-  //        int statusCode = error.getInteger(STATUS);
-  //        String type = error.getJsonObject(ERROR.toLowerCase()).getString(TYPE_KEY);
-  //        if (statusCode == 404 && INDEX_NOT_FOUND.equalsIgnoreCase(type)) {
-  //            response.put(DETAIL, INVALID_RESOURCE_ID);
-  //        } else {
-  //            response.put(DETAIL,
-  //
-  // error.getJsonObject(ERROR.toLowerCase()).getJsonArray(ROOT_CAUSE).getJsonObject(0)
-  //                            .getString(REASON));
-  //        }
-  //        return this;
-  //    }
-
   public ResponseBuilder setCount(int count) {
     response.put(RESULTS, new JsonArray().add(new JsonObject().put(COUNT, count)));
     return this;
   }
-
-  //    public ResponseBuilder setFromParam(int from) {
-  //        response.put(FROM_KEY, from);
-  //        return this;
-  //    }
-
-  //    public ResponseBuilder setSizeParam(int size) {
-  //        response.put(SIZE_KEY, size);
-  //        return this;
-  //    }
-
   public JsonObject getResponse() {
     return response;
   }
