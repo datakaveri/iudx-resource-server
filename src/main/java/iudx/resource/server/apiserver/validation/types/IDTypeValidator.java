@@ -16,7 +16,6 @@ public final class IDTypeValidator implements Validator {
   private Integer maxLength = VALIDATION_ID_MAX_LEN;
   private static final Pattern regexIDPattern =ID_REGEX;
 
-
   private final String value;
   private final boolean required;
 

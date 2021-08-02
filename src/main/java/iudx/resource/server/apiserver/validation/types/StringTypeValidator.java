@@ -1,5 +1,6 @@
 package iudx.resource.server.apiserver.validation.types;
 
+
 import java.util.regex.Pattern;
 import static iudx.resource.server.apiserver.response.ResponseUrn.*;
 import org.apache.logging.log4j.LogManager;
