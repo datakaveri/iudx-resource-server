@@ -36,7 +36,6 @@ public class ResponseBuilder {
     response.put(DETAIL, error);
     return this;
   }
-
   public ResponseBuilder setCount(int count) {
     response.put(RESULTS, new JsonArray().add(new JsonObject().put(COUNT, count)));
     return this;
