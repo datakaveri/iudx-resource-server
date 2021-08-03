@@ -77,20 +77,17 @@ public class AuthenticationVerticle extends AbstractVerticle {
                 "GGyyM2/MGF/zYTZV9Z28hHwvZgSfnbsrF36BBKnWszlOYW0AieyAUKaKdg==\n" +
                 "-----END PUBLIC KEY-----\n" +
                 ""));
-    // jwtAuthOptions.setKeyStore(
-    // new KeyStoreOptions()
-    // .setPath(config().getString(KEYSTORE_PATH))
-    // .setPassword(config().getString(KEYSTORE_PASSWORD)));
-    //
+    
     jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
     JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
+    //@TODO: replace binder with jwt once auth server available.
     jwtAuthenticationService =
         new JwtAuthenticationServiceImpl(vertx, jwtAuth, createWebClient(vertx, config()), config());
     /* Publish the Authentication service with the Event Bus against an address. */
 
     consumer = binder.setAddress(AUTH_SERVICE_ADDRESS)
-        .register(AuthenticationService.class, jwtAuthenticationService);
+        .register(AuthenticationService.class, authentication);
   }
 
   @Override

@@ -1,5 +1,7 @@
 package iudx.resource.server.authenticator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
@@ -78,14 +80,14 @@ public class JwtAuthServiceImplTest {
     authInfo.put("token", jwt);
     authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/entities");
-    authInfo.put("method", "POST");
+    authInfo.put("method", "GET");
 
     JwtData jwtData = new JwtData();
     jwtData.setIss("auth.test.com");
     jwtData.setAud("rs.iudx.io");
     jwtData.setExp(1627408865L);
     jwtData.setIat(1627408865L);
-    jwtData.setIid("rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    jwtData.setIid("ri:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
     jwtData.setCons(new JsonObject());
 
@@ -164,6 +166,56 @@ public class JwtAuthServiceImplTest {
         testContext.completeNow();
       } else {
         testContext.failNow(handler.cause());
+      }
+    });
+  }
+
+
+
+  @Disabled("test once have a provider token")
+  @Test
+  @DisplayName("decode valid jwt")
+  public void decodeJwtProviderSuccess(VertxTestContext testContext) {
+    String jwt =
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhM2U3ZTM0Yy00NGJmLTQxZmYtYWQ4Ni0yZWUwNGE5NTQ0MTgiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2Mjc2ODk5NDAsImlhdCI6MTYyNzY0Njc0MCwiaWlkIjoicmc6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cCIsInJvbGUiOiJkZWxlZ2F0ZSIsImNvbnMiOnt9fQ.eJjCUvWuGD3L3Dn2fKj8Ydl1byGoyRS59VfL6ZJcdKR3_eIhm6SOY-CW3p5XDSYVhRTlWvlPLjfXYo9t_PxgnA";
+    jwtAuthenticationService.decodeJwt(jwt).onComplete(handler -> {
+      if (handler.succeeded()) {
+        assertEquals("provider",handler.result().getRole());
+        testContext.completeNow();
+      } else {
+        testContext.failNow(handler.cause());
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("decode valid jwt")
+  public void decodeJwtDelegateSuccess(VertxTestContext testContext) {
+    String jwt =
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhM2U3ZTM0Yy00NGJmLTQxZmYtYWQ4Ni0yZWUwNGE5NTQ0MTgiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2Mjc2ODk5NDAsImlhdCI6MTYyNzY0Njc0MCwiaWlkIjoicmc6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cCIsInJvbGUiOiJkZWxlZ2F0ZSIsImNvbnMiOnt9fQ.eJjCUvWuGD3L3Dn2fKj8Ydl1byGoyRS59VfL6ZJcdKR3_eIhm6SOY-CW3p5XDSYVhRTlWvlPLjfXYo9t_PxgnA";
+    jwtAuthenticationService.decodeJwt(jwt).onComplete(handler -> {
+      if (handler.succeeded()) {
+        assertEquals( "delegate",handler.result().getRole());
+        testContext.completeNow();
+      } else {
+        testContext.failNow(handler.cause());
+      }
+    });
+  }
+
+ 
+  @Test
+  @DisplayName("decode invalid jwt")
+  public void decodeJwtFailure(VertxTestContext testContext) {
+    String jwt =
+        "eyJ0eXAiOiJKV1QiLCJbGciOiJFUzI1NiJ9.eyJzdWIiOiJhM2U3ZTM0Yy00NGJmLTQxZmYtYWQ4Ni0yZWUwNGE5NTQ0MTgiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2Mjc2ODk5NDAsImlhdCI6MTYyNzY0Njc0MCwiaWlkIjoicmc6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cCIsInJvbGUiOiJkZWxlZ2F0ZSIsImNvbnMiOnt9fQ.eJjCUvWuGD3L3Dn2fKj8Ydl1byGoyRS59VfL6ZJcdKR3_eIhm6SOY-CW3p5XDSYVhRTlWvlPLjfXYo9t_PxgnA";
+    jwtAuthenticationService.decodeJwt(jwt).onComplete(handler -> {
+      if (handler.succeeded()) {
+        // assertEquals(handler.result().getRole(), "delegate");;
+        testContext.failNow(handler.cause());
+      } else {
+        testContext.completeNow();
+
       }
     });
   }
