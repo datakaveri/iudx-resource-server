@@ -24,8 +24,6 @@ public class LatestServiceTest {
   private static LatestDataService latestService;
   private static Vertx vertxObj;
   private static RedisClient client;
-  private static String redisHost, user, password;
-  private static int port;
   private static Configuration config;
   private static JsonObject attributeList;
   // private static String connectionString;
@@ -37,22 +35,8 @@ public class LatestServiceTest {
     vertxObj = vertx;
     config = new Configuration();
     JsonObject redisConfig = config.configLoader(5, vertx);
-
-    /* Read the configuration and set the rabbitMQ server properties. */
-    /* Configuration setup */
-    redisHost = redisConfig.getString("redisHost");
-    port = redisConfig.getInteger("redisPort");
-    user = redisConfig.getString("redisUser");
-    password = redisConfig.getString("redisPassword");
     attributeList = redisConfig.getJsonObject("attributeList");
-    // connectionString =
-    // "redis://:".concat(user).concat(":").concat(password).concat("@").concat(redisHost)
-    // .concat(":").concat(String.valueOf(port));
-    // connectionString = "redis://:@https://database.iudx.io:28734/1";
-
-    // logger.debug("Redis ConnectionString: " + connectionString);
-    logger.debug("Host: " + redisHost + "Port: " + port);
-    client = new RedisClient(io.vertx.core.Vertx.vertx(), redisHost, port);
+    client = new RedisClient(io.vertx.core.Vertx.vertx(), redisConfig);
     latestService = new LatestDataServiceImpl(client, attributeList);
     testContext.completeNow();
   }
