@@ -22,15 +22,9 @@ public class LatestVerticle extends AbstractVerticle {
      */
     private LatestDataService latestData;
     private RedisClient redisClient;
-    private String redisHost;
-    private String redisUser;
-    private String password;
     private JsonObject attributeList;
-    private int port;
     private ServiceBinder binder;
     private MessageConsumer<JsonObject> consumer;
-    private String connectionString;
-
 
     /**
          * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
@@ -43,23 +37,9 @@ public class LatestVerticle extends AbstractVerticle {
         @Override
         public void start() throws Exception {
 
-            /** config to read the Redis credentials
-             * IP
-             * redisUser
-             * password
-             * port
-             * */
-            redisHost = config().getString("redisHost");
-            port = config().getInteger("redisPort");
-            redisUser = config().getString("redisUser");
-            password = config().getString("redisPassword");
+
             attributeList = config().getJsonObject("attributeList");
-            //connectionString = "redis://:".concat(redisUser).concat(":").concat(password).concat("@").concat(redisHost)
-              //      .concat(":").concat(String.valueOf(port));
-            // connectionString = "redis://:@https://database.iudx.io:28734/1";
-            // System.out.println("RedisConnectionString: " + connectionString);
-            // redisClient = new RedisClient(vertx, connectionString);
-            redisClient = new RedisClient(vertx, redisHost, port);
+            redisClient = new RedisClient(vertx, config());
             binder = new ServiceBinder(vertx);
             latestData = new LatestDataServiceImpl(redisClient, attributeList);
 

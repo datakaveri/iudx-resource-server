@@ -1,8 +1,5 @@
 {
     "version": "1.0",
-    "zookeepers": [ "zookeeper" ],
-    "clusterId": "iudx-rs-cluster",
-    "host": "server",
     "modules": [
         {
             "id": "iudx.resource.server.database.archives.DatabaseVerticle",
@@ -12,12 +9,7 @@
             "dbUser": "",
             "dbPassword": "",
             "resourceServerId":"",
-            "timeLimit": "",
-            "redisHost": "",
-            "redisPort": 1234,
-            "redisUser": "",
-            "redisPassword": "",
-            "attributeList": ""
+            "timeLimit": ""
         },
         {
             "id": "iudx.resource.server.authenticator.AuthenticationVerticle",
@@ -91,11 +83,18 @@
         },
         {
             "id": "iudx.resource.server.database.latest.LatestVerticle",
-            "redisHost": "",
-            "redisPort": 1234,
-            "redisUser": "",
+            "verticleInstances": 2,
+            "attributeList": {"itms-info": "some-attr"},
+            "redisMode": "STANDALONE",
+            "redisUsername": "",
             "redisPassword": "",
-            "attributeList": {"itms-info": "some-attr"}
+            "redisMaxPoolSize": 30,
+            "redisMaxPoolWaiting": 200,
+            "redisMaxWaitingHandlers": 1024,
+            "redisPoolRecycleTimeout": 1500,
+            "redisHost":"",
+            "redisPort": 1234
+
         }
     ]
 }

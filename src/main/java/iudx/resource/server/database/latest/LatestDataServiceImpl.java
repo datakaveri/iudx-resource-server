@@ -14,7 +14,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.database.archives.DatabaseServiceImpl;
 import iudx.resource.server.database.archives.QueryDecoder;
 import iudx.resource.server.database.archives.ResponseBuilder;
 
@@ -35,7 +34,7 @@ public class LatestDataServiceImpl implements LatestDataService{
     RedisClient redisClient;
     private ResponseBuilder responseBuilder;
     JsonObject attributeList;
-    private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceImpl.class);
+    private static final Logger LOGGER = LogManager.getLogger(LatestDataServiceImpl.class);
     // private RedisAPI redisAPI;
     private QueryDecoder decoder = new QueryDecoder();
     private JsonObject query;
