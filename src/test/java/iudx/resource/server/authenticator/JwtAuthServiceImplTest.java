@@ -30,8 +30,15 @@ public class JwtAuthServiceImplTest {
   private static JwtAuthenticationServiceImpl jwtAuthenticationService;
   private static Configuration config;
 
-  private static String jwt =
-      "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIzNDliNGI1NS0wMjUxLTQ5MGUtYmVlOS0wMGYzYTVkM2U2NDMiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2Mjc0MDg4NjUsImlhdCI6MTYyNzM2NTY2NSwiaWlkIjoicmc6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cCIsInJvbGUiOiJjb25zdW1lciIsImNvbnMiOnsiYWNjZXNzIjpbImFwaSIsInN1YnMiLCJpbmdlc3QiLCJmaWxlIl19fQ.C27Rtn5cFQRwGmphs5lmmZVHSNgOVqcG7YvV7vQ-BnxgDydVHPnT9D7iXf0bceXZqcUijtbEvt7QDNeIYMyeyw";
+  private static String delegateJwt =
+      "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhMTNlYjk1NS1jNjkxLTRmZDMtYjIwMC1mMThiYzc4ODEwYjUiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2MjgxODIzMjcsImlhdCI6MTYyODEzOTEyNywiaWlkIjoicmk6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cC9yZXNvdXJjZSIsInJvbGUiOiJkZWxlZ2F0ZSIsImNvbnMiOnsiYWNjZXNzIjpbImFwaSIsInN1YnMiLCJpbmdlc3QiLCJmaWxlIl19fQ.tUoO1L-tXByxNtjY_iK41neeshCiYrNr505wWn1hC1ACwoeL9frebABeFiCqJQGrsBsGOZ1-OACZdHBNcetwyw";
+  private static String consumerJwt =
+      "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIzMmE0Yjk3OS00ZjRhLTRjNDQtYjBjMy0yZmUxMDk5NTJiNWYiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2MjgxODUzNTksImlhdCI6MTYyODE0MjE1OSwiaWlkIjoicmc6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cCIsInJvbGUiOiJjb25zdW1lciIsImNvbnMiOnsiYWNjZXNzIjpbImFwaSIsInN1YnMiLCJpbmdlc3QiLCJmaWxlIl19fQ.NoEiJB_5zwTU-zKbFHTefMuqDJ7L6mA11mfckzA4IZOSrdweSmR6my0zGcf7hEVljX9OOFm4tToZQYfCtPg4Uw";
+  private static String providerJwt =
+      "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhMTNlYjk1NS1jNjkxLTRmZDMtYjIwMC1mMThiYzc4ODEwYjUiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2MjgxODU4MjEsImlhdCI6MTYyODE0MjYyMSwiaWlkIjoicmc6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cCIsInJvbGUiOiJwcm92aWRlciIsImNvbnMiOnsiYWNjZXNzIjpbImFwaSIsInN1YnMiLCJpbmdlc3QiLCJmaWxlIl19fQ.BSoCQPUT8_YA-6p7-_OEUBOfbbvQZs8VKwDzdnubT3gutVueRe42a9d9mhszhijMQK7Qa0ww_rmAaPhA_2jP6w";
+
+  private static String closedResourceToken =
+      "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhMTNlYjk1NS1jNjkxLTRmZDMtYjIwMC1mMThiYzc4ODEwYjUiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoicnMuaXVkeC5pbyIsImV4cCI6MTYyODYxMjg5MCwiaWF0IjoxNjI4NTY5NjkwLCJpaWQiOiJyZzppaXNjLmFjLmluLzg5YTM2MjczZDc3ZGFjNGNmMzgxMTRmY2ExYmJlNjQzOTI1NDdmODYvcnMuaXVkeC5pby9zdXJhdC1pdG1zLXJlYWx0aW1lLWluZm9ybWF0aW9uL3N1cmF0LWl0bXMtbGl2ZS1ldGEiLCJyb2xlIjoiY29uc3VtZXIiLCJjb25zIjp7ImFjY2VzcyI6WyJhcGkiLCJzdWJzIiwiaW5nZXN0IiwiZmlsZSJdfX0.OBJZUc15s8gDA6PB5IK3KkUGmjvJQWr7RvByhMXmmrCULmPGgtesFmNDVG2gqD4WXZob5OsjxZ1vxRmgMBgLxw";
 
   @BeforeAll
   @DisplayName("Initialize Vertx and deploy Auth Verticle")
@@ -77,7 +84,7 @@ public class JwtAuthServiceImplTest {
   public void allow4OpenEndpoint(VertxTestContext testContext) {
     JsonObject authInfo = new JsonObject();
 
-    authInfo.put("token", jwt);
+    authInfo.put("token", delegateJwt);
     authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/entities");
     authInfo.put("method", "GET");
@@ -101,6 +108,28 @@ public class JwtAuthServiceImplTest {
       }
     });
   }
+  
+  @Test
+  @DisplayName("success - allow access to closed endpoint")
+  public void allow4ClosedEndpoint(VertxTestContext testContext) {
+    JsonObject authInfo = new JsonObject();
+
+    authInfo.put("token", closedResourceToken);
+    authInfo.put("id", "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta");
+    authInfo.put("apiEndpoint", "/ngsi-ld/v1/entities");
+    authInfo.put("method", "GET");
+
+    JsonObject request = new JsonObject();
+    
+
+    jwtAuthenticationService.tokenInterospect(request, authInfo, handler -> {
+      if (handler.succeeded()) {
+        testContext.completeNow();
+      } else {
+        testContext.failNow("invalid access");
+      }
+    });
+  }
 
 
   @Disabled
@@ -111,7 +140,7 @@ public class JwtAuthServiceImplTest {
     JsonObject request = new JsonObject();
     JsonObject authInfo = new JsonObject();
 
-    authInfo.put("token", jwt);
+    authInfo.put("token", delegateJwt);
     authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/entities");
     authInfo.put("method", "POST");
@@ -134,7 +163,7 @@ public class JwtAuthServiceImplTest {
     JsonObject request = new JsonObject();
     JsonObject authInfo = new JsonObject();
 
-    authInfo.put("token", jwt);
+    authInfo.put("token", delegateJwt);
     authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/subscription");
     authInfo.put("method", "POST");
@@ -150,13 +179,13 @@ public class JwtAuthServiceImplTest {
 
   @Disabled
   @Test
-  @DisplayName("success - allow consumer access to /entities endpoint")
-  public void allow4ConsumerTokenIngestAPI(VertxTestContext testContext) {
+  @DisplayName("success - allow consumer access to /ingestion endpoint")
+  public void allow4DelegateTokenIngestAPI(VertxTestContext testContext) {
 
     JsonObject request = new JsonObject();
     JsonObject authInfo = new JsonObject();
 
-    authInfo.put("token", jwt);
+    authInfo.put("token", delegateJwt);
     authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/ingestion");
     authInfo.put("method", "POST");
@@ -172,15 +201,12 @@ public class JwtAuthServiceImplTest {
 
 
 
-  @Disabled("test once have a provider token")
   @Test
   @DisplayName("decode valid jwt")
   public void decodeJwtProviderSuccess(VertxTestContext testContext) {
-    String jwt =
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhM2U3ZTM0Yy00NGJmLTQxZmYtYWQ4Ni0yZWUwNGE5NTQ0MTgiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2Mjc2ODk5NDAsImlhdCI6MTYyNzY0Njc0MCwiaWlkIjoicmc6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cCIsInJvbGUiOiJkZWxlZ2F0ZSIsImNvbnMiOnt9fQ.eJjCUvWuGD3L3Dn2fKj8Ydl1byGoyRS59VfL6ZJcdKR3_eIhm6SOY-CW3p5XDSYVhRTlWvlPLjfXYo9t_PxgnA";
-    jwtAuthenticationService.decodeJwt(jwt).onComplete(handler -> {
+    jwtAuthenticationService.decodeJwt(providerJwt).onComplete(handler -> {
       if (handler.succeeded()) {
-        assertEquals("provider",handler.result().getRole());
+        assertEquals("provider", handler.result().getRole());
         testContext.completeNow();
       } else {
         testContext.failNow(handler.cause());
@@ -189,13 +215,11 @@ public class JwtAuthServiceImplTest {
   }
 
   @Test
-  @DisplayName("decode valid jwt")
+  @DisplayName("decode valid jwt - delegate")
   public void decodeJwtDelegateSuccess(VertxTestContext testContext) {
-    String jwt =
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJhM2U3ZTM0Yy00NGJmLTQxZmYtYWQ4Ni0yZWUwNGE5NTQ0MTgiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2Mjc2ODk5NDAsImlhdCI6MTYyNzY0Njc0MCwiaWlkIjoicmc6ZXhhbXBsZS5jb20vNzllN2JmYTYyZmFkNmM3NjViYWM2OTE1NGMyZjI0Yzk0Yzk1MjIwYS9yZXNvdXJjZS1ncm91cCIsInJvbGUiOiJkZWxlZ2F0ZSIsImNvbnMiOnt9fQ.eJjCUvWuGD3L3Dn2fKj8Ydl1byGoyRS59VfL6ZJcdKR3_eIhm6SOY-CW3p5XDSYVhRTlWvlPLjfXYo9t_PxgnA";
-    jwtAuthenticationService.decodeJwt(jwt).onComplete(handler -> {
+    jwtAuthenticationService.decodeJwt(delegateJwt).onComplete(handler -> {
       if (handler.succeeded()) {
-        assertEquals( "delegate",handler.result().getRole());
+        assertEquals("delegate", handler.result().getRole());
         testContext.completeNow();
       } else {
         testContext.failNow(handler.cause());
@@ -203,7 +227,19 @@ public class JwtAuthServiceImplTest {
     });
   }
 
- 
+  @Test
+  @DisplayName("decode valid jwt - consumer")
+  public void decodeJwtConsumerSuccess(VertxTestContext testContext) {
+    jwtAuthenticationService.decodeJwt(consumerJwt).onComplete(handler -> {
+      if (handler.succeeded()) {
+        assertEquals("consumer", handler.result().getRole());
+        testContext.completeNow();
+      } else {
+        testContext.failNow(handler.cause());
+      }
+    });
+  }
+
   @Test
   @DisplayName("decode invalid jwt")
   public void decodeJwtFailure(VertxTestContext testContext) {
@@ -226,7 +262,7 @@ public class JwtAuthServiceImplTest {
 
     JsonObject authInfo = new JsonObject();
 
-    authInfo.put("token", jwt);
+    authInfo.put("token", consumerJwt);
     authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/entities");
     authInfo.put("method", "GET");
@@ -256,7 +292,7 @@ public class JwtAuthServiceImplTest {
 
     JsonObject authInfo = new JsonObject();
 
-    authInfo.put("token", jwt);
+    authInfo.put("token", consumerJwt);
     authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/entities");
     authInfo.put("method", "POST");
@@ -286,7 +322,7 @@ public class JwtAuthServiceImplTest {
 
     JsonObject authInfo = new JsonObject();
 
-    authInfo.put("token", jwt);
+    authInfo.put("token", consumerJwt);
     authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/subscription");
     authInfo.put("method", "POST");
@@ -316,7 +352,7 @@ public class JwtAuthServiceImplTest {
 
     JsonObject authInfo = new JsonObject();
 
-    authInfo.put("token", jwt);
+    authInfo.put("token", consumerJwt);
     authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/subscription");
     authInfo.put("method", "POST");
@@ -346,7 +382,7 @@ public class JwtAuthServiceImplTest {
 
     JsonObject authInfo = new JsonObject();
 
-    authInfo.put("token", jwt);
+    authInfo.put("token", consumerJwt);
     authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/ingestion");
     authInfo.put("method", "POST");
@@ -378,7 +414,7 @@ public class JwtAuthServiceImplTest {
 
     JsonObject authInfo = new JsonObject();
 
-    authInfo.put("token", jwt);
+    authInfo.put("token", providerJwt);
     authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/entities");
     authInfo.put("method", "GET");
@@ -409,7 +445,7 @@ public class JwtAuthServiceImplTest {
 
     JsonObject authInfo = new JsonObject();
 
-    authInfo.put("token", jwt);
+    authInfo.put("token", providerJwt);
     authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/ingestion");
     authInfo.put("method", "POST");
@@ -442,7 +478,7 @@ public class JwtAuthServiceImplTest {
 
     JsonObject authInfo = new JsonObject();
 
-    authInfo.put("token", jwt);
+    authInfo.put("token", providerJwt);
     authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/ingestion");
     authInfo.put("method", "GET");
@@ -513,5 +549,26 @@ public class JwtAuthServiceImplTest {
             testContext.completeNow();
           }
         });
+  }
+
+  @Test
+  @DisplayName("failure - invalid audience")
+  public void invalidAudienceCheck(VertxTestContext testContext) {
+    JwtData jwtData = new JwtData();
+    jwtData.setIss("auth.test.com");
+    jwtData.setAud("abc.iudx.io1");
+    jwtData.setExp(1627408865L);
+    jwtData.setIat(1627408865L);
+    jwtData.setIid("rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    jwtData.setRole("provider");
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("ingest")));
+    jwtAuthenticationService.isValidAudienceValue(jwtData).onComplete(handler -> {
+      if (handler.failed()) {
+        testContext.completeNow();
+      } else {
+        testContext.failNow("fail");
+
+      }
+    });
   }
 }
