@@ -18,7 +18,7 @@ public enum IudxAccess {
     return this.access;
   }
 
-  public static IudxAccess fromRole(final String access) {
+  public static IudxAccess fromAccess(final String access) {
     return Stream.of(values())
         .filter(v -> v.access.equalsIgnoreCase(access))
         .findAny()
