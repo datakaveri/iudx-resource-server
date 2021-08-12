@@ -34,7 +34,7 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     apiAccessList.add(new AuthorizationRequest(GET, TEMPORAL));
     apiAccessList.add(new AuthorizationRequest(POST, ENTITY_OPERATION));
     apiAccessList.add(new AuthorizationRequest(POST, ENTITY_OPERATION_TEMPORAL));
-    consumerAuthorizationRules.put("api", apiAccessList);
+    consumerAuthorizationRules.put(IudxAccess.API.getAccess(), apiAccessList);
 
     // subscriptions access list/rules
     List<AuthorizationRequest> subsAccessList = new ArrayList<>();
@@ -42,7 +42,7 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     subsAccessList.add(new AuthorizationRequest(POST, SUBSCRIPTION));
     subsAccessList.add(new AuthorizationRequest(DELETE, SUBSCRIPTION));
     subsAccessList.add(new AuthorizationRequest(PUT, SUBSCRIPTION));
-    consumerAuthorizationRules.put("subs", subsAccessList);
+    consumerAuthorizationRules.put(IudxAccess.SUBSCRIPTION.getAccess(), subsAccessList);
   }
 
 
@@ -58,11 +58,11 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     LOGGER.info("authorization request for : " + endpoint + " with method : " + method.name());
     LOGGER.info("allowed access : " + access);
 
-    if (!result && access.contains("api")) {
-      result = consumerAuthorizationRules.get("api").contains(authRequest);
+    if (!result && access.contains(IudxAccess.API.getAccess())) {
+      result = consumerAuthorizationRules.get(IudxAccess.API.getAccess()).contains(authRequest);
     }
-    if (!result && access.contains("subs")) {
-      result = consumerAuthorizationRules.get("subs").contains(authRequest);
+    if (!result && access.contains(IudxAccess.SUBSCRIPTION.getAccess())) {
+      result = consumerAuthorizationRules.get(IudxAccess.SUBSCRIPTION.getAccess()).contains(authRequest);
     }
 
     return result;

@@ -30,7 +30,7 @@ public class DelegateAuthStrategy implements AuthorizationStrategy {
     ingestAccessList.add(new AuthorizationRequest(POST, INGESTION));
     ingestAccessList.add(new AuthorizationRequest(DELETE, INGESTION));
     ingestAccessList.add(new AuthorizationRequest(PUT, INGESTION));
-    delegateAuthorizationRules.put("ingest", ingestAccessList);
+    delegateAuthorizationRules.put(IudxAccess.INGESTION.getAccess(), ingestAccessList);
   }
 
   @Override
@@ -45,10 +45,10 @@ public class DelegateAuthStrategy implements AuthorizationStrategy {
     LOGGER.info("authorization request for : " + endpoint + " with method : " + method.name());
     LOGGER.info("allowed access : " + access);
 
-    if (access.contains("ingest")) {
-      result = delegateAuthorizationRules.get("ingest").contains(authRequest);
+    if (access.contains(IudxAccess.INGESTION.getAccess())) {
+      result = delegateAuthorizationRules.get(IudxAccess.INGESTION.getAccess()).contains(authRequest);
     }
-    
+
     return result;
   }
 }

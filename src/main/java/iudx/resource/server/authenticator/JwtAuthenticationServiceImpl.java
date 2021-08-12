@@ -47,13 +47,13 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   final String audience;
 
   // resourceGroupCache will contains ACL info about all resource group in a resource server
-  private final Cache<String, String> resourceGroupCache = CacheBuilder
+  Cache<String, String> resourceGroupCache = CacheBuilder
       .newBuilder()
       .maximumSize(1000)
       .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
       .build();
   // resourceIdCache will contains info about resources available(& their ACL) in resource server.
-  private final Cache<String, String> resourceIdCache = CacheBuilder
+  Cache<String, String> resourceIdCache = CacheBuilder
       .newBuilder()
       .maximumSize(1000)
       .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
@@ -189,6 +189,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     JwtAuthorization jwtAuthStrategy = new JwtAuthorization(authStrategy);
     LOGGER.info("endPoint : " + authInfo.getString("apiEndpoint"));
     if (jwtAuthStrategy.isAuthorized(authRequest, jwtData)) {
+      LOGGER.info("User access is allowed.");
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put(JSON_CONSUMER, jwtData.getSub());
       promise.complete(jsonResponse);

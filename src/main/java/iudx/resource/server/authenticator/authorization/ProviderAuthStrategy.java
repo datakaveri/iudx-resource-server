@@ -28,7 +28,7 @@ public class ProviderAuthStrategy implements AuthorizationStrategy {
     // api access list/rules
     List<AuthorizationRequest> apiAccessList = new ArrayList<>();
     apiAccessList.add(new AuthorizationRequest(POST, ENTITIES));
-    providerAuthorizationRules.put("api", apiAccessList);
+    providerAuthorizationRules.put(IudxAccess.API.getAccess(), apiAccessList);
 
     // ingestion access list/rules
     List<AuthorizationRequest> ingestAccessList = new ArrayList<>();
@@ -36,7 +36,7 @@ public class ProviderAuthStrategy implements AuthorizationStrategy {
     ingestAccessList.add(new AuthorizationRequest(POST, INGESTION));
     ingestAccessList.add(new AuthorizationRequest(DELETE, INGESTION));
     ingestAccessList.add(new AuthorizationRequest(PUT, INGESTION));
-    providerAuthorizationRules.put("ingest", ingestAccessList);
+    providerAuthorizationRules.put(IudxAccess.INGESTION.getAccess(), ingestAccessList);
   }
 
   @Override
@@ -51,11 +51,11 @@ public class ProviderAuthStrategy implements AuthorizationStrategy {
     LOGGER.info("authorization request for : " + endpoint + " with method : " + method.name());
     LOGGER.info("allowed access : " + access);
 
-    if (!result && access.contains("api")) {
-      result = providerAuthorizationRules.get("api").contains(authRequest);
+    if (!result && access.contains(IudxAccess.API.getAccess())) {
+      result = providerAuthorizationRules.get(IudxAccess.API.getAccess()).contains(authRequest);
     }
-    if (!result && access.contains("ingest")) {  
-      result = providerAuthorizationRules.get("ingest").contains(authRequest);
+    if (!result && access.contains(IudxAccess.INGESTION.getAccess())) {
+      result = providerAuthorizationRules.get(IudxAccess.INGESTION.getAccess()).contains(authRequest);
     }
 
     return result;

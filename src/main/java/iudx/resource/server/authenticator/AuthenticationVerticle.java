@@ -78,7 +78,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
                 "-----END PUBLIC KEY-----\n" +
                 ""));
     
-    jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
+   // jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
     JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
     //@TODO: replace binder with jwt once auth server available.
