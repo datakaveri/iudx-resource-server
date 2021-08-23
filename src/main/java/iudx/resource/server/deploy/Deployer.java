@@ -1,47 +1,46 @@
 package iudx.resource.server.deploy;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
-import java.util.EnumSet;
-
-import io.vertx.core.eventbus.EventBusOptions;
-import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
-import com.hazelcast.config.Config;
-import com.hazelcast.config.DiscoveryStrategyConfig;
-import com.hazelcast.zookeeper.*;
-
-import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.cli.CLI;
-import io.vertx.core.cli.Option;
-import io.vertx.core.cli.CommandLine;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.DeploymentOptions;
-
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
-import java.nio.file.Files;
 
-import io.vertx.core.metrics.MetricsOptions;
-import io.vertx.micrometer.VertxPrometheusOptions;
-import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.Label;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+
+import com.hazelcast.config.Config;
+import com.hazelcast.config.DiscoveryStrategyConfig;
+import com.hazelcast.zookeeper.ZookeeperDiscoveryProperties;
+import com.hazelcast.zookeeper.ZookeeperDiscoveryStrategyFactory;
+
 import io.micrometer.core.instrument.MeterRegistry;
-import io.vertx.micrometer.backends.BackendRegistries;
 // JVM metrics imports
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
+import io.vertx.core.cli.CLI;
+import io.vertx.core.cli.CommandLine;
+import io.vertx.core.cli.Option;
+import io.vertx.core.eventbus.EventBusOptions;
+import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.metrics.MetricsOptions;
+import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.micrometer.Label;
+import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.VertxPrometheusOptions;
+import io.vertx.micrometer.backends.BackendRegistries;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 public class Deployer {
   private static final Logger LOGGER = LogManager.getLogger(Deployer.class);
@@ -54,6 +53,7 @@ public class Deployer {
       return;
     }
     JsonObject config = configs.getJsonArray("modules").getJsonObject(i);
+    config.put("host", configs.getString("host"));
     String moduleName = config.getString("id");
     int numInstances = config.getInteger("verticleInstances");
     vertx.deployVerticle(moduleName,
