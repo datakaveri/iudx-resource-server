@@ -14,7 +14,6 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.vertx.core.json.JsonArray;
 import iudx.resource.server.authenticator.model.JwtData;
 
 public class DelegateAuthStrategy implements AuthorizationStrategy {
@@ -35,20 +34,6 @@ public class DelegateAuthStrategy implements AuthorizationStrategy {
 
   @Override
   public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData) {
-    JsonArray access = jwtData.getCons() != null ? jwtData.getCons().getJsonArray("access") : null;
-    boolean result = false;
-    if (access == null) {
-      return result;
-    }
-    String endpoint = authRequest.getApi().getApiEndpoint();
-    Method method = authRequest.getMethod();
-    LOGGER.info("authorization request for : " + endpoint + " with method : " + method.name());
-    LOGGER.info("allowed access : " + access);
-
-    if (access.contains(IudxAccess.INGESTION.getAccess())) {
-      result = delegateAuthorizationRules.get(IudxAccess.INGESTION.getAccess()).contains(authRequest);
-    }
-
-    return result;
+    return true;
   }
 }
