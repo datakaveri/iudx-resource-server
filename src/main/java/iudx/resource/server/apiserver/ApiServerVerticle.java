@@ -1,12 +1,69 @@
 package iudx.resource.server.apiserver;
 
 
-import static iudx.resource.server.apiserver.response.ResponseUrn.*;
-import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.response.ResponseUrn.BACKING_SERVICE_FORMAT;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_PARAM;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_TEMPORAL_PARAM;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_TOKEN;
+import static iudx.resource.server.apiserver.response.ResponseUrn.MISSING_TOKEN;
+import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
+import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
+import static iudx.resource.server.apiserver.util.Constants.APP_NAME_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.DOMAIN;
+import static iudx.resource.server.apiserver.util.Constants.EXCHANGE_ID;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_ACCEPT;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_ALLOW_ORIGIN;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_LENGTH;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_HOST;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_ORIGIN;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_REFERER;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
+import static iudx.resource.server.apiserver.util.Constants.ID;
+import static iudx.resource.server.apiserver.util.Constants.IUDXQUERY_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_ADAPTER_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_BIND_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_EXCHANGE_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_QUEUE_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_UNBIND_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_VHOST_URL;
+import static iudx.resource.server.apiserver.util.Constants.JSON_ALIAS;
+import static iudx.resource.server.apiserver.util.Constants.JSON_CONSUMER;
+import static iudx.resource.server.apiserver.util.Constants.JSON_COUNT;
+import static iudx.resource.server.apiserver.util.Constants.JSON_EXCHANGE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.JSON_ID;
+import static iudx.resource.server.apiserver.util.Constants.JSON_INSTANCEID;
+import static iudx.resource.server.apiserver.util.Constants.JSON_NAME;
+import static iudx.resource.server.apiserver.util.Constants.JSON_PROVIDER;
+import static iudx.resource.server.apiserver.util.Constants.JSON_QUEUE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.JSON_SEARCH_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_VHOST;
+import static iudx.resource.server.apiserver.util.Constants.JSON_VHOST_ID;
+import static iudx.resource.server.apiserver.util.Constants.MIME_APPLICATION_JSON;
+import static iudx.resource.server.apiserver.util.Constants.MIME_TEXT_HTML;
+import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_EXCHANGE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_NAME;
+import static iudx.resource.server.apiserver.util.Constants.MSG_SUB_TYPE_NOT_FOUND;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_ENTITIES_URL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_ENTITIES_QUERY_PATH;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_TEMPORAL_QUERY_PATH;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_SUBSCRIPTION_URL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
+import static iudx.resource.server.apiserver.util.Constants.ROUTE_DOC;
+import static iudx.resource.server.apiserver.util.Constants.ROUTE_STATIC_SPEC;
+import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
+import static iudx.resource.server.apiserver.util.Constants.SUB_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.USERSHA;
+import static iudx.resource.server.apiserver.util.HttpStatusCode.BAD_REQUEST;
+import static iudx.resource.server.apiserver.util.HttpStatusCode.UNAUTHORIZED;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
-import static iudx.resource.server.apiserver.util.HttpStatusCode.*;
 
-import iudx.resource.server.metering.MeteringService;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +115,7 @@ import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.archives.DatabaseService;
 import iudx.resource.server.database.latest.LatestDataService;
 import iudx.resource.server.databroker.DataBrokerService;
+import iudx.resource.server.metering.MeteringService;
 
 
 /**
@@ -186,7 +244,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     ValidationHandler entityValidationHandler = new ValidationHandler(vertx, RequestType.ENTITY);
     router.get(NGSILD_ENTITIES_URL)
         .handler(entityValidationHandler)
-        .handler(AuthHandler.create(vertx)).handler(this::handleEntitiesQuery)
+        .handler(AuthHandler.create(vertx))
+        .handler(this::handleEntitiesQuery)
         .failureHandler(validationsFailureHandler);
 
     ValidationHandler latestValidationHandler = new ValidationHandler(vertx, RequestType.LATEST);
@@ -194,7 +253,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         .get(NGSILD_ENTITIES_URL + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
         .handler(latestValidationHandler)
         .handler(AuthHandler.create(vertx))
-        .handler(this::handleLatestEntitiesQuery).failureHandler(validationsFailureHandler);
+        .handler(this::handleLatestEntitiesQuery)
+        .failureHandler(validationsFailureHandler);
 
     ValidationHandler postTemporalValidationHandler =
         new ValidationHandler(vertx, RequestType.POST_TEMPORAL);
@@ -273,7 +333,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
         .handler(AuthHandler.create(vertx)).handler(this::getAdapterDetails);
     router
-        .get(IUDX_MANAGEMENT_ADAPTER_URL+ "/:domain/:userSha/:resourceServer/:resourceGroup")
+        .get(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSha/:resourceServer/:resourceGroup")
         .handler(AuthHandler.create(vertx)).handler(this::getAdapterDetails);
 
     router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat").handler(AuthHandler.create(vertx))
@@ -390,7 +450,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     filtersFuture.onComplete(filtersHandler -> {
       if (filtersHandler.succeeded()) {
         json.put("applicableFilters", filtersHandler.result());
-        executeLatestSearchQuery(json, response);
+        executeLatestSearchQuery(routingContext,json, response);
       } else {
         LOGGER.error("catalogue item/group doesn't have filters.");
         handleResponse(response, BAD_REQUEST, INVALID_PARAM, filtersHandler.cause().getMessage());
@@ -544,10 +604,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     });
   }
 
-  private void executeLatestSearchQuery(JsonObject json, HttpServerResponse response) {
+  private void executeLatestSearchQuery(RoutingContext context,JsonObject json, HttpServerResponse response) {
     latestDataService.getLatestData(json, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("Latest data search succeeded");
+        Future.future(fu->updateAuditTable(context));
         handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
       } else {
         LOGGER.error("Fail: Search Fail");
@@ -1234,7 +1295,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               });
             } else {
               LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-              handleResponse(response, BAD_REQUEST,INVALID_PARAM,MSG_INVALID_EXCHANGE_NAME);
+              handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_INVALID_EXCHANGE_NAME);
             }
           });
         } else if (authHandler.failed()) {
@@ -1595,7 +1656,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   private void handleResponse(HttpServerResponse response, HttpStatusCode statusCode,
-                              ResponseUrn urn, String message) {
+      ResponseUrn urn, String message) {
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
         .setStatusCode(statusCode.getValue())
         .end(generateResponse(statusCode, urn, message).toString());
@@ -1649,7 +1710,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @return Optional Optional of Map
    */
   private Optional<MultiMap> getQueryParams(RoutingContext routingContext,
-                                            HttpServerResponse response) {
+      HttpServerResponse response) {
     MultiMap queryParams = null;
     try {
       queryParams = MultiMap.caseInsensitiveMultiMap();
@@ -1681,5 +1742,26 @@ public class ApiServerVerticle extends AbstractVerticle {
         || ngsildquery.getTemporalRelation().getTime() != null
         || ngsildquery.getTemporalRelation().getEndTime() != null;
 
+  }
+  
+  private Future<Void> updateAuditTable(RoutingContext context){
+    Promise<Void> promise = Promise.promise();
+    JsonObject authInfo = (JsonObject) context.data().get("authInfo");
+    
+    JsonObject request = new JsonObject();
+    request.put("emailId", authInfo.getValue("userId"));
+    request.put(ID, authInfo.getValue(ID));
+    request.put("api", authInfo.getValue(API_ENDPOINT));
+    meteringService.executeWriteQuery(request, handler -> {
+      if(handler.succeeded()) {
+        LOGGER.info("audit table updated");
+        promise.complete();
+      }else {
+        LOGGER.error("failed to update audit table");
+        promise.complete();
+      }
+    });
+    
+    return promise.future();
   }
 }
