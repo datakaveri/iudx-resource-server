@@ -420,7 +420,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.debug("Info:handleLatestEntitiesQuery method started.;");
     /* Handles HTTP request from client */
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-    LOGGER.debug("authInfo : " + authInfo);
     HttpServerRequest request = routingContext.request();
     /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
@@ -467,7 +466,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.debug("Info:handleEntitiesQuery method started.;");
     /* Handles HTTP request from client */
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-    LOGGER.debug("authInfo : " + authInfo);
     HttpServerRequest request = routingContext.request();
     /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
@@ -503,9 +501,9 @@ public class ApiServerVerticle extends AbstractVerticle {
             json.put("applicableFilters", filtersHandler.result());
             if (json.containsKey(IUDXQUERY_OPTIONS)
                 && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
-              executeCountQuery(json, response);
+              executeCountQuery(routingContext,json, response);
             } else {
-              executeSearchQuery(json, response);
+              executeSearchQuery(routingContext,json, response);
             }
           } else {
             LOGGER.error("catalogue item/group doesn't have filters.");
@@ -551,9 +549,9 @@ public class ApiServerVerticle extends AbstractVerticle {
             json.put("applicableFilters", filtersHandler.result());
             if (json.containsKey(IUDXQUERY_OPTIONS)
                 && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
-              executeCountQuery(json, response);
+              executeCountQuery(routingContext,json, response);
             } else {
-              executeSearchQuery(json, response);
+              executeSearchQuery(routingContext,json, response);
             }
           } else {
             LOGGER.error("catalogue item/group doesn't have filters.");
@@ -572,10 +570,11 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param json valid json query
    * @param response
    */
-  private void executeCountQuery(JsonObject json, HttpServerResponse response) {
+  private void executeCountQuery(RoutingContext context,JsonObject json, HttpServerResponse response) {
     database.countQuery(json, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("Success: Count Success");
+        Future.future(fu->updateAuditTable(context));
         handleSuccessResponse(response, ResponseType.Ok.getCode(),
             handler.result().toString());
       } else if (handler.failed()) {
@@ -591,10 +590,11 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param json valid json query
    * @param response
    */
-  private void executeSearchQuery(JsonObject json, HttpServerResponse response) {
+  private void executeSearchQuery(RoutingContext context,JsonObject json, HttpServerResponse response) {
     database.searchQuery(json, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("Success: Search Success");
+        Future.future(fu->updateAuditTable(context));
         handleSuccessResponse(response, ResponseType.Ok.getCode(),
             handler.result().toString());
       } else if (handler.failed()) {
@@ -655,9 +655,9 @@ public class ApiServerVerticle extends AbstractVerticle {
             json.put("applicableFilters", filtersHandler.result());
             if (json.containsKey(IUDXQUERY_OPTIONS)
                 && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
-              executeCountQuery(json, response);
+              executeCountQuery(routingContext,json, response);
             } else {
-              executeSearchQuery(json, response);
+              executeSearchQuery(routingContext,json, response);
             }
           } else {
             LOGGER.error("catalogue item/group doesn't have filters.");
@@ -694,7 +694,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestBody.put(SUB_TYPE, subscrtiptionType);
     /* checking authentication info in requests */
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-    LOGGER.debug("authInfo : " + authInfo);
 
     if (requestBody.containsKey(SUB_TYPE)) {
       JsonObject jsonObj = requestBody.copy();
@@ -705,6 +704,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       subsReq.onComplete(subHandler -> {
         if (subHandler.succeeded()) {
           LOGGER.info("Success: Handle Subscription request;");
+          Future.future(fu->updateAuditTable(routingContext));
           handleSuccessResponse(response, ResponseType.Created.getCode(),
               subHandler.result().toString());
         } else {
@@ -742,7 +742,6 @@ public class ApiServerVerticle extends AbstractVerticle {
             : SubsType.CALLBACK.getMessage();
     requestJson.put(SUB_TYPE, subscrtiptionType);
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-    LOGGER.debug("authInfo : " + authInfo);
     if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
       if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
         JsonObject jsonObj = requestJson.copy();
@@ -751,6 +750,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         subsReq.onComplete(subsRequestHandler -> {
           if (subsRequestHandler.succeeded()) {
             LOGGER.info("Success: Appending subscription");
+            Future.future(fu->updateAuditTable(routingContext));
             handleSuccessResponse(response, ResponseType.Created.getCode(),
                 subsRequestHandler.result().toString());
           } else {
@@ -799,6 +799,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         Future<JsonObject> subsReq = subsService.updateSubscription(jsonObj, databroker, database);
         subsReq.onComplete(subsRequestHandler -> {
           if (subsRequestHandler.succeeded()) {
+            Future.future(fu->updateAuditTable(routingContext));
             handleSuccessResponse(response, ResponseType.Created.getCode(),
                 subsRequestHandler.result().toString());
           } else {
@@ -850,6 +851,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       subsReq.onComplete(subHandler -> {
         if (subHandler.succeeded()) {
           LOGGER.info("Success: Getting subscription");
+          Future.future(fu->updateAuditTable(routingContext));
           handleSuccessResponse(response, ResponseType.Ok.getCode(),
               subHandler.result().toString());
         } else {
@@ -893,6 +895,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       Future<JsonObject> subsReq = subsService.deleteSubscription(jsonObj, databroker, database);
       subsReq.onComplete(subHandler -> {
         if (subHandler.succeeded()) {
+          Future.future(fu->updateAuditTable(routingContext));
           handleSuccessResponse(response, ResponseType.Ok.getCode(),
               subHandler.result().toString());
         } else {
@@ -934,6 +937,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               brokerResult.onComplete(brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                   LOGGER.info("Success: Creating exchange");
+                  Future.future(fu->updateAuditTable(routingContext));
                   handleSuccessResponse(response, ResponseType.Created.getCode(),
                       brokerResultHandler.result().toString());
                 } else if (brokerResultHandler.failed()) {
@@ -981,6 +985,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: Deleting exchange");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else if (brokerResultHandler.failed()) {
@@ -1026,6 +1031,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: Getting exchange details");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else if (brokerResultHandler.failed()) {
@@ -1071,6 +1077,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               brokerResult.onComplete(brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                   LOGGER.info("Success: Creating Queue");
+                  Future.future(fu->updateAuditTable(routingContext));
                   handleSuccessResponse(response, ResponseType.Created.getCode(),
                       brokerResultHandler.result().toString());
                 } else if (brokerResultHandler.failed()) {
@@ -1119,6 +1126,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: Deleting Queue");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else if (brokerResultHandler.failed()) {
@@ -1161,6 +1169,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: Getting Queue Details");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else if (brokerResultHandler.failed()) {
@@ -1202,6 +1211,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: binding queue to exchange");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Created.getCode(),
                   brokerResultHandler.result().toString());
             } else if (brokerResultHandler.failed()) {
@@ -1243,6 +1253,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: Unbinding queue to exchange");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Created.getCode(),
                   brokerResultHandler.result().toString());
             } else if (brokerResultHandler.failed()) {
@@ -1286,6 +1297,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               brokerResult.onComplete(brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                   LOGGER.info("Success: Creating vhost");
+                  Future.future(fu->updateAuditTable(routingContext));
                   handleSuccessResponse(response, ResponseType.Created.getCode(),
                       brokerResultHandler.result().toString());
                 } else if (brokerResultHandler.failed()) {
@@ -1333,6 +1345,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: Deleting vhost");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else if (brokerResultHandler.failed()) {
@@ -1374,6 +1387,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     brokerResult.onComplete(handler -> {
       if (handler.succeeded()) {
         LOGGER.info("Success: Registering adapter");
+        Future.future(fu->updateAuditTable(routingContext));
         handleSuccessResponse(response, ResponseType.Created.getCode(),
             handler.result().toString());
       } else if (brokerResult.failed()) {
@@ -1412,6 +1426,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     brokerResult.onComplete(brokerResultHandler -> {
       if (brokerResultHandler.succeeded()) {
         LOGGER.info("Success: Deleting adapter");
+        Future.future(fu->updateAuditTable(routingContext));
         handleSuccessResponse(response, ResponseType.Ok.getCode(),
             brokerResultHandler.result().toString());
       } else {
@@ -1449,6 +1464,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         managementApi.getAdapterDetails(adapterIdBuilder.toString(), databroker);
     brokerResult.onComplete(brokerResultHandler -> {
       if (brokerResultHandler.succeeded()) {
+        Future.future(fu->updateAuditTable(routingContext));
         handleSuccessResponse(response, ResponseType.Ok.getCode(),
             brokerResultHandler.result().toString());
       } else {
@@ -1481,6 +1497,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.debug("Success: Published heartbeat");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else {
@@ -1523,6 +1540,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.debug("Success: published downstream issue");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else {
@@ -1563,6 +1581,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.debug("Success: publishing a data issue");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else {
@@ -1603,6 +1622,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.debug("Success: publishing data from adapter");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else {

@@ -14,13 +14,15 @@ import static iudx.resource.server.metering.util.Constants.TIME_INTERVAL_QUERY;
 import static iudx.resource.server.metering.util.Constants.TIME_NOT_FOUND;
 import static iudx.resource.server.metering.util.Constants.WRITE_QUERY;
 
-import io.vertx.core.json.JsonObject;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.UUID;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import io.vertx.core.json.JsonObject;
 
 public class QueryBuilder {
 
@@ -77,9 +79,8 @@ public class QueryBuilder {
 
     if (emailId != null && resourceId != null) {
       StringBuilder tempQuery = timeQuery;
-      for (String s :
-          Arrays.asList(
-              EMAIL_QUERY.replace("$3", emailId), RESOURCE_QUERY.replace("$4", resourceId))) {
+      for (String s : Arrays.asList(
+          EMAIL_QUERY.replace("$3", emailId), RESOURCE_QUERY.replace("$4", resourceId))) {
         tempQuery = tempQuery.append(s);
       }
       LOGGER.info("Info: QUERY " + tempQuery);

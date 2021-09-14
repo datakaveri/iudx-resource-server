@@ -4,7 +4,7 @@ import java.util.stream.Stream;
 
 public enum Api {
   ENTITIES("/ngsi-ld/v1/entities"),
-  TEMPORAL("/ngsi-ld/v1/temporal"),
+  TEMPORAL("/ngsi-ld/v1/temporal/entities"),
   ENTITY_OPERATION("/ngsi-ld/v1/entityoperations/query"),
   ENTITY_OPERATION_TEMPORAL("/ngsi-ld/v1/temporal/entityoperations/query"),
   SUBSCRIPTION("/ngsi-ld/v1/subscription"),
