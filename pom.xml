@@ -28,8 +28,6 @@
 		<junit-jupiter.params>5.5.2</junit-jupiter.params>
 		<slf4j.version>1.7.25</slf4j.version>
 		<jts2geojson.version>0.16.1</jts2geojson.version>
-		<redis-jrejson.version>1.4.0</redis-jrejson.version>
-
 		<maven.compiler.source>11</maven.compiler.source>
 		<maven.compiler.target>11</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -195,21 +193,22 @@
 			<artifactId>jts2geojson</artifactId>
 			<version>${jts2geojson.version}</version>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>io.vertx</groupId> -->
-		<!-- <artifactId>vertx-redis-client</artifactId> -->
-		<!-- <version>3.9.0</version> -->
-		<!-- </dependency> -->
-
 		<dependency>
-			<groupId>com.redislabs</groupId>
-			<artifactId>jrejson</artifactId>
-			<version>${redis-jrejson.version}</version>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-redis-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-json-schema</artifactId>
 		</dependency>
+
+
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-auth-jwt</artifactId>
+		</dependency>
+
+
 	</dependencies>
 
 
