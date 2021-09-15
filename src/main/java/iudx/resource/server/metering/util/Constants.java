@@ -36,7 +36,7 @@ public class Constants {
   public static final String INVALID_DATE_TIME = "invalid date-time";
   public static final String TIME_INTERVAL_QUERY =
       "SELECT count() FROM auditing where time>=$1 and time<=$2";
-  public static final String EMAIL_QUERY = " and email='$3'";
+  public static final String USERID_QUERY = " and userid='$3'";
   public static final String RESOURCE_QUERY = " and resourceId='$4'";
   public static final String API = "api";
   public static final String USER_ID="userid";

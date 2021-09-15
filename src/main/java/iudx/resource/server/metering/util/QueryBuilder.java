@@ -2,7 +2,7 @@ package iudx.resource.server.metering.util;
 
 import static iudx.resource.server.metering.util.Constants.API;
 import static iudx.resource.server.metering.util.Constants.EMAIL_ID;
-import static iudx.resource.server.metering.util.Constants.EMAIL_QUERY;
+import static iudx.resource.server.metering.util.Constants.USERID_QUERY;
 import static iudx.resource.server.metering.util.Constants.END_TIME;
 import static iudx.resource.server.metering.util.Constants.ERROR;
 import static iudx.resource.server.metering.util.Constants.ID;
@@ -81,14 +81,14 @@ public class QueryBuilder {
     if (emailId != null && resourceId != null) {
       StringBuilder tempQuery = timeQuery;
       for (String s : Arrays.asList(
-          EMAIL_QUERY.replace("$3", emailId), RESOURCE_QUERY.replace("$4", resourceId))) {
+          USERID_QUERY.replace("$3", emailId), RESOURCE_QUERY.replace("$4", resourceId))) {
         tempQuery = tempQuery.append(s);
       }
       LOGGER.info("Info: QUERY " + tempQuery);
       return new JsonObject().put(QUERY_KEY, tempQuery);
     } else if (emailId != null) {
       StringBuilder tempQuery = timeQuery;
-      tempQuery = tempQuery.append(EMAIL_QUERY.replace("$3", emailId));
+      tempQuery = tempQuery.append(USERID_QUERY.replace("$3", emailId));
       LOGGER.info("Info: QUERY " + tempQuery);
       return new JsonObject().put(QUERY_KEY, tempQuery);
     } else if (resourceId != null) {

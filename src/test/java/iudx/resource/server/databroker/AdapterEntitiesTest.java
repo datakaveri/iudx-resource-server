@@ -9,12 +9,13 @@ import static iudx.resource.server.databroker.util.Constants.USER_NAME;
 import static iudx.resource.server.databroker.util.Constants.VHOST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -37,7 +39,6 @@ import io.vertx.sqlclient.PoolOptions;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.databroker.util.Constants;
-import iudx.resource.server.databroker.util.Util;
 
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -187,8 +188,8 @@ public class AdapterEntitiesTest {
 
     resourceGroup = brokerConfig.getString("testResourceGroup");
     resourceServer = brokerConfig.getString("testResourceServer");
-    consumer = brokerConfig.getString("testAdapterConsumer") + UUID.randomUUID().toString();
-    provider = brokerConfig.getString("testAdapterProvider") + UUID.randomUUID().toString();
+    consumer = UUID.randomUUID().toString();
+    provider = UUID.randomUUID().toString();
     testContext.completeNow();
 
   }
@@ -199,7 +200,7 @@ public class AdapterEntitiesTest {
   void successRegisterAdaptor(VertxTestContext testContext) {
     JsonObject request = new JsonObject();
     request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information"));
-    request.put(Constants.CONSUMER, consumer);
+    request.put(Constants.USER_ID, consumer);
     request.put(JSON_PROVIDER, provider);
 
     JsonObject expected = new JsonObject();
@@ -312,7 +313,7 @@ public class AdapterEntitiesTest {
 //    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
 //    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
     request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information1"));
-    request.put(Constants.CONSUMER, consumer);
+    request.put(Constants.USER_ID, consumer);
     request.put(JSON_PROVIDER, anotherProvider);
 
     JsonObject expected = new JsonObject();
@@ -399,7 +400,7 @@ public class AdapterEntitiesTest {
 //    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
 //    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
     request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information"));
-    request.put(Constants.CONSUMER, consumer);
+    request.put(Constants.USER_ID, consumer);
     request.put(JSON_PROVIDER, provider);
 
     JsonObject expected = new JsonObject();

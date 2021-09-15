@@ -19,7 +19,7 @@
             "id": "iudx.resource.server.authenticator.AuthenticationVerticle",
             "verticleInstances": 1,
             "keystore": "configs/keystore.jks",
-            "keystorePassword": "password",
+            "keystorePassword": "",
             "authServerHost": "",
             "testAuthToken": "",
             "testExpiredAuthToken": "",
@@ -87,10 +87,15 @@
         {
             "id": "iudx.resource.server.database.latest.LatestVerticle",
             "verticleInstances": 2,
+             "redisMode": "",
+            "redisUsername": "",
+            "redisPassword": "",
+            "redisMaxPoolSize": 30,
+            "redisMaxPoolWaiting": 200,
+            "redisMaxWaitingHandlers": 1024,
+            "redisPoolRecycleTimeout": 1500,
             "redisHost": "",
             "redisPort": 1234,
-            "redisUser": "",
-            "redisPassword": "",
             "attributeList": {
                 "key": "value"
             }

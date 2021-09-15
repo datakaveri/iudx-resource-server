@@ -111,11 +111,28 @@
         {
             "id": "iudx.resource.server.database.latest.LatestVerticle",
             "verticleInstances": 2,
-            "redisHost": "",
-            "redisPort": 12345,
-            "redisUser": "",
+            "redisMode": "",
+            "redisUsername": "",
             "redisPassword": "",
-            "attributeList": {"key":"value"}                        
+            "redisMaxPoolSize": 30,
+            "redisMaxPoolWaiting": 200,
+            "redisMaxWaitingHandlers": 1024,
+            "redisPoolRecycleTimeout": 1500,
+            "redisHost": "",
+            "redisPort": 123,
+            "attributeList": {
+                "key": "value"
+            }                           
+        },
+        {
+            "id": "iudx.resource.server.metering.MeteringVerticle",
+            "verticleInstances": 1,
+            "meteringDatabaseIP": "",
+            "meteringDatabasePort": 1234,
+            "meteringDatabaseName": "",
+            "meteringDatabaseUserName": "",
+            "meteringDatabasePassword": "",
+            "meteringPoolSize": 25
         }
     ]
 }
