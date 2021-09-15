@@ -23,6 +23,7 @@ public class Constants {
       "Something went wrong while creating user using mgmt API. Check credentials";
   public static final String CONFIGURE = "configure";
   public static final String CONSUMER = "consumer";
+  public static final String USER_ID = "userid";
   public static final String CONSUMER_TEST_EXAMPLE = "vasanth.rajaraman@rbccps.org";
   public static final String CALLBACKURL = "callbackURL";  
 

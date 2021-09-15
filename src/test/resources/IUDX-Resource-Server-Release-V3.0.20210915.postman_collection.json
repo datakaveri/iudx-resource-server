@@ -29,7 +29,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"request\": [\n\t\t\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n    ]\n}",
+							"raw": "{\n\t\"request\": [\n\t\t\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\"\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -92,7 +92,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -137,7 +137,7 @@
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
 									"    const resultsjsonData = body.results[0];",
-									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR019\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\");",
 									"});"
 								],
 								"type": "text/javascript"
@@ -148,14 +148,13 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "",
+								"key": "token",
 								"type": "text",
-								"value": "",
-								"disabled": true
+								"value": "{{openResourceToken}}"
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities/datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR019",
+							"raw": "{{base_url}}/ngsi-ld/v1/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055",
 							"host": [
 								"{{base_url}}"
 							],
@@ -163,11 +162,11 @@
 								"ngsi-ld",
 								"v1",
 								"entities",
-								"datakaveri.org",
-								"04a15c9960ffda227e9546f3f46e629e1fe4132b",
+								"iisc.ac.in",
+								"89a36273d77dac4cf38114fca1bbe64392547f86",
 								"rs.iudx.io",
 								"pune-env-flood",
-								"FWR019"
+								"FWR055"
 							]
 						}
 					},
@@ -202,7 +201,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id",
 							"host": [
@@ -336,7 +341,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -406,7 +411,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -477,7 +482,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -618,7 +623,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=near;maxDistance=1000&geometry=Point&coordinates=[21.178,72.834]",
 							"host": [
@@ -689,12 +700,12 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within;WAITFOR DELAY CHAR(48)+CHAR(58)+CHAR(48)+CHAR(58)+CHAR(91)+CHAR(83)+CHAR(76)+CHAR(69)+CHAR(69)+CHAR(80)+CHAR(84)+CHAR(73)+CHAR(77)+CHAR(69)+CHAR(93)--&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]",
+							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]",
 							"host": [
 								"{{base_url}}"
 							],
@@ -714,7 +725,7 @@
 								},
 								{
 									"key": "georel",
-									"value": "within;WAITFOR DELAY CHAR(48)+CHAR(58)+CHAR(48)+CHAR(58)+CHAR(91)+CHAR(83)+CHAR(76)+CHAR(69)+CHAR(69)+CHAR(80)+CHAR(84)+CHAR(73)+CHAR(77)+CHAR(69)+CHAR(93)--"
+									"value": "within"
 								},
 								{
 									"key": "geometry",
@@ -751,7 +762,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -823,7 +834,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -965,10 +976,9 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "",
+								"key": "token",
 								"type": "text",
-								"value": "",
-								"disabled": true
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -1041,7 +1051,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -1103,7 +1113,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -1175,7 +1185,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -1245,10 +1255,9 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "",
+								"key": "token",
 								"type": "text",
-								"value": "",
-								"disabled": true
+								"value": "abc"
 							}
 						],
 						"url": {
@@ -1318,10 +1327,9 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "",
+								"key": "token",
 								"type": "text",
-								"value": "",
-								"disabled": true
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -1395,7 +1403,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -1456,7 +1464,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -1528,7 +1536,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -1670,10 +1678,9 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "",
+								"key": "token",
 								"type": "text",
-								"value": "",
-								"disabled": true
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -1771,7 +1778,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -1837,7 +1844,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -1912,7 +1919,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -2061,7 +2068,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=near;maxDistance=1000&geometry=Point&coordinates=[21.178,72.834]&options=count",
 							"host": [
@@ -2136,7 +2149,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -2202,7 +2215,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -2278,7 +2291,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -2428,10 +2441,9 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "",
+								"key": "token",
 								"type": "text",
-								"value": "",
-								"disabled": true
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -2508,7 +2520,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -2574,7 +2586,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -2650,7 +2662,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -2724,10 +2736,9 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "",
+								"key": "token",
 								"type": "text",
-								"value": "",
-								"disabled": true
+								"value": "abc"
 							}
 						],
 						"url": {
@@ -2801,10 +2812,9 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "",
+								"key": "token",
 								"type": "text",
-								"value": "",
-								"disabled": true
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -2882,7 +2892,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -2947,7 +2957,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -3023,7 +3033,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -3173,10 +3183,9 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "",
+								"key": "token",
 								"type": "text",
-								"value": "",
-								"disabled": true
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -3275,7 +3284,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z",
 							"host": [
@@ -3327,7 +3342,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-01-18T14:20:00Z&endtime=2020-01-19T14:20:00Z",
 							"host": [
@@ -3390,7 +3411,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerelation=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z",
 							"host": [
@@ -3453,7 +3480,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-09-18X14:20:00Z&endtime=2020-09-19X14:20:00Z",
 							"host": [
@@ -3516,7 +3549,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z",
 							"host": [
@@ -3650,7 +3689,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-10-19T12:00:00Z",
 							"host": [
@@ -3708,7 +3753,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-01-19T12:00:00Z",
 							"host": [
@@ -3777,7 +3828,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&timea=2020-09-19T12:00:00Z",
 							"host": [
@@ -3846,7 +3903,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-09-19X12:00:00Z",
 							"host": [
@@ -3915,7 +3978,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=before&time=2020-09-19T12:00:00Z",
 							"host": [
@@ -4061,7 +4130,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-10-18T14:20:01Z",
 							"host": [
@@ -4109,7 +4184,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-01-19T12:00:00Z",
 							"host": [
@@ -4168,7 +4249,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerelation=after&time=2020-06-01T14:20:01Z",
 							"host": [
@@ -4227,7 +4314,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-06-01X14:20:01Z",
 							"host": [
@@ -4286,7 +4379,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=after&time=2020-06-01T14:20:01Z",
 							"host": [
@@ -4317,7 +4416,7 @@
 					"response": []
 				},
 				{
-					"name": "404 (invalid credentials) temporal (after)",
+					"name": "401 (invalid credentials) temporal (after)",
 					"event": [
 						{
 							"listen": "test",
@@ -4340,8 +4439,8 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "abc",
-								"type": "text"
+								"type": "text",
+								"value": "abc"
 							}
 						],
 						"url": {
@@ -4431,10 +4530,9 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "",
+								"key": "token",
 								"type": "text",
-								"value": "",
-								"disabled": true
+								"value": "{{openResourceToken}}"
 							}
 						],
 						"url": {
@@ -4494,10 +4592,9 @@
 						"method": "GET",
 						"header": [
 							{
-								"key": "",
+								"key": "token",
 								"type": "text",
-								"value": "",
-								"disabled": true
+								"value": "{{openResourceToken}}"
 							}
 						],
 						"url": {
@@ -4566,7 +4663,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerelation=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z&options=count",
 							"host": [
@@ -4633,7 +4736,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-09-18XX14:20:00Z&endtime=2020-09-19XX14:20:00Z&options=count",
 							"host": [
@@ -4700,7 +4809,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z&options=count",
 							"host": [
@@ -4771,8 +4886,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "abc",
-								"disabled": true
+								"value": "abc"
 							}
 						],
 						"url": {
@@ -4843,7 +4957,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-10-19T12:00:00Z&options=count",
 							"host": [
@@ -4900,7 +5020,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-01-19T12:00:00Z&options=count",
 							"host": [
@@ -4968,7 +5094,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&timeattribute=2020-09-19T12:00:00Z&options=count",
 							"host": [
@@ -5036,7 +5168,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-09-19XX12:00:00Z&options=count",
 							"host": [
@@ -5104,7 +5242,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=before&time=2020-09-19T12:00:00Z&options=count",
 							"host": [
@@ -5248,7 +5392,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-10-18T14:20:01Z&options=count",
 							"host": [
@@ -5300,7 +5450,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-01-18T14:20:01Z&options=count",
 							"host": [
@@ -5363,7 +5519,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerelation=after&time=2020-06-01T14:20:01Z&options=count",
 							"host": [
@@ -5426,7 +5588,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-06-01XX14:20:01Z&options=count",
 							"host": [
@@ -5489,7 +5657,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=after&time=2020-06-01T14:20:01Z&options=count",
 							"host": [
@@ -5651,7 +5825,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>15.0",
 							"host": [
@@ -5704,7 +5884,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>150.0",
 							"host": [
@@ -5768,7 +5954,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel>150.0",
 							"host": [
@@ -5832,7 +6024,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel>150.0",
 							"host": [
@@ -5966,7 +6164,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>>150.0",
 							"host": [
@@ -6025,7 +6229,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<16.0",
 							"host": [
@@ -6068,7 +6278,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<1.0",
 							"host": [
@@ -6122,7 +6338,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel<1.0",
 							"host": [
@@ -6176,7 +6398,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel<1.0",
 							"host": [
@@ -6290,7 +6518,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<<1.0",
 							"host": [
@@ -6349,7 +6583,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>=15.9",
 							"host": [
@@ -6392,7 +6632,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>=150",
 							"host": [
@@ -6446,7 +6692,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel>=15.9",
 							"host": [
@@ -6500,7 +6752,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel>=15.9",
 							"host": [
@@ -6614,7 +6872,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<>=50",
 							"host": [
@@ -6673,7 +6937,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<=15.9",
 							"host": [
@@ -6716,7 +6986,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<=1",
 							"host": [
@@ -6770,7 +7046,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel<=1",
 							"host": [
@@ -6824,7 +7106,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel<=1",
 							"host": [
@@ -6938,7 +7226,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<>=1",
 							"host": [
@@ -7024,7 +7318,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>15.0&options=count",
 							"host": [
@@ -7076,7 +7376,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>150.0&options=count",
 							"host": [
@@ -7139,7 +7445,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel>150.0&options=count",
 							"host": [
@@ -7202,7 +7514,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel>150.0&options=count",
 							"host": [
@@ -7334,7 +7652,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>>150.0&options=count",
 							"host": [
@@ -7394,7 +7718,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<16.0&options=count",
 							"host": [
@@ -7441,7 +7771,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<1.0&options=count",
 							"host": [
@@ -7499,7 +7835,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel<1.0&options=count",
 							"host": [
@@ -7557,7 +7899,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel<1.0&options=count",
 							"host": [
@@ -7679,7 +8027,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<<1.0&options=count",
 							"host": [
@@ -7739,7 +8093,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>=15.9&options=count",
 							"host": [
@@ -7786,7 +8146,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>=150&options=count",
 							"host": [
@@ -7836,7 +8202,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel>=15.9&options=count",
 							"host": [
@@ -7894,7 +8266,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel>=15.9&options=count",
 							"host": [
@@ -8016,7 +8394,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<>=50&options=count",
 							"host": [
@@ -8076,7 +8460,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<=15.9&options=count",
 							"host": [
@@ -8123,7 +8513,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<=1&options=count",
 							"host": [
@@ -8181,7 +8577,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel<=1&options=count",
 							"host": [
@@ -8239,7 +8641,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel<=1&options=count",
 							"host": [
@@ -8361,7 +8769,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<>=1&options=count",
 							"host": [
@@ -8449,7 +8863,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>15.0&attrs=id,currentLevel,referenceLevel",
 							"host": [
@@ -8501,7 +8921,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>150.0&attrs=id,currentLevel,referenceLevel",
 							"host": [
@@ -8564,7 +8990,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>150.0&attributes=id,currentLevel,referenceLevel",
 							"host": [
@@ -8627,7 +9059,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>>150.0&attrs=id,currentLevel,referenceLevel",
 							"host": [
@@ -8690,7 +9128,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel>15.0&attrs=id,currentLevel,referenceLevel",
 							"host": [
@@ -8827,7 +9271,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z&attrs=id,currentLevel,referenceLevel",
 							"host": [
@@ -8883,7 +9333,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-01-18T14:20:00Z&endtime=2020-01-19T14:20:00Z&attrs=id,currentLevel,referenceLevel",
 							"host": [
@@ -8950,7 +9406,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-09-18X14:20:00Z&endtime=2020-09-19X14:20:00Z&attrs=id,currentLevel,referenceLevel",
 							"host": [
@@ -9017,7 +9479,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z&attrs=id,currentLevel,referenceLevel",
 							"host": [
@@ -9170,7 +9638,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -9249,7 +9717,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -9333,7 +9801,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -9418,7 +9886,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -9503,7 +9971,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{openResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -9674,7 +10142,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -9763,7 +10231,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -9879,7 +10347,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -9953,7 +10421,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -10037,7 +10505,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -10127,7 +10595,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -10212,7 +10680,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -10383,7 +10851,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -10472,7 +10940,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -10589,7 +11057,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -10639,7 +11107,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -10698,7 +11166,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -10758,7 +11226,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -10882,7 +11350,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -10932,7 +11400,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -10993,7 +11461,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -11054,7 +11522,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -11177,7 +11645,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -11241,7 +11709,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -11302,7 +11770,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -11363,7 +11831,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -11486,7 +11954,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -11549,7 +12017,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -11600,7 +12068,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -11661,7 +12129,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -11721,7 +12189,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -11774,7 +12242,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -11900,7 +12368,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -11951,7 +12419,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -12011,7 +12479,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -12072,7 +12540,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -12198,7 +12666,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -12248,7 +12716,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -12308,7 +12776,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -12368,7 +12836,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -12491,7 +12959,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -12541,7 +13009,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -12601,7 +13069,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -12661,7 +13129,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -12784,7 +13252,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -12834,7 +13302,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -12894,7 +13362,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -12954,7 +13422,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -13100,7 +13568,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -13150,7 +13618,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -13209,7 +13677,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -13269,7 +13737,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -13391,7 +13859,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -13441,7 +13909,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -13502,7 +13970,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -13563,7 +14031,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -13686,7 +14154,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -13748,7 +14216,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -13809,7 +14277,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -13870,7 +14338,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -13993,7 +14461,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -14055,7 +14523,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -14106,7 +14574,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -14167,7 +14635,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -14228,7 +14696,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -14351,7 +14819,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -14401,7 +14869,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -14461,7 +14929,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -14521,7 +14989,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -14642,7 +15110,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -14692,7 +15160,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -14752,7 +15220,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -14812,7 +15280,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -14933,7 +15401,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -14983,7 +15451,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -15043,7 +15511,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -15103,7 +15571,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -15244,7 +15712,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055iNsm39qa8Z6GfSZrq5b0xmBA0apYYjJVgtxq5kZHd1fq2TGQ3c12gkri34j10msxSPaXt7uynP0OI8EvHPK5V1YsefHxRfem25C8TTASr1ggdtk9ORXuQ6ry0leCorbzFvVtQdJO4HAuLjplMpIkipmTTGfoSRWWIT7yt60nn4ZqHYsXhhm4ud1hYkCUGrDeC3CkacthEuJAah10OpzaCyWHMf0XWqirLAYahsJzhv9p2BRLRZrEG7gP0TWD9BjMvIuVk8ILGVgZyYWjC3dJsKuNe2cLo5P4fWW0iRik4dtvHTYaFA2TGXs1euujSpBYY1XsTCuLuOhuCMAsMS9PPmlePl7vlIA109IbhDOqrQqjOGx7LELr8P02F9arsqK3MfCTSwfQJPg3vcGBeMJsVPtZjDTDhJjVHCFzRtFsnmCTySZUcgEYVwU3byAg3CFSPIPhE6LvJpj6iv0xx8GmnG8Qot4kplFcVA0yvOQbaMG7gTzQBwokBwBdkibDDrW7\n",
 							"host": [
@@ -15297,7 +15771,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -15369,7 +15843,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -15441,7 +15915,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -15514,7 +15988,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -15586,7 +16060,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -15658,7 +16132,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -15730,7 +16204,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -15802,7 +16276,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -15874,7 +16348,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -15946,7 +16420,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -16018,7 +16492,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -16094,7 +16568,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {
@@ -16166,7 +16640,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=beyond&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z",
 							"host": [
@@ -16229,7 +16709,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-09-18T14:20:00Z",
 							"host": [
@@ -16293,7 +16779,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-09-01T14:20:00Z&endtime=2020-09-19T14:20:00Z",
 							"host": [
@@ -16356,7 +16848,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>/15.0&attrs=id,currentLevel,referenceLevel",
 							"host": [
@@ -16419,7 +16917,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>15.0&attrs=id,currentLevel,referenceLevel,attr1,atte2,attr3,attr4",
 							"host": [
@@ -16482,7 +16986,13 @@
 					],
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>15.0&attrs=id,currentLevel,referenceLevelW45soq9yt0acejbMxwggziMSK8e7FsfylXQH3b5jDVXl6IQma7Ak6hfqlUldp3lf6K11Z0F2jJwm2cDC8lzxQ3KetN3dgn01Gv7G",
 							"host": [
@@ -16548,7 +17058,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -16608,7 +17118,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -16668,7 +17178,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -16729,7 +17239,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -16789,7 +17299,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -16848,7 +17358,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{consumerToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -16909,7 +17419,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{consumerToken}}"
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"body": {
@@ -16979,7 +17489,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{adapterToken}}",
+								"value": "{{groupAdapterToken}}",
 								"type": "text"
 							}
 						],
@@ -17077,7 +17587,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{adapterToken}}"
+								"value": "{{groupAdapterToken}}"
 							}
 						],
 						"body": {
@@ -17283,7 +17793,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{adapterToken}}"
+								"value": "{{groupAdapterToken}}"
 							}
 						],
 						"url": {
@@ -17334,7 +17844,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{adapterToken}}"
+								"value": "{{groupAdapterToken}}"
 							}
 						],
 						"url": {
@@ -17438,7 +17948,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{adapterToken}}",
+								"value": "{{groupAdapterToken}}",
 								"type": "text"
 							}
 						],
@@ -17490,7 +18000,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{adapterToken}}"
+								"value": "{{groupAdapterToken}}"
 							}
 						],
 						"url": {
@@ -17565,50 +18075,6 @@
 			"name": "adaptor- Resource Level",
 			"item": [
 				{
-					"name": "Get token for Adapter (RL)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const responseJson=pm.response.json();",
-									"pm.globals.set(\"consumerToken_rl\", responseJson.token);",
-									"pm.globals.set(\"adapterToken_rl\", responseJson.token);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"request\": [\n\t\t\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\"\n    ]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "https://authdev.iudx.io/auth/v1/token",
-							"protocol": "https",
-							"host": [
-								"authdev",
-								"iudx",
-								"io"
-							],
-							"path": [
-								"auth",
-								"v1",
-								"token"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "201 (created successfully) - Register adapter",
 					"event": [
 						{
@@ -17632,7 +18098,7 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\");",
+									"    pm.expect(body).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\");",
 									"});",
 									"",
 									""
@@ -17646,13 +18112,13 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{adapterToken_rl}}",
+								"value": "{{resourceAdapterToken}}",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"entities\": [\r\n        \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\"\r\n    ]\r\n}",
+							"raw": "{\r\n    \"entities\": [\r\n        \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -17744,12 +18210,12 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{adapterToken_rl}}"
+								"value": "{{resourceAdapterToken}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"entities\": [\r\n        \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\"\r\n    ]\r\n}",
+							"raw": "{\r\n    \"entities\": [\r\n        \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -17949,7 +18415,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{adapterToken_rl}}",
+								"value": "{{resourceAdapterToken}}",
 								"type": "text"
 							}
 						],
@@ -18001,7 +18467,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{adapterToken_rl}}"
+								"value": "{{resourceAdapterToken}}"
 							}
 						],
 						"url": {
@@ -18105,7 +18571,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{adapterToken_rl}}",
+								"value": "{{resourceAdapterToken}}",
 								"type": "text"
 							}
 						],
@@ -18157,7 +18623,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{adapterToken_rl}}"
+								"value": "{{resourceAdapterToken}}"
 							}
 						],
 						"url": {

@@ -1,5 +1,14 @@
 package iudx.resource.server.authenticator;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.apache.http.HttpStatus;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
@@ -13,13 +22,9 @@ import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.configuration.Configuration;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
+@Deprecated
+@Disabled
 @ExtendWith(VertxExtension.class)
 public class AuthenticationServiceTest {
   private static final Logger logger = LoggerFactory.getLogger(AuthenticationServiceTest.class);

@@ -78,7 +78,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
                 "-----END PUBLIC KEY-----\n" +
                 ""));
     
-   // jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
+    jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
     JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
     //@TODO: replace binder with jwt once auth server available.
@@ -87,7 +87,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
     /* Publish the Authentication service with the Event Bus against an address. */
 
     consumer = binder.setAddress(AUTH_SERVICE_ADDRESS)
-        .register(AuthenticationService.class, authentication);
+        .register(AuthenticationService.class, jwtAuthenticationService);
   }
 
   @Override

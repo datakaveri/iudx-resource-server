@@ -168,6 +168,8 @@ public class Constants {
   public static final String RESOURCE_SERVER = "resourceServer";
   public static final String RESOURCE_GROUP = "resourceGroup";
   public static final String RESOURCE_NAME = "resourceName";
+  public static final String USER_ID = "userid";
+  public static final String API="api";
 
   // searchtype
   public static final String JSON_SEARCH_TYPE = "searchType";

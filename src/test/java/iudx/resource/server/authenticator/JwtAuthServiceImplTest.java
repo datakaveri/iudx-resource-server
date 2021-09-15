@@ -234,9 +234,9 @@ public class JwtAuthServiceImplTest {
 
     jwtAuthenticationService.tokenInterospect(request, authInfo, handler -> {
       if (handler.succeeded()) {
-        testContext.failNow(handler.cause());
-      } else {
         testContext.completeNow();
+      } else {
+        testContext.failNow(handler.cause());
       }
     });
   }
@@ -556,10 +556,9 @@ public class JwtAuthServiceImplTest {
 
     jwtAuthenticationService.validateAccess(jwtData, false, authInfo).onComplete(handler -> {
       if (handler.succeeded()) {
-        testContext.failNow("invalid access provided");
-      } else {
-        LOGGER.debug("failed access ");
         testContext.completeNow();
+      } else {
+        testContext.failNow("provider not provided access to API");
       }
     });
   }

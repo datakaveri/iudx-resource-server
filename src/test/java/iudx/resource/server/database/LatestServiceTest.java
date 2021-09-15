@@ -1,11 +1,14 @@
 package iudx.resource.server.database;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -247,11 +250,12 @@ public class LatestServiceTest {
   // })));
   // }
 
+  @Disabled("cleanup - invalid resource id will be validated at jwt validation time.")
   @Test
   @DisplayName("Testing Basic Exceptions (id not present in Database)")
   void searchIdNotInRedis(VertxTestContext testContext) {
     String id = "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86" +
-        "/rs.iudx.io/surat-itms-realtime-information/surat-itms-live";
+        "/rs.iudx.io/surat-itms-realtime-information/surat-itms-live112323";
     JsonObject request =
         new JsonObject().put("id", new JsonArray().add(id))
             .put("options", "id")

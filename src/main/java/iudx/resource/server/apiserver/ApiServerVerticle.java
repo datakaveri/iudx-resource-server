@@ -1,10 +1,69 @@
 package iudx.resource.server.apiserver;
 
 
-import static iudx.resource.server.apiserver.response.ResponseUrn.*;
-import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.response.ResponseUrn.BACKING_SERVICE_FORMAT;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_PARAM;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_TEMPORAL_PARAM;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_TOKEN;
+import static iudx.resource.server.apiserver.response.ResponseUrn.MISSING_TOKEN;
+import static iudx.resource.server.apiserver.util.Constants.API;
+import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
+import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
+import static iudx.resource.server.apiserver.util.Constants.APP_NAME_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.DOMAIN;
+import static iudx.resource.server.apiserver.util.Constants.EXCHANGE_ID;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_ACCEPT;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_ALLOW_ORIGIN;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_LENGTH;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_HOST;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_ORIGIN;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_REFERER;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
+import static iudx.resource.server.apiserver.util.Constants.ID;
+import static iudx.resource.server.apiserver.util.Constants.IUDXQUERY_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_ADAPTER_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_BIND_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_EXCHANGE_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_QUEUE_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_UNBIND_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_VHOST_URL;
+import static iudx.resource.server.apiserver.util.Constants.JSON_ALIAS;
+import static iudx.resource.server.apiserver.util.Constants.JSON_CONSUMER;
+import static iudx.resource.server.apiserver.util.Constants.JSON_COUNT;
+import static iudx.resource.server.apiserver.util.Constants.JSON_EXCHANGE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.JSON_ID;
+import static iudx.resource.server.apiserver.util.Constants.JSON_INSTANCEID;
+import static iudx.resource.server.apiserver.util.Constants.JSON_NAME;
+import static iudx.resource.server.apiserver.util.Constants.JSON_QUEUE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.JSON_SEARCH_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_VHOST;
+import static iudx.resource.server.apiserver.util.Constants.JSON_VHOST_ID;
+import static iudx.resource.server.apiserver.util.Constants.MIME_APPLICATION_JSON;
+import static iudx.resource.server.apiserver.util.Constants.MIME_TEXT_HTML;
+import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_EXCHANGE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_NAME;
+import static iudx.resource.server.apiserver.util.Constants.MSG_SUB_TYPE_NOT_FOUND;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_ENTITIES_URL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_ENTITIES_QUERY_PATH;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_TEMPORAL_QUERY_PATH;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_SUBSCRIPTION_URL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
+import static iudx.resource.server.apiserver.util.Constants.ROUTE_DOC;
+import static iudx.resource.server.apiserver.util.Constants.ROUTE_STATIC_SPEC;
+import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
+import static iudx.resource.server.apiserver.util.Constants.SUB_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.USERSHA;
+import static iudx.resource.server.apiserver.util.Constants.USER_ID;
+import static iudx.resource.server.apiserver.util.HttpStatusCode.BAD_REQUEST;
+import static iudx.resource.server.apiserver.util.HttpStatusCode.UNAUTHORIZED;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
-import static iudx.resource.server.apiserver.util.HttpStatusCode.*;
 
 import java.util.HashSet;
 import java.util.List;
@@ -57,6 +116,7 @@ import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.archives.DatabaseService;
 import iudx.resource.server.database.latest.LatestDataService;
 import iudx.resource.server.databroker.DataBrokerService;
+import iudx.resource.server.metering.MeteringService;
 
 
 /**
@@ -66,7 +126,7 @@ import iudx.resource.server.databroker.DataBrokerService;
  * The API Server verticle implements the IUDX Resource Server APIs. It handles the API requests
  * from the clients and interacts with the associated Service to respond.
  * </p>
- * 
+ *
  * @see io.vertx.core.Vertx
  * @see io.vertx.core.AbstractVerticle
  * @see io.vertx.core.http.HttpServer
@@ -87,7 +147,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private static final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
   private static final String BROKER_SERVICE_ADDRESS = "iudx.rs.broker.service";
   private static final String LATEST_SEARCH_ADDRESS = "iudx.rs.latest.service";
-
+  private static final String METERING_SERVICE_ADDRESS = "iudx.rs.metering.service";
   private HttpServer server;
   private Router router;
   private int port = 8443;
@@ -97,7 +157,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private ManagementApi managementApi;
   private SubscriptionService subsService;
   private CatalogueService catalogueService;
-
+  private MeteringService meteringService;
   private DatabaseService database;
   private DataBrokerService databroker;
   private AuthenticationService authenticator;
@@ -109,9 +169,9 @@ public class ApiServerVerticle extends AbstractVerticle {
    * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
    * configuration, obtains a proxy for the Event bus services exposed through service discovery,
    * start an HTTPs server at port 8443 or an HTTP server at port 8080.
-   * 
+   *
    * @throws Exception which is a startup exception TODO Need to add documentation for all the
-   * 
+   *
    */
 
   @Override
@@ -185,7 +245,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     ValidationHandler entityValidationHandler = new ValidationHandler(vertx, RequestType.ENTITY);
     router.get(NGSILD_ENTITIES_URL)
         .handler(entityValidationHandler)
-        .handler(AuthHandler.create(vertx)).handler(this::handleEntitiesQuery)
+        .handler(AuthHandler.create(vertx))
+        .handler(this::handleEntitiesQuery)
         .failureHandler(validationsFailureHandler);
 
     ValidationHandler latestValidationHandler = new ValidationHandler(vertx, RequestType.LATEST);
@@ -193,7 +254,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         .get(NGSILD_ENTITIES_URL + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
         .handler(latestValidationHandler)
         .handler(AuthHandler.create(vertx))
-        .handler(this::handleLatestEntitiesQuery).failureHandler(validationsFailureHandler);
+        .handler(this::handleLatestEntitiesQuery)
+        .failureHandler(validationsFailureHandler);
 
     ValidationHandler postTemporalValidationHandler =
         new ValidationHandler(vertx, RequestType.POST_TEMPORAL);
@@ -259,22 +321,22 @@ public class ApiServerVerticle extends AbstractVerticle {
     // adapter
     router.post(IUDX_MANAGEMENT_ADAPTER_URL).handler(AuthHandler.create(vertx))
         .handler(this::registerAdapter);
-    
+
     router
         .delete(IUDX_MANAGEMENT_ADAPTER_URL
             + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
         .handler(AuthHandler.create(vertx)).handler(this::deleteAdapter);
     router.delete(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSha/:resourceServer/:resourceGroup")
         .handler(AuthHandler.create(vertx)).handler(this::deleteAdapter);
-    
+
     router
         .get(IUDX_MANAGEMENT_ADAPTER_URL
             + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
         .handler(AuthHandler.create(vertx)).handler(this::getAdapterDetails);
     router
-        .get(IUDX_MANAGEMENT_ADAPTER_URL+ "/:domain/:userSha/:resourceServer/:resourceGroup")
+        .get(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSha/:resourceServer/:resourceGroup")
         .handler(AuthHandler.create(vertx)).handler(this::getAdapterDetails);
-    
+
     router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat").handler(AuthHandler.create(vertx))
         .handler(this::publishHeartbeat);
     router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/downstreamissue").handler(AuthHandler.create(vertx))
@@ -344,7 +406,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     authenticator = AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
 
     databroker = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
-
+    meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
     latestDataService = LatestDataService.createProxy(vertx, LATEST_SEARCH_ADDRESS);
 
     managementApi = new ManagementApiImpl();
@@ -359,7 +421,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.debug("Info:handleLatestEntitiesQuery method started.;");
     /* Handles HTTP request from client */
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-    LOGGER.debug("authInfo : " + authInfo);
     HttpServerRequest request = routingContext.request();
     /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
@@ -375,7 +436,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String resourceServer = request.getParam(RESOURCE_SERVER);
     String resourceGroup = request.getParam(RESOURCE_GROUP);
     String resourceName = request.getParam(RESOURCE_NAME);
-   
+
     String id = domain + "/" + userSha + "/" + resourceServer + "/" + resourceGroup + "/"
         + resourceName;
     JsonObject json = new JsonObject();
@@ -389,7 +450,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     filtersFuture.onComplete(filtersHandler -> {
       if (filtersHandler.succeeded()) {
         json.put("applicableFilters", filtersHandler.result());
-        executeLatestSearchQuery(json, response);
+        executeLatestSearchQuery(routingContext,json, response);
       } else {
         LOGGER.error("catalogue item/group doesn't have filters.");
         handleResponse(response, BAD_REQUEST, INVALID_PARAM, filtersHandler.cause().getMessage());
@@ -399,14 +460,13 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * This method is used to handle all NGSI-LD queries for endpoint /ngsi-ld/v1/entities/**.
-   * 
+   *
    * @param routingContext RoutingContext Object
    */
   private void handleEntitiesQuery(RoutingContext routingContext) {
     LOGGER.debug("Info:handleEntitiesQuery method started.;");
     /* Handles HTTP request from client */
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-    LOGGER.debug("authInfo : " + authInfo);
     HttpServerRequest request = routingContext.request();
     /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
@@ -442,9 +502,9 @@ public class ApiServerVerticle extends AbstractVerticle {
             json.put("applicableFilters", filtersHandler.result());
             if (json.containsKey(IUDXQUERY_OPTIONS)
                 && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
-              executeCountQuery(json, response);
+              executeCountQuery(routingContext,json, response);
             } else {
-              executeSearchQuery(json, response);
+              executeSearchQuery(routingContext,json, response);
             }
           } else {
             LOGGER.error("catalogue item/group doesn't have filters.");
@@ -460,7 +520,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * this method is used to handle all entities queries from post endpoint.
-   * 
+   *
    * @param routingContext routingContext
    *
    */
@@ -490,9 +550,9 @@ public class ApiServerVerticle extends AbstractVerticle {
             json.put("applicableFilters", filtersHandler.result());
             if (json.containsKey(IUDXQUERY_OPTIONS)
                 && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
-              executeCountQuery(json, response);
+              executeCountQuery(routingContext,json, response);
             } else {
-              executeSearchQuery(json, response);
+              executeSearchQuery(routingContext,json, response);
             }
           } else {
             LOGGER.error("catalogue item/group doesn't have filters.");
@@ -507,14 +567,15 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * Execute a count query in DB
-   * 
+   *
    * @param json valid json query
    * @param response
    */
-  private void executeCountQuery(JsonObject json, HttpServerResponse response) {
+  private void executeCountQuery(RoutingContext context,JsonObject json, HttpServerResponse response) {
     database.countQuery(json, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("Success: Count Success");
+        Future.future(fu->updateAuditTable(context));
         handleSuccessResponse(response, ResponseType.Ok.getCode(),
             handler.result().toString());
       } else if (handler.failed()) {
@@ -526,14 +587,15 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * Execute a search query in DB
-   * 
+   *
    * @param json valid json query
    * @param response
    */
-  private void executeSearchQuery(JsonObject json, HttpServerResponse response) {
+  private void executeSearchQuery(RoutingContext context,JsonObject json, HttpServerResponse response) {
     database.searchQuery(json, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("Success: Search Success");
+        Future.future(fu->updateAuditTable(context));
         handleSuccessResponse(response, ResponseType.Ok.getCode(),
             handler.result().toString());
       } else if (handler.failed()) {
@@ -543,10 +605,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     });
   }
 
-  private void executeLatestSearchQuery(JsonObject json, HttpServerResponse response) {
+  private void executeLatestSearchQuery(RoutingContext context,JsonObject json, HttpServerResponse response) {
     latestDataService.getLatestData(json, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("Latest data search succeeded");
+        Future.future(fu->updateAuditTable(context));
         handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
       } else {
         LOGGER.error("Fail: Search Fail");
@@ -558,15 +621,14 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * This method is used to handler all temporal NGSI-LD queries for endpoint /ngsi-ld/v1/temporal/**.
-   * 
+   *
    * @param routingContext RoutingContext object
-   * 
+   *
    */
   private void handleTemporalQuery(RoutingContext routingContext) {
     LOGGER.debug("Info: handleTemporalQuery method started.");
     /* Handles HTTP request from client */
     HttpServerRequest request = routingContext.request();
-    /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
     /* HTTP request instance/host details */
     String instanceID = request.getHeader(HEADER_HOST);
@@ -594,9 +656,9 @@ public class ApiServerVerticle extends AbstractVerticle {
             json.put("applicableFilters", filtersHandler.result());
             if (json.containsKey(IUDXQUERY_OPTIONS)
                 && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
-              executeCountQuery(json, response);
+              executeCountQuery(routingContext,json, response);
             } else {
-              executeSearchQuery(json, response);
+              executeSearchQuery(routingContext,json, response);
             }
           } else {
             LOGGER.error("catalogue item/group doesn't have filters.");
@@ -612,7 +674,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * Method used to handle all subscription requests.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void handleSubscriptions(RoutingContext routingContext) {
@@ -633,7 +695,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestBody.put(SUB_TYPE, subscrtiptionType);
     /* checking authentication info in requests */
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-    LOGGER.debug("authInfo : " + authInfo);
 
     if (requestBody.containsKey(SUB_TYPE)) {
       JsonObject jsonObj = requestBody.copy();
@@ -644,6 +705,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       subsReq.onComplete(subHandler -> {
         if (subHandler.succeeded()) {
           LOGGER.info("Success: Handle Subscription request;");
+          Future.future(fu->updateAuditTable(routingContext));
           handleSuccessResponse(response, ResponseType.Created.getCode(),
               subHandler.result().toString());
         } else {
@@ -659,7 +721,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * handle append requests for subscription.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void appendSubscription(RoutingContext routingContext) {
@@ -681,7 +743,6 @@ public class ApiServerVerticle extends AbstractVerticle {
             : SubsType.CALLBACK.getMessage();
     requestJson.put(SUB_TYPE, subscrtiptionType);
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-    LOGGER.debug("authInfo : " + authInfo);
     if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
       if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
         JsonObject jsonObj = requestJson.copy();
@@ -690,6 +751,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         subsReq.onComplete(subsRequestHandler -> {
           if (subsRequestHandler.succeeded()) {
             LOGGER.info("Success: Appending subscription");
+            Future.future(fu->updateAuditTable(routingContext));
             handleSuccessResponse(response, ResponseType.Created.getCode(),
                 subsRequestHandler.result().toString());
           } else {
@@ -709,7 +771,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * handle update subscription requests.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void updateSubscription(RoutingContext routingContext) {
@@ -738,6 +800,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         Future<JsonObject> subsReq = subsService.updateSubscription(jsonObj, databroker, database);
         subsReq.onComplete(subsRequestHandler -> {
           if (subsRequestHandler.succeeded()) {
+            Future.future(fu->updateAuditTable(routingContext));
             handleSuccessResponse(response, ResponseType.Created.getCode(),
                 subsRequestHandler.result().toString());
           } else {
@@ -759,7 +822,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * get a subscription by id.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void getSubscription(RoutingContext routingContext) {
@@ -789,6 +852,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       subsReq.onComplete(subHandler -> {
         if (subHandler.succeeded()) {
           LOGGER.info("Success: Getting subscription");
+          Future.future(fu->updateAuditTable(routingContext));
           handleSuccessResponse(response, ResponseType.Ok.getCode(),
               subHandler.result().toString());
         } else {
@@ -804,7 +868,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * delete a subscription by id.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void deleteSubscription(RoutingContext routingContext) {
@@ -832,6 +896,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       Future<JsonObject> subsReq = subsService.deleteSubscription(jsonObj, databroker, database);
       subsReq.onComplete(subHandler -> {
         if (subHandler.succeeded()) {
+          Future.future(fu->updateAuditTable(routingContext));
           handleSuccessResponse(response, ResponseType.Ok.getCode(),
               subHandler.result().toString());
         } else {
@@ -845,7 +910,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * Create a exchange in rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void createExchange(RoutingContext routingContext) {
@@ -873,6 +938,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               brokerResult.onComplete(brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                   LOGGER.info("Success: Creating exchange");
+                  Future.future(fu->updateAuditTable(routingContext));
                   handleSuccessResponse(response, ResponseType.Created.getCode(),
                       brokerResultHandler.result().toString());
                 } else if (brokerResultHandler.failed()) {
@@ -899,7 +965,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * delete an exchange in rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void deleteExchange(RoutingContext routingContext) {
@@ -920,6 +986,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: Deleting exchange");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else if (brokerResultHandler.failed()) {
@@ -941,7 +1008,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * get exchange details from rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void getExchangeDetails(RoutingContext routingContext) {
@@ -965,6 +1032,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: Getting exchange details");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else if (brokerResultHandler.failed()) {
@@ -985,7 +1053,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * create a queue in rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void createQueue(RoutingContext routingContext) {
@@ -1010,6 +1078,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               brokerResult.onComplete(brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                   LOGGER.info("Success: Creating Queue");
+                  Future.future(fu->updateAuditTable(routingContext));
                   handleSuccessResponse(response, ResponseType.Created.getCode(),
                       brokerResultHandler.result().toString());
                 } else if (brokerResultHandler.failed()) {
@@ -1036,7 +1105,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * delete a queue in rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext.
    */
   private void deleteQueue(RoutingContext routingContext) {
@@ -1058,6 +1127,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: Deleting Queue");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else if (brokerResultHandler.failed()) {
@@ -1078,7 +1148,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * get queue details from rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void getQueueDetails(RoutingContext routingContext) {
@@ -1100,6 +1170,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: Getting Queue Details");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else if (brokerResultHandler.failed()) {
@@ -1120,7 +1191,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * bind queue to exchange in rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void bindQueue2Exchange(RoutingContext routingContext) {
@@ -1141,6 +1212,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: binding queue to exchange");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Created.getCode(),
                   brokerResultHandler.result().toString());
             } else if (brokerResultHandler.failed()) {
@@ -1161,7 +1233,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * unbind a queue from an exchange in rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void unbindQueue2Exchange(RoutingContext routingContext) {
@@ -1182,6 +1254,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: Unbinding queue to exchange");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Created.getCode(),
                   brokerResultHandler.result().toString());
             } else if (brokerResultHandler.failed()) {
@@ -1202,7 +1275,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * create a vhost in rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void createVHost(RoutingContext routingContext) {
@@ -1225,6 +1298,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               brokerResult.onComplete(brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                   LOGGER.info("Success: Creating vhost");
+                  Future.future(fu->updateAuditTable(routingContext));
                   handleSuccessResponse(response, ResponseType.Created.getCode(),
                       brokerResultHandler.result().toString());
                 } else if (brokerResultHandler.failed()) {
@@ -1234,7 +1308,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               });
             } else {
               LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-              handleResponse(response, BAD_REQUEST,INVALID_PARAM,MSG_INVALID_EXCHANGE_NAME);
+              handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_INVALID_EXCHANGE_NAME);
             }
           });
         } else if (authHandler.failed()) {
@@ -1251,7 +1325,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * delete vhost from rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void deleteVHost(RoutingContext routingContext) {
@@ -1272,6 +1346,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: Deleting vhost");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else if (brokerResultHandler.failed()) {
@@ -1292,7 +1367,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * register a adapter in Rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   private void registerAdapter(RoutingContext routingContext) {
@@ -1303,8 +1378,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String instanceID = request.getHeader(HEADER_HOST);
     requestJson.put(JSON_INSTANCEID, instanceID);
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-    requestJson.put(JSON_CONSUMER, authInfo.getString(JSON_CONSUMER));
-    requestJson.put(JSON_PROVIDER, authInfo.getString(JSON_PROVIDER));
+    requestJson.put(USER_ID, authInfo.getString(USER_ID));
 
     // Future<Boolean>
     // isCatItemsExist=catalogueService.isItemExist(toList(requestJson.getJsonArray(JSON_ENTITIES)));
@@ -1313,6 +1387,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     brokerResult.onComplete(handler -> {
       if (handler.succeeded()) {
         LOGGER.info("Success: Registering adapter");
+        Future.future(fu->updateAuditTable(routingContext));
         handleSuccessResponse(response, ResponseType.Created.getCode(),
             handler.result().toString());
       } else if (brokerResult.failed()) {
@@ -1324,7 +1399,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * delete a adapter in Rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   public void deleteAdapter(RoutingContext routingContext) {
@@ -1351,6 +1426,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     brokerResult.onComplete(brokerResultHandler -> {
       if (brokerResultHandler.succeeded()) {
         LOGGER.info("Success: Deleting adapter");
+        Future.future(fu->updateAuditTable(routingContext));
         handleSuccessResponse(response, ResponseType.Ok.getCode(),
             brokerResultHandler.result().toString());
       } else {
@@ -1362,7 +1438,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * get Adapter details from Rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext
    */
   public void getAdapterDetails(RoutingContext routingContext) {
@@ -1388,6 +1464,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         managementApi.getAdapterDetails(adapterIdBuilder.toString(), databroker);
     brokerResult.onComplete(brokerResultHandler -> {
       if (brokerResultHandler.succeeded()) {
+        Future.future(fu->updateAuditTable(routingContext));
         handleSuccessResponse(response, ResponseType.Ok.getCode(),
             brokerResultHandler.result().toString());
       } else {
@@ -1399,7 +1476,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * publish heartbeat details to Rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext Note: This is too frequent an operation to have info or
    *        error level logs
    */
@@ -1420,6 +1497,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.debug("Success: Published heartbeat");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else {
@@ -1440,7 +1518,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * publish downstream issues to Rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext Note: This is too frequent an operation to have info or
    *        error level logs
    */
@@ -1462,6 +1540,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.debug("Success: published downstream issue");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else {
@@ -1482,7 +1561,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * publish data issue to Rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext Note: All logs are debug level only
    */
   public void publishDataIssue(RoutingContext routingContext) {
@@ -1502,6 +1581,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.debug("Success: publishing a data issue");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else {
@@ -1521,7 +1601,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * publish data from adapter to rabbit MQ.
-   * 
+   *
    * @param routingContext routingContext Note: All logs are debug level
    */
   public void publishDataFromAdapter(RoutingContext routingContext) {
@@ -1542,6 +1622,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.debug("Success: publishing data from adapter");
+              Future.future(fu->updateAuditTable(routingContext));
               handleSuccessResponse(response, ResponseType.Ok.getCode(),
                   brokerResultHandler.result().toString());
             } else {
@@ -1562,7 +1643,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * handle HTTP response.
-   * 
+   *
    * @param response response object
    * @param responseType Http status for response
    * @param isBodyRequired body is required or not for response
@@ -1579,7 +1660,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       int type = json.getInteger(JSON_TYPE);
       HttpStatusCode status = HttpStatusCode.getByValue(type);
       ResponseUrn urn = ResponseUrn.fromCode(type + ""); // @TODO : remove +"" after other verticles
-                                                         // return urn in body
+      // return urn in body
       response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(type)
           .end(generateResponse(status, urn).toString());
@@ -1625,7 +1706,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   /**
    * validate if name passes the regex test for IUDX queue,exchage name.
-   * 
+   *
    * @param name name(queue,exchange)
    * @return Future true if name matches the regex else false
    */
@@ -1643,7 +1724,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * Get the request query parameters delimited by <b>&</b>, <i><b>;</b>(semicolon) is considered as
    * part of the parameter</i>.
-   * 
+   *
    * @param routingContext RoutingContext Object
    * @param response HttpServerResponse
    * @return Optional Optional of Map
@@ -1682,6 +1763,25 @@ public class ApiServerVerticle extends AbstractVerticle {
         || ngsildquery.getTemporalRelation().getEndTime() != null;
 
   }
+  
+  private Future<Void> updateAuditTable(RoutingContext context){
+    Promise<Void> promise = Promise.promise();
+    JsonObject authInfo = (JsonObject) context.data().get("authInfo");
+    
+    JsonObject request = new JsonObject();
+    request.put(USER_ID, authInfo.getValue(USER_ID));
+    request.put(ID, authInfo.getValue(ID));
+    request.put(API, authInfo.getValue(API_ENDPOINT));
+    meteringService.executeWriteQuery(request, handler -> {
+      if(handler.succeeded()) {
+        LOGGER.info("audit table updated");
+        promise.complete();
+      }else {
+        LOGGER.error("failed to update audit table");
+        promise.complete();
+      }
+    });
+    
+    return promise.future();
+  }
 }
-
-

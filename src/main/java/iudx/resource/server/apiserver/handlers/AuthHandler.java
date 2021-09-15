@@ -1,7 +1,48 @@
 package iudx.resource.server.apiserver.handlers;
 
-import static iudx.resource.server.apiserver.response.ResponseUrn.*;
-import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_TOKEN;
+import static iudx.resource.server.apiserver.response.ResponseUrn.RESOURCE_NOT_FOUND;
+import static iudx.resource.server.apiserver.util.Constants.ADAPTER_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
+import static iudx.resource.server.apiserver.util.Constants.API_METHOD;
+import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
+import static iudx.resource.server.apiserver.util.Constants.BIND_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.DOMAIN;
+import static iudx.resource.server.apiserver.util.Constants.ENTITIES_POST_QUERY_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.ENTITITES_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.EXCHANGE_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
+import static iudx.resource.server.apiserver.util.Constants.ID;
+import static iudx.resource.server.apiserver.util.Constants.IDS;
+import static iudx.resource.server.apiserver.util.Constants.ID_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_ADAPTER_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_BIND_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_EXCHANGE_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_QUEUE_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_UNBIND_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_VHOST_URL;
+import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
+import static iudx.resource.server.apiserver.util.Constants.JSON_ENTITIES;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_ENTITIES_URL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_ENTITIES_QUERY_PATH;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_TEMPORAL_QUERY_PATH;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_SUBSCRIPTION_URL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
+import static iudx.resource.server.apiserver.util.Constants.QUEUE_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
+import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.TEMPORAL_POST_QUERY_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.TEMPORAL_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.UNBIND_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.USERSHA;
+import static iudx.resource.server.apiserver.util.Constants.USER_ID;
+import static iudx.resource.server.apiserver.util.Constants.VHOST_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.bypassEndpoint;
 
 import java.util.List;
 import java.util.Map;
@@ -106,8 +147,8 @@ public class AuthHandler implements Handler<RoutingContext> {
     LOGGER.debug("request" + requestJson);
     authenticator.tokenInterospect(requestJson, authInfo, authHandler -> {
       if (authHandler.succeeded()) {
-        LOGGER.debug("Auth info : " + authHandler.result());
-        context.data().put(AUTH_INFO, authHandler.result());
+        authInfo.put(USER_ID, authHandler.result().getValue(USER_ID));
+        context.data().put(AUTH_INFO, authInfo);
       } else {
         processAuthFailure(context, authHandler.cause().getMessage());
         return;
