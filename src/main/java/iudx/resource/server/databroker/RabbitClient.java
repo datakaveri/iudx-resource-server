@@ -1,12 +1,99 @@
 package iudx.resource.server.databroker;
 
-import static iudx.resource.server.databroker.util.Constants.*;
-import static iudx.resource.server.databroker.util.Util.*;
+import static iudx.resource.server.databroker.util.Constants.ADAPTER_ID_NOT_PROVIDED;
+import static iudx.resource.server.databroker.util.Constants.ALLOW;
+import static iudx.resource.server.databroker.util.Constants.ALL_NOT_FOUND;
+import static iudx.resource.server.databroker.util.Constants.APIKEY;
+import static iudx.resource.server.databroker.util.Constants.AUTO_DELETE;
+import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST;
+import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_CODE;
+import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_DATA;
+import static iudx.resource.server.databroker.util.Constants.BROKER_PRODUCTION_DOMAIN;
+import static iudx.resource.server.databroker.util.Constants.BROKER_PRODUCTION_PORT;
+import static iudx.resource.server.databroker.util.Constants.CHECK_CREDENTIALS;
+import static iudx.resource.server.databroker.util.Constants.CONFIGURE;
+import static iudx.resource.server.databroker.util.Constants.DATABASE_READ_FAILURE;
+import static iudx.resource.server.databroker.util.Constants.DATABASE_READ_SUCCESS;
+import static iudx.resource.server.databroker.util.Constants.DATA_ISSUE;
+import static iudx.resource.server.databroker.util.Constants.DATA_WILDCARD_ROUTINGKEY;
+import static iudx.resource.server.databroker.util.Constants.DENY;
+import static iudx.resource.server.databroker.util.Constants.DETAIL;
+import static iudx.resource.server.databroker.util.Constants.DETAILS;
+import static iudx.resource.server.databroker.util.Constants.DOWNSTREAM_ISSUE;
+import static iudx.resource.server.databroker.util.Constants.DURABLE;
+import static iudx.resource.server.databroker.util.Constants.ERROR;
+import static iudx.resource.server.databroker.util.Constants.EXCHANGE;
+import static iudx.resource.server.databroker.util.Constants.EXCHANGE_CREATE_ERROR;
+import static iudx.resource.server.databroker.util.Constants.EXCHANGE_DECLARATION_ERROR;
+import static iudx.resource.server.databroker.util.Constants.EXCHANGE_DELETE_ERROR;
+import static iudx.resource.server.databroker.util.Constants.EXCHANGE_EXISTS;
+import static iudx.resource.server.databroker.util.Constants.EXCHANGE_EXISTS_WITH_DIFFERENT_PROPERTIES;
+import static iudx.resource.server.databroker.util.Constants.EXCHANGE_FOUND;
+import static iudx.resource.server.databroker.util.Constants.EXCHANGE_NAME;
+import static iudx.resource.server.databroker.util.Constants.EXCHANGE_NOT_FOUND;
+import static iudx.resource.server.databroker.util.Constants.EXCHANGE_TYPE;
+import static iudx.resource.server.databroker.util.Constants.FAILURE;
+import static iudx.resource.server.databroker.util.Constants.HEARTBEAT;
+import static iudx.resource.server.databroker.util.Constants.ID;
+import static iudx.resource.server.databroker.util.Constants.ID_NOT_PROVIDED;
+import static iudx.resource.server.databroker.util.Constants.INSERT_DATABROKER_USER;
+import static iudx.resource.server.databroker.util.Constants.INTERNAL_ERROR_CODE;
+import static iudx.resource.server.databroker.util.Constants.INVALID_ID;
+import static iudx.resource.server.databroker.util.Constants.NETWORK_ISSUE;
+import static iudx.resource.server.databroker.util.Constants.NONE;
+import static iudx.resource.server.databroker.util.Constants.PASSWORD;
+import static iudx.resource.server.databroker.util.Constants.QUEUE_ADAPTOR_LOGS;
+import static iudx.resource.server.databroker.util.Constants.QUEUE_ALREADY_EXISTS;
+import static iudx.resource.server.databroker.util.Constants.QUEUE_ALREADY_EXISTS_WITH_DIFFERENT_PROPERTIES;
+import static iudx.resource.server.databroker.util.Constants.QUEUE_BIND_ERROR;
+import static iudx.resource.server.databroker.util.Constants.QUEUE_CREATE_ERROR;
+import static iudx.resource.server.databroker.util.Constants.QUEUE_DATA;
+import static iudx.resource.server.databroker.util.Constants.QUEUE_DELETE_ERROR;
+import static iudx.resource.server.databroker.util.Constants.QUEUE_DOES_NOT_EXISTS;
+import static iudx.resource.server.databroker.util.Constants.QUEUE_EXCHANGE_NOT_FOUND;
+import static iudx.resource.server.databroker.util.Constants.QUEUE_LIST_ERROR;
+import static iudx.resource.server.databroker.util.Constants.READ;
+import static iudx.resource.server.databroker.util.Constants.REQUEST_DELETE;
+import static iudx.resource.server.databroker.util.Constants.REQUEST_GET;
+import static iudx.resource.server.databroker.util.Constants.REQUEST_POST;
+import static iudx.resource.server.databroker.util.Constants.REQUEST_PUT;
+import static iudx.resource.server.databroker.util.Constants.SELECT_DATABROKER_USER;
+import static iudx.resource.server.databroker.util.Constants.SHA_USER_NAME;
+import static iudx.resource.server.databroker.util.Constants.SUCCESS;
+import static iudx.resource.server.databroker.util.Constants.SUCCESS_CODE;
+import static iudx.resource.server.databroker.util.Constants.TAGS;
+import static iudx.resource.server.databroker.util.Constants.TITLE;
+import static iudx.resource.server.databroker.util.Constants.TOPIC_PERMISSION;
+import static iudx.resource.server.databroker.util.Constants.TOPIC_PERMISSION_ALREADY_SET;
+import static iudx.resource.server.databroker.util.Constants.TOPIC_PERMISSION_SET_ERROR;
+import static iudx.resource.server.databroker.util.Constants.TOPIC_PERMISSION_SET_SUCCESS;
+import static iudx.resource.server.databroker.util.Constants.TYPE;
+import static iudx.resource.server.databroker.util.Constants.USER_CREATION_ERROR;
+import static iudx.resource.server.databroker.util.Constants.USER_ID;
+import static iudx.resource.server.databroker.util.Constants.USER_NAME;
+import static iudx.resource.server.databroker.util.Constants.USER_NAME_NOT_PROVIDED;
+import static iudx.resource.server.databroker.util.Constants.VHOST_ALREADY_EXISTS;
+import static iudx.resource.server.databroker.util.Constants.VHOST_CREATE_ERROR;
+import static iudx.resource.server.databroker.util.Constants.VHOST_DELETE_ERROR;
+import static iudx.resource.server.databroker.util.Constants.VHOST_IUDX;
+import static iudx.resource.server.databroker.util.Constants.VHOST_LIST_ERROR;
+import static iudx.resource.server.databroker.util.Constants.VHOST_NOT_FOUND;
+import static iudx.resource.server.databroker.util.Constants.VHOST_PERMISSIONS;
+import static iudx.resource.server.databroker.util.Constants.VHOST_PERMISSIONS_WRITE;
+import static iudx.resource.server.databroker.util.Constants.VHOST_PERMISSION_SET_ERROR;
+import static iudx.resource.server.databroker.util.Constants.WRITE;
+import static iudx.resource.server.databroker.util.Util.encodeValue;
+import static iudx.resource.server.databroker.util.Util.getResponseJson;
+import static iudx.resource.server.databroker.util.Util.isGroupId;
+import static iudx.resource.server.databroker.util.Util.isValidId;
+
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -620,17 +707,17 @@ public class RabbitClient {
     requestParams.vhost = vhost;
     requestParams.id = request.getString("resourceGroup");
     requestParams.resourceServer = request.getString("resourceServer");
-    requestParams.userName = request.getString(CONSUMER);
-    requestParams.provider = request.getString("provider");
-    requestParams.domain = requestParams.userName.substring(requestParams.userName.indexOf("@") + 1,
-        requestParams.userName.length());
-    requestParams.userNameSha = getSha(requestParams.userName);
-    requestParams.userId = requestParams.domain + "/" + requestParams.userNameSha;
+    requestParams.userid = request.getString(USER_ID);
+//    requestParams.provider = request.getString("provider");
+//    requestParams.domain = requestParams.userName.substring(requestParams.userName.indexOf("@") + 1,
+//        requestParams.userName.length());
+//    requestParams.userNameSha = getSha(requestParams.userName);
+//    requestParams.userId = requestParams.domain + "/" + requestParams.userNameSha;
     requestParams.adaptorId =id;
 //        requestParams.provider + "/" + requestParams.resourceServer + "/" + requestParams.id;
     if (isValidId.test(requestParams.adaptorId)) {
       if (requestParams.adaptorId != null && !requestParams.adaptorId.isEmpty() && !requestParams.adaptorId.isBlank()) {
-        Future<JsonObject> userCreationFuture = createUserIfNotExist(requestParams.userName, vhost);
+        Future<JsonObject> userCreationFuture = createUserIfNotExist(requestParams.userid, vhost);
         userCreationFuture.compose(userCreationResult -> {
           requestParams.apiKey = userCreationResult.getString("apiKey");
           JsonObject json = new JsonObject();
@@ -644,14 +731,14 @@ public class RabbitClient {
           }
           LOGGER.debug("Success : Exchange created successfully.");
           return setTopicPermissions(requestParams.vhost, requestParams.adaptorId,
-              requestParams.userId);
+              requestParams.userid);
         }).compose(topicPermissionsResult -> {
           LOGGER.debug("Success : topic permissions set.");
           return queueBinding(requestParams.adaptorId, vhost);
         }).onSuccess(success -> {
           LOGGER.debug("Success : queue bindings done.");
           JsonObject response = new JsonObject()
-              .put(USER_NAME, requestParams.userId)
+              .put(USER_NAME, requestParams.userid)
               .put(Constants.APIKEY, requestParams.apiKey)
               .put(Constants.ID, requestParams.adaptorId)
               .put(Constants.URL, BROKER_PRODUCTION_DOMAIN)
@@ -680,11 +767,7 @@ public class RabbitClient {
     public String apiKey;
     public String id;
     public String resourceServer;
-    public String userName;
-    public String userNameSha;
-    public String provider;
-    public String domain;
-    public String userId;
+    public String userid;
     public String adaptorId;
     public String vhost;
 
@@ -698,7 +781,7 @@ public class RabbitClient {
     /* Get the ID and userName from the request */
     String id = request.getString("resourceGroup");
     String resourceServer = request.getString("resourceServer");
-    String userName = request.getString(CONSUMER);
+    String userName = request.getString(USER_ID);
 
     String provider = request.getString("provider");
     LOGGER.debug("Info : Resource Group Name given by user is : " + id);
@@ -920,16 +1003,16 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    **/
 
-  Future<JsonObject> createUserIfNotExist(String userName, String vhost) {
+  Future<JsonObject> createUserIfNotExist(String userid, String vhost) {
     LOGGER.debug("Info : RabbitClient#createUserIfNotPresent() started");
     Promise<JsonObject> promise = Promise.promise();
     /* Get domain, shaUsername from userName */
-    String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
-    String shaUsername = domain + "/" + Util.getSha(userName);
+    //String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
+    //String shaUsername = domain + "/" + Util.getSha(userName);
     String password = Util.randomPassword.get();
     // This API requires user name in path parameter. Encode the username as it
     // contains a "/"
-    String url = "/api/users/" + encodeValue(shaUsername);
+    String url = "/api/users/" + userid;
     /* Check if user exists */
     JsonObject response = new JsonObject();
     webClient.requestAsync(REQUEST_GET, url).onComplete(reply -> {
@@ -938,12 +1021,12 @@ public class RabbitClient {
         if (reply.result().statusCode() == HttpStatus.SC_NOT_FOUND) {
           LOGGER.debug("Success : User not found. creating user");
           /* Create new user */
-          Future<JsonObject> userCreated = createUser(shaUsername, password, vhost, url);
+          Future<JsonObject> userCreated = createUser(userid, password, vhost, url);
           userCreated.onComplete(handler -> {
             if (handler.succeeded()) {
               /* Handle the response */
               JsonObject result = handler.result();
-              response.put(SHA_USER_NAME, shaUsername);
+              response.put(SHA_USER_NAME, userid);
               response.put(APIKEY, password);
               response.put(TYPE, result.getInteger("type"));
               response.put(TITLE, result.getString("title"));
@@ -961,13 +1044,13 @@ public class RabbitClient {
           // user exists , So something useful can be done here
           /* Handle the response if a user exists */
           JsonObject readDbResponse = new JsonObject();
-          Future<JsonObject> getUserApiKey = getUserInDb(shaUsername);
+          Future<JsonObject> getUserApiKey = getUserInDb(userid);
 
           getUserApiKey.onComplete(getUserApiKeyHandler -> {
             if (getUserApiKeyHandler.succeeded()) {
               LOGGER.info("DATABASE_READ_SUCCESS");
               String apiKey = getUserApiKey.result().getString(APIKEY);
-              readDbResponse.put(SHA_USER_NAME, shaUsername);
+              readDbResponse.put(SHA_USER_NAME, userid);
               readDbResponse.put(APIKEY, apiKey);
               readDbResponse.mergeIn(
                   getResponseJson(SUCCESS_CODE, DATABASE_READ_SUCCESS, DATABASE_READ_SUCCESS));

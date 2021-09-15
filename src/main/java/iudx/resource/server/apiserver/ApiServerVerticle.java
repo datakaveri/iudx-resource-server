@@ -37,7 +37,6 @@ import static iudx.resource.server.apiserver.util.Constants.JSON_EXCHANGE_NAME;
 import static iudx.resource.server.apiserver.util.Constants.JSON_ID;
 import static iudx.resource.server.apiserver.util.Constants.JSON_INSTANCEID;
 import static iudx.resource.server.apiserver.util.Constants.JSON_NAME;
-import static iudx.resource.server.apiserver.util.Constants.JSON_PROVIDER;
 import static iudx.resource.server.apiserver.util.Constants.JSON_QUEUE_NAME;
 import static iudx.resource.server.apiserver.util.Constants.JSON_SEARCH_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
@@ -1379,8 +1378,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String instanceID = request.getHeader(HEADER_HOST);
     requestJson.put(JSON_INSTANCEID, instanceID);
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-    requestJson.put(JSON_CONSUMER, authInfo.getString(JSON_CONSUMER));
-    requestJson.put(JSON_PROVIDER, authInfo.getString(JSON_PROVIDER));
+    requestJson.put(USER_ID, authInfo.getString(USER_ID));
 
     // Future<Boolean>
     // isCatItemsExist=catalogueService.isItemExist(toList(requestJson.getJsonArray(JSON_ENTITIES)));
