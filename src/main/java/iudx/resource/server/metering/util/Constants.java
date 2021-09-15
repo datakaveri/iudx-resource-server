@@ -35,13 +35,14 @@ public class Constants {
   public static final String EMAIL_ID = "emailId";
   public static final String INVALID_DATE_TIME = "invalid date-time";
   public static final String TIME_INTERVAL_QUERY =
-      "SELECT count() FROM meteringtable where time>=$1 and time<=$2";
+      "SELECT count() FROM auditing where time>=$1 and time<=$2";
   public static final String EMAIL_QUERY = " and email='$3'";
   public static final String RESOURCE_QUERY = " and resourceId='$4'";
   public static final String API = "api";
+  public static final String USER_ID="userid";
   public static final String WRITE_QUERY =
-      "INSERT INTO meteringtable (id,time,resourceid,api,email) VALUES ('$1',$2,'$3','$4','$5')";
-  public static final String COLUMN_NAME = "(metering.meteringtable.col0)";
+      "INSERT INTO auditing (id,time,resourceid,api,userid) VALUES ('$1',$2,'$3','$4','$5')";
+  public static final String COLUMN_NAME = "(metering.auditing.col0)";
 
   public static final String MESSAGE = "message";
 }

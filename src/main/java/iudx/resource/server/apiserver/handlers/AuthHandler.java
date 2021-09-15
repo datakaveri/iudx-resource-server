@@ -40,6 +40,7 @@ import static iudx.resource.server.apiserver.util.Constants.TEMPORAL_POST_QUERY_
 import static iudx.resource.server.apiserver.util.Constants.TEMPORAL_URL_REGEX;
 import static iudx.resource.server.apiserver.util.Constants.UNBIND_URL_REGEX;
 import static iudx.resource.server.apiserver.util.Constants.USERSHA;
+import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.apiserver.util.Constants.VHOST_URL_REGEX;
 import static iudx.resource.server.apiserver.util.Constants.bypassEndpoint;
 
@@ -146,8 +147,7 @@ public class AuthHandler implements Handler<RoutingContext> {
     LOGGER.debug("request" + requestJson);
     authenticator.tokenInterospect(requestJson, authInfo, authHandler -> {
       if (authHandler.succeeded()) {
-        LOGGER.debug("Auth info : " + authHandler.result());
-        authInfo.put("userId", authHandler.result().getValue("consumer"));
+        authInfo.put(USER_ID, authHandler.result().getValue(USER_ID));
         context.data().put(AUTH_INFO, authInfo);
       } else {
         processAuthFailure(context, authHandler.cause().getMessage());

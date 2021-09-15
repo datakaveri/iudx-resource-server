@@ -12,6 +12,7 @@ import static iudx.resource.server.metering.util.Constants.RESOURCE_QUERY;
 import static iudx.resource.server.metering.util.Constants.START_TIME;
 import static iudx.resource.server.metering.util.Constants.TIME_INTERVAL_QUERY;
 import static iudx.resource.server.metering.util.Constants.TIME_NOT_FOUND;
+import static iudx.resource.server.metering.util.Constants.USER_ID;
 import static iudx.resource.server.metering.util.Constants.WRITE_QUERY;
 
 import java.time.ZonedDateTime;
@@ -105,7 +106,7 @@ public class QueryBuilder {
   public JsonObject buildWritingQuery(JsonObject request) {
 
     String primaryKey = UUID.randomUUID().toString().replace("-", "");
-    String email = request.getString(EMAIL_ID);
+    String email = request.getString(USER_ID);
     String resourceId = request.getString(ID);
     String api = request.getString(API);
     ZonedDateTime zst = ZonedDateTime.now();

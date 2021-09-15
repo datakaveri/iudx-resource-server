@@ -1,6 +1,6 @@
 package iudx.resource.server.authenticator;
 
-import static iudx.resource.server.authenticator.Constants.JSON_CONSUMER;
+import static iudx.resource.server.authenticator.Constants.JSON_USERID;
 import static iudx.resource.server.authenticator.Constants.OPEN_ENDPOINTS;
 
 import java.util.Arrays;
@@ -96,7 +96,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       result.isOpen = openResourceHandler.equalsIgnoreCase("OPEN");
       if (result.isOpen && OPEN_ENDPOINTS.contains(endPoint)) {
         JsonObject json = new JsonObject();
-        json.put(JSON_CONSUMER, result.jwtData.getSub());
+        json.put(JSON_USERID, result.jwtData.getSub());
         handler.handle(Future.succeededFuture(json));
       }
       return isValidId(result.jwtData, id);
@@ -191,7 +191,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     if (jwtAuthStrategy.isAuthorized(authRequest, jwtData)) {
       LOGGER.info("User access is allowed.");
       JsonObject jsonResponse = new JsonObject();
-      jsonResponse.put(JSON_CONSUMER, jwtData.getSub());
+      jsonResponse.put(JSON_USERID, jwtData.getSub());
       promise.complete(jsonResponse);
     } else {
       LOGGER.info("failed");

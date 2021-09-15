@@ -6,6 +6,7 @@ import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_PARAM;
 import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_TEMPORAL_PARAM;
 import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_TOKEN;
 import static iudx.resource.server.apiserver.response.ResponseUrn.MISSING_TOKEN;
+import static iudx.resource.server.apiserver.util.Constants.API;
 import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
 import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
 import static iudx.resource.server.apiserver.util.Constants.APP_NAME_REGEX;
@@ -60,6 +61,7 @@ import static iudx.resource.server.apiserver.util.Constants.ROUTE_STATIC_SPEC;
 import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
 import static iudx.resource.server.apiserver.util.Constants.SUB_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.USERSHA;
+import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.apiserver.util.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.apiserver.util.HttpStatusCode.UNAUTHORIZED;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
@@ -1769,9 +1771,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
     
     JsonObject request = new JsonObject();
-    request.put("emailId", authInfo.getValue("userId"));
+    request.put(USER_ID, authInfo.getValue(USER_ID));
     request.put(ID, authInfo.getValue(ID));
-    request.put("api", authInfo.getValue(API_ENDPOINT));
+    request.put(API, authInfo.getValue(API_ENDPOINT));
     meteringService.executeWriteQuery(request, handler -> {
       if(handler.succeeded()) {
         LOGGER.info("audit table updated");
