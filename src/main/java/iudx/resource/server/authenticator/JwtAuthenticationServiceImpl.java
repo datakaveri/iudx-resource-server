@@ -62,9 +62,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   JwtAuthenticationServiceImpl(Vertx vertx, final JWTAuth jwtAuth, final WebClient webClient, final JsonObject config) {
     this.jwtAuth = jwtAuth;
     this.audience = config.getString("host");
-    host = config.getString("catServerHost");
-    port = config.getInteger("catServerPort");
-    path = Constants.CAT_RSG_PATH;
+    this.host = config.getString("catServerHost");
+    this.port = config.getInteger("catServerPort");
+    this.path = Constants.CAT_RSG_PATH;
 
     WebClientOptions options = new WebClientOptions();
     options.setTrustAll(true)
@@ -80,10 +80,14 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     String endPoint = authenticationInfo.getString("apiEndpoint");
     String id = authenticationInfo.getString("id");
     String token = authenticationInfo.getString("token");
+    String method = authenticationInfo.getString("method");
 
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);
-    Future<String> openResourceFuture = isOpenResource(id);
+    // Future<String> openResourceFuture =
 
+    boolean doCheckResourceAndId =
+        (endPoint.equalsIgnoreCase("/ngsi-ld/v1/subscription")
+            && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")));
 
     ResultContainer result = new ResultContainer();
 
@@ -91,7 +95,10 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       result.jwtData = decodeHandler;
       return isValidAudienceValue(result.jwtData);
     }).compose(audienceHandler -> {
-      return openResourceFuture;
+      if (!doCheckResourceAndId) {
+        return isOpenResource(id);
+      }
+      return Future.succeededFuture("OPEN");
     }).compose(openResourceHandler -> {
       result.isOpen = openResourceHandler.equalsIgnoreCase("OPEN");
       if (result.isOpen && OPEN_ENDPOINTS.contains(endPoint)) {
@@ -99,7 +106,10 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         json.put(JSON_USERID, result.jwtData.getSub());
         handler.handle(Future.succeededFuture(json));
       }
-      return isValidId(result.jwtData, id);
+      if (!doCheckResourceAndId) {
+        return isValidId(result.jwtData, id);
+      }
+      return Future.succeededFuture(true);
     }).compose(validIdHandler -> {
       return validateAccess(result.jwtData, result.isResourceExist, authenticationInfo);
     }).onComplete(completeHandler -> {

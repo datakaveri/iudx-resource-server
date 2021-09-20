@@ -7,6 +7,7 @@ import static iudx.resource.server.authenticator.authorization.Api.SUBSCRIPTION;
 import static iudx.resource.server.authenticator.authorization.Api.TEMPORAL;
 import static iudx.resource.server.authenticator.authorization.Method.DELETE;
 import static iudx.resource.server.authenticator.authorization.Method.GET;
+import static iudx.resource.server.authenticator.authorization.Method.PATCH;
 import static iudx.resource.server.authenticator.authorization.Method.POST;
 import static iudx.resource.server.authenticator.authorization.Method.PUT;
 
@@ -42,6 +43,7 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     subsAccessList.add(new AuthorizationRequest(POST, SUBSCRIPTION));
     subsAccessList.add(new AuthorizationRequest(DELETE, SUBSCRIPTION));
     subsAccessList.add(new AuthorizationRequest(PUT, SUBSCRIPTION));
+    subsAccessList.add(new AuthorizationRequest(PATCH, SUBSCRIPTION));
     consumerAuthorizationRules.put(IudxAccess.SUBSCRIPTION.getAccess(), subsAccessList);
   }
 

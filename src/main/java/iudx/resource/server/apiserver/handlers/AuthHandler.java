@@ -22,6 +22,7 @@ import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_EXCH
 import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_QUEUE_URL;
 import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_UNBIND_URL;
 import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_VHOST_URL;
+import static iudx.resource.server.apiserver.util.Constants.JSON_ALIAS;
 import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_ENTITIES;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
@@ -132,7 +133,13 @@ public class AuthHandler implements Handler<RoutingContext> {
     }
     LOGGER.info("id : " + id);
 
-    authInfo.put(ID, id);
+    if (path.matches(NGSILD_SUBSCRIPTION_URL)
+        && (!method.equalsIgnoreCase("GET") || !method.equalsIgnoreCase("DELETE"))) {
+      authInfo.put(ID, bodyId);
+    } else {
+      authInfo.put(ID, id);
+    }
+
     JsonArray ids = new JsonArray();
     String[] idArray = id.split(",");
     for (String i : idArray) {
@@ -267,11 +274,10 @@ public class AuthHandler implements Handler<RoutingContext> {
   }
 
   private String getId4rmPath(RoutingContext context) {
-    StringBuilder id = null;
+    StringBuilder id = new StringBuilder();
     Map<String, String> pathParams = context.pathParams();
     LOGGER.info("path params :" + pathParams);
     if (pathParams != null && !pathParams.isEmpty()) {
-      id = new StringBuilder();
       if (pathParams.containsKey(DOMAIN)
           && pathParams.containsKey(USERSHA)
           && pathParams.containsKey(RESOURCE_SERVER)
@@ -281,12 +287,16 @@ public class AuthHandler implements Handler<RoutingContext> {
         id.append("/").append(pathParams.get(USERSHA));
         id.append("/").append(pathParams.get(RESOURCE_SERVER));
         id.append("/").append(pathParams.get(RESOURCE_GROUP));
+        if (pathParams.containsKey(RESOURCE_NAME)) {
+          id.append("/").append(pathParams.get(RESOURCE_NAME));
+        }
         LOGGER.info("id :" + id.toString());
+      } else if (pathParams.containsKey(USER_ID) && pathParams.containsKey(JSON_ALIAS)) {
+        id.append(pathParams.get(USER_ID))
+            .append("/")
+            .append(pathParams.get(JSON_ALIAS));
       }
 
-      if (pathParams.containsKey(RESOURCE_NAME)) {
-        id.append("/").append(pathParams.get(RESOURCE_NAME));
-      }
     }
     LOGGER.info("id :" + id);
     return id != null ? id.toString() : null;
@@ -303,7 +313,7 @@ public class AuthHandler implements Handler<RoutingContext> {
     if (body != null) {
       JsonArray array = body.getJsonArray(JSON_ENTITIES);
       if (array != null) {
-        if (api.matches(ADAPTER_URL_REGEX)) {
+        if (api.matches(ADAPTER_URL_REGEX) || api.matches(SUBSCRIPTION_URL_REGEX)) {
           id = array.getString(0);
         } else {
           JsonObject json = array.getJsonObject(0);

@@ -58,7 +58,6 @@ import static iudx.resource.server.databroker.util.Constants.REQUEST_GET;
 import static iudx.resource.server.databroker.util.Constants.REQUEST_POST;
 import static iudx.resource.server.databroker.util.Constants.REQUEST_PUT;
 import static iudx.resource.server.databroker.util.Constants.SELECT_DATABROKER_USER;
-import static iudx.resource.server.databroker.util.Constants.SHA_USER_NAME;
 import static iudx.resource.server.databroker.util.Constants.SUCCESS;
 import static iudx.resource.server.databroker.util.Constants.SUCCESS_CODE;
 import static iudx.resource.server.databroker.util.Constants.TAGS;
@@ -1006,12 +1005,7 @@ public class RabbitClient {
   Future<JsonObject> createUserIfNotExist(String userid, String vhost) {
     LOGGER.debug("Info : RabbitClient#createUserIfNotPresent() started");
     Promise<JsonObject> promise = Promise.promise();
-    /* Get domain, shaUsername from userName */
-    //String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
-    //String shaUsername = domain + "/" + Util.getSha(userName);
     String password = Util.randomPassword.get();
-    // This API requires user name in path parameter. Encode the username as it
-    // contains a "/"
     String url = "/api/users/" + userid;
     /* Check if user exists */
     JsonObject response = new JsonObject();
@@ -1026,7 +1020,7 @@ public class RabbitClient {
             if (handler.succeeded()) {
               /* Handle the response */
               JsonObject result = handler.result();
-              response.put(SHA_USER_NAME, userid);
+              response.put(USER_ID, userid);
               response.put(APIKEY, password);
               response.put(TYPE, result.getInteger("type"));
               response.put(TITLE, result.getString("title"));
@@ -1050,7 +1044,7 @@ public class RabbitClient {
             if (getUserApiKeyHandler.succeeded()) {
               LOGGER.info("DATABASE_READ_SUCCESS");
               String apiKey = getUserApiKey.result().getString(APIKEY);
-              readDbResponse.put(SHA_USER_NAME, userid);
+              readDbResponse.put(USER_ID, userid);
               readDbResponse.put(APIKEY, apiKey);
               readDbResponse.mergeIn(
                   getResponseJson(SUCCESS_CODE, DATABASE_READ_SUCCESS, DATABASE_READ_SUCCESS));
@@ -1084,7 +1078,7 @@ public class RabbitClient {
    * @param vhost which is a String
    * @return response which is a Future object of promise of Json type
    **/
-  Future<JsonObject> createUser(String shaUsername, String password, String vhost, String url) {
+  Future<JsonObject> createUser(String userid, String password, String vhost, String url) {
     LOGGER.debug("Info : RabbitClient#createUser() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject response = new JsonObject();
@@ -1097,17 +1091,17 @@ public class RabbitClient {
         /* Check if user is created */
         if (ar.result().statusCode() == HttpStatus.SC_CREATED) {
           LOGGER.info("createUserRequest success");
-          response.put(SHA_USER_NAME, shaUsername);
+          response.put(USER_ID, userid);
           response.put(PASSWORD, password);
           LOGGER.debug("Info : user created successfully");
           // set permissions to vhost for newly created user
-          Future<JsonObject> vhostPermission = setVhostPermissions(shaUsername, vhost);
+          Future<JsonObject> vhostPermission = setVhostPermissions(userid, vhost);
           vhostPermission.onComplete(handler -> {
             if (handler.succeeded()) {
               response.mergeIn(getResponseJson(SUCCESS_CODE, VHOST_PERMISSIONS,
                   handler.result().getString(DETAIL)));
               // Call the DB method to store username and password
-              Future<JsonObject> createUserinDb = createUserInDb(shaUsername, password);
+              Future<JsonObject> createUserinDb = createUserInDb(userid, password);
               createUserinDb.onComplete(createUserinDbHandler -> {
                 if (createUserinDbHandler.succeeded()) {
                   promise.complete(response);
@@ -1148,7 +1142,6 @@ public class RabbitClient {
     JsonObject response = new JsonObject();
 
     String query = INSERT_DATABROKER_USER.replace("$1", shaUsername).replace("$2", password);
-    // System.out.println(query);
 
     // Check in DB, get username and password
     pgSQLClient.executeAsync(query).onComplete(db -> {
@@ -1165,12 +1158,12 @@ public class RabbitClient {
     return promise.future();
   }
 
-  Future<JsonObject> getUserInDb(String shaUsername) {
+  Future<JsonObject> getUserInDb(String userid) {
     LOGGER.debug("Info : RabbitClient#getUserInDb() started");
 
     Promise<JsonObject> promise = Promise.promise();
     JsonObject response = new JsonObject();
-    String query = SELECT_DATABROKER_USER.replace("$1", shaUsername);
+    String query = SELECT_DATABROKER_USER.replace("$1", userid);
     LOGGER.debug("Info : " + query);
     // Check in DB, get username and password
     pgSQLClient.executeAsync(query).onComplete(db -> {

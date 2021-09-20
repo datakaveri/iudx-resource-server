@@ -1,13 +1,17 @@
 package iudx.resource.server.apiserver.query;
 
-import static iudx.resource.server.apiserver.response.ResponseUrn.*;
-import static iudx.resource.server.apiserver.util.HttpStatusCode.*;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_ATTR_PARAM;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_GEO_PARAM;
+import static iudx.resource.server.apiserver.util.HttpStatusCode.BAD_REQUEST;
+
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
