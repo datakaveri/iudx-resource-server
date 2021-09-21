@@ -2,6 +2,7 @@ package iudx.resource.server.database;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.text.ParseException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -9,17 +10,19 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.configuration.Configuration;
@@ -29,7 +32,7 @@ import iudx.resource.server.database.archives.ElasticClient;
 
 @ExtendWith({VertxExtension.class})
 public class DatabaseServiceTest {
-  private static Logger logger = LoggerFactory.getLogger(DatabaseServiceTest.class);
+  private static final Logger logger = LogManager.getLogger(DatabaseServiceTest.class);
   private static DatabaseService dbService;
   private static Vertx vertxObj;
   private static ElasticClient client;

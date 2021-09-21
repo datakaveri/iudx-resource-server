@@ -120,9 +120,15 @@ public class SubscriptionService {
                         }
                       });
                     } else {
-                      String exchangeName = entitites.getString(0);//routingKey.substring(0, routingKey.lastIndexOf("/"));
                       JsonArray array = new JsonArray();
-                      array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                      String exchangeName;
+                      if (isGroupResource(routingKey)) {
+                        exchangeName = routingKey;
+                        array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                      } else {
+                        exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
+                        array.add(routingKey);
+                      }
                       JsonObject json = new JsonObject();
                       json.put(EXCHANGE_NAME, exchangeName);
                       json.put(QUEUE_NAME, queueName);
@@ -214,8 +220,8 @@ public class SubscriptionService {
     if (request != null && !request.isEmpty()) {
       String userid = request.getString(USER_ID);
       System.out.println(request);
-//      String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
-      String queueName = userid + "/"+ request.getString("name");
+      // String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
+      String queueName = userid + "/" + request.getString("name");
       Future<JsonObject> resultCreateUser = rabbitClient.createUserIfNotExist(userid, VHOST_IUDX);
       resultCreateUser.onComplete(resultCreateUserhandler -> {
         if (resultCreateUserhandler.succeeded()) {
@@ -262,7 +268,7 @@ public class SubscriptionService {
                             }
                           });
                         } else {
-                          String exchangeName =entitites.getString(0);
+                          String exchangeName = entitites.getString(0);
                           JsonArray array = new JsonArray();
                           array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
                           JsonObject json = new JsonObject();
@@ -395,9 +401,10 @@ public class SubscriptionService {
                       if (bindResponse.containsKey(TITLE)
                           && bindResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
                         LOGGER.error("failed ::" + resultHandlerbind.cause());
-                        //promise.fail(new JsonObject().put(ERROR, "Binding Failed").toString());
+                        // promise.fail(new JsonObject().put(ERROR, "Binding Failed").toString());
                         promise.fail(
-                            getResponseJson(BAD_REQUEST_CODE, ResponseUrn.BAD_REQUEST_URN.getUrn(), BINDING_FAILED).toString());
+                            getResponseJson(BAD_REQUEST_CODE, ResponseUrn.BAD_REQUEST_URN.getUrn(), BINDING_FAILED)
+                                .toString());
                       } else if (totalBindSuccess == totalBindCount) {
                         appendStreamingSubscriptionResponse.put(Constants.ENTITIES, entitites);
                         promise.complete(appendStreamingSubscriptionResponse);
@@ -874,5 +881,9 @@ public class SubscriptionService {
       promise.fail(listCallbackSubscriptionResponse.toString());
     }
     return promise.future();
+  }
+
+  private boolean isGroupResource(String id) {
+    return id.split("/").length == 4;
   }
 }
