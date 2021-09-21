@@ -268,9 +268,15 @@ public class SubscriptionService {
                             }
                           });
                         } else {
-                          String exchangeName = entitites.getString(0);
                           JsonArray array = new JsonArray();
-                          array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                          String exchangeName;
+                          if (isGroupResource(routingKey)) {
+                            exchangeName = routingKey;
+                            array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                          } else {
+                            exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
+                            array.add(routingKey);
+                          }
                           JsonObject json = new JsonObject();
                           json.put(EXCHANGE_NAME, exchangeName);
                           json.put(QUEUE_NAME, queueName);
@@ -381,9 +387,15 @@ public class SubscriptionService {
                   promise.fail(
                       getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY).toString());
                 } else {
-                  String exchangeName = entitites.getString(0);
                   JsonArray array = new JsonArray();
-                  array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                  String exchangeName;
+                  if (isGroupResource(routingKey)) {
+                    exchangeName = routingKey;
+                    array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                  } else {
+                    exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
+                    array.add(routingKey);
+                  }
                   JsonObject json = new JsonObject();
                   json.put(EXCHANGE_NAME, exchangeName);
                   json.put(QUEUE_NAME, queueName);
