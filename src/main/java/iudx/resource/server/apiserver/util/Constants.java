@@ -38,6 +38,7 @@ public class Constants {
   public static final String IUDX_MANAGEMENT_UNBIND_URL = IUDX_MANAGEMENT_URL + "/unbind";
   public static final String IUDX_MANAGEMENT_VHOST_URL = IUDX_MANAGEMENT_URL + "/vhost";
   public static final String IUDX_MANAGEMENT_ADAPTER_URL = IUDX_ADAPTOR_URL + "/ingestion";
+  public static final String IUDX_MANAGEMENT_RESET_PWD = IUDX_MANAGEMENT_URL + "/reset";
 
   /** API Documentation endpoint */
   public static final String ROUTE_STATIC_SPEC = "/apis/spec";
@@ -169,7 +170,7 @@ public class Constants {
   public static final String RESOURCE_GROUP = "resourceGroup";
   public static final String RESOURCE_NAME = "resourceName";
   public static final String USER_ID = "userid";
-  public static final String API="api";
+  public static final String API = "api";
 
   // searchtype
   public static final String JSON_SEARCH_TYPE = "searchType";

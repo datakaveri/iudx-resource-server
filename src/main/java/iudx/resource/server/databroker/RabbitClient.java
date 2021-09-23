@@ -53,10 +53,12 @@ import static iudx.resource.server.databroker.util.Constants.QUEUE_DOES_NOT_EXIS
 import static iudx.resource.server.databroker.util.Constants.QUEUE_EXCHANGE_NOT_FOUND;
 import static iudx.resource.server.databroker.util.Constants.QUEUE_LIST_ERROR;
 import static iudx.resource.server.databroker.util.Constants.READ;
+import static iudx.resource.server.databroker.util.Constants.REDIS_LATEST;
 import static iudx.resource.server.databroker.util.Constants.REQUEST_DELETE;
 import static iudx.resource.server.databroker.util.Constants.REQUEST_GET;
 import static iudx.resource.server.databroker.util.Constants.REQUEST_POST;
 import static iudx.resource.server.databroker.util.Constants.REQUEST_PUT;
+import static iudx.resource.server.databroker.util.Constants.RESET_PWD;
 import static iudx.resource.server.databroker.util.Constants.SELECT_DATABROKER_USER;
 import static iudx.resource.server.databroker.util.Constants.SUCCESS;
 import static iudx.resource.server.databroker.util.Constants.SUCCESS_CODE;
@@ -699,21 +701,21 @@ public class RabbitClient {
 
   public Future<JsonObject> registerAdapter(JsonObject request, String vhost) {
     LOGGER.debug("Info : RabbitClient#registerAdaptor() started");
-    LOGGER.debug("Request :"+request);
+    LOGGER.debug("Request :" + request);
     Promise<JsonObject> promise = Promise.promise();
-    String id=request.getJsonArray("entities").getString(0);//getting first and only id
+    String id = request.getJsonArray("entities").getString(0);// getting first and only id
     AdaptorResultContainer requestParams = new AdaptorResultContainer();
     requestParams.vhost = vhost;
     requestParams.id = request.getString("resourceGroup");
     requestParams.resourceServer = request.getString("resourceServer");
     requestParams.userid = request.getString(USER_ID);
-//    requestParams.provider = request.getString("provider");
-//    requestParams.domain = requestParams.userName.substring(requestParams.userName.indexOf("@") + 1,
-//        requestParams.userName.length());
-//    requestParams.userNameSha = getSha(requestParams.userName);
-//    requestParams.userId = requestParams.domain + "/" + requestParams.userNameSha;
-    requestParams.adaptorId =id;
-//        requestParams.provider + "/" + requestParams.resourceServer + "/" + requestParams.id;
+    // requestParams.provider = request.getString("provider");
+    // requestParams.domain = requestParams.userName.substring(requestParams.userName.indexOf("@") + 1,
+    // requestParams.userName.length());
+    // requestParams.userNameSha = getSha(requestParams.userName);
+    // requestParams.userId = requestParams.domain + "/" + requestParams.userNameSha;
+    requestParams.adaptorId = id;
+    // requestParams.provider + "/" + requestParams.resourceServer + "/" + requestParams.id;
     if (isValidId.test(requestParams.adaptorId)) {
       if (requestParams.adaptorId != null && !requestParams.adaptorId.isEmpty() && !requestParams.adaptorId.isBlank()) {
         Future<JsonObject> userCreationFuture = createUserIfNotExist(requestParams.userid, vhost);
@@ -844,8 +846,7 @@ public class RabbitClient {
                                 /* Construct the response for registration of adaptor */
                                 registerResponse.put(USER_NAME, userID);
                                 /*
-                                 * APIKEY should be equal to password generated. For testing use
-                                 * APIKEY_TEST_EXAMPLE
+                                 * APIKEY should be equal to password generated. For testing use APIKEY_TEST_EXAMPLE
                                  */
                                 registerResponse.put(Constants.APIKEY, apikey);
                                 registerResponse.put(Constants.ID, adaptorID);
@@ -1005,6 +1006,7 @@ public class RabbitClient {
   Future<JsonObject> createUserIfNotExist(String userid, String vhost) {
     LOGGER.debug("Info : RabbitClient#createUserIfNotPresent() started");
     Promise<JsonObject> promise = Promise.promise();
+
     String password = Util.randomPassword.get();
     String url = "/api/users/" + userid;
     /* Check if user exists */
@@ -1158,6 +1160,56 @@ public class RabbitClient {
     return promise.future();
   }
 
+
+  Future<JsonObject> resetPasswordInRMQ(String userid, String password) {
+    LOGGER.debug("Info : RabbitClient#resetPassword() started");
+    Promise<JsonObject> promise = Promise.promise();
+    JsonObject response = new JsonObject();
+    JsonObject arg = new JsonObject();
+    arg.put(PASSWORD, password);
+    arg.put(TAGS, NONE);
+    String url = "/api/users/" + userid;
+    webClient.requestAsync(REQUEST_PUT, url, arg).onComplete(ar -> {
+      if (ar.succeeded()) {
+        if (ar.result().statusCode() == HttpStatus.SC_CREATED) {
+          response.put(userid, userid);
+          response.put(PASSWORD, password);
+          LOGGER.debug("user password changed");
+        } else {
+          LOGGER.error("Error :reset pwd method failed" + ar.cause());
+          response.put(FAILURE, NETWORK_ISSUE);
+          promise.fail(response.toString());
+        }
+      } else {
+        LOGGER.info("Error : Something went wrong while creating user using mgmt API :" + ar.cause());
+        response.put(FAILURE, CHECK_CREDENTIALS);
+        promise.fail(response.toString());
+      }
+    });
+    return promise.future();
+  }
+
+  Future<JsonObject> resetPwdInDb(String userid, String password) {
+    LOGGER.debug("Info : RabbitClient#resetpwdInDb() started");
+    Promise<JsonObject> promise = Promise.promise();
+    JsonObject response = new JsonObject();
+
+    String query = RESET_PWD.replace("$1", password).replace("$2", userid);
+
+    pgSQLClient.executeAsync(query).onComplete(db -> {
+      LOGGER.debug("Info : RabbitClient#resetpwdInDb()executeAsync completed");
+      if (db.succeeded()) {
+        LOGGER.debug("Info : RabbitClient#resetpwdInDb()executeAsync success");
+        response.put("status", "success");
+        promise.complete(response);
+      } else {
+        LOGGER.fatal("Fail : RabbitClient#resetpwdInDb()executeAsync failed");
+        promise.fail("Error : Write to database failed");
+      }
+    });
+    return promise.future();
+  }
+
   Future<JsonObject> getUserInDb(String userid) {
     LOGGER.debug("Info : RabbitClient#getUserInDb() started");
 
@@ -1297,21 +1349,18 @@ public class RabbitClient {
     LOGGER.info("RabbitClient#queueBinding() method started");
     Promise<JsonObject> promise = Promise.promise();
     String topics;
-    
-    if(isGroupId(adaptorID)) {
+
+    if (isGroupId(adaptorID)) {
       topics = adaptorID + DATA_WILDCARD_ROUTINGKEY;
-    }else {
-      topics=adaptorID;
+    } else {
+      topics = adaptorID;
     }
-    
+
     bindQueue(QUEUE_DATA, adaptorID, topics, vhost)
-        .compose(queueDataResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + HEARTBEAT,
-            vhost))
-        .compose(
-            heartBeatResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + DATA_ISSUE,
-                vhost))
-        .compose(dataIssueResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID,
-            adaptorID + DOWNSTREAM_ISSUE, vhost))
+        .compose(databaseResult -> bindQueue(REDIS_LATEST, adaptorID, topics, vhost))
+        .compose(queueDataResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + HEARTBEAT, vhost))
+        .compose(heartBeatResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + DATA_ISSUE, vhost))
+        .compose(dataIssueResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + DOWNSTREAM_ISSUE, vhost))
         .onSuccess(successHandler -> {
           JsonObject response = new JsonObject();
           response.mergeIn(getResponseJson(SUCCESS_CODE, "Queue_Database",

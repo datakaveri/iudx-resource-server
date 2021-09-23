@@ -28,6 +28,7 @@ import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_ADAP
 import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_BIND_URL;
 import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_EXCHANGE_URL;
 import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_QUEUE_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_RESET_PWD;
 import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_UNBIND_URL;
 import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_VHOST_URL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_ALIAS;
@@ -351,6 +352,10 @@ public class ApiServerVerticle extends AbstractVerticle {
         .handler(this::publishDataIssue);
     router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/entities").handler(AuthHandler.create(vertx))
         .handler(this::publishDataFromAdapter);
+
+    router.post(IUDX_MANAGEMENT_RESET_PWD)
+        .handler(AuthHandler.create(vertx))
+        .handler(this::resetPassword);
 
     /**
      * Documentation routes
@@ -1644,6 +1649,25 @@ public class ApiServerVerticle extends AbstractVerticle {
       LOGGER.debug("Fail: Unauthorized");
       handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
+  }
+
+
+  public void resetPassword(RoutingContext routingContext) {
+    LOGGER.debug("Info: resetPassword method started;");
+
+    HttpServerResponse response = routingContext.response();
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+
+    JsonObject request = new JsonObject();
+    request.put(USER_ID, authInfo.getString(USER_ID));
+
+    databroker.resetPassword(request, handler -> {
+      if (handler.succeeded()) {
+        handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+      } else {
+        handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
+      }
+    });
   }
 
   /**

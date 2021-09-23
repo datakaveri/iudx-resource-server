@@ -89,6 +89,13 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         (endPoint.equalsIgnoreCase("/ngsi-ld/v1/subscription")
             && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")));
 
+
+
+    if (!doCheckResourceAndId && (endPoint.equalsIgnoreCase("/managemnet/reset"))) {
+      doCheckResourceAndId = true;
+    }
+
+
     ResultContainer result = new ResultContainer();
 
     jwtDecodeFuture.compose(decodeHandler -> {
@@ -111,6 +118,11 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       }
       return Future.succeededFuture(true);
     }).compose(validIdHandler -> {
+      if (endPoint.equalsIgnoreCase("/managemnet/reset")) {
+        JsonObject json = new JsonObject();
+        json.put(JSON_USERID, result.jwtData.getSub());
+        handler.handle(Future.succeededFuture(json));
+      }
       return validateAccess(result.jwtData, result.isResourceExist, authenticationInfo);
     }).onComplete(completeHandler -> {
       LOGGER.debug("completion handler");
@@ -189,6 +201,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   public Future<JsonObject> validateAccess(JwtData jwtData, boolean resourceExist, JsonObject authInfo) {
     LOGGER.trace("validateAccess() started");
     Promise<JsonObject> promise = Promise.promise();
+
 
     Method method = Method.valueOf(authInfo.getString("method"));
     Api api = Api.fromEndpoint(authInfo.getString("apiEndpoint"));
