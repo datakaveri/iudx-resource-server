@@ -47,8 +47,8 @@ public class Constants {
   public static final String EXCHANGE_CREATE_ERROR = "Creation of Exchange failed";
   public static final String EXCHANGE = "exchange";
   public static final String EXCHANGE_NAME = "exchangeName";
-  public static final String ERROR = "error";
   public static final String EXCHANGE_DECLARATION_ERROR = "something wrong in exchange declaration";
+  public static final String ERROR = "error";
   public static final String EXCHANGE_NOT_FOUND = "Exchange not found";
   public static final String EXCHANGE_TYPE = "topic";
   public static final boolean EXCHANGE_DURABLE_TRUE = true;
@@ -106,7 +106,7 @@ public class Constants {
 
   public static final String STATUS = "status";
   public static final String SUCCESS = "success";
-  public static final String SHA_USER_NAME = "shaUsername";
+//  public static final String USER_ID = "shaUsername";
   public static final String SUBSCRIPTION_ID = "subscriptionID";
   public static final String STREAMING_URL = "streamingURL";
   

@@ -59,8 +59,8 @@ public class JwtAuthServiceImplTest {
     jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, webClient, authConfig);
 
     // since test token doesn't contains valid id's, so forcibly put some dummy id in cache for test.
-    openId = "foobar.iudx.io";
-    closeId = "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group";
+    openId = "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood";
+    closeId = "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information";
     invalidId = "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group1";
 
     jwtAuthenticationService.resourceIdCache.put(openId, "OPEN");
@@ -399,7 +399,7 @@ public class JwtAuthServiceImplTest {
     jwtData.setIat(1627408865L);
     jwtData.setIid("rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
-    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api").add("subs")));
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api").add("sub")));
 
 
     jwtAuthenticationService.validateAccess(jwtData, true, authInfo).onComplete(handler -> {
@@ -459,7 +459,7 @@ public class JwtAuthServiceImplTest {
     jwtData.setIat(1627408865L);
     jwtData.setIid("rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
-    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api").add("subs")));
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api").add("sub")));
 
 
     jwtAuthenticationService.validateAccess(jwtData, true, authInfo).onComplete(handler -> {

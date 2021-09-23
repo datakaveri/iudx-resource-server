@@ -1,13 +1,16 @@
 package iudx.resource.server.apiserver.subscription;
 
+import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static iudx.resource.server.apiserver.util.Constants.*;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.util.Constants;
 import iudx.resource.server.database.archives.DatabaseService;
@@ -176,6 +179,7 @@ public class SubscriptionService {
   private JsonObject generateResponse(JsonObject response) {
     JsonObject finalResponse = new JsonObject();
     int type = response.getInteger(JSON_TYPE);
+    String title=response.getString(JSON_TITLE);
     switch(type) {
       case 400:{
         finalResponse.put(JSON_TYPE, type)
@@ -191,12 +195,12 @@ public class SubscriptionService {
       }
       case 409: {
         finalResponse.put(JSON_TYPE, type)
-            .put(JSON_TITLE, ResponseType.fromCode(type).getMessage())
+            .put(JSON_TITLE,  ResponseType.fromCode(type).getMessage())
             .put(JSON_DETAIL, "Subscription " + ResponseType.AlreadyExists.getMessage());
         break;
       }
       default: {
-        finalResponse.put(JSON_TYPE, ResponseType.BadRequestData.getCode())
+        finalResponse.put(JSON_TYPE, type)
             .put(JSON_TITLE, ResponseType.BadRequestData.getMessage())
             .put(JSON_DETAIL, response.getString(JSON_DETAIL));
         break;

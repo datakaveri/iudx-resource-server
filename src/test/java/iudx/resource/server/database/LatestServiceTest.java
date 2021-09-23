@@ -2,6 +2,8 @@ package iudx.resource.server.database;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -12,8 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.configuration.Configuration;
@@ -23,7 +23,7 @@ import iudx.resource.server.database.latest.RedisClient;
 
 @ExtendWith({VertxExtension.class})
 public class LatestServiceTest {
-  private static Logger logger = LoggerFactory.getLogger(LatestDataService.class);
+  private static final Logger logger = LogManager.getLogger(LatestDataService.class);
   private static LatestDataService latestService;
   private static Vertx vertxObj;
   private static RedisClient client;
@@ -56,7 +56,7 @@ public class LatestServiceTest {
    * resource-id query resource-group aqm rg flood rg itms
    */
 
-  //@Test
+  // @Test
   @DisplayName("Testing Latest Data at resource level- flood")
   void searchLatestResourceflood(VertxTestContext testContext) {
     String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/" +
@@ -80,7 +80,7 @@ public class LatestServiceTest {
     });
   }
 
-  //@Test
+  // @Test
   @DisplayName("Testing Latest Data at resource level- itms")
   void searchLatestResourceItms(VertxTestContext testContext) {
     String id =
@@ -183,8 +183,8 @@ public class LatestServiceTest {
   // Exception Testing
 
   /**
-   * id not present in JSONObject from Verticle options not present in JSONObject id is empty
-   * options is empty options not equal to group/id id not present in the Redis
+   * id not present in JSONObject from Verticle options not present in JSONObject id is empty options
+   * is empty options not equal to group/id id not present in the Redis
    **/
 
   @Test

@@ -5,7 +5,7 @@ import java.util.stream.Stream;
 public enum IudxAccess {
 
   API("api"),
-  SUBSCRIPTION("subs"),
+  SUBSCRIPTION("sub"),
   INGESTION("ingestion");
 
   private final String access;
