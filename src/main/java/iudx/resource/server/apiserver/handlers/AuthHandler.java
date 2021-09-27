@@ -20,6 +20,7 @@ import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_ADAP
 import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_BIND_URL;
 import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_EXCHANGE_URL;
 import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_QUEUE_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_RESET_PWD;
 import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_UNBIND_URL;
 import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_VHOST_URL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_ALIAS;
@@ -33,6 +34,7 @@ import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_TEMPORAL
 import static iudx.resource.server.apiserver.util.Constants.NGSILD_SUBSCRIPTION_URL;
 import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
 import static iudx.resource.server.apiserver.util.Constants.QUEUE_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.RESET_URL_REGEX;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
@@ -139,9 +141,8 @@ public class AuthHandler implements Handler<RoutingContext> {
     } else {
       authInfo.put(ID, id);
     }
-
     JsonArray ids = new JsonArray();
-    String[] idArray = id.split(",");
+    String[] idArray = id == null ? new String[0] : id.split(",");
     for (String i : idArray) {
       ids.add(i);
     }
@@ -261,10 +262,10 @@ public class AuthHandler implements Handler<RoutingContext> {
     String bodyId = getId4rmBody(context, path);
 
     String id;
-    if (!pathId.isBlank()) {
+    if (pathId != null && !pathId.isBlank()) {
       id = pathId;
     } else {
-      if (!paramId.isBlank()) {
+      if (paramId != null && !paramId.isBlank()) {
         id = paramId;
       } else {
         id = bodyId;
@@ -274,7 +275,7 @@ public class AuthHandler implements Handler<RoutingContext> {
   }
 
   private String getId4rmPath(RoutingContext context) {
-    StringBuilder id = new StringBuilder();
+    StringBuilder id = null;
     Map<String, String> pathParams = context.pathParams();
     LOGGER.info("path params :" + pathParams);
     if (pathParams != null && !pathParams.isEmpty()) {
@@ -282,7 +283,7 @@ public class AuthHandler implements Handler<RoutingContext> {
           && pathParams.containsKey(USERSHA)
           && pathParams.containsKey(RESOURCE_SERVER)
           && pathParams.containsKey(RESOURCE_GROUP)) {
-
+        id = new StringBuilder();
         id.append(pathParams.get(DOMAIN));
         id.append("/").append(pathParams.get(USERSHA));
         id.append("/").append(pathParams.get(RESOURCE_SERVER));
@@ -292,6 +293,7 @@ public class AuthHandler implements Handler<RoutingContext> {
         }
         LOGGER.info("id :" + id.toString());
       } else if (pathParams.containsKey(USER_ID) && pathParams.containsKey(JSON_ALIAS)) {
+        id = new StringBuilder();
         id.append(pathParams.get(USER_ID))
             .append("/")
             .append(pathParams.get(JSON_ALIAS));
@@ -358,6 +360,8 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = IUDX_MANAGEMENT_BIND_URL;
     } else if (url.matches(UNBIND_URL_REGEX)) {
       path = IUDX_MANAGEMENT_UNBIND_URL;
+    }else if(url.matches(RESET_URL_REGEX)) {
+      path=IUDX_MANAGEMENT_RESET_PWD;
     }
     return path;
   }

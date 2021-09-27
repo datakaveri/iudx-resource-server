@@ -1,16 +1,20 @@
 package iudx.resource.server.databroker;
 
-import static iudx.resource.server.databroker.util.Constants.*;
+import static iudx.resource.server.databroker.util.Constants.REQUEST_DELETE;
+import static iudx.resource.server.databroker.util.Constants.REQUEST_GET;
+import static iudx.resource.server.databroker.util.Constants.REQUEST_POST;
+import static iudx.resource.server.databroker.util.Constants.REQUEST_PUT;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
-
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 
@@ -34,7 +38,6 @@ public class RabbitWebClient {
   public Future<HttpResponse<Buffer>> requestAsync(String requestType, String url,
       JsonObject requestJson) {
     LOGGER.debug("Info : RabbitMQClientImpl#requestAsync() started");
-    LOGGER.debug("Info : " + requestType + " : " + url + " : " + requestJson);
     Promise<HttpResponse<Buffer>> promise = Promise.promise();
     HttpRequest<Buffer> webRequest = createRequest(requestType, url);
     webRequest.sendJsonObject(requestJson, ar -> {

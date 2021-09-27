@@ -62,6 +62,7 @@ public class Constants {
   public static final String VHOST_URL_REGEX = IUDX_MANAGEMENT_VHOST_URL + "(.*)";
   public static final String BIND_URL_REGEX = IUDX_MANAGEMENT_BIND_URL + "(.*)";
   public static final String UNBIND_URL_REGEX = IUDX_MANAGEMENT_UNBIND_URL + "(.*)";
+  public static final String RESET_URL_REGEX = IUDX_MANAGEMENT_RESET_PWD + "(.*)";
 
 
 

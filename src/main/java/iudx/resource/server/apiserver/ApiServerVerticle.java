@@ -1653,11 +1653,10 @@ public class ApiServerVerticle extends AbstractVerticle {
 
 
   public void resetPassword(RoutingContext routingContext) {
-    LOGGER.debug("Info: resetPassword method started;");
+    LOGGER.debug("Info: resetPassword method started");
 
     HttpServerResponse response = routingContext.response();
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-
     JsonObject request = new JsonObject();
     request.put(USER_ID, authInfo.getString(USER_ID));
 

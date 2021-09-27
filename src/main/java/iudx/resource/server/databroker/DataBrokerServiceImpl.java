@@ -836,13 +836,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerService resetPassword(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler) {
 
-    JsonObject response=new JsonObject();
+    JsonObject response = new JsonObject();
     String password = Util.randomPassword.get();
     String userid = request.getString(USER_ID);
+    Future<JsonObject> userFuture = webClient.getUserInDb(userid);
 
-    Future<JsonObject> userFuture = webClient.getUserInDb(request.getString(userid));
-
-    userFuture.compose(checkUserFut -> {
+    userFuture.compose(checkUserFut->{
       return webClient.resetPasswordInRMQ(userid, password);
     }).compose(rmqResetFut -> {
       return webClient.resetPwdInDb(userid, Util.getSha(password));

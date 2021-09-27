@@ -266,6 +266,7 @@ public class AdapterEntitiesTest {
     database_entities.add(id + Constants.ALLOW_ROUTING_KEY);
     expected.put(Constants.QUEUE_ADAPTOR_LOGS, adaptorLogs_entities);
     expected.put(Constants.QUEUE_DATA, database_entities);
+    expected.put(Constants.REDIS_LATEST, database_entities);
 
     databroker.listAdaptor(request, handler -> {
       if (handler.succeeded()) {
@@ -379,6 +380,7 @@ public class AdapterEntitiesTest {
     database_entities.add(anotherid + Constants.ALLOW_ROUTING_KEY);
     expected.put(Constants.QUEUE_ADAPTOR_LOGS, adaptorLogs_entities);
     expected.put(Constants.QUEUE_DATA, database_entities);
+    expected.put(Constants.REDIS_LATEST, database_entities);
 
     databroker.listAdaptor(request, handler -> {
       if (handler.succeeded()) {

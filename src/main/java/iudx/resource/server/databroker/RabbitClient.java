@@ -1103,7 +1103,7 @@ public class RabbitClient {
               response.mergeIn(getResponseJson(SUCCESS_CODE, VHOST_PERMISSIONS,
                   handler.result().getString(DETAIL)));
               // Call the DB method to store username and password
-              Future<JsonObject> createUserinDb = createUserInDb(userid, password);
+              Future<JsonObject> createUserinDb = createUserInDb(userid, Util.getSha(password));
               createUserinDb.onComplete(createUserinDbHandler -> {
                 if (createUserinDbHandler.succeeded()) {
                   promise.complete(response);
@@ -1171,11 +1171,13 @@ public class RabbitClient {
     String url = "/api/users/" + userid;
     webClient.requestAsync(REQUEST_PUT, url, arg).onComplete(ar -> {
       if (ar.succeeded()) {
-        if (ar.result().statusCode() == HttpStatus.SC_CREATED) {
+        if (ar.result().statusCode() == HttpStatus.SC_NO_CONTENT) {
           response.put(userid, userid);
           response.put(PASSWORD, password);
           LOGGER.debug("user password changed");
+          promise.complete(response);
         } else {
+          LOGGER.error(ar.result().statusCode());
           LOGGER.error("Error :reset pwd method failed" + ar.cause());
           response.put(FAILURE, NETWORK_ISSUE);
           promise.fail(response.toString());
