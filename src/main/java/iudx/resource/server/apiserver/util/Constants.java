@@ -38,7 +38,7 @@ public class Constants {
   public static final String IUDX_MANAGEMENT_UNBIND_URL = IUDX_MANAGEMENT_URL + "/unbind";
   public static final String IUDX_MANAGEMENT_VHOST_URL = IUDX_MANAGEMENT_URL + "/vhost";
   public static final String IUDX_MANAGEMENT_ADAPTER_URL = IUDX_ADAPTOR_URL + "/ingestion";
-  public static final String IUDX_MANAGEMENT_RESET_PWD = IUDX_MANAGEMENT_URL + "/reset";
+  public static final String IUDX_MANAGEMENT_RESET_PWD = IUDX_MANAGEMENT_URL + "/user/resetPassword";
 
   /** API Documentation endpoint */
   public static final String ROUTE_STATIC_SPEC = "/apis/spec";

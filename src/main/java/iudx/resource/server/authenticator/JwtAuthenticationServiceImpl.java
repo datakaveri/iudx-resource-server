@@ -88,7 +88,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     boolean doCheckResourceAndId =
         (endPoint.equalsIgnoreCase("/ngsi-ld/v1/subscription")
             && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")))
-            || endPoint.equalsIgnoreCase("/management/reset");
+            || endPoint.equalsIgnoreCase("/management/user/resetPassword");
 
     LOGGER.info("checkResourceFlag" + doCheckResourceAndId);
 
