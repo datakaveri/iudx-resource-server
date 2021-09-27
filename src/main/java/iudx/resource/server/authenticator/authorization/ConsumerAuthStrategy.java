@@ -3,6 +3,7 @@ package iudx.resource.server.authenticator.authorization;
 import static iudx.resource.server.authenticator.authorization.Api.ENTITIES;
 import static iudx.resource.server.authenticator.authorization.Api.ENTITY_OPERATION;
 import static iudx.resource.server.authenticator.authorization.Api.ENTITY_OPERATION_TEMPORAL;
+import static iudx.resource.server.authenticator.authorization.Api.RESET_PWD;
 import static iudx.resource.server.authenticator.authorization.Api.SUBSCRIPTION;
 import static iudx.resource.server.authenticator.authorization.Api.TEMPORAL;
 import static iudx.resource.server.authenticator.authorization.Method.DELETE;
@@ -45,6 +46,11 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     subsAccessList.add(new AuthorizationRequest(PUT, SUBSCRIPTION));
     subsAccessList.add(new AuthorizationRequest(PATCH, SUBSCRIPTION));
     consumerAuthorizationRules.put(IudxAccess.SUBSCRIPTION.getAccess(), subsAccessList);
+    
+    //management
+    List<AuthorizationRequest> mgmtAccessList=new ArrayList<>();
+    mgmtAccessList.add(new AuthorizationRequest(POST, RESET_PWD));
+    consumerAuthorizationRules.put(IudxAccess.MANAGEMENT.getAccess(), mgmtAccessList);
   }
 
 
@@ -65,6 +71,9 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     }
     if (!result && access.contains(IudxAccess.SUBSCRIPTION.getAccess())) {
       result = consumerAuthorizationRules.get(IudxAccess.SUBSCRIPTION.getAccess()).contains(authRequest);
+    }
+    if(!result) {
+      result=consumerAuthorizationRules.get(IudxAccess.MANAGEMENT.getAccess()).contains(authRequest);
     }
 
     return result;

@@ -87,7 +87,10 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
     boolean doCheckResourceAndId =
         (endPoint.equalsIgnoreCase("/ngsi-ld/v1/subscription")
-            && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")));
+            && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")))
+            || endPoint.equalsIgnoreCase("/management/user/resetPassword");
+
+    LOGGER.info("checkResourceFlag" + doCheckResourceAndId);
 
     ResultContainer result = new ResultContainer();
 
@@ -189,6 +192,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   public Future<JsonObject> validateAccess(JwtData jwtData, boolean resourceExist, JsonObject authInfo) {
     LOGGER.trace("validateAccess() started");
     Promise<JsonObject> promise = Promise.promise();
+
 
     Method method = Method.valueOf(authInfo.getString("method"));
     Api api = Api.fromEndpoint(authInfo.getString("apiEndpoint"));

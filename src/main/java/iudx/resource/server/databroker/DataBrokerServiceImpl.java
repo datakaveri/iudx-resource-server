@@ -1,18 +1,25 @@
 package iudx.resource.server.databroker;
 
+import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_CODE;
+import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_DATA;
+import static iudx.resource.server.databroker.util.Constants.ID;
+import static iudx.resource.server.databroker.util.Constants.STATUS;
+import static iudx.resource.server.databroker.util.Constants.TYPE;
+import static iudx.resource.server.databroker.util.Constants.USER_ID;
+
+import java.util.Map;
+
+import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import io.vertx.rabbitmq.RabbitMQClient;
 import iudx.resource.server.databroker.util.Util;
-import java.util.Map;
-import org.apache.http.HttpStatus;
-import static iudx.resource.server.databroker.util.Constants.*;
 
 /**
  * The Data Broker Service Implementation.
@@ -146,8 +153,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   }
 
   /**
-   * The listAdaptor implements the list of bindings for an exchange (source). This method has
-   * similar functionality as listExchangeSubscribers(JsonObject) method
+   * The listAdaptor implements the list of bindings for an exchange (source). This method has similar
+   * functionality as listExchangeSubscribers(JsonObject) method
    * 
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
@@ -693,7 +700,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     }
     return null;
   }
-  
+
   /**
    * {@inheritDoc}
    */
@@ -712,19 +719,19 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         resourceGroupId = resourceGroupId.substring(0, resourceGroupId.lastIndexOf("/"));
         LOGGER.debug("Info : resourceGroupId  " + resourceGroupId);
         LOGGER.debug("Info : routingKey  " + routingKey);
-        Buffer buffer=Buffer.buffer(json.toString());
+        Buffer buffer = Buffer.buffer(json.toString());
         webClient.getRabbitMQClient().basicPublish(resourceGroupId, routingKey, buffer,
             resultHandler -> {
-          if (resultHandler.succeeded()) {
-            finalResponse.put(STATUS, HttpStatus.SC_OK);
-            LOGGER.info("Success : Message published to queue");
-            handler.handle(Future.succeededFuture(finalResponse));
-          } else {
-            finalResponse.put(TYPE, HttpStatus.SC_BAD_REQUEST);
-            LOGGER.error("Fail : " + resultHandler.cause().toString());
-            handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
-          }
-        });
+              if (resultHandler.succeeded()) {
+                finalResponse.put(STATUS, HttpStatus.SC_OK);
+                LOGGER.info("Success : Message published to queue");
+                handler.handle(Future.succeededFuture(finalResponse));
+              } else {
+                finalResponse.put(TYPE, HttpStatus.SC_BAD_REQUEST);
+                LOGGER.error("Fail : " + resultHandler.cause().toString());
+                handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
+              }
+            });
       }
     }
     return this;
@@ -761,27 +768,27 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                       // routingKey matched. now publish message
                       JsonObject message = new JsonObject();
                       message.put("body", request.toString());
-                      Buffer buffer=Buffer.buffer(message.toString());
+                      Buffer buffer = Buffer.buffer(message.toString());
                       webClient.getRabbitMQClient().basicPublish(adaptor, routingKey, buffer,
                           resultHandler -> {
-                        if (resultHandler.succeeded()) {
-                          LOGGER.info("publishHeartbeat - message published to queue [ " + queueName
-                              + " ] for routingKey [ " + routingKey + " ]");
-                          response.put("type", "success");
-                          response.put("queueName", queueName);
-                          response.put("routingKey", rk.toString());
-                          response.put("detail", "routingKey matched");
-                          handler.handle(Future.succeededFuture(response));
-                        } else {
-                          LOGGER.error(
-                              "publishHeartbeat - some error in publishing message to queue [ "
-                                  + queueName + " ]. cause : " + resultHandler.cause());
-                          response.put("messagePublished", "failed");
-                          response.put("type", "error");
-                          response.put("detail", "routingKey not matched");
-                          handler.handle(Future.failedFuture(response.toString()));
-                        }
-                      });
+                            if (resultHandler.succeeded()) {
+                              LOGGER.info("publishHeartbeat - message published to queue [ " + queueName
+                                  + " ] for routingKey [ " + routingKey + " ]");
+                              response.put("type", "success");
+                              response.put("queueName", queueName);
+                              response.put("routingKey", rk.toString());
+                              response.put("detail", "routingKey matched");
+                              handler.handle(Future.succeededFuture(response));
+                            } else {
+                              LOGGER.error(
+                                  "publishHeartbeat - some error in publishing message to queue [ "
+                                      + queueName + " ]. cause : " + resultHandler.cause());
+                              response.put("messagePublished", "failed");
+                              response.put("type", "error");
+                              response.put("detail", "routingKey not matched");
+                              handler.handle(Future.failedFuture(response.toString()));
+                            }
+                          });
                     } else {
                       LOGGER.error(
                           "publishHeartbeat - routingKey [ " + routingKey + " ] not matched with [ "
@@ -823,5 +830,30 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
     return null;
 
+  }
+
+  @Override
+  public DataBrokerService resetPassword(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler) {
+
+    JsonObject response = new JsonObject();
+    String password = Util.randomPassword.get();
+    String userid = request.getString(USER_ID);
+    Future<JsonObject> userFuture = webClient.getUserInDb(userid);
+
+    userFuture.compose(checkUserFut->{
+      return webClient.resetPasswordInRMQ(userid, password);
+    }).compose(rmqResetFut -> {
+      return webClient.resetPwdInDb(userid, Util.getSha(password));
+    }).onSuccess(successHandler -> {
+      response.put("password", password);
+      handler.handle(Future.succeededFuture(response));
+    }).onFailure(failurehandler -> {
+      JsonObject failureResponse = new JsonObject();
+      failureResponse.put("type", 401).put("title", "not authorized").put("detail", "not authorized");
+      handler.handle(Future.failedFuture(failureResponse.toString()));
+    });
+
+    return this;
   }
 }

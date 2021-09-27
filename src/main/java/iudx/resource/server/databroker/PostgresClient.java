@@ -1,10 +1,11 @@
 package iudx.resource.server.databroker;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
@@ -24,7 +25,6 @@ public class PostgresClient {
 
   public Future<RowSet<Row>> executeAsync(String preparedQuerySQL) {
     LOGGER.debug("Info : PostgresQLClient#executeAsync() started");
-    LOGGER.debug("Info : Query is : " + preparedQuerySQL);
     Promise<RowSet<Row>> promise = Promise.promise();
     pgPool.getConnection(connectionHandler -> {
       if (connectionHandler.succeeded()) {

@@ -91,6 +91,7 @@ public class Constants {
       "Queue already exists with different properties";
   public static final String QUEUE_DATA = "database";
   public static final String QUEUE_ADAPTOR_LOGS = "adaptorLogs";
+  public static final String REDIS_LATEST="redis-latest";
   public static final String QUEUE_LIST_ERROR = "Listing of Queue failed";
   public static final String QUEUE_DELETE_ERROR = "Deletion of Queue failed";
   public static final String QUEUE_CREATE_ERROR = "Creation of Queue failed";
@@ -178,6 +179,7 @@ public class Constants {
       "SELECT * FROM databroker WHERE username='user-test'";
   public static final String SELECT_DATABROKER_USER =
       "SELECT * FROM databroker WHERE username='$1'";
+  public static final String RESET_PWD="UPDATE databroker SET password='$1' where username='$2'";
   
   // sql errors
   public static final String SQL_ERROR = "SQL Error";
