@@ -14,7 +14,7 @@ consumes:
 
 info:
   title: "IUDX Resource Server APIs"
-  version: 1.0.0
+  version: 3.0.0
   description: |
     # Introduction
     The Resource Server is IUDX's data store which allows publication, subscription and discovery of data.
@@ -22,7 +22,7 @@ info:
     For publication and subscription, it allows users to use AMQP streaming protocol over TLS.
     It enables *Providers* of datasources to publish data as per the IUDX data descriptor.
     It enables *Consumers* of datasources to search and query for data using HTTPs APIs.
-    It enables *Subscribers* a.k.a [Streaming Consumer] of datasources to stream data using AMQP streaming protocol over TLS.
+    It enables *Streaming Consumer* a.k.a [Subscribers] of datasources to stream data using AMQP streaming protocol over TLS.
     
     # API HTTP Responses
     Apart from the response codes specified in each API, the API server may respond with certain 4xx and 5xx error codes which are related to common API Gateway behaviours.
@@ -34,32 +34,35 @@ info:
     - <b> Pagination is applicable only for</b>
        - <b>/entities</b>
        - <b>/temporal/entities</b>
-       - <b>/temporal/entityOperations/query</b> &
+       - <b>/temporal/entityOperations/query</b>
        - <b>/entityOperations/query</b>
     
-    additional parameters to be used:
-      - offset : The from parameter defines the offset from the first result you want to fetch,  ( <i>default : 0</i> )
-      - limit : The size parameter allows you to configure the maximum results to be returned  ( <i>default: 5000</i> )
+    Additional query parameters to be used:
+      - <b>offset</b> : The from parameter defines the offset from the first result you want to fetch,  ( <i>default : 0</i> ,<i>minValue: 0</i>, <i>maxValue: 49999</i> )
+      - <b>limit</b> : The size parameter allows you to configure the maximum results to be returned  ( <i>default: 5000</i> ,<i>minValue: 0</i>, <i>maxValue: 5000</i> )
+      
+    # Tokens
+    All the <b>*Search API*</b>  calls to the resource server should now contain a valid IUDX auth token presented in the query header. To search (or) access an *Open* resource, the consumer should present a valid IUDX Auth token. To search (or) access a *Secure / Closed* resource, a consumer must get a token for the *Secure / Closed* resource along with the associated constraints from the IUDX Auth Server. For subscription to a *Secure / Closed / Open* resource, a consumer must get a token along with the associated constraints from the IUDX Auth Server.
     
 tags:
 - name: Latest Entity
   x-displayName: "Latest Data"
   description: |
-        A Spatial Search is used by IUDX Data *Consumers* for querying a resource using a <b>valid IUDX</b> `id`. <br/> If the resource is a <b> protected resource </b> a <b> valid IUDX Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .
+        A Spatial Search is used by IUDX Data *Consumers* for querying a resource using a <b>valid IUDX</b> `id`. <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .
 
 - name: Spatial Entities
   x-displayName: "Spatial Search"
   description: |
-        A Spatial Search is used by IUDX Data *Consumers* for querying a resource using a <b>valid IUDX</b> `id`, `spatial` and `attribute` parameters. <br/> If the resource is a <b> protected resource </b> a <b> valid IUDX Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b>. <br/> You can use this API to make a `spatial` or `attribute` or `complex : spatial+attribute` query.
+        A Spatial Search is used by IUDX Data *Consumers* for querying a resource using a <b>valid IUDX</b> `id`, `spatial` and `attribute` parameters. <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b>. <br/> You can use this API to make a `spatial` or `attribute` or `complex : spatial+attribute` query.
 - name: Temporal Entities
   x-displayName: "Temporal and Complex Search"
   description: |
-        A Temporal Search is used by IUDX Data *Consumers* for querying a resource using a <b>valid IUDX</b> `id`, `temporal`, `spatial` and `attribute` parameters. <br/> If the resource is a <b> protected resource </b> a <b> valid IUDX Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b>. <br/>In order to use this API, a `temporal` parameter is <b>mandatory</b>. <br/> You can use this API to make a `temporal` or `complex : temporal+spatial` or `complex : temporal+attribute` or `complex : temporal+spatial+attribute` query. <br/> If you are looking for an `attribute` only query refer the <b>Spatial Search</b> `/entities` endpoint.
+        A Temporal Search is used by IUDX Data *Consumers* for querying a resource using a <b>valid IUDX</b> `id`, `temporal`, `spatial` and `attribute` parameters. <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b>. <br/>In order to use this API, a `temporal` parameter is <b>mandatory</b>. <br/> You can use this API to make a `temporal` or `complex : temporal+spatial` or `complex : temporal+attribute` or `complex : temporal+spatial+attribute` query. <br/> If you are looking for an `attribute` only query refer the <b>Spatial Search</b> `/entities` endpoint.
 
 - name: Entities Post Query
   x-displayName: "Complex Search (Post Query)"
   description: |
-        A Complex Search (Post Query) is an HTTP POST API and is used by IUDX Data *Consumers*. <br/>This API is used for querying a resource using a <b>valid IUDX</b> `id`, `temporal`, `spatial` and `attribute` parameters. <br/> If the resource is a <b> protected resource </b> a <b> valid IUDX Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b>. <br/> You can use this API to make a `temporal` or `spatial` or `attribute` or `complex : temporal+spatial` or `complex : temporal+attribute` or `complex : spatial+attribute` or `complex : temporal+spatial+attribute` query.
+        A Complex Search (Post Query) is an HTTP POST API and is used by IUDX Data *Consumers*. <br/>This API is used for querying a resource using a <b>valid IUDX</b> `id`, `temporal`, `spatial` and `attribute` parameters. <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b>. <br/> You can use this API to make a `temporal` or `spatial` or `attribute` or `complex : temporal+spatial` or `complex : temporal+attribute` or `complex : spatial+attribute` or `complex : temporal+spatial+attribute` query.
 
 - name: Data Ingestion Adaptor
   x-displayName: "Data Ingestion Adaptor"
@@ -71,13 +74,13 @@ tags:
 - name: Data Subscriber
   x-displayName: "Data Subscriber"
   description: |
-    Register Subscriber a.k.a [Streaming Consumer] using HTTPs APIs to subscribe for data as per the IUDX data descriptor  using AMQP streaming protocol over TLS.
+    Register *Streaming Consumer* a.k.a [Subscribers] using HTTPs APIs to subscribe for data as per the IUDX data descriptor  using AMQP streaming protocol over TLS.
     These apis are intended to be used by IUDX Data *Subscribers* a.k.a [Streaming Consumer].
     
 - name: Management
   x-displayName: "Management"
   description: |
-    Management APIs provide the ability to the users to carry out management tasks by themselves.
+    Management APIs provide the ability to the users to reset streaming credentials.
 
 paths:
       
@@ -90,7 +93,8 @@ paths:
       parameters:
       - name: token
         in: header
-        description: A <b> valid IUDX Auth token </b> to process the request for a <b> protected entity </b> . <br/> This field is <b> mandatory </b> for accessing a <b> protected resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
+        description: A <b> valid IUDX Auth token </b> to process the request. <br/> This field is <b> mandatory </b> for accessing a <b> resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
+        required: true
         schema:
           type: string
           maxLength: 512
@@ -98,7 +102,7 @@ paths:
       
       - name: id
         in: path
-        description: 'A <b> valid IUDX ID </b> of the resource.  <br/> If the resource is a <b> protected resource </b> a <b> valid IUDX Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .'
+        description: 'A <b> valid IUDX ID </b> of the resource. <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .'
         required: true
         schema:
           type: string
@@ -141,7 +145,7 @@ paths:
             https://rs.iudx.org.in/ngsi-ld/v1/entities/suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta
 
       description: |
-        The <b> Latest Data API </b> is used to get the latest (last published) data of a resource. <br /> It uses the <b> IUDX ID </b> a.k.a `id` to query the resource server. <br />  To get data for a <b> protected resource</b>  a <b> valid IUDX Auth token</b>  is mandatory.  <br/> The `/entities` end point follwed by `id` as a <b>path parameter</b> is used to get the latest data.
+        The <b> Latest Data API </b> is used to get the latest (last published) data of a resource. <br /> It uses the <b> IUDX ID </b> a.k.a `id` to query the resource server. <br />  To get data a <b> valid IUDX Auth token</b> is mandatory.  <br/> The `/entities` end point followed by `id` as a <b>path parameter</b> is used to get the latest data.
 
       deprecated: false
 
@@ -153,7 +157,8 @@ paths:
       parameters:
       - name: token
         in: header
-        description: A <b> valid IUDX Auth token </b> to process the request for a <b> protected entity </b> . <br/> This field is <b> mandatory </b> for accessing a <b> protected resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
+        description: A <b> valid IUDX Auth token </b> to process the request. <br/> This field is <b> mandatory </b> for accessing a <b> resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
+        required: true
         schema:
           type: string
           maxLength: 512
@@ -161,7 +166,7 @@ paths:
       
       - name: id
         in: query
-        description: 'A <b> valid IUDX ID </b> of the resource.  <br/> If the resource is a <b> protected resource </b> a <b> valid IUDX Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .'
+        description: 'A <b> valid IUDX ID </b> of the resource. <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .'
         required: true
         schema:
           type: string
@@ -352,7 +357,8 @@ paths:
       parameters:
       - name: token
         in: header
-        description: A <b> valid IUDX Auth token </b> to process the request for a <b> protected entity </b> . <br/> This field is <b> mandatory </b> for accessing a <b> protected resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
+        description: A <b> valid IUDX Auth token </b> to process the request. <br/> This field is <b> mandatory </b> for accessing a <b> resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
+        required: true
         schema:
           type: string
           maxLength: 512
@@ -360,7 +366,7 @@ paths:
       
       - name: id
         in: query
-        description: 'A <b> valid IUDX ID </b> of the resource.  <br/> If the resource is a <b> protected resource </b> a <b> valid IUDX Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .'
+        description: 'A <b> valid IUDX ID </b> of the resource. <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .'
         required: true
         schema:
           type: string
@@ -580,7 +586,8 @@ paths:
       parameters: 
       - name: token
         in: header
-        description: A <b> valid IUDX Auth token </b> to process the request for a <b> protected entity </b> . <br/> This field is <b> mandatory </b> for accessing a <b> protected resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
+        description: A <b> valid IUDX Auth token </b> to process the request. <br/> This field is <b> mandatory </b> for accessing a <b> resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
+        required: true
         schema:
           type: string
           maxLength: 512
@@ -710,7 +717,8 @@ paths:
       parameters: 
       - name: token
         in: header
-        description: A <b> valid IUDX Auth token </b> to process the request for a <b> protected entity </b> . <br/> This field is <b> mandatory </b> for accessing a <b> protected resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
+        description: A <b> valid IUDX Auth token </b> to process the request. <br/> This field is <b> mandatory </b> for accessing a <b> resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
+        required: true
         schema:
           type: string
           maxLength: 512
@@ -2022,6 +2030,12 @@ components:
               type: string
             route_id:
               type: string
+        limit:
+          type: string
+        offset:
+          type: string
+        totalHits:
+          type: string  
 
       example:
         type: urn:dx:rs:success
@@ -2033,6 +2047,10 @@ components:
          "route_id": 14U
          }
          ]
+        limit: 5000
+        offset: 0
+        totalHits: 9091
+
     registeradapter:
       title: registeradapter
       required:
