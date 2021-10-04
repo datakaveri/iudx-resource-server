@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "7367f8c5-26db-4014-8fcf-5227fc6cbeda",
+		"_postman_id": "0ea9e971-6cc8-48df-bd99-1dc1746eb90d",
 		"name": "IUDX-Resource-Server-Consumer-APIs-V3",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -29,7 +29,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"request\": [\n\t\t\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\"\n    ]\n}",
+							"raw": "{\n  \"itemId\": \"example.com/8d4b20ec4bf21efb363e72671e1b5bd77fd6cf91/rs.iudx.io/resource-group\",\n  \"itemType\": \"resource_group\",\n  \"role\": \"consumer\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -37,12 +37,10 @@
 							}
 						},
 						"url": {
-							"raw": "https://authdev.iudx.io/auth/v1/token",
+							"raw": "https://{{auth-server-URL}}/auth/v1/token",
 							"protocol": "https",
 							"host": [
-								"authdev",
-								"iudx",
-								"io"
+								"{{auth-server-URL}}"
 							],
 							"path": [
 								"auth",
