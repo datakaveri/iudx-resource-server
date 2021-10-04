@@ -21,3 +21,4 @@ ENV JAR="iudx.resource.server-cluster-${VERSION}-fat.jar"
 
 WORKDIR /usr/share/app
 COPY --from=builder /usr/share/app/target/${JAR} ./fatjar.jar
+COPY docs docs

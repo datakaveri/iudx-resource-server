@@ -1,5 +1,7 @@
 package iudx.resource.server.database.latest;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -25,6 +27,7 @@ public class LatestVerticle extends AbstractVerticle {
   private JsonObject attributeList;
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
+  private static final Logger LOGGER = LogManager.getLogger(LatestVerticle.class);
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
@@ -39,17 +42,25 @@ public class LatestVerticle extends AbstractVerticle {
 
 
     attributeList = config().getJsonObject("attributeList");
-    redisClient = new RedisClient(vertx, config());
-    binder = new ServiceBinder(vertx);
-    latestData = new LatestDataServiceImpl(redisClient, attributeList);
+    new RedisClient(vertx, config()).start().onSuccess(handler -> {
+      redisClient = handler;
+      binder = new ServiceBinder(vertx);
+      latestData = new LatestDataServiceImpl(redisClient, attributeList);
+      consumer = binder.setAddress(Constants.LATEST_DATA_SERVICE_ADDRESS)
+          .register(LatestDataService.class, latestData);
+    }).onFailure(handler -> {
+      LOGGER.error("failed to start redis client");
+    });
+    
 
-    consumer =
-        binder.setAddress(Constants.LATEST_DATA_SERVICE_ADDRESS)
-            .register(LatestDataService.class, latestData);
+
   }
 
   @Override
   public void stop() {
+    if (redisClient != null) {
+      redisClient.close();
+    }
     binder.unregister(consumer);
   }
 }

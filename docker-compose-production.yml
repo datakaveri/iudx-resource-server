@@ -15,7 +15,6 @@ services:
       - RS_JAVA_OPTS=-Xmx4096m
     volumes:
       - ./configs/config-depl.json:/usr/share/app/configs/config.json
-      - ./docs/:/usr/share/app/docs
       - ./configs/keystore.jks:/usr/share/app/configs/keystore.jks
     depends_on:
       - "zookeeper"
@@ -41,7 +40,6 @@ services:
     volumes:
       - ./configs/config-dev.json:/usr/share/app/configs/config.json
       - ./configs/keystore.jks:/usr/share/app/configs/keystore.jks
-      - ./docs/:/usr/share/app/docs
     ports:
       - "8080:80"
       - "9000:9000"
