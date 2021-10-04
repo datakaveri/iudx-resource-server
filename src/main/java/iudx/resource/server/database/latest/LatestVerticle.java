@@ -10,7 +10,6 @@ import iudx.resource.server.database.archives.Constants;
 
 public class LatestVerticle extends AbstractVerticle {
 
-
   /**
    * The Latest Verticle.
    * <h1>Latest Verticle</h1>
@@ -40,7 +39,6 @@ public class LatestVerticle extends AbstractVerticle {
   @Override
   public void start() throws Exception {
 
-
     attributeList = config().getJsonObject("attributeList");
     new RedisClient(vertx, config()).start().onSuccess(handler -> {
       redisClient = handler;
@@ -51,9 +49,6 @@ public class LatestVerticle extends AbstractVerticle {
     }).onFailure(handler -> {
       LOGGER.error("failed to start redis client");
     });
-    
-
-
   }
 
   @Override

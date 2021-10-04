@@ -11,6 +11,10 @@ import static iudx.resource.server.metering.util.Constants.QUERY_KEY;
 import static iudx.resource.server.metering.util.Constants.START_TIME;
 import static iudx.resource.server.metering.util.Constants.SUCCESS;
 import static iudx.resource.server.metering.util.Constants.TIME_NOT_FOUND;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -24,8 +28,6 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import iudx.resource.server.metering.util.QueryBuilder;
 import iudx.resource.server.metering.util.ResponseBuilder;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class MeteringServiceImpl implements MeteringService {
 
@@ -65,14 +67,7 @@ public class MeteringServiceImpl implements MeteringService {
 
     this.poolOptions = new PoolOptions().setMaxSize(databasePoolSize);
     this.pool = PgPool.pool(vertxInstance, connectOptions, poolOptions);
-    System.out.println(propObj);
     this.vertx = vertxInstance;
-
-    LOGGER.info("IP: " + databaseIP);
-    LOGGER.info("Port: " + databasePort);
-    LOGGER.info("database: " + databaseName);
-    LOGGER.info("user: " + databaseUserName);
-    LOGGER.info("pass: " + databasePassword);
   }
 
   @Override

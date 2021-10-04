@@ -1,11 +1,9 @@
 package iudx.resource.server.databroker;
 
-import static iudx.resource.server.databroker.util.Constants.ADAPTER_ID_NOT_PROVIDED;
 import static iudx.resource.server.databroker.util.Constants.ALLOW;
 import static iudx.resource.server.databroker.util.Constants.ALL_NOT_FOUND;
 import static iudx.resource.server.databroker.util.Constants.APIKEY;
 import static iudx.resource.server.databroker.util.Constants.AUTO_DELETE;
-import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST;
 import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_CODE;
 import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_DATA;
 import static iudx.resource.server.databroker.util.Constants.BROKER_PRODUCTION_DOMAIN;
@@ -24,7 +22,6 @@ import static iudx.resource.server.databroker.util.Constants.DURABLE;
 import static iudx.resource.server.databroker.util.Constants.ERROR;
 import static iudx.resource.server.databroker.util.Constants.EXCHANGE;
 import static iudx.resource.server.databroker.util.Constants.EXCHANGE_CREATE_ERROR;
-import static iudx.resource.server.databroker.util.Constants.EXCHANGE_DECLARATION_ERROR;
 import static iudx.resource.server.databroker.util.Constants.EXCHANGE_DELETE_ERROR;
 import static iudx.resource.server.databroker.util.Constants.EXCHANGE_EXISTS;
 import static iudx.resource.server.databroker.util.Constants.EXCHANGE_EXISTS_WITH_DIFFERENT_PROPERTIES;
@@ -35,10 +32,8 @@ import static iudx.resource.server.databroker.util.Constants.EXCHANGE_TYPE;
 import static iudx.resource.server.databroker.util.Constants.FAILURE;
 import static iudx.resource.server.databroker.util.Constants.HEARTBEAT;
 import static iudx.resource.server.databroker.util.Constants.ID;
-import static iudx.resource.server.databroker.util.Constants.ID_NOT_PROVIDED;
 import static iudx.resource.server.databroker.util.Constants.INSERT_DATABROKER_USER;
 import static iudx.resource.server.databroker.util.Constants.INTERNAL_ERROR_CODE;
-import static iudx.resource.server.databroker.util.Constants.INVALID_ID;
 import static iudx.resource.server.databroker.util.Constants.NETWORK_ISSUE;
 import static iudx.resource.server.databroker.util.Constants.NONE;
 import static iudx.resource.server.databroker.util.Constants.PASSWORD;
@@ -72,7 +67,6 @@ import static iudx.resource.server.databroker.util.Constants.TYPE;
 import static iudx.resource.server.databroker.util.Constants.USER_CREATION_ERROR;
 import static iudx.resource.server.databroker.util.Constants.USER_ID;
 import static iudx.resource.server.databroker.util.Constants.USER_NAME;
-import static iudx.resource.server.databroker.util.Constants.USER_NAME_NOT_PROVIDED;
 import static iudx.resource.server.databroker.util.Constants.VHOST_ALREADY_EXISTS;
 import static iudx.resource.server.databroker.util.Constants.VHOST_CREATE_ERROR;
 import static iudx.resource.server.databroker.util.Constants.VHOST_DELETE_ERROR;
@@ -772,175 +766,6 @@ public class RabbitClient {
     public String adaptorId;
     public String vhost;
 
-  }
-
-  @Deprecated
-  public Future<JsonObject> registerAdaptor_V1(JsonObject request, String vhost) {
-    LOGGER.debug("Info : RabbitClient#registerAdaptor() started");
-    Promise<JsonObject> promise = Promise.promise();
-    // System.out.println(request.toString());
-    /* Get the ID and userName from the request */
-    String id = request.getString("resourceGroup");
-    String resourceServer = request.getString("resourceServer");
-    String userName = request.getString(USER_ID);
-
-    String provider = request.getString("provider");
-    LOGGER.debug("Info : Resource Group Name given by user is : " + id);
-    LOGGER.debug("Info : Resource Server Name by user is : " + resourceServer);
-    LOGGER.debug("Info : User Name is : " + userName);
-    /* Construct a response object */
-    JsonObject registerResponse = new JsonObject();
-    /* Validate the request object */
-    if (request != null && !request.isEmpty()) {
-      /* Goto Create user if ID is not empty */
-      if (id != null && !id.isEmpty() && !id.isBlank()) {
-        /* Validate the ID for special characters */
-        if (Util.isValidId.test(id)) {
-          /* Validate the userName */
-          if (userName != null && !userName.isBlank() && !userName.isEmpty()) {
-            /* Create a new user, if it does not exists */
-            Future<JsonObject> userCreationFuture = createUserIfNotExist(userName, vhost);
-            /* On completion of user creation, handle the result */
-            userCreationFuture.onComplete(rh -> {
-              if (rh.succeeded()) {
-                /* Obtain the result of user creation */
-                JsonObject result = rh.result();
-                LOGGER.debug("Info : Response of createUserIfNotExist is : " + result);
-                /* Construct the domain, userNameSHA, userID and adaptorID */
-                String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
-                String userNameSha = Util.getSha(userName);
-                String userID = domain + "/" + userNameSha;
-                String adaptorID = provider + "/" + resourceServer + "/" + id;
-                String apikey = result.getString(APIKEY);
-                LOGGER.debug("Info : userID is : " + userID);
-                LOGGER.debug("Info : adaptorID is : " + adaptorID);
-                LOGGER.debug("Info : apikey is : " + apikey);
-                if (adaptorID != null && !adaptorID.isBlank() && !adaptorID.isEmpty()) {
-                  JsonObject json = new JsonObject();
-                  json.put(EXCHANGE_NAME, adaptorID);
-                  /* Create an exchange if it does not exists */
-                  Future<JsonObject> exchangeDeclareFuture = createExchange(json, vhost);
-                  /* On completion of exchange creation, handle the result */
-                  exchangeDeclareFuture.onComplete(ar -> {
-                    if (ar.succeeded()) {
-                      /* Obtain the result of exchange creation */
-                      JsonObject obj = ar.result();
-                      LOGGER.debug("Info : Response of createExchange is : " + obj);
-                      LOGGER.debug("Info : exchange name provided : " + adaptorID);
-                      LOGGER.debug("Info : exchange name received : " + obj.getString("exchange"));
-                      // if exchange just registered then set topic permission and bind with queues
-                      if (!obj.containsKey("detail")) {
-                        Future<JsonObject> topicPermissionFuture =
-                            setTopicPermissions(vhost, adaptorID, userID);
-                        topicPermissionFuture.onComplete(topicHandler -> {
-                          if (topicHandler.succeeded()) {
-                            LOGGER.debug("Success : Write permission set on topic for exchange "
-                                + obj.getString("exchange"));
-                            /* Bind the exchange with the database and adaptorLogs queue */
-                            Future<JsonObject> queueBindFuture = queueBinding(adaptorID, vhost);
-                            queueBindFuture.onComplete(res -> {
-                              if (res.succeeded()) {
-                                LOGGER.debug(
-                                    "Success : Queue_Database, Queue_adaptorLogs binding done with "
-                                        + obj.getString("exchange") + " exchange");
-                                /* Construct the response for registration of adaptor */
-                                registerResponse.put(USER_NAME, userID);
-                                /*
-                                 * APIKEY should be equal to password generated. For testing use APIKEY_TEST_EXAMPLE
-                                 */
-                                registerResponse.put(Constants.APIKEY, apikey);
-                                registerResponse.put(Constants.ID, adaptorID);
-                                registerResponse.put(Constants.URL,
-                                    Constants.BROKER_PRODUCTION_DOMAIN);
-                                registerResponse.put(Constants.PORT,
-                                    Constants.BROKER_PRODUCTION_PORT);
-                                registerResponse.put(Constants.VHOST, Constants.VHOST_IUDX);
-
-                                LOGGER.debug("Info : registerResponse : " + registerResponse);
-                                promise.complete(registerResponse);
-                              } else {
-                                /* Handle Queue Error */
-                                LOGGER.error(
-                                    "Error : error in queue binding with adaptor - " + res.cause());
-                                registerResponse.clear().mergeIn(
-                                    getResponseJson(BAD_REQUEST_CODE, ERROR, QUEUE_BIND_ERROR));
-                                promise.fail(registerResponse.toString());
-                              }
-                            });
-                          } else {
-                            /* Handle Topic Permission Error */
-                            LOGGER.error("Error : topic permissions not set for exchange "
-                                + obj.getString("exchange") + " - cause : "
-                                + topicHandler.cause().getMessage());
-                            registerResponse.clear().mergeIn(getResponseJson(BAD_REQUEST_CODE,
-                                ERROR, TOPIC_PERMISSION_SET_ERROR));
-                            promise.fail(registerResponse.toString());
-                          }
-                        });
-                      } else if (obj.getString("detail") != null
-                          && !obj.getString("detail").isEmpty()
-                          && obj.getString("detail").equalsIgnoreCase("Exchange already exists")) {
-                        /* Handle Exchange Error */
-                        LOGGER.error(
-                            "Error : something wrong in exchange declaration : " + ar.cause());
-                        registerResponse.clear()
-                            .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, EXCHANGE_EXISTS));
-                        promise.fail(registerResponse.toString());
-                      }
-                    } else {
-                      /* Handle Exchange Error */
-                      registerResponse.clear().mergeIn(
-                          getResponseJson(BAD_REQUEST_CODE, ERROR, EXCHANGE_DECLARATION_ERROR));
-                      promise.fail(registerResponse.toString());
-                    }
-                  });
-                } else {
-                  /* Handle Request Error */
-                  LOGGER.error("Error : AdaptorID / Exchange not provided in request");
-                  registerResponse.clear()
-                      .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, ADAPTER_ID_NOT_PROVIDED));
-                  promise.fail(registerResponse.toString());
-                }
-              } else if (rh.failed()) {
-                /* Handle User Creation Error */
-                LOGGER.error("Error : User creation failed. " + rh.cause());
-                registerResponse.clear()
-                    .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, USER_CREATION_ERROR));
-                promise.fail(registerResponse.toString());
-              } else {
-                /* Handle User Creation Error */
-                LOGGER.error("Error : User creation failed. " + rh.cause());
-                registerResponse.clear()
-                    .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, USER_CREATION_ERROR));
-                promise.fail(registerResponse.toString());
-              }
-            });
-          } else {
-            /* Handle Request Error */
-            LOGGER.error("Error : user not provided in adaptor registration");
-            registerResponse.clear()
-                .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, USER_NAME_NOT_PROVIDED));
-            promise.fail(registerResponse.toString());
-          }
-        } else {
-          /* Handle Invalid ID Error */
-          registerResponse.clear().mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ID));
-          promise.fail(registerResponse.toString());
-          LOGGER.error("Error : id not provided in adaptor registration");
-        }
-      } else {
-        /* Handle Request Error */
-        LOGGER.error("Error : id not provided in adaptor registration");
-        registerResponse.clear().mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, ID_NOT_PROVIDED));
-        promise.fail(registerResponse.toString());
-      }
-    } else {
-      /* Handle Request Error */
-      LOGGER.error("Error : Bad Request");
-      registerResponse.clear().mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, BAD_REQUEST));
-      promise.fail(registerResponse.toString());
-    }
-    return promise.future();
   }
 
   Future<JsonObject> deleteAdapter(JsonObject json, String vhost) {

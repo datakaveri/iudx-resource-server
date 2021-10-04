@@ -40,15 +40,14 @@ public class RedisClient {
    */
 
   public RedisClient(Vertx vertx, JsonObject config) {
-    this.vertx = vertx;
-    this.config = config;
-
+    this.vertx=vertx;
+    this.config=config;
   }
-
+  
   public Future<RedisClient> start() {
     Promise<RedisClient> promise = Promise.promise();
     StringBuilder RedisURI = new StringBuilder();
-    RedisOptions options;
+    RedisOptions options=null;
     RedisURI.append("redis://").append(config.getString("redisUsername")).append(":")
         .append(config.getString("redisPassword")).append("@")
         .append(config.getString("redisHost")).append(":")
@@ -83,7 +82,6 @@ public class RedisClient {
 
   public RedisClient searchAsync(String key, String pathParam, Handler<AsyncResult<JsonObject>> searchHandler) {
     // using get command
-   
     get(key, pathParam).onComplete(resultRedis -> {
       if (resultRedis.succeeded()) {
         LOGGER.debug("Key found!");

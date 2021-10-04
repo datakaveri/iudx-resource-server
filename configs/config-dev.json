@@ -18,12 +18,7 @@
         {
             "id": "iudx.resource.server.authenticator.AuthenticationVerticle",
             "verticleInstances": 1,
-            "keystore": "configs/keystore.jks",
-            "keystorePassword": "password",
             "authServerHost": "",
-            "testAuthToken": "",
-            "testExpiredAuthToken": "",
-            "testResourceID": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
             "catServerHost": "api.catalogue.iudx.io",
             "catServerPort": 443,
             "resourceServerId": "[[datakaveri.org/27e503da0bdda6efae3a52b3ef423c1f9005657a/rs.iudx.org.in]]",
