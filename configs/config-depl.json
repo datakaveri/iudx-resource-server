@@ -90,10 +90,7 @@
             "redisMode": "CLUSTER",
             "redisUsername": "",
             "redisPassword": "",
-            "redisMaxPoolSize": 30,
-            "redisMaxPoolWaiting": 200,
             "redisMaxWaitingHandlers": 1024,
-            "redisPoolRecycleTimeout": 1500,
             "redisHost":"",
             "redisPort": 1234
 

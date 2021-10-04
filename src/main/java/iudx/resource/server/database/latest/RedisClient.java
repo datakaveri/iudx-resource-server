@@ -44,7 +44,7 @@ public class RedisClient {
     this.config=config;
   }
   
-  Future<RedisClient> start(){
+  public Future<RedisClient> start() {
     Promise<RedisClient> promise = Promise.promise();
     StringBuilder RedisURI = new StringBuilder();
     RedisOptions options=null;
@@ -61,10 +61,10 @@ public class RedisClient {
     } else {
       LOGGER.error("Invalid/Unsupported mode");
       promise.fail("Invalid/Unsupported mode");
+      return promise.future();
     }
     options.setMaxWaitingHandlers(config.getInteger("redisMaxWaitingHandlers"))
         .setConnectionString(RedisURI.toString());
-
     ClusteredClient = Redis.createClient(vertx, options);
     ClusteredClient.connect(conn -> {
       redis = RedisAPI.api(conn.result());
@@ -72,7 +72,6 @@ public class RedisClient {
     });
     return promise.future();
   }
-
   /**
    * searchAsync - Wrapper around Redis async search requests.
    *
@@ -130,6 +129,11 @@ public class RedisClient {
     });
 
     return promise.future();
+  }
+
+  public void close() {
+    redis.close();
+
   }
 
 }
