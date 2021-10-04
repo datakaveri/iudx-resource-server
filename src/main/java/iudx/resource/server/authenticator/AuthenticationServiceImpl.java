@@ -8,16 +8,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -45,6 +47,8 @@ import iudx.resource.server.databroker.util.Util;
  * @since 2020-05-31
  */
 
+@Deprecated()
+//@TODO : delete in 3.0.1
 public class AuthenticationServiceImpl implements AuthenticationService {
 
   private static final Logger LOGGER = LogManager.getLogger(AuthenticationServiceImpl.class);

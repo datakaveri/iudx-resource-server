@@ -1,16 +1,14 @@
 package iudx.resource.server.authenticator;
 
-import static iudx.resource.server.authenticator.Constants.KEYSTORE_PASSWORD;
-import static iudx.resource.server.authenticator.Constants.KEYSTORE_PATH;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.JksOptions;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
@@ -38,6 +36,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
   private AuthenticationService jwtAuthenticationService;
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
+  private WebClient webClient;
 
   static WebClient createWebClient(Vertx vertx, JsonObject config) {
     return createWebClient(vertx, config, false);
@@ -48,9 +47,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
     if (testing) {
       webClientOptions.setTrustAll(true).setVerifyHost(false);
     }
-    webClientOptions.setSsl(true).setKeyStoreOptions(
-        new JksOptions().setPath(config.getString(KEYSTORE_PATH))
-            .setPassword(config.getString(KEYSTORE_PASSWORD)));
+    webClientOptions.setSsl(true);
     return WebClient.create(vertxObj, webClientOptions);
   }
 
@@ -64,35 +61,55 @@ public class AuthenticationVerticle extends AbstractVerticle {
 
   @Override
   public void start() throws Exception {
-    binder = new ServiceBinder(vertx);
-    authentication = new AuthenticationServiceImpl(vertx, createWebClient(vertx, config()), config());
 
+    getJwtPublicKey(vertx, config()).onSuccess(handler -> {
+      String cert = handler;
+      LOGGER.info("cert : " + cert);
+      binder = new ServiceBinder(vertx);
 
-    JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
-    jwtAuthOptions.addPubSecKey(
-        new PubSecKeyOptions()
-            .setAlgorithm("ES256")
-            .setBuffer("-----BEGIN PUBLIC KEY-----\n" +
-                "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8BKf2HZ3wt6wNf30SIsbyjYPkkTS\n" +
-                "GGyyM2/MGF/zYTZV9Z28hHwvZgSfnbsrF36BBKnWszlOYW0AieyAUKaKdg==\n" +
-                "-----END PUBLIC KEY-----\n" +
-                ""));
-    
-    jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
-    JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
+      JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
+      jwtAuthOptions.addPubSecKey(
+          new PubSecKeyOptions()
+              .setAlgorithm("ES256")
+              .setBuffer(cert));
 
-    //@TODO: replace binder with jwt once auth server available.
-    jwtAuthenticationService =
-        new JwtAuthenticationServiceImpl(vertx, jwtAuth, createWebClient(vertx, config()), config());
-    /* Publish the Authentication service with the Event Bus against an address. */
+      jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
+      JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
-    consumer = binder.setAddress(AUTH_SERVICE_ADDRESS)
-        .register(AuthenticationService.class, jwtAuthenticationService);
+      jwtAuthenticationService =
+          new JwtAuthenticationServiceImpl(vertx, jwtAuth, createWebClient(vertx, config()), config());
+
+      /* Publish the Authentication service with the Event Bus against an address. */
+      consumer =
+          binder.setAddress(AUTH_SERVICE_ADDRESS).register(AuthenticationService.class, jwtAuthenticationService);
+
+      LOGGER.info("Authentication verticle deployed");
+
+    }).onFailure(handler -> {
+      LOGGER.error("failed to get JWT public key from auth server");
+      LOGGER.error("Authentication verticle deployment failed.");
+    });
   }
 
   @Override
   public void stop() {
     binder.unregister(consumer);
+  }
+
+
+  private Future<String> getJwtPublicKey(Vertx vertx, JsonObject config) {
+    Promise<String> promise = Promise.promise();
+    webClient = createWebClient(vertx, config);
+    webClient.get(443, config.getString("authServerHost"), "/auth/v1/cert")
+        .send(handler -> {
+          if (handler.succeeded()) {
+            JsonObject json = handler.result().bodyAsJsonObject();
+            promise.complete(json.getString("cert"));
+          } else {
+            promise.fail("fail to get JWT public key");
+          }
+        });
+    return promise.future();
   }
 }
 

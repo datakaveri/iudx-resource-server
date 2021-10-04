@@ -30,6 +30,7 @@ import iudx.resource.server.authenticator.authorization.Api;
 import iudx.resource.server.authenticator.authorization.AuthorizationContextFactory;
 import iudx.resource.server.authenticator.authorization.AuthorizationRequest;
 import iudx.resource.server.authenticator.authorization.AuthorizationStrategy;
+import iudx.resource.server.authenticator.authorization.IudxRole;
 import iudx.resource.server.authenticator.authorization.JwtAuthorization;
 import iudx.resource.server.authenticator.authorization.Method;
 import iudx.resource.server.authenticator.model.JwtData;
@@ -83,8 +84,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     String method = authenticationInfo.getString("method");
 
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);
-    // Future<String> openResourceFuture =
-
+    
     boolean doCheckResourceAndId =
         (endPoint.equalsIgnoreCase("/ngsi-ld/v1/subscription")
             && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")))
@@ -138,10 +138,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
   Future<JwtData> decodeJwt(String jwtToken) {
     Promise<JwtData> promise = Promise.promise();
-
-    // jwtToken =
-    // "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIzNDliNGI1NS0wMjUxLTQ5MGUtYmVlOS0wMGYzYTVkM2U2NDMiLCJpc3MiOiJhdXRoLnRlc3QuY29tIiwiYXVkIjoiZm9vYmFyLml1ZHguaW8iLCJleHAiOjE2MjU5NDUxMTQsImlhdCI6MTYyNTkwMTkxNCwiaWlkIjoicmc6ZXhhbXBsZS5jb20vOGQ0YjIwZWM0YmYyMWVmYjM2M2U3MjY3MWUxYjViZDc3ZmQ2Y2Y5MS9yZXNvdXJjZS1ncm91cCIsInJvbGUiOiJjb25zdW1lciIsImNvbnMiOnt9fQ.44MehPzbPBgAFWz7k3CSF2b-wHBQktGVJVk-unDLnO3_SrbClyQ3k42PgD7TFKB9H13rqBegr7vI0C4BShZbAw";
-
     TokenCredentials creds = new TokenCredentials(jwtToken);
 
     jwtAuth.authenticate(creds)
@@ -198,7 +194,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     Api api = Api.fromEndpoint(authInfo.getString("apiEndpoint"));
     AuthorizationRequest authRequest = new AuthorizationRequest(method, api);
 
-    AuthorizationStrategy authStrategy = AuthorizationContextFactory.create(jwtData.getRole());
+    IudxRole role = IudxRole.fromRole(jwtData.getRole());
+    AuthorizationStrategy authStrategy = AuthorizationContextFactory.create(role);
     LOGGER.info("strategy : " + authStrategy.getClass().getSimpleName());
     JwtAuthorization jwtAuthStrategy = new JwtAuthorization(authStrategy);
     LOGGER.info("endPoint : " + authInfo.getString("apiEndpoint"));

@@ -225,7 +225,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           try {
             response.close();
           } catch (RuntimeException e) {
-            // ignore
+            LOGGER.error("Error : "+e);
           }
           return;
         }
@@ -236,9 +236,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       });
     });
 
-    // router.route().handler(HeadersHandler.create());
     router.route().handler(BodyHandler.create());
-    // router.route().handler(AuthHandler.create(vertx));
 
     ValidatorsHandlersFactory validators = new ValidatorsHandlersFactory();
     FailureHandler validationsFailureHandler = new FailureHandler();
@@ -740,7 +738,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     String userid = request.getParam(USER_ID);
-    // String usersha = request.getParam(USERSHA);
     String alias = request.getParam(JSON_ALIAS);
     String subsId = userid + "/" + alias;
     JsonObject requestJson = routingContext.getBodyAsJson();
@@ -840,7 +837,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     String domain = request.getParam(USER_ID);
-    // String usersha = request.getParam(USERSHA);
     String alias = request.getParam(JSON_ALIAS);
     String subsId = domain + "/" + alias;
     JsonObject requestJson = new JsonObject();
@@ -886,7 +882,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     String userid = request.getParam(USER_ID);
-    // String usersha = request.getParam(USERSHA);
     String alias = request.getParam(JSON_ALIAS);
     String subsId = userid + "/" + alias;
     JsonObject requestJson = new JsonObject();
@@ -1390,8 +1385,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     requestJson.put(USER_ID, authInfo.getString(USER_ID));
 
-    // Future<Boolean>
-    // isCatItemsExist=catalogueService.isItemExist(toList(requestJson.getJsonArray(JSON_ENTITIES)));
     Future<JsonObject> brokerResult = managementApi.registerAdapter(requestJson, databroker);
 
     brokerResult.onComplete(handler -> {
@@ -1716,13 +1709,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         .end(generateResponse(statusCode, urn, message).toString());
   }
 
-  // private JsonObject generateResponse(ResponseType responseType) {
-  // int type = responseType.getCode();
-  // //@TODO : temp fix with ""+
-  // return new RestResponse.Builder().withType(""+type)
-  // .withTitle(ResponseType.fromCode(type).getMessage())
-  // .withMessage(ResponseType.fromCode(type).getMessage()).build().toJson();
-  // }
 
   private JsonObject generateResponse(HttpStatusCode statusCode, ResponseUrn urn) {
     return generateResponse(statusCode, urn, statusCode.getDescription());

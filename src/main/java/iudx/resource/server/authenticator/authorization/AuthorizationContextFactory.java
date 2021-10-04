@@ -2,16 +2,21 @@ package iudx.resource.server.authenticator.authorization;
 
 public class AuthorizationContextFactory {
 
-  public static AuthorizationStrategy create(String role) {
+
+  private final static AuthorizationStrategy consumerAuth = new ConsumerAuthStrategy();
+  private final static AuthorizationStrategy providerAuth = new ProviderAuthStrategy();
+  private final static AuthorizationStrategy delegateAuth = new DelegateAuthStrategy();
+
+  public static AuthorizationStrategy create(IudxRole role) {
     switch (role) {
-      case "consumer": {
-        return new ConsumerAuthStrategy();
+      case CONSUMER: {
+        return consumerAuth;
       }
-      case "provider": {
-        return new ProviderAuthStrategy();
+      case PROVIDER: {
+        return providerAuth;
       }
-      case "delegate": {
-        return new DelegateAuthStrategy();
+      case DELEGATE: {
+        return delegateAuth;
       }
       default:
         throw new IllegalArgumentException(role + "role is not defined in IUDX");

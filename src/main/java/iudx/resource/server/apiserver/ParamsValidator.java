@@ -1,7 +1,30 @@
 package iudx.resource.server.apiserver;
 
-import static iudx.resource.server.apiserver.response.ResponseUrn.*;
-import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_GEO_PARAM;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_GEO_VALUE;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
+import static iudx.resource.server.apiserver.util.Constants.IUDXQUERY_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.MSG_BAD_QUERY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ATTRIBUTE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_COORDINATES;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ENDTIME;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ENTITIES;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_FROM;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOMETRY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOPROPERTY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOQ;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOREL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ID;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_IDPATTERN;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_Q;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_SIZE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TEMPORALQ;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEPROPERTY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEREL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME_PROPERTY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TYPE;
 
 import java.util.HashSet;
 import java.util.List;
@@ -177,17 +200,6 @@ public class ParamsValidator {
     String geoRel = paramsMap.get(NGSILDQUERY_GEOREL);
     String[] georelArray = geoRel != null ? geoRel.split(";") : null;
 
-
-    // boolean validation =
-    // !isValidValue(attrs, attrsValidator)
-    // || !isValidValue(q, qtypeValidator)
-    // || !isValidValue(coordinates, coordinateValidator)
-    // || !isValidValue(georelArray != null ? georelArray[0] : null, geoRelTypeValidator)
-    // || !((georelArray != null && georelArray.length == 2)
-    // ? isValidDistance(georelArray[1], distanceTypeValidator)
-    // : isValidDistance(null, distanceTypeValidator));
-
-
     boolean validations1 =
         !(new AttrsTypeValidator(attrs, false).isValid())
             || !(new QTypeValidator(q, false).isValid())
@@ -316,7 +328,6 @@ public class ParamsValidator {
         validator = new DistanceTypeValidator(distanceValue, false);
         return validator.isValid();
       } else {
-        // return false;
         throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), INVALID_GEO_VALUE,
             INVALID_GEO_VALUE.getMessage());
       }

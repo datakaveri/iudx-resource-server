@@ -24,6 +24,8 @@ public class RedisClient {
   private ResponseBuilder responseBuilder;
   private Redis ClusteredClient;
   private RedisAPI redis;
+  private Vertx vertx;
+  private JsonObject config;
   private static final Command JSONGET =
       Command.create("JSON.GET", -1, 1, 1, 1, false, true, false, false);
   private static final Logger LOGGER = LogManager.getLogger(RedisClient.class);
@@ -38,8 +40,14 @@ public class RedisClient {
    */
 
   public RedisClient(Vertx vertx, JsonObject config) {
+    this.vertx=vertx;
+    this.config=config;
+  }
+  
+  Future<RedisClient> start(){
+    Promise<RedisClient> promise = Promise.promise();
     StringBuilder RedisURI = new StringBuilder();
-    RedisOptions options;
+    RedisOptions options=null;
     RedisURI.append("redis://").append(config.getString("redisUsername")).append(":")
         .append(config.getString("redisPassword")).append("@")
         .append(config.getString("redisHost")).append(":")
@@ -52,17 +60,17 @@ public class RedisClient {
       options = new RedisOptions().setType(RedisClientType.STANDALONE);
     } else {
       LOGGER.error("Invalid/Unsupported mode");
-      return;
+      promise.fail("Invalid/Unsupported mode");
     }
-    options.setMaxPoolSize(config.getInteger("redisMaxPoolSize"))
-        .setMaxPoolWaiting(config.getInteger("redisMaxPoolWaiting"))
-        .setMaxWaitingHandlers(config.getInteger("redisMaxWaitingHandlers"))
-        .setPoolRecycleTimeout(config.getInteger("redisPoolRecycleTimeout"))
+    options.setMaxWaitingHandlers(config.getInteger("redisMaxWaitingHandlers"))
         .setConnectionString(RedisURI.toString());
 
     ClusteredClient = Redis.createClient(vertx, options);
-    redis = RedisAPI.api(ClusteredClient);
-
+    ClusteredClient.connect(conn -> {
+      redis = RedisAPI.api(conn.result());
+      promise.complete(this);
+    });
+    return promise.future();
   }
 
   /**
@@ -75,7 +83,6 @@ public class RedisClient {
 
   public RedisClient searchAsync(String key, String pathParam, Handler<AsyncResult<JsonObject>> searchHandler) {
     // using get command
-   
     get(key, pathParam).onComplete(resultRedis -> {
       if (resultRedis.succeeded()) {
         LOGGER.debug("Key found!");
