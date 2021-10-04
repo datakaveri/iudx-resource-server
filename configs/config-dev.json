@@ -85,15 +85,16 @@
             "catServerPort": 443
         },
         {
-            "id": "iudx.resource.server.database.latest.LatestVerticle",
+           "id": "iudx.resource.server.database.latest.LatestVerticle",
             "verticleInstances": 2,
-            "redisHost": "",
-            "redisPort": 28734,
-            "redisUser": "",
+            "attributeList": {"itms-info": "some-attr"},
+            "redisMode": "STANDALONE",
+            "redisUsername": "",
             "redisPassword": "",
-            "attributeList": {
-                "key": "value"
-            }
+            "redisMaxWaitingHandlers": 1024,
+            "redisHost":"",
+            "redisPort": 1234
+
         },
         {
          	"id": "iudx.resource.server.metering.MeteringVerticle",
