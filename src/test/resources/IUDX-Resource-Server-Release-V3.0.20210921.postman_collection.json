@@ -18698,121 +18698,6 @@
 			"name": "subscription",
 			"item": [
 				{
-					"name": "201 (created successfully) - create exchange for Subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"//set exchange name to env variables.",
-									"var jsonData = pm.response.json(); ",
-									"pm.globals.set(\"exchange_id\",jsonData.id);",
-									"",
-									"// Test the response code",
-									"pm.test(\"response is 201 (created)\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information\");",
-									"});",
-									"",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "token",
-								"type": "text",
-								"value": "{{groupAdapterToken}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"entities\": [\r\n        \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information\"\r\n    ]\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/ingestion",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"ingestion"
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "register adapter",
-							"originalRequest": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "token",
-										"value": "auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/9c86739bbb0f653aeed1d78d18d64841",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"resourceGroup\":\"surat-itms\",\r\n    \"resourceServer\":\"rs.iudx.io\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{base_url}}/iudx/v1/adapter/register",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"iudx",
-										"v1",
-										"adapter",
-										"register"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "content-type",
-									"value": "application/json"
-								},
-								{
-									"key": "content-length",
-									"value": "225"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"username\": \"datakaveri.org/3ae88e7ba006938ffc38203d326b1711b892226d\",\n    \"apiKey\": \"123456\",\n    \"id\": \"rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms\",\n    \"URL\": \"databroker.iudx.io\",\n    \"port\": \"5671\",\n    \"vHost\": \"IUDX\"\n}"
-						}
-					]
-				},
-				{
 					"name": "201 (created) - create a streaming subscription GL",
 					"event": [
 						{
@@ -19844,6 +19729,36 @@
 								"v1",
 								"ingestion",
 								"{{exchange_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reset streaming credentials",
+			"item": [
+				{
+					"name": "{{base_url}}/management/user/resetPassword",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{groupAdapterToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/management/user/resetPassword",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"management",
+								"user",
+								"resetPassword"
 							]
 						}
 					},
