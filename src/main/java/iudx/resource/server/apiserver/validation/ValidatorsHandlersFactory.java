@@ -1,7 +1,32 @@
 package iudx.resource.server.apiserver.validation;
 
-import static iudx.resource.server.apiserver.response.ResponseUrn.*;
-import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.response.ResponseUrn.SCHEMA_READ_ERROR;
+import static iudx.resource.server.apiserver.util.Constants.DOMAIN;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.ID_DOMAIN_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.ID_RG_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.ID_RN_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.ID_RS_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.ID_USERSHA_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.IUDXQUERY_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ATTRIBUTE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_COORDINATES;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ENDTIME;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_FROM;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOMETRY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOPROPERTY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOREL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ID;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_MAXDISTANCE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_Q;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_SIZE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEREL;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
+import static iudx.resource.server.apiserver.util.Constants.USERSHA;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,10 +34,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
+
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -34,8 +62,8 @@ import iudx.resource.server.apiserver.validation.types.IDTypeValidator;
 import iudx.resource.server.apiserver.validation.types.JsonSchemaTypeValidator;
 import iudx.resource.server.apiserver.validation.types.OptionsHeaderValidator;
 import iudx.resource.server.apiserver.validation.types.OptionsTypeValidator;
-import iudx.resource.server.apiserver.validation.types.PaginationOffsetTypeValidator;
 import iudx.resource.server.apiserver.validation.types.PaginationLimitTypeValidator;
+import iudx.resource.server.apiserver.validation.types.PaginationOffsetTypeValidator;
 import iudx.resource.server.apiserver.validation.types.QTypeValidator;
 import iudx.resource.server.apiserver.validation.types.StringTypeValidator;
 import iudx.resource.server.apiserver.validation.types.TimeRelTypeValidator;
@@ -64,10 +92,10 @@ public class ValidatorsHandlersFactory {
         validator = getLatestRequestValidations(parameters, headers);
         break;
       case POST_TEMPORAL:
-        validator = getPostRequestValidator(vertx, body,requestType);
+        validator = getRequestSchemaValidator(vertx, body,requestType);
         break;
       case POST_ENTITIES:
-        validator = getPostRequestValidator(vertx, body,requestType);
+        validator = getRequestSchemaValidator(vertx, body,requestType);
         break;
       case SUBSCRIPTION:
         validator = getSubscriptionsValidations(vertx, body, headers);
@@ -147,33 +175,15 @@ public class ValidatorsHandlersFactory {
   private List<Validator> getSubscriptionsValidations(final Vertx vertx, final JsonObject body,
       final MultiMap headers) {
     List<Validator> validators = new ArrayList<>();
-    validators.add(new OptionsHeaderValidator(headers.get(HEADER_OPTIONS), false));
-
+    validators.add(new OptionsHeaderValidator(headers.get(HEADER_OPTIONS), true));
+    validators.addAll(getRequestSchemaValidator(vertx, body, RequestType.SUBSCRIPTION));
     return validators;
   }
 
 
   private static Map<String, String> jsonSchemaMap = new HashMap<>();
-
-  private List<Validator> getTemporalPostRequestValidations(Vertx vertx, JsonObject body) {
-    List<Validator> validators = new ArrayList<>();
-    SchemaRouter schemaRouter = SchemaRouter.create(vertx, new SchemaRouterOptions());
-    SchemaParser schemaParser = SchemaParser.createOpenAPI3SchemaParser(schemaRouter);
-    String jsonSchema = null;
-
-    try {
-      jsonSchema = loadJson(RequestType.POST_TEMPORAL.getFilename());
-      Schema schema = schemaParser.parse(new JsonObject(jsonSchema));
-      validators.add(new JsonSchemaTypeValidator(body, schema));
-    } catch (Exception ex) {
-      LOGGER.error(ex);
-      throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), SCHEMA_READ_ERROR);
-    }
-    return validators;
-  }
-
-
-  private List<Validator> getPostRequestValidator(Vertx vertx, JsonObject body,RequestType requestType) {
+  
+  private List<Validator> getRequestSchemaValidator(Vertx vertx, JsonObject body,RequestType requestType) {
     List<Validator> validators = new ArrayList<>();
     SchemaRouter schemaRouter = SchemaRouter.create(vertx, new SchemaRouterOptions());
     SchemaParser schemaParser = SchemaParser.createOpenAPI3SchemaParser(schemaRouter);

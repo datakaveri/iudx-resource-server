@@ -7,7 +7,7 @@ public enum RequestType {
   LATEST("latest"),
   POST_TEMPORAL("post_temporal_schema.json"),
   POST_ENTITIES("post_entities_schema.json"),
-  SUBSCRIPTION("subscription");
+  SUBSCRIPTION("subscription_schema.json");
 
   private String filename;
 

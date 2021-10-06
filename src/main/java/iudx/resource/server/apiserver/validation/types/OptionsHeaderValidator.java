@@ -1,7 +1,12 @@
 package iudx.resource.server.apiserver.validation.types;
 
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_HEADER_VALUE;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 
 public class OptionsHeaderValidator implements Validator {
 
@@ -20,19 +25,19 @@ public class OptionsHeaderValidator implements Validator {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_HEADER_VALUE, failureMessage(value));
     } else {
       if (value == null) {
         return true;
       }
       if (value.isBlank()) {
         LOGGER.error("Validation error :  blank value passed");
-        return false;
+        throw new DxRuntimeException(failureCode(), INVALID_HEADER_VALUE, failureMessage(value));
       }
     }
     if (!value.equals("streaming")) {
       LOGGER.error("Validation error : streaming is only allowed value for options parameter");
-      return false;
+      throw new DxRuntimeException(failureCode(), INVALID_HEADER_VALUE, failureMessage(value));
     }
     return true;
   }
@@ -40,12 +45,12 @@ public class OptionsHeaderValidator implements Validator {
 
   @Override
   public int failureCode() {
-    return 400;
+    return HttpStatusCode.BAD_REQUEST.getValue();
   }
 
 
   @Override
   public String failureMessage() {
-    return "Invalid options value";
+    return INVALID_HEADER_VALUE.getMessage();
   }
 }
