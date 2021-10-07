@@ -29,6 +29,9 @@ public class Constants {
   public static final String NGSILD_POST_ENTITIES_QUERY_PATH =
       NGSILD_BASE_PATH + "/entityOperations/query";
 
+  // IUDX resource attribute endpoints
+  public static final String IUDX_MANAGEMENT_RESOURCE_ATTRIBUTE = "/iudx/v1/management/resourceAttribute";
+
   // IUDX management endpoints
   public static final String IUDX_MANAGEMENT_URL = "/management";
   public static final String IUDX_ADAPTOR_URL = "/ngsi-ld/v1";

@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
+import iudx.resource.server.admin.AdminService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -97,6 +99,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private ManagementApi managementApi;
   private SubscriptionService subsService;
   private CatalogueService catalogueService;
+  private AdminService adminService;
 
   private DatabaseService database;
   private DataBrokerService databroker;
@@ -259,6 +262,15 @@ public class ApiServerVerticle extends AbstractVerticle {
     // adapter
     router.post(IUDX_MANAGEMENT_ADAPTER_URL).handler(AuthHandler.create(vertx))
         .handler(this::registerAdapter);
+
+    /* Resource Attribute API Endpoints */
+    router.post(IUDX_MANAGEMENT_RESOURCE_ATTRIBUTE)
+        .consumes(APPLICATION_JSON)
+        .handler(AuthHandler.create(vertx))
+        .handler(this::handlePostResourceAttribute);
+    router.delete(IUDX_MANAGEMENT_RESOURCE_ATTRIBUTE + "/:id")
+        .handler(AuthHandler.create(vertx))
+        .handler(this::handleDeleteResourceAttribute);
     
     router
         .delete(IUDX_MANAGEMENT_ADAPTER_URL
@@ -1669,6 +1681,42 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     }
     return Optional.of(queryParams);
+  }
+
+  private JsonObject handlePostResourceAttribute(RoutingContext context) {
+    LOGGER.info("Info:handlePostResourceAttribute started");
+    JsonObject result = new JsonObject();
+    JsonObject requestJson = context.getBodyAsJson();
+    LOGGER.debug("Request Json: {}", requestJson);
+    HttpServerResponse response = context.response();
+    adminService.setUniqueResourceAttribute(requestJson, handler -> {
+      if (handler.succeeded()) {
+        LOGGER.debug("Unique Resource Attribute set successfully!");
+        handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+      } else {
+        LOGGER.error("Failure in setting unique resource attribute");
+        handleResponse(response, HttpStatusCode.BAD_REQUEST, BACKING_SERVICE_FORMAT);
+      }
+    });
+    return result;
+  }
+
+  private JsonObject handleDeleteResourceAttribute(RoutingContext context) {
+    LOGGER.info("Info:handlePostResourceAttribute started");
+    JsonObject result = new JsonObject();
+    JsonObject requestJson = context.getBodyAsJson();
+    LOGGER.debug("Request Json: {}", requestJson);
+    HttpServerResponse response = context.response();
+    adminService.deleteUniqueResourceAttribute(requestJson, handler -> {
+      if (handler.succeeded()) {
+        LOGGER.debug("Unique Resource Attribute deleted successfully!");
+        handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+      } else {
+        LOGGER.error("Failure in deleting unique resource attribute");
+        handleResponse(response, HttpStatusCode.BAD_REQUEST, BACKING_SERVICE_FORMAT);
+      }
+    });
+    return result;
   }
 
   @Override

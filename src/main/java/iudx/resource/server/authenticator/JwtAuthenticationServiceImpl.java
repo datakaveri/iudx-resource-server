@@ -45,6 +45,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   final int port;;
   final String path;
   final String audience;
+  final String issuer;
 
   // resourceGroupCache will contains ACL info about all resource group in a resource server
   Cache<String, String> resourceGroupCache = CacheBuilder
@@ -62,6 +63,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   JwtAuthenticationServiceImpl(Vertx vertx, final JWTAuth jwtAuth, final WebClient webClient, final JsonObject config) {
     this.jwtAuth = jwtAuth;
     this.audience = config.getString("host");
+    this.issuer = config.getString("issuer");
     host = config.getString("catServerHost");
     port = config.getInteger("catServerPort");
     path = Constants.CAT_RSG_PATH;
@@ -83,7 +85,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);
     Future<String> openResourceFuture = isOpenResource(id);
-
+    if (jwtDecodeFuture.succeeded() && jwtDecodeFuture.result().getRole().equals("admin")) {
+      return authenticateAdminRole(jwtDecodeFuture.result(), handler);
+    }
 
     ResultContainer result = new ResultContainer();
 
@@ -212,6 +216,19 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return promise.future();
   }
 
+  Future<Boolean> isValidIssuerValue(JwtData jwtData) {
+    Promise<Boolean> promise = Promise.promise();
+
+    if (issuer != null && issuer.equalsIgnoreCase(jwtData.getIss())) {
+      promise.complete(true);
+    } else {
+      LOGGER.error("Incorrect issuer value in jwt");
+      promise.fail("Incorrect issuer value in jwt");
+    }
+
+    return promise.future();
+  }
+
   Future<Boolean> isValidId(JwtData jwtData, String id) {
     Promise<Boolean> promise = Promise.promise();
     String jwtId = jwtData.getIid().split(":")[1];
@@ -327,6 +344,21 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return promise.future();
   }
 
-
+  private AuthenticationService authenticateAdminRole(JwtData jwtData, Handler<AsyncResult<JsonObject>> handler) {
+    isValidAudienceValue(jwtData)
+        .compose(ar -> {
+          LOGGER.debug("Audience Value validated");
+          return isValidIssuerValue(jwtData);
+        })
+        .onSuccess(ar -> {
+          LOGGER.debug("Info: Admin role validated");
+          handler.handle(Future.succeededFuture());
+        })
+        .onFailure(ar -> {
+          LOGGER.debug("Error: could not verify admin role due to: {}", ar.getMessage());
+          handler.handle(Future.failedFuture(ar.getCause()));
+        });
+    return this;
+  }
 
 }
