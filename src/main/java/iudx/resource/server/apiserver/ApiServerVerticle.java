@@ -225,7 +225,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           try {
             response.close();
           } catch (RuntimeException e) {
-            LOGGER.error("Error : "+e);
+            LOGGER.error("Error : " + e);
           }
           return;
         }
@@ -277,17 +277,25 @@ public class ApiServerVerticle extends AbstractVerticle {
         .handler(AuthHandler.create(vertx)).handler(this::handleTemporalQuery)
         .failureHandler(validationsFailureHandler);
 
+    ValidationHandler subsValidationHandler = new ValidationHandler(vertx, RequestType.SUBSCRIPTION);
+
     router.post(NGSILD_SUBSCRIPTION_URL)
+        .handler(subsValidationHandler)
         .handler(AuthHandler.create(vertx))
-        .handler(this::handleSubscriptions);
+        .handler(this::handleSubscriptions)
+        .failureHandler(validationsFailureHandler);
     // append sub
     router.patch(NGSILD_SUBSCRIPTION_URL + "/:userid/:alias")
+        .handler(subsValidationHandler)
         .handler(AuthHandler.create(vertx))
-        .handler(this::appendSubscription);
+        .handler(this::appendSubscription)
+        .failureHandler(validationsFailureHandler);
     // update sub
     router.put(NGSILD_SUBSCRIPTION_URL + "/:userid/:alias")
+        .handler(subsValidationHandler)
         .handler(AuthHandler.create(vertx))
-        .handler(this::updateSubscription);
+        .handler(this::updateSubscription)
+        .failureHandler(validationsFailureHandler);
     // get sub
     router.get(NGSILD_SUBSCRIPTION_URL + "/:userid/:alias")
         .handler(AuthHandler.create(vertx))
@@ -354,6 +362,14 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.post(IUDX_MANAGEMENT_RESET_PWD)
         .handler(AuthHandler.create(vertx))
         .handler(this::resetPassword);
+
+
+    router.route().last().handler(requestHandler -> {
+      HttpServerResponse response = requestHandler.response();
+      response.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
+              .setStatusCode(404)
+              .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED).toString());
+    });
 
     /**
      * Documentation routes
@@ -1680,11 +1696,11 @@ public class ApiServerVerticle extends AbstractVerticle {
       JsonObject json = new JsonObject(failureMessage);
       int type = json.getInteger(JSON_TYPE);
       HttpStatusCode status = HttpStatusCode.getByValue(type);
-      String urnTitle=json.getString(JSON_TITLE);
+      String urnTitle = json.getString(JSON_TITLE);
       ResponseUrn urn;
-      if(urnTitle!=null) {
+      if (urnTitle != null) {
         urn = ResponseUrn.fromCode(urnTitle);
-      }else {
+      } else {
         urn = ResponseUrn.fromCode(type + "");
       }
       // return urn in body
