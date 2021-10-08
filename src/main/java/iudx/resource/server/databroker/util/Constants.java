@@ -15,10 +15,6 @@ public class Constants {
   
   public static final String BAD_REQUEST =
       "Bad request : insufficient request data to register adaptor";
-  public static final String BROKER_PRODUCTION_DOMAIN = "databroker.iudx.org.in";
-  public static final String BROKER_PRODUCTION_PORT = "24567";
-  public static final String BROKER_IP = "68.183.80.248";
-  public static final String BROKER_PORT = "5672";
   public static final String CHECK_CREDENTIALS =
       "Something went wrong while creating user using mgmt API. Check credentials";
   public static final String CONFIGURE = "configure";

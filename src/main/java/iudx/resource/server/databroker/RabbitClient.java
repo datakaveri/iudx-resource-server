@@ -6,8 +6,6 @@ import static iudx.resource.server.databroker.util.Constants.APIKEY;
 import static iudx.resource.server.databroker.util.Constants.AUTO_DELETE;
 import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_CODE;
 import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_DATA;
-import static iudx.resource.server.databroker.util.Constants.BROKER_PRODUCTION_DOMAIN;
-import static iudx.resource.server.databroker.util.Constants.BROKER_PRODUCTION_PORT;
 import static iudx.resource.server.databroker.util.Constants.CHECK_CREDENTIALS;
 import static iudx.resource.server.databroker.util.Constants.CONFIGURE;
 import static iudx.resource.server.databroker.util.Constants.DATABASE_READ_FAILURE;
@@ -70,7 +68,6 @@ import static iudx.resource.server.databroker.util.Constants.USER_NAME;
 import static iudx.resource.server.databroker.util.Constants.VHOST_ALREADY_EXISTS;
 import static iudx.resource.server.databroker.util.Constants.VHOST_CREATE_ERROR;
 import static iudx.resource.server.databroker.util.Constants.VHOST_DELETE_ERROR;
-import static iudx.resource.server.databroker.util.Constants.VHOST_IUDX;
 import static iudx.resource.server.databroker.util.Constants.VHOST_LIST_ERROR;
 import static iudx.resource.server.databroker.util.Constants.VHOST_NOT_FOUND;
 import static iudx.resource.server.databroker.util.Constants.VHOST_PERMISSIONS;
@@ -110,9 +107,17 @@ public class RabbitClient {
   private RabbitMQClient client;
   private RabbitWebClient webClient;
   private PostgresClient pgSQLClient;
+  private String url;
+  private int port;
+  private String vhost;
+  
 
   public RabbitClient(Vertx vertx, RabbitMQOptions rabbitConfigs, RabbitWebClient webClient,
-      PostgresClient pgSQLClient) {
+      PostgresClient pgSQLClient,JsonObject configs) {
+    this.url=configs.getString("dataBrokerIP");
+    this.port=configs.getInteger("dataBrokerPort");
+    this.vhost=configs.getString("dataBrokerVhost");
+    
     this.client = getRabbitMQClient(vertx, rabbitConfigs);
     this.webClient = webClient;
     this.pgSQLClient = pgSQLClient;
@@ -703,13 +708,8 @@ public class RabbitClient {
     requestParams.id = request.getString("resourceGroup");
     requestParams.resourceServer = request.getString("resourceServer");
     requestParams.userid = request.getString(USER_ID);
-    // requestParams.provider = request.getString("provider");
-    // requestParams.domain = requestParams.userName.substring(requestParams.userName.indexOf("@") + 1,
-    // requestParams.userName.length());
-    // requestParams.userNameSha = getSha(requestParams.userName);
-    // requestParams.userId = requestParams.domain + "/" + requestParams.userNameSha;
+    
     requestParams.adaptorId = id;
-    // requestParams.provider + "/" + requestParams.resourceServer + "/" + requestParams.id;
     if (isValidId.test(requestParams.adaptorId)) {
       if (requestParams.adaptorId != null && !requestParams.adaptorId.isEmpty() && !requestParams.adaptorId.isBlank()) {
         Future<JsonObject> userCreationFuture = createUserIfNotExist(requestParams.userid, vhost);
@@ -736,9 +736,9 @@ public class RabbitClient {
               .put(USER_NAME, requestParams.userid)
               .put(Constants.APIKEY, requestParams.apiKey)
               .put(Constants.ID, requestParams.adaptorId)
-              .put(Constants.URL, BROKER_PRODUCTION_DOMAIN)
-              .put(Constants.PORT, BROKER_PRODUCTION_PORT)
-              .put(Constants.VHOST, VHOST_IUDX);
+              .put(Constants.URL, this.url)
+              .put(Constants.PORT, this.port)
+              .put(Constants.VHOST, this.vhost);
           LOGGER.debug("Success : Adapter created successfully.");
           promise.complete(response);
         }).onFailure(failure -> {

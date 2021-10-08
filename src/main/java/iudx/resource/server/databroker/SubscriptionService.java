@@ -48,8 +48,6 @@ import iudx.resource.server.databroker.util.Constants;
 public class SubscriptionService {
   private static final Logger LOGGER = LogManager.getLogger(SubscriptionService.class);
 
-  private String url;
-  // private WebClient webClient;
   JsonObject requestBody = new JsonObject();
   JsonObject finalResponse = new JsonObject();
   private String user;
@@ -64,10 +62,15 @@ public class SubscriptionService {
   private RabbitClient rabbitClient;
   private PostgresClient pgSQLClient;
 
-  SubscriptionService(RabbitClient rabbitClient, PostgresClient pgSQLClient, String vhost) {
+  private String url;
+  private int port;
+
+  SubscriptionService(RabbitClient rabbitClient, PostgresClient pgSQLClient, JsonObject config) {
     this.rabbitClient = rabbitClient;
     this.pgSQLClient = pgSQLClient;
-    this.vhost = vhost;
+    this.vhost = config.getString("dataBrokerVhost");
+    this.url = config.getString("dataBrokerIP");
+    this.port = config.getInteger("dataBrokerPort");
   }
 
   Future<JsonObject> registerStreamingSubscription(JsonObject request) {
@@ -156,18 +159,12 @@ public class SubscriptionService {
                               }
                             });
                           } else if (totalBindSuccess == totalBindCount) {
-                            registerStreamingSubscriptionResponse.put(Constants.USER_NAME,
-                                streamingUserName);
-                            registerStreamingSubscriptionResponse.put(Constants.APIKEY,
-                                apiKey);
-                            registerStreamingSubscriptionResponse.put(Constants.ID,
-                                queueName);
-                            registerStreamingSubscriptionResponse.put(Constants.URL,
-                                Constants.BROKER_PRODUCTION_DOMAIN);
-                            registerStreamingSubscriptionResponse.put(Constants.PORT,
-                                Constants.BROKER_PRODUCTION_PORT);
-                            registerStreamingSubscriptionResponse.put(Constants.VHOST,
-                                Constants.VHOST_IUDX);
+                            registerStreamingSubscriptionResponse.put(Constants.USER_NAME, streamingUserName);
+                            registerStreamingSubscriptionResponse.put(Constants.APIKEY, apiKey);
+                            registerStreamingSubscriptionResponse.put(Constants.ID, queueName);
+                            registerStreamingSubscriptionResponse.put(Constants.URL, this.url);
+                            registerStreamingSubscriptionResponse.put(Constants.PORT, this.port);
+                            registerStreamingSubscriptionResponse.put(Constants.VHOST, this.vhost);
                             promise.complete(registerStreamingSubscriptionResponse);
                           }
                         } else if (resultHandlerbind.failed()) {
