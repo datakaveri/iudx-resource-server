@@ -62,15 +62,15 @@ public class SubscriptionService {
   private RabbitClient rabbitClient;
   private PostgresClient pgSQLClient;
 
-  private String url;
-  private int port;
+  private String amqpUrl;
+  private int amqpPort;
 
   SubscriptionService(RabbitClient rabbitClient, PostgresClient pgSQLClient, JsonObject config) {
     this.rabbitClient = rabbitClient;
     this.pgSQLClient = pgSQLClient;
     this.vhost = config.getString("dataBrokerVhost");
-    this.url = config.getString("dataBrokerIP");
-    this.port = config.getInteger("dataBrokerPort");
+    this.amqpUrl = config.getString("brokerAmqpIp");
+    this.amqpPort = config.getInteger("brokerAmqpPort");
   }
 
   Future<JsonObject> registerStreamingSubscription(JsonObject request) {
@@ -162,8 +162,8 @@ public class SubscriptionService {
                             registerStreamingSubscriptionResponse.put(Constants.USER_NAME, streamingUserName);
                             registerStreamingSubscriptionResponse.put(Constants.APIKEY, apiKey);
                             registerStreamingSubscriptionResponse.put(Constants.ID, queueName);
-                            registerStreamingSubscriptionResponse.put(Constants.URL, this.url);
-                            registerStreamingSubscriptionResponse.put(Constants.PORT, this.port);
+                            registerStreamingSubscriptionResponse.put(Constants.URL, this.amqpUrl);
+                            registerStreamingSubscriptionResponse.put(Constants.PORT, this.amqpPort);
                             registerStreamingSubscriptionResponse.put(Constants.VHOST, this.vhost);
                             promise.complete(registerStreamingSubscriptionResponse);
                           }

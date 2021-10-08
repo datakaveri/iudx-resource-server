@@ -47,7 +47,10 @@
             "callbackDatabaseName": "",
             "callbackDatabaseUserName": "",
             "callbackDatabasePassword": "",
-            "callbackpoolSize": "25"
+            "callbackpoolSize": "25",
+            
+            "brokerAmqpIp":"",
+            "brokerAmqpPort":""
         },
         {
             "id": "iudx.resource.server.callback.CallbackVerticle",
@@ -94,6 +97,16 @@
             "redisHost":"",
             "redisPort": 1234
 
+        },
+        {
+            "id": "iudx.resource.server.metering.MeteringVerticle",
+            "verticleInstances": 1,
+            "meteringDatabaseIP": "",
+            "meteringDatabasePort": 1234,
+            "meteringDatabaseName": "",
+            "meteringDatabaseUserName": "",
+            "meteringDatabasePassword": "",
+            "meteringpoolSize": 25
         }
     ]
 }

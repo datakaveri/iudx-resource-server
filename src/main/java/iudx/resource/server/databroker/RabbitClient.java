@@ -107,15 +107,15 @@ public class RabbitClient {
   private RabbitMQClient client;
   private RabbitWebClient webClient;
   private PostgresClient pgSQLClient;
-  private String url;
-  private int port;
+  private String amqpUrl;
+  private int amqpPort;
   private String vhost;
   
 
   public RabbitClient(Vertx vertx, RabbitMQOptions rabbitConfigs, RabbitWebClient webClient,
       PostgresClient pgSQLClient,JsonObject configs) {
-    this.url=configs.getString("dataBrokerIP");
-    this.port=configs.getInteger("dataBrokerPort");
+    this.amqpUrl=configs.getString("brokerAmqpIp");
+    this.amqpPort=configs.getInteger("brokerAmqpPort");
     this.vhost=configs.getString("dataBrokerVhost");
     
     this.client = getRabbitMQClient(vertx, rabbitConfigs);
@@ -736,8 +736,8 @@ public class RabbitClient {
               .put(USER_NAME, requestParams.userid)
               .put(Constants.APIKEY, requestParams.apiKey)
               .put(Constants.ID, requestParams.adaptorId)
-              .put(Constants.URL, this.url)
-              .put(Constants.PORT, this.port)
+              .put(Constants.URL, this.amqpUrl)
+              .put(Constants.PORT, this.amqpPort)
               .put(Constants.VHOST, this.vhost);
           LOGGER.debug("Success : Adapter created successfully.");
           promise.complete(response);
