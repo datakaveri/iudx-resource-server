@@ -13,16 +13,16 @@
             "databasePort": 24034,
             "dbUser": "",
             "dbPassword": "",
-            "timeLimit": "test,2020-10-22T00:00:00Z,10"
+            "timeLimit": ""
         },
         {
             "id": "iudx.resource.server.authenticator.AuthenticationVerticle",
             "verticleInstances": 1,
             "authServerHost": "",
-            "catServerHost": "api.catalogue.iudx.io",
+            "catServerHost": "",
             "catServerPort": 443,
-            "resourceServerId": "[[datakaveri.org/27e503da0bdda6efae3a52b3ef423c1f9005657a/rs.iudx.org.in]]",
-            "serverMode": "production"
+            "resourceServerId": "",
+            "serverMode": ""
         },
         {
             "id": "iudx.resource.server.databroker.DataBrokerVerticle",
@@ -39,12 +39,15 @@
             "requestedChannelMax": 5,
             "networkRecoveryInterval": 500,
             "automaticRecoveryEnabled": "true",
-            "callbackDatabaseIP": "tasks.auth_cred_db",
+            "callbackDatabaseIP": "",
             "callbackDatabasePort": 5432,
             "callbackDatabaseName": "",
             "callbackDatabaseUserName": "",
             "callbackDatabasePassword": "",
-            "callbackpoolSize": 25
+            "callbackpoolSize": 25,
+            
+            "brokerAmqpIp":"",
+            "brokerAmqpPort":""
         },
         {
             "id": "iudx.resource.server.callback.CallbackVerticle",
@@ -74,7 +77,7 @@
             "production": false,
             "keystore": "configs/keystore.jks",
             "keystorePassword": "",
-            "rsAdmin": "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc",
+            "rsAdmin": "",
             "verticleInstances": 8,
             "catServerHost": "",
             "catServerPort": 443
@@ -83,7 +86,7 @@
            "id": "iudx.resource.server.database.latest.LatestVerticle",
             "verticleInstances": 2,
             "attributeList": {"itms-info": "some-attr"},
-            "redisMode": "STANDALONE",
+            "redisMode": "",
             "redisUsername": "",
             "redisPassword": "",
             "redisMaxWaitingHandlers": 1024,

@@ -19,9 +19,9 @@
             "id": "iudx.resource.server.authenticator.AuthenticationVerticle",
             "verticleInstances": 1,
             "authServerHost": "",
-            "catServerHost": "api.catalogue.iudx.io",
+            "catServerHost": "",
             "catServerPort": 443,
-            "resourceServerId": "[[datakaveri.org/27e503da0bdda6efae3a52b3ef423c1f9005657a/rs.iudx.org.in]]",
+            "resourceServerId": "",
             "serverMode": "production"
         },
         {
@@ -39,12 +39,15 @@
             "requestedChannelMax": 5,
             "networkRecoveryInterval": 500,
             "automaticRecoveryEnabled": "true",
-            "callbackDatabaseIP": "tasks.auth_cred_db",
+            "callbackDatabaseIP": "",
             "callbackDatabasePort": 1234,
             "callbackDatabaseName": "",
             "callbackDatabaseUserName": "",
             "callbackDatabasePassword": "",
-            "callbackpoolSize": 25
+            "callbackpoolSize": 25,
+            
+            "brokerAmqpIp":"",
+            "brokerAmqpPort":""
         },
         {
             "id": "iudx.resource.server.callback.CallbackVerticle",
@@ -72,9 +75,9 @@
             "id": "iudx.resource.server.apiserver.ApiServerVerticle",
             "ssl": true,
             "production": false,
-            "keystore": "configs/keystore.jks",
+            "keystore": "",
             "keystorePassword": "",
-            "rsAdmin": "datakaveri.org/f7e044eee8122b5c87dce6e7ad64f3266afa41dc",
+            "rsAdmin": "",
             "verticleInstances": 8,
             "catServerHost": "",
             "catServerPort": 123

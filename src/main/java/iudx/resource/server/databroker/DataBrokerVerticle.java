@@ -2,6 +2,7 @@ package iudx.resource.server.databroker;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -76,7 +77,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
     dataBrokerIP = config().getString("dataBrokerIP");
     dataBrokerPort = config().getInteger("dataBrokerPort");
     dataBrokerManagementPort =
-      config().getInteger("dataBrokerManagementPort");
+        config().getInteger("dataBrokerManagementPort");
     dataBrokerVhost = config().getString("dataBrokerVhost");
     dataBrokerUserName = config().getString("dataBrokerUserName");
     dataBrokerPassword = config().getString("dataBrokerPassword");
@@ -85,7 +86,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
     handshakeTimeout = config().getInteger("handshakeTimeout");
     requestedChannelMax = config().getInteger("requestedChannelMax");
     networkRecoveryInterval =
-      config().getInteger("networkRecoveryInterval");
+        config().getInteger("networkRecoveryInterval");
     databaseIP = config().getString("callbackDatabaseIP");
     databasePort = config().getInteger("callbackDatabasePort");
     databaseName = config().getString("callbackDatabaseName");
@@ -121,12 +122,12 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
     /* Create a Vertx Web Client with the configuration and vertx cluster instance. */
 
-    webClient = WebClient.create(vertx, webConfig); 
+    webClient = WebClient.create(vertx, webConfig);
 
     /* Set Connection Object */
     if (connectOptions == null) {
       connectOptions = new PgConnectOptions().setPort(databasePort).setHost(databaseIP)
-        .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
+          .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
     }
 
     /* Pool options */
@@ -156,16 +157,16 @@ public class DataBrokerVerticle extends AbstractVerticle {
     rabbitWebClient = new RabbitWebClient(vertx, webConfig, propObj);
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
     rabbitClient =
-        new RabbitClient(vertx, config, rabbitWebClient, pgClient);
+        new RabbitClient(vertx, config, rabbitWebClient, pgClient, config());
     binder = new ServiceBinder(vertx);
-    databroker = new DataBrokerServiceImpl(rabbitClient, pgClient, dataBrokerVhost);
+    databroker = new DataBrokerServiceImpl(rabbitClient, pgClient, config());
 
 
     /* Publish the Data Broker service with the Event Bus against an address. */
 
     consumer =
         binder.setAddress(BROKER_SERVICE_ADDRESS)
-      .register(DataBrokerService.class, databroker);
+            .register(DataBrokerService.class, databroker);
 
   }
 

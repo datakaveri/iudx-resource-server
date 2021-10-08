@@ -53,13 +53,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   private SubscriptionService subscriptionService;
 
 
-  public DataBrokerServiceImpl(RabbitClient webClient,
-      PostgresClient pgClient, String vhost) {
+  public DataBrokerServiceImpl(RabbitClient webClient,PostgresClient pgClient, JsonObject config) {
     this.webClient = webClient;
     this.pgClient = pgClient;
-    this.vhost = vhost;
-    this.subscriptionService =
-        new SubscriptionService(this.webClient, pgClient, this.vhost);
+    this.vhost = config.getString("dataBrokerVhost");
+    this.subscriptionService = new SubscriptionService(this.webClient, pgClient, config);
 
   }
 
