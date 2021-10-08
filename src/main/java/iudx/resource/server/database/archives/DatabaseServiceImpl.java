@@ -1,16 +1,43 @@
 package iudx.resource.server.database.archives;
 
 
-import static iudx.resource.server.database.archives.Constants.*;
+import static iudx.resource.server.database.archives.Constants.COUNT_REQ_PARAM;
+import static iudx.resource.server.database.archives.Constants.DEFAULT_FROM_VALUE;
+import static iudx.resource.server.database.archives.Constants.DEFAULT_SIZE_VALUE;
+import static iudx.resource.server.database.archives.Constants.EMPTY_RESOURCE_ID;
+import static iudx.resource.server.database.archives.Constants.ERROR;
+import static iudx.resource.server.database.archives.Constants.FAILED;
+import static iudx.resource.server.database.archives.Constants.FILTER_PATH_VAL;
+import static iudx.resource.server.database.archives.Constants.FILTER_PATH_VAL_LATEST;
+import static iudx.resource.server.database.archives.Constants.FROM_KEY;
+import static iudx.resource.server.database.archives.Constants.ID;
+import static iudx.resource.server.database.archives.Constants.ID_NOT_FOUND;
+import static iudx.resource.server.database.archives.Constants.LATEST_RESOURCE_INDEX;
+import static iudx.resource.server.database.archives.Constants.LATEST_SEARCH;
+import static iudx.resource.server.database.archives.Constants.MALFORMED_ID;
+import static iudx.resource.server.database.archives.Constants.PARAM_FROM;
+import static iudx.resource.server.database.archives.Constants.PARAM_SIZE;
+import static iudx.resource.server.database.archives.Constants.SEARCHTYPE_NOT_FOUND;
+import static iudx.resource.server.database.archives.Constants.SEARCH_KEY;
+import static iudx.resource.server.database.archives.Constants.SEARCH_REQ_PARAM;
+import static iudx.resource.server.database.archives.Constants.SEARCH_TYPE;
+import static iudx.resource.server.database.archives.Constants.SIZE_KEY;
+import static iudx.resource.server.database.archives.Constants.SOURCE_FILTER_KEY;
+import static iudx.resource.server.database.archives.Constants.TIME_LIMIT;
+
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.database.archives.elastic.ElasticClient;
+import iudx.resource.server.database.archives.elastic.QueryDecoderV1;
 
 /**
  * The Database Service Implementation.
@@ -94,7 +121,9 @@ public class DatabaseServiceImpl implements DatabaseService {
     // searchIndex = searchIndex.concat(SEARCH_REQ_PARAM);
     LOGGER.debug("Index name: " + searchIndex);
 
-    query = queryDecoder.queryDecoder(request);
+    //query = queryDecoder.queryDecoder(request);
+    query=new QueryDecoderV1().getESquery(request);
+    //LOGGER.info("new query created : "+new QueryDecoderV1().getESquery(request));
     if (query.containsKey(ERROR)) {
       LOGGER.error("Fail: Query returned with an error: " + query.getString(ERROR));
       responseBuilder =
