@@ -101,17 +101,7 @@ public class LatestDataServiceImpl implements LatestDataService {
     return new JsonArray().add(result);
   }
 
-  // TODO : replace with catalogue service
   public boolean isGroupLevelRecord(String id) {
-    boolean response = false;
-    if (id.contains("pune") || id.contains("Pune")) {
-      response = false;
-    } else if (id.contains("surat") || id.contains("Surat")) {
-      response = true;
-    } else {
-      response = false;
-    }
-
-    return response;
+    return this.attributeList.containsKey(id);
   }
 }
