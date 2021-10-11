@@ -6,25 +6,20 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import io.vertx.core.json.JsonObject;
-
 public class RedisCommandArgsBuilder {
 
   private static final Logger LOGGER = LogManager.getLogger(RedisCommandArgsBuilder.class);
 
-  public RedisCommandArgsBuilder() {
-    // TODO Auto-generated constructor stub
-  }
-
   public RedisArgs getRedisCommandArgs(String id, boolean isGroup) {
     RedisArgs args = new RedisArgs();
 
-    LOGGER.debug("******In LatestSearch Redis");
-    JsonObject response = new JsonObject();
+    LOGGER.debug("In LatestSearch Redis");
 
-    String resourceGroup = id.split("/")[3];
-    resourceGroup = resourceGroup.replace("-", "_");
-    args.setKey(resourceGroup);
+    String key = id.replace("-", "_")
+        .replaceAll("/", "_")
+        .replaceAll("\\.", "_");
+
+    args.setKey(key);
     // SHA1 generator
     String sha = DigestUtils.sha1Hex(id);
     LOGGER.debug("Generated SHA1: " + sha);
