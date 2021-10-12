@@ -20,9 +20,6 @@ public class RedisCommandArgsBuilder {
         .replaceAll("\\.", "_");
 
     args.setKey(key);
-    // SHA1 generator
-    String sha = DigestUtils.sha1Hex(id);
-    LOGGER.debug("Generated SHA1: " + sha);
 
     StringBuilder pathParam = new StringBuilder();
 
@@ -31,10 +28,11 @@ public class RedisCommandArgsBuilder {
       pathParam.append(".");
     } else {
       // aqm type resource
+      StringBuilder shaId = new StringBuilder(id).append("/").append(DEFAULT_ATTRIBUTE);
+      String sha = DigestUtils.sha1Hex(shaId.toString());
       pathParam.append(".")
           .append("_")
-          .append(sha)
-          .append(DEFAULT_ATTRIBUTE);
+          .append(sha);
 
     }
     args.setPath(pathParam.toString());
