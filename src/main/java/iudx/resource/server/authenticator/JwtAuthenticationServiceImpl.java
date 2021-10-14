@@ -84,7 +84,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     String method = authenticationInfo.getString("method");
 
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);
-    
+
     boolean doCheckResourceAndId =
         (endPoint.equalsIgnoreCase("/ngsi-ld/v1/subscription")
             && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")))
@@ -96,8 +96,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
     jwtDecodeFuture.compose(decodeHandler -> {
       result.jwtData = decodeHandler;
-      //return isValidAudienceValue(result.jwtData);
-      return Future.succeededFuture(true);
+      return isValidAudienceValue(result.jwtData);
     }).compose(audienceHandler -> {
       if (!doCheckResourceAndId) {
         return isOpenResource(id);
@@ -108,24 +107,20 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       if (result.isOpen && OPEN_ENDPOINTS.contains(endPoint)) {
         JsonObject json = new JsonObject();
         json.put(JSON_USERID, result.jwtData.getSub());
-        handler.handle(Future.succeededFuture(json));
-      }
-      if (!doCheckResourceAndId) {
+        return Future.succeededFuture(true);
+      } else if (!doCheckResourceAndId && !result.isOpen) {
         return isValidId(result.jwtData, id);
-      }
-      return Future.succeededFuture(true);
-    }).compose(validIdHandler -> {
-      return validateAccess(result.jwtData, result.isResourceExist, authenticationInfo);
-    }).onComplete(completeHandler -> {
-      LOGGER.debug("completion handler");
-      if (completeHandler.succeeded()) {
-        handler.handle(Future.succeededFuture(completeHandler.result()));
       } else {
-        LOGGER.error("error : " + completeHandler.cause().getMessage());
-        handler.handle(Future.failedFuture(completeHandler.cause().getMessage()));
+        return Future.succeededFuture(true);
       }
+    }).compose(validIdHandler -> {
+      return validateAccess(result.jwtData, result.isOpen, authenticationInfo);
+    }).onSuccess(successHandler -> {
+      handler.handle(Future.succeededFuture(successHandler));
+    }).onFailure(failureHandler -> {
+      LOGGER.error("error : " + failureHandler.getMessage());
+      handler.handle(Future.failedFuture(failureHandler.getMessage()));
     });
-
     return this;
   }
 
@@ -186,10 +181,16 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return promise.future();
   }
 
-  public Future<JsonObject> validateAccess(JwtData jwtData, boolean resourceExist, JsonObject authInfo) {
+  public Future<JsonObject> validateAccess(JwtData jwtData, boolean openResource, JsonObject authInfo) {
     LOGGER.trace("validateAccess() started");
     Promise<JsonObject> promise = Promise.promise();
 
+    if (openResource && OPEN_ENDPOINTS.contains(authInfo.getString("apiEndpoint"))) {
+      LOGGER.info("User access is allowed.");
+      JsonObject jsonResponse = new JsonObject();
+      jsonResponse.put(JSON_USERID, jwtData.getSub());
+      return Future.succeededFuture(jsonResponse);
+    }
 
     Method method = Method.valueOf(authInfo.getString("method"));
     Api api = Api.fromEndpoint(authInfo.getString("apiEndpoint"));
