@@ -43,7 +43,10 @@ info:
       
     # Tokens
     All the <b>*Search API*</b>  calls to the resource server should now contain a valid IUDX auth token presented in the query header. To search (or) access an *Open* resource, the consumer should present a valid IUDX Auth token. To search (or) access a *Secure / Closed* resource, a consumer must get a token for the *Secure / Closed* resource along with the associated constraints from the IUDX Auth Server. For subscription to a *Secure / Closed / Open* resource, a consumer must get a token along with the associated constraints from the IUDX Auth Server.
-    
+  contact:
+    name: For support contact IUDX Team at
+    email: support@iudx.org.in
+
 tags:
 - name: Latest Entity
   x-displayName: "Latest Data"
