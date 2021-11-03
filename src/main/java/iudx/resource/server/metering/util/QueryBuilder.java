@@ -33,11 +33,7 @@ public class QueryBuilder {
     String startTime = request.getString(START_TIME);
     String endTime = request.getString(END_TIME);
     String resourceId = request.getString(ID);
-    String emailId = request.getString(EMAIL_ID);
-
-    if (!request.containsKey(START_TIME) || !request.containsKey(END_TIME)) {
-      return new JsonObject().put(ERROR, TIME_NOT_FOUND);
-    }
+    String userId = request.getString(USER_ID);
 
     /* check if the time is valid based on ISO 8601 format. */
     ZonedDateTime zdt;
@@ -78,17 +74,17 @@ public class QueryBuilder {
                 .replace("$2", Long.toString(toTime)));
     LOGGER.info("Info: QUERY " + timeQuery);
 
-    if (emailId != null && resourceId != null) {
+    if (userId != null && resourceId != null) {
       StringBuilder tempQuery = timeQuery;
       for (String s : Arrays.asList(
-          USERID_QUERY.replace("$3", emailId), RESOURCE_QUERY.replace("$4", resourceId))) {
+          USERID_QUERY.replace("$3", userId), RESOURCE_QUERY.replace("$4", resourceId))) {
         tempQuery = tempQuery.append(s);
       }
       LOGGER.info("Info: QUERY " + tempQuery);
       return new JsonObject().put(QUERY_KEY, tempQuery);
-    } else if (emailId != null) {
+    } else if (userId != null) {
       StringBuilder tempQuery = timeQuery;
-      tempQuery = tempQuery.append(USERID_QUERY.replace("$3", emailId));
+      tempQuery = tempQuery.append(USERID_QUERY.replace("$3", userId));
       LOGGER.info("Info: QUERY " + tempQuery);
       return new JsonObject().put(QUERY_KEY, tempQuery);
     } else if (resourceId != null) {
@@ -106,7 +102,7 @@ public class QueryBuilder {
   public JsonObject buildWritingQuery(JsonObject request) {
 
     String primaryKey = UUID.randomUUID().toString().replace("-", "");
-    String email = request.getString(USER_ID);
+    String userId = request.getString(USER_ID);
     String resourceId = request.getString(ID);
     String api = request.getString(API);
     ZonedDateTime zst = ZonedDateTime.now();
@@ -120,7 +116,7 @@ public class QueryBuilder {
                 .replace("$2", Long.toString(time))
                 .replace("$3", resourceId)
                 .replace("$4", api)
-                .replace("$5", email));
+                .replace("$5", userId));
 
     LOGGER.info("Info: Query " + query);
     return new JsonObject().put(QUERY_KEY, query);

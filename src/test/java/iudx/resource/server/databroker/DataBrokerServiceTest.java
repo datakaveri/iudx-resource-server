@@ -2,8 +2,6 @@ package iudx.resource.server.databroker;
 
 import static iudx.resource.server.databroker.util.Constants.APIKEY;
 import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_DATA;
-import static iudx.resource.server.databroker.util.Constants.BROKER_PRODUCTION_DOMAIN;
-import static iudx.resource.server.databroker.util.Constants.BROKER_PRODUCTION_PORT;
 import static iudx.resource.server.databroker.util.Constants.DETAIL;
 import static iudx.resource.server.databroker.util.Constants.ENTITIES;
 import static iudx.resource.server.databroker.util.Constants.ERROR;
@@ -63,6 +61,7 @@ import iudx.resource.server.configuration.Configuration;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class DataBrokerServiceTest {
 
+
   static DataBrokerService databroker;
   static private Properties properties;
   static private InputStream inputstream;
@@ -106,7 +105,8 @@ public class DataBrokerServiceTest {
   private static int statusConflict;
   private static Configuration appConfig;
   private static String userid;
-
+  private static String BROKER_PRODUCTION_DOMAIN;
+  private static int BROKER_PRODUCTION_PORT;
 
   private static final Logger logger = LogManager.getLogger(DataBrokerServiceTest.class);
 
@@ -124,6 +124,8 @@ public class DataBrokerServiceTest {
 
     appConfig = new Configuration();
     JsonObject brokerConfig = appConfig.configLoader(2, vertx);
+     BROKER_PRODUCTION_DOMAIN = brokerConfig.getString("brokerAmqpIp");
+     BROKER_PRODUCTION_PORT=brokerConfig.getInteger("brokerAmqpPort");
 
 
     logger.info("Exchange Name is " + exchangeName);
@@ -227,8 +229,8 @@ public class DataBrokerServiceTest {
     /* Call the databroker constructor with the RabbitMQ client. */
     rabbitMQWebClient = new RabbitWebClient(vertx, webConfig, propObj);
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
-    rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient, pgClient);
-    databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, dataBrokerVhost);
+    rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient, pgClient, brokerConfig);
+    databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, brokerConfig);
 
     userid = UUID.randomUUID().toString();
 

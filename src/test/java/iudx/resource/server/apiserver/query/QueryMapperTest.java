@@ -144,7 +144,7 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_ATTRIBUTE, "attr1,attr2");
     map.add(NGSILDQUERY_TIMEREL, "before");
     map.add(NGSILDQUERY_TIME, "2020-01-23T14:20:00Z");
-    map.add(NGSILDQUERY_TIMEPROPERTY, "obserVationTimeRel");
+    map.add(NGSILDQUERY_TIMEPROPERTY, "observationTimeRel");
     NGSILDQueryParams params = new NGSILDQueryParams(map);
 
     JsonObject json = qm.toJson(params, true);
@@ -165,7 +165,7 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_TIMEREL, "during");
     map.add(NGSILDQUERY_TIME, "2020-01-23X14:20:00Z");
     map.add(NGSILDQUERY_ENDTIME, "2020-01-24T14:40:00Z");
-    map.add(NGSILDQUERY_TIMEPROPERTY, "obserVationTimeRel");
+    map.add(NGSILDQUERY_TIMEPROPERTY, "observationTimeRel");
     NGSILDQueryParams params = new NGSILDQueryParams(map);
 
     RuntimeException ex = assertThrows(RuntimeException.class, () -> {
@@ -180,7 +180,7 @@ public class QueryMapperTest {
     MultiMap map = MultiMap.caseInsensitiveMultiMap();
     map.add(NGSILDQUERY_ID, "id1,id2");
     map.add(NGSILDQUERY_ATTRIBUTE, "attr1,attr2");
-    map.add(NGSILDQUERY_Q, "speed>=300;temprature==35");
+    map.add(NGSILDQUERY_Q, "speed>=300;temperature==35");
     NGSILDQueryParams params = new NGSILDQueryParams(map);
 
     JsonObject json = qm.toJson(params, false);

@@ -213,6 +213,7 @@
 
 	<build>
 		<plugins>
+
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
@@ -248,7 +249,7 @@
 						<jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
 					</systemPropertyVariables>
 					<excludes>
-						<!-- classes are excluded since they are not testable or don't add 
+						<!-- classes are excluded since they are not testable or don't add
 							any value if test cases are written. -->
 						<!-- ApiServerVerticle testing is covered in integration for now. -->
 						<exclude>iudx/resource/server/apiserver/ApiServerVerticle.class</exclude>
@@ -260,6 +261,7 @@
 					</excludes>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
