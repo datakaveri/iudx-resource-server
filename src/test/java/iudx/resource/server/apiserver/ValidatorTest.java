@@ -30,7 +30,7 @@ import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.configuration.Configuration;
-@Disabled
+
 @ExtendWith(VertxExtension.class)
 public class ValidatorTest {
 
