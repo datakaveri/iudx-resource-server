@@ -14,6 +14,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.database.archives.elastic.exception.ESQueryDecodeException;
 
 public class TemporalQueryParser implements QueryParser {
 
@@ -39,17 +40,22 @@ public class TemporalQueryParser implements QueryParser {
     try {
       zdt = ZonedDateTime.parse(time);
     } catch (DateTimeParseException e) {
-      // TODO : throw RuntimeException
+      throw new ESQueryDecodeException("exception while parsing date/time");
     }
 
     if (DURING.equalsIgnoreCase(timeRelation)) {
       ZonedDateTime endzdt;
       endTime = json.getString(END_TIME);
       startTime = time;
-      endzdt = ZonedDateTime.parse(endTime);
+      
+      try {
+        endzdt = ZonedDateTime.parse(endTime);
+      } catch (DateTimeParseException e) {
+        throw new ESQueryDecodeException("exception while parsing date/time");
+      }
 
       if (zdt.isAfter(endzdt)) {
-        // TODO: throw Runtime exception
+        throw new ESQueryDecodeException("end date is before start date");
       }
     } else if (BEFORE.equalsIgnoreCase(timeRelation)) {
       zdt = ZonedDateTime.parse(time);
@@ -66,7 +72,7 @@ public class TemporalQueryParser implements QueryParser {
         endTime = zdt.toString();
       }
     } else {
-      // TODO : throw Runtime exception.
+      throw new ESQueryDecodeException("exception while parsing date/time");
     }
 
     builder
@@ -75,14 +81,6 @@ public class TemporalQueryParser implements QueryParser {
             .gte(startTime));
 
     return builder;
-  }
-
-
-  public static void main(String[] args) {
-    TemporalQueryParser temporalQueryParser = new TemporalQueryParser(new BoolQueryBuilder(), new JsonObject(
-        "{\"id\":[\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\"],\"time\":\"2020-10-18T14:20:01Z\",\"timerel\":\"after\",\"searchType\":\"temporalSearch\",\"instanceID\":\"localhost:8443\"}"));
-    BoolQueryBuilder bool = temporalQueryParser.parse();
-    System.out.println(bool.toString());
   }
 
 }

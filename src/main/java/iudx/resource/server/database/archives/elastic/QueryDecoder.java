@@ -30,9 +30,9 @@ import org.elasticsearch.index.query.QueryBuilders;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-public class QueryDecoderV1 {
+public class QueryDecoder {
 
-  private static final Logger LOGGER = LogManager.getLogger(QueryDecoderV1.class);
+  private static final Logger LOGGER = LogManager.getLogger(QueryDecoder.class);
 
   public JsonObject getESquery(JsonObject json) {
 
@@ -54,15 +54,31 @@ public class QueryDecoderV1 {
       boolQuery = new GeoQueryParser(boolQuery, json).parse();
       isValidQuery = true;
     }
+
     if (searchType.matches(TEMPORAL_SEARCH_REGEX) && json.containsKey(REQ_TIMEREL)
         && json.containsKey(TIME_KEY)) {
       boolQuery = new TemporalQueryParser(boolQuery, json).parse();
       temporalQuery = true;
       isValidQuery = true;
     }
+
     if (searchType.matches(ATTRIBUTE_SEARCH_REGEX)) {
       boolQuery = new AttributeQueryParser(boolQuery, json).parse();
       isValidQuery = true;
+    }
+
+    JsonArray responseFilters = null;
+    if (searchType.matches(RESPONSE_FILTER_REGEX)) {
+      LOGGER.debug("Info: Adding responseFilter");
+      isValidQuery = true;
+      if (!json.getBoolean(SEARCH_KEY)) {
+        return new JsonObject().put(ERROR, COUNT_UNSUPPORTED);
+      }
+      if (json.containsKey(RESPONSE_ATTRS)) {
+        responseFilters = json.getJsonArray(RESPONSE_ATTRS);
+      } else {
+        return new JsonObject().put(ERROR, MISSING_RESPONSE_FILTER_FIELDS);
+      }
     }
 
     /* checks if any valid search jsons have matched */
@@ -92,17 +108,8 @@ public class QueryDecoderV1 {
 
     elasticQuery.put(QUERY_KEY, new JsonObject(boolQuery.toString()));
 
-    if (searchType.matches(RESPONSE_FILTER_REGEX)) {
-      LOGGER.debug("Info: Adding responseFilter");
-      if (!json.getBoolean(SEARCH_KEY)) {
-        return new JsonObject().put(ERROR, COUNT_UNSUPPORTED);
-      }
-      if (json.containsKey(RESPONSE_ATTRS)) {
-        JsonArray sourceFilter = json.getJsonArray(RESPONSE_ATTRS);
-        elasticQuery.put(SOURCE_FILTER_KEY, sourceFilter);
-      } else {
-        return new JsonObject().put(ERROR, MISSING_RESPONSE_FILTER_FIELDS);
-      }
+    if (responseFilters != null) {
+      elasticQuery.put(SOURCE_FILTER_KEY, responseFilters);
     }
 
     return elasticQuery;

@@ -37,7 +37,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.database.archives.elastic.ElasticClient;
-import iudx.resource.server.database.archives.elastic.QueryDecoderV1;
+import iudx.resource.server.database.archives.elastic.QueryDecoder;
 
 /**
  * The Database Service Implementation.
@@ -79,7 +79,6 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     request.put(SEARCH_KEY, true);
     request.put(TIME_LIMIT, timeLimit);
-    // TODO : only for testing comment after testing.
     request.put("isTest", true);
 
     if (!request.containsKey(ID)) {
@@ -118,12 +117,19 @@ public class DatabaseServiceImpl implements DatabaseService {
         .getString(0).split("/")));
     splitId.remove(splitId.size() - 1);
     final String searchIndex = String.join("__", splitId).concat(SEARCH_REQ_PARAM);
-    // searchIndex = searchIndex.concat(SEARCH_REQ_PARAM);
     LOGGER.debug("Index name: " + searchIndex);
 
-    //query = queryDecoder.queryDecoder(request);
-    query=new QueryDecoderV1().getESquery(request);
-    //LOGGER.info("new query created : "+new QueryDecoderV1().getESquery(request));
+    try {
+      query = new QueryDecoder().getESquery(request);
+    } catch (Exception e) {
+      responseBuilder =
+          new ResponseBuilder(FAILED)
+              .setTypeAndTitle(400)
+              .setMessage(e.getMessage());
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+      return null;
+    }
+
     if (query.containsKey(ERROR)) {
       LOGGER.error("Fail: Query returned with an error: " + query.getString(ERROR));
       responseBuilder =
@@ -148,7 +154,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     } else {
       String countIndex = String.join("__", splitId);
       countIndex = countIndex.concat(COUNT_REQ_PARAM);
-      JsonObject countQuery=query.copy();
+      JsonObject countQuery = query.copy();
       countQuery.remove(SOURCE_FILTER_KEY);
       client.countAsync(countIndex, countQuery.toString(), countHandler -> {
         if (countHandler.succeeded()) {
@@ -235,7 +241,17 @@ public class DatabaseServiceImpl implements DatabaseService {
     index = index.concat(COUNT_REQ_PARAM);
     LOGGER.debug("Index name: " + index);
 
-    query = queryDecoder.queryDecoder(request);
+    try {
+      query = new QueryDecoder().getESquery(request);
+    } catch (Exception e) {
+      responseBuilder =
+          new ResponseBuilder(FAILED)
+              .setTypeAndTitle(400)
+              .setMessage(e.getMessage());
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+      return null;
+    }
+
     if (query.containsKey(ERROR)) {
       LOGGER.error("Fail: Query returned with an error: " + query.getString(ERROR));
       responseBuilder =

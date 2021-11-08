@@ -19,6 +19,8 @@ import org.elasticsearch.index.query.QueryBuilders;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.apiserver.response.ResponseUrn;
+import iudx.resource.server.database.archives.elastic.exception.ESQueryDecodeException;
 
 public class AttributeQueryParser implements QueryParser {
 
@@ -40,63 +42,35 @@ public class AttributeQueryParser implements QueryParser {
       /* Multi-Attribute */
       for (Object obj : attrQuery) {
         JsonObject attrObj = (JsonObject) obj;
-        String attrElasticQuery = "";
-
         try {
           String attribute = attrObj.getString(ATTRIBUTE_KEY);
           String operator = attrObj.getString(OPERATOR);
           String attributeValue = attrObj.getString(VALUE);
 
           if (GREATER_THAN_OP.equalsIgnoreCase(operator)) {
-            // attrElasticQuery = RANGE_QUERY.replace("$1", attribute).replace("$2", GREATER_THAN)
-            // .replace("$3", attributeValue);
             builder.filter(QueryBuilders.rangeQuery(attribute).gt(attributeValue));
-
           } else if (LESS_THAN_OP.equalsIgnoreCase(operator)) {
-            // attrElasticQuery = RANGE_QUERY.replace("$1", attribute).replace("$2", LESS_THAN)
-            // .replace("$3", attributeValue);
             builder.filter(QueryBuilders.rangeQuery(attribute).lt(attributeValue));
           } else if (GREATER_THAN_EQ_OP.equalsIgnoreCase(operator)) {
-            // attrElasticQuery = RANGE_QUERY.replace("$1", attribute).replace("$2", GREATER_THAN_EQ)
-            // .replace("$3", attributeValue);
             builder.filter(QueryBuilders.rangeQuery(attribute).gte(attributeValue));
           } else if (LESS_THAN_EQ_OP.equalsIgnoreCase(operator)) {
-            // attrElasticQuery = RANGE_QUERY.replace("$1", attribute).replace("$2", LESS_THAN_EQ)
-            // .replace("$3", attributeValue);
             builder.filter(QueryBuilders.rangeQuery(attribute).lte(attributeValue));
           } else if (EQUAL_OP.equalsIgnoreCase(operator)) {
-            // attrElasticQuery = TERM_QUERY.replace("$1", attribute).replace("$2", attributeValue);
             builder.filter(QueryBuilders.termQuery(attribute, attributeValue));
           } else if (BETWEEN_OP.equalsIgnoreCase(operator)) {
-            // attrElasticQuery = RANGE_QUERY_BW.replace("$1", attribute)
-            // .replace("$2", GREATER_THAN_EQ).replace("$3", attrObj.getString(VALUE_LOWER))
-            // .replace("$4", LESS_THAN_EQ).replace("$5", attrObj.getString(VALUE_UPPER));
             builder.filter(QueryBuilders.rangeQuery(attribute)
                 .gte(attrObj.getString(VALUE_LOWER))
                 .lte(attrObj.getString(VALUE_UPPER)));
           } else if (NOT_EQUAL_OP.equalsIgnoreCase(operator)) {
             builder.mustNot(QueryBuilders.termQuery(attribute, attributeValue));
           } else {
-            // TODO: throw runtime exception
+            throw new ESQueryDecodeException(ResponseUrn.INVALID_ATTR_PARAM, "invalid attribute operator");
           }
-
-          if (!attrElasticQuery.isBlank()) {
-            // filterQuery.add(new JsonObject(attrElasticQuery));
-          }
-
         } catch (NullPointerException e) {
-          // TODO: throw runtime exception
+          throw new ESQueryDecodeException(ResponseUrn.INVALID_ATTR_PARAM, "exception occured at decoding attributes");
         }
       }
     }
     return builder;
   }
-
-  public static void main(String[] args) {
-    AttributeQueryParser attrQueryParser = new AttributeQueryParser(new BoolQueryBuilder(), new JsonObject(
-        "{\"id\":[\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\"],\"attr-query\":[{\"attribute\":\"referenceLevel\",\"operator\":\">\",\"value\":\"15.0\"}],\"searchType\":\"latestSearch_attributeSearch\",\"instanceID\":\"localhost:8443\",\"applicableFilters\":[\"ATTR\",\"TEMPORAL\"]}"));
-    BoolQueryBuilder bool = attrQueryParser.parse();
-    System.out.println(bool.toString());
-  }
-
 }
