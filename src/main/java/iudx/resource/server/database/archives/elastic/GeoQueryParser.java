@@ -18,6 +18,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.database.archives.elastic.exception.ESQueryDecodeException;
 
 public class GeoQueryParser implements QueryParser {
 
@@ -50,8 +51,11 @@ public class GeoQueryParser implements QueryParser {
         && json.containsKey(GEOREL) && json.containsKey(COORDINATES_KEY)
         && json.containsKey(GEO_PROPERTY)) {
 
+      if (!isValidCoordinates(json.getString(GEOMETRY), new JsonArray(json.getString("coordinates")))) {
+        throw new ESQueryDecodeException("Coordinate mismatch (Polygon)");
+      }
+
       relation = json.getString(GEOREL);
-      // coordinates = new JsonArray(json.getString(COORDINATES_KEY));
 
       builder.filter(QueryBuilders.wrapperQuery(String
           .format("{ \"geo_shape\": { \"%s\": { \"shape\": %s, \"relation\": \"%s\" } } }",
@@ -63,13 +67,14 @@ public class GeoQueryParser implements QueryParser {
         && json.containsKey(GEOREL) && json.containsKey(COORDINATES_KEY)
         && json.containsKey(GEO_PROPERTY)) {
       relation = json.getString(GEOREL);
-      // coordinates = new JsonArray(json.getString(COORDINATES_KEY));
       builder.filter(QueryBuilders.wrapperQuery(String
           .format("{ \"geo_shape\": { \"%s\": { \"shape\": %s, \"relation\": \"%s\" } } }",
               "location",
               getGeoJson(json),
               ShapeRelation.getRelationByName(relation).getRelationName())));
 
+    } else {
+      throw new ESQueryDecodeException("Missing/Invalid geo parameters");
     }
     return builder;
   }
@@ -96,14 +101,17 @@ public class GeoQueryParser implements QueryParser {
     return geoJson;
   }
 
+  private boolean isValidCoordinates(String geometry, JsonArray coordinates) {
+    int length = coordinates.getJsonArray(0).size();
+    if (geometry.equalsIgnoreCase(POLYGON)
+        && !coordinates.getJsonArray(0).getJsonArray(0).getDouble(0)
+            .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(0))
+        && !coordinates.getJsonArray(0).getJsonArray(0).getDouble(1)
+            .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(1))) {
+      return false;
 
-  public static void main(String[] args) {
-    JsonObject json = new JsonObject(
-        "{\"id\":[\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"],\"geometry\":\"bbox\",\"coordinates\":\"[[72.8296,21.2],[72.8297,21.15]]\",\"georel\":\"within\",\"geoproperty\":\"location\",\"searchType\":\"latestSearch_geoSearch\",\"instanceID\":\"localhost:8443\"}");
-
-    GeoQueryParser geoQueryParser = new GeoQueryParser(new BoolQueryBuilder(), json);
-    BoolQueryBuilder bool = geoQueryParser.parse();
-    System.out.println(bool.toString());
+    }
+    return true;
   }
 
 }
