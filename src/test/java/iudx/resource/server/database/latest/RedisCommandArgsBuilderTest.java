@@ -1,5 +1,6 @@
 package iudx.resource.server.database.latest;
 
+import static iudx.resource.server.database.archives.Constants.DEFAULT_ATTRIBUTE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -11,39 +12,42 @@ import io.vertx.junit5.VertxExtension;
 
 @ExtendWith({VertxExtension.class})
 public class RedisCommandArgsBuilderTest {
-  
+
   static RedisCommandArgsBuilder redisCmdArgsBuilder;
-  
+
   @BeforeAll
   static void init() {
-    redisCmdArgsBuilder=new RedisCommandArgsBuilder();
+    redisCmdArgsBuilder = new RedisCommandArgsBuilder();
   }
-  
-  
+
+
   @Test
   public void resourceLevelArgs() {
-    String id="asdas/asdasdas/adsasdasd/asdasda/asdasdas";
-    RedisArgs redisArgs=redisCmdArgsBuilder.getRedisCommandArgs(id, true);
-    
-    String resourceGroup = id.split("/")[3];
-    resourceGroup = resourceGroup.replace("-", "_");
-    
-    assertEquals(resourceGroup, redisArgs.getKey());
+    String id = "asdas/asdasdas/adsasdasd/asdasda/asdasdas";
+    RedisArgs redisArgs = redisCmdArgsBuilder.getRedisCommandArgs(id, true);
+
+    String key = id.replace("-", "_")
+        .replaceAll("/", "_")
+        .replaceAll("\\.", "_");
+
+    assertEquals(key, redisArgs.getKey());
     assertEquals(".", redisArgs.getPath());
   }
-  
+
   @Test
   public void groupLevelArgs() {
-    String id="asdas/asdasdas/adsasdasd/asdasda";
-    RedisArgs redisArgs=redisCmdArgsBuilder.getRedisCommandArgs(id, false);
-    
-    String resourceGroup = id.split("/")[3];
-    resourceGroup = resourceGroup.replace("-", "_");
-    
-    String sha = DigestUtils.sha1Hex(id);
-    
-    assertEquals(resourceGroup, redisArgs.getKey());
-    assertEquals("._"+sha+"_d", redisArgs.getPath());
+    String id = "asdas/asdasdas/adsasdasd/asdasda";
+    RedisArgs redisArgs = redisCmdArgsBuilder.getRedisCommandArgs(id, false);
+
+    String key = id.replace("-", "_")
+        .replaceAll("/", "_")
+        .replaceAll("\\.", "_");
+
+    StringBuilder shaId = new StringBuilder(id).append("/").append(DEFAULT_ATTRIBUTE);
+    String sha = DigestUtils.sha1Hex(shaId.toString());
+
+    assertEquals(key, redisArgs.getKey());
+    assertEquals("._" + sha, redisArgs.getPath());
   }
 
 }
