@@ -89,7 +89,6 @@ public class RedisClient {
         searchHandler.handle(Future.succeededFuture(fromRedis));
       } else {
         LOGGER.error("Redis Error: " + resultRedis.cause());
-        resultRedis.cause().printStackTrace();
         responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204)
             .setMessage(resultRedis.cause().getLocalizedMessage());
         searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
