@@ -120,7 +120,8 @@ public class MeteringServiceImpl implements MeteringService {
               }
               if (response.getInteger(COUNT) == 0) {
                 responseBuilder =
-                    new ResponseBuilder(FAILED).setTypeAndTitle(204).setMessage(EMPTY_RESPONSE);
+                    new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(response.getInteger(COUNT))
+                        .setMessage(EMPTY_RESPONSE);
                 promise.complete(responseBuilder.getResponse());
               } else {
                 responseBuilder =
