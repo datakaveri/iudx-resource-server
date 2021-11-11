@@ -63,7 +63,9 @@ public class MeteringServiceImpl implements MeteringService {
             .setHost(databaseIP)
             .setDatabase(databaseName)
             .setUser(databaseUserName)
-            .setPassword(databasePassword);
+            .setPassword(databasePassword)
+            .setReconnectAttempts(2)
+            .setReconnectInterval(1000);
 
     this.poolOptions = new PoolOptions().setMaxSize(databasePoolSize);
     this.pool = PgPool.pool(vertxInstance, connectOptions, poolOptions);
@@ -109,8 +111,7 @@ public class MeteringServiceImpl implements MeteringService {
   private Future<JsonObject> executeCountQuery(JsonObject query) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject response = new JsonObject();
-    pool.getConnection()
-        .compose(connection -> connection.query(query.getString(QUERY_KEY)).execute())
+    pool.withConnection(connection -> connection.query(query.getString(QUERY_KEY)).execute())
         .onComplete(
             rows -> {
               RowSet<Row> result = rows.result();
@@ -156,8 +157,7 @@ public class MeteringServiceImpl implements MeteringService {
   private Future<JsonObject> writeInDatabase(JsonObject query) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject response = new JsonObject();
-    pool.getConnection()
-        .compose(connection -> connection.query(query.getString(QUERY_KEY)).execute())
+    pool.withConnection(connection -> connection.query(query.getString(QUERY_KEY)).execute())
         .onComplete(
             rows -> {
               if (rows.succeeded()) {
