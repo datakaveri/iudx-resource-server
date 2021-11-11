@@ -64,7 +64,7 @@ public class MeteringServiceImpl implements MeteringService {
             .setDatabase(databaseName)
             .setUser(databaseUserName)
             .setPassword(databasePassword)
-            .setReconnectAttempts(5)
+            .setReconnectAttempts(2)
             .setReconnectInterval(1000);
 
     this.poolOptions = new PoolOptions().setMaxSize(databasePoolSize);
