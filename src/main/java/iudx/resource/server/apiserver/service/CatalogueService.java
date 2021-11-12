@@ -1,13 +1,17 @@
 package iudx.resource.server.apiserver.service;
 
-import static iudx.resource.server.apiserver.util.Util.*;
+import static iudx.resource.server.apiserver.util.Util.toList;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -44,7 +48,7 @@ public class CatalogueService {
           .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
 
   public CatalogueService(Vertx vertx, JsonObject config) {
-    this.vertx=vertx;
+    this.vertx = vertx;
     catHost = config.getString("catServerHost");
     catPort = config.getInteger("catServerPort");
     catSearchPath = Constants.CAT_RSG_PATH;
@@ -55,7 +59,7 @@ public class CatalogueService {
     catWebClient = WebClient.create(vertx, options);
     populateCache();
     cacheTimerid = vertx.setPeriodic(TimeUnit.DAYS.toMillis(1), handler -> {
-       populateCache();
+      populateCache();
     });
   }
 
@@ -93,7 +97,7 @@ public class CatalogueService {
 
 
   public Future<List<String>> getApplicableFilters(String id) {
-    Promise<List<String>> promise=Promise.promise();
+    Promise<List<String>> promise = Promise.promise();
     // Note: id should be a complete id not a group id (ex : domain/SHA/rs/rs-group/itemId)
     String groupId = id.substring(0, id.lastIndexOf("/"));
     // check for item in cache.
@@ -103,15 +107,15 @@ public class CatalogueService {
       filters = applicableFilterCache.getIfPresent(groupId + "/*");
     }
     if (filters == null) {
-      //filters = fetchFilters4Item(id, groupId);
-      fetchFilters4Item(id, groupId).onComplete(handler->{
-        if(handler.succeeded()) {
+      // filters = fetchFilters4Item(id, groupId);
+      fetchFilters4Item(id, groupId).onComplete(handler -> {
+        if (handler.succeeded()) {
           promise.complete(handler.result());
-        }else {
+        } else {
           promise.fail("failed to fetch filters.");
         }
       });
-    }else {
+    } else {
       promise.complete(filters);
     }
     return promise.future();
@@ -126,7 +130,7 @@ public class CatalogueService {
       if (itemHandler.succeeded()) {
         List<String> filters4Item = itemHandler.result();
         if (filters4Item.isEmpty()) {
-          //Future<List<String>> getGroupFilters = getFilterFromGroupId(groupId);
+          // Future<List<String>> getGroupFilters = getFilterFromGroupId(groupId);
           getGroupFilters.onComplete(groupHandler -> {
             if (groupHandler.succeeded()) {
               List<String> filters4Group = groupHandler.result();
@@ -172,7 +176,7 @@ public class CatalogueService {
     });
     return promise.future();
   }
-  
+
   private void callCatalogueAPI(String id, Handler<AsyncResult<List<String>>> handler) {
     List<String> filters = new ArrayList<String>();
     catWebClient.get(catPort, catHost, catItemPath).addQueryParam("id", id).send(catHandler -> {
@@ -191,7 +195,7 @@ public class CatalogueService {
       }
     });
   }
-  
+
   public Future<Boolean> isItemExist(String id) {
     LOGGER.debug("isItemExist() started");
     Promise<Boolean> promise = Promise.promise();
@@ -201,7 +205,7 @@ public class CatalogueService {
           if (responseHandler.succeeded()) {
             HttpResponse<Buffer> response = responseHandler.result();
             JsonObject responseBody = response.bodyAsJsonObject();
-            if (responseBody.getString("status").equalsIgnoreCase("success")
+            if (responseBody.getString("status").equalsIgnoreCase("urn:dx:cat:Success")
                 && responseBody.getInteger("totalHits") > 0) {
               promise.complete(true);
             } else {
@@ -213,22 +217,22 @@ public class CatalogueService {
         });
     return promise.future();
   }
-  
-  public Future<Boolean> isItemExist(List<String> ids){
+
+  public Future<Boolean> isItemExist(List<String> ids) {
     Promise<Boolean> promise = Promise.promise();
-    List<Future> futures=new ArrayList<Future>();
-    for(String id:ids) {
+    List<Future> futures = new ArrayList<Future>();
+    for (String id : ids) {
       futures.add(isItemExist(id));
     }
-    
-    CompositeFuture.all(futures).onComplete(handler->{
-      if(handler.succeeded()) {
+
+    CompositeFuture.all(futures).onComplete(handler -> {
+      if (handler.succeeded()) {
         promise.complete();
-      }else {
+      } else {
         promise.fail(handler.cause());
       }
     });
     return promise.future();
   }
-  
+
 }
