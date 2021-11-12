@@ -72,8 +72,15 @@ public class AuthenticationVerticle extends AbstractVerticle {
           new PubSecKeyOptions()
               .setAlgorithm("ES256")
               .setBuffer(cert));
-
-      jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
+      /* Default jwtIgnoreExpiry is false. If set through config, then that value is taken */
+      boolean jwtIgnoreExpiry = config().getBoolean("jwtIgnoreExpiry") == null ? false
+          : config().getBoolean("jwtIgnoreExpiry");
+      if (jwtIgnoreExpiry)
+      {
+        jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
+        LOGGER
+            .warn("JWT ignore expiration set to true, do not set IgnoreExpiration in production!!");
+      }
       JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
       jwtAuthenticationService =

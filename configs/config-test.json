@@ -31,7 +31,9 @@
             "catServerHost": "",
             "catServerPort": "",
             "serverMode": "",
-            "resourceServerId":""
+            "resourceServerId":"",
+	    "jwtIgnoreExpiry": true
+
         },
         {
             "id": "iudx.resource.server.databroker.DataBrokerVerticle",
