@@ -96,7 +96,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
     jwtDecodeFuture.compose(decodeHandler -> {
       result.jwtData = decodeHandler;
-      return isValidAudienceValue(result.jwtData);
+//      return isValidAudienceValue(result.jwtData);
+      return Future.succeededFuture(true);
     }).compose(audienceHandler -> {
       if (!doCheckResourceAndId) {
         return isOpenResource(id);

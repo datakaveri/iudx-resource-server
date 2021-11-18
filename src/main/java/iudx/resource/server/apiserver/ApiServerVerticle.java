@@ -363,14 +363,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         .handler(AuthHandler.create(vertx))
         .handler(this::resetPassword);
 
-
-    router.route().last().handler(requestHandler -> {
-      HttpServerResponse response = requestHandler.response();
-      response.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
-              .setStatusCode(404)
-              .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED).toString());
-    });
-
     /**
      * Documentation routes
      */
@@ -438,6 +430,16 @@ public class ApiServerVerticle extends AbstractVerticle {
     subsService = new SubscriptionService();
     catalogueService = new CatalogueService(vertx, config());
     validator = new ParamsValidator(catalogueService);
+    
+    
+    router.mountSubRouter("/admin", new AdminRestApi(vertx, databroker, database).init());
+
+    router.route().last().handler(requestHandler -> {
+      HttpServerResponse response = requestHandler.response();
+      response.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
+              .setStatusCode(404)
+              .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED).toString());
+    });
 
   }
 
