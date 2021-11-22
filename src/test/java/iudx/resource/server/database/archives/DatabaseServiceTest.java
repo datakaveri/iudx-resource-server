@@ -26,10 +26,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.configuration.Configuration;
-import iudx.resource.server.database.archives.DatabaseService;
-import iudx.resource.server.database.archives.DatabaseServiceImpl;
 import iudx.resource.server.database.archives.elastic.ElasticClient;
-
 
 @ExtendWith({VertxExtension.class})
 public class DatabaseServiceTest {
