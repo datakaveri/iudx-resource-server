@@ -19,6 +19,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.rabbitmq.RabbitMQClient;
 import iudx.resource.server.databroker.util.Util;
 
 /**
@@ -53,7 +54,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   private SubscriptionService subscriptionService;
 
 
-  public DataBrokerServiceImpl(RabbitClient webClient,PostgresClient pgClient, JsonObject config) {
+  public DataBrokerServiceImpl(RabbitClient webClient, PostgresClient pgClient, JsonObject config) {
     this.webClient = webClient;
     this.pgClient = pgClient;
     this.vhost = config.getString("dataBrokerVhost");
@@ -839,7 +840,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     String userid = request.getString(USER_ID);
     Future<JsonObject> userFuture = webClient.getUserInDb(userid);
 
-    userFuture.compose(checkUserFut->{
+    userFuture.compose(checkUserFut -> {
       return webClient.resetPasswordInRMQ(userid, password);
     }).compose(rmqResetFut -> {
       return webClient.resetPwdInDb(userid, Util.getSha(password));
@@ -852,6 +853,34 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       handler.handle(Future.failedFuture(failureResponse.toString()));
     });
 
+    return this;
+  }
+
+  @Override
+  // TODO : complete implementation
+  public DataBrokerService publishMessage(JsonObject request, String toExchange,String routingKey,
+      Handler<AsyncResult<JsonObject>> handler) {
+
+    Future<Void> rabbitMqClientStartFuture;
+    
+    JsonObject message = new JsonObject();
+    message.put("body", request.toString());
+    Buffer buffer = Buffer.buffer(message.toString());
+    
+    RabbitMQClient client = webClient.getRabbitMQClient();
+    if (!client.isConnected())
+      rabbitMqClientStartFuture = client.start();
+    else
+      rabbitMqClientStartFuture = Future.succeededFuture();
+    
+    rabbitMqClientStartFuture.compose(rabbitstartupFuture -> {
+      return client.basicPublish(toExchange, routingKey, buffer);
+    }).onSuccess(successHandler -> {
+      Future.succeededFuture();
+
+    }).onFailure(failureHandler->{
+      
+    });
     return this;
   }
 }

@@ -117,6 +117,7 @@ import iudx.resource.server.apiserver.validation.ValidatorsHandlersFactory;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.database.archives.DatabaseService;
 import iudx.resource.server.database.latest.LatestDataService;
+import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.metering.MeteringService;
 
@@ -150,6 +151,8 @@ public class ApiServerVerticle extends AbstractVerticle {
   private static final String BROKER_SERVICE_ADDRESS = "iudx.rs.broker.service";
   private static final String LATEST_SEARCH_ADDRESS = "iudx.rs.latest.service";
   private static final String METERING_SERVICE_ADDRESS = "iudx.rs.metering.service";
+  private static final String POSTGRES_SERVICE_ADDRESS = "iudx.rs.pgsql.service";
+
   private HttpServer server;
   private Router router;
   private int port = 8443;
@@ -161,6 +164,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private CatalogueService catalogueService;
   private MeteringService meteringService;
   private DatabaseService database;
+  private PostgresService postgresService;
   private DataBrokerService databroker;
   private AuthenticationService authenticator;
   private ParamsValidator validator;
@@ -430,15 +434,16 @@ public class ApiServerVerticle extends AbstractVerticle {
     subsService = new SubscriptionService();
     catalogueService = new CatalogueService(vertx, config());
     validator = new ParamsValidator(catalogueService);
-    
-    
-    router.mountSubRouter("/admin", new AdminRestApi(vertx, databroker, database).init());
+
+    postgresService = PostgresService.createProxy(vertx, POSTGRES_SERVICE_ADDRESS);
+
+    router.mountSubRouter("/admin", new AdminRestApi(vertx, databroker, postgresService).init());
 
     router.route().last().handler(requestHandler -> {
       HttpServerResponse response = requestHandler.response();
       response.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
-              .setStatusCode(404)
-              .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED).toString());
+          .setStatusCode(404)
+          .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED).toString());
     });
 
   }
