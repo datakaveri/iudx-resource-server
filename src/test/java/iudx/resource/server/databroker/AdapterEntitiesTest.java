@@ -1,7 +1,6 @@
 package iudx.resource.server.databroker;
 
 
-import static iudx.resource.server.apiserver.util.Constants.JSON_CONSUMER;
 import static iudx.resource.server.apiserver.util.Constants.JSON_PROVIDER;
 import static iudx.resource.server.databroker.util.Constants.APIKEY;
 import static iudx.resource.server.databroker.util.Constants.PORT;
@@ -10,23 +9,24 @@ import static iudx.resource.server.databroker.util.Constants.USER_NAME;
 import static iudx.resource.server.databroker.util.Constants.VHOST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import java.io.FileInputStream;
+
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
@@ -69,7 +69,7 @@ public class AdapterEntitiesTest {
   private static String consumer;
   private static String provider;
 
-  private static String id, anotherid;
+  private static String id, anotherid, userName2Delete;
   private static String anotherProvider;
   /* Database Properties */
   private static String databaseIP;
@@ -86,39 +86,38 @@ public class AdapterEntitiesTest {
   private static PostgresClient pgClient;
   private static Configuration appConfig;
 
-  private static final Logger logger = LoggerFactory.getLogger(AdapterEntitiesTest.class);
+  private static final Logger logger = LogManager.getLogger(AdapterEntitiesTest.class);
 
   @BeforeAll
   @DisplayName("Initialize the Databroker class with web client and rabbitmq client")
-  static void startVertx(Vertx vertx, io.vertx.reactivex.core.Vertx vertx2,
-      VertxTestContext testContext) {
+  static void startVertx(Vertx vertx, VertxTestContext testContext) {
 
     /* Read the configuration and set the rabbitMQ server properties. */
     appConfig = new Configuration();
-    JsonObject brokerConfig = appConfig.configLoader(2, vertx2);
+    JsonObject brokerConfig = appConfig.configLoader(2, vertx);
 
     try {
 
 
 
       dataBrokerIP = brokerConfig.getString("dataBrokerIP");
-      dataBrokerPort = Integer.parseInt(brokerConfig.getString("dataBrokerPort"));
+      dataBrokerPort = brokerConfig.getInteger("dataBrokerPort");
       dataBrokerManagementPort =
-          Integer.parseInt(brokerConfig.getString("dataBrokerManagementPort"));
+          brokerConfig.getInteger("dataBrokerManagementPort");
       dataBrokerVhost = brokerConfig.getString("dataBrokerVhost");
       dataBrokerUserName = brokerConfig.getString("dataBrokerUserName");
       dataBrokerPassword = brokerConfig.getString("dataBrokerPassword");
-      connectionTimeout = Integer.parseInt(brokerConfig.getString("connectionTimeout"));
-      requestedHeartbeat = Integer.parseInt(brokerConfig.getString("requestedHeartbeat"));
-      handshakeTimeout = Integer.parseInt(brokerConfig.getString("handshakeTimeout"));
-      requestedChannelMax = Integer.parseInt(brokerConfig.getString("requestedChannelMax"));
-      networkRecoveryInterval = Integer.parseInt(brokerConfig.getString("networkRecoveryInterval"));
+      connectionTimeout = brokerConfig.getInteger("connectionTimeout");
+      requestedHeartbeat = brokerConfig.getInteger("requestedHeartbeat");
+      handshakeTimeout = brokerConfig.getInteger("handshakeTimeout");
+      requestedChannelMax = brokerConfig.getInteger("requestedChannelMax");
+      networkRecoveryInterval = brokerConfig.getInteger("networkRecoveryInterval");
       databaseIP = brokerConfig.getString("callbackDatabaseIP");
-      databasePort = Integer.parseInt(brokerConfig.getString("callbackDatabasePort"));
+      databasePort = brokerConfig.getInteger("callbackDatabasePort");
       databaseName = brokerConfig.getString("callbackDatabaseName");
       databaseUserName = brokerConfig.getString("callbackDatabaseUserName");
       databasePassword = brokerConfig.getString("callbackDatabasePassword");
-      poolSize = Integer.parseInt(brokerConfig.getString("callbackpoolSize"));
+      poolSize = brokerConfig.getInteger("callbackpoolSize");
 
     } catch (Exception ex) {
       logger.info(ex.toString());
@@ -151,7 +150,7 @@ public class AdapterEntitiesTest {
     /* Create a RabbitMQ Clinet with the configuration and vertx cluster instance. */
     client = RabbitMQClient.create(vertx, config);
     /* Create a Vertx Web Client with the configuration and vertx cluster instance. */
-    
+
     webClient = WebClient.create(vertx, webConfig);
 
     /* Set Connection Object */
@@ -179,18 +178,19 @@ public class AdapterEntitiesTest {
     propObj.put("databaseUserName", databaseUserName);
     propObj.put("databasePassword", databasePassword);
     propObj.put("databasePoolSize", poolSize);
-    
+
     /* Call the databroker constructor with the RabbitMQ client Vertx web client. */
 
     rabbitMQWebClient = new RabbitWebClient(vertx, webConfig, propObj);
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
-    rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient, pgClient);
-    databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, dataBrokerVhost);
-    
+    rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient, pgClient, brokerConfig);
+    databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, brokerConfig);
+
+
     resourceGroup = brokerConfig.getString("testResourceGroup");
     resourceServer = brokerConfig.getString("testResourceServer");
-    consumer = brokerConfig.getString("testConsumer");
-    provider = brokerConfig.getString("testProvider");
+    consumer = UUID.randomUUID().toString();
+    provider = UUID.randomUUID().toString();
     testContext.completeNow();
 
   }
@@ -200,9 +200,8 @@ public class AdapterEntitiesTest {
   @Order(1)
   void successRegisterAdaptor(VertxTestContext testContext) {
     JsonObject request = new JsonObject();
-    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
-    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
-    request.put(Constants.CONSUMER, consumer);
+    request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information_1"));
+    request.put(Constants.USER_ID, consumer);
     request.put(JSON_PROVIDER, provider);
 
     JsonObject expected = new JsonObject();
@@ -215,12 +214,14 @@ public class AdapterEntitiesTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         logger.info("inside  successRegisterAdaptor - RegisteAdaptor response is : " + response);
-        id = response.getString(Constants.ID);
         assertTrue(response.containsKey(USER_NAME));
         assertTrue(response.containsKey(APIKEY));
         assertTrue(response.containsKey(URL));
         assertTrue(response.containsKey(PORT));
         assertTrue(response.containsKey(VHOST));
+
+        id = response.getString(Constants.ID);
+        userName2Delete = response.getString(USER_NAME);
         // assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -237,7 +238,7 @@ public class AdapterEntitiesTest {
     expected.put(Constants.TYPE, 200);
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, Constants.EXCHANGE_FOUND);
-System.out.println(id);
+    System.out.println(id);
     databroker.getExchange(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -256,7 +257,7 @@ System.out.println(id);
     JsonObject request = new JsonObject();
     request.put(Constants.ID, id);
     request.put("exchangeName", id);// TODO : discuss conflict between impl and test code
-    System.out.println("request: "+request);
+    System.out.println("request: " + request);
     JsonObject expected = new JsonObject();
     JsonArray adaptorLogs_entities = new JsonArray();
     JsonArray database_entities = new JsonArray();
@@ -266,6 +267,7 @@ System.out.println(id);
     database_entities.add(id + Constants.ALLOW_ROUTING_KEY);
     expected.put(Constants.QUEUE_ADAPTOR_LOGS, adaptorLogs_entities);
     expected.put(Constants.QUEUE_DATA, database_entities);
+    expected.put(Constants.REDIS_LATEST, database_entities);
 
     databroker.listAdaptor(request, handler -> {
       if (handler.succeeded()) {
@@ -310,9 +312,10 @@ System.out.println(id);
     anotherProvider = Constants.USER_NAME_TEST_EXAMPLE;
 
     JsonObject request = new JsonObject();
-    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup + "_1");
-    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
-    request.put(Constants.CONSUMER, consumer);
+//    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
+//    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information1"));
+    request.put(Constants.USER_ID, consumer);
     request.put(JSON_PROVIDER, anotherProvider);
 
     JsonObject expected = new JsonObject();
@@ -343,6 +346,7 @@ System.out.println(id);
   @Order(6)
   void successGetExchangeExistingUser(VertxTestContext testContext) throws InterruptedException {
     JsonObject request = new JsonObject();
+    logger.info("Exchange name :"+anotherid);
     request.put(Constants.ID, anotherid);
     JsonObject expected = new JsonObject();
     expected.put(Constants.TYPE, 200);
@@ -377,6 +381,7 @@ System.out.println(id);
     database_entities.add(anotherid + Constants.ALLOW_ROUTING_KEY);
     expected.put(Constants.QUEUE_ADAPTOR_LOGS, adaptorLogs_entities);
     expected.put(Constants.QUEUE_DATA, database_entities);
+    expected.put(Constants.REDIS_LATEST, database_entities);
 
     databroker.listAdaptor(request, handler -> {
       if (handler.succeeded()) {
@@ -395,9 +400,10 @@ System.out.println(id);
       throws InterruptedException {
     Thread.sleep(1000);
     JsonObject request = new JsonObject();
-    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
-    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
-    request.put(Constants.CONSUMER, consumer);
+//    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
+//    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information"));
+    request.put(Constants.USER_ID, consumer);
     request.put(JSON_PROVIDER, provider);
 
     JsonObject expected = new JsonObject();
@@ -433,10 +439,10 @@ System.out.println(id);
         logger.info("inside test - DeleteAdaptor response is : " + response);
         assertEquals(ResponseType.Ok.getCode(), handler.result().getInteger(Constants.TYPE));
         testContext.completeNow();
-      }else {
+      } else {
         testContext.failNow(handler.cause());
       }
-      
+
     });
   }
 
@@ -468,8 +474,9 @@ System.out.println(id);
   @Order(11)
   void failureRegisterInvalidAdaptorID(VertxTestContext testContext) throws InterruptedException {
     JsonObject request = new JsonObject();
-    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup + "+()*&");
-    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+//    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup + "+()*&");
+//    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information()*&"));
     request.put(Constants.CONSUMER, Constants.CONSUMER_TEST_EXAMPLE);
 
     JsonObject expected = new JsonObject();
@@ -483,6 +490,29 @@ System.out.println(id);
       }
       testContext.completeNow();
     });
+  }
+
+  @Test
+  @Order(11)
+  static void cleanUp(VertxTestContext testContext) {
+    
+    if (userName2Delete != null) {
+      logger.info("cleanup : delete user "+userName2Delete);
+      String url = "/api/users/bulk-delete";// + Util.encodeValue(userName2Delete);
+      JsonObject request=new JsonObject();
+      request.put("users", new JsonArray().add(userName2Delete));
+      
+      rabbitMQWebClient.requestAsync(Constants.REQUEST_DELETE, url,request).onComplete(handler -> {
+        if (handler.succeeded()) {
+          logger.info(userName2Delete + " deleted");
+        } else {
+          logger.error(handler.cause());
+          logger.info(userName2Delete + " deletion failed");
+        }
+        testContext.completeNow();
+      });
+    }
+
   }
 
 

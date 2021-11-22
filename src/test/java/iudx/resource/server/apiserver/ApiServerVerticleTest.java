@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -74,14 +73,13 @@ public class ApiServerVerticleTest {
   ApiServerVerticleTest() {}
 
   @BeforeAll
-  public static void setup(Vertx vertx, io.vertx.reactivex.core.Vertx vertx2,
-      VertxTestContext testContext) {
+  public static void setup(Vertx vertx,VertxTestContext testContext) {
     WebClientOptions clientOptions =
         new WebClientOptions().setSsl(true).setVerifyHost(false).setTrustAll(true);
     client = WebClient.create(vertx, clientOptions);
 
     config = new Configuration();
-    JsonObject apiConfig = config.configLoader(4, vertx2);
+    JsonObject apiConfig = config.configLoader(4, vertx);
     exchangeName = UUID.randomUUID().toString().replaceAll("-", "");
     queueName = UUID.randomUUID().toString().replaceAll("-", "");
     vhost = UUID.randomUUID().toString().replaceAll("-", "");
@@ -1799,8 +1797,8 @@ public class ApiServerVerticleTest {
   public void testAdapterRegistrationWithoutToken(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register";
     JsonObject requestJson = new JsonObject();
-    requestJson.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
-    requestJson.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    requestJson.put(Constants.RESOURCE_GROUP, resourceGroup);
+    requestJson.put(Constants.RESOURCE_SERVER, resourceServer);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, invalidauthToken)
         .sendJsonObject(requestJson, handler -> {
           if (handler.succeeded()) {
@@ -1823,8 +1821,8 @@ public class ApiServerVerticleTest {
   public void testRegisterAdapter(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register";
     JsonObject requestJson = new JsonObject();
-    requestJson.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
-    requestJson.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    requestJson.put(Constants.RESOURCE_GROUP, resourceGroup);
+    requestJson.put(Constants.RESOURCE_SERVER, resourceServer);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, authToken)
         .putHeader(Constants.HEADER_TOKEN, publicToken).sendJsonObject(requestJson, handler -> {
           if (handler.succeeded()) {
@@ -1848,8 +1846,8 @@ public class ApiServerVerticleTest {
   public void testRegisterAdapter400(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.IUDX_MANAGEMENT_ADAPTER_URL + "/register";
     JsonObject requestJson = new JsonObject();
-    requestJson.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
-    requestJson.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    requestJson.put(Constants.RESOURCE_GROUP, resourceGroup);
+    requestJson.put(Constants.RESOURCE_SERVER, resourceServer);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, authToken)
         .putHeader(Constants.HEADER_TOKEN, publicToken).sendJsonObject(requestJson, handler -> {
           if (handler.succeeded()) {

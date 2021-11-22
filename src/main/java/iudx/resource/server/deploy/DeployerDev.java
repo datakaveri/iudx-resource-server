@@ -1,24 +1,21 @@
 package iudx.resource.server.deploy;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
-
-import io.vertx.core.eventbus.EventBusOptions;
-
-import io.vertx.core.cli.CLI;
-import io.vertx.core.cli.Option;
-import io.vertx.core.cli.CommandLine;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.DeploymentOptions;
-
-
-import java.util.Arrays;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
+import io.vertx.core.cli.CLI;
+import io.vertx.core.cli.CommandLine;
+import io.vertx.core.cli.Option;
+import io.vertx.core.eventbus.EventBusOptions;
+import io.vertx.core.json.JsonObject;
 
 
 /**
@@ -33,6 +30,7 @@ public class DeployerDev {
       return;
     }
     JsonObject config = configs.getJsonArray("modules").getJsonObject(i);
+    config.put("host", configs.getString("host"));
     String moduleName = config.getString("id");
     int numInstances = config.getInteger("verticleInstances");
     vertx.deployVerticle(moduleName,

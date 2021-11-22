@@ -2,131 +2,106 @@ package iudx.resource.server.database.latest;
 
 import static iudx.resource.server.database.archives.Constants.ATTRIBUTE_LIST;
 import static iudx.resource.server.database.archives.Constants.EMPTY_RESOURCE_ID;
-import static iudx.resource.server.database.archives.Constants.ERROR;
 import static iudx.resource.server.database.archives.Constants.FAILED;
 import static iudx.resource.server.database.archives.Constants.ID;
 import static iudx.resource.server.database.archives.Constants.ID_NOT_FOUND;
-import static iudx.resource.server.database.archives.Constants.KEY;
-import static iudx.resource.server.database.archives.Constants.PATH_PARAM;
+import static iudx.resource.server.database.archives.Constants.SUCCESS;
+
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.database.archives.DatabaseServiceImpl;
-import iudx.resource.server.database.archives.QueryDecoder;
 import iudx.resource.server.database.archives.ResponseBuilder;
 
 /**
  * The LatestData Service Implementation.
  * <h1>LatestData Service Implementation</h1>
  * <p>
- * The LatestData Service implementation in the IUDX Resource Server implements the definitions of the
- * {@link iudx.resource.server.database.latest.LatestDataService}.
+ * The LatestData Service implementation in the IUDX Resource Server implements the definitions of
+ * the {@link iudx.resource.server.database.latest.LatestDataService}.
  * </p>
  *
  * @version 1.0
  * @since 2021-03-26
  */
 
-public class LatestDataServiceImpl implements LatestDataService{
+public class LatestDataServiceImpl implements LatestDataService {
 
-    RedisClient redisClient;
-    private ResponseBuilder responseBuilder;
-    JsonObject attributeList;
-    private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceImpl.class);
-    // private RedisAPI redisAPI;
-    private QueryDecoder decoder = new QueryDecoder();
-    private JsonObject query;
+  RedisClient redisClient;
+  private ResponseBuilder responseBuilder;
+  JsonObject attributeList;
+  private static final Logger LOGGER = LogManager.getLogger(LatestDataServiceImpl.class);
+  // private RedisAPI redisAPI;
+  private RedisCommandArgsBuilder redisCmdBuilder = new RedisCommandArgsBuilder();
 
-    public LatestDataServiceImpl(RedisClient client, JsonObject attributeList) {
-        this.redisClient = client;
-        this.attributeList = attributeList;
+  public LatestDataServiceImpl(RedisClient client, JsonObject attributeList) {
+    this.redisClient = client;
+    this.attributeList = attributeList;
+  }
+
+  /**
+   * Performs a Latest search query using the Redis JReJSON client.
+   *
+   * @param request Json object received from the ApiServerVerticle
+   * @param handler Handler to return redis response in case of success and appropriate error message
+   *        in case of failure
+   */
+
+  @Override
+  public LatestDataService getLatestData(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+
+    request.put(ATTRIBUTE_LIST, attributeList);
+
+    // Exceptions
+    if (!request.containsKey(ID)) {
+      LOGGER.debug("Info: " + ID_NOT_FOUND);
+      responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(ID_NOT_FOUND);
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+      return null;
     }
 
-    /**
-     * Performs a Latest search query using the Redis JReJSON client.
-     *
-     * @param request Json object received from the ApiServerVerticle
-     * @param handler Handler to return redis response in case of success and appropriate error
-     *        message in case of failure
-     */
-
-    @Override
-    public LatestDataService getLatestData(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-
-        request.put(ATTRIBUTE_LIST, attributeList);
-
-        // Exceptions
-        if (!request.containsKey(ID)) {
-            LOGGER.debug("Info: " + ID_NOT_FOUND);
-            responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(ID_NOT_FOUND);
-            handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-            return null;
-        }
-
-        if (request.getJsonArray(ID).isEmpty()) {
-            LOGGER.debug("Info: " + EMPTY_RESOURCE_ID);
-            responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
-                    .setMessage(EMPTY_RESOURCE_ID);
-            handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-            return null;
-        }
-
-//        if (!request.containsKey(OPTIONS)) {
-//            LOGGER.debug("Info: " + OPTIONS_NOT_FOUND);
-//            responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(OPTIONS_NOT_FOUND);
-//            handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-//            return null;
-//        }
-//
-//        if (request.getString(OPTIONS).isEmpty()) {
-//            LOGGER.debug("Info: " + EMPTY_OPTIONS);
-//            responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
-//                    .setMessage(EMPTY_OPTIONS);
-//            handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-//            return null;
-//        }
-
-        // options has to be equal to group or id
-
-//        if (!GROUP.equalsIgnoreCase(request.getString(OPTIONS)) && !ID.equalsIgnoreCase(request.getString(OPTIONS))) {
-//            LOGGER.debug("Info: " + EMPTY_OPTIONS);
-//            responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
-//                    .setMessage(INVALID_OPTIONS);
-//            handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-//            return null;
-//        }
-
-        /** Reusing QueryDecoder
-         * TODO: can use the QueryDecoder module to throw another request concurrently
-         * to ES to ensure better data consistency between cache and DB
-         * query = {key: rg, pathParam: pathParam} for Redis command.
-         */
-
-        LOGGER.debug("<LatestDataServiceImpl---> "+request);
-        query = decoder.queryDecoder(request);
-        if (query.containsKey(ERROR)) {
-            LOGGER.error("Fail: Query returned with an error: " + query.getString(ERROR));
-            responseBuilder =
-                    new ResponseBuilder(FAILED).setTypeAndTitle(400)
-                            .setMessage(query.getString(ERROR));
-            handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-            return null;
-        }
-
-        LOGGER.debug("Info: Query constructed: " + query.toString());
-        redisClient.searchAsync(query.getString(KEY), query.getString(PATH_PARAM), searchRes -> {
-            if (searchRes.succeeded()) {
-                LOGGER.debug("Success: Successful Redis request");
-                handler.handle(Future.succeededFuture(searchRes.result()));
-            } else {
-                LOGGER.error("Fail: Redis Cache Request;" + searchRes.cause().getMessage());
-                handler.handle(Future.failedFuture(searchRes.cause().getMessage()));
-            }
-        });
-
-        return null;
+    if (request.getJsonArray(ID).isEmpty()) {
+      LOGGER.debug("Info: " + EMPTY_RESOURCE_ID);
+      responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
+          .setMessage(EMPTY_RESOURCE_ID);
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+      return null;
     }
+
+    String id = request.getJsonArray(ID).getString(0);
+    RedisArgs args = redisCmdBuilder.getRedisCommandArgs(id, isGroupLevelRecord(id));
+
+    JsonArray response = new JsonArray();
+    redisClient.searchAsync(args.getKey(), args.getPath(), searchRes -> {
+      if (searchRes.succeeded()) {
+        LOGGER.debug("Success: Successful Redis request");
+        response.addAll(extractValues(args.getKey(), searchRes.result(), isGroupLevelRecord(id)));
+        responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200).setMessage(response);
+        handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+      } else {
+        LOGGER.error("Fail: Redis Cache Request;" + searchRes.cause().getMessage());
+        handler.handle(Future.failedFuture(searchRes.cause().getMessage()));
+      }
+    });
+
+    return this;
+  }
+
+  private JsonArray extractValues(String key, JsonObject result, boolean groupSnapshot) {
+    if (groupSnapshot) {
+      result.remove(key);
+      return new JsonArray(result.stream().map(e -> e.getValue()).collect(Collectors.toList()));
+    }
+    return new JsonArray().add(result);
+  }
+
+  public boolean isGroupLevelRecord(String id) {
+    return this.attributeList.containsKey(id);
+  }
 }

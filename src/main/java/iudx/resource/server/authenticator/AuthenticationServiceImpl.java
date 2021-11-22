@@ -12,11 +12,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -44,6 +47,8 @@ import iudx.resource.server.databroker.util.Util;
  * @since 2020-05-31
  */
 
+@Deprecated()
+//@TODO : delete in 3.0.1
 public class AuthenticationServiceImpl implements AuthenticationService {
 
   private static final Logger LOGGER = LogManager.getLogger(AuthenticationServiceImpl.class);
@@ -89,7 +94,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     vertxObj = vertx;
     this.config = config;
     catHost = config.getString("catServerHost");
-    catPort = Integer.parseInt(config.getString("catServerPort"));
+    catPort = config.getInteger("catServerPort");
     catPath = Constants.CAT_RSG_PATH;
     resourceServerId = config.getString("resourceServerId");
 
@@ -238,7 +243,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             responseContainer.tipResponse = tipResponse;
             LOGGER.debug("Info: TIP Response is : " + tipResponse);
             String id = tipResponse.getJsonArray("request").getJsonObject(0).getString("id");
-            return isOpenResource1(new JsonArray().add(id), requestEndpoint);
+            return isOpenResource1(request.getJsonArray("ids"), requestEndpoint);
           }).onSuccess(success -> {
 
             responseContainer.catResponse = success;
@@ -263,9 +268,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
              */
           }).onFailure(failure -> {
             JsonObject result = new JsonObject();
+            LOGGER.info("failure : "+failure.getMessage());
             result.put("status", "error");
             result.put("message", failure.getMessage());
-            LOGGER.debug("RESULT : " + failure.getCause());
+            handler.handle(Future.failedFuture(failure.getMessage()));
           });
         } else {
           // Based on API perform TIP.
@@ -430,7 +436,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
               : String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
 
           String catHost = config.getString("catServerHost");
-          int catPort = Integer.parseInt(config.getString("catServerPort"));
+          int catPort = config.getInteger("catServerPort");
           String catPath = Constants.CAT_RSG_PATH;
           LOGGER.debug("Info: Host " + catHost + " Port " + catPort + " Path " + catPath);
           // Check if resourceID is available
@@ -554,16 +560,30 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       }
     } else {
       // process for /adapter or /subscription
-      LOGGER.debug("resource exist" + requestIDs.getString(0));
-      isItemExist(requestIDs.getString(0)).onComplete(handler -> {
-        if (handler.succeeded()) {
-          LOGGER.debug("item exist succeeded");
-          result.put("Closed End Point", true);
-          promise.complete(result);
-        } else {
-          LOGGER.error("cat response failed for Item : ");
-          result.put("Closed End Point", false);
-          promise.fail("Not Found ");
+//      LOGGER.debug("resource exist" + requestIDs.getString(0));
+//      isItemExist(requestIDs.getString(0)).onComplete(handler -> {
+//        if (handler.succeeded()) {
+//          LOGGER.debug("item exist succeeded");
+//          result.put("Closed End Point", true);
+//          promise.complete(result);
+//        } else {
+//          LOGGER.error("cat response failed for Item : ");
+//          result.put("Closed End Point", false);
+//          promise.fail("Not Found ");
+//        }
+//      });
+      
+      Iterator<Object> itr = requestIDs.iterator();
+      List<Future> futures=new ArrayList<Future>();
+      while (itr.hasNext()) {
+        String rId = (String) itr.next();
+        futures.add(isItemExist(rId));
+      }
+      CompositeFuture.all(futures).onComplete(handler->{
+        if(handler.succeeded()) {
+          promise.complete();
+        }else {
+          promise.fail("Not Found");
         }
       });
     }
@@ -625,7 +645,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     LOGGER.debug("isResourceExist() started");
     Promise<Boolean> promise = Promise.promise();
     String catHost = config.getString("catServerHost");
-    int catPort = Integer.parseInt(config.getString("catServerPort"));
+    int catPort = config.getInteger("catServerPort");
     String catPath = Constants.CAT_RSG_PATH;
     String resourceExist = resourceIdCache.getIfPresent(id);
     if (resourceExist != null) {
@@ -697,8 +717,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     // 1. Check the API requested.
     if (Constants.OPEN_ENDPOINTS.contains(requestEndpoint)) {
       JsonObject response = new JsonObject();
-      LOGGER.info(Constants.OPEN_ENDPOINTS);
-
+      LOGGER.info(Constants.OPEN_ENDPOINTS); 
       // 1.1. Check with catalogue if resource is open or secure.
       // 1.2. If open respond success.
       // 1.3. If closed, check if auth response has access to the requested resource.
@@ -783,6 +802,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       LOGGER.debug("Info: Requested access for " + requestEndpoint);
       JsonArray tipresult = result.getJsonArray("request");
       JsonObject tipresponse = tipresult.getJsonObject(0);
+      
       LOGGER.debug("Info: Allowed APIs " + tipresponse);
       JsonArray allowedAPIs = tipresponse.getJsonArray("apis");
       int total = allowedAPIs.size();
@@ -804,10 +824,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (requestMethod.equalsIgnoreCase("POST")) {
           String resourceGroup = userRequest.getString("resourceGroup");
           String resourceServer = userRequest.getString("resourceServer");
+          String entityId=userRequest.getJsonArray("entities").getString(0);
           // System.out.println(providerID);
           // System.out.println(resourceGroup);
           // System.out.println(resourceServer);
-          if (providerID.contains(resourceServer + "/" + resourceGroup)) {
+          
+          if (providerID.contains(entityId)) {
             LOGGER.info(
                 "Success :: Has access to " + requestEndpoint + " API and Adapter " + adapterID);
             result.put("provider", providerSHA);
@@ -977,4 +999,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
     return true;
   }
+  
+  private static <T> List<T> toList(JsonArray arr) {
+    if (arr == null) {
+      return null;
+    } else {
+      return (List<T>) arr.getList();
+    }
+  }
+
 }

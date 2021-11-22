@@ -1,47 +1,48 @@
 package iudx.resource.server.deploy;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
-import java.util.EnumSet;
-
-import io.vertx.core.eventbus.EventBusOptions;
-import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
-import com.hazelcast.config.Config;
-import com.hazelcast.config.DiscoveryStrategyConfig;
-import com.hazelcast.zookeeper.*;
-
-import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.cli.CLI;
-import io.vertx.core.cli.Option;
-import io.vertx.core.cli.CommandLine;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.DeploymentOptions;
-
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
-import java.nio.file.Files;
 
-import io.vertx.core.metrics.MetricsOptions;
-import io.vertx.micrometer.VertxPrometheusOptions;
-import io.vertx.micrometer.MicrometerMetricsOptions;
-import io.vertx.micrometer.Label;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+
+import com.hazelcast.config.Config;
+import com.hazelcast.config.DiscoveryStrategyConfig;
+import com.hazelcast.zookeeper.ZookeeperDiscoveryProperties;
+import com.hazelcast.zookeeper.ZookeeperDiscoveryStrategyFactory;
+
 import io.micrometer.core.instrument.MeterRegistry;
-import io.vertx.micrometer.backends.BackendRegistries;
+import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 // JVM metrics imports
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
+import io.vertx.core.cli.CLI;
+import io.vertx.core.cli.CommandLine;
+import io.vertx.core.cli.Option;
+import io.vertx.core.eventbus.EventBusOptions;
+import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.metrics.MetricsOptions;
+import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.micrometer.Label;
+import io.vertx.micrometer.MicrometerMetricsOptions;
+import io.vertx.micrometer.VertxPrometheusOptions;
+import io.vertx.micrometer.backends.BackendRegistries;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 public class Deployer {
   private static final Logger LOGGER = LogManager.getLogger(Deployer.class);
@@ -54,6 +55,7 @@ public class Deployer {
       return;
     }
     JsonObject config = configs.getJsonArray("modules").getJsonObject(i);
+    config.put("host", configs.getString("host"));
     String moduleName = config.getString("id");
     int numInstances = config.getInteger("verticleInstances");
     vertx.deployVerticle(moduleName,
@@ -98,12 +100,14 @@ public class Deployer {
                 .setEmbeddedServerOptions(new HttpServerOptions().setPort(9000)))
         // .setPublishQuantiles(true))
         .setLabels(EnumSet.of(Label.EB_ADDRESS, Label.EB_FAILURE, Label.HTTP_CODE,
-            Label.HTTP_METHOD, Label.HTTP_PATH))
+            Label.HTTP_METHOD))
         .setEnabled(true);
   }
 
   public static void setJVMmetrics() {
     MeterRegistry registry = BackendRegistries.getDefaultNow();
+    LOGGER.debug(registry);
+    new ClassLoaderMetrics().bindTo(registry);
     new JvmMemoryMetrics().bindTo(registry);
     new JvmGcMetrics().bindTo(registry);
     new ProcessorMetrics().bindTo(registry);
@@ -127,13 +131,14 @@ public class Deployer {
     List<String> zookeepers = configuration.getJsonArray("zookeepers").getList();
     String clusterId = configuration.getString("clusterId");
     mgr = getClusterManager(host, zookeepers, clusterId);
-    EventBusOptions ebOptions = new EventBusOptions().setClustered(true).setHost(host);
+    EventBusOptions ebOptions = new EventBusOptions().setClusterPublicHost(host);
     VertxOptions options = new VertxOptions().setClusterManager(mgr).setEventBusOptions(ebOptions)
         .setMetricsOptions(getMetricsOptions());
-
+    LOGGER.debug("metrics-options" + options.getMetricsOptions());
     Vertx.clusteredVertx(options, res -> {
       if (res.succeeded()) {
         vertx = res.result();
+        LOGGER.debug(vertx.isMetricsEnabled());
         setJVMmetrics();
         recursiveDeploy(vertx, configuration, 0);
       } else {
@@ -151,6 +156,7 @@ public class Deployer {
     CountDownLatch latch_cluster = new CountDownLatch(1);
     CountDownLatch latch_vertx = new CountDownLatch(1);
     LOGGER.debug("number of verticles being undeployed are:" + deployIDSet.size());
+    // shutdown verticles
     for (String deploymentID : deployIDSet) {
       vertx.undeploy(deploymentID, handler -> {
         if (handler.succeeded()) {
@@ -166,21 +172,17 @@ public class Deployer {
     try {
       latch_verticles.await(5, TimeUnit.SECONDS);
       LOGGER.info("All the verticles undeployed");
-      mgr.leave(handler -> {
-        if (handler.succeeded()) {
-          LOGGER.info("Hazelcast succesfully left:");
-          latch_cluster.countDown();
-
-        } else {
-          LOGGER.warn("Error while hazelcast leaving, reason:" + handler.cause());
-        }
-      });
+      Promise<Void> promise = Promise.promise();
+      // leave the cluster
+      mgr.leave(promise);
+      LOGGER.info("vertx left cluster succesfully");
     } catch (Exception e) {
       e.printStackTrace();
     }
 
     try {
       latch_cluster.await(5, TimeUnit.SECONDS);
+      // shutdown vertx
       vertx.close(handler -> {
         if (handler.succeeded()) {
           LOGGER.info("vertx closed succesfully");

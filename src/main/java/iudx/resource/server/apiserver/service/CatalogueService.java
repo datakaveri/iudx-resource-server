@@ -1,20 +1,27 @@
 package iudx.resource.server.apiserver.service;
 
+import static iudx.resource.server.apiserver.util.Util.toList;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
@@ -41,9 +48,9 @@ public class CatalogueService {
           .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
 
   public CatalogueService(Vertx vertx, JsonObject config) {
-    this.vertx=vertx;
+    this.vertx = vertx;
     catHost = config.getString("catServerHost");
-    catPort = Integer.parseInt(config.getString("catServerPort"));
+    catPort = config.getInteger("catServerPort");
     catSearchPath = Constants.CAT_RSG_PATH;
     catItemPath = Constants.CAT_ITEM_PATH;
 
@@ -52,7 +59,7 @@ public class CatalogueService {
     catWebClient = WebClient.create(vertx, options);
     populateCache();
     cacheTimerid = vertx.setPeriodic(TimeUnit.DAYS.toMillis(1), handler -> {
-       populateCache();
+      populateCache();
     });
   }
 
@@ -90,7 +97,7 @@ public class CatalogueService {
 
 
   public Future<List<String>> getApplicableFilters(String id) {
-    Promise<List<String>> promise=Promise.promise();
+    Promise<List<String>> promise = Promise.promise();
     // Note: id should be a complete id not a group id (ex : domain/SHA/rs/rs-group/itemId)
     String groupId = id.substring(0, id.lastIndexOf("/"));
     // check for item in cache.
@@ -100,15 +107,15 @@ public class CatalogueService {
       filters = applicableFilterCache.getIfPresent(groupId + "/*");
     }
     if (filters == null) {
-      //filters = fetchFilters4Item(id, groupId);
-      fetchFilters4Item(id, groupId).onComplete(handler->{
-        if(handler.succeeded()) {
+      // filters = fetchFilters4Item(id, groupId);
+      fetchFilters4Item(id, groupId).onComplete(handler -> {
+        if (handler.succeeded()) {
           promise.complete(handler.result());
-        }else {
+        } else {
           promise.fail("failed to fetch filters.");
         }
       });
-    }else {
+    } else {
       promise.complete(filters);
     }
     return promise.future();
@@ -123,7 +130,7 @@ public class CatalogueService {
       if (itemHandler.succeeded()) {
         List<String> filters4Item = itemHandler.result();
         if (filters4Item.isEmpty()) {
-          //Future<List<String>> getGroupFilters = getFilterFromGroupId(groupId);
+          // Future<List<String>> getGroupFilters = getFilterFromGroupId(groupId);
           getGroupFilters.onComplete(groupHandler -> {
             if (groupHandler.succeeded()) {
               List<String> filters4Group = groupHandler.result();
@@ -169,7 +176,7 @@ public class CatalogueService {
     });
     return promise.future();
   }
-  
+
   private void callCatalogueAPI(String id, Handler<AsyncResult<List<String>>> handler) {
     List<String> filters = new ArrayList<String>();
     catWebClient.get(catPort, catHost, catItemPath).addQueryParam("id", id).send(catHandler -> {
@@ -188,13 +195,44 @@ public class CatalogueService {
       }
     });
   }
-  
 
-  private <T> List<T> toList(JsonArray arr) {
-    if (arr == null) {
-      return null;
-    } else {
-      return (List<T>) arr.getList();
-    }
+  public Future<Boolean> isItemExist(String id) {
+    LOGGER.debug("isItemExist() started");
+    Promise<Boolean> promise = Promise.promise();
+    LOGGER.info("id : " + id);
+    catWebClient.get(catPort, catHost, catItemPath).addQueryParam("id", id)
+        .expect(ResponsePredicate.JSON).send(responseHandler -> {
+          if (responseHandler.succeeded()) {
+            HttpResponse<Buffer> response = responseHandler.result();
+            JsonObject responseBody = response.bodyAsJsonObject();
+            if (responseBody.getString("status").equalsIgnoreCase("urn:dx:cat:Success")
+                && responseBody.getInteger("totalHits") > 0) {
+              promise.complete(true);
+            } else {
+              promise.fail(responseHandler.cause());
+            }
+          } else {
+            promise.fail(responseHandler.cause());
+          }
+        });
+    return promise.future();
   }
+
+  public Future<Boolean> isItemExist(List<String> ids) {
+    Promise<Boolean> promise = Promise.promise();
+    List<Future> futures = new ArrayList<Future>();
+    for (String id : ids) {
+      futures.add(isItemExist(id));
+    }
+
+    CompositeFuture.all(futures).onComplete(handler -> {
+      if (handler.succeeded()) {
+        promise.complete();
+      } else {
+        promise.fail(handler.cause());
+      }
+    });
+    return promise.future();
+  }
+
 }

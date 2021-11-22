@@ -25,13 +25,15 @@
             "keystore": "",
             "keystorePassword": "",
             "authServerHost": "",
-            "testAuthToken": "",
+            "testAuthToken": "authtest.iudx.io/kailash.adhikari@india.nec.com/732b94a17b9e127d0541af9f3c9c9ef8",
             "testExpiredAuthToken": "",
             "testResourceID": "",
             "catServerHost": "",
             "catServerPort": "",
             "serverMode": "",
-            "resourceServerId":""
+            "resourceServerId":"",
+	    "jwtIgnoreExpiry": true
+
         },
         {
             "id": "iudx.resource.server.databroker.DataBrokerVerticle",
@@ -58,7 +60,10 @@
             "testResourceGroup":"",
             "testResourceServer":"",
             "testConsumer":"",
-            "testProvider":""
+            "testProvider":"",
+            
+            "testAdapterConsumer":"",
+            "testAdapterProvider":""
         },
         {
             "id": "iudx.resource.server.callback.CallbackVerticle",
@@ -90,7 +95,7 @@
             "keystorePassword": "",
             "rsAdmin": "",
             "verticleInstances": 2,
-            "authToken":"",
+            "authToken":"authtest.iudx.io/kailash.adhikari@india.nec.com/732b94a17b9e127d0541af9f3c9c9ef8",
             "invalidauthToken":"",
             "resourceID":"",
             "circleCoords":"",
@@ -108,11 +113,28 @@
         {
             "id": "iudx.resource.server.database.latest.LatestVerticle",
             "verticleInstances": 2,
-            "redisHost": "",
-            "redisPort": 12345,
-            "redisUser": "",
+            "redisMode": "",
+            "redisUsername": "",
             "redisPassword": "",
-            "attributeList": {"key":"value"}                        
+            "redisMaxPoolSize": 30,
+            "redisMaxPoolWaiting": 200,
+            "redisMaxWaitingHandlers": 1024,
+            "redisPoolRecycleTimeout": 1500,
+            "redisHost": "",
+            "redisPort": 123,
+            "attributeList": {
+                "key": "value"
+            }                           
+        },
+        {
+            "id": "iudx.resource.server.metering.MeteringVerticle",
+            "verticleInstances": 1,
+            "meteringDatabaseIP": "",
+            "meteringDatabasePort": 1234,
+            "meteringDatabaseName": "",
+            "meteringDatabaseUserName": "",
+            "meteringDatabasePassword": "",
+            "meteringPoolSize": 25
         }
     ]
 }

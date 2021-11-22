@@ -72,8 +72,8 @@ public interface DataBrokerService {
   DataBrokerService listAdaptor(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The registerStreamingSubscription implements the registration of streaming subscription
-   * operation with the data broker.
+   * The registerStreamingSubscription implements the registration of streaming subscription operation
+   * with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -86,8 +86,8 @@ public interface DataBrokerService {
 
 
   /**
-   * The updateStreamingSubscription implements the updation of streaming subscription operation
-   * with the data broker.
+   * The updateStreamingSubscription implements the updation of streaming subscription operation with
+   * the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -110,10 +110,10 @@ public interface DataBrokerService {
   @Fluent
   DataBrokerService appendStreamingSubscription(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler);
-  
+
   /**
-   * The deleteStreamingSubscription implements the deletion of streaming subscription operation
-   * with the data broker.
+   * The deleteStreamingSubscription implements the deletion of streaming subscription operation with
+   * the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -125,8 +125,8 @@ public interface DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The listStreamingSubscription implements the listing of streaming subscription operation with
-   * the data broker.
+   * The listStreamingSubscription implements the listing of streaming subscription operation with the
+   * data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -335,8 +335,8 @@ public interface DataBrokerService {
 
 
   /**
-   * The listExchangeSubscribers implements the listing of all bindings of a queue operation with
-   * the data broker.
+   * The listExchangeSubscribers implements the listing of all bindings of a queue operation with the
+   * data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -356,6 +356,9 @@ public interface DataBrokerService {
   @Fluent
   DataBrokerService publishFromAdaptor(JsonObject request,
       Handler<AsyncResult<JsonObject>> handler);
+
+  @Fluent
+  DataBrokerService resetPassword(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   @GenIgnore
   static DataBrokerService createProxy(Vertx vertx, String address) {

@@ -2,6 +2,7 @@ package iudx.resource.server.databroker;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -74,24 +75,24 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
     /* Read the configuration and set the rabbitMQ server properties. */
     dataBrokerIP = config().getString("dataBrokerIP");
-    dataBrokerPort = Integer.parseInt(config().getString("dataBrokerPort"));
+    dataBrokerPort = config().getInteger("dataBrokerPort");
     dataBrokerManagementPort =
-      Integer.parseInt(config().getString("dataBrokerManagementPort"));
+        config().getInteger("dataBrokerManagementPort");
     dataBrokerVhost = config().getString("dataBrokerVhost");
     dataBrokerUserName = config().getString("dataBrokerUserName");
     dataBrokerPassword = config().getString("dataBrokerPassword");
-    connectionTimeout = Integer.parseInt(config().getString("connectionTimeout"));
-    requestedHeartbeat = Integer.parseInt(config().getString("requestedHeartbeat"));
-    handshakeTimeout = Integer.parseInt(config().getString("handshakeTimeout"));
-    requestedChannelMax = Integer.parseInt(config().getString("requestedChannelMax"));
+    connectionTimeout = config().getInteger("connectionTimeout");
+    requestedHeartbeat = config().getInteger("requestedHeartbeat");
+    handshakeTimeout = config().getInteger("handshakeTimeout");
+    requestedChannelMax = config().getInteger("requestedChannelMax");
     networkRecoveryInterval =
-      Integer.parseInt(config().getString("networkRecoveryInterval"));
+        config().getInteger("networkRecoveryInterval");
     databaseIP = config().getString("callbackDatabaseIP");
-    databasePort = Integer.parseInt(config().getString("callbackDatabasePort"));
+    databasePort = config().getInteger("callbackDatabasePort");
     databaseName = config().getString("callbackDatabaseName");
     databaseUserName = config().getString("callbackDatabaseUserName");
     databasePassword = config().getString("callbackDatabasePassword");
-    poolSize = Integer.parseInt(config().getString("callbackpoolSize"));
+    poolSize = config().getInteger("callbackpoolSize");
 
     /* Configure the RabbitMQ Data Broker client with input from config files. */
 
@@ -121,12 +122,12 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
     /* Create a Vertx Web Client with the configuration and vertx cluster instance. */
 
-    webClient = WebClient.create(vertx, webConfig); 
+    webClient = WebClient.create(vertx, webConfig);
 
     /* Set Connection Object */
     if (connectOptions == null) {
       connectOptions = new PgConnectOptions().setPort(databasePort).setHost(databaseIP)
-        .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
+          .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
     }
 
     /* Pool options */
@@ -156,16 +157,16 @@ public class DataBrokerVerticle extends AbstractVerticle {
     rabbitWebClient = new RabbitWebClient(vertx, webConfig, propObj);
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
     rabbitClient =
-        new RabbitClient(vertx, config, rabbitWebClient, pgClient);
+        new RabbitClient(vertx, config, rabbitWebClient, pgClient, config());
     binder = new ServiceBinder(vertx);
-    databroker = new DataBrokerServiceImpl(rabbitClient, pgClient, dataBrokerVhost);
+    databroker = new DataBrokerServiceImpl(rabbitClient, pgClient, config());
 
 
     /* Publish the Data Broker service with the Event Bus against an address. */
 
     consumer =
         binder.setAddress(BROKER_SERVICE_ADDRESS)
-      .register(DataBrokerService.class, databroker);
+            .register(DataBrokerService.class, databroker);
 
   }
 

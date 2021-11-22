@@ -45,7 +45,9 @@ public class Constants {
   public static final String DOCS_KEY = "docs";
   public static final String SEARCH_REQ_PARAM = "/_search";
   public static final String COUNT_REQ_PARAM = "/_count";
+  public static final String COUNT_REQ_PARAM_WITHOUT_FILTER = "/_search?search_type=count";
   public static final String TIME_FIELD_DB = "observationDateTime";
+  public static final String FROM_KEY = "from";
   /* Request Params */
   /* Temporal */
   public static final String REQ_TIMEREL = "timerel";
@@ -82,13 +84,19 @@ public class Constants {
   public static final String EQUAL_OP = "==";
   public static final String NOT_EQUAL_OP = "!=";
   public static final String BETWEEN_OP = "<==>";
+  
+  /*pagination*/
+  public static final String PARAM_SIZE = "limit";
+  public static final String PARAM_FROM = "offset";
+  
   /* Errors */
   public static final String INVALID_OPERATOR = "Invalid operator";
   public static final String INVALID_SEARCH = "Invalid search request";
   public static final String INVALID_DATE = "Invalid date format";
   public static final String MISSING_ATTRIBUTE_FIELDS = "Missing attribute query fields";
   public static final String MISSING_TEMPORAL_FIELDS = "Missing/Invalid temporal parameters";
-  public static final String MISSING_RESPONSE_FILTER_FIELDS = "Missing/Invalid responseFilter parameters";
+  public static final String MISSING_RESPONSE_FILTER_FIELDS =
+      "Missing/Invalid responseFilter parameters";
   public static final String MISSING_GEO_FIELDS = "Missing/Invalid geo parameters";
   public static final String COORDINATE_MISMATCH = "Coordinate mismatch (Polygon)";
   public static final String COUNT_UNSUPPORTED = "Count is not supported with filtering";
@@ -143,4 +151,11 @@ public class Constants {
   public static final String INVALID_OPTIONS = "invalid options for latest";
   // needs modification depending on the actual error returned from Redis
   public static final String ID_NOT_PRESENT = "Not found";
+
+
+  // pagination
+
+  public static final int DEFAULT_SIZE_VALUE = 5000;
+  public static final int DEFAULT_FROM_VALUE = 0;
+  public static final String COUNT_MATCH_ALL_QUERY="{\"query\": { \"match_all\": {} }}";
 }

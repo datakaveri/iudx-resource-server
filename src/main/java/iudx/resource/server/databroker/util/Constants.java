@@ -15,14 +15,11 @@ public class Constants {
   
   public static final String BAD_REQUEST =
       "Bad request : insufficient request data to register adaptor";
-  public static final String BROKER_PRODUCTION_DOMAIN = "databroker.iudx.org.in";
-  public static final String BROKER_PRODUCTION_PORT = "24567";
-  public static final String BROKER_IP = "68.183.80.248";
-  public static final String BROKER_PORT = "5672";
   public static final String CHECK_CREDENTIALS =
       "Something went wrong while creating user using mgmt API. Check credentials";
   public static final String CONFIGURE = "configure";
   public static final String CONSUMER = "consumer";
+  public static final String USER_ID = "userid";
   public static final String CONSUMER_TEST_EXAMPLE = "vasanth.rajaraman@rbccps.org";
   public static final String CALLBACKURL = "callbackURL";  
 
@@ -46,8 +43,8 @@ public class Constants {
   public static final String EXCHANGE_CREATE_ERROR = "Creation of Exchange failed";
   public static final String EXCHANGE = "exchange";
   public static final String EXCHANGE_NAME = "exchangeName";
-  public static final String ERROR = "error";
   public static final String EXCHANGE_DECLARATION_ERROR = "something wrong in exchange declaration";
+  public static final String ERROR = "error";
   public static final String EXCHANGE_NOT_FOUND = "Exchange not found";
   public static final String EXCHANGE_TYPE = "topic";
   public static final boolean EXCHANGE_DURABLE_TRUE = true;
@@ -90,6 +87,7 @@ public class Constants {
       "Queue already exists with different properties";
   public static final String QUEUE_DATA = "database";
   public static final String QUEUE_ADAPTOR_LOGS = "adaptorLogs";
+  public static final String REDIS_LATEST="redis-latest";
   public static final String QUEUE_LIST_ERROR = "Listing of Queue failed";
   public static final String QUEUE_DELETE_ERROR = "Deletion of Queue failed";
   public static final String QUEUE_CREATE_ERROR = "Creation of Queue failed";
@@ -105,7 +103,7 @@ public class Constants {
 
   public static final String STATUS = "status";
   public static final String SUCCESS = "success";
-  public static final String SHA_USER_NAME = "shaUsername";
+//  public static final String USER_ID = "shaUsername";
   public static final String SUBSCRIPTION_ID = "subscriptionID";
   public static final String STREAMING_URL = "streamingURL";
   
@@ -177,6 +175,7 @@ public class Constants {
       "SELECT * FROM databroker WHERE username='user-test'";
   public static final String SELECT_DATABROKER_USER =
       "SELECT * FROM databroker WHERE username='$1'";
+  public static final String RESET_PWD="UPDATE databroker SET password='$1' where username='$2'";
   
   // sql errors
   public static final String SQL_ERROR = "SQL Error";

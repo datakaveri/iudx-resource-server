@@ -1,0 +1,38 @@
+{
+    "type": "object",
+    "properties": {
+        "name": {
+            "$id": "#root/name", 
+            "title": "Name", 
+            "type": "string",
+            "default": "",
+            "pattern": "^.*$"
+        },
+        "type": {
+            "$id": "#root/type", 
+            "title": "Type", 
+            "type": "string",
+            "enum":["subscription"],
+            "default": "",
+            "pattern": "^.*$"
+        },
+        "entities": {
+            "$id": "#root/entities", 
+            "title": "Entities", 
+            "type": "array",
+            "default": [],
+            "items":{
+                "$id": "#root/entities/items", 
+                "title": "Items", 
+                "type": "string",
+                "default": "",
+                "pattern": "^.*$"
+            }
+        }
+    },
+    "required": [
+        "name",
+        "type",
+        "entities"
+    ]
+}

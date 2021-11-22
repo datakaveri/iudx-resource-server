@@ -1,25 +1,53 @@
 package iudx.resource.server.databroker;
 
-import static iudx.resource.server.databroker.util.Constants.*;
-import static iudx.resource.server.databroker.util.Util.*;
+import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_CODE;
+import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_DATA;
+import static iudx.resource.server.databroker.util.Constants.BINDING_FAILED;
+import static iudx.resource.server.databroker.util.Constants.DELETE_CALLBACK;
+import static iudx.resource.server.databroker.util.Constants.DUPLICATE_KEY;
+import static iudx.resource.server.databroker.util.Constants.ENTITIES;
+import static iudx.resource.server.databroker.util.Constants.ERROR;
+import static iudx.resource.server.databroker.util.Constants.EXCHANGE_NAME;
+import static iudx.resource.server.databroker.util.Constants.FAILURE;
+import static iudx.resource.server.databroker.util.Constants.INSERT_CALLBACK;
+import static iudx.resource.server.databroker.util.Constants.INTERNAL_ERROR_CODE;
+import static iudx.resource.server.databroker.util.Constants.INVALID_ROUTING_KEY;
+import static iudx.resource.server.databroker.util.Constants.MSG_PUBLISH_FAILED;
+import static iudx.resource.server.databroker.util.Constants.PAYLOAD_ERROR;
+import static iudx.resource.server.databroker.util.Constants.QUEUE_CREATE_ERROR;
+import static iudx.resource.server.databroker.util.Constants.QUEUE_DELETE_ERROR;
+import static iudx.resource.server.databroker.util.Constants.QUEUE_LIST_ERROR;
+import static iudx.resource.server.databroker.util.Constants.QUEUE_NAME;
+import static iudx.resource.server.databroker.util.Constants.SELECT_CALLBACK;
+import static iudx.resource.server.databroker.util.Constants.SQL_ERROR;
+import static iudx.resource.server.databroker.util.Constants.SUBSCRIPTION_ID;
+import static iudx.resource.server.databroker.util.Constants.SUCCESS;
+import static iudx.resource.server.databroker.util.Constants.TITLE;
+import static iudx.resource.server.databroker.util.Constants.UPDATE_CALLBACK;
+import static iudx.resource.server.databroker.util.Constants.USER_ID;
+import static iudx.resource.server.databroker.util.Constants.VHOST_IUDX;
+import static iudx.resource.server.databroker.util.Util.getResponseJson;
+import static iudx.resource.server.databroker.util.Util.getSha;
+
 import java.time.OffsetDateTime;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import iudx.resource.server.apiserver.response.ResponseUrn;
 import iudx.resource.server.databroker.util.Constants;
-import iudx.resource.server.databroker.util.Util;
 
 public class SubscriptionService {
   private static final Logger LOGGER = LogManager.getLogger(SubscriptionService.class);
 
-  private String url;
-  // private WebClient webClient;
   JsonObject requestBody = new JsonObject();
   JsonObject finalResponse = new JsonObject();
   private String user;
@@ -34,10 +62,15 @@ public class SubscriptionService {
   private RabbitClient rabbitClient;
   private PostgresClient pgSQLClient;
 
-  SubscriptionService(RabbitClient rabbitClient, PostgresClient pgSQLClient, String vhost) {
+  private String amqpUrl;
+  private int amqpPort;
+
+  SubscriptionService(RabbitClient rabbitClient, PostgresClient pgSQLClient, JsonObject config) {
     this.rabbitClient = rabbitClient;
     this.pgSQLClient = pgSQLClient;
-    this.vhost = vhost;
+    this.vhost = config.getString("dataBrokerVhost");
+    this.amqpUrl = config.getString("brokerAmqpIp");
+    this.amqpPort = config.getInteger("brokerAmqpPort");
   }
 
   Future<JsonObject> registerStreamingSubscription(JsonObject request) {
@@ -46,17 +79,16 @@ public class SubscriptionService {
     JsonObject registerStreamingSubscriptionResponse = new JsonObject();
     JsonObject requestjson = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      String userName = request.getString(CONSUMER);
-      String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
-      String queueName = domain + "/" + Util.getSha(userName) + "/" + request.getString("name");
-      Future<JsonObject> resultCreateUser = rabbitClient.createUserIfNotExist(userName, VHOST_IUDX);
+      String userid = request.getString(USER_ID);
+      String queueName = userid + "/" + request.getString("name");
+      Future<JsonObject> resultCreateUser = rabbitClient.createUserIfNotExist(userid, VHOST_IUDX);
       resultCreateUser.onComplete(resultCreateUserhandler -> {
         if (resultCreateUserhandler.succeeded()) {
           JsonObject result = resultCreateUserhandler.result();
           LOGGER.debug("success :: createUserIfNotExist " + result);
-          String streamingUserName = result.getString("shaUsername");
+          String streamingUserName = result.getString(USER_ID);
           String apiKey = result.getString("apiKey");
-          
+
           JsonArray entitites = request.getJsonArray(ENTITIES);
           LOGGER.debug("Info : Request Access for " + entitites);
           LOGGER.debug("Info : No of bindings to do : " + entitites.size());
@@ -79,21 +111,27 @@ public class SubscriptionService {
                   String routingKey = (String) currentEntity;
                   LOGGER.debug("Info : routingKey is " + routingKey);
                   if (routingKey != null) {
-                    if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
-                        || routingKey.split("/").length != 5) {
+                    if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == "") {
                       LOGGER.error("failed :: Invalid (or) NULL routingKey");
                       Future<JsonObject> resultDeletequeue =
                           rabbitClient.deleteQueue(requestjson, vhost);
                       resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                         if (resultHandlerDeletequeue.succeeded()) {
-                          promise.fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, INVALID_ROUTING_KEY)
-                              .toString());
+                          promise.fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA,
+                              INVALID_ROUTING_KEY)
+                                  .toString());
                         }
                       });
                     } else {
-                      String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
                       JsonArray array = new JsonArray();
-                      array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                      String exchangeName;
+                      if (isGroupResource(routingKey)) {
+                        exchangeName = routingKey;
+                        array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                      } else {
+                        exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
+                        array.add(routingKey);
+                      }
                       JsonObject json = new JsonObject();
                       json.put(EXCHANGE_NAME, exchangeName);
                       json.put(QUEUE_NAME, queueName);
@@ -115,23 +153,18 @@ public class SubscriptionService {
                             resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                               if (resultHandlerDeletequeue.succeeded()) {
                                 promise
-                                    .fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, BINDING_FAILED)
-                                        .toString());
+                                    .fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA,
+                                        BINDING_FAILED)
+                                            .toString());
                               }
                             });
                           } else if (totalBindSuccess == totalBindCount) {
-                            registerStreamingSubscriptionResponse.put(Constants.USER_NAME,
-                                streamingUserName);
-                            registerStreamingSubscriptionResponse.put(Constants.APIKEY,
-                                apiKey);
-                            registerStreamingSubscriptionResponse.put(Constants.ID,
-                                queueName);
-                            registerStreamingSubscriptionResponse.put(Constants.URL,
-                                Constants.BROKER_PRODUCTION_DOMAIN);
-                            registerStreamingSubscriptionResponse.put(Constants.PORT,
-                                Constants.BROKER_PRODUCTION_PORT);
-                            registerStreamingSubscriptionResponse.put(Constants.VHOST,
-                                Constants.VHOST_IUDX);
+                            registerStreamingSubscriptionResponse.put(Constants.USER_NAME, streamingUserName);
+                            registerStreamingSubscriptionResponse.put(Constants.APIKEY, apiKey);
+                            registerStreamingSubscriptionResponse.put(Constants.ID, queueName);
+                            registerStreamingSubscriptionResponse.put(Constants.URL, this.amqpUrl);
+                            registerStreamingSubscriptionResponse.put(Constants.PORT, this.amqpPort);
+                            registerStreamingSubscriptionResponse.put(Constants.VHOST, this.vhost);
                             promise.complete(registerStreamingSubscriptionResponse);
                           }
                         } else if (resultHandlerbind.failed()) {
@@ -140,8 +173,9 @@ public class SubscriptionService {
                               rabbitClient.deleteQueue(requestjson, vhost);
                           resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                             if (resultHandlerDeletequeue.succeeded()) {
-                              promise.fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, BINDING_FAILED)
-                                  .toString());
+                              promise.fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA,
+                                  BINDING_FAILED)
+                                      .toString());
                             }
                           });
                         }
@@ -153,8 +187,9 @@ public class SubscriptionService {
                         rabbitClient.deleteQueue(requestjson, vhost);
                     resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                       if (resultHandlerDeletequeue.succeeded()) {
-                        promise.fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, INVALID_ROUTING_KEY)
-                            .toString());
+                        promise.fail(
+                            getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, INVALID_ROUTING_KEY)
+                                .toString());
                       }
                     });
                   }
@@ -180,15 +215,16 @@ public class SubscriptionService {
     JsonObject updateStreamingSubscriptionResponse = new JsonObject();
     JsonObject requestjson = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      String userName = request.getString(CONSUMER);
-      String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
-      String queueName = domain + "/" + Util.getSha(userName) + "/" + request.getString("name");
-      Future<JsonObject> resultCreateUser = rabbitClient.createUserIfNotExist(userName, VHOST_IUDX);
+      String userid = request.getString(USER_ID);
+      System.out.println(request);
+      // String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
+      String queueName = userid + "/" + request.getString("name");
+      Future<JsonObject> resultCreateUser = rabbitClient.createUserIfNotExist(userid, VHOST_IUDX);
       resultCreateUser.onComplete(resultCreateUserhandler -> {
         if (resultCreateUserhandler.succeeded()) {
           JsonObject result = resultCreateUserhandler.result();
           LOGGER.debug("success :: createUserIfNotExist " + result);
-          String streamingUserName = result.getString("shaUsername");
+          String streamingUserName = result.getString(USER_ID);
           String apiKey = result.getString("apiKey");
 
           JsonArray entitites = request.getJsonArray(ENTITIES);
@@ -216,8 +252,7 @@ public class SubscriptionService {
                       String routingKey = (String) currentEntity;
                       LOGGER.debug("Info : routingKey is " + routingKey);
                       if (routingKey != null) {
-                        if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
-                            || routingKey.split("/").length != 5) {
+                        if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == "") {
                           LOGGER.error("failed :: Invalid (or) NULL routingKey");
 
                           Future<JsonObject> resultDeletequeue =
@@ -230,10 +265,15 @@ public class SubscriptionService {
                             }
                           });
                         } else {
-                          String exchangeName =
-                              routingKey.substring(0, routingKey.lastIndexOf("/"));
                           JsonArray array = new JsonArray();
-                          array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                          String exchangeName;
+                          if (isGroupResource(routingKey)) {
+                            exchangeName = routingKey;
+                            array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                          } else {
+                            exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
+                            array.add(routingKey);
+                          }
                           JsonObject json = new JsonObject();
                           json.put(EXCHANGE_NAME, exchangeName);
                           json.put(QUEUE_NAME, queueName);
@@ -339,15 +379,20 @@ public class SubscriptionService {
               String routingKey = (String) currentEntity;
               LOGGER.debug("Info : routingKey is " + routingKey);
               if (routingKey != null) {
-                if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
-                    || routingKey.split("/").length != 5) {
+                if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == "") {
                   LOGGER.error("failed :: Invalid (or) NULL routingKey");
                   promise.fail(
                       getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY).toString());
                 } else {
-                  String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
                   JsonArray array = new JsonArray();
-                  array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                  String exchangeName;
+                  if (isGroupResource(routingKey)) {
+                    exchangeName = routingKey;
+                    array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                  } else {
+                    exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
+                    array.add(routingKey);
+                  }
                   JsonObject json = new JsonObject();
                   json.put(EXCHANGE_NAME, exchangeName);
                   json.put(QUEUE_NAME, queueName);
@@ -365,7 +410,10 @@ public class SubscriptionService {
                       if (bindResponse.containsKey(TITLE)
                           && bindResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
                         LOGGER.error("failed ::" + resultHandlerbind.cause());
-                        promise.fail(new JsonObject().put(ERROR, "Binding Failed").toString());
+                        // promise.fail(new JsonObject().put(ERROR, "Binding Failed").toString());
+                        promise.fail(
+                            getResponseJson(BAD_REQUEST_CODE, ResponseUrn.BAD_REQUEST_URN.getUrn(), BINDING_FAILED)
+                                .toString());
                       } else if (totalBindSuccess == totalBindCount) {
                         appendStreamingSubscriptionResponse.put(Constants.ENTITIES, entitites);
                         promise.complete(appendStreamingSubscriptionResponse);
@@ -552,8 +600,9 @@ public class SubscriptionService {
 
                             JsonObject jsonpg = new JsonObject();
                             jsonpg.put("body", publishjson.toString());
+                            Buffer messageBuffer = Buffer.buffer(jsonpg.toString());
                             rabbitClient.getRabbitMQClient().basicPublish(exchangename, routingkey,
-                                jsonpg, resultHandler -> {
+                                messageBuffer, resultHandler -> {
                                   if (resultHandler.succeeded()) {
                                     registerCallbackSubscriptionResponse.put("subscriptionID",
                                         subscriptionID);
@@ -678,9 +727,9 @@ public class SubscriptionService {
 
                       JsonObject jsonpg = new JsonObject();
                       jsonpg.put("body", publishjson.toString());
-
+                      Buffer messageBuffer = Buffer.buffer(jsonpg.toString());
                       rabbitClient.getRabbitMQClient().basicPublish(exchangename, routingkey,
-                          jsonpg, resultHandler -> {
+                          messageBuffer, resultHandler -> {
                             if (resultHandler.succeeded()) {
                               updateCallbackSubscriptionResponse.put("subscriptionID",
                                   subscriptionID);
@@ -761,7 +810,9 @@ public class SubscriptionService {
                 String routingkey = "delete";
                 JsonObject jsonpg = new JsonObject();
                 jsonpg.put("body", publishjson.toString());
-                rabbitClient.getRabbitMQClient().basicPublish(exchangename, routingkey, jsonpg,
+                Buffer messageBuffer = Buffer.buffer(jsonpg.toString());
+                rabbitClient.getRabbitMQClient().basicPublish(exchangename, routingkey,
+                    messageBuffer,
                     resultHandler -> {
                       if (resultHandler.succeeded()) {
                         deleteCallbackSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
@@ -839,5 +890,9 @@ public class SubscriptionService {
       promise.fail(listCallbackSubscriptionResponse.toString());
     }
     return promise.future();
+  }
+
+  private boolean isGroupResource(String id) {
+    return id.split("/").length == 4;
   }
 }

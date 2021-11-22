@@ -31,9 +31,9 @@ import iudx.resource.server.configuration.Configuration;
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 /**
- *@Disabled test cases disabled for current release.
+ * @Disabled test cases disabled for current release.
  */
-@Disabled 
+@Disabled
 public class CallbackServiceTest {
 
   static CallbackService callback;
@@ -72,37 +72,36 @@ public class CallbackServiceTest {
 
   @BeforeAll
   @DisplayName("Deploy a verticle")
-  static void startVertx(Vertx vertx, io.vertx.reactivex.core.Vertx vertx2,
-      VertxTestContext testContext) {
+  static void startVertx(Vertx vertx,VertxTestContext testContext) {
 
     vertxObj = vertx;
 
     /* Read the configuration and set the rabbitMQ server properties. */
     appConfig = new Configuration();
-    JsonObject callbackConfig = appConfig.configLoader(3, vertx2);
+    JsonObject callbackConfig = appConfig.configLoader(3, vertx);
 
     try {
 
       dataBrokerIP = callbackConfig.getString("dataBrokerIP");
-      dataBrokerPort = Integer.parseInt(callbackConfig.getString("dataBrokerPort"));
+      dataBrokerPort = callbackConfig.getInteger("dataBrokerPort");
       dataBrokerManagementPort =
-          Integer.parseInt(callbackConfig.getString("dataBrokerManagementPort"));
+          callbackConfig.getInteger("dataBrokerManagementPort");
       dataBrokerVhost = callbackConfig.getString("dataBrokerVhost");
       dataBrokerUserName = callbackConfig.getString("dataBrokerUserName");
       dataBrokerPassword = callbackConfig.getString("dataBrokerPassword");
-      connectionTimeout = Integer.parseInt(callbackConfig.getString("connectionTimeout"));
-      requestedHeartbeat = Integer.parseInt(callbackConfig.getString("requestedHeartbeat"));
-      handshakeTimeout = Integer.parseInt(callbackConfig.getString("handshakeTimeout"));
-      requestedChannelMax = Integer.parseInt(callbackConfig.getString("requestedChannelMax"));
+      connectionTimeout = callbackConfig.getInteger("connectionTimeout");
+      requestedHeartbeat = callbackConfig.getInteger("requestedHeartbeat");
+      handshakeTimeout = callbackConfig.getInteger("handshakeTimeout");
+      requestedChannelMax = callbackConfig.getInteger("requestedChannelMax");
       networkRecoveryInterval =
-          Integer.parseInt(callbackConfig.getString("networkRecoveryInterval"));
+          callbackConfig.getInteger("networkRecoveryInterval");
 
       databaseIP = callbackConfig.getString("callbackDatabaseIP");
-      databasePort = Integer.parseInt(callbackConfig.getString("callbackDatabasePort"));
+      databasePort = callbackConfig.getInteger("callbackDatabasePort");
       databaseName = callbackConfig.getString("callbackDatabaseName");
       databaseUserName = callbackConfig.getString("callbackDatabaseUserName");
       databasePassword = callbackConfig.getString("callbackDatabasePassword");
-      poolSize = Integer.parseInt(callbackConfig.getString("callbackpoolSize"));
+      poolSize = callbackConfig.getInteger("callbackpoolSize");
 
     } catch (Exception ex) {
       logger.info(ex.toString());

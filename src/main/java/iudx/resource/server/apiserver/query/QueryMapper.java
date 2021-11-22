@@ -1,14 +1,21 @@
 package iudx.resource.server.apiserver.query;
 
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_ATTR_PARAM;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_GEO_PARAM;
+import static iudx.resource.server.apiserver.util.HttpStatusCode.BAD_REQUEST;
+
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.api.validation.ValidationException;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.apiserver.response.ResponseUrn;
 import iudx.resource.server.apiserver.util.Constants;
 
 /**
@@ -31,7 +38,7 @@ public class QueryMapper {
    * @return JsonObject result.
    */
   public JsonObject toJson(NGSILDQueryParams params, boolean isTemporal) {
-    LOGGER.debug("Info QuerryMapper#toJson() started");
+    LOGGER.debug("Info QueryMapper#toJson() started");
     LOGGER.debug("Info : params" + params);
     this.isTemporal = isTemporal;
     JsonObject json = new JsonObject();
@@ -73,10 +80,8 @@ public class QueryMapper {
         }
         LOGGER.debug("Info : json " + json);
       } else {
-        ValidationException exception = new ValidationException(
-            "incomplete geo-query geoproperty, geometry, georel, coordinates all are mandatory. ");
-        exception.setParameterName("geometry, georel, coordinates, geoproperty");
-        throw exception;
+        throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_GEO_PARAM,
+            "incomplete geo-query geoproperty, geometry, georel, coordinates all are mandatory.");
       }
     }
     if (isTemporal && params.getTemporalRelation().getTemprel() != null
@@ -114,6 +119,12 @@ public class QueryMapper {
       json.put(Constants.IUDXQUERY_OPTIONS, params.getOptions());
       LOGGER.debug("Info : json " + json);
     }
+    if (params.getPageFrom() != null) {
+      json.put(Constants.NGSILDQUERY_FROM, params.getPageFrom());
+    }
+    if (params.getPageSize() != null) {
+      json.put(Constants.NGSILDQUERY_SIZE, params.getPageSize());
+    }
 
     json.put(Constants.JSON_SEARCH_TYPE, getSearchType());
     LOGGER.debug("Info : json " + json);
@@ -131,10 +142,8 @@ public class QueryMapper {
       LOGGER.debug("Info : inside isValidTimeInterval time : " + time.isBlank());
       LOGGER.debug("Info : inside isValidTimeInterval endTime : " + endTime);
       if (isNullorEmpty(time) || isNullorEmpty(endTime)) {
-        ValidationException exception =
-            new ValidationException("time and endTime both are mandatory for during Query.");
-        exception.setParameterName("time/endtime");
-        throw exception;
+        throw new DxRuntimeException(BAD_REQUEST.getValue(), ResponseUrn.INVALID_TEMPORAL_PARAM,
+            "time and endTime both are mandatory for during Query.");
       }
 
       LOGGER.debug("Info : inside isValidTimeInterval after check");
@@ -144,10 +153,9 @@ public class QueryMapper {
         Duration duration = Duration.between(start, end);
         totalDaysAllowed = duration.toDays();
       } catch (Exception ex) {
-        ValidationException exception =
-            new ValidationException("Invalid time format");
-        exception.setParameterName("time/endtime");
-        throw exception;
+        throw new DxRuntimeException(BAD_REQUEST.getValue(), ResponseUrn.INVALID_TEMPORAL_PARAM,
+            "time and endTime both are mandatory for during Query.");
+
       }
     } else if (timeRel.equalsIgnoreCase("after")) {
       // how to enforce days duration for after and before,i.e here or DB
@@ -155,10 +163,8 @@ public class QueryMapper {
 
     }
     if (totalDaysAllowed > Constants.VALIDATION_MAX_DAYS_INTERVAL_ALLOWED) {
-      ValidationException exception =
-          new ValidationException("time interval greater than 10 days is not allowed");
-      exception.setParameterName("time-endtime");
-      throw exception;
+      throw new DxRuntimeException(BAD_REQUEST.getValue(), ResponseUrn.INVALID_TEMPORAL_PARAM,
+          "time interval greater than 10 days is not allowed");
     }
   }
 
@@ -203,6 +209,7 @@ public class QueryMapper {
     JsonObject json = new JsonObject();
     int length = queryTerms.length();
     List<Character> allowedSpecialCharacter = Arrays.asList('>', '=', '<', '!');
+    List<String> allowedOperators = Arrays.asList(">", "=", "<", ">=", "<=", "==", "!=");
     int startIndex = 0;
     boolean specialCharFound = false;
     for (int i = 0; i < length; i++) {
@@ -214,6 +221,7 @@ public class QueryMapper {
           specialCharFound = true;
         } else {
           LOGGER.info("Ignore " + c.toString());
+          throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_ATTR_PARAM, "Operator not allowed.");
         }
       } else {
         if (specialCharFound && (Character.isLetter(c) || Character.isDigit(c))) {
@@ -223,6 +231,9 @@ public class QueryMapper {
         }
       }
 
+    }
+    if (!allowedOperators.contains(json.getString(Constants.JSON_OPERATOR))) {
+      throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_ATTR_PARAM, "Operator not allowed.");
     }
     return json;
   }

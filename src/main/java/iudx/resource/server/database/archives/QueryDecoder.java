@@ -34,28 +34,33 @@ public class QueryDecoder {
         .add(new JsonObject(TERMS_QUERY.replace("$1", RESOURCE_ID_KEY).replace("$2", id.encode())));
 
     /* TODO: Pagination for large result set */
-    if (request.containsKey(SEARCH_KEY) && request.getBoolean(SEARCH_KEY)) {
-      elasticQuery.put(SIZE_KEY, 10000);
-    }
+//    if (request.containsKey(SIZE_KEY) && request.containsKey(FROM_KEY)) {
+//      elasticQuery.put(SIZE_KEY, Integer.parseInt(request.getString(SIZE_KEY)));
+//      elasticQuery.put(FROM_KEY, Integer.parseInt(request.getString(FROM_KEY)));
+//    }else {
+//      //default values
+//      elasticQuery.put(SIZE_KEY, 10000);
+//      elasticQuery.put(FROM_KEY, 0);
+//    }
 
     /* Latest Search */
     if (LATEST_SEARCH.equalsIgnoreCase(searchType)) {
-//      JsonArray sourceFilter = null;
-//      if (request.containsKey(RESPONSE_ATTRS)) {
-//        sourceFilter = request.getJsonArray(RESPONSE_ATTRS);
-//      }
-//      JsonObject latestQuery = new JsonObject();
-//      JsonArray docs = new JsonArray();
-//      for (Object o : id) {
-//        String resourceString = (String) o;
-//        String sha1String = DigestUtils.sha1Hex(resourceString);
-//        JsonObject json = new JsonObject().put(DOC_ID, sha1String);
-//        if (sourceFilter != null) {
-//          json.put(SOURCE_FILTER_KEY, sourceFilter);
-//        }
-//        docs.add(json);
-//      }
-//      return latestQuery.put(DOCS_KEY, docs);
+      // JsonArray sourceFilter = null;
+      // if (request.containsKey(RESPONSE_ATTRS)) {
+      // sourceFilter = request.getJsonArray(RESPONSE_ATTRS);
+      // }
+      // JsonObject latestQuery = new JsonObject();
+      // JsonArray docs = new JsonArray();
+      // for (Object o : id) {
+      // String resourceString = (String) o;
+      // String sha1String = DigestUtils.sha1Hex(resourceString);
+      // JsonObject json = new JsonObject().put(DOC_ID, sha1String);
+      // if (sourceFilter != null) {
+      // json.put(SOURCE_FILTER_KEY, sourceFilter);
+      // }
+      // docs.add(json);
+      // }
+      // return latestQuery.put(DOCS_KEY, docs);
 
       // Redis Latest
 
@@ -63,7 +68,7 @@ public class QueryDecoder {
       String resourceId = id.getString(0);
       String options = request.getString(OPTIONS);
       String resourceGroup = resourceId.split("/")[3];
-      resourceGroup = resourceGroup.replace("-","_");
+      resourceGroup = resourceGroup.replace("-", "_");
       if (!request.containsKey(ATTRIBUTE_LIST)) {
         return new JsonObject().put(ERROR, ATTRIBUTE_LIST_NOT_FOUND);
       }
@@ -71,39 +76,40 @@ public class QueryDecoder {
 
       // SHA1 generator
       String sha1String = DigestUtils.sha1Hex(resourceId);
-      LOGGER.debug("Generated SHA1: "+sha1String);
+      LOGGER.debug("Generated SHA1: " + sha1String);
       // read attributeList from request
       String pathParam;
-      //id query
+      // id query
 
       // if (ID.equalsIgnoreCase(options)) {
-//        if (!attributeList.containsKey(resourceGroup))
-//          // aqm/flood type sensor
-//          pathParam = resourceGroup.concat("._").concat(sha1String).concat(DEFAULT_ATTRIBUTE);
-//        else
-//          // itms type sensor
-//          pathParam = resourceGroup.concat("._").concat(sha1String).concat(attributeList.getString(resourceGroup));
+      // if (!attributeList.containsKey(resourceGroup))
+      // // aqm/flood type sensor
+      // pathParam = resourceGroup.concat("._").concat(sha1String).concat(DEFAULT_ATTRIBUTE);
+      // else
+      // // itms type sensor
+      // pathParam =
+      // resourceGroup.concat("._").concat(sha1String).concat(attributeList.getString(resourceGroup));
       pathParam = resourceGroup.concat("._").concat(sha1String).concat(DEFAULT_ATTRIBUTE);
-      LOGGER.debug("PathParam: "+pathParam);
+      LOGGER.debug("PathParam: " + pathParam);
       return new JsonObject().put(KEY, resourceGroup).put(PATH_PARAM, pathParam);
-      //}
+      // }
       // group query
 
-//      else if (GROUP.equalsIgnoreCase(options)) {
-//        pathParam = ".".concat(resourceGroup);
-//        LOGGER.debug("PathParam: "+pathParam);
-//        return new JsonObject().put(KEY, resourceGroup).put(PATH_PARAM, pathParam);
-//      }
-//      else {
-//        // failed query
-//        return new JsonObject().put(ERROR, INVALID_LATEST_QUERY);
-//      }
+      // else if (GROUP.equalsIgnoreCase(options)) {
+      // pathParam = ".".concat(resourceGroup);
+      // LOGGER.debug("PathParam: "+pathParam);
+      // return new JsonObject().put(KEY, resourceGroup).put(PATH_PARAM, pathParam);
+      // }
+      // else {
+      // // failed query
+      // return new JsonObject().put(ERROR, INVALID_LATEST_QUERY);
+      // }
     }
 
     // Time Object (for limiting query based on time parameters) instantiated to
     // null;
     JsonObject timeObject = null;
-      String timeLimit = request.getString(TIME_LIMIT).split(",")[1];
+    String timeLimit = request.getString(TIME_LIMIT).split(",")[1];
     int numDays = Integer.valueOf(request.getString(TIME_LIMIT).split(",")[2]);
 
     /* Geo-Spatial Search */
@@ -337,8 +343,8 @@ public class QueryDecoder {
        * timeLimit="test,2020-09-22T00:00:00Z,30"
        */
 
-      //check whether request object contains TEMPORAL in applicableFilters array.
-      if (timeObject==null && request.getJsonArray("applicableFilters").contains("TEMPORAL")) {
+      // check whether request object contains TEMPORAL in applicableFilters array.
+      if (timeObject == null && request.getJsonArray("applicableFilters").contains("TEMPORAL")) {
         String timeLimitString = "";
         if (request.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(PROD_INSTANCE)) {
           timeLimitString =
@@ -352,7 +358,7 @@ public class QueryDecoder {
               TIME_QUERY.replace("$1", LESS_THAN_EQ).replace("$2\"", endTime.concat(startTemp));
           System.out.println(timeLimitString);
         }
-        System.out.println("time limit : "+timeLimitString);
+        System.out.println("time limit : " + timeLimitString);
         timeObject = new JsonObject(timeLimitString);
         filterQuery.add(timeObject);
         LOGGER.debug("#######TIME COMPONENT ATTACHED: " + filterQuery.toString());

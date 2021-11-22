@@ -1,34 +1,72 @@
 package iudx.resource.server.apiserver;
 
-import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_GEO_PARAM;
+import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_GEO_VALUE;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
+import static iudx.resource.server.apiserver.util.Constants.IUDXQUERY_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.MSG_BAD_QUERY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ATTRIBUTE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_COORDINATES;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ENDTIME;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ENTITIES;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_FROM;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOMETRY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOPROPERTY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOQ;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOREL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ID;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_IDPATTERN;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_Q;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_SIZE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TEMPORALQ;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEPROPERTY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEREL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME_PROPERTY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TYPE;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.wololo.jts2geojson.GeoJSONReader;
+
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.apiserver.service.CatalogueService;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
+import iudx.resource.server.apiserver.validation.types.AttrsTypeValidator;
+import iudx.resource.server.apiserver.validation.types.CoordinatesTypeValidator;
+import iudx.resource.server.apiserver.validation.types.DistanceTypeValidator;
+import iudx.resource.server.apiserver.validation.types.GeoRelTypeValidator;
+import iudx.resource.server.apiserver.validation.types.QTypeValidator;
+import iudx.resource.server.apiserver.validation.types.Validator;
 
 /**
  * This class is used to validate NGSI-LD request and request parameters.
  *
  */
-public class Validator {
+public class ParamsValidator {
 
-  private static final Logger LOGGER = LogManager.getLogger(Validator.class);
+  private static final Logger LOGGER = LogManager.getLogger(ParamsValidator.class);
 
   private static Set<String> validParams = new HashSet<String>();
   private static Set<String> validHeaders = new HashSet<String>();
   private CatalogueService catalogueService;
 
-  public Validator(CatalogueService catalogueService) {
+  private static final Pattern pattern = Pattern.compile("[\\w]+[^\\,]*(?:\\.*[\\w])");
+
+  public ParamsValidator(CatalogueService catalogueService) {
     this.catalogueService = catalogueService;
   }
 
@@ -52,6 +90,8 @@ public class Validator {
     validParams.add(NGSILDQUERY_TEMPORALQ);
     // Need to check with the timeProperty in Post Query property for NGSI-LD release v1.3.1
     validParams.add(NGSILDQUERY_TIME_PROPERTY);
+    validParams.add(NGSILDQUERY_FROM);
+    validParams.add(NGSILDQUERY_SIZE);
 
     // for IUDX count query
     validParams.add(IUDXQUERY_OPTIONS);
@@ -107,7 +147,9 @@ public class Validator {
           // validation for geometry and coordinates.
           String geom = paramsMap.get(NGSILDQUERY_GEOMETRY);
           String coords = paramsMap.get(NGSILDQUERY_COORDINATES);
+
           if (geom != null && coords != null && !isValidCoordinatesForGeometry(geom, coords)) {
+            System.out.println("fail");
             promise.fail(MSG_BAD_QUERY);
           } else {
             promise.complete(true);
@@ -151,12 +193,28 @@ public class Validator {
       }
 
     });
-    
-    validate(paramsMap).onComplete(handler->{
-      if(handler.succeeded()) {
+
+    String attrs = paramsMap.get(NGSILDQUERY_ATTRIBUTE);
+    String q = paramsMap.get(NGSILDQUERY_Q);
+    String coordinates = paramsMap.get(NGSILDQUERY_COORDINATES);
+    String geoRel = paramsMap.get(NGSILDQUERY_GEOREL);
+    String[] georelArray = geoRel != null ? geoRel.split(";") : null;
+
+    boolean validations1 =
+        !(new AttrsTypeValidator(attrs, false).isValid())
+            || !(new QTypeValidator(q, false).isValid())
+            || !(new CoordinatesTypeValidator(coordinates, false).isValid())
+            || !(new GeoRelTypeValidator(georelArray != null ? georelArray[0] : null, false)
+                .isValid())
+            || !((georelArray != null && georelArray.length == 2)
+                ? isValidDistance(georelArray[1])
+                : isValidDistance(null));
+
+    validate(paramsMap).onComplete(handler -> {
+      if (handler.succeeded() && !validations1) {
         promise.complete(true);
-      }else {
-        promise.fail(handler.cause().getMessage());
+      } else {
+        promise.fail(MSG_BAD_QUERY);
       }
     });
     return promise.future();
@@ -208,6 +266,9 @@ public class Validator {
   }
 
   private boolean isValidCoordinatesForGeometry(String geom, String coordinates) {
+    if (geom == null && coordinates == null) {
+      return true;
+    }
     JsonObject json = new JsonObject();
     json.put("coordinates", new JsonArray(coordinates));
     if (geom.equalsIgnoreCase("point")) {
@@ -224,7 +285,8 @@ public class Validator {
       // coordinates and validate as a linestring
       String[] bboxEdges = coordinates.replaceAll("\\[", "").replaceAll("\\]", "").split(",");
       if (bboxEdges.length != 4) {
-        return false;
+        throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), INVALID_GEO_PARAM,
+            INVALID_GEO_PARAM.getMessage());
       }
       json.put("type", "LineString");
       return isValidCoordinates(json.toString());
@@ -236,19 +298,44 @@ public class Validator {
   private boolean isValidCoordinates(String geoJson) {
     boolean isValid = false;
     try {
+      System.out.println("geo json : " + geoJson);
       GeoJSONReader reader = new GeoJSONReader();
       org.locationtech.jts.geom.Geometry geom = reader.read(geoJson);
-      boolean  isValidNosCoords=false;
-      boolean isPolygon=false;
-      if(("Polygon").equalsIgnoreCase(geom.getGeometryType())) {
-        isPolygon=true;
-        Coordinate[] coords=geom.getCoordinates();
-        isValidNosCoords=coords.length<11;
+      boolean isValidNosCoords = false;
+      boolean isPolygon = false;
+      if (("Polygon").equalsIgnoreCase(geom.getGeometryType())) {
+        isPolygon = true;
+        Coordinate[] coords = geom.getCoordinates();
+        isValidNosCoords = coords.length < 11;
       }
-      isValid = geom.isValid() && (isPolygon?isValidNosCoords:true);
+      isValid = geom.isValid() && (isPolygon ? isValidNosCoords : true);
     } catch (Exception ex) {
-      LOGGER.error("Invalid geom/coordinates passed");
+      throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), INVALID_GEO_PARAM,
+          INVALID_GEO_PARAM.getMessage());
     }
     return isValid;
   }
+
+  private boolean isValidDistance(String value) {
+    if (value == null) {
+      return true;
+    }
+    Validator validator;
+    try {
+      String[] distanceArray = value.split("=");
+      if (distanceArray.length == 2) {
+        String distanceValue = distanceArray[1];
+        validator = new DistanceTypeValidator(distanceValue, false);
+        return validator.isValid();
+      } else {
+        throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), INVALID_GEO_VALUE,
+            INVALID_GEO_VALUE.getMessage());
+      }
+    } catch (Exception ex) {
+      LOGGER.error(ex);
+      throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), INVALID_GEO_VALUE,
+          INVALID_GEO_VALUE.getMessage());
+    }
+  }
+
 }

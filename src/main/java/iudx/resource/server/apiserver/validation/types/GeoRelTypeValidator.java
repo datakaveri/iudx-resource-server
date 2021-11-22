@@ -1,37 +1,57 @@
 package iudx.resource.server.apiserver.validation.types;
 
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import io.vertx.ext.web.api.RequestParameter;
-import io.vertx.ext.web.api.validation.ParameterTypeValidator;
-import io.vertx.ext.web.api.validation.ValidationException;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 
-public class GeoRelTypeValidator {
+
+public final class GeoRelTypeValidator implements Validator {
+
   private static final Logger LOGGER = LogManager.getLogger(GeoRelTypeValidator.class);
 
   private List<String> allowedValues = List.of("within", "intersects", "near");
 
-  public ParameterTypeValidator create() {
-    ParameterTypeValidator geoRelTypeValidator = new GeoRelValidator();
-    return geoRelTypeValidator;
+  private final String value;
+  private final boolean required;
+
+  public GeoRelTypeValidator(final String value, final boolean required) {
+    this.value = value;
+    this.required = required;
+  }
+
+  @Override
+  public boolean isValid() {
+    LOGGER.debug("value : " + value + "required : " + required);
+    if (required && (value == null || value.isBlank())) {
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_REL, failureMessage());
+    } else {
+      if (value == null) {
+        return true;
+      }
+      if (value.isBlank()) {
+        LOGGER.error("Validation error :  blank value for passed");
+        throw new DxRuntimeException(failureCode(), INVALID_GEO_REL, failureMessage(value));
+      }
+    }
+    String[] geoRelationValues = value.split(";");
+    if (!allowedValues.contains(geoRelationValues[0])) {
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_REL, failureMessage(value));
+    }
+    return true;
   }
 
 
-  class GeoRelValidator implements ParameterTypeValidator {
-    @Override
-    public RequestParameter isValid(String value) throws ValidationException {
-      if(value.isBlank()) {
-        throw ValidationException.ValidationExceptionFactory
-        .generateNotMatchValidationException("Empty value not allowed for parameter.");
-      }
-      String[] geoRelationValues = value.split(";");
-      if (!allowedValues.contains(geoRelationValues[0])) {
-        throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
-            "Value " + value + " " + "in not inside enum list " + allowedValues.toString());
+  @Override
+  public int failureCode() {
+    return HttpStatusCode.BAD_REQUEST.getValue();
+  }
 
-      }
-      return RequestParameter.create(value);
-    }
+
+  @Override
+  public String failureMessage() {
+    return INVALID_GEO_REL.getMessage();
   }
 }

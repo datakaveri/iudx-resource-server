@@ -1,5 +1,14 @@
 package iudx.resource.server.authenticator;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.apache.http.HttpStatus;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
@@ -13,13 +22,9 @@ import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.configuration.Configuration;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
+@Deprecated
+@Disabled
 @ExtendWith(VertxExtension.class)
 public class AuthenticationServiceTest {
   private static final Logger logger = LoggerFactory.getLogger(AuthenticationServiceTest.class);
@@ -30,11 +35,10 @@ public class AuthenticationServiceTest {
 
   @BeforeAll
   @DisplayName("Initialize Vertx and deploy Auth Verticle")
-  static void initialize(Vertx vertx, io.vertx.reactivex.core.Vertx vertx2,
-      VertxTestContext testContext) {
+  static void initialize(Vertx vertx, VertxTestContext testContext) {
     vertxObj = vertx;
     config = new Configuration();
-    authConfig = config.configLoader(1, vertx2);
+    authConfig = config.configLoader(1, vertx);
 
     WebClient client = AuthenticationVerticle.createWebClient(vertxObj, authConfig, true);
     authenticationService = new AuthenticationServiceImpl(vertxObj, client, authConfig);
@@ -125,141 +129,149 @@ public class AuthenticationServiceTest {
       });
     });
   }
-  
+
   @Test
   @DisplayName("Test valid token(token for entities) with invalid path(/subscription)")
   public void testInvalidPathAccess(VertxTestContext testContext) {
-    JsonObject request=new JsonObject().put("ids", new JsonArray()
+    JsonObject request = new JsonObject().put("ids", new JsonArray()
         .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/alias"));;
     JsonObject authInfo =
         new JsonObject()
             .put("token", authConfig.getString("testAuthToken"))
             .put("apiEndpoint", Constants.CLOSED_ENDPOINTS.get(1))
-            .put("method","GET")
-            .put("id","iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/alias");
-    authenticationService.tokenInterospect(request, authInfo, handler->{
-      if(handler.failed()) {
+            .put("method", "GET")
+            .put("id", "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/alias");
+    authenticationService.tokenInterospect(request, authInfo, handler -> {
+      if (handler.failed()) {
         testContext.completeNow();
-      }else {
+      } else {
         testContext.failNow(handler.cause());
       }
     });
   }
-  
+
   @Test
   @DisplayName("Test secure item with invalid token")
   public void testSecureItemAccessInvalidToken(VertxTestContext testContext) {
-    JsonObject request=new JsonObject().put("ids", new JsonArray()
-        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"));;
+    JsonObject request = new JsonObject().put("ids", new JsonArray()
+        .add(
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"));;
     JsonObject authInfo =
         new JsonObject()
             .put("token", authConfig.getString("testExpiredAuthToken"))
             .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(1));
-    authenticationService.tokenInterospect(request, authInfo, handler->{
-      if(handler.failed()) {
-        String response=handler.cause().getMessage();
+    authenticationService.tokenInterospect(request, authInfo, handler -> {
+      if (handler.failed()) {
+        String response = handler.cause().getMessage();
         assertTrue(response.contains("Invalid 'token'"));
         testContext.completeNow();
-      }else {
+      } else {
         testContext.failNow(handler.cause());
       }
     });
   }
-  
+
   @Test
   @DisplayName("Test secure item with valid token")
   public void testSecureItemAccessValidToken(VertxTestContext testContext) {
-    JsonObject request=new JsonObject().put("ids", new JsonArray()
-        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"));;
+    JsonObject request = new JsonObject().put("ids", new JsonArray()
+        .add(
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"));;
     JsonObject authInfo =
         new JsonObject()
             .put("token", authConfig.getString("testAuthToken"))
             .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(1));
-    authenticationService.tokenInterospect(request, authInfo, handler->{
-      if(handler.failed()) {
+    authenticationService.tokenInterospect(request, authInfo, handler -> {
+      if (handler.failed()) {
         testContext.failNow(handler.cause());
-      }else {
+      } else {
         testContext.completeNow();
       }
     });
   }
-  
+
   @Test
   @DisplayName("Test secure+open item with invalid token")
   public void testSecureAndValidItemAccessInValidToken(VertxTestContext testContext) {
-    JsonObject request=new JsonObject().put("ids", new JsonArray()
-        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta")
-        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"));
+    JsonObject request = new JsonObject().put("ids", new JsonArray()
+        .add(
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta")
+        .add(
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"));
     JsonObject authInfo =
         new JsonObject()
             .put("token", authConfig.getString("testExpiredAuthToken"))
             .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(1));
-    authenticationService.tokenInterospect(request, authInfo, handler->{
-      if(handler.failed()) {
-        String result=handler.cause().getMessage();
+    authenticationService.tokenInterospect(request, authInfo, handler -> {
+      if (handler.failed()) {
+        String result = handler.cause().getMessage();
         assertTrue(result.contains("Invalid 'token'"));
         testContext.completeNow();
-      }else {
+      } else {
         testContext.failNow(handler.cause());
       }
     });
   }
-  
+
   @Test
   @DisplayName("Test secure+open item with valid token")
   public void testSecureAndValidItemAccessValidToken(VertxTestContext testContext) {
-    JsonObject request=new JsonObject().put("ids", new JsonArray()
-        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta")
-        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"));
+    JsonObject request = new JsonObject().put("ids", new JsonArray()
+        .add(
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta")
+        .add(
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"));
     JsonObject authInfo =
         new JsonObject()
             .put("token", authConfig.getString("testAuthToken"))
             .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(1));
-    authenticationService.tokenInterospect(request, authInfo, handler->{
-      if(handler.succeeded()) {
+    authenticationService.tokenInterospect(request, authInfo, handler -> {
+      if (handler.succeeded()) {
         testContext.completeNow();
-      }else {
+      } else {
         testContext.failNow(handler.cause());
       }
     });
   }
-  
-  
+
+
   @Test
   @DisplayName("Test invalid(not found in cat server) secure item")
   public void testInvalidSecureItem(VertxTestContext testContext) {
-    JsonObject request=new JsonObject().put("ids", new JsonArray()
-        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta_invalid"));;
+    JsonObject request = new JsonObject().put("ids", new JsonArray()
+        .add(
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta_invalid"));;
     JsonObject authInfo =
         new JsonObject()
             .put("token", authConfig.getString("testAuthToken"))
             .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(1));
-    authenticationService.tokenInterospect(request, authInfo, handler->{
-      if(handler.failed()) {
-        String response=handler.cause().getMessage();
+    authenticationService.tokenInterospect(request, authInfo, handler -> {
+      if (handler.failed()) {
+        String response = handler.cause().getMessage();
         assertTrue(response.contains("Not Found"));
         testContext.completeNow();
-      }else {
+      } else {
         testContext.failNow(handler.cause());
       }
     });
   }
-  
+
   @Test
   @DisplayName("Test invalid(not found in cat server) open item")
   public void testInvalidOpenItem(VertxTestContext testContext) {
-    JsonObject request=new JsonObject().put("ids", new JsonArray()
-        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055_invalid"));;
+    JsonObject request = new JsonObject().put("ids", new JsonArray()
+        .add(
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055_invalid"));;
     JsonObject authInfo =
         new JsonObject()
             .put("token", authConfig.getString("testAuthToken"))
             .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(1));
-    authenticationService.tokenInterospect(request, authInfo, handler->{
-      if(handler.failed()) {
-        String response=handler.cause().getMessage();
+    authenticationService.tokenInterospect(request, authInfo, handler -> {
+      if (handler.failed()) {
+        String response = handler.cause().getMessage();
         assertTrue(response.contains("Not Found"));
         testContext.completeNow();
-      }else {
+      } else {
         testContext.failNow(handler.cause());
       }
     });
@@ -269,7 +281,8 @@ public class AuthenticationServiceTest {
   @DisplayName("Test expired token for failure")
   public void testExpiredToken(VertxTestContext testContext) {
     JsonObject request = new JsonObject().put("ids", new JsonArray()
-        .add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"));
+        .add(
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"));
     JsonObject authInfo =
         new JsonObject().put("token", authConfig.getString("testExpiredAuthToken"))
             .put("apiEndpoint", Constants.OPEN_ENDPOINTS.get(0));
@@ -289,7 +302,7 @@ public class AuthenticationServiceTest {
   @Test
   @DisplayName("Test CAT resource group ID API")
   public void testCatAPI(Vertx vertx, VertxTestContext testContext) {
-    int catPort = Integer.parseInt(authConfig.getString("catServerPort"));
+    int catPort = authConfig.getInteger("catServerPort");
     String catHost = authConfig.getString("catServerHost");
     String catPath = Constants.CAT_RSG_PATH;
     String groupID =
@@ -330,7 +343,7 @@ public class AuthenticationServiceTest {
   @Test
   @DisplayName("Test CAT resource group invalid ID API")
   public void testCatAPIWithInvalidID(Vertx vertx, VertxTestContext testContext) {
-    int catPort = Integer.parseInt(authConfig.getString("catServerPort"));
+    int catPort = authConfig.getInteger("catServerPort");
     String catHost = authConfig.getString("catServerHost");
     String catPath = Constants.CAT_RSG_PATH;
     String groupID =

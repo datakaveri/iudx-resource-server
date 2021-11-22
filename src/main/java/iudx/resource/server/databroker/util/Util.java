@@ -3,18 +3,24 @@ package iudx.resource.server.databroker.util;
 import static iudx.resource.server.databroker.util.Constants.DETAIL;
 import static iudx.resource.server.databroker.util.Constants.TITLE;
 import static iudx.resource.server.databroker.util.Constants.TYPE;
+
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.UUID;
 import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.apache.commons.codec.digest.DigestUtils;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class Util {
   private static final Logger LOGGER = LogManager.getLogger(Util.class);
@@ -53,8 +59,15 @@ public class Util {
     return org.apache.commons.lang3.RandomStringUtils.random(Constants.PASSWORD_LENGTH, true, true);
   }
 
-  public static Supplier<String> randomPassword = () -> org.apache.commons.lang3.RandomStringUtils
-      .random(Constants.PASSWORD_LENGTH, true, true);
+  public static Supplier<String> randomPassword = () -> {
+    UUID uid=UUID.randomUUID();
+    byte[] pwdBytes=ByteBuffer.wrap(new byte[16])
+        .putLong(uid.getMostSignificantBits())
+        .putLong(uid.getLeastSignificantBits())
+        .array();
+    return Base64.getUrlEncoder().encodeToString(pwdBytes).substring(0,22);
+  };
+      ;
 
   /**
    * TODO This method checks the if for special characters other than hyphen, A-Z, a-z and 0-9.
@@ -70,7 +83,7 @@ public class Util {
   public static Predicate<String> isValidId=(id)->{
     if (id == null)
       return false;
-    Pattern allowedPattern = Pattern.compile("[^-_.a-z0-9 ]", Pattern.CASE_INSENSITIVE);
+    Pattern allowedPattern = Pattern.compile("[^-_.//a-zA-Z0-9 ]", Pattern.CASE_INSENSITIVE);
     Matcher isInvalid = allowedPattern.matcher(id);
     return !isInvalid.find();
   };
@@ -88,5 +101,9 @@ public class Util {
     json.put(TITLE, title);
     json.put(DETAIL, detail);
     return json;
+  }
+  
+  public static boolean isGroupId(String id) {
+    return id.split("/").length == 4;
   }
 }

@@ -1,103 +1,68 @@
 package iudx.resource.server.apiserver.validation.types;
 
+import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.response.ResponseUrn.*;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.api.RequestParameter;
-import io.vertx.ext.web.api.validation.ParameterTypeValidator;
-import io.vertx.ext.web.api.validation.ValidationException;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.apiserver.util.HttpStatusCode;
 
+public final class QTypeValidator implements Validator {
 
-import static iudx.resource.server.apiserver.util.Constants.*;
-
-public class QTypeValidator {
   private static final Logger LOGGER = LogManager.getLogger(QTypeValidator.class);
 
-  List<String> allowedOperators = List.of(">", "==", "<", "!=", "<=", ">=");
-  //TODO : put valid regex for IUDX id
-  private final String idRegex = ".*";
+  private final String value;
+  private final boolean required;
 
-  public ParameterTypeValidator create() {
-    ParameterTypeValidator qTypeValidator = new QValidator();
-    return qTypeValidator;
+  public QTypeValidator(final String value, final boolean required) {
+    this.value = value;
+    this.required = required;
   }
 
-  class QValidator implements ParameterTypeValidator {
+  private boolean isValidAttribute(final String value) {
+    return true;
+  }
 
-    private boolean isValidAttribute(String value) {
+  private boolean isValidOperator(final String value) {
+    return VALIDATION_ALLOWED_OPERATORS.contains(value);
+  }
+
+  private boolean isValidValue(final String value) {
+    try {
+      Float.parseFloat(value);
+      return true;
+    } catch (NumberFormatException ex) {
+      LOGGER.info("Passed value in q parameter is not float");
+      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage(value));
+    }
+  }
+
+  private boolean isValidID(final JsonObject json) {
+    if (json.containsKey("id")) {
+      String id = json.getString(JSON_VALUE);
+      Matcher matcher = VALIDATION_ID_PATTERN.matcher(id);
+      return matcher.matches();
+    } else {
       return true;
     }
-
-    private boolean isValidOperator(String value) {
-      return allowedOperators.contains(value);
-    }
-
-    private boolean isValidValue(String value) {
-      try {
-        Float.parseFloat(value);
-        return true;
-      } catch (NumberFormatException ex) {
-        LOGGER.info("Passes value in q parameter in not float");
-        return false;
-      }
-    }
-
-    private boolean isValidID(JsonObject json) {
-      if (json.containsKey("id")) {
-        String id = json.getString(JSON_VALUE);
-        Pattern pattern = Pattern.compile(idRegex);
-        Matcher matcher = pattern.matcher(id);
-        return matcher.matches();
-      } else {
-        return true;
-      }
-    }
-
-    @Override
-    public RequestParameter isValid(String value) throws ValidationException {
-      if (value.isBlank()) {
-        throw ValidationException.ValidationExceptionFactory
-            .generateNotMatchValidationException("Empty value not allowed for parameter.");
-      }
-      if (value.length() > 512) {
-        throw ValidationException.ValidationExceptionFactory
-            .generateNotMatchValidationException("Exceeding max length(512 characters) criteria ");
-      }
-
-      JsonObject qJson = getQueryTerms(value);
-      if (!isValidAttribute(qJson.getString(JSON_ATTRIBUTE))) {
-        throw ValidationException.ValidationExceptionFactory
-            .generateNotMatchValidationException("Not a valid attribute in <<q>> query");
-      }
-      if (!isValidOperator(qJson.getString(JSON_OPERATOR))) {
-        throw ValidationException.ValidationExceptionFactory.generateNotMatchValidationException(
-            "Not a valid Operator in <<q>> query, only " + allowedOperators + "  allowed");
-      }
-
-      if (!isValidID(qJson)) {
-        throw ValidationException.ValidationExceptionFactory
-            .generateNotMatchValidationException("Not a valid id query");
-      }
-
-      // NOTE : committed till filter work is not completed.
-      // Now value is not restricted to only float
-      /*
-       * if (!isValidValue(qJson.getString(JSON_VALUE))) { throw
-       * ValidationException.ValidationExceptionFactory
-       * .generateNotMatchValidationException("Not a valid Float value in <<q>> query"); }
-       */
-      return RequestParameter.create(value);
-    }
   }
 
-  JsonObject getQueryTerms(String queryTerms) {
+  private boolean isValidAttributeValue(final String value) {
+    return VALIDATION_Q_ATTR_PATTERN.matches(value);
+  }
+
+
+
+  JsonObject getQueryTerms(final String queryTerms) throws Exception {
     JsonObject json = new JsonObject();
     int length = queryTerms.length();
     List<Character> allowedSpecialCharacter = Arrays.asList('>', '=', '<', '!');
+    List<Character> allowedSpecialCharAttribValue = Arrays.asList('_', '-');
     int startIndex = 0;
     boolean specialCharFound = false;
     for (int i = 0; i < length; i++) {
@@ -107,8 +72,11 @@ public class QTypeValidator {
           json.put(JSON_ATTRIBUTE, queryTerms.substring(startIndex, i));
           startIndex = i;
           specialCharFound = true;
+        } else if (allowedSpecialCharAttribValue.contains(c)) {
+          // do nothing
         } else {
-          LOGGER.info("Ignore " + c.toString());
+          LOGGER.error("Ignore " + c.toString());
+          throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage(value));
         }
       } else {
         if (specialCharFound && (Character.isLetter(c) || Character.isDigit(c))) {
@@ -121,4 +89,60 @@ public class QTypeValidator {
     }
     return json;
   }
+
+  @Override
+  public boolean isValid() {
+    LOGGER.debug("value : " + value + " required : " + required);
+    if (required && (value == null || value.isBlank())) {
+      LOGGER.error("Validation error : null or blank value for required mandatory field");
+      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage());
+    } else {
+      if (value == null) {
+        return true;
+      }
+      if (value.isBlank()) {
+        LOGGER.error("Validation error :  blank value for passed");
+        throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage());
+      }
+    }
+    if (value.length() > 512) {
+      LOGGER.error("Validation error : Exceeding max length(512 characters) criteria");
+      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage(value));
+    }
+    JsonObject qJson;
+    try {
+      qJson = getQueryTerms(value);
+    } catch (Exception ex) {
+      LOGGER.error("Validation error : Operator not allowed.");
+      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage(value));
+    }
+    if (!isValidAttribute(qJson.getString(JSON_ATTRIBUTE))) {
+      LOGGER.error("Validation error : Not a valid attribute in <<q>> query");
+      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage(value));
+    }
+    if (!isValidOperator(qJson.getString(JSON_OPERATOR))) {
+      LOGGER.error("Validation error : Not a valid Operator in <<q>> query");
+      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage(value));
+    }
+    // if (!isValidAttributeValue(qJson.getString(JSON_VALUE))) {
+    // throw ValidationException.ValidationExceptionFactory
+    // .generateNotMatchValidationException("Not a valid attribute value in <<q>> query");
+    // }
+
+    if (!isValidID(qJson)) {
+      return false;
+    }
+    return true;
+  }
+
+  @Override
+  public int failureCode() {
+    return HttpStatusCode.BAD_REQUEST.getValue();
+  }
+
+  @Override
+  public String failureMessage() {
+    return INVALID_PARAM_VALUE.getMessage();
+  }
+
 }

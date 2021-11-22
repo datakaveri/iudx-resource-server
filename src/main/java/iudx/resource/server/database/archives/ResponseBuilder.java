@@ -57,6 +57,16 @@ public class ResponseBuilder {
     response.put(RESULTS, new JsonArray().add(new JsonObject().put(COUNT, count)));
     return this;
   }
+  
+  public ResponseBuilder setFromParam(int from) {
+    response.put(FROM_KEY, from);
+    return this;
+  }
+  
+  public ResponseBuilder setSizeParam(int size) {
+    response.put(SIZE_KEY, size);
+    return this;
+  }
 
   public JsonObject getResponse() {
     return response;

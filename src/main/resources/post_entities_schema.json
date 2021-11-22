@@ -7,7 +7,8 @@
 			"maxLength":512, 
 			"type": "string",
 			"default": "",
-			"pattern": "^.*$"
+			"pattern": "^.*$",
+			"enum":["Query"]
 		},
 		"entities": {
 			"$id": "#root/entities", 
@@ -24,7 +25,7 @@
 						"title": "Id", 
 						"type": "string",
 						"default": "",
-						"pattern": "^.*$",
+						"pattern": "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z.]{4,100}/{1}[a-zA-Z-_.]{4,100}/{1}[a-zA-Z0-9-_.]{4,100}$",
 						"maxLength":512
 					}
 				},
@@ -109,6 +110,7 @@
 					"$id": "#root/geoQ/georel", 
 					"title": "Georel", 
 					"type": "string",
+					"minLength":1,
 					"maxLength":512,
 					"default": "",
 					"pattern": "^.*$"
@@ -126,51 +128,11 @@
 			"additionalProperties":false
 		}
 ,
-		"temporalQ": {
-			"$id": "#root/temporalQ", 
-			"title": "Temporalq", 
-			"type": "object",
-			"properties": {
-				"timerel": {
-					"$id": "#root/temporalQ/timerel", 
-					"title": "Timerel", 
-					"type": "string",
-					"default": "",
-					"pattern": "^.*$",
-					"enum":["after","before","during","between"]
-				},
-				"time": {
-					"$id": "#root/temporalQ/time", 
-					"title": "Time", 
-					"type": "string",
-					"format":"date-time",
-					"default": "",
-					"pattern": "^.*$"
-				},
-				"endtime": {
-					"$id": "#root/temporalQ/endtime", 
-					"title": "Endtime", 
-					"type": "string",
-					"format":"date-time",
-					"default": "",
-					"pattern": "^.*$"
-				},
-				"timeProperty": {
-					"$id": "#root/temporalQ/timeProperty", 
-					"title": "Timeproperty",
-					"maxLength":512, 
-					"type": "string",
-					"default": "",
-					"pattern": "^.*$"
-				}
-			},
-			"additionalProperties":false
-		}
-,
 		"q": {
 			"$id": "#root/q", 
 			"title": "Q", 
 			"type": "string",
+			"minLength":1,
 			"maxLength":512,
 			"default": "",
 			"pattern": "^.*$"
@@ -188,9 +150,26 @@
 			"title": "attrs",
 			"maxLength":512, 
 			"type": "string",
+			"minLength":1,
 			"default": "",
 			"pattern": "^.*$"
-		}
+		},
+		"offset": {
+            "$id": "#root/offset", 
+            "title": "offset",
+            "type": "integer",
+            "minimum":0,
+            "maximum":50000,
+            "default":0
+        },
+        "limit":{
+            "$id": "#root/limit", 
+            "title": "limit",
+            "type": "integer",
+            "minimum":0,
+            "maximum":10000,
+            "default":5000
+        }
 	},
 	"required":["entities","type"],
 	"additionalProperties":false
