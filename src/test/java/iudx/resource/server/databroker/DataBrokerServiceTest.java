@@ -127,6 +127,8 @@ public class DataBrokerServiceTest {
      BROKER_PRODUCTION_DOMAIN = brokerConfig.getString("brokerAmqpIp");
      BROKER_PRODUCTION_PORT=brokerConfig.getInteger("brokerAmqpPort");
 
+    BROKER_PRODUCTION_DOMAIN = brokerConfig.getString("brokerAmqpIp");
+    BROKER_PRODUCTION_PORT=brokerConfig.getInteger("brokerAmqpPort");
 
     logger.info("Exchange Name is " + exchangeName);
     logger.info("Queue Name is " + queueName);

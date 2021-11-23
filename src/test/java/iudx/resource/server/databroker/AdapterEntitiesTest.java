@@ -186,7 +186,6 @@ public class AdapterEntitiesTest {
     rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient, pgClient, brokerConfig);
     databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, brokerConfig);
 
-
     resourceGroup = brokerConfig.getString("testResourceGroup");
     resourceServer = brokerConfig.getString("testResourceServer");
     consumer = UUID.randomUUID().toString();

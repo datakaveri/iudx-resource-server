@@ -1,4 +1,4 @@
-package iudx.resource.server.database.archives;
+package iudx.resource.server.database.archives.elastic;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -6,6 +6,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.database.archives.ResponseBuilder;
+
 import static iudx.resource.server.database.archives.Constants.*;
 import java.io.IOException;
 import org.apache.http.HttpHost;
