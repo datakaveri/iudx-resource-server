@@ -135,6 +135,17 @@
             "meteringDatabaseUserName": "",
             "meteringDatabasePassword": "",
             "meteringPoolSize": 25
+        },
+        {
+            "id":"iudx.resource.server.database.postgres.PostgresVerticle",
+            "verticleInstances": 1,
+            "databaseIP": "localhost",
+            "databasePort": 5432,
+            "databaseName": "",
+            "databaseUserName": "",
+            "databasePassword": "",
+            "poolSize": 25
+        
         }
     ]
 }

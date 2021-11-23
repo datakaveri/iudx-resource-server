@@ -20,6 +20,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rabbitmq.RabbitMQClient;
+import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.databroker.util.Util;
 
 /**
@@ -858,28 +859,29 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
   @Override
   // TODO : complete implementation
-  public DataBrokerService publishMessage(JsonObject request, String toExchange,String routingKey,
+  public DataBrokerService publishMessage(JsonObject request, String toExchange, String routingKey,
       Handler<AsyncResult<JsonObject>> handler) {
 
     Future<Void> rabbitMqClientStartFuture;
-    
+
     JsonObject message = new JsonObject();
     message.put("body", request.toString());
     Buffer buffer = Buffer.buffer(message.toString());
-    
+
     RabbitMQClient client = webClient.getRabbitMQClient();
     if (!client.isConnected())
       rabbitMqClientStartFuture = client.start();
     else
       rabbitMqClientStartFuture = Future.succeededFuture();
-    
+
     rabbitMqClientStartFuture.compose(rabbitstartupFuture -> {
       return client.basicPublish(toExchange, routingKey, buffer);
     }).onSuccess(successHandler -> {
-      Future.succeededFuture();
-
-    }).onFailure(failureHandler->{
-      
+      JsonObject json = new JsonObject();
+      json.put("type", ResponseUrn.SUCCESS.getUrn());
+      handler.handle(Future.succeededFuture(json));
+    }).onFailure(failureHandler -> {
+      handler.handle(Future.failedFuture("Failed"));
     });
     return this;
   }

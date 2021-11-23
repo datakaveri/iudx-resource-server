@@ -1,6 +1,6 @@
 package iudx.resource.server.apiserver.exceptions;
 
-import iudx.resource.server.apiserver.response.ResponseUrn;
+import iudx.resource.server.common.ResponseUrn;
 
 public final class DxRuntimeException extends RuntimeException {
 

@@ -6,7 +6,8 @@ public enum IudxRole {
   
   CONSUMER("consumer"),
   PROVIDER("provider"),
-  DELEGATE("delegate");
+  DELEGATE("delegate"),
+  ADMIN("admin");
 
   private final String role;
 

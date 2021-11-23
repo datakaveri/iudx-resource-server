@@ -1,18 +1,28 @@
 package iudx.resource.server.apiserver;
 
+import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
 import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
 import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
+import static iudx.resource.server.database.postgres.Constants.INSERT_REVOKE_TOKEN_SQL;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import iudx.resource.server.apiserver.response.RestResponse;
+import iudx.resource.server.apiserver.handlers.AuthHandler;
+import iudx.resource.server.common.Api;
+import iudx.resource.server.common.HttpStatusCode;
+import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 
 public final class AdminRestApi {
+
+  private static final Logger LOGGER = LogManager.getLogger(AdminRestApi.class);
 
   private final Vertx vertx;
   private final Router router;
@@ -28,7 +38,8 @@ public final class AdminRestApi {
 
   public Router init() {
     router
-        .post(Api.REVOKE_TOKEN.getPath())
+        .post(Api.REVOKE_TOKEN.path)
+        .handler(AuthHandler.create(vertx))
         .handler(this::handleRevokeTokenRequest);
 
     return router;
@@ -36,49 +47,50 @@ public final class AdminRestApi {
 
 
   private void handleRevokeTokenRequest(RoutingContext context) {
+
     HttpServerResponse response = context.response();
-
+    JsonObject authInfo = (JsonObject) context.data().get("authInfo");
     JsonObject requestBody = context.getBodyAsJson();
-    String sql = "INSERT INTO revoked_tokens(client_id,rs_url,token,expiry) VALUES($1,$2,$3,$4)";
-    sql.replace("$1", requestBody.getString("client_id"));
-    sql.replace("$2", requestBody.getString("rs_url"));
-    sql.replace("$3", requestBody.getString("token"));
-    sql.replace("$4", requestBody.getString("expiry"));
 
-    pgService.executeQuery(sql, pgSuccessHandler -> {
+    StringBuilder sql = new StringBuilder(INSERT_REVOKE_TOKEN_SQL
+        .replace("$1", requestBody.getString("clientId"))
+        .replace("$2", requestBody.getString("rsUrl"))
+        .replace("$3", requestBody.getString("token"))
+        .replace("$4", authInfo.getString("expiry")));
+
+    JsonObject rmqMessage = new JsonObject();
+    rmqMessage.put("token", requestBody.getString("token"));
+
+    pgService.executeQuery(sql.toString(), pgSuccessHandler -> {
       if (pgSuccessHandler.succeeded()) {
-        RMQbrokerService.publishMessage(new JsonObject(), "rs-token-invalidation", "rs-token-invalidation",
+        RMQbrokerService.publishMessage(rmqMessage, "rs-token-invalidation", "rs-token-invalidation",
             rmqSuccessHandler -> {
               if (rmqSuccessHandler.succeeded()) {
-                response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                    .setStatusCode(200)
-                    .end(new RestResponse.Builder()
-                        .withType("200")
-                        .withTitle("success")
-                        .withMessage("passed")
-                        .build().toJson().toString());
+                handleResponse(response, HttpStatusCode.SUCCESS, ResponseUrn.SUCCESS);
               } else {
-                response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                    .setStatusCode(400)
-                    .end(new RestResponse.Builder()
-                        .withType("400")
-                        .withTitle("failed")
-                        .withMessage("failed")
-                        .build().toJson().toString());
+                handleResponse(response, HttpStatusCode.BAD_REQUEST, ResponseUrn.BAD_REQUEST_URN);
               }
             });
       } else {
-        response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(400)
-            .end(new RestResponse.Builder()
-                .withType("400")
-                .withTitle("failed")
-                .withMessage("failed")
-                .build().toJson().toString());
+        handleResponse(response, HttpStatusCode.BAD_REQUEST, ResponseUrn.BAD_REQUEST_URN);
       }
     });
 
 
   }
+
+
+  private void handleResponse(HttpServerResponse response, HttpStatusCode code, ResponseUrn urn) {
+    handleResponse(response, code, urn, code.getDescription());
+  }
+
+  private void handleResponse(HttpServerResponse response, HttpStatusCode statusCode, ResponseUrn urn, String message) {
+
+    response
+        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+        .setStatusCode(statusCode.getValue())
+        .end(generateResponse(statusCode, urn, message).toString());
+  }
+
 
 }
