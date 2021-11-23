@@ -280,7 +280,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             JsonObject responseBody = response.bodyAsJsonObject();
             if (response.statusCode() != HttpStatus.SC_OK) {
               promise.fail("false");
-            } else if (!responseBody.getString("status").equals("success")) {
+            } else if (!responseBody.getString("type").equals("urn:dx:cat:Success")) {
               promise.fail("Not Found");
               return;
             } else if (responseBody.getInteger("totalHits") == 0) {
@@ -319,7 +319,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
               return;
             }
             JsonObject responseBody = response.bodyAsJsonObject();
-            if (!responseBody.getString("status").equals("success")) {
+            if (!responseBody.getString("type").equals("urn:dx:cat:Success")) {
               promise.fail("Resource not found");
               return;
             }
