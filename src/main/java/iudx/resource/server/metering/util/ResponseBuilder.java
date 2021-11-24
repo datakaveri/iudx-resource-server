@@ -1,15 +1,15 @@
 package iudx.resource.server.metering.util;
 
-import static iudx.resource.server.metering.util.Constants.COUNT;
 import static iudx.resource.server.metering.util.Constants.DETAIL;
-import static iudx.resource.server.metering.util.Constants.ERROR_TYPE;
-import static iudx.resource.server.metering.util.Constants.FAILED;
 import static iudx.resource.server.metering.util.Constants.RESULTS;
 import static iudx.resource.server.metering.util.Constants.SUCCESS;
 import static iudx.resource.server.metering.util.Constants.TITLE;
+import static iudx.resource.server.metering.util.Constants.TOTAL;
+import static iudx.resource.server.metering.util.Constants.TYPE_KEY;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.apiserver.response.ResponseUrn;
 
 public class ResponseBuilder {
   private String status;
@@ -22,11 +22,16 @@ public class ResponseBuilder {
   }
 
   public ResponseBuilder setTypeAndTitle(int statusCode) {
-    response.put(ERROR_TYPE, statusCode);
-    if (SUCCESS.equalsIgnoreCase(status)) {
+
+    if (200 == statusCode) {
+      response.put(TYPE_KEY, ResponseUrn.SUCCESS.getUrn());
       response.put(TITLE, SUCCESS);
-    } else if (FAILED.equalsIgnoreCase(status)) {
-      response.put(TITLE, FAILED);
+    } else if (204 == statusCode) {
+      response.put(TYPE_KEY, statusCode);
+      response.put(TITLE, SUCCESS);
+    } else {
+      response.put(TYPE_KEY, statusCode);
+      response.put(TITLE, ResponseUrn.BAD_REQUEST_URN.getUrn());
     }
     return this;
   }
@@ -36,10 +41,17 @@ public class ResponseBuilder {
     response.put(DETAIL, error);
     return this;
   }
+
   public ResponseBuilder setCount(int count) {
-    response.put(RESULTS, new JsonArray().add(new JsonObject().put(COUNT, count)));
+    response.put(RESULTS, new JsonArray().add(new JsonObject().put(TOTAL, count)));
     return this;
   }
+
+  public ResponseBuilder setData(JsonArray jsonArray) {
+    response.put(RESULTS, jsonArray);
+    return this;
+  }
+
   public JsonObject getResponse() {
     return response;
   }

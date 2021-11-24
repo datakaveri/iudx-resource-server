@@ -423,15 +423,55 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   }
 
+  private Future<Void>  getAuditDetail(RoutingContext routingContext) {
+    LOGGER.info("Info: getAuditDetail Started.");
+    Promise<Void> promise = Promise.promise();
+    JsonObject entries=new JsonObject();
+    JsonObject consumer= (JsonObject) routingContext.data().get("authInfo");
+    HttpServerRequest request=routingContext.request();
+    HttpServerResponse response=routingContext.response();
+    entries.put("userid",consumer.getString("userid"));
+    entries.put("startTime",request.getParam("time"));
+    entries.put("endtime",request.getParam("endTime"));
+    entries.put("timeRelation",request.getParam("timerel"));
+
+    entries.put("options",request.headers().get("options"));
+    entries.put("id",request.getParam("id"));
+    entries.put("api",request.getParam("api"));
+
+    {
+      LOGGER.info(entries);
+      meteringService.executeReadQuery(
+          entries,
+          handler -> {
+            if (handler.succeeded()) {
+              LOGGER.info("Table Reading Done.");
+              handleSuccessResponse(
+                  response, ResponseType.Ok.getCode(), handler.result().toString());
+              promise.complete();
+            } else {
+              LOGGER.error("Fail msg "+handler.cause().getMessage());
+              LOGGER.error("Table reading failed.");
+              processBackendResponse(response,handler.cause().getMessage());
+//              handleResponse(response, BAD_REQUEST, INVALID_PARAM, handler.cause().getMessage());
+              promise.complete();
+            }
+          });
+      return promise.future();
+  }
+//    return promise.future();
+  }
+
 
   private void handleLatestEntitiesQuery(RoutingContext routingContext) {
     LOGGER.debug("Info:handleLatestEntitiesQuery method started.;");
     /* Handles HTTP request from client */
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     HttpServerRequest request = routingContext.request();
+
     /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
-    // get query paramaters
+    // get query parameters
     MultiMap params = getQueryParams(routingContext, response).get();
     if (!params.isEmpty()) {
       RuntimeException ex =

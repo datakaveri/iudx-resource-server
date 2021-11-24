@@ -32,6 +32,7 @@ public class Constants {
   // IUDX management endpoints
   public static final String IUDX_MANAGEMENT_URL = "/management";
   public static final String IUDX_ADAPTOR_URL = "/ngsi-ld/v1";
+  public static final String IUDX_AUDIT_URL=IUDX_ADAPTOR_URL+"/user/audit";
   public static final String IUDX_MANAGEMENT_EXCHANGE_URL = IUDX_MANAGEMENT_URL + "/exchange";
   public static final String IUDX_MANAGEMENT_QUEUE_URL = IUDX_MANAGEMENT_URL + "/queue";
   public static final String IUDX_MANAGEMENT_BIND_URL = IUDX_MANAGEMENT_URL + "/bind";

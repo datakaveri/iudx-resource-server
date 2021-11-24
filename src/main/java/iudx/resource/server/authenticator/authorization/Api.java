@@ -9,7 +9,8 @@ public enum Api {
   ENTITY_OPERATION_TEMPORAL("/ngsi-ld/v1/temporal/entityoperations/query"),
   SUBSCRIPTION("/ngsi-ld/v1/subscription"),
   INGESTION("/ngsi-ld/v1/ingestion"),
-  RESET_PWD("/management/user/resetPassword");
+  RESET_PWD("/management/user/resetPassword"),
+  USER_AUDIT("/ngsi-ld/v1/user/audit");
 
 
 

@@ -1,25 +1,32 @@
 package iudx.resource.server.metering;
 
-import static iudx.resource.server.metering.util.Constants.COLUMN_NAME;
-import static iudx.resource.server.metering.util.Constants.COUNT;
-import static iudx.resource.server.metering.util.Constants.EMPTY_RESPONSE;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
+import static iudx.resource.server.metering.util.Constants.API_COLUMN_NAME;
+import static iudx.resource.server.metering.util.Constants.COUNT_COLUMN_NAME;
 import static iudx.resource.server.metering.util.Constants.END_TIME;
 import static iudx.resource.server.metering.util.Constants.ERROR;
 import static iudx.resource.server.metering.util.Constants.FAILED;
 import static iudx.resource.server.metering.util.Constants.MESSAGE;
 import static iudx.resource.server.metering.util.Constants.QUERY_KEY;
+import static iudx.resource.server.metering.util.Constants.RESOURCEID_COLUMN_NAME;
 import static iudx.resource.server.metering.util.Constants.START_TIME;
 import static iudx.resource.server.metering.util.Constants.SUCCESS;
+import static iudx.resource.server.metering.util.Constants.TIME_COLUMN_NAME;
 import static iudx.resource.server.metering.util.Constants.TIME_NOT_FOUND;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import static iudx.resource.server.metering.util.Constants.TIME_REL;
+import static iudx.resource.server.metering.util.Constants.TIME_RELATION;
+import static iudx.resource.server.metering.util.Constants.TIME_RELATION_NOT_FOUND;
+import static iudx.resource.server.metering.util.Constants.TOTAL;
+import static iudx.resource.server.metering.util.Constants.USERID_COLUMN_NAME;
+import static iudx.resource.server.metering.util.Constants.USERID_NOT_FOUND;
+import static iudx.resource.server.metering.util.Constants.USER_ID;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
@@ -28,15 +35,17 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import iudx.resource.server.metering.util.QueryBuilder;
 import iudx.resource.server.metering.util.ResponseBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class MeteringServiceImpl implements MeteringService {
 
   private static final Logger LOGGER = LogManager.getLogger(MeteringServiceImpl.class);
+  private final Vertx vertx;
+  private final QueryBuilder queryBuilder = new QueryBuilder();
   PgConnectOptions connectOptions;
   PoolOptions poolOptions;
   PgPool pool;
-  private Vertx vertx;
-  private QueryBuilder queryBuilder = new QueryBuilder();
   private JsonObject query = new JsonObject();
   private String databaseIP;
   private int databasePort;
@@ -73,16 +82,33 @@ public class MeteringServiceImpl implements MeteringService {
   }
 
   @Override
-  public MeteringService executeCountQuery(
+  public MeteringService executeReadQuery(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
 
     LOGGER.debug("Info: Count Query" + request.toString());
 
-    if (!request.containsKey(START_TIME) || !request.containsKey(END_TIME)) {
+    if (request.getString("timeRelation") == null
+        || !request.getString(TIME_RELATION).equals(TIME_REL)) {
+      LOGGER.debug("Info: " + TIME_RELATION_NOT_FOUND);
+      responseBuilder =
+          new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(TIME_RELATION_NOT_FOUND);
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+      return this;
+    }
+
+    if (request.getString(START_TIME) == null || request.getString(END_TIME) == null) {
       LOGGER.debug("Info: " + TIME_NOT_FOUND);
       responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(TIME_NOT_FOUND);
       handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-      return null;
+      return this;
+    }
+
+    if (request.getString(USER_ID) == null || request.getString(USER_ID).isEmpty()) {
+      LOGGER.debug("Info: " + USERID_NOT_FOUND);
+      responseBuilder =
+          new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(USERID_NOT_FOUND);
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+      return this;
     }
     query = queryBuilder.buildReadingQuery(request);
 
@@ -91,11 +117,16 @@ public class MeteringServiceImpl implements MeteringService {
       responseBuilder =
           new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(query.getString(ERROR));
       handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-      return null;
+      return this;
     }
+    //    query.put(QUERY_KEY,"select * from auditing");
     LOGGER.debug("Info: Query constructed: " + query.getString(QUERY_KEY));
+    Future<JsonObject> result;
 
-    Future<JsonObject> result = executeCountQuery(query);
+    if (request.getString(HEADER_OPTIONS) != null) {
+      result = executeCountQuery(query);
+    } else result = executeReadQuery(query);
+
     result.onComplete(
         resultHandler -> {
           if (resultHandler.succeeded()) {
@@ -108,30 +139,67 @@ public class MeteringServiceImpl implements MeteringService {
     return this;
   }
 
+  private Future<JsonObject> executeReadQuery(JsonObject query) {
+    Promise<JsonObject> promise = Promise.promise();
+    JsonObject response = new JsonObject();
+    pool.withConnection(connection -> connection.query(query.getString(QUERY_KEY)).execute())
+        .onSuccess(
+            rows -> {
+              JsonArray jsonArray = new JsonArray();
+              RowSet<Row> result = rows;
+              for (Row rs : result) {
+                JsonObject temp = new JsonObject();
+                temp.put("id", rs.getString(RESOURCEID_COLUMN_NAME));
+                temp.put("time", rs.getString(TIME_COLUMN_NAME));
+                temp.put("api", rs.getString(API_COLUMN_NAME));
+                temp.put("consumer", rs.getString(USERID_COLUMN_NAME));
+                jsonArray.add(temp);
+              }
+
+              if (jsonArray.isEmpty()) {
+                responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204);
+                promise.fail(responseBuilder.getResponse().toString());
+              } else {
+                responseBuilder =
+                    new ResponseBuilder(SUCCESS).setTypeAndTitle(200).setData(jsonArray);
+                //                LOGGER.info("Info: " + responseBuilder.getResponse().toString());
+              }
+              promise.complete(responseBuilder.getResponse());
+            })
+        .onFailure(
+            event -> {
+              promise.fail("Failed to get connection from the database");
+            });
+
+    return promise.future();
+  }
+
   private Future<JsonObject> executeCountQuery(JsonObject query) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject response = new JsonObject();
     pool.withConnection(connection -> connection.query(query.getString(QUERY_KEY)).execute())
-        .onComplete(
+        .onSuccess(
             rows -> {
-              RowSet<Row> result = rows.result();
+              RowSet<Row> result = rows;
               for (Row rs : result) {
-                LOGGER.debug("COUNT: " + (rs.getInteger(COLUMN_NAME)));
-                response.put(COUNT, rs.getInteger(COLUMN_NAME));
+                LOGGER.debug("COUNT: " + (rs.getInteger(COUNT_COLUMN_NAME)));
+                response.put(TOTAL, rs.getInteger(COUNT_COLUMN_NAME));
               }
-              if (response.getInteger(COUNT) == 0) {
-                responseBuilder =
-                    new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(response.getInteger(COUNT))
-                        .setMessage(EMPTY_RESPONSE);
-                promise.complete(responseBuilder.getResponse());
+              if (response.getInteger(TOTAL) == 0) {
+                responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204);
+                promise.fail(responseBuilder.getResponse().toString());
               } else {
                 responseBuilder =
                     new ResponseBuilder(SUCCESS)
                         .setTypeAndTitle(200)
-                        .setCount(response.getInteger(COUNT));
+                        .setCount(response.getInteger(TOTAL));
                 LOGGER.info("Info: " + responseBuilder.getResponse().toString());
-                promise.complete(responseBuilder.getResponse());
               }
+              promise.complete(responseBuilder.getResponse());
+            })
+        .onFailure(
+            event -> {
+              promise.fail("Failed to get connection from the database");
             });
     return promise.future();
   }
@@ -139,6 +207,7 @@ public class MeteringServiceImpl implements MeteringService {
   @Override
   public MeteringService executeWriteQuery(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+
     query = queryBuilder.buildWritingQuery(request);
 
     Future<JsonObject> result = writeInDatabase(query);

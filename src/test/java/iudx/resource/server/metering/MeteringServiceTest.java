@@ -1,14 +1,21 @@
 package iudx.resource.server.metering;
 
 import static iudx.resource.server.metering.util.Constants.API;
-import static iudx.resource.server.metering.util.Constants.COUNT;
 import static iudx.resource.server.metering.util.Constants.DETAIL;
 import static iudx.resource.server.metering.util.Constants.END_TIME;
 import static iudx.resource.server.metering.util.Constants.ID;
+import static iudx.resource.server.metering.util.Constants.INVALID_DATE_DIFFERENCE;
 import static iudx.resource.server.metering.util.Constants.INVALID_DATE_TIME;
 import static iudx.resource.server.metering.util.Constants.RESULTS;
 import static iudx.resource.server.metering.util.Constants.START_TIME;
+import static iudx.resource.server.metering.util.Constants.SUCCESS;
 import static iudx.resource.server.metering.util.Constants.TIME_NOT_FOUND;
+import static iudx.resource.server.metering.util.Constants.TIME_REL;
+import static iudx.resource.server.metering.util.Constants.TIME_RELATION;
+import static iudx.resource.server.metering.util.Constants.TIME_RELATION_NOT_FOUND;
+import static iudx.resource.server.metering.util.Constants.TITLE;
+import static iudx.resource.server.metering.util.Constants.TOTAL;
+import static iudx.resource.server.metering.util.Constants.USERID_NOT_FOUND;
 import static iudx.resource.server.metering.util.Constants.USER_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -22,6 +29,7 @@ import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,6 +68,17 @@ public class MeteringServiceTest {
     vertxTestContext.completeNow();
   }
 
+  private JsonObject readRequest() {
+    JsonObject jsonObject = new JsonObject();
+    jsonObject.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
+    jsonObject.put(ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias");
+    jsonObject.put(START_TIME, "2021-11-20T05:30:00+05:30[Asia/Kolkata]");
+    jsonObject.put(END_TIME, "2021-11-24T02:00:00+05:30[Asia/Kolkata]");
+    jsonObject.put(TIME_RELATION,TIME_REL);
+    jsonObject.put(API, "/ngsi-ld/v1/subscription");
+    return jsonObject;
+  }
+
   // @AfterAll
   // public void finish(VertxTestContext testContext) {
   // logger.info("finishing");
@@ -69,160 +88,109 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query with invalid time interval")
   void readFromInvalidTimeInterval(VertxTestContext testContext) {
-    JsonObject request = new JsonObject();
-    request.put(END_TIME, "1970-01-01T05:30:00+05:30[Asia/Kolkata]");
-    request.put(START_TIME, "1970-01-01T05:30:10+05:30[Asia/Kolkata]");
-
-    meteringService.executeCountQuery(
+    JsonObject request = readRequest();
+    request.put(START_TIME, "2021-11-01T05:30:00+05:30[Asia/Kolkata]");
+    request.put(END_TIME, "2021-11-24T02:00:00+05:30[Asia/Kolkata]");
+    meteringService.executeReadQuery(
         request,
         testContext.failing(
             response ->
                 testContext.verify(
                     () -> {
                       assertEquals(
-                          INVALID_DATE_TIME,
+                          INVALID_DATE_DIFFERENCE,
                           new JsonObject(response.getMessage()).getString(DETAIL));
                       testContext.completeNow();
                     })));
   }
 
   @Test
-  @DisplayName("Testing count query with given Time Interval")
+  @DisplayName("Testing read query with given Time Interval")
   void readFromValidTimeInterval(VertxTestContext vertxTestContext) {
-    JsonObject request = new JsonObject();
+    JsonObject request = readRequest();
 
-    request.put(START_TIME, "1970-01-01T05:30:00+05:30[Asia/Kolkata]");
-    request.put(END_TIME, "2021-09-18T00:30:00+05:30[Asia/Kolkata]");
-
-    meteringService.executeCountQuery(
+    meteringService.executeReadQuery(
         request,
         vertxTestContext.succeeding(
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      assertTrue(
-                          response.getJsonArray(RESULTS).getJsonObject(0).containsKey(COUNT));
+                      assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
   }
 
   @Test
-  @DisplayName("Testing count query for Empty Response")
-  void readForEmptyResponse(VertxTestContext vertxTestContext) {
-    JsonObject request = new JsonObject();
+  @DisplayName("Testing read query for missing userId")
+  void readForMissingUserId(VertxTestContext vertxTestContext) {
+    JsonObject request = readRequest();
+    request.remove(USER_ID);
 
-    request.put(START_TIME, "1970-01-01T05:30:00+05:30[Asia/Kolkata]");
-    request.put(END_TIME, "2021-09-15T00:30:00+05:30[Asia/Kolkata]");
-
-    meteringService.executeCountQuery(
-        request,
-        vertxTestContext.succeeding(
-            response ->
-                vertxTestContext.verify(
-                    () -> {
-                      assertTrue(response.getString(DETAIL).equals("Empty response"));
-                      vertxTestContext.completeNow();
-                    })));
-  }
-
-  @Test
-  @DisplayName("Testing count query for given time and email")
-  void readForGivenEmailAndTime(VertxTestContext vertxTestContext) {
-    JsonObject request = new JsonObject();
-    request.put(START_TIME, "1970-01-01T05:30:00+05:30[Asia/Kolkata]");
-    request.put(END_TIME, "2021-09-18T00:30:00+05:30[Asia/Kolkata]");
-    request.put(USER_ID, userId);
-    meteringService.executeCountQuery(
-        request,
-        vertxTestContext.succeeding(
-            response ->
-                vertxTestContext.verify(
-                    () -> {
-                      LOGGER.info("RESPONSE" + response);
-                      assertTrue(
-                          response.getJsonArray(RESULTS).getJsonObject(0).containsKey(COUNT));
-                      vertxTestContext.completeNow();
-                    })));
-  }
-
-  //  @Disabled("even if the method under test executes correctly, test will fail since it is
-  // dependent on already existing data in db")
-  @Test
-  @DisplayName("Testing count query for given time and resource")
-  void readForGivenResourceAndTime(VertxTestContext vertxTestContext) {
-    JsonObject request = new JsonObject();
-    request.put(START_TIME, "1970-01-01T05:30:00+05:30[Asia/Kolkata]");
-    request.put(END_TIME, "2021-09-18T00:30:00+05:30[Asia/Kolkata]");
-    request.put(ID, id);
-    meteringService.executeCountQuery(
-        request,
-        vertxTestContext.succeeding(
-            response ->
-                vertxTestContext.verify(
-                    () -> {
-                      LOGGER.info("RESPONSE" + response);
-                      assertTrue(
-                          response.getJsonArray(RESULTS).getJsonObject(0).containsKey(COUNT));
-                      vertxTestContext.completeNow();
-                    })));
-  }
-
-  //  @Disabled("even if the method under test executes correctly, test will fail since it is
-  // dependent on already existing data in db")
-  @Test
-  @DisplayName("Testing count query for given email,time and resource")
-  void readForGivenEmailResourceAndTime(VertxTestContext vertxTestContext) {
-    JsonObject request = new JsonObject();
-    request.put(START_TIME, "1970-01-01T05:30:00+05:30[Asia/Kolkata]");
-    request.put(END_TIME, "2021-09-18T00:30:00+05:30[Asia/Kolkata]");
-    request.put(ID, id);
-    request.put(USER_ID, userId);
-    meteringService.executeCountQuery(
-        request,
-        vertxTestContext.succeeding(
-            response ->
-                vertxTestContext.verify(
-                    () -> {
-                      LOGGER.info("RESPONSE" + response.getString("title"));
-                      assertTrue(
-                          response.getJsonArray(RESULTS).getJsonObject(0).containsKey(COUNT));
-                      vertxTestContext.completeNow();
-                    })));
-  }
-
-  @Test
-  @DisplayName("Testing count query w/o start time")
-  void readForMissingStartTime(VertxTestContext vertxTestContext) {
-    JsonObject request = new JsonObject();
-    request.put(END_TIME, "2021-09-18T00:30:00+05:30[Asia/Kolkata]");
-    meteringService.executeCountQuery(
+    meteringService.executeReadQuery(
         request,
         vertxTestContext.failing(
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      LOGGER.info(
-                          "RESPONSE" + new JsonObject(response.getMessage()).getString(DETAIL));
                       assertEquals(
-                          TIME_NOT_FOUND, new JsonObject(response.getMessage()).getString(DETAIL));
+                          USERID_NOT_FOUND,
+                          new JsonObject(response.getMessage()).getString(DETAIL));
                       vertxTestContext.completeNow();
                     })));
   }
 
   @Test
-  @DisplayName("Testing count query with invalid start time")
+  @DisplayName("Testing read query for missing time Relation")
+  void readForMissingTimeRel(VertxTestContext vertxTestContext) {
+    JsonObject request = readRequest();
+    request.remove(TIME_RELATION);
+
+    meteringService.executeReadQuery(
+        request,
+        vertxTestContext.failing(
+            response ->
+                vertxTestContext.verify(
+                    () -> {
+                      assertEquals(
+                          TIME_RELATION_NOT_FOUND,
+                          new JsonObject(response.getMessage()).getString(DETAIL));
+                      vertxTestContext.completeNow();
+                    })));
+  }
+
+  @Test
+  @DisplayName("Testing read query for missing time")
+  void readForMissingTime(VertxTestContext vertxTestContext) {
+    JsonObject request = readRequest();
+    request.remove(START_TIME);
+
+    meteringService.executeReadQuery(
+        request,
+        vertxTestContext.failing(
+            response ->
+                vertxTestContext.verify(
+                    () -> {
+                      assertEquals(
+                          TIME_NOT_FOUND,
+                          new JsonObject(response.getMessage()).getString(DETAIL));
+                      vertxTestContext.completeNow();
+                    })));
+  }
+
+  @Test
+  @DisplayName("Testing read query with invalid start/end time")
   void readForInvalidStartTime(VertxTestContext vertxTestContext) {
-    JsonObject request = new JsonObject();
+    JsonObject request = readRequest();
     request.put(START_TIME, "2021-009-18T00:30:00+05:30[Asia/Kolkata]");
-    request.put(END_TIME, "2021-09-18T00:30:00+05:30[Asia/Kolkata]");
-    meteringService.executeCountQuery(
+
+    meteringService.executeReadQuery(
         request,
         vertxTestContext.failing(
             response ->
                 vertxTestContext.verify(
                     () -> {
                       LOGGER.info(
-                          "RESPONSE" + new JsonObject(response.getMessage()).getString(DETAIL));
+                          "RESPONSE " + new JsonObject(response.getMessage()).getString(DETAIL));
                       assertEquals(
                           INVALID_DATE_TIME,
                           new JsonObject(response.getMessage()).getString(DETAIL));
@@ -231,25 +199,121 @@ public class MeteringServiceTest {
   }
 
   @Test
-  @DisplayName("Testing count query with invalid end time")
-  void readForInvalidEndTime(VertxTestContext vertxTestContext) {
-    JsonObject request = new JsonObject();
-    request.put(START_TIME, "2021-09-18T00:30:00+05:30[Asia/Kolkata]");
-    request.put(END_TIME, "2021-009-18T00:30:00+05:30[Asia/Kolkata]");
-    meteringService.executeCountQuery(
-        request,
+  @DisplayName("Testing read query for given time.")
+  void readForGivenTime(VertxTestContext vertxTestContext) {
+    JsonObject jsonObject =readRequest();
+    jsonObject.remove(ID);
+    jsonObject.remove(API);
+    meteringService.executeReadQuery(
+        jsonObject,
+        vertxTestContext.succeeding(
+            response ->
+                vertxTestContext.verify(
+                    () -> {
+                      LOGGER.info("RESPONSE" + response);
+                      assertTrue(
+                          response.getString(TITLE).equals(SUCCESS));
+                      vertxTestContext.completeNow();
+                    })));
+  }
+
+  @Test
+  @DisplayName("Testing read query for given time and id.")
+  void readForGivenTimeAndId(VertxTestContext vertxTestContext) {
+    JsonObject jsonObject =readRequest();
+    jsonObject.remove(API);
+    meteringService.executeReadQuery(
+        jsonObject,
+        vertxTestContext.succeeding(
+            response ->
+                vertxTestContext.verify(
+                    () -> {
+                      LOGGER.info("RESPONSE" + response);
+                      assertTrue(
+                          response.getString(TITLE).equals(SUCCESS));
+                      vertxTestContext.completeNow();
+                    })));
+  }
+
+  @Test
+  @DisplayName("Testing read query for given time and api.")
+  void readForGivenTimeAndApi(VertxTestContext vertxTestContext) {
+    JsonObject jsonObject =readRequest();
+    jsonObject.remove(ID);
+
+    meteringService.executeReadQuery(
+        jsonObject,
+        vertxTestContext.succeeding(
+            response ->
+                vertxTestContext.verify(
+                    () -> {
+                      LOGGER.info("RESPONSE" + response);
+                      assertTrue(
+                          response.getString(TITLE).equals(SUCCESS));
+                      vertxTestContext.completeNow();
+                    })));
+  }
+
+  @Test
+  @DisplayName("Testing read query for given time,api and id.")
+  void readForGivenTimeApiAndID(VertxTestContext vertxTestContext) {
+    JsonObject jsonObject =readRequest();
+
+    meteringService.executeReadQuery(
+        jsonObject,
+        vertxTestContext.succeeding(
+            response ->
+                vertxTestContext.verify(
+                    () -> {
+                      LOGGER.info("RESPONSE" + response);
+                      assertTrue(
+                          response.getString(TITLE).equals(SUCCESS));
+                      vertxTestContext.completeNow();
+                    })));
+  }
+
+  @Test
+  @DisplayName("Testing read query for given time,api and id.")
+  void readForGivenTimeApiAndIDEmptyResponse(VertxTestContext vertxTestContext) {
+    JsonObject jsonObject =readRequest();
+    jsonObject.put(START_TIME, "2021-11-19T05:30:00+05:30[Asia/Kolkata]");
+    jsonObject.put(END_TIME, "2021-11-21T02:00:00+05:30[Asia/Kolkata]");
+
+    meteringService.executeReadQuery(
+        jsonObject,
         vertxTestContext.failing(
             response ->
                 vertxTestContext.verify(
                     () -> {
                       LOGGER.info(
-                          "RESPONSE" + new JsonObject(response.getMessage()).getString(DETAIL));
+                          "RESPONSE " + new JsonObject(response.getMessage()).getString(DETAIL));
                       assertEquals(
-                          INVALID_DATE_TIME,
-                          new JsonObject(response.getMessage()).getString(DETAIL));
+                          SUCCESS,
+                          new JsonObject(response.getMessage()).getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
   }
+
+  @Test
+  @DisplayName("Testing count query for given time,api and id.")
+  void countForGivenTimeAndApiAndID(VertxTestContext vertxTestContext) {
+    JsonObject jsonObject =readRequest();
+    jsonObject.put("options","count");
+
+    meteringService.executeReadQuery(
+        jsonObject,
+        vertxTestContext.succeeding(
+            response ->
+                vertxTestContext.verify(
+                    () -> {
+                      LOGGER.info("RESPONSE" + response);
+                      assertTrue(
+                          response.getJsonArray(RESULTS).getJsonObject(0).containsKey(TOTAL));
+                      vertxTestContext.completeNow();
+                    })));
+  }
+
+  @Disabled
   @Test
   @DisplayName("Testing Write Query")
   void writeData(VertxTestContext vertxTestContext) {
