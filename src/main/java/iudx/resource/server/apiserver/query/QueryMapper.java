@@ -1,8 +1,8 @@
 package iudx.resource.server.apiserver.query;
 
-import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_ATTR_PARAM;
-import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_GEO_PARAM;
-import static iudx.resource.server.apiserver.util.HttpStatusCode.BAD_REQUEST;
+import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
+import static iudx.resource.server.common.ResponseUrn.INVALID_ATTR_PARAM;
+import static iudx.resource.server.common.ResponseUrn.INVALID_GEO_PARAM;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
@@ -15,8 +15,8 @@ import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
-import iudx.resource.server.apiserver.response.ResponseUrn;
 import iudx.resource.server.apiserver.util.Constants;
+import iudx.resource.server.common.ResponseUrn;
 
 /**
  * QueryMapper class to convert NGSILD query into json object for the purpose of information

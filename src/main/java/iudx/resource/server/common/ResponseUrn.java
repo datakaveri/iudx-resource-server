@@ -1,4 +1,4 @@
-package iudx.resource.server.apiserver.response;
+package iudx.resource.server.common;
 
 import java.util.stream.Stream;
 

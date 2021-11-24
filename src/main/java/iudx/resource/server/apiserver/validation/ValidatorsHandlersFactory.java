@@ -1,6 +1,5 @@
 package iudx.resource.server.apiserver.validation;
 
-import static iudx.resource.server.apiserver.response.ResponseUrn.SCHEMA_READ_ERROR;
 import static iudx.resource.server.apiserver.util.Constants.DOMAIN;
 import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
 import static iudx.resource.server.apiserver.util.Constants.ID_DOMAIN_REGEX;
@@ -26,6 +25,7 @@ import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
 import static iudx.resource.server.apiserver.util.Constants.USERSHA;
+import static iudx.resource.server.common.ResponseUrn.SCHEMA_READ_ERROR;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,7 +49,6 @@ import io.vertx.json.schema.SchemaParser;
 import io.vertx.json.schema.SchemaRouter;
 import io.vertx.json.schema.SchemaRouterOptions;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
-import iudx.resource.server.apiserver.util.HttpStatusCode;
 import iudx.resource.server.apiserver.util.RequestType;
 import iudx.resource.server.apiserver.validation.types.AttrsTypeValidator;
 import iudx.resource.server.apiserver.validation.types.CoordinatesTypeValidator;
@@ -68,6 +67,7 @@ import iudx.resource.server.apiserver.validation.types.QTypeValidator;
 import iudx.resource.server.apiserver.validation.types.StringTypeValidator;
 import iudx.resource.server.apiserver.validation.types.TimeRelTypeValidator;
 import iudx.resource.server.apiserver.validation.types.Validator;
+import iudx.resource.server.common.HttpStatusCode;
 
 public class ValidatorsHandlersFactory {
 

@@ -370,7 +370,10 @@ public interface DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler);
 
   @Fluent
-  DataBrokerService publishHeartbeat(JsonObject request,
+  DataBrokerService publishHeartbeat(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+  @Fluent
+  DataBrokerService publishMessage(JsonObject body, String toExchange, String routingKey,
       Handler<AsyncResult<JsonObject>> handler);
 
 }

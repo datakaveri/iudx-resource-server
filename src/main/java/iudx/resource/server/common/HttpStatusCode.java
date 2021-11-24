@@ -1,4 +1,4 @@
-package iudx.resource.server.apiserver.util;
+package iudx.resource.server.common;
 
 public enum HttpStatusCode {
 
@@ -10,6 +10,7 @@ public enum HttpStatusCode {
 
   // 2XX: codes
   NO_CONTENT(204, "No Content", "urn:dx:rs:noContent"),
+  SUCCESS(200, "Success", "urn:dx:rs:Success"),
 
   // 4xx: Client Error
   BAD_REQUEST(400, "Bad Request", "urn:dx:rs:badRequest"),

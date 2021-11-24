@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.apiserver.response.RestResponse;
-import iudx.resource.server.apiserver.util.HttpStatusCode;
+import iudx.resource.server.common.HttpStatusCode;
 
 public class FailureHandler implements Handler<RoutingContext> {
 

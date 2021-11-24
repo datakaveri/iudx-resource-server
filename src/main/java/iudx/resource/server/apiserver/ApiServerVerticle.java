@@ -1,18 +1,11 @@
 package iudx.resource.server.apiserver;
 
-
-import static iudx.resource.server.apiserver.response.ResponseUrn.BACKING_SERVICE_FORMAT;
-import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_PARAM;
-import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_TEMPORAL_PARAM;
-import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_TOKEN;
-import static iudx.resource.server.apiserver.response.ResponseUrn.MISSING_TOKEN;
+import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
 import static iudx.resource.server.apiserver.util.Constants.API;
 import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
 import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
-import static iudx.resource.server.apiserver.util.Constants.APP_NAME_REGEX;
 import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.DOMAIN;
-import static iudx.resource.server.apiserver.util.Constants.EXCHANGE_ID;
 import static iudx.resource.server.apiserver.util.Constants.HEADER_ACCEPT;
 import static iudx.resource.server.apiserver.util.Constants.HEADER_ALLOW_ORIGIN;
 import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_LENGTH;
@@ -24,35 +17,22 @@ import static iudx.resource.server.apiserver.util.Constants.HEADER_REFERER;
 import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
 import static iudx.resource.server.apiserver.util.Constants.ID;
 import static iudx.resource.server.apiserver.util.Constants.IUDXQUERY_OPTIONS;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_ADAPTER_URL;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_BIND_URL;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_EXCHANGE_URL;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_QUEUE_URL;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_RESET_PWD;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_UNBIND_URL;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_MANAGEMENT_VHOST_URL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_ALIAS;
 import static iudx.resource.server.apiserver.util.Constants.JSON_CONSUMER;
 import static iudx.resource.server.apiserver.util.Constants.JSON_COUNT;
-import static iudx.resource.server.apiserver.util.Constants.JSON_EXCHANGE_NAME;
 import static iudx.resource.server.apiserver.util.Constants.JSON_ID;
 import static iudx.resource.server.apiserver.util.Constants.JSON_INSTANCEID;
 import static iudx.resource.server.apiserver.util.Constants.JSON_NAME;
-import static iudx.resource.server.apiserver.util.Constants.JSON_QUEUE_NAME;
 import static iudx.resource.server.apiserver.util.Constants.JSON_SEARCH_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.JSON_VHOST;
-import static iudx.resource.server.apiserver.util.Constants.JSON_VHOST_ID;
 import static iudx.resource.server.apiserver.util.Constants.MIME_APPLICATION_JSON;
 import static iudx.resource.server.apiserver.util.Constants.MIME_TEXT_HTML;
-import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_EXCHANGE_NAME;
 import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_NAME;
 import static iudx.resource.server.apiserver.util.Constants.MSG_SUB_TYPE_NOT_FOUND;
 import static iudx.resource.server.apiserver.util.Constants.NGSILD_ENTITIES_URL;
 import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_ENTITIES_QUERY_PATH;
 import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_TEMPORAL_QUERY_PATH;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_SUBSCRIPTION_URL;
 import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
@@ -63,16 +43,24 @@ import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
 import static iudx.resource.server.apiserver.util.Constants.SUB_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.USERSHA;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
-import static iudx.resource.server.apiserver.util.HttpStatusCode.BAD_REQUEST;
-import static iudx.resource.server.apiserver.util.HttpStatusCode.UNAUTHORIZED;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
+import static iudx.resource.server.common.Api.ADMIN;
+import static iudx.resource.server.common.Api.INGESTION;
+import static iudx.resource.server.common.Api.MANAGEMENT;
+import static iudx.resource.server.common.Api.NGSILD_BASE;
+import static iudx.resource.server.common.Api.SUBSCRIPTION;
+import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
+import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
+import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT;
+import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM;
+import static iudx.resource.server.common.ResponseUrn.INVALID_TEMPORAL_PARAM;
+import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.LogManager;
@@ -106,17 +94,17 @@ import iudx.resource.server.apiserver.management.ManagementApiImpl;
 import iudx.resource.server.apiserver.query.NGSILDQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
-import iudx.resource.server.apiserver.response.ResponseUrn;
-import iudx.resource.server.apiserver.response.RestResponse;
 import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
-import iudx.resource.server.apiserver.util.HttpStatusCode;
 import iudx.resource.server.apiserver.util.RequestType;
 import iudx.resource.server.apiserver.validation.ValidatorsHandlersFactory;
 import iudx.resource.server.authenticator.AuthenticationService;
+import iudx.resource.server.common.HttpStatusCode;
+import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.archives.DatabaseService;
 import iudx.resource.server.database.latest.LatestDataService;
+import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.metering.MeteringService;
 
@@ -150,6 +138,8 @@ public class ApiServerVerticle extends AbstractVerticle {
   private static final String BROKER_SERVICE_ADDRESS = "iudx.rs.broker.service";
   private static final String LATEST_SEARCH_ADDRESS = "iudx.rs.latest.service";
   private static final String METERING_SERVICE_ADDRESS = "iudx.rs.metering.service";
+  private static final String POSTGRES_SERVICE_ADDRESS = "iudx.rs.pgsql.service";
+
   private HttpServer server;
   private Router router;
   private int port = 8443;
@@ -161,6 +151,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private CatalogueService catalogueService;
   private MeteringService meteringService;
   private DatabaseService database;
+  private PostgresService postgresService;
   private DataBrokerService databroker;
   private AuthenticationService authenticator;
   private ParamsValidator validator;
@@ -278,98 +269,76 @@ public class ApiServerVerticle extends AbstractVerticle {
         .failureHandler(validationsFailureHandler);
 
     ValidationHandler subsValidationHandler = new ValidationHandler(vertx, RequestType.SUBSCRIPTION);
-
-    router.post(NGSILD_SUBSCRIPTION_URL)
+    router
+        .post(NGSILD_BASE.path + SUBSCRIPTION.path)
         .handler(subsValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::handleSubscriptions)
         .failureHandler(validationsFailureHandler);
     // append sub
-    router.patch(NGSILD_SUBSCRIPTION_URL + "/:userid/:alias")
+    router
+        .patch(NGSILD_BASE.path + SUBSCRIPTION.path + "/:userid/:alias")
         .handler(subsValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::appendSubscription)
         .failureHandler(validationsFailureHandler);
     // update sub
-    router.put(NGSILD_SUBSCRIPTION_URL + "/:userid/:alias")
+    router
+        .put(NGSILD_BASE.path + SUBSCRIPTION.path + "/:userid/:alias")
         .handler(subsValidationHandler)
         .handler(AuthHandler.create(vertx))
         .handler(this::updateSubscription)
         .failureHandler(validationsFailureHandler);
     // get sub
-    router.get(NGSILD_SUBSCRIPTION_URL + "/:userid/:alias")
+    router
+        .get(NGSILD_BASE.path + SUBSCRIPTION.path + "/:userid/:alias")
         .handler(AuthHandler.create(vertx))
         .handler(this::getSubscription);
     // delete sub
-    router.delete(NGSILD_SUBSCRIPTION_URL + "/:userid/:alias")
+    router
+        .delete(NGSILD_BASE.path + SUBSCRIPTION.path + "/:userid/:alias")
         .handler(AuthHandler.create(vertx))
         .handler(this::deleteSubscription);
 
-    /* Management Api endpoints */
-    // Exchange
-    router.post(IUDX_MANAGEMENT_EXCHANGE_URL).handler(AuthHandler.create(vertx))
-        .handler(this::createExchange);
-    router.delete(IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId").handler(AuthHandler.create(vertx))
-        .handler(this::deleteExchange);
-    router.get(IUDX_MANAGEMENT_EXCHANGE_URL + "/:exId").handler(AuthHandler.create(vertx))
-        .handler(this::getExchangeDetails);
-    // Queue
-    router.post(IUDX_MANAGEMENT_QUEUE_URL).handler(AuthHandler.create(vertx))
-        .handler(this::createQueue);
-    router.delete(IUDX_MANAGEMENT_QUEUE_URL + "/:queueId").handler(AuthHandler.create(vertx))
-        .handler(this::deleteQueue);
-    router.get(IUDX_MANAGEMENT_QUEUE_URL + "/:queueId").handler(AuthHandler.create(vertx))
-        .handler(this::getQueueDetails);
-    // bind
-    router.post(IUDX_MANAGEMENT_BIND_URL).handler(AuthHandler.create(vertx))
-        .handler(this::bindQueue2Exchange);
-    // unbind
-    router.post(IUDX_MANAGEMENT_UNBIND_URL).handler(AuthHandler.create(vertx))
-        .handler(this::unbindQueue2Exchange);
-    // vHost
-    router.post(IUDX_MANAGEMENT_VHOST_URL).handler(AuthHandler.create(vertx))
-        .handler(this::createVHost);
-    router.delete(IUDX_MANAGEMENT_VHOST_URL + "/:vhostId").handler(AuthHandler.create(vertx))
-        .handler(this::deleteVHost);
     // adapter
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL).handler(AuthHandler.create(vertx))
-        .handler(this::registerAdapter);
-
     router
-        .delete(IUDX_MANAGEMENT_ADAPTER_URL
-            + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
-        .handler(AuthHandler.create(vertx)).handler(this::deleteAdapter);
-    router.delete(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSha/:resourceServer/:resourceGroup")
-        .handler(AuthHandler.create(vertx)).handler(this::deleteAdapter);
-
-    router
-        .get(IUDX_MANAGEMENT_ADAPTER_URL
-            + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
-        .handler(AuthHandler.create(vertx)).handler(this::getAdapterDetails);
-    router
-        .get(IUDX_MANAGEMENT_ADAPTER_URL + "/:domain/:userSha/:resourceServer/:resourceGroup")
-        .handler(AuthHandler.create(vertx)).handler(this::getAdapterDetails);
-
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/heartbeat").handler(AuthHandler.create(vertx))
-        .handler(this::publishHeartbeat);
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/downstreamissue").handler(AuthHandler.create(vertx))
-        .handler(this::publishDownstreamIssue);
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/dataissue").handler(AuthHandler.create(vertx))
-        .handler(this::publishDataIssue);
-    router.post(IUDX_MANAGEMENT_ADAPTER_URL + "/entities").handler(AuthHandler.create(vertx))
-        .handler(this::publishDataFromAdapter);
-
-    router.post(IUDX_MANAGEMENT_RESET_PWD)
+        .post(NGSILD_BASE.path +INGESTION.path)
         .handler(AuthHandler.create(vertx))
-        .handler(this::resetPassword);
+        .handler(this::registerAdapter);
+    router
+        .delete(NGSILD_BASE.path +INGESTION.path + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
+        .handler(AuthHandler.create(vertx))
+        .handler(this::deleteAdapter);
+    router
+        .delete(NGSILD_BASE.path +INGESTION.path + "/:domain/:userSha/:resourceServer/:resourceGroup")
+        .handler(AuthHandler.create(vertx))
+        .handler(this::deleteAdapter);
+    router
+        .get(NGSILD_BASE.path +INGESTION.path + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
+        .handler(AuthHandler.create(vertx))
+        .handler(this::getAdapterDetails);
+    // reset password
+    router
+        .get(NGSILD_BASE.path +INGESTION.path + "/:domain/:userSha/:resourceServer/:resourceGroup")
+        .handler(AuthHandler.create(vertx))
+        .handler(this::getAdapterDetails);
 
-
-    router.route().last().handler(requestHandler -> {
-      HttpServerResponse response = requestHandler.response();
-      response.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
-              .setStatusCode(404)
-              .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED).toString());
-    });
+    router
+        .post(NGSILD_BASE.path +INGESTION.path + "/heartbeat")
+        .handler(AuthHandler.create(vertx))
+        .handler(this::publishHeartbeat);
+    router
+        .post(NGSILD_BASE.path +INGESTION.path + "/downstreamissue")
+        .handler(AuthHandler.create(vertx))
+        .handler(this::publishDownstreamIssue);
+    router
+        .post(NGSILD_BASE.path +INGESTION.path + "/dataissue")
+        .handler(AuthHandler.create(vertx))
+        .handler(this::publishDataIssue);
+    router
+        .post(NGSILD_BASE.path +INGESTION.path + "/entities")
+        .handler(AuthHandler.create(vertx))
+        .handler(this::publishDataFromAdapter);
 
     /**
      * Documentation routes
@@ -438,6 +407,19 @@ public class ApiServerVerticle extends AbstractVerticle {
     subsService = new SubscriptionService();
     catalogueService = new CatalogueService(vertx, config());
     validator = new ParamsValidator(catalogueService);
+
+    postgresService = PostgresService.createProxy(vertx, POSTGRES_SERVICE_ADDRESS);
+
+    router.mountSubRouter(ADMIN.path, new AdminRestApi(vertx, databroker, postgresService).init());
+    router.mountSubRouter(MANAGEMENT.path,
+        new ManagementRestApi(vertx, databroker, postgresService, meteringService, managementApi).init());
+
+    router.route().last().handler(requestHandler -> {
+      HttpServerResponse response = requestHandler.response();
+      response.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
+          .setStatusCode(404)
+          .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED).toString());
+    });
 
   }
 
@@ -930,463 +912,6 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   /**
-   * Create a exchange in rabbit MQ.
-   *
-   * @param routingContext routingContext
-   */
-  private void createExchange(RoutingContext routingContext) {
-    LOGGER.debug("Info: createExchange method started;");
-    JsonObject requestJson = routingContext.getBodyAsJson();
-    LOGGER.info("request ::: " + requestJson);
-    HttpServerRequest request = routingContext.request();
-    HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(HEADER_HOST);
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/management/exchange");
-    requestJson.put(JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          LOGGER.debug("Info: Authenticating response ;".concat(authHandler.result().toString()));
-          LOGGER.debug("Info: databroker :: ;" + databroker);
-          Future<Boolean> isValidNameResult =
-              isValidName(requestJson.copy().getString(JSON_EXCHANGE_NAME));
-          isValidNameResult.onComplete(validNameHandler -> {
-            if (validNameHandler.succeeded()) {
-              Future<JsonObject> brokerResult =
-                  managementApi.createExchange(requestJson, databroker);
-              brokerResult.onComplete(brokerResultHandler -> {
-                if (brokerResultHandler.succeeded()) {
-                  LOGGER.info("Success: Creating exchange");
-                  Future.future(fu -> updateAuditTable(routingContext));
-                  handleSuccessResponse(response, ResponseType.Created.getCode(),
-                      brokerResultHandler.result().toString());
-                } else if (brokerResultHandler.failed()) {
-                  LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause());
-                  processBackendResponse(response, brokerResultHandler.cause().getMessage());
-                }
-              });
-            } else {
-              LOGGER.error("Fail: Unauthorized;" + validNameHandler.cause().getMessage());
-              handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_INVALID_EXCHANGE_NAME);
-            }
-          });
-        } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
-        }
-      });
-    } else {
-      LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
-    }
-
-  }
-
-  /**
-   * delete an exchange in rabbit MQ.
-   *
-   * @param routingContext routingContext
-   */
-  private void deleteExchange(RoutingContext routingContext) {
-    LOGGER.debug("Info: deleteExchange method started;");
-    JsonObject requestJson = new JsonObject();
-    HttpServerRequest request = routingContext.request();
-    HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(HEADER_HOST);
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/management/exchange");
-    String exchangeId = request.getParam(EXCHANGE_ID);
-    requestJson.put(JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult = managementApi.deleteExchange(exchangeId, databroker);
-          brokerResult.onComplete(brokerResultHandler -> {
-            if (brokerResultHandler.succeeded()) {
-              LOGGER.info("Success: Deleting exchange");
-              Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  brokerResultHandler.result().toString());
-            } else if (brokerResultHandler.failed()) {
-              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
-            }
-          });
-        } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
-        }
-      });
-    } else {
-      LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
-    }
-
-  }
-
-  /**
-   * get exchange details from rabbit MQ.
-   *
-   * @param routingContext routingContext
-   */
-  private void getExchangeDetails(RoutingContext routingContext) {
-    LOGGER.debug("Info: getExchange method started;");
-    JsonObject requestJson = new JsonObject();
-    HttpServerRequest request = routingContext.request();
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/management/exchange");
-    LOGGER.debug("Info: request :: ;" + request);
-    LOGGER.debug("Info: request json :: ;" + requestJson);
-    String exchangeId = request.getParam(EXCHANGE_ID);
-    String instanceID = request.getHeader(HEADER_HOST);
-    requestJson.put(JSON_INSTANCEID, instanceID);
-    HttpServerResponse response = routingContext.response();
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult =
-              managementApi.getExchangeDetails(exchangeId, databroker);
-          brokerResult.onComplete(brokerResultHandler -> {
-            if (brokerResultHandler.succeeded()) {
-              LOGGER.info("Success: Getting exchange details");
-              Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  brokerResultHandler.result().toString());
-            } else if (brokerResultHandler.failed()) {
-              LOGGER.error("Fail: Bad request" + brokerResultHandler.cause().getMessage());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
-            }
-          });
-        } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized" + authHandler.cause().getMessage());
-          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
-        }
-      });
-    } else {
-      LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
-    }
-  }
-
-  /**
-   * create a queue in rabbit MQ.
-   *
-   * @param routingContext routingContext
-   */
-  private void createQueue(RoutingContext routingContext) {
-    LOGGER.debug("Info: createQueue method started;");
-    JsonObject requestJson = routingContext.getBodyAsJson();
-    HttpServerRequest request = routingContext.request();
-    HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(HEADER_HOST);
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/management/queue");
-    requestJson.put(JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
-        LOGGER.debug("Info: Authenticating response ;".concat(authHandler.result().toString()));
-        if (authHandler.succeeded()) {
-          Future<Boolean> validNameResult =
-              isValidName(requestJson.copy().getString(JSON_QUEUE_NAME));
-          validNameResult.onComplete(validNameHandler -> {
-            if (validNameHandler.succeeded()) {
-              Future<JsonObject> brokerResult = managementApi.createQueue(requestJson, databroker);
-              brokerResult.onComplete(brokerResultHandler -> {
-                if (brokerResultHandler.succeeded()) {
-                  LOGGER.info("Success: Creating Queue");
-                  Future.future(fu -> updateAuditTable(routingContext));
-                  handleSuccessResponse(response, ResponseType.Created.getCode(),
-                      brokerResultHandler.result().toString());
-                } else if (brokerResultHandler.failed()) {
-                  LOGGER.error("Fail: Bad request" + brokerResultHandler.cause().getMessage());
-                  processBackendResponse(response, brokerResultHandler.cause().getMessage());
-                }
-              });
-            } else {
-              LOGGER.error("Fail: Bad request");
-              handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_INVALID_EXCHANGE_NAME);
-            }
-
-          });
-        } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
-        }
-      });
-    } else {
-      LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
-    }
-  }
-
-  /**
-   * delete a queue in rabbit MQ.
-   *
-   * @param routingContext routingContext.
-   */
-  private void deleteQueue(RoutingContext routingContext) {
-    LOGGER.debug("Info: deleteQueue method started;");
-    JsonObject requestJson = new JsonObject();
-    HttpServerRequest request = routingContext.request();
-    HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(HEADER_HOST);
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/management/queue");
-    requestJson.put(JSON_INSTANCEID, instanceID);
-    String queueId = routingContext.request().getParam("queueId");
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
-        LOGGER.debug("Info: Authenticating response ;".concat(authHandler.result().toString()));
-        if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult = managementApi.deleteQueue(queueId, databroker);
-          brokerResult.onComplete(brokerResultHandler -> {
-            if (brokerResultHandler.succeeded()) {
-              LOGGER.info("Success: Deleting Queue");
-              Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  brokerResultHandler.result().toString());
-            } else if (brokerResultHandler.failed()) {
-              LOGGER.error("Fail: Bad request" + brokerResultHandler.cause().getMessage());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
-            }
-          });
-        } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
-        }
-      });
-    } else {
-      LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
-    }
-  }
-
-  /**
-   * get queue details from rabbit MQ.
-   *
-   * @param routingContext routingContext
-   */
-  private void getQueueDetails(RoutingContext routingContext) {
-    LOGGER.debug("Info: getQueueDetails method started;");
-    JsonObject requestJson = new JsonObject();
-    HttpServerRequest request = routingContext.request();
-    HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(HEADER_HOST);
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/management/queue");
-    requestJson.put(JSON_INSTANCEID, instanceID);
-    String queueId = routingContext.request().getParam("queueId");
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
-        LOGGER.debug("Info: Authenticating response;".concat(authHandler.result().toString()));
-        if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult = managementApi.getQueueDetails(queueId, databroker);
-          brokerResult.onComplete(brokerResultHandler -> {
-            if (brokerResultHandler.succeeded()) {
-              LOGGER.info("Success: Getting Queue Details");
-              Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  brokerResultHandler.result().toString());
-            } else if (brokerResultHandler.failed()) {
-              LOGGER.error("Fail: Bad Request;" + brokerResultHandler.cause());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
-            }
-          });
-        } else {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
-        }
-      });
-    } else {
-      LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
-    }
-  }
-
-  /**
-   * bind queue to exchange in rabbit MQ.
-   *
-   * @param routingContext routingContext
-   */
-  private void bindQueue2Exchange(RoutingContext routingContext) {
-    LOGGER.debug("Info: bindQueue2Exchange method started;");
-    JsonObject requestJson = routingContext.getBodyAsJson();
-    HttpServerRequest request = routingContext.request();
-    HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(HEADER_HOST);
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/management/bind");
-    requestJson.put(JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult =
-              managementApi.bindQueue2Exchange(requestJson, databroker);
-          brokerResult.onComplete(brokerResultHandler -> {
-            if (brokerResultHandler.succeeded()) {
-              LOGGER.info("Success: binding queue to exchange");
-              Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(response, ResponseType.Created.getCode(),
-                  brokerResultHandler.result().toString());
-            } else if (brokerResultHandler.failed()) {
-              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
-            }
-          });
-        } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
-        }
-      });
-    } else {
-      LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
-    }
-  }
-
-  /**
-   * unbind a queue from an exchange in rabbit MQ.
-   *
-   * @param routingContext routingContext
-   */
-  private void unbindQueue2Exchange(RoutingContext routingContext) {
-    LOGGER.debug("Info: unbindQueue2Exchange method started;");
-    JsonObject requestJson = routingContext.getBodyAsJson();
-    HttpServerRequest request = routingContext.request();
-    HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(HEADER_HOST);
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/management/unbind");
-    requestJson.put(JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult =
-              managementApi.unbindQueue2Exchange(requestJson, databroker);
-          brokerResult.onComplete(brokerResultHandler -> {
-            if (brokerResultHandler.succeeded()) {
-              LOGGER.info("Success: Unbinding queue to exchange");
-              Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(response, ResponseType.Created.getCode(),
-                  brokerResultHandler.result().toString());
-            } else if (brokerResultHandler.failed()) {
-              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
-            }
-          });
-        } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
-        }
-      });
-    } else {
-      LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
-    }
-  }
-
-  /**
-   * create a vhost in rabbit MQ.
-   *
-   * @param routingContext routingContext
-   */
-  private void createVHost(RoutingContext routingContext) {
-    LOGGER.debug("Info: createVHost method started;");
-    JsonObject requestJson = routingContext.getBodyAsJson();
-    HttpServerRequest request = routingContext.request();
-    HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(HEADER_HOST);
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/management/vhost");
-    requestJson.put(JSON_INSTANCEID, instanceID);
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          Future<Boolean> validNameResult = isValidName(requestJson.copy().getString(JSON_VHOST));
-          validNameResult.onComplete(validNameHandler -> {
-            if (validNameHandler.succeeded()) {
-              Future<JsonObject> brokerResult = managementApi.createVHost(requestJson, databroker);
-              brokerResult.onComplete(brokerResultHandler -> {
-                if (brokerResultHandler.succeeded()) {
-                  LOGGER.info("Success: Creating vhost");
-                  Future.future(fu -> updateAuditTable(routingContext));
-                  handleSuccessResponse(response, ResponseType.Created.getCode(),
-                      brokerResultHandler.result().toString());
-                } else if (brokerResultHandler.failed()) {
-                  LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
-                  processBackendResponse(response, brokerResultHandler.cause().getMessage());
-                }
-              });
-            } else {
-              LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-              handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_INVALID_EXCHANGE_NAME);
-            }
-          });
-        } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized");
-          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
-        }
-      });
-    } else {
-      LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
-    }
-
-  }
-
-  /**
-   * delete vhost from rabbit MQ.
-   *
-   * @param routingContext routingContext
-   */
-  private void deleteVHost(RoutingContext routingContext) {
-    LOGGER.debug("Info: deleteVHost method started;");
-    JsonObject requestJson = new JsonObject();
-    HttpServerRequest request = routingContext.request();
-    HttpServerResponse response = routingContext.response();
-    String instanceID = request.getHeader(HEADER_HOST);
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/management/vhost");
-    requestJson.put(JSON_INSTANCEID, instanceID);
-    String vhostId = routingContext.request().getParam(JSON_VHOST_ID);
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson, authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult = managementApi.deleteVHost(vhostId, databroker);
-          brokerResult.onComplete(brokerResultHandler -> {
-            if (brokerResultHandler.succeeded()) {
-              LOGGER.info("Success: Deleting vhost");
-              Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  brokerResultHandler.result().toString());
-            } else if (brokerResultHandler.failed()) {
-              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
-            }
-          });
-        } else if (authHandler.failed()) {
-          LOGGER.error("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
-        }
-      });
-    } else {
-      LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
-    }
-  }
-
-  /**
    * register a adapter in Rabbit MQ.
    *
    * @param routingContext routingContext
@@ -1440,8 +965,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     if (resourceName != null) {
       adapterIdBuilder.append("/").append(resourceName);
     }
-    Future<JsonObject> brokerResult =
-        managementApi.deleteAdapter(adapterIdBuilder.toString(), databroker);
+    Future<JsonObject> brokerResult = managementApi.deleteAdapter(adapterIdBuilder.toString(), databroker);
     brokerResult.onComplete(brokerResultHandler -> {
       if (brokerResultHandler.succeeded()) {
         LOGGER.info("Success: Deleting adapter");
@@ -1479,8 +1003,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       adapterIdBuilder.append("/").append(resourceName);
     }
 
-    Future<JsonObject> brokerResult =
-        managementApi.getAdapterDetails(adapterIdBuilder.toString(), databroker);
+    Future<JsonObject> brokerResult = managementApi.getAdapterDetails(adapterIdBuilder.toString(), databroker);
     brokerResult.onComplete(brokerResultHandler -> {
       if (brokerResultHandler.succeeded()) {
         Future.future(fu -> updateAuditTable(routingContext));
@@ -1510,25 +1033,20 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(JSON_INSTANCEID, instanceID);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult = managementApi.publishHeartbeat(requestJson, databroker);
-          brokerResult.onComplete(brokerResultHandler -> {
-            if (brokerResultHandler.succeeded()) {
-              LOGGER.debug("Success: Published heartbeat");
-              Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  brokerResultHandler.result().toString());
-            } else {
-              LOGGER.debug("Fail: Unauthorized;" + authHandler.cause().getMessage());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
-            }
-          });
+
+      Future<JsonObject> brokerResult = managementApi.publishHeartbeat(requestJson, databroker);
+      brokerResult.onComplete(brokerResultHandler -> {
+        if (brokerResultHandler.succeeded()) {
+          LOGGER.debug("Success: Published heartbeat");
+          Future.future(fu -> updateAuditTable(routingContext));
+          handleSuccessResponse(response, ResponseType.Ok.getCode(),
+              brokerResultHandler.result().toString());
         } else {
-          LOGGER.debug("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
+          LOGGER.debug("Fail: Unauthorized;" + brokerResultHandler.cause().getMessage());
+          processBackendResponse(response, brokerResultHandler.cause().getMessage());
         }
       });
+
     } else {
       LOGGER.info("Fail: Unauthorized");
       handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
@@ -1552,26 +1070,21 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(JSON_INSTANCEID, instanceID);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult =
-              managementApi.publishDownstreamIssues(requestJson, databroker);
-          brokerResult.onComplete(brokerResultHandler -> {
-            if (brokerResultHandler.succeeded()) {
-              LOGGER.debug("Success: published downstream issue");
-              Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  brokerResultHandler.result().toString());
-            } else {
-              LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
-            }
-          });
+
+      Future<JsonObject> brokerResult =
+          managementApi.publishDownstreamIssues(requestJson, databroker);
+      brokerResult.onComplete(brokerResultHandler -> {
+        if (brokerResultHandler.succeeded()) {
+          LOGGER.debug("Success: published downstream issue");
+          Future.future(fu -> updateAuditTable(routingContext));
+          handleSuccessResponse(response, ResponseType.Ok.getCode(),
+              brokerResultHandler.result().toString());
         } else {
-          LOGGER.debug("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
+          LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
+          processBackendResponse(response, brokerResultHandler.cause().getMessage());
         }
       });
+
     } else {
       LOGGER.debug("Fail: Unauthorized");
       handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
@@ -1594,25 +1107,20 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(JSON_INSTANCEID, instanceID);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult = managementApi.publishDataIssue(requestJson, databroker);
-          brokerResult.onComplete(brokerResultHandler -> {
-            if (brokerResultHandler.succeeded()) {
-              LOGGER.debug("Success: publishing a data issue");
-              Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  brokerResultHandler.result().toString());
-            } else {
-              LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
-            }
-          });
+
+      Future<JsonObject> brokerResult = managementApi.publishDataIssue(requestJson, databroker);
+      brokerResult.onComplete(brokerResultHandler -> {
+        if (brokerResultHandler.succeeded()) {
+          LOGGER.debug("Success: publishing a data issue");
+          Future.future(fu -> updateAuditTable(routingContext));
+          handleSuccessResponse(response, ResponseType.Ok.getCode(),
+              brokerResultHandler.result().toString());
         } else {
-          LOGGER.error(authHandler.cause());
-          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
+          LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
+          processBackendResponse(response, brokerResultHandler.cause().getMessage());
         }
       });
+
     } else {
       handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
@@ -1634,49 +1142,26 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(JSON_INSTANCEID, instanceID);
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-      authenticator.tokenInterospect(requestJson.copy(), authenticationInfo, authHandler -> {
-        if (authHandler.succeeded()) {
-          Future<JsonObject> brokerResult =
-              managementApi.publishDataFromAdapter(requestJson, databroker);
-          brokerResult.onComplete(brokerResultHandler -> {
-            if (brokerResultHandler.succeeded()) {
-              LOGGER.debug("Success: publishing data from adapter");
-              Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                  brokerResultHandler.result().toString());
-            } else {
-              LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
-            }
-          });
+
+      Future<JsonObject> brokerResult =managementApi.publishDataFromAdapter(requestJson, databroker);
+      brokerResult.onComplete(brokerResultHandler -> {
+        if (brokerResultHandler.succeeded()) {
+          LOGGER.debug("Success: publishing data from adapter");
+          Future.future(fu -> updateAuditTable(routingContext));
+          handleSuccessResponse(response, ResponseType.Ok.getCode(),
+              brokerResultHandler.result().toString());
         } else {
-          LOGGER.debug("Fail: Unauthorized;" + authHandler.cause().getMessage());
-          handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
+          LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
+          processBackendResponse(response, brokerResultHandler.cause().getMessage());
         }
       });
+
     } else {
       LOGGER.debug("Fail: Unauthorized");
       handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
     }
   }
 
-
-  public void resetPassword(RoutingContext routingContext) {
-    LOGGER.debug("Info: resetPassword method started");
-
-    HttpServerResponse response = routingContext.response();
-    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-    JsonObject request = new JsonObject();
-    request.put(USER_ID, authInfo.getString(USER_ID));
-
-    databroker.resetPassword(request, handler -> {
-      if (handler.succeeded()) {
-        handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
-      } else {
-        handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
-      }
-    });
-  }
 
   /**
    * handle HTTP response.
@@ -1723,38 +1208,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON)
         .setStatusCode(statusCode.getValue())
         .end(generateResponse(statusCode, urn, message).toString());
-  }
-
-
-  private JsonObject generateResponse(HttpStatusCode statusCode, ResponseUrn urn) {
-    return generateResponse(statusCode, urn, statusCode.getDescription());
-  }
-
-  private JsonObject generateResponse(HttpStatusCode statusCode, ResponseUrn urn, String message) {
-    String type = urn.getUrn();
-    return new RestResponse.Builder()
-        .withType(type)
-        .withTitle(statusCode.getDescription())
-        .withMessage(message)
-        .build().toJson();
-
-  }
-
-  /**
-   * validate if name passes the regex test for IUDX queue,exchage name.
-   *
-   * @param name name(queue,exchange)
-   * @return Future true if name matches the regex else false
-   */
-  public Future<Boolean> isValidName(String name) {
-    Promise<Boolean> promise = Promise.promise();
-    if (Pattern.compile(APP_NAME_REGEX).matcher(name).matches()) {
-      promise.complete(true);
-    } else {
-      LOGGER.error(MSG_INVALID_NAME + name);
-      promise.fail(MSG_INVALID_NAME);
-    }
-    return promise.future();
   }
 
   /**

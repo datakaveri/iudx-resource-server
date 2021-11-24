@@ -42,7 +42,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-import iudx.resource.server.apiserver.response.ResponseUrn;
+import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.databroker.util.Constants;
 
 public class SubscriptionService {

@@ -1,12 +1,12 @@
 package iudx.resource.server.apiserver.validation.types;
 
-import static iudx.resource.server.apiserver.response.ResponseUrn.INVALID_HEADER_VALUE;
+import static iudx.resource.server.common.ResponseUrn.INVALID_HEADER_VALUE;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
-import iudx.resource.server.apiserver.util.HttpStatusCode;
+import iudx.resource.server.common.HttpStatusCode;
 
 public class OptionsHeaderValidator implements Validator {
 
