@@ -1,7 +1,7 @@
 package iudx.resource.server.apiserver.validation.types;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
-import static iudx.resource.server.apiserver.response.ResponseUrn.*;
+import static iudx.resource.server.common.ResponseUrn.*;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
-import iudx.resource.server.apiserver.util.HttpStatusCode;
+import iudx.resource.server.common.HttpStatusCode;
 
 // TODO : find a better way to validate coordinates,
 // current method works but not very efficient,

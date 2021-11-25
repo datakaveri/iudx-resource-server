@@ -58,6 +58,7 @@ public class LatestDataServiceImpl implements LatestDataService {
 
     request.put(ATTRIBUTE_LIST, attributeList);
 
+      System.out.println(request);
     // Exceptions
     if (!request.containsKey(ID)) {
       LOGGER.debug("Info: " + ID_NOT_FOUND);
@@ -77,6 +78,7 @@ public class LatestDataServiceImpl implements LatestDataService {
     String id = request.getJsonArray(ID).getString(0);
     RedisArgs args = redisCmdBuilder.getRedisCommandArgs(id, isGroupLevelRecord(id));
 
+    System.out.println("key : "+args.getKey()+"path : "+args.getPath());
     JsonArray response = new JsonArray();
     redisClient.searchAsync(args.getKey(), args.getPath(), searchRes -> {
       if (searchRes.succeeded()) {

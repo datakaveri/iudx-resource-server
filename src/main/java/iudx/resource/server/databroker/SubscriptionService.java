@@ -42,7 +42,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-import iudx.resource.server.apiserver.response.ResponseUrn;
+import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.databroker.util.Constants;
 
 public class SubscriptionService {
@@ -130,7 +130,7 @@ public class SubscriptionService {
                         array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
                       } else {
                         exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
-                        array.add(routingKey);
+                        array.add(exchangeName+"/."+routingKey.substring(routingKey.lastIndexOf("/")+1));
                       }
                       JsonObject json = new JsonObject();
                       json.put(EXCHANGE_NAME, exchangeName);
@@ -272,7 +272,7 @@ public class SubscriptionService {
                             array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
                           } else {
                             exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
-                            array.add(routingKey);
+                            array.add(exchangeName+"/."+routingKey.substring(routingKey.lastIndexOf("/")+1));
                           }
                           JsonObject json = new JsonObject();
                           json.put(EXCHANGE_NAME, exchangeName);
@@ -391,7 +391,7 @@ public class SubscriptionService {
                     array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
                   } else {
                     exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
-                    array.add(routingKey);
+                    array.add(exchangeName+"/."+routingKey.substring(routingKey.lastIndexOf("/")+1));
                   }
                   JsonObject json = new JsonObject();
                   json.put(EXCHANGE_NAME, exchangeName);

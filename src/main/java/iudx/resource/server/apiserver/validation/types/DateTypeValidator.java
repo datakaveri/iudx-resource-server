@@ -1,13 +1,13 @@
 package iudx.resource.server.apiserver.validation.types;
 
-import static iudx.resource.server.apiserver.response.ResponseUrn.*;
+import static iudx.resource.server.common.ResponseUrn.*;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
-import iudx.resource.server.apiserver.util.HttpStatusCode;
+import iudx.resource.server.common.HttpStatusCode;
 
 public final class DateTypeValidator implements Validator {
   

@@ -40,5 +40,6 @@ public class Constants {
               new JsonArray().add(new JsonObject().put("id", "iudx.org/public/server/group/*")))
           .put("apis", new JsonArray().add("/iudx/public"));
   public static final String JSON_PUBLIC_CONSUMER = "public.data1@iudx.org";
+  public static final String JSON_EXPIRY="expiry";
   
 }

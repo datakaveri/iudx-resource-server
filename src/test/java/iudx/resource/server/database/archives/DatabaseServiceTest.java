@@ -1,4 +1,4 @@
-package iudx.resource.server.database;
+package iudx.resource.server.database.archives;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,10 +26,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.configuration.Configuration;
-import iudx.resource.server.database.archives.DatabaseService;
-import iudx.resource.server.database.archives.DatabaseServiceImpl;
-import iudx.resource.server.database.archives.ElasticClient;
-
+import iudx.resource.server.database.archives.elastic.ElasticClient;
 
 @ExtendWith({VertxExtension.class})
 public class DatabaseServiceTest {
@@ -52,7 +49,7 @@ public class DatabaseServiceTest {
   @BeforeAll
   @DisplayName("Deploying Verticle")
   static void startVertx(Vertx vertx, VertxTestContext testContext) {
-    vertxObj=vertx;
+    vertxObj = vertx;
     config = new Configuration();
     JsonObject dbConfig = config.configLoader(0, vertx);
 
@@ -68,9 +65,6 @@ public class DatabaseServiceTest {
     idClose = dbConfig.getString("testIdSecure");
     temporalStartDate = dbConfig.getString("temporalStartDate");
     temporalEndDate = dbConfig.getString("temporalEndDate");
-
-    logger.debug("Info : DB creds " + databaseIP + ", " + databasePort + ", " + user + ", "
-        + password + ", " + timeLimit);
 
     client = new ElasticClient(databaseIP, databasePort, user, password);
     dbService = new DatabaseServiceImpl(client, timeLimit);
@@ -97,8 +91,6 @@ public class DatabaseServiceTest {
             .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-//      assertEquals(72.833759, response.getJsonArray("results").getJsonObject(0)
-//          .getJsonObject("location").getJsonArray("coordinates").getDouble(0));
       testContext.completeNow();
     })));
   }
@@ -109,6 +101,18 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject().put("searchType", "geoSearch_");
 
     dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
+      assertEquals("No id found", new JsonObject(response.getMessage()).getString(
+          "detail"));
+      testContext.completeNow();
+    })));
+  }
+  
+  @Test
+  @DisplayName("Testing Basic Exceptions (No resource-id key) in count query")
+  void countWithNoResourceId(VertxTestContext testContext) {
+    JsonObject request = new JsonObject().put("searchType", "geoSearch_");
+
+    dbService.countQuery(request, testContext.failing(response -> testContext.verify(() -> {
       assertEquals("No id found", new JsonObject(response.getMessage()).getString(
           "detail"));
       testContext.completeNow();
@@ -127,6 +131,19 @@ public class DatabaseServiceTest {
       testContext.completeNow();
     })));
   }
+  
+  @Test
+  @DisplayName("Testing Basic Exceptions (resource-id is empty) in count query")
+  void countEmptyResourceId(VertxTestContext testContext) {
+    JsonObject request =
+        new JsonObject().put("id", new JsonArray()).put("searchType", "geoSearch_");
+
+    dbService.countQuery(request, testContext.failing(response -> testContext.verify(() -> {
+      assertEquals("resource-id is empty", new JsonObject(response.getMessage()).getString(
+          "detail"));
+      testContext.completeNow();
+    })));
+  }
 
   @Test
   @DisplayName("Testing Basic Exceptions (No searchType key)")
@@ -136,6 +153,20 @@ public class DatabaseServiceTest {
             "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"));
 
     dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
+      assertEquals("No searchType found", new JsonObject(response.getMessage()).getString(
+          "detail"));
+      testContext.completeNow();
+    })));
+  }
+  
+  @Test
+  @DisplayName("Testing Basic Exceptions (No searchType key) in count query")
+  void countWithSearchType(VertxTestContext testContext) {
+    JsonObject request = new JsonObject().put("id", new JsonArray()
+        .add(
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"));
+
+    dbService.countQuery(request, testContext.failing(response -> testContext.verify(() -> {
       assertEquals("No searchType found", new JsonObject(response.getMessage()).getString(
           "detail"));
       testContext.completeNow();
@@ -162,8 +193,7 @@ public class DatabaseServiceTest {
   @DisplayName("Testing Geo-Polygon query")
   void searchGeoPolygon(VertxTestContext testContext) {
     /**
-     * coordinates should look like this
-     * [[[lo1,la1],[lo2,la2],[lo3,la3],[lo4,la4],[lo5,la5],[lo1,la1]]]
+     * coordinates should look like this [[[lo1,la1],[lo2,la2],[lo3,la3],[lo4,la4],[lo5,la5],[lo1,la1]]]
      */
 
     JsonObject request =
@@ -501,12 +531,13 @@ public class DatabaseServiceTest {
 
   @Test
   @DisplayName("Testing Temporal Queries (TEquals)")
+  @Disabled("no tequals supported by IUDX")
   void searchTequalsTemporal(VertxTestContext testContext) throws ParseException {
     JsonObject request =
         new JsonObject()
             .put("id",
                 new JsonArray().add(idOpen))
-            .put("searchType", "temporalSearch_").put("timerel", "tequals")
+            .put("searchType", "temporalSearch_").put("timerel", "before")
             .put("time", temporalStartDate);
 
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
@@ -575,11 +606,68 @@ public class DatabaseServiceTest {
             .put("id",
                 new JsonArray().add(
                     "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
-            .put("searchType", "temporalSearch_").put("timerel", "tequals")
+            .put("searchType", "temporalSearch_").put("timerel", "after")
             .put("time", "Invalid date");
 
     dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
-      assertEquals("Invalid date format", new JsonObject(response.getMessage())
+      assertEquals("exception while parsing date/time", new JsonObject(response.getMessage())
+          .getString("detail"));
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing Temporal Exceptions (invalid end date)")
+  void searchTemporalInvalidEndDate(VertxTestContext testContext) {
+    JsonObject request =
+        new JsonObject()
+            .put("id",
+                new JsonArray().add(
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+            .put("searchType", "temporalSearch_").put("timerel", "during")
+            .put("time", "2020-09-18T14:20:00Z")
+            .put("endtime", "Invalid date");
+
+    dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
+      assertEquals("exception while parsing date/time", new JsonObject(response.getMessage())
+          .getString("detail"));
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing Temporal Exceptions (invalid timeRel date)")
+  void searchTemporalInvalidTimerel(VertxTestContext testContext) {
+    JsonObject request =
+        new JsonObject()
+            .put("id",
+                new JsonArray().add(
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+            .put("searchType", "temporalSearch_").put("timerel", "adadas")
+            .put("time", "2020-09-18T14:20:00Z")
+            .put("endtime", "2020-09-19T14:20:00Z");
+
+    dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
+      assertEquals("exception while parsing date/time", new JsonObject(response.getMessage())
+          .getString("detail"));
+      testContext.completeNow();
+    })));
+  }
+
+  @Test
+  @DisplayName("Testing Temporal Exceptions (end date before start date)")
+  void searchTemporalInvalidTimeInterval(VertxTestContext testContext) {
+    JsonObject request =
+        new JsonObject()
+            .put("id",
+                new JsonArray().add(
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+            .put("searchType", "temporalSearch_").put("timerel", "during")
+            .put("time", "2020-09-28T14:20:00Z")
+            .put("endtime", "2020-09-19T14:20:00Z");
+
+    dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
+      assertEquals("end date is before start date", new JsonObject(response.getMessage())
           .getString("detail"));
       testContext.completeNow();
     })));
@@ -659,6 +747,7 @@ public class DatabaseServiceTest {
 
   @Test
   @DisplayName("Testing Partial Complex Queries (Geo + Temporal + invalid-Response Filter)")
+  @Disabled
   void searchPartialComplex(VertxTestContext testContext) {
     JsonObject request =
         new JsonObject()
@@ -667,8 +756,8 @@ public class DatabaseServiceTest {
             .put("searchType", "temporalSearch_geoSearch_response@KSf_")
             .put("timerel", "before")
             .put("time", temporalEndDate)
-            .put("lon", 72.8296)
-            .put("lat", 21.2)
+            .put("lon", 21.2)
+            .put("lat", 72.8296)
             .put("radius", 500)
             .put("attrs", new JsonArray()
                 .add("id")
@@ -783,9 +872,9 @@ public class DatabaseServiceTest {
             "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013"))
         .put("searchType", "attributeSearch_")
         .put("attr-query", new JsonArray().add(new JsonObject()
-                                                  .put("attribute", "referenceLevel")
-                                                  .put("operator", "<==>")
-                                                  .put("valueLower", "3").put("valueUpper","5")))
+            .put("attribute", "referenceLevel")
+            .put("operator", "<==>")
+            .put("valueLower", "3").put("valueUpper", "5")))
         .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
       assertTrue(response.getJsonArray("results").getJsonObject(9).getDouble("referenceLevel") > 3
@@ -843,6 +932,23 @@ public class DatabaseServiceTest {
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
       assertTrue(
           response.getJsonArray("results").getJsonObject(4).getDouble("referenceLevel") != 5);
+      testContext.completeNow();
+    })));
+  }
+  
+  @Test
+  @DisplayName("Testing Attribute Search (invalid property operator)")
+  void searchInvalidAttributeOP(VertxTestContext testContext) {
+    JsonObject request = new JsonObject().put("id", new JsonArray()
+        .add(
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013"))
+        .put("searchType",
+            "attributeSearch_")
+        .put("attr-query", new JsonArray().add(new JsonObject().put(
+            "attribute", "referenceLevel").put("operator", "asasd").put("value", "5")))
+        .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
+    dbService.searchQuery(request, testContext.failing(response -> testContext.verify(() -> {
+      assertEquals("invalid attribute operator", new JsonObject(response.getMessage()).getString("detail"));
       testContext.completeNow();
     })));
   }

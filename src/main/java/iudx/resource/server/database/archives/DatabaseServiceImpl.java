@@ -1,16 +1,43 @@
 package iudx.resource.server.database.archives;
 
 
-import static iudx.resource.server.database.archives.Constants.*;
+import static iudx.resource.server.database.archives.Constants.COUNT_REQ_PARAM;
+import static iudx.resource.server.database.archives.Constants.DEFAULT_FROM_VALUE;
+import static iudx.resource.server.database.archives.Constants.DEFAULT_SIZE_VALUE;
+import static iudx.resource.server.database.archives.Constants.EMPTY_RESOURCE_ID;
+import static iudx.resource.server.database.archives.Constants.ERROR;
+import static iudx.resource.server.database.archives.Constants.FAILED;
+import static iudx.resource.server.database.archives.Constants.FILTER_PATH_VAL;
+import static iudx.resource.server.database.archives.Constants.FILTER_PATH_VAL_LATEST;
+import static iudx.resource.server.database.archives.Constants.FROM_KEY;
+import static iudx.resource.server.database.archives.Constants.ID;
+import static iudx.resource.server.database.archives.Constants.ID_NOT_FOUND;
+import static iudx.resource.server.database.archives.Constants.LATEST_RESOURCE_INDEX;
+import static iudx.resource.server.database.archives.Constants.LATEST_SEARCH;
+import static iudx.resource.server.database.archives.Constants.MALFORMED_ID;
+import static iudx.resource.server.database.archives.Constants.PARAM_FROM;
+import static iudx.resource.server.database.archives.Constants.PARAM_SIZE;
+import static iudx.resource.server.database.archives.Constants.SEARCHTYPE_NOT_FOUND;
+import static iudx.resource.server.database.archives.Constants.SEARCH_KEY;
+import static iudx.resource.server.database.archives.Constants.SEARCH_REQ_PARAM;
+import static iudx.resource.server.database.archives.Constants.SEARCH_TYPE;
+import static iudx.resource.server.database.archives.Constants.SIZE_KEY;
+import static iudx.resource.server.database.archives.Constants.SOURCE_FILTER_KEY;
+import static iudx.resource.server.database.archives.Constants.TIME_LIMIT;
+
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.database.archives.elastic.ElasticClient;
+import iudx.resource.server.database.archives.elastic.QueryDecoder;
 
 /**
  * The Database Service Implementation.
@@ -52,7 +79,6 @@ public class DatabaseServiceImpl implements DatabaseService {
 
     request.put(SEARCH_KEY, true);
     request.put(TIME_LIMIT, timeLimit);
-    // TODO : only for testing comment after testing.
     request.put("isTest", true);
 
     if (!request.containsKey(ID)) {
@@ -91,10 +117,19 @@ public class DatabaseServiceImpl implements DatabaseService {
         .getString(0).split("/")));
     splitId.remove(splitId.size() - 1);
     final String searchIndex = String.join("__", splitId).concat(SEARCH_REQ_PARAM);
-    // searchIndex = searchIndex.concat(SEARCH_REQ_PARAM);
     LOGGER.debug("Index name: " + searchIndex);
 
-    query = queryDecoder.queryDecoder(request);
+    try {
+      query = new QueryDecoder().getESquery(request);
+    } catch (Exception e) {
+      responseBuilder =
+          new ResponseBuilder(FAILED)
+              .setTypeAndTitle(400)
+              .setMessage(e.getMessage());
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+      return null;
+    }
+
     if (query.containsKey(ERROR)) {
       LOGGER.error("Fail: Query returned with an error: " + query.getString(ERROR));
       responseBuilder =
@@ -119,7 +154,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     } else {
       String countIndex = String.join("__", splitId);
       countIndex = countIndex.concat(COUNT_REQ_PARAM);
-      JsonObject countQuery=query.copy();
+      JsonObject countQuery = query.copy();
       countQuery.remove(SOURCE_FILTER_KEY);
       client.countAsync(countIndex, countQuery.toString(), countHandler -> {
         if (countHandler.succeeded()) {
@@ -206,7 +241,17 @@ public class DatabaseServiceImpl implements DatabaseService {
     index = index.concat(COUNT_REQ_PARAM);
     LOGGER.debug("Index name: " + index);
 
-    query = queryDecoder.queryDecoder(request);
+    try {
+      query = new QueryDecoder().getESquery(request);
+    } catch (Exception e) {
+      responseBuilder =
+          new ResponseBuilder(FAILED)
+              .setTypeAndTitle(400)
+              .setMessage(e.getMessage());
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+      return null;
+    }
+
     if (query.containsKey(ERROR)) {
       LOGGER.error("Fail: Query returned with an error: " + query.getString(ERROR));
       responseBuilder =

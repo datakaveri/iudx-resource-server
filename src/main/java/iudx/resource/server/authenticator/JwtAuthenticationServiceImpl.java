@@ -1,8 +1,12 @@
 package iudx.resource.server.authenticator;
 
+import static iudx.resource.server.authenticator.Constants.JSON_EXPIRY;
 import static iudx.resource.server.authenticator.Constants.JSON_USERID;
 import static iudx.resource.server.authenticator.Constants.OPEN_ENDPOINTS;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -88,7 +92,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     boolean doCheckResourceAndId =
         (endPoint.equalsIgnoreCase("/ngsi-ld/v1/subscription")
             && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")))
-            || endPoint.equalsIgnoreCase("/management/user/resetPassword");
+            || endPoint.equalsIgnoreCase("/management/user/resetPassword")
+            || endPoint.equalsIgnoreCase("/revoketoken");
 
     LOGGER.info("checkResourceFlag" + doCheckResourceAndId);
 
@@ -97,6 +102,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     jwtDecodeFuture.compose(decodeHandler -> {
       result.jwtData = decodeHandler;
       return isValidAudienceValue(result.jwtData);
+      // return Future.succeededFuture(true);
     }).compose(audienceHandler -> {
       if (!doCheckResourceAndId) {
         return isOpenResource(id);
@@ -139,6 +145,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     jwtAuth.authenticate(creds)
         .onSuccess(user -> {
           JwtData jwtData = new JwtData(user.principal());
+          jwtData.setExp(user.get("exp"));
           promise.complete(jwtData);
         }).onFailure(err -> {
           LOGGER.error("failed to decode/validate jwt token : " + err.getMessage());
@@ -205,6 +212,10 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       LOGGER.info("User access is allowed.");
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put(JSON_USERID, jwtData.getSub());
+      LOGGER.info("jwt : " + jwtData.toString());
+      jsonResponse.put(JSON_EXPIRY,
+          (LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(jwtData.getExp().toString())),
+              ZoneId.systemDefault())).toString());
       promise.complete(jsonResponse);
     } else {
       LOGGER.info("failed");
@@ -280,7 +291,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             JsonObject responseBody = response.bodyAsJsonObject();
             if (response.statusCode() != HttpStatus.SC_OK) {
               promise.fail("false");
-            } else if (!responseBody.getString("status").equals("success")) {
+            } else if (!responseBody.getString("type").equals("urn:dx:cat:Success")) {
               promise.fail("Not Found");
               return;
             } else if (responseBody.getInteger("totalHits") == 0) {
@@ -319,7 +330,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
               return;
             }
             JsonObject responseBody = response.bodyAsJsonObject();
-            if (!responseBody.getString("status").equals("success")) {
+            if (!responseBody.getString("type").equals("urn:dx:cat:Success")) {
               promise.fail("Resource not found");
               return;
             }

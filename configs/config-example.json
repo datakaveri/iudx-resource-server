@@ -48,7 +48,7 @@
             "callbackpoolSize": 25,
             
             "brokerAmqpIp":"",
-            "brokerAmqpPort":""
+            "brokerAmqpPort":1234
         },
         {
             "id": "iudx.resource.server.callback.CallbackVerticle",
@@ -108,6 +108,17 @@
             "meteringDatabaseUserName": "",
             "meteringDatabasePassword": "",
             "meteringpoolSize": 25
+        },
+        {
+            "id":"iudx.resource.server.database.postgres.PostgresVerticle",
+            "verticleInstances": 1,
+            "databaseIP": "localhost",
+            "databasePort": 5432,
+            "databaseName": "",
+            "databaseUserName": "",
+            "databasePassword": "",
+            "poolSize": 25
+        
         }
     ]
 }
