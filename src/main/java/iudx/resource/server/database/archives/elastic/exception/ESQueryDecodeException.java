@@ -2,7 +2,8 @@ package iudx.resource.server.database.archives.elastic.exception;
 
 import org.apache.http.HttpStatus;
 
-import iudx.resource.server.apiserver.response.ResponseUrn;
+import iudx.resource.server.common.ResponseUrn;
+
 
 public class ESQueryDecodeException extends RuntimeException {
 
