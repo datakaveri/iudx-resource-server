@@ -4,7 +4,7 @@ pipeline {
   environment {
     devRegistry = 'ghcr.io/karun-singh/iudx-resource-server:dev'
     deplRegistry = 'ghcr.io/karun-singh/iudx-resource-server:depl'
-    testRegistry = 'ghcr.io/karun-singh/iudx-resource-server:devtest'
+    testRegistry = 'ghcr.io/karun-singh/iudx-resource-server:test'
     registryUri = 'https://ghcr.io'
     registryCredential = 'karun-ghcr'
   }
