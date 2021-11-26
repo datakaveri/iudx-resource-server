@@ -19,7 +19,8 @@ public enum Api {
   RESET_PWD("/user/resetPassword"),
 
   ADMIN("/admin"),
-  REVOKE_TOKEN("/revoketoken");
+  REVOKE_TOKEN("/revoketoken"),
+  RESOURCE_ATTRIBS("/resourceattribute");
 
   
   public final String path;

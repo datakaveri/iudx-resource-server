@@ -5,6 +5,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Tuple;
 
 public final class PostgresServiceImpl implements PostgresService {
 
@@ -26,6 +27,12 @@ public final class PostgresServiceImpl implements PostgresService {
           Future.failedFuture(failureHandler);
         });
     return this;
+  }
+
+  @Override
+  public PostgresService executeQuery(String query, Tuple queryparams, Handler<AsyncResult<JsonObject>> handler) {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

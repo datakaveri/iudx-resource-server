@@ -8,6 +8,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.sqlclient.Tuple;
 
 
 @VertxGen
@@ -16,6 +17,9 @@ public interface PostgresService {
 
   @Fluent
   PostgresService executeQuery(final String query, Handler<AsyncResult<JsonObject>> handler);
+  
+  @Fluent
+  PostgresService executeQuery(final String query,final Tuple queryparams, Handler<AsyncResult<JsonObject>> handler);
   
   
   @GenIgnore
