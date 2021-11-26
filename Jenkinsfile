@@ -2,11 +2,11 @@ properties([pipelineTriggers([githubPush()])])
 pipeline {
 
   environment {
-    devRegistry = 'dockerhub.iudx.io/jenkins/resource-dev'
-    deplRegistry = 'dockerhub.iudx.io/jenkins/resource-depl'
-    testRegistry = 'dockerhub.iudx.io/jenkins/resource-test'
-    registryUri = 'https://dockerhub.iudx.io'
-    registryCredential = 'docker-jenkins'
+    devRegistry = 'ghcr.io/karun-singh/iudx-resource-server:dev'
+    deplRegistry = 'ghcr.io/karun-singh/iudx-resource-server:depl'
+    testRegistry = 'ghcr.io/karun-singh/iudx-resource-server:devtest'
+    registryUri = 'https://ghcr.io'
+    registryCredential = 'karun-ghcr'
   }
 
   agent { 
@@ -37,7 +37,7 @@ pipeline {
     stage('Capture Unit Test results'){
       steps{
         xunit (
-          thresholds: [ skipped(failureThreshold: '5'), failed(failureThreshold: '6') ],
+          thresholds: [ skipped(failureThreshold: '5'), failed(failureThreshold: '20') ],
           tools: [ JUnit(pattern: 'target/surefire-reports/*Test.xml') ]
         )
       }
@@ -51,8 +51,8 @@ pipeline {
     stage('Start RS server for performance testing'){
       steps{
         script{
-          sh 'scp Jmeter/ResourceServer.jmx root@128.199.18.230:/var/lib/jenkins/iudx/rs/Jmeter/'
-          sh 'scp src/test/resources/IUDX-Resource-Server-Release-v2.1.postman_collection.json root@128.199.18.230:/var/lib/jenkins/iudx/rs/Newman/'
+          sh 'scp Jmeter/ResourceServer.jmx jenkins@20.193.225.59:/var/lib/jenkins/iudx/rs/Jmeter/'
+          sh 'scp src/test/resources/IUDX-Resource-Server-Release-v2.1.postman_collection.json jenkins@20.193.225.59:/var/lib/jenkins/iudx/rs/Newman/'
           sh 'docker-compose -f docker-compose-production.yml up -d rs'
           sh 'sleep 45'
         }
