@@ -23,7 +23,7 @@
             "catServerPort": 443,
             "resourceServerId": "",
             "serverMode": "",
-	    "jwtIgnoreExpiry": true
+	        "jwtIgnoreExpiry": true
 
         },
         {
@@ -85,7 +85,7 @@
             "catServerPort": 443
         },
         {
-           "id": "iudx.resource.server.database.latest.LatestVerticle",
+            "id": "iudx.resource.server.database.latest.LatestVerticle",
             "verticleInstances": 2,
             "attributeList": {"itms-info": "some-attr"},
             "redisMode": "",
