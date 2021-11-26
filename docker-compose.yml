@@ -53,7 +53,7 @@ services:
     command: bash -c "exec java $$RS_JAVA_OPTS  -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory -jar ./fatjar.jar  --host $$(hostname) -c configs/config.json"
 
   test:
-    image: ghcr.io/karun-singh/resource-server:test
+    image: ghcr.io/karun-singh/iudx-resource-server:test
     environment:
       - RS_URL=https://rs.iudx.org.in
       - LOG_LEVEL=DEBUG
