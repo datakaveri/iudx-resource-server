@@ -4,13 +4,12 @@ import org.apache.http.HttpStatus;
 
 import iudx.resource.server.common.ResponseUrn;
 
-
 public class ESQueryDecodeException extends RuntimeException {
 
   private static final long serialVersionUID = 1L;
 
   private final int statusCode = HttpStatus.SC_BAD_REQUEST;
-  private final ResponseUrn urn;
+  private final iudx.resource.server.common.ResponseUrn urn;
   private final String message;
 
   public ESQueryDecodeException(final String message) {

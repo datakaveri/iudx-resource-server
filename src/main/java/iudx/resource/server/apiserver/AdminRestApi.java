@@ -4,6 +4,7 @@ import static iudx.resource.server.apiserver.response.ResponseUtil.generateRespo
 import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
 import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
 import static iudx.resource.server.database.postgres.Constants.INSERT_REVOKE_TOKEN_SQL;
+import static iudx.resource.server.database.postgres.Constants.INSERT_UNIQUE_ATTR_SQL;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +14,7 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.sqlclient.Tuple;
 import iudx.resource.server.apiserver.handlers.AuthHandler;
 import iudx.resource.server.common.Api;
 import iudx.resource.server.common.HttpStatusCode;
@@ -39,6 +41,21 @@ public final class AdminRestApi {
   public Router init() {
     router
         .post(Api.REVOKE_TOKEN.path)
+        .handler(AuthHandler.create(vertx))
+        .handler(this::handleRevokeTokenRequest);
+
+    router
+        .post(Api.RESOURCE_ATTRIBS.path)
+        .handler(AuthHandler.create(vertx))
+        .handler(this::createUniqueAttribute);
+    
+    router
+        .put(Api.RESOURCE_ATTRIBS.path)
+        .handler(AuthHandler.create(vertx))
+        .handler(this::handleRevokeTokenRequest);
+    
+    router
+        .delete(Api.RESOURCE_ATTRIBS.path)
         .handler(AuthHandler.create(vertx))
         .handler(this::handleRevokeTokenRequest);
 
@@ -75,7 +92,22 @@ public final class AdminRestApi {
         handleResponse(response, HttpStatusCode.BAD_REQUEST, ResponseUrn.BAD_REQUEST_URN);
       }
     });
-
+  }
+  
+  private void createUniqueAttribute(RoutingContext context) {
+    HttpServerResponse response = context.response();
+    JsonObject authInfo = (JsonObject) context.data().get("authInfo");
+    JsonObject requestBody = context.getBodyAsJson();
+    
+    String id=requestBody.getString("id");
+    String attribute=requestBody.getString("attribute");
+    
+    Tuple queryparams=Tuple.of(id,attribute);
+    
+    pgService.executeQuery(INSERT_UNIQUE_ATTR_SQL, queryparams, handler->{
+      
+    });
+    
 
   }
 
