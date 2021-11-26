@@ -60,8 +60,8 @@ services:
       - WORKSPACE
     volumes:
       - ./src/:/usr/share/app/src
-      - /root/configs/rs-config-test.json:/usr/share/app/configs/config-test.json
-      - ./configs/keystore.jks:/usr/share/app/configs/keystore.jks
+      - /home/ubuntu/configs/rs-config-test.json:/usr/share/app/configs/config-test.json
+      - /home/ubuntu/configs/keystore.jks:/usr/share/app/configs/keystore.jks
       - ./docker/runTests.sh:/usr/share/app/docker/runTests.sh
       - ${WORKSPACE}:/tmp/test
     command: bash -c "docker/runTests.sh && cp -r target /tmp/test"
