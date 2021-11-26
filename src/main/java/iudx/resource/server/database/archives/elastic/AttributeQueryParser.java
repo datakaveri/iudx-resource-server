@@ -19,7 +19,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.apiserver.response.ResponseUrn;
+import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.archives.elastic.exception.ESQueryDecodeException;
 
 public class AttributeQueryParser implements QueryParser {
