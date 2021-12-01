@@ -64,6 +64,7 @@ public class Constants {
   public static final String UNBIND_URL_REGEX = IUDX_MANAGEMENT_UNBIND_URL + "(.*)";
   public static final String RESET_URL_REGEX = IUDX_MANAGEMENT_RESET_PWD + "(.*)";
   public static final String REVOKE_TOKEN_REGEX="/admin/revoketoken"+"(.*)";
+  public static final String UNIQUE_ATTR_REGEX="/admin/resourceattribute";
 
 
 

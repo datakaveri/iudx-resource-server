@@ -24,19 +24,19 @@ public final class GeoPropertyTypeValidator implements Validator {
   public boolean isValid() {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
-      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage());
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE_URN, failureMessage());
     } else {
       if (value == null) {
         return true;
       }
       if (value.isBlank()) {
         LOGGER.error("Validation error :  blank value for passed");
-        throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
+        throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE_URN, failureMessage(value));
       }
     }
     if (!VALIDATION_ALLOWED_GEOPROPERTY.contains(value)) {
       LOGGER.error("Validation error : Only location is allowed for geoproperty");
-      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE_URN, failureMessage(value));
     }
     return true;
   }
@@ -50,6 +50,6 @@ public final class GeoPropertyTypeValidator implements Validator {
 
   @Override
   public String failureMessage() {
-    return INVALID_GEO_VALUE.getMessage();
+    return INVALID_GEO_VALUE_URN.getMessage();
   }
 }

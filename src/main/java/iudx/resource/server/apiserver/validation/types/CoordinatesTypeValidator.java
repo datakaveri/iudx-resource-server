@@ -45,7 +45,7 @@ public final class CoordinatesTypeValidator implements Validator {
     Float latitudeValue = Float.parseFloat(latitude);
     if (!df.format(latitudeValue).matches(LATITUDE_PATTERN)) {
       LOGGER.error("Validation error :  invalid latitude value " + latitude);
-      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE_URN, failureMessage(value));
     }
     return true;
   }
@@ -54,7 +54,7 @@ public final class CoordinatesTypeValidator implements Validator {
     Float longitudeValue = Float.parseFloat(longitude);
     if (!df.format(longitudeValue).matches(LONGITUDE_PATTERN)) {
       LOGGER.error("Validation error :  invalid longitude value " + longitude);
-      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE_URN, failureMessage(value));
     }
     return true;
   }
@@ -69,7 +69,7 @@ public final class CoordinatesTypeValidator implements Validator {
     if (geom.equalsIgnoreCase("point")) {
       if (coordinatesList.size() != 2) {
         LOGGER.error("Validation error :  Invalid number of coordinates given for point");
-        throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
+        throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE_URN, failureMessage(value));
       }
     } else if (geom.equalsIgnoreCase("polygon")) {
       if (coordinatesList.size() > allowedMaxCoordinates * 2) {
@@ -97,7 +97,7 @@ public final class CoordinatesTypeValidator implements Validator {
   private boolean isValidCoordinates(final String value) {
     if (!value.startsWith("[") || !value.endsWith("]")) {
       LOGGER.error("Validation error :  invalid coordinate format");
-      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE_URN, failureMessage(value));
     }
     String coordinates = value.replaceAll("\\[", "").replaceAll("\\]", "");
     String[] coordinatesArray = coordinates.split(",");
@@ -112,7 +112,7 @@ public final class CoordinatesTypeValidator implements Validator {
       checkLongitudeFlag = !checkLongitudeFlag;
       if (isPricisonLengthAllowed(coordinate)) {
         LOGGER.error("Validation error :  invalid coordinate (only 6 digits to precision allowed)");
-        throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage(value));
+        throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE_URN, failureMessage(value));
       }
     }
     return true;
@@ -134,17 +134,17 @@ public final class CoordinatesTypeValidator implements Validator {
   public boolean isValid() {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
-      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage());
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE_URN, failureMessage());
     } else {
       if (value == null || value.isBlank()) {
         return true;
       }
     }
     if (!isValidCoordinates(value)) {
-      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage());
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE_URN, failureMessage());
     }
     if (!isValidCoordinateCount(value)) {
-      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE, failureMessage());
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE_URN, failureMessage());
     }
     return true;
   }
@@ -156,6 +156,6 @@ public final class CoordinatesTypeValidator implements Validator {
 
   @Override
   public String failureMessage() {
-    return INVALID_GEO_VALUE.getMessage();
+    return INVALID_GEO_VALUE_URN.getMessage();
   }
 }

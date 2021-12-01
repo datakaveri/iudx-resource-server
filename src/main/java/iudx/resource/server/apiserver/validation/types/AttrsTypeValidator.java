@@ -29,7 +29,7 @@ public final class AttrsTypeValidator implements Validator {
   private boolean isValidAttributesCount(final String value) {
     String[] attrs = value.split(",");
     if (attrs.length > maxAttrsItems) {
-      throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE, failureMessage(value));
+      throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE_URN, failureMessage(value));
     }
     return true;
   }
@@ -39,10 +39,10 @@ public final class AttrsTypeValidator implements Validator {
     String[] attrs = value.split(",");
     for (String attr : attrs) {
       if (attr.length() > maxAttrLength) {
-        throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE, failureMessage(value));
+        throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE_URN, failureMessage(value));
       }
       if (!attrsValueRegex.matcher(attr).matches()) {
-        throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE, failureMessage(value));
+        throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE_URN, failureMessage(value));
       }
     }
     return true;
@@ -52,13 +52,13 @@ public final class AttrsTypeValidator implements Validator {
   public boolean isValid() {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
-      throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE, failureMessage());
+      throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE_URN, failureMessage());
     } else {
       if (value == null) {
         return true;
       }
       if (value.isBlank()) {
-        throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE, failureMessage(value));
+        throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE_URN, failureMessage(value));
       }
     }
     if (!isValidAttributesCount(value)) {
@@ -77,6 +77,6 @@ public final class AttrsTypeValidator implements Validator {
 
   @Override
   public String failureMessage() {
-    return INVALID_ATTR_VALUE.getMessage();
+    return INVALID_ATTR_VALUE_URN.getMessage();
   }
 }

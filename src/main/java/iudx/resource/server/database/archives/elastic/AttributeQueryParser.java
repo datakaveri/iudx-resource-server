@@ -64,10 +64,10 @@ public class AttributeQueryParser implements QueryParser {
           } else if (NOT_EQUAL_OP.equalsIgnoreCase(operator)) {
             builder.mustNot(QueryBuilders.termQuery(attribute, attributeValue));
           } else {
-            throw new ESQueryDecodeException(ResponseUrn.INVALID_ATTR_PARAM, "invalid attribute operator");
+            throw new ESQueryDecodeException(ResponseUrn.INVALID_ATTR_PARAM_URN, "invalid attribute operator");
           }
         } catch (NullPointerException e) {
-          throw new ESQueryDecodeException(ResponseUrn.INVALID_ATTR_PARAM, "exception occured at decoding attributes");
+          throw new ESQueryDecodeException(ResponseUrn.INVALID_ATTR_PARAM_URN, "exception occured at decoding attributes");
         }
       }
     }

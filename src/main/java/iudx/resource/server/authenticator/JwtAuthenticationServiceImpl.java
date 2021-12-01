@@ -89,11 +89,14 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);
 
+    System.out.println(endPoint);
+    
     boolean doCheckResourceAndId =
         (endPoint.equalsIgnoreCase("/ngsi-ld/v1/subscription")
             && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")))
             || endPoint.equalsIgnoreCase("/management/user/resetPassword")
-            || endPoint.equalsIgnoreCase("/revoketoken");
+            || endPoint.equalsIgnoreCase("/admin/revoketoken")
+            || endPoint.equalsIgnoreCase("/admin/resourceattribute");
 
     LOGGER.info("checkResourceFlag" + doCheckResourceAndId);
 

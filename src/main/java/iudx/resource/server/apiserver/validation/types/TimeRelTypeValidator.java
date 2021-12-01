@@ -25,19 +25,19 @@ public final class TimeRelTypeValidator implements Validator {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
-      throw new DxRuntimeException(failureCode(), INVALID_TEMPORAL_REL, failureMessage());
+      throw new DxRuntimeException(failureCode(), INVALID_TEMPORAL_REL_URN, failureMessage());
     } else {
       if (value == null) {
         return true;
       }
       if (value.isBlank()) {
         LOGGER.error("Validation error :  blank value for passed");
-        throw new DxRuntimeException(failureCode(), INVALID_TEMPORAL_REL, failureMessage(value));
+        throw new DxRuntimeException(failureCode(), INVALID_TEMPORAL_REL_URN, failureMessage(value));
       }
     }
     if (!VALIDATION_ALLOWED_TEMPORAL_REL.contains(value)) {
       LOGGER.error("Validation error : Value " + value + " " + "is not allowed");
-      throw new DxRuntimeException(failureCode(), INVALID_TEMPORAL_REL, failureMessage(value));
+      throw new DxRuntimeException(failureCode(), INVALID_TEMPORAL_REL_URN, failureMessage(value));
     }
     return true;
   }
@@ -51,6 +51,6 @@ public final class TimeRelTypeValidator implements Validator {
 
   @Override
   public String failureMessage() {
-    return INVALID_TEMPORAL_REL.getMessage();
+    return INVALID_TEMPORAL_REL_URN.getMessage();
   }
 }
