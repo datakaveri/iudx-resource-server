@@ -35,6 +35,7 @@ import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_URL_REG
 import static iudx.resource.server.apiserver.util.Constants.TEMPORAL_POST_QUERY_URL_REGEX;
 import static iudx.resource.server.apiserver.util.Constants.TEMPORAL_URL_REGEX;
 import static iudx.resource.server.apiserver.util.Constants.UNBIND_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.UNIQUE_ATTR_REGEX;
 import static iudx.resource.server.apiserver.util.Constants.USERSHA;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.apiserver.util.Constants.VHOST_URL_REGEX;
@@ -47,12 +48,20 @@ import static iudx.resource.server.common.Api.MANAGEMENT;
 import static iudx.resource.server.common.Api.NGSILD_BASE;
 import static iudx.resource.server.common.Api.QUEUE;
 import static iudx.resource.server.common.Api.RESET_PWD;
+import static iudx.resource.server.common.Api.RESOURCE_ATTRIBS;
 import static iudx.resource.server.common.Api.REVOKE_TOKEN;
 import static iudx.resource.server.common.Api.SUBSCRIPTION;
 import static iudx.resource.server.common.Api.UNBIND;
 import static iudx.resource.server.common.Api.VHOST;
-import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN;
-import static iudx.resource.server.common.ResponseUrn.RESOURCE_NOT_FOUND;
+import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN_URN;
+import static iudx.resource.server.common.ResponseUrn.RESOURCE_NOT_FOUND_URN;
+
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -64,11 +73,6 @@ import io.vertx.ext.web.RoutingContext;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /** IUDX Authentication handler to authenticate token passed in HEADER */
 public class AuthHandler implements Handler<RoutingContext> {
@@ -159,14 +163,14 @@ public class AuthHandler implements Handler<RoutingContext> {
       ctx.response()
           .putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(statusCode.getValue())
-          .end(generateResponse(RESOURCE_NOT_FOUND, statusCode).toString());
+          .end(generateResponse(RESOURCE_NOT_FOUND_URN, statusCode).toString());
     } else {
       LOGGER.error("Error : Authentication Failure");
       HttpStatusCode statusCode = HttpStatusCode.getByValue(401);
       ctx.response()
           .putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(statusCode.getValue())
-          .end(generateResponse(INVALID_TOKEN, statusCode).toString());
+          .end(generateResponse(INVALID_TOKEN_URN, statusCode).toString());
     }
   }
 
@@ -297,6 +301,8 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = ADMIN.path + REVOKE_TOKEN.path;
     } else if (url.matches(IUDX_AUDIT_URL)) {
       path = IUDX_AUDIT_URL;
+    }else if(url.matches(UNIQUE_ATTR_REGEX)) {
+      path=ADMIN.path+RESOURCE_ATTRIBS.path;
     }
     return path;
   }

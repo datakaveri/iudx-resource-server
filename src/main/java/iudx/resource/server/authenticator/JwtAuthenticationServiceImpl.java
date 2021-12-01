@@ -4,8 +4,19 @@ import static iudx.resource.server.authenticator.Constants.JSON_EXPIRY;
 import static iudx.resource.server.authenticator.Constants.JSON_USERID;
 import static iudx.resource.server.authenticator.Constants.OPEN_ENDPOINTS;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.http.HttpStatus;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -27,14 +38,6 @@ import iudx.resource.server.authenticator.authorization.IudxRole;
 import iudx.resource.server.authenticator.authorization.JwtAuthorization;
 import iudx.resource.server.authenticator.authorization.Method;
 import iudx.resource.server.authenticator.model.JwtData;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
@@ -84,12 +87,15 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);
 
+    System.out.println(endPoint);
+    
     boolean doCheckResourceAndId =
         (endPoint.equalsIgnoreCase("/ngsi-ld/v1/subscription")
                 && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")))
             || endPoint.equalsIgnoreCase("/management/user/resetPassword")
-            || endPoint.equalsIgnoreCase("/revoketoken")
-            || endPoint.equalsIgnoreCase("/ngsi-ld/v1/consumer/audit");
+            || endPoint.equalsIgnoreCase("/ngsi-ld/v1/consumer/audit")
+            || endPoint.equalsIgnoreCase("/admin/revoketoken")
+            || endPoint.equalsIgnoreCase("/admin/resourceattribute");
 
     LOGGER.info("checkResourceFlag " + doCheckResourceAndId);
 

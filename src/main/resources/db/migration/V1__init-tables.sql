@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS unique_attributes
    unique_attribute varchar NOT NULL,
    created_at timestamp without time zone NOT NULL,
    modified_at timestamp without time zone NOT NULL,
-   CONSTRAINT unique_attrib_pk PRIMARY KEY (_id)
+   CONSTRAINT unique_attrib_pk PRIMARY KEY (_id),
+   CONSTRAINT resource_id_unique UNIQUE(resource_id)
 );
 
 

@@ -26,10 +26,10 @@ import static iudx.resource.server.common.Api.UNBIND;
 import static iudx.resource.server.common.Api.VHOST;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
-import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT;
-import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM;
-import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN;
-import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN;
+import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
+import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
+import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN_URN;
+import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN_URN;
 import static iudx.resource.server.common.Util.isValidName;
 
 import org.apache.logging.log4j.LogManager;
@@ -170,13 +170,13 @@ public class ManagementRestApi {
           });
         } else {
           LOGGER.error("Fail: Unauthorized;" + validNameHandler.cause().getMessage());
-          handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_INVALID_EXCHANGE_NAME);
+          handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_EXCHANGE_NAME);
         }
       });
 
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
 
   }
@@ -213,7 +213,7 @@ public class ManagementRestApi {
 
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
 
   }
@@ -253,7 +253,7 @@ public class ManagementRestApi {
 
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
   }
 
@@ -292,14 +292,14 @@ public class ManagementRestApi {
           });
         } else {
           LOGGER.error("Fail: Bad request");
-          handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_INVALID_EXCHANGE_NAME);
+          handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_EXCHANGE_NAME);
         }
 
       });
 
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
   }
 
@@ -336,7 +336,7 @@ public class ManagementRestApi {
 
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
   }
 
@@ -373,7 +373,7 @@ public class ManagementRestApi {
 
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
   }
 
@@ -410,7 +410,7 @@ public class ManagementRestApi {
 
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
   }
 
@@ -447,7 +447,7 @@ public class ManagementRestApi {
 
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
   }
 
@@ -485,13 +485,13 @@ public class ManagementRestApi {
           });
         } else {
           LOGGER.error("Fail: Unauthorized;" + validNameHandler.cause().getMessage());
-          handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_INVALID_EXCHANGE_NAME);
+          handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_EXCHANGE_NAME);
         }
       });
 
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
 
   }
@@ -529,7 +529,7 @@ public class ManagementRestApi {
 
     } else {
       LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
   }
 
@@ -548,7 +548,7 @@ public class ManagementRestApi {
       if (handler.succeeded()) {
         handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
       } else {
-        handleResponse(response, UNAUTHORIZED, INVALID_TOKEN);
+        handleResponse(response, UNAUTHORIZED, INVALID_TOKEN_URN);
       }
     });
   }
@@ -588,7 +588,7 @@ public class ManagementRestApi {
           .end(generateResponse(status, urn).toString());
     } catch (DecodeException ex) {
       LOGGER.error("ERROR : Expecting Json from backend service [ jsonFormattingException ]");
-      handleResponse(response, HttpStatusCode.BAD_REQUEST, BACKING_SERVICE_FORMAT);
+      handleResponse(response, HttpStatusCode.BAD_REQUEST, BACKING_SERVICE_FORMAT_URN);
     }
 
   }
