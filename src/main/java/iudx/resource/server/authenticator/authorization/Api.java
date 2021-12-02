@@ -10,18 +10,12 @@ public enum Api {
   SUBSCRIPTION("/ngsi-ld/v1/subscription"),
   INGESTION("/ngsi-ld/v1/ingestion"),
   RESET_PWD("/management/user/resetPassword"),
-  USER_AUDIT("/ngsi-ld/v1/user/audit");
-
-
+  USER_AUDIT("/ngsi-ld/v1/consumer/audit");
 
   private final String endpoint;
 
   Api(String endpoint) {
     this.endpoint = endpoint;
-  }
-
-  public String getApiEndpoint() {
-    return this.endpoint;
   }
 
   public static Api fromEndpoint(final String endpoint) {
@@ -31,4 +25,7 @@ public enum Api {
         .orElse(null);
   }
 
+  public String getApiEndpoint() {
+    return this.endpoint;
+  }
 }

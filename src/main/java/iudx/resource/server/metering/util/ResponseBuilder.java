@@ -9,11 +9,11 @@ import static iudx.resource.server.metering.util.Constants.TYPE_KEY;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.apiserver.response.ResponseUrn;
+import iudx.resource.server.common.ResponseUrn;
 
 public class ResponseBuilder {
-  private String status;
-  private JsonObject response;
+  private final String status;
+  private final JsonObject response;
 
   /** Initialise the object with Success or Failure. */
   public ResponseBuilder(String status) {

@@ -106,6 +106,7 @@ public class QueryBuilder {
     String primaryKey = UUID.randomUUID().toString().replace("-", "");
     String userId = request.getString(USER_ID);
     String resourceId = request.getString(ID);
+    String providerID = resourceId.substring(0,resourceId.indexOf('/',resourceId.indexOf('/')+1));
     String api = request.getString(API);
     ZonedDateTime zst = ZonedDateTime.now();
     long time = getEpochTime(zst);
@@ -123,7 +124,8 @@ public class QueryBuilder {
                 .replace("$3", userId)
                 .replace("$4", Long.toString(time))
                 .replace("$5", resourceId)
-                .replace("$6", isoTime));
+                .replace("$6", isoTime)
+                .replace("$7",providerID));
 
     LOGGER.info("Info: Query " + query);
     return new JsonObject().put(QUERY_KEY, query);

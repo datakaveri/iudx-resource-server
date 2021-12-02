@@ -5,9 +5,9 @@ public class Constants {
   public static final String ID = "id";
   /* Temporal */
   public static final String START_TIME = "startTime";
-  public static final String END_TIME = "endtime";
+  public static final String END_TIME = "endTime";
   public static final String TIME_RELATION = "timeRelation";
-  public static final String TIME_REL = "timerel";
+  public static final String DURING = "during";
 
   /* Errors */
   public static final String SUCCESS = "Success";
@@ -37,21 +37,21 @@ public class Constants {
   public static final String RESOURCE_QUERY = " and resourceId='$4';";
 
   public static final String USERID_TIME_INTERVAL_COUNT_QUERY =
-      "SELECT count() FROM auditing_table where time>=$1 and time<=$2 and userid='$3'";
+      "SELECT count() FROM rsauditingtable where epochtime>=$1 and epochtime<=$2 and userid='$3'";
 
   public static final String USERID_TIME_INTERVAL_READ_QUERY =
-      "SELECT * FROM auditing_table where time>=$1 and time<=$2 and userid='$3'";
+      "SELECT * FROM rsauditingtable where epochtime>=$1 and epochtime<=$2 and userid='$3'";
   public static final String API_QUERY = " and api='$5'";
 
   public static final String API = "api";
   public static final String USER_ID = "userid";
   public static final String WRITE_QUERY =
-      "INSERT INTO auditing_table (id,api,userid,time,resourceid,isotime) VALUES ('$1','$2','$3',$4,'$5','$6')";
-  public static final String COUNT_COLUMN_NAME = "(metering.auditing_table.col0)";
-  public static final String RESOURCEID_COLUMN_NAME = "(metering.auditing_table.resourceid)";
-  public static final String API_COLUMN_NAME = "(metering.auditing_table.api)";
-  public static final String USERID_COLUMN_NAME = "(metering.auditing_table.userid)";
-  public static final String TIME_COLUMN_NAME = "(metering.auditing_table.isotime)";
+      "INSERT INTO rsauditingtable (id,api,userid,epochtime,resourceid,isotime,providerid) VALUES ('$1','$2','$3',$4,'$5','$6','$7')";
+  public static final String COUNT_COLUMN_NAME = "(metering.rsauditingtable.col0)";
+  public static final String RESOURCEID_COLUMN_NAME = "(metering.rsauditingtable.resourceid)";
+  public static final String API_COLUMN_NAME = "(metering.rsauditingtable.api)";
+  public static final String USERID_COLUMN_NAME = "(metering.rsauditingtable.userid)";
+  public static final String TIME_COLUMN_NAME = "(metering.rsauditingtable.isotime)";
 
   public static final String MESSAGE = "message";
 }

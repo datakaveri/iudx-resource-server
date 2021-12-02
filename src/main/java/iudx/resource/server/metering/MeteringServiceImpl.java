@@ -3,6 +3,7 @@ package iudx.resource.server.metering;
 import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
 import static iudx.resource.server.metering.util.Constants.API_COLUMN_NAME;
 import static iudx.resource.server.metering.util.Constants.COUNT_COLUMN_NAME;
+import static iudx.resource.server.metering.util.Constants.DURING;
 import static iudx.resource.server.metering.util.Constants.END_TIME;
 import static iudx.resource.server.metering.util.Constants.ERROR;
 import static iudx.resource.server.metering.util.Constants.FAILED;
@@ -13,7 +14,6 @@ import static iudx.resource.server.metering.util.Constants.START_TIME;
 import static iudx.resource.server.metering.util.Constants.SUCCESS;
 import static iudx.resource.server.metering.util.Constants.TIME_COLUMN_NAME;
 import static iudx.resource.server.metering.util.Constants.TIME_NOT_FOUND;
-import static iudx.resource.server.metering.util.Constants.TIME_REL;
 import static iudx.resource.server.metering.util.Constants.TIME_RELATION;
 import static iudx.resource.server.metering.util.Constants.TIME_RELATION_NOT_FOUND;
 import static iudx.resource.server.metering.util.Constants.TOTAL;
@@ -87,8 +87,8 @@ public class MeteringServiceImpl implements MeteringService {
 
     LOGGER.debug("Info: Count Query" + request.toString());
 
-    if (request.getString("timeRelation") == null
-        || !request.getString(TIME_RELATION).equals(TIME_REL)) {
+    if (request.getString(TIME_RELATION) == null
+        || !request.getString(TIME_RELATION).equals(DURING)) {
       LOGGER.debug("Info: " + TIME_RELATION_NOT_FOUND);
       responseBuilder =
           new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(TIME_RELATION_NOT_FOUND);
@@ -119,7 +119,6 @@ public class MeteringServiceImpl implements MeteringService {
       handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return this;
     }
-    //    query.put(QUERY_KEY,"select * from auditing");
     LOGGER.debug("Info: Query constructed: " + query.getString(QUERY_KEY));
     Future<JsonObject> result;
 
@@ -163,8 +162,8 @@ public class MeteringServiceImpl implements MeteringService {
                 responseBuilder =
                     new ResponseBuilder(SUCCESS).setTypeAndTitle(200).setData(jsonArray);
                 //                LOGGER.info("Info: " + responseBuilder.getResponse().toString());
+                promise.complete(responseBuilder.getResponse());
               }
-              promise.complete(responseBuilder.getResponse());
             })
         .onFailure(
             event -> {
@@ -194,8 +193,8 @@ public class MeteringServiceImpl implements MeteringService {
                         .setTypeAndTitle(200)
                         .setCount(response.getInteger(TOTAL));
                 LOGGER.info("Info: " + responseBuilder.getResponse().toString());
+                promise.complete(responseBuilder.getResponse());
               }
-              promise.complete(responseBuilder.getResponse());
             })
         .onFailure(
             event -> {

@@ -1,8 +1,5 @@
 package iudx.resource.server.authenticator;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -15,19 +12,20 @@ import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.serviceproxy.ServiceBinder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * The Authentication Verticle.
+ *
  * <h1>Authentication Verticle</h1>
- * <p>
- * The Authentication Verticle implementation in the the IUDX Resource Server exposes the
- * {@link iudx.resource.server.authenticator.AuthenticationService} over the Vert.x Event Bus.
- * </p>
+ *
+ * <p>The Authentication Verticle implementation in the the IUDX Resource Server exposes the {@link
+ * iudx.resource.server.authenticator.AuthenticationService} over the Vert.x Event Bus.
  *
  * @version 1.0
  * @since 2020-05-31
  */
-
 public class AuthenticationVerticle extends AbstractVerticle {
 
   private static final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
@@ -58,44 +56,47 @@ public class AuthenticationVerticle extends AbstractVerticle {
    *
    * @throws Exception which is a startup exception
    */
-
   @Override
   public void start() throws Exception {
 
-    getJwtPublicKey(vertx, config()).onSuccess(handler -> {
-      String cert = handler;
-      LOGGER.info("cert : " + cert);
-      binder = new ServiceBinder(vertx);
+    getJwtPublicKey(vertx, config())
+        .onSuccess(
+            handler -> {
+              String cert = handler;
+              LOGGER.info("cert : " + cert);
+              binder = new ServiceBinder(vertx);
 
-      JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
-      jwtAuthOptions.addPubSecKey(
-          new PubSecKeyOptions()
-              .setAlgorithm("ES256")
-              .setBuffer(cert));
-      /* Default jwtIgnoreExpiry is false. If set through config, then that value is taken */
-      boolean jwtIgnoreExpiry = config().getBoolean("jwtIgnoreExpiry") == null ? false
-          : config().getBoolean("jwtIgnoreExpiry");
-      if (jwtIgnoreExpiry)
-      {
-        jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
-        LOGGER
-            .warn("JWT ignore expiration set to true, do not set IgnoreExpiration in production!!");
-      }
-      JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
+              JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
+              jwtAuthOptions.addPubSecKey(
+                  new PubSecKeyOptions().setAlgorithm("ES256").setBuffer(cert));
+              /* Default jwtIgnoreExpiry is false. If set through config, then that value is taken */
+              boolean jwtIgnoreExpiry =
+                  config().getBoolean("jwtIgnoreExpiry") != null &&
+                      config().getBoolean("jwtIgnoreExpiry");
+              if (jwtIgnoreExpiry) {
+                jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
+                LOGGER.warn(
+                    "JWT ignore expiration set to true, do not set IgnoreExpiration in production!!");
+              }
+              JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
-      jwtAuthenticationService =
-          new JwtAuthenticationServiceImpl(vertx, jwtAuth, createWebClient(vertx, config()), config());
+              jwtAuthenticationService =
+                  new JwtAuthenticationServiceImpl(
+                      vertx, jwtAuth, createWebClient(vertx, config()), config());
 
-      /* Publish the Authentication service with the Event Bus against an address. */
-      consumer =
-          binder.setAddress(AUTH_SERVICE_ADDRESS).register(AuthenticationService.class, jwtAuthenticationService);
+              /* Publish the Authentication service with the Event Bus against an address. */
+              consumer =
+                  binder
+                      .setAddress(AUTH_SERVICE_ADDRESS)
+                      .register(AuthenticationService.class, jwtAuthenticationService);
 
-      LOGGER.info("Authentication verticle deployed");
-
-    }).onFailure(handler -> {
-      LOGGER.error("failed to get JWT public key from auth server");
-      LOGGER.error("Authentication verticle deployment failed.");
-    });
+              LOGGER.info("Authentication verticle deployed");
+            })
+        .onFailure(
+            handler -> {
+              LOGGER.error("failed to get JWT public key from auth server");
+              LOGGER.error("Authentication verticle deployment failed.");
+            });
   }
 
   @Override
@@ -103,21 +104,20 @@ public class AuthenticationVerticle extends AbstractVerticle {
     binder.unregister(consumer);
   }
 
-
   private Future<String> getJwtPublicKey(Vertx vertx, JsonObject config) {
     Promise<String> promise = Promise.promise();
     webClient = createWebClient(vertx, config);
-    webClient.get(443, config.getString("authServerHost"), "/auth/v1/cert")
-        .send(handler -> {
-          if (handler.succeeded()) {
-            JsonObject json = handler.result().bodyAsJsonObject();
-            promise.complete(json.getString("cert"));
-          } else {
-            promise.fail("fail to get JWT public key");
-          }
-        });
+    webClient
+        .get(443, config.getString("authServerHost"), "/auth/v1/cert")
+        .send(
+            handler -> {
+              if (handler.succeeded()) {
+                JsonObject json = handler.result().bodyAsJsonObject();
+                promise.complete(json.getString("cert"));
+              } else {
+                promise.fail("fail to get JWT public key");
+              }
+            });
     return promise.future();
   }
 }
-
-
