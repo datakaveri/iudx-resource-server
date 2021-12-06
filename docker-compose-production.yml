@@ -8,7 +8,7 @@ networks:
 services:
 
   prod:
-    image: iudx/rs-depl:latest
+    image: ghcr.io/karun-singh/iudx-resource-server:depl
     environment:
       - RS_URL=https://rs.iudx.org.in
       - LOG_LEVEL=INFO
