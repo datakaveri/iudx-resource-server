@@ -178,11 +178,8 @@ public class AuthHandler implements Handler<RoutingContext> {
   }
 
   /**
-   * <<<<<<< HEAD extract id from request (path/query or body )
+   * extract id from request (path/query or body )
    *
-   * <p>======= extract id from path param
-   *
-   * <p>>>>>>>> Audit Api Created.
    *
    * @param ctx current routing context
    * @param forPath endpoint called for
