@@ -4,7 +4,6 @@ import org.apache.http.HttpStatus;
 
 import iudx.resource.server.common.ResponseUrn;
 
-
 public class ESQueryDecodeException extends RuntimeException {
 
   private static final long serialVersionUID = 1L;

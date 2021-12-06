@@ -666,7 +666,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           }
         });
     }
-  
+
 
   /**
    * Execute a count query in DB
@@ -781,7 +781,9 @@ public class ApiServerVerticle extends AbstractVerticle {
                 response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
           }
         });
-  }
+
+      }
+
 
   /**
    * Method used to handle all subscription requests.

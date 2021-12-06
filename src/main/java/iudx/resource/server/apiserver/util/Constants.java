@@ -67,6 +67,7 @@ public class Constants {
   public static final String REVOKE_TOKEN_REGEX = "/admin/revoketoken" + "(.*)";
   public static final String UNIQUE_ATTR_REGEX="/admin/resourceattribute";
 
+
   /** Accept Headers and CORS */
   public static final String MIME_APPLICATION_JSON = "application/json";
 
