@@ -14,6 +14,7 @@ import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
 import static iudx.resource.server.apiserver.util.Constants.ID;
 import static iudx.resource.server.apiserver.util.Constants.IDS;
 import static iudx.resource.server.apiserver.util.Constants.ID_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_AUDIT_URL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_ALIAS;
 import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_ENTITIES;
@@ -53,13 +54,6 @@ import static iudx.resource.server.common.Api.VHOST;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN;
 import static iudx.resource.server.common.ResponseUrn.RESOURCE_NOT_FOUND;
 
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -70,22 +64,22 @@ import io.vertx.ext.web.RoutingContext;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-
-/**
- * IUDX Authentication handler to authenticate token passed in HEADER
- * 
- *
- */
+/** IUDX Authentication handler to authenticate token passed in HEADER */
 public class AuthHandler implements Handler<RoutingContext> {
 
   private static final Logger LOGGER = LogManager.getLogger(AuthHandler.class);
 
   private static final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
   private static final Pattern regexIDPattern = ID_REGEX;
+  private static AuthenticationService authenticator;
   private final String AUTH_INFO = "authInfo";
   private final List<String> noAuthRequired = bypassEndpoint;
-  private static AuthenticationService authenticator;
   private HttpServerRequest request;
 
   public static AuthHandler create(Vertx vertx) {
@@ -113,8 +107,7 @@ public class AuthHandler implements Handler<RoutingContext> {
     final String path = getNormalizedPath(request.path());
     final String method = context.request().method().toString();
 
-    if (token == null)
-      token = "public";
+    if (token == null) token = "public";
 
     JsonObject authInfo =
         new JsonObject().put(API_ENDPOINT, path).put(HEADER_TOKEN, token).put(API_METHOD, method);
@@ -122,7 +115,7 @@ public class AuthHandler implements Handler<RoutingContext> {
     LOGGER.debug("Info :" + context.request().path());
     LOGGER.debug("Info :" + context.request().path().split("/").length);
 
-    String id = getId(context, path,method);
+    String id = getId(context, path, method);
     authInfo.put(ID, id);
 
     JsonArray ids = new JsonArray();
@@ -132,25 +125,31 @@ public class AuthHandler implements Handler<RoutingContext> {
     }
     LOGGER.debug("id :" + ids);
 
-    if (path.equals(MANAGEMENT.path + INGESTION.path) && HttpMethod.POST.name().equalsIgnoreCase(method)) {
+    if (path.equals(MANAGEMENT.path + INGESTION.path)
+        && HttpMethod.POST.name().equalsIgnoreCase(method)) {
       ids = requestJson.getJsonArray(JSON_ENTITIES);
     }
     LOGGER.debug("id :1" + ids);
     requestJson.put(IDS, ids);
     LOGGER.debug("id :2" + ids);
+
     LOGGER.debug("request" + requestJson);
-    authenticator.tokenInterospect(requestJson, authInfo, authHandler -> {
-      if (authHandler.succeeded()) {
-        authInfo.put(USER_ID, authHandler.result().getValue(USER_ID));
-        authInfo.put("expiry", authHandler.result().getValue("expiry"));
-        context.data().put(AUTH_INFO, authInfo);
-      } else {
-        processAuthFailure(context, authHandler.cause().getMessage());
-        return;
-      }
-      context.next();
-      return;
-    });
+    authenticator.tokenInterospect(
+        requestJson,
+        authInfo,
+        authHandler -> {
+          if (authHandler.succeeded()) {
+
+            authInfo.put(USER_ID, authHandler.result().getValue(USER_ID));
+            authInfo.put("expiry", authHandler.result().getValue("expiry"));
+            context.data().put(AUTH_INFO, authInfo);
+          } else {
+            processAuthFailure(context, authHandler.cause().getMessage());
+            return;
+          }
+          context.next();
+          return;
+        });
   }
 
   private void processAuthFailure(RoutingContext ctx, String result) {
@@ -178,10 +177,10 @@ public class AuthHandler implements Handler<RoutingContext> {
         .put(JSON_DETAIL, statusCode.getDescription());
   }
 
-
   /**
    * extract id from request (path/query or body )
-   * 
+   *
+   *
    * @param ctx current routing context
    * @param forPath endpoint called for
    * @return id extraced fro path if present
@@ -227,14 +226,11 @@ public class AuthHandler implements Handler<RoutingContext> {
         if (pathParams.containsKey(RESOURCE_NAME)) {
           id.append("/").append(pathParams.get(RESOURCE_NAME));
         }
-        LOGGER.info("id :" + id.toString());
+        LOGGER.info("id :" + id);
       } else if (pathParams.containsKey(USER_ID) && pathParams.containsKey(JSON_ALIAS)) {
         id = new StringBuilder();
-        id.append(pathParams.get(USER_ID))
-            .append("/")
-            .append(pathParams.get(JSON_ALIAS));
+        id.append(pathParams.get(USER_ID)).append("/").append(pathParams.get(JSON_ALIAS));
       }
-
     }
     LOGGER.info("id :" + id);
     return id != null ? id.toString() : null;
@@ -243,7 +239,6 @@ public class AuthHandler implements Handler<RoutingContext> {
   private String getId4rmRequest() {
     return request.getParam(ID);
   }
-
 
   private String getId4rmBody(RoutingContext context, String api) {
     JsonObject body = context.getBodyAsJson();
@@ -267,7 +262,7 @@ public class AuthHandler implements Handler<RoutingContext> {
 
   /**
    * get normalized path without id as path param.
-   * 
+   *
    * @param url complete path from request
    * @return path without id.
    */
@@ -300,6 +295,8 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = MANAGEMENT.path + RESET_PWD.path;
     } else if (url.matches(REVOKE_TOKEN_REGEX)) {
       path = ADMIN.path + REVOKE_TOKEN.path;
+    } else if (url.matches(IUDX_AUDIT_URL)) {
+      path = IUDX_AUDIT_URL;
     }
     return path;
   }
