@@ -92,7 +92,7 @@ services:
          options:
              max-file: "5"
              max-size: "100m"
-    command: bash -c "exec java $$RS_JAVA_OPTS  -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory -jar ./fatjar.jar  --host $$(hostname) -c configs/config.json"
+    command: bash -c "mvn clean compile exec:java@resource-server"
 
   zookeeper:
     image: zookeeper:latest
