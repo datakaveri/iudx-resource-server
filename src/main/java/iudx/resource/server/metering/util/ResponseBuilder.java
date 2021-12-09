@@ -24,7 +24,7 @@ public class ResponseBuilder {
   public ResponseBuilder setTypeAndTitle(int statusCode) {
 
     if (200 == statusCode) {
-      response.put(TYPE_KEY, ResponseUrn.SUCCESS.getUrn());
+      response.put(TYPE_KEY, ResponseUrn.SUCCESS_URN.getUrn());
       response.put(TITLE, SUCCESS);
     } else if (204 == statusCode) {
       response.put(TYPE_KEY, statusCode);

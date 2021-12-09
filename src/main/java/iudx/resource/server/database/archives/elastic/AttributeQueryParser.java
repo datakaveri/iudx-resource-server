@@ -14,12 +14,13 @@ import static iudx.resource.server.database.archives.Constants.VALUE;
 import static iudx.resource.server.database.archives.Constants.VALUE_LOWER;
 import static iudx.resource.server.database.archives.Constants.VALUE_UPPER;
 
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.archives.elastic.exception.ESQueryDecodeException;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 
 public class AttributeQueryParser implements QueryParser {
 
@@ -64,12 +65,10 @@ public class AttributeQueryParser implements QueryParser {
           } else if (NOT_EQUAL_OP.equalsIgnoreCase(operator)) {
             builder.mustNot(QueryBuilders.termQuery(attribute, attributeValue));
           } else {
-            throw new ESQueryDecodeException(
-                ResponseUrn.INVALID_ATTR_PARAM, "invalid attribute operator");
+            throw new ESQueryDecodeException(ResponseUrn.INVALID_ATTR_PARAM_URN, "invalid attribute operator");
           }
         } catch (NullPointerException e) {
-          throw new ESQueryDecodeException(
-              ResponseUrn.INVALID_ATTR_PARAM, "exception occurred at decoding attributes");
+          throw new ESQueryDecodeException(ResponseUrn.INVALID_ATTR_PARAM_URN, "exception occured at decoding attributes");
         }
       }
     }

@@ -52,10 +52,20 @@ import static iudx.resource.server.common.Api.NGSILD_BASE;
 import static iudx.resource.server.common.Api.SUBSCRIPTION;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
-import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT;
-import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM;
-import static iudx.resource.server.common.ResponseUrn.INVALID_TEMPORAL_PARAM;
-import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN;
+import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
+import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
+import static iudx.resource.server.common.ResponseUrn.INVALID_TEMPORAL_PARAM_URN;
+import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN_URN;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
@@ -98,14 +108,6 @@ import iudx.resource.server.database.latest.LatestDataService;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.metering.MeteringService;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * The Resource Server API Verticle.
@@ -446,11 +448,16 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     postgresService = PostgresService.createProxy(vertx, POSTGRES_SERVICE_ADDRESS);
 
-    router.mountSubRouter(ADMIN.path, new AdminRestApi(vertx, databroker, postgresService).init());
-    router.mountSubRouter(
-        MANAGEMENT.path,
-        new ManagementRestApi(vertx, databroker, postgresService, meteringService, managementApi)
-            .init());
+    router.mountSubRouter(ADMIN.path, new AdminRestApi(vertx, databroker, postgresService,meteringService).init());
+    router.mountSubRouter(MANAGEMENT.path,
+        new ManagementRestApi(vertx, databroker, postgresService, meteringService, managementApi).init());
+
+    router.route().last().handler(requestHandler -> {
+      HttpServerResponse response = requestHandler.response();
+      response.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
+          .setStatusCode(404)
+          .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN).toString());
+    });
 
     router
         .route()
@@ -462,7 +469,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                   .putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
                   .setStatusCode(404)
                   .end(
-                      generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED)
+                      generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
                           .toString());
             });
   }
@@ -538,17 +545,15 @@ public class ApiServerVerticle extends AbstractVerticle {
     json.put(JSON_ID, new JsonArray().add(id));
     json.put(JSON_SEARCH_TYPE, "latestSearch");
     LOGGER.debug("Info: IUDX query json;" + json);
-    filtersFuture.onComplete(
-        filtersHandler -> {
-          if (filtersHandler.succeeded()) {
-            json.put("applicableFilters", filtersHandler.result());
-            executeLatestSearchQuery(routingContext, json, response);
-          } else {
-            LOGGER.error("catalogue item/group doesn't have filters.");
-            handleResponse(
-                response, BAD_REQUEST, INVALID_PARAM, filtersHandler.cause().getMessage());
-          }
-        });
+    filtersFuture.onComplete(filtersHandler -> {
+      if (filtersHandler.succeeded()) {
+        json.put("applicableFilters", filtersHandler.result());
+        executeLatestSearchQuery(routingContext, json, response);
+      } else {
+        LOGGER.error("catalogue item/group doesn't have filters.");
+        handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, filtersHandler.cause().getMessage());
+      }
+    });
   }
 
   /**
@@ -568,51 +573,49 @@ public class ApiServerVerticle extends AbstractVerticle {
     MultiMap headerParams = request.headers();
     // validate request parameters
     Future<Boolean> validationResult = validator.validate(params);
-    validationResult.onComplete(
-        validationHandler -> {
-          if (validationHandler.succeeded()) {
-            // parse query params
-            NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
-            if (isTemporalParamsPresent(ngsildquery)) {
-              DxRuntimeException ex =
-                  new DxRuntimeException(
-                      BAD_REQUEST.getValue(),
-                      INVALID_TEMPORAL_PARAM,
-                      "Temporal parameters are not allowed in entities query.");
-              routingContext.fail(ex);
+    validationResult.onComplete(validationHandler -> {
+      if (validationHandler.succeeded()) {
+        // parse query params
+        NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
+        if (isTemporalParamsPresent(ngsildquery)) {
+          DxRuntimeException ex =
+              new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_TEMPORAL_PARAM_URN,
+                  "Temporal parameters are not allowed in entities query.");
+          routingContext.fail(ex);
+        }
+        // create json
+        QueryMapper queryMapper = new QueryMapper();
+        JsonObject json = queryMapper.toJson(ngsildquery, false);
+        Future<List<String>> filtersFuture =
+            catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
+        /* HTTP request instance/host details */
+        String instanceID = request.getHeader(HEADER_HOST);
+        json.put(JSON_INSTANCEID, instanceID);
+        LOGGER.debug("Info: IUDX query json;" + json);
+        /* HTTP request body as Json */
+        JsonObject requestBody = new JsonObject();
+        requestBody.put("ids", json.getJsonArray("id"));
+        filtersFuture.onComplete(filtersHandler -> {
+          if (filtersHandler.succeeded()) {
+            json.put("applicableFilters", filtersHandler.result());
+            if (json.containsKey(IUDXQUERY_OPTIONS)
+                && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
+              executeCountQuery(routingContext, json, response);
+            } else {
+              executeSearchQuery(routingContext, json, response);
             }
-            // create json
-            QueryMapper queryMapper = new QueryMapper();
-            JsonObject json = queryMapper.toJson(ngsildquery, false);
-            Future<List<String>> filtersFuture =
-                catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
-            /* HTTP request instance/host details */
-            String instanceID = request.getHeader(HEADER_HOST);
-            json.put(JSON_INSTANCEID, instanceID);
-            LOGGER.debug("Info: IUDX query json;" + json);
-            /* HTTP request body as Json */
-            JsonObject requestBody = new JsonObject();
-            requestBody.put("ids", json.getJsonArray("id"));
-            filtersFuture.onComplete(
-                filtersHandler -> {
-                  if (filtersHandler.succeeded()) {
-                    json.put("applicableFilters", filtersHandler.result());
-                    if (json.containsKey(IUDXQUERY_OPTIONS)
-                        && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
-                      executeCountQuery(routingContext, json, response);
-                    } else {
-                      executeSearchQuery(routingContext, json, response);
-                    }
-                  } else {
-                    LOGGER.error("catalogue item/group doesn't have filters.");
-                  }
-                });
           } else if (validationHandler.failed()) {
             LOGGER.error("Fail: Validation failed");
             handleResponse(
-                response, BAD_REQUEST, INVALID_PARAM, validationHandler.cause().getMessage());
+                response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
           }
         });
+      } else if (validationHandler.failed()) {
+        LOGGER.error("Fail: Validation failed");
+        handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN,
+            validationHandler.cause().getMessage());
+      }
+    });
   }
 
   /**
@@ -659,10 +662,11 @@ public class ApiServerVerticle extends AbstractVerticle {
           } else if (validationHandler.failed()) {
             LOGGER.error("Fail: Bad request");
             handleResponse(
-                response, BAD_REQUEST, INVALID_PARAM, validationHandler.cause().getMessage());
+                response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
           }
         });
-  }
+    }
+
 
   /**
    * Execute a count query in DB
@@ -774,10 +778,12 @@ public class ApiServerVerticle extends AbstractVerticle {
           } else if (validationHandler.failed()) {
             LOGGER.error("Fail: Bad request;");
             handleResponse(
-                response, BAD_REQUEST, INVALID_PARAM, validationHandler.cause().getMessage());
+                response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
           }
         });
-  }
+
+      }
+
 
   /**
    * Method used to handle all subscription requests.
@@ -821,7 +827,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           });
     } else {
       LOGGER.error("Fail: Bad request");
-      handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_SUB_TYPE_NOT_FOUND);
+      handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_SUB_TYPE_NOT_FOUND);
     }
   }
 
@@ -867,11 +873,11 @@ public class ApiServerVerticle extends AbstractVerticle {
             });
       } else {
         LOGGER.error("Fail: Bad request");
-        handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_INVALID_NAME);
+        handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_NAME);
       }
     } else {
       LOGGER.error("Fail: Bad request");
-      handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_SUB_TYPE_NOT_FOUND);
+      handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_SUB_TYPE_NOT_FOUND);
     }
   }
 
@@ -916,11 +922,11 @@ public class ApiServerVerticle extends AbstractVerticle {
             });
       } else {
         LOGGER.error("Fail: Bad request");
-        handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_INVALID_NAME);
+        handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_NAME);
       }
     } else {
       LOGGER.error("Fail: Bad request");
-      handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_SUB_TYPE_NOT_FOUND);
+      handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_SUB_TYPE_NOT_FOUND);
     }
   }
 
@@ -964,7 +970,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           });
     } else {
       LOGGER.error("Fail: Bad request");
-      handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_SUB_TYPE_NOT_FOUND);
+      handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_SUB_TYPE_NOT_FOUND);
     }
   }
 
@@ -1004,7 +1010,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             }
           });
     } else {
-      handleResponse(response, BAD_REQUEST, INVALID_PARAM, MSG_SUB_TYPE_NOT_FOUND);
+      handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_SUB_TYPE_NOT_FOUND);
     }
   }
 
@@ -1151,7 +1157,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     } else {
       LOGGER.info("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
   }
 
@@ -1190,7 +1196,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     } else {
       LOGGER.debug("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
   }
 
@@ -1226,7 +1232,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           });
 
     } else {
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
   }
 
@@ -1264,7 +1270,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     } else {
       LOGGER.debug("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN);
+      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
   }
 
@@ -1299,7 +1305,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           .end(generateResponse(status, urn).toString());
     } catch (DecodeException ex) {
       LOGGER.error("ERROR : Expecting Json from backend service [ jsonFormattingException ]");
-      handleResponse(response, HttpStatusCode.BAD_REQUEST, BACKING_SERVICE_FORMAT);
+      handleResponse(response, HttpStatusCode.BAD_REQUEST, BACKING_SERVICE_FORMAT_URN);
     }
   }
 
@@ -1340,7 +1346,8 @@ public class ApiServerVerticle extends AbstractVerticle {
       response
           .putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(HttpStatusCode.BAD_REQUEST.getValue())
-          .end(generateResponse(HttpStatusCode.BAD_REQUEST, INVALID_PARAM).toString());
+          .end(generateResponse(HttpStatusCode.BAD_REQUEST, INVALID_PARAM_URN).toString());
+
     }
     return Optional.of(queryParams);
   }

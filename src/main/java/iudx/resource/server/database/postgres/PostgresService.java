@@ -16,11 +16,15 @@ public interface PostgresService {
 
   @Fluent
   PostgresService executeQuery(final String query, Handler<AsyncResult<JsonObject>> handler);
-  
-  
+
+  @Fluent
+  PostgresService executePreparedQuery(final String query, final JsonObject queryparams,
+      Handler<AsyncResult<JsonObject>> handler);
+
+
   @GenIgnore
   static PostgresService createProxy(Vertx vertx, String address) {
-      return new PostgresServiceVertxEBProxy(vertx, address);
+    return new PostgresServiceVertxEBProxy(vertx, address);
   }
 
 }

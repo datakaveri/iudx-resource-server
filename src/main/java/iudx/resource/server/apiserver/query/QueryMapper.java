@@ -1,8 +1,8 @@
 package iudx.resource.server.apiserver.query;
 
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
-import static iudx.resource.server.common.ResponseUrn.INVALID_ATTR_PARAM;
-import static iudx.resource.server.common.ResponseUrn.INVALID_GEO_PARAM;
+import static iudx.resource.server.common.ResponseUrn.INVALID_ATTR_PARAM_URN;
+import static iudx.resource.server.common.ResponseUrn.INVALID_GEO_PARAM_URN;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
@@ -80,7 +80,7 @@ public class QueryMapper {
         }
         LOGGER.debug("Info : json " + json);
       } else {
-        throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_GEO_PARAM,
+        throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_GEO_PARAM_URN,
             "incomplete geo-query geoproperty, geometry, georel, coordinates all are mandatory.");
       }
     }
@@ -142,7 +142,7 @@ public class QueryMapper {
       LOGGER.debug("Info : inside isValidTimeInterval time : " + time.isBlank());
       LOGGER.debug("Info : inside isValidTimeInterval endTime : " + endTime);
       if (isNullorEmpty(time) || isNullorEmpty(endTime)) {
-        throw new DxRuntimeException(BAD_REQUEST.getValue(), ResponseUrn.INVALID_TEMPORAL_PARAM,
+        throw new DxRuntimeException(BAD_REQUEST.getValue(), ResponseUrn.INVALID_TEMPORAL_PARAM_URN,
             "time and endTime both are mandatory for during Query.");
       }
 
@@ -153,7 +153,7 @@ public class QueryMapper {
         Duration duration = Duration.between(start, end);
         totalDaysAllowed = duration.toDays();
       } catch (Exception ex) {
-        throw new DxRuntimeException(BAD_REQUEST.getValue(), ResponseUrn.INVALID_TEMPORAL_PARAM,
+        throw new DxRuntimeException(BAD_REQUEST.getValue(), ResponseUrn.INVALID_TEMPORAL_PARAM_URN,
             "time and endTime both are mandatory for during Query.");
 
       }
@@ -163,7 +163,7 @@ public class QueryMapper {
 
     }
     if (totalDaysAllowed > Constants.VALIDATION_MAX_DAYS_INTERVAL_ALLOWED) {
-      throw new DxRuntimeException(BAD_REQUEST.getValue(), ResponseUrn.INVALID_TEMPORAL_PARAM,
+      throw new DxRuntimeException(BAD_REQUEST.getValue(), ResponseUrn.INVALID_TEMPORAL_PARAM_URN,
           "time interval greater than 10 days is not allowed");
     }
   }
@@ -221,7 +221,7 @@ public class QueryMapper {
           specialCharFound = true;
         } else {
           LOGGER.info("Ignore " + c.toString());
-          throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_ATTR_PARAM, "Operator not allowed.");
+          throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_ATTR_PARAM_URN, "Operator not allowed.");
         }
       } else {
         if (specialCharFound && (Character.isLetter(c) || Character.isDigit(c))) {
@@ -233,7 +233,7 @@ public class QueryMapper {
 
     }
     if (!allowedOperators.contains(json.getString(Constants.JSON_OPERATOR))) {
-      throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_ATTR_PARAM, "Operator not allowed.");
+      throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_ATTR_PARAM_URN, "Operator not allowed.");
     }
     return json;
   }

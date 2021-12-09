@@ -34,23 +34,23 @@ public final class IDTypeValidator implements Validator {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
-      throw new DxRuntimeException(failureCode(), INVALID_ID_VALUE, failureMessage());
+      throw new DxRuntimeException(failureCode(), INVALID_ID_VALUE_URN, failureMessage());
     } else {
       if (value == null) {
         return true;
       }
       if (value.isBlank()) {
         LOGGER.error("Validation error :  blank value for passed");
-        throw new DxRuntimeException(failureCode(), INVALID_ID_VALUE, failureMessage(value));
+        throw new DxRuntimeException(failureCode(), INVALID_ID_VALUE_URN, failureMessage(value));
       }
     }
     if (value.length() > VALIDATION_ID_MAX_LEN) {
       LOGGER.error("Validation error : Value exceed max character limit.");
-      throw new DxRuntimeException(failureCode(), INVALID_ID_VALUE, failureMessage(value));
+      throw new DxRuntimeException(failureCode(), INVALID_ID_VALUE_URN, failureMessage(value));
     }
     if (!isvalidIUDXId(value)) {
       LOGGER.error("Validation error : Invalid id.");
-      throw new DxRuntimeException(failureCode(), INVALID_ID_VALUE, failureMessage(value));
+      throw new DxRuntimeException(failureCode(), INVALID_ID_VALUE_URN, failureMessage(value));
     }
     return true;
   }
@@ -62,7 +62,7 @@ public final class IDTypeValidator implements Validator {
 
   @Override
   public String failureMessage() {
-    return INVALID_ID_VALUE.getMessage();
+    return INVALID_ID_VALUE_URN.getMessage();
   }
 
 }

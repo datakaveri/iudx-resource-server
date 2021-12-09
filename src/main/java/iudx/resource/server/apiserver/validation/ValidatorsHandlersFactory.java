@@ -25,7 +25,7 @@ import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
 import static iudx.resource.server.apiserver.util.Constants.USERSHA;
-import static iudx.resource.server.common.ResponseUrn.SCHEMA_READ_ERROR;
+import static iudx.resource.server.common.ResponseUrn.SCHEMA_READ_ERROR_URN;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -195,7 +195,7 @@ public class ValidatorsHandlersFactory {
       validators.add(new JsonSchemaTypeValidator(body, schema));
     } catch (Exception ex) {
       LOGGER.error(ex);
-      throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), SCHEMA_READ_ERROR);
+      throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), SCHEMA_READ_ERROR_URN);
     }
     return validators;
   }
@@ -212,7 +212,7 @@ public class ValidatorsHandlersFactory {
         jsonSchemaMap.put(filename, jsonStr);
       } catch (IOException e) {
         LOGGER.error(e);
-        throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), SCHEMA_READ_ERROR); 
+        throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), SCHEMA_READ_ERROR_URN); 
       }
     }
     return jsonStr;
