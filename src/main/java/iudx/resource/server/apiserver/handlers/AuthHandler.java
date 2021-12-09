@@ -10,11 +10,14 @@ import static iudx.resource.server.apiserver.util.Constants.DOMAIN;
 import static iudx.resource.server.apiserver.util.Constants.ENTITIES_POST_QUERY_URL_REGEX;
 import static iudx.resource.server.apiserver.util.Constants.ENTITITES_URL_REGEX;
 import static iudx.resource.server.apiserver.util.Constants.EXCHANGE_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.EXPIRY;
 import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
 import static iudx.resource.server.apiserver.util.Constants.ID;
 import static iudx.resource.server.apiserver.util.Constants.IDS;
 import static iudx.resource.server.apiserver.util.Constants.ID_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_AUDIT_URL;
+import static iudx.resource.server.apiserver.util.Constants.IID;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_CONSUMER_AUDIT_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_PROVIDER_AUDIT_URL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_ALIAS;
 import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_ENTITIES;
@@ -144,8 +147,9 @@ public class AuthHandler implements Handler<RoutingContext> {
         authHandler -> {
           if (authHandler.succeeded()) {
 
+            authInfo.put(IID, authHandler.result().getValue(IID));
             authInfo.put(USER_ID, authHandler.result().getValue(USER_ID));
-            authInfo.put("expiry", authHandler.result().getValue("expiry"));
+            authInfo.put(EXPIRY, authHandler.result().getValue(EXPIRY));
             context.data().put(AUTH_INFO, authInfo);
           } else {
             processAuthFailure(context, authHandler.cause().getMessage());
@@ -299,10 +303,12 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = MANAGEMENT.path + RESET_PWD.path;
     } else if (url.matches(REVOKE_TOKEN_REGEX)) {
       path = ADMIN.path + REVOKE_TOKEN.path;
-    } else if (url.matches(IUDX_AUDIT_URL)) {
-      path = IUDX_AUDIT_URL;
-    }else if(url.matches(UNIQUE_ATTR_REGEX)) {
+    } else if(url.matches(UNIQUE_ATTR_REGEX)) {
       path=ADMIN.path+RESOURCE_ATTRIBS.path;
+    } else if (url.matches(IUDX_CONSUMER_AUDIT_URL)) {
+      path = IUDX_CONSUMER_AUDIT_URL;
+    }else if (url.matches(IUDX_PROVIDER_AUDIT_URL)) {
+      path = IUDX_PROVIDER_AUDIT_URL;
     }
     return path;
   }

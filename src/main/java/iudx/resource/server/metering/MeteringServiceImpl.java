@@ -1,13 +1,17 @@
 package iudx.resource.server.metering;
 
 import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_PROVIDER_AUDIT_URL;
 import static iudx.resource.server.metering.util.Constants.API_COLUMN_NAME;
 import static iudx.resource.server.metering.util.Constants.COUNT_COLUMN_NAME;
 import static iudx.resource.server.metering.util.Constants.DURING;
+import static iudx.resource.server.metering.util.Constants.ENDPOINT;
 import static iudx.resource.server.metering.util.Constants.END_TIME;
 import static iudx.resource.server.metering.util.Constants.ERROR;
 import static iudx.resource.server.metering.util.Constants.FAILED;
+import static iudx.resource.server.metering.util.Constants.INVALID_PROVIDER_REQUIRED;
 import static iudx.resource.server.metering.util.Constants.MESSAGE;
+import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
 import static iudx.resource.server.metering.util.Constants.QUERY_KEY;
 import static iudx.resource.server.metering.util.Constants.RESOURCEID_COLUMN_NAME;
 import static iudx.resource.server.metering.util.Constants.START_TIME;
@@ -86,6 +90,14 @@ public class MeteringServiceImpl implements MeteringService {
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
 
     LOGGER.debug("Info: Count Query" + request.toString());
+
+    if (request.getString(ENDPOINT).equals(IUDX_PROVIDER_AUDIT_URL)
+        && request.getString(PROVIDER_ID) == null) {
+      responseBuilder =
+          new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(INVALID_PROVIDER_REQUIRED);
+      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+      return this;
+    }
 
     if (request.getString(TIME_RELATION) == null
         || !request.getString(TIME_RELATION).equals(DURING)) {

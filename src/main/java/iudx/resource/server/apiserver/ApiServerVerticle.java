@@ -17,7 +17,8 @@ import static iudx.resource.server.apiserver.util.Constants.HEADER_REFERER;
 import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
 import static iudx.resource.server.apiserver.util.Constants.ID;
 import static iudx.resource.server.apiserver.util.Constants.IUDXQUERY_OPTIONS;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_AUDIT_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_CONSUMER_AUDIT_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_PROVIDER_AUDIT_URL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_ALIAS;
 import static iudx.resource.server.apiserver.util.Constants.JSON_CONSUMER;
 import static iudx.resource.server.apiserver.util.Constants.JSON_COUNT;
@@ -322,7 +323,14 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* Management Api endpoints */
     // Exchange
 
-    router.get(IUDX_AUDIT_URL).handler(AuthHandler.create(vertx)).handler(this::getAuditDetail);
+    router
+        .get(IUDX_CONSUMER_AUDIT_URL)
+        .handler(AuthHandler.create(vertx))
+        .handler(this::getConsumerAuditDetail);
+    router
+        .get(IUDX_PROVIDER_AUDIT_URL)
+        .handler(AuthHandler.create(vertx))
+        .handler(this::getProviderAuditDetail);
 
     // adapter
     router
@@ -474,20 +482,21 @@ public class ApiServerVerticle extends AbstractVerticle {
             });
   }
 
-  private Future<Void> getAuditDetail(RoutingContext routingContext) {
-    LOGGER.info("Info: getAuditDetail Started.");
+  private Future<Void> getConsumerAuditDetail(RoutingContext routingContext) {
+    LOGGER.info("Info: getConsumerAuditDetail Started.");
     Promise<Void> promise = Promise.promise();
     JsonObject entries = new JsonObject();
     JsonObject consumer = (JsonObject) routingContext.data().get("authInfo");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
+
     entries.put("userid", consumer.getString("userid"));
+    entries.put("endPoint", consumer.getString("apiEndpoint"));
     entries.put("startTime", request.getParam("time"));
     entries.put("endTime", request.getParam("endTime"));
     entries.put("timeRelation", request.getParam("timerel"));
-
     entries.put("options", request.headers().get("options"));
-    entries.put("id", request.getParam("id"));
+    entries.put("resourceId", request.getParam("id"));
     entries.put("api", request.getParam("api"));
 
     {
@@ -504,14 +513,52 @@ public class ApiServerVerticle extends AbstractVerticle {
               LOGGER.error("Fail msg " + handler.cause().getMessage());
               LOGGER.error("Table reading failed.");
               processBackendResponse(response, handler.cause().getMessage());
-              //              handleResponse(response, BAD_REQUEST, INVALID_PARAM,
-              // handler.cause().getMessage());
               promise.complete();
             }
           });
       return promise.future();
     }
-    //    return promise.future();
+  }
+
+  private Future<Void> getProviderAuditDetail(RoutingContext routingContext) {
+    LOGGER.info("Info: getProviderAuditDetail Started.");
+    Promise<Void> promise = Promise.promise();
+    JsonObject entries = new JsonObject();
+    JsonObject provider = (JsonObject) routingContext.data().get("authInfo");
+    HttpServerRequest request = routingContext.request();
+    HttpServerResponse response = routingContext.response();
+
+    entries.put("endPoint", provider.getString("apiEndpoint"));
+    entries.put("userid", provider.getString("userid"));
+    entries.put("iid", provider.getString("iid"));
+    entries.put("startTime", request.getParam("time"));
+    entries.put("endTime", request.getParam("endTime"));
+    entries.put("timeRelation", request.getParam("timerel"));
+    entries.put("providerID", request.getParam("providerID"));
+    entries.put("consumerID", request.getParam("consumer"));
+    entries.put("resourceId", request.getParam("id"));
+    entries.put("api", request.getParam("api"));
+    entries.put("options", request.headers().get("options"));
+
+    {
+      LOGGER.info(entries);
+      meteringService.executeReadQuery(
+          entries,
+          handler -> {
+            if (handler.succeeded()) {
+              LOGGER.info("Table Reading Done.");
+              handleSuccessResponse(
+                  response, ResponseType.Ok.getCode(), handler.result().toString());
+              promise.complete();
+            } else {
+              LOGGER.error("Fail msg " + handler.cause().getMessage());
+              LOGGER.error("Table reading failed.");
+              processBackendResponse(response, handler.cause().getMessage());
+              promise.complete();
+            }
+          });
+      return promise.future();
+    }
   }
 
   private void handleLatestEntitiesQuery(RoutingContext routingContext) {
@@ -801,8 +848,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* HTTP request instance/host details */
     String instanceID = request.getHeader(HEADER_HOST);
     String subHeader = request.getHeader(HEADER_OPTIONS);
-    String subscrtiptionType =
-        SubsType.STREAMING.getMessage();
+    String subscrtiptionType = SubsType.STREAMING.getMessage();
     requestBody.put(SUB_TYPE, subscrtiptionType);
     /* checking authentication info in requests */
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
@@ -848,8 +894,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(SUBSCRIPTION_ID, subsId);
     requestJson.put(JSON_INSTANCEID, instanceID);
     String subHeader = request.getHeader(HEADER_OPTIONS);
-    String subscrtiptionType =
-        SubsType.STREAMING.getMessage();
+    String subscrtiptionType = SubsType.STREAMING.getMessage();
     requestJson.put(SUB_TYPE, subscrtiptionType);
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
@@ -896,8 +941,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = routingContext.getBodyAsJson();
     String instanceID = request.getHeader(HEADER_HOST);
     String subHeader = request.getHeader(HEADER_OPTIONS);
-    String subscrtiptionType =
-        SubsType.STREAMING.getMessage();
+    String subscrtiptionType = SubsType.STREAMING.getMessage();
     requestJson.put(SUB_TYPE, subscrtiptionType);
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
@@ -947,8 +991,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(SUBSCRIPTION_ID, subsId);
     requestJson.put(JSON_INSTANCEID, instanceID);
     String subHeader = request.getHeader(HEADER_OPTIONS);
-    String subscrtiptionType =
-        SubsType.STREAMING.getMessage();
+    String subscrtiptionType = SubsType.STREAMING.getMessage();
     requestJson.put(SUB_TYPE, subscrtiptionType);
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
 
@@ -991,8 +1034,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(SUBSCRIPTION_ID, subsId);
     requestJson.put(JSON_INSTANCEID, instanceID);
     String subHeader = request.getHeader(HEADER_OPTIONS);
-    String subscrtiptionType =
-        SubsType.STREAMING.getMessage();
+    String subscrtiptionType = SubsType.STREAMING.getMessage();
     requestJson.put(SUB_TYPE, subscrtiptionType);
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     if (requestJson.containsKey(SUB_TYPE)) {
