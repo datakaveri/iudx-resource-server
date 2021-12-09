@@ -20,6 +20,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rabbitmq.RabbitMQClient;
+import iudx.resource.server.common.Response;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.databroker.util.Util;
 
@@ -878,10 +879,15 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       return client.basicPublish(toExchange, routingKey, buffer);
     }).onSuccess(successHandler -> {
       JsonObject json = new JsonObject();
-      json.put("type", ResponseUrn.SUCCESS.getUrn());
+      json.put("type", ResponseUrn.SUCCESS_URN.getUrn());
       handler.handle(Future.succeededFuture(json));
     }).onFailure(failureHandler -> {
-      handler.handle(Future.failedFuture("Failed"));
+      LOGGER.error(failureHandler);
+      Response response = new Response.Builder()
+          .withType(ResponseUrn.QUEUE_ERROR_URN.getUrn())
+          .withStatus(HttpStatus.SC_BAD_REQUEST)
+          .withDetail(failureHandler.getLocalizedMessage()).build();
+      handler.handle(Future.failedFuture(response.toJson().toString()));
     });
     return this;
   }

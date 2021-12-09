@@ -24,19 +24,19 @@ public final class OptionsTypeValidator implements Validator {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
-      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage());
+      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage());
     } else {
       if (value == null) {
         return true;
       }
       if (value.isBlank()) {
         LOGGER.error("Validation error :  blank value passed");
-        throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage(value));
+        throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
       }
     }
     if (!value.equals("count")) {
       LOGGER.error("Validation error : count is only allowed value for options parameter");
-      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage(value));
+      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
     }
     return true;
   }
@@ -50,6 +50,6 @@ public final class OptionsTypeValidator implements Validator {
 
   @Override
   public String failureMessage() {
-    return INVALID_PARAM_VALUE.getMessage();
+    return INVALID_PARAM_VALUE_URN.getMessage();
   }
 }

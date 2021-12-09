@@ -38,7 +38,7 @@ public final class QTypeValidator implements Validator {
       return true;
     } catch (NumberFormatException ex) {
       LOGGER.info("Passed value in q parameter is not float");
-      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage(value));
+      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
     }
   }
 
@@ -76,7 +76,7 @@ public final class QTypeValidator implements Validator {
           // do nothing
         } else {
           LOGGER.error("Ignore " + c.toString());
-          throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage(value));
+          throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
         }
       } else {
         if (specialCharFound && (Character.isLetter(c) || Character.isDigit(c))) {
@@ -95,34 +95,34 @@ public final class QTypeValidator implements Validator {
     LOGGER.debug("value : " + value + " required : " + required);
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
-      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage());
+      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage());
     } else {
       if (value == null) {
         return true;
       }
       if (value.isBlank()) {
         LOGGER.error("Validation error :  blank value for passed");
-        throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage());
+        throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage());
       }
     }
     if (value.length() > 512) {
       LOGGER.error("Validation error : Exceeding max length(512 characters) criteria");
-      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage(value));
+      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
     }
     JsonObject qJson;
     try {
       qJson = getQueryTerms(value);
     } catch (Exception ex) {
       LOGGER.error("Validation error : Operator not allowed.");
-      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage(value));
+      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
     }
     if (!isValidAttribute(qJson.getString(JSON_ATTRIBUTE))) {
       LOGGER.error("Validation error : Not a valid attribute in <<q>> query");
-      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage(value));
+      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
     }
     if (!isValidOperator(qJson.getString(JSON_OPERATOR))) {
       LOGGER.error("Validation error : Not a valid Operator in <<q>> query");
-      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE, failureMessage(value));
+      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
     }
     // if (!isValidAttributeValue(qJson.getString(JSON_VALUE))) {
     // throw ValidationException.ValidationExceptionFactory
@@ -142,7 +142,7 @@ public final class QTypeValidator implements Validator {
 
   @Override
   public String failureMessage() {
-    return INVALID_PARAM_VALUE.getMessage();
+    return INVALID_PARAM_VALUE_URN.getMessage();
   }
 
 }

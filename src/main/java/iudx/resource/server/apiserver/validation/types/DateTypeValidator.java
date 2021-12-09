@@ -28,7 +28,7 @@ public final class DateTypeValidator implements Validator {
       ZonedDateTime.parse(dateString);
       return true;
     } catch (DateTimeParseException e) {
-      throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE, failureMessage(value));
+      throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE_URN, failureMessage(value));
     }
   }
 
@@ -36,13 +36,13 @@ public final class DateTypeValidator implements Validator {
   public boolean isValid() {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
-      throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE, failureMessage());
+      throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE_URN, failureMessage());
     } else {
       if (value == null) {
         return true;
       }
       if (value.isBlank()) {
-        throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE, failureMessage(value));
+        throw new DxRuntimeException(failureCode(), INVALID_ATTR_VALUE_URN, failureMessage(value));
       }
     }
     return isValidDate(value);
@@ -55,7 +55,7 @@ public final class DateTypeValidator implements Validator {
 
   @Override
   public String failureMessage() {
-    return INVALID_TEMPORAL_DATE_FORMAT.getMessage();
+    return INVALID_TEMPORAL_DATE_FORMAT_URN.getMessage();
   }
 
 }

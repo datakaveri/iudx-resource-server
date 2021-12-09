@@ -19,8 +19,11 @@ public interface MeteringService {
   }
 
   @Fluent
-  MeteringService executeCountQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  MeteringService executeReadQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   @Fluent
   MeteringService executeWriteQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+
+//  MeteringService executeReadQuery(JsonObject request,Handler<AsyncResult<JsonObject>> handler);
 }

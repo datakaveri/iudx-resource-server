@@ -27,19 +27,19 @@ public final class GeoRelTypeValidator implements Validator {
   public boolean isValid() {
     LOGGER.debug("value : " + value + "required : " + required);
     if (required && (value == null || value.isBlank())) {
-      throw new DxRuntimeException(failureCode(), INVALID_GEO_REL, failureMessage());
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_REL_URN, failureMessage());
     } else {
       if (value == null) {
         return true;
       }
       if (value.isBlank()) {
         LOGGER.error("Validation error :  blank value for passed");
-        throw new DxRuntimeException(failureCode(), INVALID_GEO_REL, failureMessage(value));
+        throw new DxRuntimeException(failureCode(), INVALID_GEO_REL_URN, failureMessage(value));
       }
     }
     String[] geoRelationValues = value.split(";");
     if (!allowedValues.contains(geoRelationValues[0])) {
-      throw new DxRuntimeException(failureCode(), INVALID_GEO_REL, failureMessage(value));
+      throw new DxRuntimeException(failureCode(), INVALID_GEO_REL_URN, failureMessage(value));
     }
     return true;
   }
@@ -53,6 +53,6 @@ public final class GeoRelTypeValidator implements Validator {
 
   @Override
   public String failureMessage() {
-    return INVALID_GEO_REL.getMessage();
+    return INVALID_GEO_REL_URN.getMessage();
   }
 }

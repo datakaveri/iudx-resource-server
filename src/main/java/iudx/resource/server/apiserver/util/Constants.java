@@ -22,53 +22,55 @@ public class Constants {
   // NGSI-LD endpoints
   public static final String NGSILD_BASE_PATH = "/ngsi-ld/v1";
   public static final String NGSILD_ENTITIES_URL = NGSILD_BASE_PATH + "/entities";
+  // path regex
+  public static final String ENTITITES_URL_REGEX = NGSILD_ENTITIES_URL + "(.*)";
   public static final String NGSILD_TEMPORAL_URL = NGSILD_BASE_PATH + "/temporal/entities";
+  public static final String TEMPORAL_URL_REGEX = NGSILD_TEMPORAL_URL + "(.*)";
   public static final String NGSILD_SUBSCRIPTION_URL = NGSILD_BASE_PATH + "/subscription";
+  public static final String SUBSCRIPTION_URL_REGEX = NGSILD_SUBSCRIPTION_URL + "(.*)";
   public static final String NGSILD_POST_TEMPORAL_QUERY_PATH =
       NGSILD_BASE_PATH + "/temporal/entityOperations/query";
+  public static final String TEMPORAL_POST_QUERY_URL_REGEX =
+      NGSILD_POST_TEMPORAL_QUERY_PATH + "(.*)";
   public static final String NGSILD_POST_ENTITIES_QUERY_PATH =
       NGSILD_BASE_PATH + "/entityOperations/query";
-
+  public static final String ENTITIES_POST_QUERY_URL_REGEX =
+      NGSILD_POST_ENTITIES_QUERY_PATH + "(.*)";
   // IUDX management endpoints
   public static final String IUDX_MANAGEMENT_URL = "/management";
   public static final String IUDX_ADAPTOR_URL = "/ngsi-ld/v1";
+  public static final String IUDX_AUDIT_URL = IUDX_ADAPTOR_URL + "/consumer/audit";
   public static final String IUDX_MANAGEMENT_EXCHANGE_URL = IUDX_MANAGEMENT_URL + "/exchange";
+  public static final String EXCHANGE_URL_REGEX = IUDX_MANAGEMENT_EXCHANGE_URL + "(.*)";
   public static final String IUDX_MANAGEMENT_QUEUE_URL = IUDX_MANAGEMENT_URL + "/queue";
+  public static final String QUEUE_URL_REGEX = IUDX_MANAGEMENT_QUEUE_URL + "(.*)";
   public static final String IUDX_MANAGEMENT_BIND_URL = IUDX_MANAGEMENT_URL + "/bind";
+  public static final String BIND_URL_REGEX = IUDX_MANAGEMENT_BIND_URL + "(.*)";
   public static final String IUDX_MANAGEMENT_UNBIND_URL = IUDX_MANAGEMENT_URL + "/unbind";
+  public static final String UNBIND_URL_REGEX = IUDX_MANAGEMENT_UNBIND_URL + "(.*)";
   public static final String IUDX_MANAGEMENT_VHOST_URL = IUDX_MANAGEMENT_URL + "/vhost";
+  public static final String VHOST_URL_REGEX = IUDX_MANAGEMENT_VHOST_URL + "(.*)";
   public static final String IUDX_MANAGEMENT_ADAPTER_URL = IUDX_ADAPTOR_URL + "/ingestion";
-  public static final String IUDX_MANAGEMENT_RESET_PWD = IUDX_MANAGEMENT_URL + "/user/resetPassword";
-
+  public static final String ADAPTER_URL_REGEX = IUDX_MANAGEMENT_ADAPTER_URL + "(.*)";
+  public static final String IUDX_MANAGEMENT_RESET_PWD =
+      IUDX_MANAGEMENT_URL + "/user/resetPassword";
+  public static final String RESET_URL_REGEX = IUDX_MANAGEMENT_RESET_PWD + "(.*)";
   /** API Documentation endpoint */
   public static final String ROUTE_STATIC_SPEC = "/apis/spec";
   public static final String ROUTE_DOC = "/apis";
-
   public static final List<String> bypassEndpoint = List.of(ROUTE_STATIC_SPEC, ROUTE_DOC);
-  public static final List<String> openEndPoints = List.of("/ngsi-ld/v1/temporal/entities",
-      "/ngsi-ld/v1/entities", "/ngsi-ld/v1/entityOperations/query");
-
-  // path regex
-  public static final String ENTITITES_URL_REGEX = NGSILD_ENTITIES_URL + "(.*)";
-  public static final String TEMPORAL_URL_REGEX = NGSILD_TEMPORAL_URL + "(.*)";
-  public static final String TEMPORAL_POST_QUERY_URL_REGEX =
-      NGSILD_POST_TEMPORAL_QUERY_PATH + "(.*)";
-  public static final String ENTITIES_POST_QUERY_URL_REGEX =
-      NGSILD_POST_ENTITIES_QUERY_PATH + "(.*)";
-  public static final String SUBSCRIPTION_URL_REGEX = NGSILD_SUBSCRIPTION_URL + "(.*)";
-  public static final String ADAPTER_URL_REGEX = IUDX_MANAGEMENT_ADAPTER_URL + "(.*)";
-  public static final String EXCHANGE_URL_REGEX = IUDX_MANAGEMENT_EXCHANGE_URL + "(.*)";
-  public static final String QUEUE_URL_REGEX = IUDX_MANAGEMENT_QUEUE_URL + "(.*)";
-  public static final String VHOST_URL_REGEX = IUDX_MANAGEMENT_VHOST_URL + "(.*)";
-  public static final String BIND_URL_REGEX = IUDX_MANAGEMENT_BIND_URL + "(.*)";
-  public static final String UNBIND_URL_REGEX = IUDX_MANAGEMENT_UNBIND_URL + "(.*)";
-  public static final String RESET_URL_REGEX = IUDX_MANAGEMENT_RESET_PWD + "(.*)";
-  public static final String REVOKE_TOKEN_REGEX="/admin/revoketoken"+"(.*)";
-
+  public static final List<String> openEndPoints =
+      List.of(
+          "/ngsi-ld/v1/temporal/entities",
+          "/ngsi-ld/v1/entities",
+          "/ngsi-ld/v1/entityOperations/query");
+  public static final String REVOKE_TOKEN_REGEX = "/admin/revoketoken" + "(.*)";
+  public static final String UNIQUE_ATTR_REGEX="/admin/resourceattribute";
 
 
   /** Accept Headers and CORS */
   public static final String MIME_APPLICATION_JSON = "application/json";
+
   public static final String MIME_TEXT_HTML = "text/html";
 
   // ngsi-ld/IUDX query paramaters
@@ -194,7 +196,6 @@ public class Constants {
   public static final String SUB_CALLBACK = "callback";
   public static final String SUB_STREAMING_URL = "streamingURL";
 
-
   // messages (Error, Exception, messages..)
   public static final String MSG_INVALID_PARAM = "Invalid parameter in request.";
   public static final String MSG_PARAM_DECODE_ERROR = "Error while decoding query params.";
@@ -219,8 +220,9 @@ public class Constants {
   // Validations
   public static final int VALIDATION_ID_MIN_LEN = 0;
   public static final int VALIDATION_ID_MAX_LEN = 512;
-  public static final Pattern VALIDATION_ID_PATTERN = Pattern.compile(
-      "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z.]{4,100}/{1}[a-zA-Z-_.]{4,100}/{1}[a-zA-Z0-9-_.]{4,100}$");
+  public static final Pattern VALIDATION_ID_PATTERN =
+      Pattern.compile(
+          "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z.]{4,100}/{1}[a-zA-Z-_.]{4,100}/{1}[a-zA-Z0-9-_.]{4,100}$");
   public static final int VALIDATION_MAX_ATTRS = 5;
   public static final int VALIDATION_MAX_DAYS_INTERVAL_ALLOWED = 10;
   public static final int VALIDATION_COORDINATE_PRECISION_ALLOWED = 6;
@@ -244,9 +246,10 @@ public class Constants {
   public static final List<Object> VALIDATION_ALLOWED_GEOM =
       List.of("Point", "point", "Polygon", "polygon", "LineString", "linestring", "bbox");
   public static final List<Object> VALIDATION_ALLOWED_GEOPROPERTY = List.of("location", "Location");
-  public static final List<String> VALIDATION_ALLOWED_OPERATORS = List.of(">", "=", "<", ">=", "<=", "==", "!=");
-  public static final List<String> VALIDATION_ALLOWED_TEMPORAL_REL = List.of("after", "before", "during", "between");
+  public static final List<String> VALIDATION_ALLOWED_OPERATORS =
+      List.of(">", "=", "<", ">=", "<=", "==", "!=");
+  public static final List<String> VALIDATION_ALLOWED_TEMPORAL_REL =
+      List.of("after", "before", "during", "between");
 
   public static final String VALIDATION_Q_ATTR_PATTERN = "^[a-zA-Z0-9_]{1,100}+$";
-
 }

@@ -4,39 +4,41 @@ import java.util.stream.Stream;
 
 public enum ResponseUrn {
 
-  SUCCESS("urn:dx:rs:success", "successful operations"),
-  INVALID_PARAM("urn:dx:rs:invalidParamameter", "Invalid parameter passed"),
-  INVALID_GEO_REL("urn:dx:rs:invalidGeoRel", "Invalid geo relation value"),
-  INVALID_TEMPORAL_PARAM("urn:dx:rs:invalidTemporalParam", "Invalid temporal parameter"),
-  INVALID_TEMPORAL_REL("urn:dx:rs:invalidTemporalRelationParam", "Invalid temporal param value"),
-  INVALID_TEMPORAL_DATE_FORMAT("urn:dx:rs:invalidTemporalDateFormat", "Invalid date format"),
-  INVALID_GEO_PARAM("urn:dx:rs:invalidGeoParam", "Invalid geo param"),
-  INVALID_GEO_VALUE("urn:dx:rs:invalidGeoValue", "Invalid geo param value"),
-  INVALID_ATTR_PARAM("urn:dx:rs:invalidAttributeParam", "Invalid attribute param"),
-  INVALID_ATTR_VALUE("urn:dx:rs:invalidAttributeValue", "Invalid attribute value"),
-  INVALID_OPERATION("urn:dx:rs:invalidOperation", "Invalid operation"),
-  UNAUTHORIZED_ENDPOINT("urn:dx:rs:unauthorizedEndpoint", "Access to endpoint is not available"),
-  UNAUTHORIZED_RESOURCE("urn,dx:rs:unauthorizedResource", "Access to resource is not available"),
-  EXPIRED_TOKEN("urn:dx:rs:expiredAuthorizationToken", "Token has expired"),
-  MISSING_TOKEN("urn:dx:rs:missingAuthorizationToken", "Token needed and not present"),
-  INVALID_TOKEN("urn:dx:rs:invalidAuthorizationToken", "Token is invalid"),
-  RESOURCE_NOT_FOUND("urn:dx:rs:resourceNotFound", "Document of given id does not exist"),
+  SUCCESS_URN("urn:dx:rs:success", "successful operations"),
+  INVALID_PARAM_URN("urn:dx:rs:invalidParamameter", "Invalid parameter passed"),
+  INVALID_GEO_REL_URN("urn:dx:rs:invalidGeoRel", "Invalid geo relation value"),
+  INVALID_TEMPORAL_PARAM_URN("urn:dx:rs:invalidTemporalParam", "Invalid temporal parameter"),
+  INVALID_TEMPORAL_REL_URN("urn:dx:rs:invalidTemporalRelationParam", "Invalid temporal param value"),
+  INVALID_TEMPORAL_DATE_FORMAT_URN("urn:dx:rs:invalidTemporalDateFormat", "Invalid date format"),
+  INVALID_GEO_PARAM_URN("urn:dx:rs:invalidGeoParam", "Invalid geo param"),
+  INVALID_GEO_VALUE_URN("urn:dx:rs:invalidGeoValue", "Invalid geo param value"),
+  INVALID_ATTR_PARAM_URN("urn:dx:rs:invalidAttributeParam", "Invalid attribute param"),
+  INVALID_ATTR_VALUE_URN("urn:dx:rs:invalidAttributeValue", "Invalid attribute value"),
+  INVALID_OPERATION_URN("urn:dx:rs:invalidOperation", "Invalid operation"),
+  UNAUTHORIZED_ENDPOINT_URN("urn:dx:rs:unauthorizedEndpoint", "Access to endpoint is not available"),
+  UNAUTHORIZED_RESOURCE_URN("urn,dx:rs:unauthorizedResource", "Access to resource is not available"),
+  EXPIRED_TOKEN_URN("urn:dx:rs:expiredAuthorizationToken", "Token has expired"),
+  MISSING_TOKEN_URN("urn:dx:rs:missingAuthorizationToken", "Token needed and not present"),
+  INVALID_TOKEN_URN("urn:dx:rs:invalidAuthorizationToken", "Token is invalid"),
+  RESOURCE_NOT_FOUND_URN("urn:dx:rs:resourceNotFound", "Document of given id does not exist"),
 
 
 
-  LIMIT_EXCEED("urn:dx:rs:requestLimitExceeded", "Operation exceeds the degault value of limit"),
+  LIMIT_EXCEED_URN("urn:dx:rs:requestLimitExceeded", "Operation exceeds the degault value of limit"),
 
 
   // extra urn
-  INVALID_ID_VALUE("urn:dx:rs:invalidIdValue", "Invalid id"),
-  INVALID_PAYLOAD_FORMAT("urn:dx:rs:invalidPayloadFormat", "Invalid json format in post request [schema mismatch]"),
-  INVALID_PARAM_VALUE("urn:dx:rs:invalidParamameterValue", "Invalid parameter value passed"),
+  INVALID_ID_VALUE_URN("urn:dx:rs:invalidIdValue", "Invalid id"),
+  INVALID_PAYLOAD_FORMAT_URN("urn:dx:rs:invalidPayloadFormat", "Invalid json format in post request [schema mismatch]"),
+  INVALID_PARAM_VALUE_URN("urn:dx:rs:invalidParamameterValue", "Invalid parameter value passed"),
   BAD_REQUEST_URN("urn:dx:rs:badRequest","bad request parameter"),
-  INVALID_HEADER_VALUE("urn:dx:rs:invalidHeaderValue","Invalid header value"),
+  INVALID_HEADER_VALUE_URN("urn:dx:rs:invalidHeaderValue","Invalid header value"),
+  DB_ERROR_URN("urn:dx:rs:DatabaseError","Database error"),
+  QUEUE_ERROR_URN("urn:dx:rs:QueueError","Queue error"),
 
-  BACKING_SERVICE_FORMAT("urn:dx:rs:backend", "format error from backing service [cat,auth etc.]"),
-  SCHEMA_READ_ERROR("urn:dx:rs:readError","Fail to read file"),
-  YET_NOT_IMPLEMENTED("urn:dx:rs:general", "urn yet not implemented in backend verticle.");
+  BACKING_SERVICE_FORMAT_URN("urn:dx:rs:backend", "format error from backing service [cat,auth etc.]"),
+  SCHEMA_READ_ERROR_URN("urn:dx:rs:readError","Fail to read file"),
+  YET_NOT_IMPLEMENTED_URN("urn:dx:rs:general", "urn yet not implemented in backend verticle.");
 
 
 
@@ -60,7 +62,7 @@ public enum ResponseUrn {
     return Stream.of(values())
         .filter(v -> v.urn.equalsIgnoreCase(urn))
         .findAny()
-        .orElse(YET_NOT_IMPLEMENTED); // if backend service dont respond with urn
+        .orElse(YET_NOT_IMPLEMENTED_URN); // if backend service dont respond with urn
   }
 
   public String toString() {

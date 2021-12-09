@@ -24,8 +24,8 @@ import iudx.resource.server.database.archives.elastic.exception.ESQueryDecodeExc
 
 public class AttributeQueryParser implements QueryParser {
 
-  private BoolQueryBuilder builder;
-  private JsonObject json;
+  private final BoolQueryBuilder builder;
+  private final JsonObject json;
 
   public AttributeQueryParser(BoolQueryBuilder builder, JsonObject json) {
     this.builder = builder;
@@ -58,16 +58,17 @@ public class AttributeQueryParser implements QueryParser {
           } else if (EQUAL_OP.equalsIgnoreCase(operator)) {
             builder.filter(QueryBuilders.termQuery(attribute, attributeValue));
           } else if (BETWEEN_OP.equalsIgnoreCase(operator)) {
-            builder.filter(QueryBuilders.rangeQuery(attribute)
-                .gte(attrObj.getString(VALUE_LOWER))
-                .lte(attrObj.getString(VALUE_UPPER)));
+            builder.filter(
+                QueryBuilders.rangeQuery(attribute)
+                    .gte(attrObj.getString(VALUE_LOWER))
+                    .lte(attrObj.getString(VALUE_UPPER)));
           } else if (NOT_EQUAL_OP.equalsIgnoreCase(operator)) {
             builder.mustNot(QueryBuilders.termQuery(attribute, attributeValue));
           } else {
-            throw new ESQueryDecodeException(ResponseUrn.INVALID_ATTR_PARAM, "invalid attribute operator");
+            throw new ESQueryDecodeException(ResponseUrn.INVALID_ATTR_PARAM_URN, "invalid attribute operator");
           }
         } catch (NullPointerException e) {
-          throw new ESQueryDecodeException(ResponseUrn.INVALID_ATTR_PARAM, "exception occured at decoding attributes");
+          throw new ESQueryDecodeException(ResponseUrn.INVALID_ATTR_PARAM_URN, "exception occured at decoding attributes");
         }
       }
     }

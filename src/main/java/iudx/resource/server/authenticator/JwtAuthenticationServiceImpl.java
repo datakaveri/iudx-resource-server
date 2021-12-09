@@ -43,28 +43,28 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
   private static final Logger LOGGER = LogManager.getLogger(JwtAuthenticationServiceImpl.class);
 
-
   final JWTAuth jwtAuth;
   final WebClient catWebClient;
   final String host;
-  final int port;;
+  final int port;
   final String path;
   final String audience;
 
   // resourceGroupCache will contains ACL info about all resource group in a resource server
-  Cache<String, String> resourceGroupCache = CacheBuilder
-      .newBuilder()
-      .maximumSize(1000)
-      .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
-      .build();
+  Cache<String, String> resourceGroupCache =
+      CacheBuilder.newBuilder()
+          .maximumSize(1000)
+          .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
+          .build();
   // resourceIdCache will contains info about resources available(& their ACL) in resource server.
-  Cache<String, String> resourceIdCache = CacheBuilder
-      .newBuilder()
-      .maximumSize(1000)
-      .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
-      .build();
+  Cache<String, String> resourceIdCache =
+      CacheBuilder.newBuilder()
+          .maximumSize(1000)
+          .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
+          .build();
 
-  JwtAuthenticationServiceImpl(Vertx vertx, final JWTAuth jwtAuth, final WebClient webClient, final JsonObject config) {
+  JwtAuthenticationServiceImpl(
+      Vertx vertx, final JWTAuth jwtAuth, final WebClient webClient, final JsonObject config) {
     this.jwtAuth = jwtAuth;
     this.audience = config.getString("host");
     this.host = config.getString("catServerHost");
@@ -72,15 +72,13 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     this.path = Constants.CAT_RSG_PATH;
 
     WebClientOptions options = new WebClientOptions();
-    options.setTrustAll(true)
-        .setVerifyHost(false)
-        .setSsl(true);
+    options.setTrustAll(true).setVerifyHost(false).setSsl(true);
     catWebClient = WebClient.create(vertx, options);
   }
 
   @Override
-  public AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
-      Handler<AsyncResult<JsonObject>> handler) {
+  public AuthenticationService tokenInterospect(
+      JsonObject request, JsonObject authenticationInfo, Handler<AsyncResult<JsonObject>> handler) {
 
     String endPoint = authenticationInfo.getString("apiEndpoint");
     String id = authenticationInfo.getString("id");
@@ -89,68 +87,80 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);
 
+    System.out.println(endPoint);
+    
     boolean doCheckResourceAndId =
         (endPoint.equalsIgnoreCase("/ngsi-ld/v1/subscription")
-            && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")))
+                && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")))
             || endPoint.equalsIgnoreCase("/management/user/resetPassword")
-            || endPoint.equalsIgnoreCase("/revoketoken");
+            || endPoint.equalsIgnoreCase("/ngsi-ld/v1/consumer/audit")
+            || endPoint.equalsIgnoreCase("/admin/revoketoken")
+            || endPoint.equalsIgnoreCase("/admin/resourceattribute");
 
-    LOGGER.info("checkResourceFlag" + doCheckResourceAndId);
+    LOGGER.info("checkResourceFlag " + doCheckResourceAndId);
 
     ResultContainer result = new ResultContainer();
 
-    jwtDecodeFuture.compose(decodeHandler -> {
-      result.jwtData = decodeHandler;
-      return isValidAudienceValue(result.jwtData);
-      // return Future.succeededFuture(true);
-    }).compose(audienceHandler -> {
-      if (!doCheckResourceAndId) {
-        return isOpenResource(id);
-      }
-      return Future.succeededFuture("OPEN");
-    }).compose(openResourceHandler -> {
-      result.isOpen = openResourceHandler.equalsIgnoreCase("OPEN");
-      if (result.isOpen && OPEN_ENDPOINTS.contains(endPoint)) {
-        JsonObject json = new JsonObject();
-        json.put(JSON_USERID, result.jwtData.getSub());
-        return Future.succeededFuture(true);
-      } else if (!doCheckResourceAndId && !result.isOpen) {
-        return isValidId(result.jwtData, id);
-      } else {
-        return Future.succeededFuture(true);
-      }
-    }).compose(validIdHandler -> {
-      return validateAccess(result.jwtData, result.isOpen, authenticationInfo);
-    }).onSuccess(successHandler -> {
-      handler.handle(Future.succeededFuture(successHandler));
-    }).onFailure(failureHandler -> {
-      LOGGER.error("error : " + failureHandler.getMessage());
-      handler.handle(Future.failedFuture(failureHandler.getMessage()));
-    });
+    jwtDecodeFuture
+        .compose(
+            decodeHandler -> {
+              result.jwtData = decodeHandler;
+              return isValidAudienceValue(result.jwtData);
+              // return Future.succeededFuture(true);
+            })
+        .compose(
+            audienceHandler -> {
+              if (!doCheckResourceAndId) {
+                return isOpenResource(id);
+              }
+              return Future.succeededFuture("OPEN");
+            })
+        .compose(
+            openResourceHandler -> {
+              result.isOpen = openResourceHandler.equalsIgnoreCase("OPEN");
+              if (result.isOpen && OPEN_ENDPOINTS.contains(endPoint)) {
+                JsonObject json = new JsonObject();
+                json.put(JSON_USERID, result.jwtData.getSub());
+                return Future.succeededFuture(true);
+              } else if (!doCheckResourceAndId && !result.isOpen) {
+                return isValidId(result.jwtData, id);
+              } else {
+                return Future.succeededFuture(true);
+              }
+            })
+        .compose(
+            validIdHandler -> {
+              return validateAccess(result.jwtData, result.isOpen, authenticationInfo);
+            })
+        .onSuccess(
+            successHandler -> {
+              handler.handle(Future.succeededFuture(successHandler));
+            })
+        .onFailure(
+            failureHandler -> {
+              LOGGER.error("error : " + failureHandler.getMessage());
+              handler.handle(Future.failedFuture(failureHandler.getMessage()));
+            });
     return this;
   }
-
-  // class to contain intermeddiate data for token interospection
-  final class ResultContainer {
-    JwtData jwtData;
-    boolean isResourceExist;
-    boolean isOpen;
-  }
-
 
   Future<JwtData> decodeJwt(String jwtToken) {
     Promise<JwtData> promise = Promise.promise();
     TokenCredentials creds = new TokenCredentials(jwtToken);
 
-    jwtAuth.authenticate(creds)
-        .onSuccess(user -> {
-          JwtData jwtData = new JwtData(user.principal());
-          jwtData.setExp(user.get("exp"));
-          promise.complete(jwtData);
-        }).onFailure(err -> {
-          LOGGER.error("failed to decode/validate jwt token : " + err.getMessage());
-          promise.fail("failed");
-        });
+    jwtAuth
+        .authenticate(creds)
+        .onSuccess(
+            user -> {
+              JwtData jwtData = new JwtData(user.principal());
+              jwtData.setExp(user.get("exp"));
+              promise.complete(jwtData);
+            })
+        .onFailure(
+            err -> {
+              LOGGER.error("failed to decode/validate jwt token : " + err.getMessage());
+              promise.fail("failed");
+            });
 
     return promise.future();
   }
@@ -170,25 +180,34 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       if (idComponents.length < 4) {
         promise.fail("Not Found " + id);
       }
-      String groupId = (idComponents.length == 4) ? id
-          : String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
+      String groupId =
+          (idComponents.length == 4)
+              ? id
+              : String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
       // 1. check group accessPolicy.
       // 2. check resource exist, if exist set accessPolicy to group accessPolicy. else fail
       Future<String> groupACLFuture = getGroupAccessPolicy(groupId);
-      groupACLFuture.compose(groupACLResult -> {
-        String groupPolicy = (String) groupACLResult;
-        return isResourceExist(id, groupPolicy);
-      }).onSuccess(handler -> {
-        promise.complete(resourceIdCache.getIfPresent(id));
-      }).onFailure(handler -> {
-        LOGGER.error("cat response failed for Id : (" + id + ")" + handler.getCause());
-        promise.fail("Not Found " + id);
-      });
+      groupACLFuture
+          .compose(
+              groupACLResult -> {
+                String groupPolicy = groupACLResult;
+                return isResourceExist(id, groupPolicy);
+              })
+          .onSuccess(
+              handler -> {
+                promise.complete(resourceIdCache.getIfPresent(id));
+              })
+          .onFailure(
+              handler -> {
+                LOGGER.error("cat response failed for Id : (" + id + ")" + handler.getCause());
+                promise.fail("Not Found " + id);
+              });
     }
     return promise.future();
   }
 
-  public Future<JsonObject> validateAccess(JwtData jwtData, boolean openResource, JsonObject authInfo) {
+  public Future<JsonObject> validateAccess(
+      JwtData jwtData, boolean openResource, JsonObject authInfo) {
     LOGGER.trace("validateAccess() started");
     Promise<JsonObject> promise = Promise.promise();
 
@@ -212,10 +231,13 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       LOGGER.info("User access is allowed.");
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put(JSON_USERID, jwtData.getSub());
-      LOGGER.info("jwt : " + jwtData.toString());
-      jsonResponse.put(JSON_EXPIRY,
-          (LocalDateTime.ofInstant(Instant.ofEpochSecond(Long.parseLong(jwtData.getExp().toString())),
-              ZoneId.systemDefault())).toString());
+      LOGGER.info("jwt : " + jwtData);
+      jsonResponse.put(
+          JSON_EXPIRY,
+          (LocalDateTime.ofInstant(
+                  Instant.ofEpochSecond(Long.parseLong(jwtData.getExp().toString())),
+                  ZoneId.systemDefault()))
+              .toString());
       promise.complete(jsonResponse);
     } else {
       LOGGER.info("failed");
@@ -254,21 +276,25 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     Promise<Boolean> promise = Promise.promise();
     String id = itemId.replace("/*", "");
     LOGGER.info("id : " + id);
-    catWebClient.get(port, host, "/iudx/cat/v1/item").addQueryParam("id", id)
-        .expect(ResponsePredicate.JSON).send(responseHandler -> {
-          if (responseHandler.succeeded()) {
-            HttpResponse<Buffer> response = responseHandler.result();
-            JsonObject responseBody = response.bodyAsJsonObject();
-            if (responseBody.getString("status").equalsIgnoreCase("success")
-                && responseBody.getInteger("totalHits") > 0) {
-              promise.complete(true);
-            } else {
-              promise.fail(responseHandler.cause());
-            }
-          } else {
-            promise.fail(responseHandler.cause());
-          }
-        });
+    catWebClient
+        .get(port, host, "/iudx/cat/v1/item")
+        .addQueryParam("id", id)
+        .expect(ResponsePredicate.JSON)
+        .send(
+            responseHandler -> {
+              if (responseHandler.succeeded()) {
+                HttpResponse<Buffer> response = responseHandler.result();
+                JsonObject responseBody = response.bodyAsJsonObject();
+                if (responseBody.getString("status").equalsIgnoreCase("success")
+                    && responseBody.getInteger("totalHits") > 0) {
+                  promise.complete(true);
+                } else {
+                  promise.fail(responseHandler.cause());
+                }
+              } else {
+                promise.fail(responseHandler.cause());
+              }
+            });
     return promise.future();
   }
 
@@ -281,28 +307,33 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       promise.complete(true);
     } else {
       LOGGER.debug("Info : Cache miss : call cat server");
-      catWebClient.get(port, host, path).addQueryParam("property", "[id]")
-          .addQueryParam("value", "[[" + id + "]]").addQueryParam("filter", "[id]")
-          .expect(ResponsePredicate.JSON).send(responseHandler -> {
-            if (responseHandler.failed()) {
-              promise.fail("false");
-            }
-            HttpResponse<Buffer> response = responseHandler.result();
-            JsonObject responseBody = response.bodyAsJsonObject();
-            if (response.statusCode() != HttpStatus.SC_OK) {
-              promise.fail("false");
-            } else if (!responseBody.getString("type").equals("urn:dx:cat:Success")) {
-              promise.fail("Not Found");
-              return;
-            } else if (responseBody.getInteger("totalHits") == 0) {
-              LOGGER.debug("Info: Resource ID invalid : Catalogue item Not Found");
-              promise.fail("Not Found");
-            } else {
-              LOGGER.debug("is Exist response : " + responseBody);
-              resourceIdCache.put(id, groupACL);
-              promise.complete(true);
-            }
-          });
+      catWebClient
+          .get(port, host, path)
+          .addQueryParam("property", "[id]")
+          .addQueryParam("value", "[[" + id + "]]")
+          .addQueryParam("filter", "[id]")
+          .expect(ResponsePredicate.JSON)
+          .send(
+              responseHandler -> {
+                if (responseHandler.failed()) {
+                  promise.fail("false");
+                }
+                HttpResponse<Buffer> response = responseHandler.result();
+                JsonObject responseBody = response.bodyAsJsonObject();
+                if (response.statusCode() != HttpStatus.SC_OK) {
+                  promise.fail("false");
+                } else if (!responseBody.getString("type").equals("urn:dx:cat:Success")) {
+                  promise.fail("Not Found");
+                  return;
+                } else if (responseBody.getInteger("totalHits") == 0) {
+                  LOGGER.debug("Info: Resource ID invalid : Catalogue item Not Found");
+                  promise.fail("Not Found");
+                } else {
+                  LOGGER.debug("is Exist response : " + responseBody);
+                  resourceIdCache.put(id, groupACL);
+                  promise.complete(true);
+                }
+              });
     }
     return promise.future();
   }
@@ -316,41 +347,53 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       promise.complete(groupACL);
     } else {
       LOGGER.debug("Info : cache miss");
-      catWebClient.get(port, host, path).addQueryParam("property", "[id]")
-          .addQueryParam("value", "[[" + groupId + "]]").addQueryParam("filter", "[accessPolicy]")
-          .expect(ResponsePredicate.JSON).send(httpResponseAsyncResult -> {
-            if (httpResponseAsyncResult.failed()) {
-              LOGGER.error(httpResponseAsyncResult.cause());
-              promise.fail("Resource not found");
-              return;
-            }
-            HttpResponse<Buffer> response = httpResponseAsyncResult.result();
-            if (response.statusCode() != HttpStatus.SC_OK) {
-              promise.fail("Resource not found");
-              return;
-            }
-            JsonObject responseBody = response.bodyAsJsonObject();
-            if (!responseBody.getString("type").equals("urn:dx:cat:Success")) {
-              promise.fail("Resource not found");
-              return;
-            }
-            String resourceACL = "SECURE";
-            try {
-              resourceACL =
-                  responseBody.getJsonArray("results").getJsonObject(0).getString("accessPolicy");
-              resourceGroupCache.put(groupId, resourceACL);
-              LOGGER.debug("Info: Group ID valid : Catalogue item Found");
-              promise.complete(resourceACL);
-            } catch (Exception ignored) {
-              LOGGER.error(ignored.getMessage());
-              LOGGER.debug("Info: Group ID invalid : Empty response in results from Catalogue");
-              promise.fail("Resource not found");
-            }
-          });
+      catWebClient
+          .get(port, host, path)
+          .addQueryParam("property", "[id]")
+          .addQueryParam("value", "[[" + groupId + "]]")
+          .addQueryParam("filter", "[accessPolicy]")
+          .expect(ResponsePredicate.JSON)
+          .send(
+              httpResponseAsyncResult -> {
+                if (httpResponseAsyncResult.failed()) {
+                  LOGGER.error(httpResponseAsyncResult.cause());
+                  promise.fail("Resource not found");
+                  return;
+                }
+                HttpResponse<Buffer> response = httpResponseAsyncResult.result();
+                if (response.statusCode() != HttpStatus.SC_OK) {
+                  promise.fail("Resource not found");
+                  return;
+                }
+                JsonObject responseBody = response.bodyAsJsonObject();
+                if (!responseBody.getString("type").equals("urn:dx:cat:Success")) {
+                  promise.fail("Resource not found");
+                  return;
+                }
+                String resourceACL = "SECURE";
+                try {
+                  resourceACL =
+                      responseBody
+                          .getJsonArray("results")
+                          .getJsonObject(0)
+                          .getString("accessPolicy");
+                  resourceGroupCache.put(groupId, resourceACL);
+                  LOGGER.debug("Info: Group ID valid : Catalogue item Found");
+                  promise.complete(resourceACL);
+                } catch (Exception ignored) {
+                  LOGGER.error(ignored.getMessage());
+                  LOGGER.debug("Info: Group ID invalid : Empty response in results from Catalogue");
+                  promise.fail("Resource not found");
+                }
+              });
     }
     return promise.future();
   }
 
-
-
+  // class to contain intermeddiate data for token interospection
+  final class ResultContainer {
+    JwtData jwtData;
+    boolean isResourceExist;
+    boolean isOpen;
+  }
 }

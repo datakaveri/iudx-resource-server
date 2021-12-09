@@ -6,6 +6,7 @@ import static iudx.resource.server.authenticator.authorization.Api.ENTITY_OPERAT
 import static iudx.resource.server.authenticator.authorization.Api.RESET_PWD;
 import static iudx.resource.server.authenticator.authorization.Api.SUBSCRIPTION;
 import static iudx.resource.server.authenticator.authorization.Api.TEMPORAL;
+import static iudx.resource.server.authenticator.authorization.Api.USER_AUDIT;
 import static iudx.resource.server.authenticator.authorization.Method.DELETE;
 import static iudx.resource.server.authenticator.authorization.Method.GET;
 import static iudx.resource.server.authenticator.authorization.Method.PATCH;
@@ -36,6 +37,7 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     apiAccessList.add(new AuthorizationRequest(GET, TEMPORAL));
     apiAccessList.add(new AuthorizationRequest(POST, ENTITY_OPERATION));
     apiAccessList.add(new AuthorizationRequest(POST, ENTITY_OPERATION_TEMPORAL));
+    apiAccessList.add(new AuthorizationRequest(GET,USER_AUDIT));
     consumerAuthorizationRules.put(IudxAccess.API.getAccess(), apiAccessList);
 
     // subscriptions access list/rules
