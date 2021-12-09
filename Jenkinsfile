@@ -111,11 +111,11 @@ set -x
       }
     }
 
-    stage('Clean up'){
-      steps{
-        sh 'docker-compose down --remove-orphans'
-      }
-    }
+    // stage('Clean up'){
+    //   steps{
+    //     sh 'docker-compose down --remove-orphans'
+    //   }
+    // }
 
     stage('Push Images') {
       steps{
