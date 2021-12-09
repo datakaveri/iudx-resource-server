@@ -73,11 +73,11 @@ services:
              max-size: "100m"
   
   perfTest:
-    image: ghcr.io/karun-singh/iudx-resource-server:depl
+    image: ghcr.io/karun-singh/iudx-resource-server:dev
     environment:
       - RS_URL=https://rs.iudx.org.in
       - LOG_LEVEL=INFO
-      - RS_JAVA_OPTS=-Xmx4096m
+      - RS_JAVA_OPTS=-Xmx1024m
     volumes:
       - /home/ubuntu/configs/rs-config-test.json:/usr/share/app/configs/config.json
       - /home/ubuntu/configs/keystore.jks:/usr/share/app/configs/keystore.jks
