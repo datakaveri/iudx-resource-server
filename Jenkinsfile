@@ -87,21 +87,25 @@ set -x
       }
     }
 
-    stage('Run Newman collection'){
+    stage('Run Newman collection and ZAP test'){
       steps{
         node('master') {
           script{
-            //catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-              sh 'rm -rf /var/lib/jenkins/iudx/rs/Newman/report/report.html'
-              sh 'newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Release-v2.1.postman_collection.json -e /var/lib/jenkins/iudx/rs/Newman/postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html'
-            //}
+            startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0'])
+            catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+              // sh 'rm -rf /var/lib/jenkins/iudx/rs/Newman/report/report.html'
+              sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Release-v2.1.postman_collection.json -e /home/ubuntu/configs/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html'
+            }
           }
         }
       }
       post{
         always{
           node('master') {
-            publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
+            script{
+               archiveZap failAllAlerts: 15
+              publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
+            }
           }
         }
       }
