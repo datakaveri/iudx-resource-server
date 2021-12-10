@@ -1,7 +1,20 @@
 package iudx.resource.server.common;
 
-import com.hazelcast.internal.json.JsonObject;
+import io.vertx.core.json.JsonObject;
 
+/**
+ * <p>
+ * Response Object can be used to pass URN based messages/responses between different verticles,
+ * mostly in case of failures. where following parameters can be used<br>
+ * <ul>
+ * <li>type   : String representation of URN like urn:dx:rs:SomeErrorURN
+ * <li>status : HTTPstatus code (e.g 404,400 etc.)
+ * <li>title  : brief error title
+ * <li>detail : detailed message
+ * </ul>
+ * </p>
+ * 
+ */
 public class Response {
 
   private String type;
@@ -19,10 +32,10 @@ public class Response {
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
 
-    json.add("type", type);
-    json.add("status", status);
-    json.add("title", title);
-    json.add("detail", detail);
+    json.put("type", type);
+    json.put("status", status);
+    json.put("title", title);
+    json.put("detail", detail);
 
     return json;
   }
@@ -82,6 +95,5 @@ public class Response {
   }
 
 
-  
 
 }

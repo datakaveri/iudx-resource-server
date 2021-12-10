@@ -1,11 +1,11 @@
 package iudx.resource.server.apiserver.subscription;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import iudx.resource.server.database.archives.DatabaseService;
+import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 
 /**
@@ -18,21 +18,21 @@ public class CallbackSubscription implements Subscription {
   private static final Logger LOGGER = LogManager.getLogger(CallbackSubscription.class);
 
   private DataBrokerService databroker;
-  private DatabaseService dbService;
+  private PostgresService pgService;
 
   private static volatile CallbackSubscription instance = null;
 
-  private CallbackSubscription(DataBrokerService databroker, DatabaseService dbService) {
+  private CallbackSubscription(DataBrokerService databroker, PostgresService pgService) {
     this.databroker = databroker;
-    this.dbService = dbService;
+    this.pgService = pgService;
   }
 
   public static CallbackSubscription getInstance(DataBrokerService databroker,
-      DatabaseService dbService) {
+      PostgresService pgService) {
     if (instance == null) {
       synchronized (CallbackSubscription.class) {
         if (instance == null)
-          instance = new CallbackSubscription(databroker, dbService);
+          instance = new CallbackSubscription(databroker, pgService);
       }
     }
     return instance;
