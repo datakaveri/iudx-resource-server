@@ -1,14 +1,11 @@
 package iudx.resource.server.database.postgres;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -32,9 +29,11 @@ public final class PostgresServiceImpl implements PostgresService {
   }
 
   @Override
-  public PostgresService executeQuery(final String query, Handler<AsyncResult<JsonObject>> handler) {
+  public PostgresService executeQuery(final String query,
+      Handler<AsyncResult<JsonObject>> handler) {
 
-    Collector<Row, ?, List<JsonObject>> rowCollector = Collectors.mapping(row -> row.toJson(), Collectors.toList());
+    Collector<Row, ?, List<JsonObject>> rowCollector =
+        Collectors.mapping(row -> row.toJson(), Collectors.toList());
 
     client
         .withConnection(connection -> connection.query(query)
@@ -55,14 +54,16 @@ public final class PostgresServiceImpl implements PostgresService {
     return this;
   }
 
+  // TODO : prepared query works only for String parameters, due to service proxy restriction with
+  // allowed type as arguments. needs to work with TupleBuilder class which will parse other types
+  // like date appropriately to match with postgres types
   @Override
-  public PostgresService executePreparedQuery(final String query, final JsonObject queryParams,
+  public PostgresService executePreparedQuery(final String query, final List<String> queryParams,
       Handler<AsyncResult<JsonObject>> handler) {
 
-    List<Object> params = new ArrayList<Object>(queryParams.getMap().values());
-    
-    Tuple tuple = Tuple.from(params);
-    Collector<Row, ?, List<JsonObject>> rowCollector = Collectors.mapping(row -> row.toJson(), Collectors.toList());
+    Tuple tuple = Tuple.from(queryParams);
+    Collector<Row, ?, List<JsonObject>> rowCollector =
+        Collectors.mapping(row -> row.toJson(), Collectors.toList());
 
     client
         .withConnection(connection -> connection.preparedQuery(query)
