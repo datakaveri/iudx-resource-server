@@ -101,7 +101,7 @@ pipeline {
         always{
           node('master') {
             script{
-               archiveZap failAllAlerts: 15
+//               archiveZap failAllAlerts: 15
               publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
             }
           }
