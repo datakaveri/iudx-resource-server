@@ -1,5 +1,6 @@
 package iudx.resource.server.database.postgres;
 
+import java.util.List;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
@@ -18,7 +19,7 @@ public interface PostgresService {
   PostgresService executeQuery(final String query, Handler<AsyncResult<JsonObject>> handler);
 
   @Fluent
-  PostgresService executePreparedQuery(final String query, final JsonObject queryparams,
+  PostgresService executePreparedQuery(final String query, final List<String> queryparams,
       Handler<AsyncResult<JsonObject>> handler);
 
 

@@ -1,17 +1,13 @@
 package iudx.resource.server.apiserver.subscription;
 
 public enum SubsType {
-  CALLBACK("callback"), 
-  STREAMING("streaming");
+  CALLBACK("CALLBACK"), 
+  STREAMING("STREAMING");
 
-  private final String subType;
+  public final String type;
 
-  SubsType(String subType) {
-    this.subType = subType;
-  }
-
-  public String getMessage() {
-    return subType;
+  SubsType(String type) {
+    this.type = type;
   }
 
 }
