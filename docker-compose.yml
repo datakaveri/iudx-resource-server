@@ -59,7 +59,7 @@ services:
       - WORKSPACE
     volumes:
       - ./src/:/usr/share/app/src
-      - /home/ubuntu/configs/rs-config-test.json:/usr/share/app/configs/config.json
+      - /home/ubuntu/configs/rs-config-test.json:/usr/share/app/configs/config-test.json
       - /home/ubuntu/configs/keystore.jks:/usr/share/app/configs/keystore.jks
       - ./docker/runTests.sh:/usr/share/app/docker/runTests.sh
       - ${WORKSPACE}:/tmp/test
@@ -80,7 +80,7 @@ services:
       - RS_JAVA_OPTS=-Xmx1024m
     volumes:
       - ./src/:/usr/share/app/src
-      - /home/ubuntu/configs/rs-config-test.json:/usr/share/app/configs/config.json
+      - /home/ubuntu/configs/rs-config-test.json:/usr/share/app/configs/config-test.json
       - /home/ubuntu/configs/keystore.jks:/usr/share/app/configs/keystore.jks
     ports:
       - "80:80"
