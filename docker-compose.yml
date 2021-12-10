@@ -82,7 +82,7 @@ services:
       - /home/ubuntu/configs/rs-config-test.json:/usr/share/app/configs/config.json
       - /home/ubuntu/configs/keystore.jks:/usr/share/app/configs/keystore.jks
     ports:
-      - "8443:8443"
+      - "8443:8080"
       - "9000:9000"
     restart: on-failure
     networks: 
