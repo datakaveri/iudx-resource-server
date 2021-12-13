@@ -39,7 +39,8 @@ public class Constants {
   // IUDX management endpoints
   public static final String IUDX_MANAGEMENT_URL = "/management";
   public static final String IUDX_ADAPTOR_URL = "/ngsi-ld/v1";
-  public static final String IUDX_AUDIT_URL = IUDX_ADAPTOR_URL + "/consumer/audit";
+  public static final String IUDX_CONSUMER_AUDIT_URL = IUDX_ADAPTOR_URL + "/consumer/audit";
+  public static final String IUDX_PROVIDER_AUDIT_URL = IUDX_ADAPTOR_URL + "/provider/audit";
   public static final String IUDX_MANAGEMENT_EXCHANGE_URL = IUDX_MANAGEMENT_URL + "/exchange";
   public static final String EXCHANGE_URL_REGEX = IUDX_MANAGEMENT_EXCHANGE_URL + "(.*)";
   public static final String IUDX_MANAGEMENT_QUEUE_URL = IUDX_MANAGEMENT_URL + "/queue";
@@ -57,6 +58,7 @@ public class Constants {
   public static final String RESET_URL_REGEX = IUDX_MANAGEMENT_RESET_PWD + "(.*)";
   /** API Documentation endpoint */
   public static final String ROUTE_STATIC_SPEC = "/apis/spec";
+
   public static final String ROUTE_DOC = "/apis";
   public static final List<String> bypassEndpoint = List.of(ROUTE_STATIC_SPEC, ROUTE_DOC);
   public static final List<String> openEndPoints =
@@ -174,6 +176,8 @@ public class Constants {
   public static final String RESOURCE_GROUP = "resourceGroup";
   public static final String RESOURCE_NAME = "resourceName";
   public static final String USER_ID = "userid";
+  public static final String EXPIRY = "expiry";
+  public static final String IID = "iid";
   public static final String API = "api";
 
   // searchtype

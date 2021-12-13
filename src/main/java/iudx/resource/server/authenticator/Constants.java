@@ -32,6 +32,7 @@ public class Constants {
   public static final String CAT_ITEM_PATH = "/iudx/cat/v1/item";
   public static final String SERVER_MODE = "serverMode";
   public static final String JSON_USERID = "userid";
+  public static final String JSON_IID = "iid";
   public static final String JSON_CONSUMER = "consumer";
   public static final String JSON_PROVIDER = "provider";
   public static final String JSON_TEST_CONSUMER = "vasanth.rajaraman@datakaveri.org";

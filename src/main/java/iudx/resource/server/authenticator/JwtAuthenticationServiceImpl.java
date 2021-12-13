@@ -1,6 +1,7 @@
 package iudx.resource.server.authenticator;
 
 import static iudx.resource.server.authenticator.Constants.JSON_EXPIRY;
+import static iudx.resource.server.authenticator.Constants.JSON_IID;
 import static iudx.resource.server.authenticator.Constants.JSON_USERID;
 import static iudx.resource.server.authenticator.Constants.OPEN_ENDPOINTS;
 
@@ -95,7 +96,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             || endPoint.equalsIgnoreCase("/management/user/resetPassword")
             || endPoint.equalsIgnoreCase("/ngsi-ld/v1/consumer/audit")
             || endPoint.equalsIgnoreCase("/admin/revoketoken")
-            || endPoint.equalsIgnoreCase("/admin/resourceattribute");
+            || endPoint.equalsIgnoreCase("/admin/resourceattribute")
+            || endPoint.equalsIgnoreCase("/ngsi-ld/v1/provider/audit");
+
 
     LOGGER.info("checkResourceFlag " + doCheckResourceAndId);
 
@@ -210,10 +213,12 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       JwtData jwtData, boolean openResource, JsonObject authInfo) {
     LOGGER.trace("validateAccess() started");
     Promise<JsonObject> promise = Promise.promise();
+    String jwtId = jwtData.getIid().split(":")[1];
 
     if (openResource && OPEN_ENDPOINTS.contains(authInfo.getString("apiEndpoint"))) {
       LOGGER.info("User access is allowed.");
       JsonObject jsonResponse = new JsonObject();
+      jsonResponse.put(JSON_IID,jwtId);
       jsonResponse.put(JSON_USERID, jwtData.getSub());
       return Future.succeededFuture(jsonResponse);
     }
@@ -231,6 +236,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       LOGGER.info("User access is allowed.");
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put(JSON_USERID, jwtData.getSub());
+      jsonResponse.put(JSON_IID,jwtId);
       LOGGER.info("jwt : " + jwtData);
       jsonResponse.put(
           JSON_EXPIRY,
