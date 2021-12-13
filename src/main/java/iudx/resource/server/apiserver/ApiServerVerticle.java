@@ -483,8 +483,6 @@ public class ApiServerVerticle extends AbstractVerticle {
                           ResponseUrn.YET_NOT_IMPLEMENTED_URN)
                               .toString());
             });
-
-    LOGGER.info("API server deployed on :" + serverOptions.getPort());
   }
 
   private Future<Void> getConsumerAuditDetail(RoutingContext routingContext) {
@@ -948,7 +946,6 @@ public class ApiServerVerticle extends AbstractVerticle {
       subsReq.onComplete(
           subsRequestHandler -> {
             if (subsRequestHandler.succeeded()) {
-              LOGGER.info("result : " + subsRequestHandler.result());
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response,
@@ -983,7 +980,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(SUBSCRIPTION_ID, subsId);
     requestJson.put(JSON_INSTANCEID, instanceID);
     String subHeader = request.getHeader(HEADER_OPTIONS);
-    String subscrtiptionType = SubsType.STREAMING.type;
+    String subscrtiptionType =SubsType.STREAMING.type;
     requestJson.put(SUB_TYPE, subscrtiptionType);
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
 
