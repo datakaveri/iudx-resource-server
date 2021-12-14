@@ -14,7 +14,7 @@
 		<curator.version>5.1.0</curator.version>
 		<apache-commons-lang3.version>3.12.0</apache-commons-lang3.version>
 		<junit-jupiter-engine.version>5.7.1</junit-jupiter-engine.version>
-		<apache-log4j-core.version>2.15.0</apache-log4j-core.version>
+		<apache-log4j-core.version>2.16.0</apache-log4j-core.version>
 		<lmax-disruptor.version>3.4.4</lmax-disruptor.version>
 		<jacoco-maven-plugin.version>0.8.7</jacoco-maven-plugin.version>
 		<checkstyle.version>8.42</checkstyle.version>
