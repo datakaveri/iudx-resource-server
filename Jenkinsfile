@@ -64,6 +64,8 @@ pipeline {
         node('master') {
           script{
             echo 'token - '+ env.authtoken
+            whoami
+            pwd
             sh 'rm -rf /var/lib/jenkins/iudx/rs/Jmeter/report ; mkdir -p /var/lib/jenkins/iudx/rs/Jmeter/report'
             sh '''
           whoami; pwd ;  
