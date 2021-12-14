@@ -91,6 +91,7 @@ pipeline {
               // sh 'rm -rf /var/lib/jenkins/iudx/rs/Newman/report/report.html'
               sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection.json -e /home/ubuntu/configs/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html'
             }
+            runZapAttack()
           }
         }
       }
