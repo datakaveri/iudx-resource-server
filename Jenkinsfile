@@ -87,6 +87,11 @@ pipeline {
           perfReport errorFailedThreshold: 0, errorUnstableThreshold: 0, filterRegex: '', showTrendGraphs: true, sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'
         }
       }
+      post{
+        failure{
+          error "Test failure. Stopping pipeline execution!"
+        }
+      }
     }
 
     stage('Run Newman collection and ZAP test'){
