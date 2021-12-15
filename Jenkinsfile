@@ -48,6 +48,12 @@ pipeline {
       }
     }
 
+    stage('Capture Code Coverage'){
+      steps{
+        jacoco classPattern: 'target/classes', execPattern: 'target/jacoco.exec', sourcePattern: 'src/main/java'
+      }
+    }
+
     stage('Start RS server for performance testing'){
       steps{
         script{
