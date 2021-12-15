@@ -1,5 +1,8 @@
 package iudx.resource.server.authenticator;
 
+import static iudx.resource.server.common.Constants.PG_SERVICE_ADD;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -12,16 +15,16 @@ import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.serviceproxy.ServiceBinder;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import iudx.resource.server.database.postgres.PostgresService;
 
 /**
  * The Authentication Verticle.
  *
  * <h1>Authentication Verticle</h1>
  *
- * <p>The Authentication Verticle implementation in the the IUDX Resource Server exposes the {@link
- * iudx.resource.server.authenticator.AuthenticationService} over the Vert.x Event Bus.
+ * <p>
+ * The Authentication Verticle implementation in the the IUDX Resource Server exposes the
+ * {@link iudx.resource.server.authenticator.AuthenticationService} over the Vert.x Event Bus.
  *
  * @version 1.0
  * @since 2020-05-31
@@ -35,6 +38,8 @@ public class AuthenticationVerticle extends AbstractVerticle {
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
   private WebClient webClient;
+
+  private PostgresService postgresService;
 
   static WebClient createWebClient(Vertx vertx, JsonObject config) {
     return createWebClient(vertx, config, false);
@@ -69,7 +74,9 @@ public class AuthenticationVerticle extends AbstractVerticle {
               JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
               jwtAuthOptions.addPubSecKey(
                   new PubSecKeyOptions().setAlgorithm("ES256").setBuffer(cert));
-              /* Default jwtIgnoreExpiry is false. If set through config, then that value is taken */
+              /*
+               * Default jwtIgnoreExpiry is false. If set through config, then that value is taken
+               */
               boolean jwtIgnoreExpiry =
                   config().getBoolean("jwtIgnoreExpiry") != null &&
                       config().getBoolean("jwtIgnoreExpiry");
@@ -80,9 +87,11 @@ public class AuthenticationVerticle extends AbstractVerticle {
               }
               JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
+              postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADD);
+
               jwtAuthenticationService =
                   new JwtAuthenticationServiceImpl(
-                      vertx, jwtAuth, createWebClient(vertx, config()), config());
+                      vertx, jwtAuth, createWebClient(vertx, config()), config(), postgresService);
 
               /* Publish the Authentication service with the Event Bus against an address. */
               consumer =

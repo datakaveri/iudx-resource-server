@@ -19,13 +19,11 @@ import static iudx.resource.server.database.postgres.Constants.DELETE_UNIQUE_ATT
 import static iudx.resource.server.database.postgres.Constants.INSERT_REVOKE_TOKEN_SQL;
 import static iudx.resource.server.database.postgres.Constants.INSERT_UNIQUE_ATTR_SQL;
 import static iudx.resource.server.database.postgres.Constants.UPDATE_UNIQUE_ATTR_SQL;
-
+import java.time.LocalDateTime;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -54,7 +52,8 @@ public final class AdminRestApi {
   private final MeteringService auditService;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  AdminRestApi(Vertx vertx, DataBrokerService brokerService, PostgresService pgService, MeteringService auditService) {
+  AdminRestApi(Vertx vertx, DataBrokerService brokerService, PostgresService pgService,
+      MeteringService auditService) {
     this.vertx = vertx;
     this.RMQbrokerService = brokerService;
     this.pgService = pgService;
@@ -93,16 +92,17 @@ public final class AdminRestApi {
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
     JsonObject requestBody = context.getBodyAsJson();
 
-    JsonObject queryParams = new JsonObject()
-        .put("clientId", requestBody.getString("clientId"))
-        .put("rsUrl", requestBody.getString("rsUrl"))
-        .put("token", requestBody.getString("token"))
-        .put("expiry", authInfo.getString("expiry"));
+    StringBuilder query = new StringBuilder(INSERT_REVOKE_TOKEN_SQL
+        .replace("$1", requestBody.getString("sub"))
+        .replace("$2", LocalDateTime.now().toString()));
+
 
     JsonObject rmqMessage = new JsonObject();
-    rmqMessage.put("token", requestBody.getString("token"));
+    rmqMessage.put("sub", requestBody.getString("sub"));
+    rmqMessage.put("expiry", LocalDateTime.now().toString());
 
-    pgService.executePreparedQuery(INSERT_REVOKE_TOKEN_SQL, queryParams, pgHandler -> {
+    LOGGER.info("query : "+query.toString());
+    pgService.executeQuery(query.toString(), pgHandler -> {
       if (pgHandler.succeeded()) {
         RMQbrokerService.publishMessage(rmqMessage, TOKEN_INVALID_EX, TOKEN_INVALID_EX_ROUTING_KEY,
             rmqHandler -> {
@@ -112,7 +112,8 @@ public final class AdminRestApi {
               } else {
                 LOGGER.error(rmqHandler.cause());
                 try {
-                  Response resp = objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
+                  Response resp =
+                      objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
                   handleResponse(response, resp);
                 } catch (JsonProcessingException e) {
                   LOGGER.error("Failure message not in format [type,title,detail]");
@@ -162,7 +163,8 @@ public final class AdminRestApi {
               } else {
                 LOGGER.error(rmqHandler.cause());
                 try {
-                  Response resp = objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
+                  Response resp =
+                      objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
                   handleResponse(response, resp);
                 } catch (JsonProcessingException e) {
                   handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
@@ -211,7 +213,8 @@ public final class AdminRestApi {
               } else {
                 LOGGER.error(rmqHandler.cause());
                 try {
-                  Response resp = objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
+                  Response resp =
+                      objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
                   handleResponse(response, resp);
                 } catch (JsonProcessingException e) {
                   handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
@@ -255,7 +258,8 @@ public final class AdminRestApi {
               } else {
                 LOGGER.error(rmqHandler.cause());
                 try {
-                  Response resp = objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
+                  Response resp =
+                      objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
                   handleResponse(response, resp);
                 } catch (JsonProcessingException e) {
                   handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
@@ -290,7 +294,8 @@ public final class AdminRestApi {
     handleResponse(response, code, urn, code.getDescription());
   }
 
-  private void handleResponse(HttpServerResponse response, HttpStatusCode statusCode, ResponseUrn urn, String message) {
+  private void handleResponse(HttpServerResponse response, HttpStatusCode statusCode,
+      ResponseUrn urn, String message) {
     response
         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
         .setStatusCode(statusCode.getValue())
