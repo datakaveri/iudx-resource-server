@@ -1,15 +1,15 @@
 package iudx.resource.server.authenticator;
 
+import static iudx.resource.server.common.Constants.PG_SERVICE_ADD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import io.micrometer.core.ipc.http.HttpSender.Method;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -22,6 +22,8 @@ import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.authenticator.authorization.Api;
 import iudx.resource.server.authenticator.model.JwtData;
 import iudx.resource.server.configuration.Configuration;
+import iudx.resource.server.database.postgres.PostgresService;
+import iudx.resource.server.database.postgres.PostgresVerticle;
 
 @ExtendWith(VertxExtension.class)
 public class JwtAuthServiceImplTest {
@@ -33,6 +35,7 @@ public class JwtAuthServiceImplTest {
   private static String openId;
   private static String closeId;
   private static String invalidId;
+  private static PostgresService pgService;
 
 
   @BeforeAll
@@ -42,34 +45,55 @@ public class JwtAuthServiceImplTest {
     authConfig = config.configLoader(1, vertx);
 
 
+    JsonObject pgconfig = config.configLoader(7, vertx);
+    vertx.deployVerticle(PostgresVerticle.class.getName(),
+        new DeploymentOptions()
+            .setInstances(1)
+            .setConfig(pgconfig),
+        pgDeployer -> {
+          if (pgDeployer.succeeded()) {
+            pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADD);
 
-    JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
-    jwtAuthOptions.addPubSecKey(
-        new PubSecKeyOptions()
-            .setAlgorithm("ES256")
-            .setBuffer("-----BEGIN PUBLIC KEY-----\n" +
-                "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8BKf2HZ3wt6wNf30SIsbyjYPkkTS\n" +
-                "GGyyM2/MGF/zYTZV9Z28hHwvZgSfnbsrF36BBKnWszlOYW0AieyAUKaKdg==\n" +
-                "-----END PUBLIC KEY-----\n" +
-                ""));
-    jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);// ignore token expiration only for test
-    JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
+            JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
+            jwtAuthOptions.addPubSecKey(
+                new PubSecKeyOptions()
+                    .setAlgorithm("ES256")
+                    .setBuffer("-----BEGIN PUBLIC KEY-----\n" +
+                        "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8BKf2HZ3wt6wNf30SIsbyjYPkkTS\n" +
+                        "GGyyM2/MGF/zYTZV9Z28hHwvZgSfnbsrF36BBKnWszlOYW0AieyAUKaKdg==\n" +
+                        "-----END PUBLIC KEY-----\n" +
+                        ""));
+            jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);// ignore token expiration only
+                                                                     // for
+                                                                     // test
+            JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
-    WebClient webClient = AuthenticationVerticle.createWebClient(vertx, authConfig, true);
-    jwtAuthenticationService = new JwtAuthenticationServiceImpl(vertx, jwtAuth, webClient, authConfig);
+            PostgresService pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADD);
 
-    // since test token doesn't contains valid id's, so forcibly put some dummy id in cache for test.
-    openId = "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood";
-    closeId = "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information";
-    invalidId = "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group1";
+            WebClient webClient = AuthenticationVerticle.createWebClient(vertx, authConfig, true);
+            jwtAuthenticationService =
+                new JwtAuthenticationServiceImpl(vertx, jwtAuth, webClient, authConfig, pgService);
 
-    jwtAuthenticationService.resourceIdCache.put(openId, "OPEN");
-    jwtAuthenticationService.resourceIdCache.put(closeId, "CLOSED");
-    jwtAuthenticationService.resourceIdCache.put(invalidId, "CLOSED");
+            // since test token doesn't contains valid id's, so forcibly put some dummy id in cache
+            // for
+            // test.
+            openId =
+                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood";
+            closeId =
+                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information";
+            invalidId = "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group1";
+
+            jwtAuthenticationService.resourceIdCache.put(openId, "OPEN");
+            jwtAuthenticationService.resourceIdCache.put(closeId, "CLOSED");
+            jwtAuthenticationService.resourceIdCache.put(invalidId, "CLOSED");
 
 
-    LOGGER.info("Auth tests setup complete");
-    testContext.completeNow();
+            LOGGER.info("Auth tests setup complete");
+            testContext.completeNow();
+          } else {
+            testContext.failNow("fail to deploy pg verticle fo JWT vertticle test");
+          }
+        });
   }
 
 
@@ -330,40 +354,43 @@ public class JwtAuthServiceImplTest {
   @Test
   @DisplayName("decode valid jwt")
   public void decodeJwtProviderSuccess(VertxTestContext testContext) {
-    jwtAuthenticationService.decodeJwt(JwtTokenHelper.closedProviderApiToken).onComplete(handler -> {
-      if (handler.succeeded()) {
-        assertEquals("provider", handler.result().getRole());
-        testContext.completeNow();
-      } else {
-        testContext.failNow(handler.cause());
-      }
-    });
+    jwtAuthenticationService.decodeJwt(JwtTokenHelper.closedProviderApiToken)
+        .onComplete(handler -> {
+          if (handler.succeeded()) {
+            assertEquals("provider", handler.result().getRole());
+            testContext.completeNow();
+          } else {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   @Test
   @DisplayName("decode valid jwt - delegate")
   public void decodeJwtDelegateSuccess(VertxTestContext testContext) {
-    jwtAuthenticationService.decodeJwt(JwtTokenHelper.closedDelegateApiToken).onComplete(handler -> {
-      if (handler.succeeded()) {
-        assertEquals("delegate", handler.result().getRole());
-        testContext.completeNow();
-      } else {
-        testContext.failNow(handler.cause());
-      }
-    });
+    jwtAuthenticationService.decodeJwt(JwtTokenHelper.closedDelegateApiToken)
+        .onComplete(handler -> {
+          if (handler.succeeded()) {
+            assertEquals("delegate", handler.result().getRole());
+            testContext.completeNow();
+          } else {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   @Test
   @DisplayName("decode valid jwt - consumer")
   public void decodeJwtConsumerSuccess(VertxTestContext testContext) {
-    jwtAuthenticationService.decodeJwt(JwtTokenHelper.closedConsumerApiSubsToken).onComplete(handler -> {
-      if (handler.succeeded()) {
-        assertEquals("consumer", handler.result().getRole());
-        testContext.completeNow();
-      } else {
-        testContext.failNow(handler.cause());
-      }
-    });
+    jwtAuthenticationService.decodeJwt(JwtTokenHelper.closedConsumerApiSubsToken)
+        .onComplete(handler -> {
+          if (handler.succeeded()) {
+            assertEquals("consumer", handler.result().getRole());
+            testContext.completeNow();
+          } else {
+            testContext.failNow(handler.cause());
+          }
+        });
   }
 
   @Test
@@ -388,7 +415,8 @@ public class JwtAuthServiceImplTest {
     JsonObject authInfo = new JsonObject();
 
     authInfo.put("token", JwtTokenHelper.openConsumerApiToken);
-    authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    authInfo.put("id",
+        "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/entities");
     authInfo.put("method", "GET");
 
@@ -397,7 +425,8 @@ public class JwtAuthServiceImplTest {
     jwtData.setAud("rs.iudx.io");
     jwtData.setExp(1627408865);
     jwtData.setIat(1627408865);
-    jwtData.setIid("rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    jwtData.setIid(
+        "rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api").add("sub")));
 
@@ -418,7 +447,8 @@ public class JwtAuthServiceImplTest {
     JsonObject authInfo = new JsonObject();
 
     authInfo.put("token", JwtTokenHelper.openConsumerApiToken);
-    authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    authInfo.put("id",
+        "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/entities");
     authInfo.put("method", "POST");
 
@@ -427,7 +457,8 @@ public class JwtAuthServiceImplTest {
     jwtData.setAud("rs.iudx.io");
     jwtData.setExp(1627408865);
     jwtData.setIat(1627408865);
-    jwtData.setIid("rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    jwtData.setIid(
+        "rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
 
@@ -448,7 +479,8 @@ public class JwtAuthServiceImplTest {
     JsonObject authInfo = new JsonObject();
 
     authInfo.put("token", JwtTokenHelper.openConsumerApiToken);
-    authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    authInfo.put("id",
+        "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/subscription");
     authInfo.put("method", "POST");
 
@@ -457,7 +489,8 @@ public class JwtAuthServiceImplTest {
     jwtData.setAud("rs.iudx.io");
     jwtData.setExp(1627408865);
     jwtData.setIat(1627408865);
-    jwtData.setIid("rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    jwtData.setIid(
+        "rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api").add("sub")));
 
@@ -478,7 +511,8 @@ public class JwtAuthServiceImplTest {
     JsonObject authInfo = new JsonObject();
 
     authInfo.put("token", JwtTokenHelper.openConsumerSubsToken);
-    authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    authInfo.put("id",
+        "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/subscription");
     authInfo.put("method", "POST");
 
@@ -487,7 +521,8 @@ public class JwtAuthServiceImplTest {
     jwtData.setAud("rs.iudx.io");
     jwtData.setExp(1627408865);
     jwtData.setIat(1627408865);
-    jwtData.setIid("rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    jwtData.setIid(
+        "rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
 
@@ -508,7 +543,8 @@ public class JwtAuthServiceImplTest {
     JsonObject authInfo = new JsonObject();
 
     authInfo.put("token", JwtTokenHelper.openConsumerApiToken);
-    authInfo.put("id", "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    authInfo.put("id",
+        "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     authInfo.put("apiEndpoint", "/ngsi-ld/v1/ingestion");
     authInfo.put("method", "POST");
 
@@ -517,7 +553,8 @@ public class JwtAuthServiceImplTest {
     jwtData.setAud("rs.iudx.io");
     jwtData.setExp(1627408865);
     jwtData.setIat(1627408865);
-    jwtData.setIid("rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    jwtData.setIid(
+        "rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
 
@@ -636,12 +673,14 @@ public class JwtAuthServiceImplTest {
     jwtData.setAud("rs.iudx.io");
     jwtData.setExp(1627408865);
     jwtData.setIat(1627408865);
-    jwtData.setIid("rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    jwtData.setIid(
+        "rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("provider");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("ingest")));
 
     jwtAuthenticationService
-        .isValidId(jwtData, "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053")
+        .isValidId(jwtData,
+            "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053")
         .onComplete(handler -> {
           if (handler.succeeded()) {
             testContext.completeNow();
@@ -660,12 +699,14 @@ public class JwtAuthServiceImplTest {
     jwtData.setAud("rs.iudx.io");
     jwtData.setExp(1627408865);
     jwtData.setIat(1627408865);
-    jwtData.setIid("rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    jwtData.setIid(
+        "rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("provider");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("ingest")));
 
     jwtAuthenticationService
-        .isValidId(jwtData, "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR055")
+        .isValidId(jwtData,
+            "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR055")
         .onComplete(handler -> {
           if (handler.succeeded()) {
             testContext.failNow("fail");
@@ -683,7 +724,8 @@ public class JwtAuthServiceImplTest {
     jwtData.setAud("abc.iudx.io1");
     jwtData.setExp(1627408865);
     jwtData.setIat(1627408865);
-    jwtData.setIid("rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
+    jwtData.setIid(
+        "rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("provider");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("ingest")));
     jwtAuthenticationService.isValidAudienceValue(jwtData).onComplete(handler -> {

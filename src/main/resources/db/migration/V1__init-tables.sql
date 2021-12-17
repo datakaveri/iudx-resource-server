@@ -6,12 +6,10 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- TODO: decide max length for varchar
 CREATE TABLE IF NOT EXISTS revoked_tokens
 (
-   _id uuid DEFAULT uuid_generate_v4 () NOT NULL,
-   client_id varchar NOT NULL,
-   rs_url varchar NOT NULL,
-   token varchar NOT NULL,
+   _id uuid NOT NULL,
    expiry timestamp with time zone NOT NULL,
    created_at timestamp without time zone NOT NULL,
+   modified_at timestamp without time zone NOT NULL,
    CONSTRAINT revoke_tokens_pk PRIMARY KEY (_id)
 );
 
@@ -57,4 +55,6 @@ CREATE TRIGGER update_ua_created BEFORE INSERT ON unique_attributes FOR EACH ROW
 
 -- revoked_tokens table
 CREATE TRIGGER update_rt_created BEFORE INSERT ON revoked_tokens FOR EACH ROW EXECUTE PROCEDURE update_created ();
+CREATE TRIGGER update_rt_modified BEFORE INSERT OR UPDATE ON revoked_tokens FOR EACH ROW EXECUTE PROCEDURE update_modified ();
+
 
