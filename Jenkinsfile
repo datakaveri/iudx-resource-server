@@ -97,7 +97,7 @@ pipeline {
       steps{
         node('master') {
           script{
-            startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0', additionalConfigurations: 'pscans.enabled=false'])
+            startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0', additionalConfigurations: ["pscans.enabled=false"]])
             catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
               // sh 'rm -rf /var/lib/jenkins/iudx/rs/Newman/report/report.html'
               sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection.json -e /home/ubuntu/configs/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html'
