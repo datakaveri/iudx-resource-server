@@ -57,8 +57,8 @@ pipeline {
     stage('Start RS server for performance testing'){
       steps{
         script{
-          sh 'scp Jmeter/ResourceServer.jmx jenkins@20.193.225.59:/var/lib/jenkins/iudx/rs/Jmeter/'
-          sh 'scp src/test/resources/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection.json jenkins@20.193.225.59:/var/lib/jenkins/iudx/rs/Newman/'
+          sh 'scp Jmeter/ResourceServer.jmx jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Jmeter/'
+          sh 'scp src/test/resources/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection.json jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Newman/'
           sh 'docker-compose -f docker-compose.yml up -d perfTest'
           sh 'sleep 45'
         }
@@ -69,10 +69,9 @@ pipeline {
       steps{
         node('master') {
           script{
-            echo 'token - '+ env.authtoken
+            // echo 'token - '+ env.authtoken
             sh 'rm -rf /var/lib/jenkins/iudx/rs/Jmeter/report ; mkdir -p /var/lib/jenkins/iudx/rs/Jmeter/report'
             sh '''
-          whoami; pwd ;  
           /var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t /var/lib/jenkins/iudx/rs/Jmeter/ResourceServer.jmx -l /var/lib/jenkins/iudx/rs/Jmeter/report/JmeterTest.jtl -e -o /var/lib/jenkins/iudx/rs/Jmeter/report/ -Jtoken=env.authtoken
         '''
           }
@@ -83,8 +82,8 @@ pipeline {
     stage('Capture Jmeter report'){
       steps{
         node('master') {
-          // perfReport filterRegex: '', sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'
-          perfReport errorFailedThreshold: 0, errorUnstableThreshold: 0, filterRegex: '', showTrendGraphs: true, sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'
+          perfReport filterRegex: '', sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'
+          // perfReport errorFailedThreshold: 0, errorUnstableThreshold: 0, filterRegex: '', showTrendGraphs: true, sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'
         }
       }
       post{
@@ -98,7 +97,7 @@ pipeline {
       steps{
         node('master') {
           script{
-            startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0', additionalConfiguration: 'pscanActionSetScannerAlertThreshold=OFF'])
+            startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0', additionalConfiguration: 'pscans.enabled=false'])
             catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
               // sh 'rm -rf /var/lib/jenkins/iudx/rs/Newman/report/report.html'
               sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection.json -e /home/ubuntu/configs/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html'
