@@ -56,13 +56,17 @@ public final class PostgresServiceImpl implements PostgresService {
     return this;
   }
 
+  // TODO : prepared query works only for String parameters, due to service proxy restriction with
+  // allowed type as arguments. needs to work with TupleBuilder class which will parse other types
+  // like date appropriately to match with postgres types
   @Override
-  public PostgresService executePreparedQuery(final String query, final JsonObject queryParams,
+  public PostgresService executePreparedQuery(final String query, final JsonObject  queryParams,
       Handler<AsyncResult<JsonObject>> handler) {
 
     List<Object> params = new ArrayList<Object>(queryParams.getMap().values());
 
     Tuple tuple = Tuple.from(params);
+
     Collector<Row, ?, List<JsonObject>> rowCollector =
         Collectors.mapping(row -> row.toJson(), Collectors.toList());
 

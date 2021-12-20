@@ -57,17 +57,14 @@ import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN
 import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TEMPORAL_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN_URN;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
@@ -115,7 +112,8 @@ import iudx.resource.server.metering.MeteringService;
  *
  * <h1>Resource Server API Verticle</h1>
  *
- * <p>The API Server verticle implements the IUDX Resource Server APIs. It handles the API requests
+ * <p>
+ * The API Server verticle implements the IUDX Resource Server APIs. It handles the API requests
  * from the clients and interacts with the associated Service to respond.
  *
  * @see io.vertx.core.Vertx
@@ -287,6 +285,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         .handler(this::handleTemporalQuery)
         .failureHandler(validationsFailureHandler);
 
+    // create sub
     ValidationHandler subsValidationHandler =
         new ValidationHandler(vertx, RequestType.SUBSCRIPTION);
     router
@@ -356,7 +355,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
         .handler(AuthHandler.create(vertx))
         .handler(this::getAdapterDetails);
-    // reset password
+
     router
         .get(NGSILD_BASE.path + INGESTION.path + "/:domain/:userSha/:resourceServer/:resourceGroup")
         .handler(AuthHandler.create(vertx))
@@ -456,15 +455,18 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     postgresService = PostgresService.createProxy(vertx, POSTGRES_SERVICE_ADDRESS);
 
-    router.mountSubRouter(ADMIN.path, new AdminRestApi(vertx, databroker, postgresService,meteringService).init());
+    router.mountSubRouter(ADMIN.path,
+        new AdminRestApi(vertx, databroker, postgresService, meteringService).init());
     router.mountSubRouter(MANAGEMENT.path,
-        new ManagementRestApi(vertx, databroker, postgresService, meteringService, managementApi).init());
+        new ManagementRestApi(vertx, databroker, postgresService, meteringService, managementApi)
+            .init());
 
     router.route().last().handler(requestHandler -> {
       HttpServerResponse response = requestHandler.response();
       response.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
           .setStatusCode(404)
-          .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN).toString());
+          .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
+              .toString());
     });
 
     router
@@ -477,9 +479,12 @@ public class ApiServerVerticle extends AbstractVerticle {
                   .putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
                   .setStatusCode(404)
                   .end(
-                      generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
-                          .toString());
+                      generateResponse(HttpStatusCode.NOT_FOUND,
+                          ResponseUrn.YET_NOT_IMPLEMENTED_URN)
+                              .toString());
             });
+
+    LOGGER.info("API server deployed on :" + serverOptions.getPort());
   }
 
   private Future<Void> getConsumerAuditDetail(RoutingContext routingContext) {
@@ -598,7 +603,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         executeLatestSearchQuery(routingContext, json, response);
       } else {
         LOGGER.error("catalogue item/group doesn't have filters.");
-        handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, filtersHandler.cause().getMessage());
+        handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN,
+            filtersHandler.cause().getMessage());
       }
     });
   }
@@ -712,7 +718,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
           }
         });
-    }
+  }
 
 
   /**
@@ -829,7 +835,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           }
         });
 
-      }
+  }
 
 
   /**
@@ -839,42 +845,33 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   private void handleSubscriptions(RoutingContext routingContext) {
     LOGGER.debug("Info: handleSubscription method started");
-    /* Handles HTTP request from client */
     HttpServerRequest request = routingContext.request();
-    /* Handles HTTP response from server to client */
     HttpServerResponse response = routingContext.response();
-    /* HTTP request body as Json */
     JsonObject requestBody = routingContext.getBodyAsJson();
-    /* HTTP request instance/host details */
     String instanceID = request.getHeader(HEADER_HOST);
     String subHeader = request.getHeader(HEADER_OPTIONS);
-    String subscrtiptionType = SubsType.STREAMING.getMessage();
+    String subscrtiptionType = SubsType.STREAMING.type;
     requestBody.put(SUB_TYPE, subscrtiptionType);
-    /* checking authentication info in requests */
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
 
-    if (requestBody.containsKey(SUB_TYPE)) {
-      JsonObject jsonObj = requestBody.copy();
-      jsonObj.put(USER_ID, authInfo.getString(USER_ID));
-      jsonObj.put(JSON_INSTANCEID, instanceID);
-      LOGGER.debug("Info: json for subs :: ;" + jsonObj);
-      Future<JsonObject> subsReq = subsService.createSubscription(jsonObj, databroker, database);
-      subsReq.onComplete(
-          subHandler -> {
-            if (subHandler.succeeded()) {
-              LOGGER.info("Success: Handle Subscription request;");
-              Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(
-                  response, ResponseType.Created.getCode(), subHandler.result().toString());
-            } else {
-              LOGGER.error("Fail: Handle Subscription request;");
-              processBackendResponse(response, subHandler.cause().getMessage());
-            }
-          });
-    } else {
-      LOGGER.error("Fail: Bad request");
-      handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_SUB_TYPE_NOT_FOUND);
-    }
+    JsonObject jsonObj = requestBody.copy();
+    jsonObj.put(USER_ID, authInfo.getString(USER_ID));
+    jsonObj.put(JSON_INSTANCEID, instanceID);
+    LOGGER.debug("Info: json for subs :: ;" + jsonObj);
+    Future<JsonObject> subsReq =
+        subsService.createSubscription(jsonObj, databroker, postgresService, authInfo);
+    subsReq.onComplete(
+        subHandler -> {
+          if (subHandler.succeeded()) {
+            LOGGER.info("Success: Handle Subscription request;");
+            Future.future(fu -> updateAuditTable(routingContext));
+            handleSuccessResponse(
+                response, ResponseType.Created.getCode(), subHandler.result().toString());
+          } else {
+            LOGGER.error("Fail: Handle Subscription request;");
+            processBackendResponse(response, subHandler.cause().getMessage());
+          }
+        });
   }
 
   /**
@@ -894,36 +891,33 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(SUBSCRIPTION_ID, subsId);
     requestJson.put(JSON_INSTANCEID, instanceID);
     String subHeader = request.getHeader(HEADER_OPTIONS);
-    String subscrtiptionType = SubsType.STREAMING.getMessage();
+    String subscrtiptionType = SubsType.STREAMING.type;
     requestJson.put(SUB_TYPE, subscrtiptionType);
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-    if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
-      if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
-        JsonObject jsonObj = requestJson.copy();
-        jsonObj.put(userid, authInfo.getString(USER_ID));
-        Future<JsonObject> subsReq = subsService.appendSubscription(jsonObj, databroker, database);
-        subsReq.onComplete(
-            subsRequestHandler -> {
-              if (subsRequestHandler.succeeded()) {
-                LOGGER.info("Success: Appending subscription");
-                Future.future(fu -> updateAuditTable(routingContext));
-                handleSuccessResponse(
-                    response,
-                    ResponseType.Created.getCode(),
-                    subsRequestHandler.result().toString());
-              } else {
-                LOGGER.error("Fail: Appending subscription");
-                processBackendResponse(response, subsRequestHandler.cause().getMessage());
-              }
-            });
-      } else {
-        LOGGER.error("Fail: Bad request");
-        handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_NAME);
-      }
+    if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
+      JsonObject jsonObj = requestJson.copy();
+      jsonObj.put(userid, authInfo.getString(USER_ID));
+      Future<JsonObject> subsReq =
+          subsService.appendSubscription(jsonObj, databroker, postgresService, authInfo);
+      subsReq.onComplete(
+          subsRequestHandler -> {
+            if (subsRequestHandler.succeeded()) {
+              LOGGER.info("Success: Appending subscription");
+              Future.future(fu -> updateAuditTable(routingContext));
+              handleSuccessResponse(
+                  response,
+                  ResponseType.Created.getCode(),
+                  subsRequestHandler.result().toString());
+            } else {
+              LOGGER.error("Fail: Appending subscription");
+              processBackendResponse(response, subsRequestHandler.cause().getMessage());
+            }
+          });
     } else {
       LOGGER.error("Fail: Bad request");
-      handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_SUB_TYPE_NOT_FOUND);
+      handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_NAME);
     }
+
   }
 
   /**
@@ -941,37 +935,35 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = routingContext.getBodyAsJson();
     String instanceID = request.getHeader(HEADER_HOST);
     String subHeader = request.getHeader(HEADER_OPTIONS);
-    String subscrtiptionType = SubsType.STREAMING.getMessage();
+    String subscrtiptionType = SubsType.STREAMING.type;
     requestJson.put(SUB_TYPE, subscrtiptionType);
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-    if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
-      if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
-        JsonObject jsonObj = requestJson.copy();
-        jsonObj.put(SUBSCRIPTION_ID, subsId);
-        jsonObj.put(JSON_INSTANCEID, instanceID);
-        jsonObj.put(USER_ID, authInfo.getString(USER_ID));
-        Future<JsonObject> subsReq = subsService.updateSubscription(jsonObj, databroker, database);
-        subsReq.onComplete(
-            subsRequestHandler -> {
-              if (subsRequestHandler.succeeded()) {
-                Future.future(fu -> updateAuditTable(routingContext));
-                handleSuccessResponse(
-                    response,
-                    ResponseType.Created.getCode(),
-                    subsRequestHandler.result().toString());
-              } else {
-                LOGGER.error("Fail: Bad request");
-                processBackendResponse(response, subsRequestHandler.cause().getMessage());
-              }
-            });
-      } else {
-        LOGGER.error("Fail: Bad request");
-        handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_NAME);
-      }
+    if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
+      JsonObject jsonObj = requestJson.copy();
+      jsonObj.put(SUBSCRIPTION_ID, subsId);
+      jsonObj.put(JSON_INSTANCEID, instanceID);
+      jsonObj.put(USER_ID, authInfo.getString(USER_ID));
+      Future<JsonObject> subsReq =
+          subsService.updateSubscription(jsonObj, databroker, postgresService, authInfo);
+      subsReq.onComplete(
+          subsRequestHandler -> {
+            if (subsRequestHandler.succeeded()) {
+              LOGGER.info("result : " + subsRequestHandler.result());
+              Future.future(fu -> updateAuditTable(routingContext));
+              handleSuccessResponse(
+                  response,
+                  ResponseType.Created.getCode(),
+                  subsRequestHandler.result().toString());
+            } else {
+              LOGGER.error("Fail: Bad request");
+              processBackendResponse(response, subsRequestHandler.cause().getMessage());
+            }
+          });
     } else {
       LOGGER.error("Fail: Bad request");
-      handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_SUB_TYPE_NOT_FOUND);
+      handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_NAME);
     }
+
   }
 
   /**
@@ -991,14 +983,15 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(SUBSCRIPTION_ID, subsId);
     requestJson.put(JSON_INSTANCEID, instanceID);
     String subHeader = request.getHeader(HEADER_OPTIONS);
-    String subscrtiptionType = SubsType.STREAMING.getMessage();
+    String subscrtiptionType = SubsType.STREAMING.type;
     requestJson.put(SUB_TYPE, subscrtiptionType);
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
 
     if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
       JsonObject jsonObj = requestJson.copy();
       jsonObj.put(JSON_CONSUMER, authInfo.getString(JSON_CONSUMER));
-      Future<JsonObject> subsReq = subsService.getSubscription(jsonObj, databroker, database);
+      Future<JsonObject> subsReq =
+          subsService.getSubscription(jsonObj, databroker, postgresService);
       subsReq.onComplete(
           subHandler -> {
             if (subHandler.succeeded()) {
@@ -1034,13 +1027,14 @@ public class ApiServerVerticle extends AbstractVerticle {
     requestJson.put(SUBSCRIPTION_ID, subsId);
     requestJson.put(JSON_INSTANCEID, instanceID);
     String subHeader = request.getHeader(HEADER_OPTIONS);
-    String subscrtiptionType = SubsType.STREAMING.getMessage();
+    String subscrtiptionType = SubsType.STREAMING.type;
     requestJson.put(SUB_TYPE, subscrtiptionType);
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     if (requestJson.containsKey(SUB_TYPE)) {
       JsonObject jsonObj = requestJson.copy();
       jsonObj.put(USER_ID, authInfo.getString(USER_ID));
-      Future<JsonObject> subsReq = subsService.deleteSubscription(jsonObj, databroker, database);
+      Future<JsonObject> subsReq =
+          subsService.deleteSubscription(jsonObj, databroker, postgresService);
       subsReq.onComplete(
           subHandler -> {
             if (subHandler.succeeded()) {
@@ -1169,7 +1163,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * publish heartbeat details to Rabbit MQ.
    *
    * @param routingContext routingContext Note: This is too frequent an operation to have info or
-   *     error level logs
+   *        error level logs
    */
   public void publishHeartbeat(RoutingContext routingContext) {
     LOGGER.debug("Info: publishHeartbeat method starts;");
@@ -1207,7 +1201,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * publish downstream issues to Rabbit MQ.
    *
    * @param routingContext routingContext Note: This is too frequent an operation to have info or
-   *     error level logs
+   *        error level logs
    */
   public void publishDownstreamIssue(RoutingContext routingContext) {
     LOGGER.debug("Info: publishDownStreamIssue method started;");

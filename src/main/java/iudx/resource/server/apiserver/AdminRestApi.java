@@ -101,7 +101,7 @@ public final class AdminRestApi {
     rmqMessage.put("sub", requestBody.getString("sub"));
     rmqMessage.put("expiry", LocalDateTime.now().toString());
 
-    LOGGER.info("query : "+query.toString());
+    LOGGER.info("query : " + query.toString());
     pgService.executeQuery(query.toString(), pgHandler -> {
       if (pgHandler.succeeded()) {
         RMQbrokerService.publishMessage(rmqMessage, TOKEN_INVALID_EX, TOKEN_INVALID_EX_ROUTING_KEY,
@@ -152,7 +152,7 @@ public final class AdminRestApi {
     rmqMessage.put("id", id);
     rmqMessage.put("unique-attribute", attribute);
     rmqMessage.put("eventType", BroadcastEventType.CREATE);
-
+    
     pgService.executePreparedQuery(INSERT_UNIQUE_ATTR_SQL, queryparams, pghandler -> {
       if (pghandler.succeeded()) {
         RMQbrokerService.publishMessage(rmqMessage, UNIQUE_ATTR_EX, UNIQUE_ATTR_EX_ROUTING_KEY,
@@ -231,6 +231,7 @@ public final class AdminRestApi {
         }
       }
     });
+
   }
 
   private void deleteUniqueAttribute(RoutingContext context) {

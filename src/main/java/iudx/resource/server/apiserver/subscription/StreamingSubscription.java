@@ -1,12 +1,13 @@
 package iudx.resource.server.apiserver.subscription;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import iudx.resource.server.apiserver.util.Constants;
-import iudx.resource.server.database.archives.DatabaseService;
+import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 
 /**
@@ -18,20 +19,20 @@ public class StreamingSubscription implements Subscription {
   private static final Logger LOGGER = LogManager.getLogger(StreamingSubscription.class);
 
   private DataBrokerService databroker;
-  private DatabaseService dbService;
+  private PostgresService pgService;
   private static volatile StreamingSubscription instance;
 
-  private StreamingSubscription(DataBrokerService databroker, DatabaseService dbService) {
+  private StreamingSubscription(DataBrokerService databroker, PostgresService pgService) {
     this.databroker = databroker;
-    this.dbService = dbService;
+    this.pgService=pgService;
   }
 
   public static StreamingSubscription getInstance(DataBrokerService databroker,
-      DatabaseService dbService) {
+      PostgresService pgService) {
     if (instance == null) {
       synchronized (StreamingSubscription.class) {
         if (instance == null)
-          instance = new StreamingSubscription(databroker, dbService);
+          instance = new StreamingSubscription(databroker, pgService);
       }
     }
     return instance;
