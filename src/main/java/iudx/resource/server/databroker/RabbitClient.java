@@ -78,14 +78,11 @@ import static iudx.resource.server.databroker.util.Util.encodeValue;
 import static iudx.resource.server.databroker.util.Util.getResponseJson;
 import static iudx.resource.server.databroker.util.Util.isGroupId;
 import static iudx.resource.server.databroker.util.Util.isValidId;
-
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -97,6 +94,8 @@ import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import iudx.resource.server.common.Response;
+import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.databroker.util.Constants;
 import iudx.resource.server.databroker.util.Util;
 
@@ -110,14 +109,14 @@ public class RabbitClient {
   private String amqpUrl;
   private int amqpPort;
   private String vhost;
-  
+
 
   public RabbitClient(Vertx vertx, RabbitMQOptions rabbitConfigs, RabbitWebClient webClient,
-      PostgresClient pgSQLClient,JsonObject configs) {
-    this.amqpUrl=configs.getString("brokerAmqpIp");
-    this.amqpPort=configs.getInteger("brokerAmqpPort");
-    this.vhost=configs.getString("dataBrokerVhost");
-    
+      PostgresClient pgSQLClient, JsonObject configs) {
+    this.amqpUrl = configs.getString("brokerAmqpIp");
+    this.amqpPort = configs.getInteger("brokerAmqpPort");
+    this.vhost = configs.getString("dataBrokerVhost");
+
     this.client = getRabbitMQClient(vertx, rabbitConfigs);
     this.webClient = webClient;
     this.pgSQLClient = pgSQLClient;
@@ -708,10 +707,11 @@ public class RabbitClient {
     requestParams.id = request.getString("resourceGroup");
     requestParams.resourceServer = request.getString("resourceServer");
     requestParams.userid = request.getString(USER_ID);
-    
+
     requestParams.adaptorId = id;
     if (isValidId.test(requestParams.adaptorId)) {
-      if (requestParams.adaptorId != null && !requestParams.adaptorId.isEmpty() && !requestParams.adaptorId.isBlank()) {
+      if (requestParams.adaptorId != null && !requestParams.adaptorId.isEmpty()
+          && !requestParams.adaptorId.isBlank()) {
         Future<JsonObject> userCreationFuture = createUserIfNotExist(requestParams.userid, vhost);
         userCreationFuture.compose(userCreationResult -> {
           requestParams.apiKey = userCreationResult.getString("apiKey");
@@ -1008,7 +1008,8 @@ public class RabbitClient {
           promise.fail(response.toString());
         }
       } else {
-        LOGGER.info("Error : Something went wrong while creating user using mgmt API :" + ar.cause());
+        LOGGER
+            .info("Error : Something went wrong while creating user using mgmt API :" + ar.cause());
         response.put(FAILURE, CHECK_CREDENTIALS);
         promise.fail(response.toString());
       }
@@ -1185,9 +1186,12 @@ public class RabbitClient {
 
     bindQueue(QUEUE_DATA, adaptorID, topics, vhost)
         .compose(databaseResult -> bindQueue(REDIS_LATEST, adaptorID, topics, vhost))
-        .compose(queueDataResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + HEARTBEAT, vhost))
-        .compose(heartBeatResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + DATA_ISSUE, vhost))
-        .compose(dataIssueResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + DOWNSTREAM_ISSUE, vhost))
+        .compose(queueDataResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + HEARTBEAT,
+            vhost))
+        .compose(heartBeatResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + DATA_ISSUE,
+            vhost))
+        .compose(dataIssueResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID,
+            adaptorID + DOWNSTREAM_ISSUE, vhost))
         .onSuccess(successHandler -> {
           JsonObject response = new JsonObject();
           response.mergeIn(getResponseJson(SUCCESS_CODE, "Queue_Database",
@@ -1217,6 +1221,78 @@ public class RabbitClient {
       } else {
         LOGGER.error("Error : Queue" + queue + " binding error : " + handler.cause());
         promise.fail(handler.cause());
+      }
+    });
+    return promise.future();
+  }
+
+  Future<JsonObject> getUserPermissions(String userId) {
+    LOGGER.debug("Info : RabbitClient#getUserpermissions() started");
+    Promise<JsonObject> promise = Promise.promise();
+    String url = "api/users/" + userId + "/permissions";
+    webClient.requestAsync(REQUEST_GET, url).onComplete(handler -> {
+      if (handler.succeeded()) {
+        HttpResponse<Buffer> rmqResponse = handler.result();
+        if (rmqResponse.statusCode() == HttpStatus.SC_OK) {
+          JsonArray permissionArray = new JsonArray(rmqResponse.body().toString());
+          promise.complete(permissionArray.getJsonObject(0));
+        } else if (handler.result().statusCode() == HttpStatus.SC_NOT_FOUND) {
+          Response response = new Response.Builder()
+              .withStatus(HttpStatus.SC_NOT_FOUND)
+              .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
+              .withDetail("user not exist.")
+              .withType(ResponseUrn.BAD_REQUEST_URN.getUrn())
+              .build();
+          promise.fail(response.toString());
+        } else {
+          Response response = new Response.Builder()
+              .withStatus(rmqResponse.statusCode())
+              .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
+              .withDetail("problem while getting user permissions")
+              .withType(ResponseUrn.BAD_REQUEST_URN.getUrn())
+              .build();
+          promise.fail(response.toString());
+        }
+      } else {
+        Response response = new Response.Builder()
+            .withStatus(HttpStatus.SC_BAD_REQUEST)
+            .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
+            .withDetail(handler.cause().getLocalizedMessage())
+            .withType(ResponseUrn.BAD_REQUEST_URN.getUrn())
+            .build();
+        promise.fail(response.toString());
+      }
+    });
+    return promise.future();
+  }
+
+  Future<JsonObject> updateUserpermissions(String userId, String updateType, String resourceId) {
+    Promise<JsonObject> promise = Promise.promise();
+    getUserPermissions(userId).onComplete(handler -> {
+      if (handler.succeeded()) {
+        String url = "api/permissions/IUDX/" + userId;
+        JsonObject permissionJson = handler.result();
+        
+        if (updateType.equalsIgnoreCase("read")) {
+          StringBuilder readPermission = new StringBuilder(permissionJson.getString("read"));
+          readPermission.append("|").append(resourceId);
+          permissionJson.put("read", readPermission.toString());
+        } else if (updateType.equalsIgnoreCase("write")) {
+          StringBuilder writePermission = new StringBuilder(permissionJson.getString("write"));
+          writePermission.append("|").append(resourceId);
+          permissionJson.put("write", writePermission.toString());
+        }
+
+        webClient.requestAsync(REQUEST_PUT, url, permissionJson)
+            .onComplete(updatePermissionHandler -> {
+              if (updatePermissionHandler.succeeded()) {
+
+              } else {
+                
+              }
+            });
+      } else {
+        promise.fail(handler.cause().getMessage());
       }
     });
     return promise.future();
