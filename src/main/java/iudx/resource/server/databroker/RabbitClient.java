@@ -78,8 +78,10 @@ import static iudx.resource.server.databroker.util.Util.encodeValue;
 import static iudx.resource.server.databroker.util.Util.getResponseJson;
 import static iudx.resource.server.databroker.util.Util.isGroupId;
 import static iudx.resource.server.databroker.util.Util.isValidId;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -97,6 +99,7 @@ import io.vertx.sqlclient.RowSet;
 import iudx.resource.server.common.Response;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.databroker.util.Constants;
+import iudx.resource.server.databroker.util.PermissionOpType;
 import iudx.resource.server.databroker.util.Util;
 
 public class RabbitClient {
@@ -729,6 +732,10 @@ public class RabbitClient {
               requestParams.userid);
         }).compose(topicPermissionsResult -> {
           LOGGER.debug("Success : topic permissions set.");
+          return updateUserPermissions(requestParams.userid, PermissionOpType.ADD_WRITE,
+              requestParams.adaptorId);
+        }).compose(userPermissionsResult -> {
+          LOGGER.debug("Success : user permissions set.");
           return queueBinding(requestParams.adaptorId, vhost);
         }).onSuccess(success -> {
           LOGGER.debug("Success : queue bindings done.");
@@ -779,11 +786,14 @@ public class RabbitClient {
         int status = resultHandler.result().getInteger("type");
         if (status == 200) {
           String exchangeID = json.getString("id");
+          String userId = json.getString("userid");
           String url = "/api/exchanges/" + vhost + "/" + encodeValue(exchangeID);
           webClient.requestAsync(REQUEST_DELETE, url).onComplete(rh -> {
             if (rh.succeeded()) {
               LOGGER.debug("Info : " + exchangeID + " adaptor deleted successfully");
               finalResponse.mergeIn(getResponseJson(200, "success", "adaptor deleted"));
+              Future.future(
+                  fu -> updateUserPermissions(userId, PermissionOpType.DELETE_WRITE, exchangeID));
             } else if (rh.failed()) {
               finalResponse.clear()
                   .mergeIn(getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Adaptor deleted",
@@ -1229,10 +1239,11 @@ public class RabbitClient {
   Future<JsonObject> getUserPermissions(String userId) {
     LOGGER.debug("Info : RabbitClient#getUserpermissions() started");
     Promise<JsonObject> promise = Promise.promise();
-    String url = "api/users/" + userId + "/permissions";
+    String url = "/api/users/" + encodeValue(userId) + "/permissions";
     webClient.requestAsync(REQUEST_GET, url).onComplete(handler -> {
       if (handler.succeeded()) {
         HttpResponse<Buffer> rmqResponse = handler.result();
+
         if (rmqResponse.statusCode() == HttpStatus.SC_OK) {
           JsonArray permissionArray = new JsonArray(rmqResponse.body().toString());
           promise.complete(permissionArray.getJsonObject(0));
@@ -1245,6 +1256,8 @@ public class RabbitClient {
               .build();
           promise.fail(response.toString());
         } else {
+          LOGGER.error(handler.cause());
+          LOGGER.error(handler.result());
           Response response = new Response.Builder()
               .withStatus(rmqResponse.statusCode())
               .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
@@ -1266,29 +1279,46 @@ public class RabbitClient {
     return promise.future();
   }
 
-  Future<JsonObject> updateUserpermissions(String userId, String updateType, String resourceId) {
+  Future<JsonObject> updateUserPermissions(String userId, PermissionOpType type,
+      String resourceId) {
     Promise<JsonObject> promise = Promise.promise();
     getUserPermissions(userId).onComplete(handler -> {
       if (handler.succeeded()) {
-        String url = "api/permissions/IUDX/" + userId;
-        JsonObject permissionJson = handler.result();
-        
-        if (updateType.equalsIgnoreCase("read")) {
-          StringBuilder readPermission = new StringBuilder(permissionJson.getString("read"));
-          readPermission.append("|").append(resourceId);
-          permissionJson.put("read", readPermission.toString());
-        } else if (updateType.equalsIgnoreCase("write")) {
-          StringBuilder writePermission = new StringBuilder(permissionJson.getString("write"));
-          writePermission.append("|").append(resourceId);
-          permissionJson.put("write", writePermission.toString());
-        }
+        String url = "/api/permissions/IUDX/" + encodeValue(userId);
+        JsonObject existingPermissions = handler.result();
 
-        webClient.requestAsync(REQUEST_PUT, url, permissionJson)
+        JsonObject updatedPermission = getUpdatedPermission(existingPermissions, type, resourceId);
+
+        LOGGER.debug("updated permission json :" + updatedPermission);
+        webClient.requestAsync(REQUEST_PUT, url, updatedPermission)
             .onComplete(updatePermissionHandler -> {
               if (updatePermissionHandler.succeeded()) {
-
+                HttpResponse<Buffer> rmqResponse = updatePermissionHandler.result();
+                if (rmqResponse.statusCode() == HttpStatus.SC_NO_CONTENT) {
+                  Response response = new Response.Builder()
+                      .withStatus(HttpStatus.SC_NO_CONTENT)
+                      .withTitle(ResponseUrn.SUCCESS_URN.getUrn())
+                      .withDetail("Permission updated sucessfully.")
+                      .withType(ResponseUrn.SUCCESS_URN.getUrn())
+                      .build();
+                  promise.complete(response.toJson());
+                } else {
+                  Response response = new Response.Builder()
+                      .withStatus(rmqResponse.statusCode())
+                      .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
+                      .withDetail(rmqResponse.statusMessage())
+                      .withType(ResponseUrn.BAD_REQUEST_URN.getUrn())
+                      .build();
+                  promise.fail(response.toString());
+                }
               } else {
-                
+                Response response = new Response.Builder()
+                    .withStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+                    .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
+                    .withDetail(updatePermissionHandler.cause().getMessage())
+                    .withType(ResponseUrn.BAD_REQUEST_URN.getUrn())
+                    .build();
+                promise.fail(response.toString());
               }
             });
       } else {
@@ -1296,6 +1326,43 @@ public class RabbitClient {
       }
     });
     return promise.future();
+  }
+
+  private JsonObject getUpdatedPermission(JsonObject permissionsJson, PermissionOpType type,
+      String resourceId) {
+    LOGGER.debug("existing permissions : " + permissionsJson);
+    switch (type) {
+      case ADD_READ:
+      case ADD_WRITE: {
+        StringBuilder permission = new StringBuilder(permissionsJson.getString(type.permission));
+        LOGGER.debug("permissions : " + permission.toString());
+        if (permission.length() != 0 && permission.indexOf(".*") != -1) {
+          permission.deleteCharAt(0).deleteCharAt(0);
+        }
+        if (permission.length() != 0) {
+          permission.append("|").append(resourceId);
+        } else {
+          permission.append(resourceId);
+        }
+
+        permissionsJson.put(type.permission, permission.toString());
+        break;
+      }
+      case DELETE_READ:
+      case DELETE_WRITE: {
+        StringBuilder permission = new StringBuilder(permissionsJson.getString(type.permission));
+        String[] permissionsArray = permission.toString().split("\\|");
+        if (permissionsArray.length > 0) {
+          Stream<String> stream = Arrays.stream(permissionsArray);
+          String updatedPermission = stream
+              .filter(item -> !item.equals(resourceId))
+              .collect(Collectors.joining("|"));
+          permissionsJson.put(type.permission, updatedPermission);
+        }
+        break;
+      }
+    }
+    return permissionsJson;
   }
 
   public RabbitMQClient getRabbitMQClient() {

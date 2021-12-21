@@ -1,20 +1,20 @@
 package iudx.resource.server.apiserver.management;
 
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.json.JsonObject;
 import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.json.JsonObject;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.util.Constants;
 import iudx.resource.server.databroker.DataBrokerService;
 
 /**
- * This class handles all DataBrokerService related interactions of API server.
- * TODO Need to add documentation.
+ * This class handles all DataBrokerService related interactions of API server. TODO Need to add
+ * documentation.
  */
 public class ManagementApiImpl implements ManagementApi {
 
@@ -289,15 +289,17 @@ public class ManagementApiImpl implements ManagementApi {
    * {@inheritDoc}
    */
   @Override
-  public Future<JsonObject> deleteAdapter(String adapterId, DataBrokerService databroker) {
+  public Future<JsonObject> deleteAdapter(String adapterId, String userId,
+      DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_ID, adapterId);
+    json.put(Constants.USER_ID, userId);
     databroker.deleteAdaptor(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.info("Result from databroker verticle :: " + result);
-         promise.complete(generateResponse(result));
+        promise.complete(generateResponse(result));
       } else if (handler.failed()) {
         String result = handler.cause().getMessage();
         promise.fail(generateResponse(new JsonObject(result)).toString());

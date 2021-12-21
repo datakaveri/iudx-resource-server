@@ -1105,8 +1105,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     if (resourceName != null) {
       adapterIdBuilder.append("/").append(resourceName);
     }
+
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+    String userId = authInfo.getString(USER_ID);
     Future<JsonObject> brokerResult =
-        managementApi.deleteAdapter(adapterIdBuilder.toString(), databroker);
+        managementApi.deleteAdapter(adapterIdBuilder.toString(), userId, databroker);
     brokerResult.onComplete(
         brokerResultHandler -> {
           if (brokerResultHandler.succeeded()) {

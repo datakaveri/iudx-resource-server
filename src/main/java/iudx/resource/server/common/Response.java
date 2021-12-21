@@ -5,13 +5,16 @@ import io.vertx.core.json.JsonObject;
 /**
  * <p>
  * Response Object can be used to pass URN based messages/responses between different verticles,
- * mostly in case of failures. where following parameters can be used<br>
- * <ul>
- * <li>type   : String representation of URN like urn:dx:rs:SomeErrorURN
- * <li>status : HTTPstatus code (e.g 404,400 etc.)
- * <li>title  : brief error title
- * <li>detail : detailed message
- * </ul>
+ * mostly in case of failures. where following parameters can be used
+ * <br>
+ * <pre>
+ *  <ul>
+ *      <li>type : String representation of URN like urn:dx:rs:SomeErrorURN
+ *      <li>status : HTTPstatus code (e.g 404,400 etc.)
+ *      <li>title : brief error title
+ *      <li>detail : detailed message
+ *  </ul>
+ * </pre>
  * </p>
  * 
  */
