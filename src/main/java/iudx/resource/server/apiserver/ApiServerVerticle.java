@@ -556,6 +556,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.debug("Info: request Json :: ;" + requestJson);
     HttpServerResponse response = routingContext.response();
     MultiMap headerParams = request.headers();
+    // get query paramaters
+    MultiMap params = getQueryParams(routingContext, response).get();
     // validate request parameters
     Future<Boolean> validationResult = validator.validate(requestJson);
     validationResult.onComplete(validationHandler -> {
@@ -573,6 +575,11 @@ public class ApiServerVerticle extends AbstractVerticle {
         filtersFuture.onComplete(filtersHandler -> {
           if (filtersHandler.succeeded()) {
             json.put("applicableFilters", filtersHandler.result());
+            // Add limit and offset value for pagination 
+            if(params.contains("limit") && params.contains("offset")) {
+            	json.put("limit", params.get("limit"));
+            	json.put("offset", params.get("offset"));
+            }
             if (json.containsKey(IUDXQUERY_OPTIONS)
                 && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
               executeCountQuery(routingContext, json, response);
