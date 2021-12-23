@@ -48,7 +48,7 @@ public final class PostgresServiceImpl implements PostgresService {
         .onFailure(failureHandler -> {
           LOGGER.error(failureHandler);
           Response response = new Response.Builder()
-              .withType(ResponseUrn.DB_ERROR_URN.getUrn())
+              .withUrn(ResponseUrn.DB_ERROR_URN.getUrn())
               .withStatus(HttpStatus.SC_BAD_REQUEST)
               .withDetail(failureHandler.getLocalizedMessage()).build();
           handler.handle(Future.failedFuture(response.toString()));
@@ -82,7 +82,7 @@ public final class PostgresServiceImpl implements PostgresService {
         .onFailure(failureHandler -> {
           LOGGER.error(failureHandler);
           Response response = new Response.Builder()
-              .withType(ResponseUrn.DB_ERROR_URN.getUrn())
+              .withUrn(ResponseUrn.DB_ERROR_URN.getUrn())
               .withStatus(HttpStatus.SC_BAD_REQUEST)
               .withDetail(failureHandler.getLocalizedMessage()).build();
           handler.handle(Future.failedFuture(response.toString()));

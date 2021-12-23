@@ -728,6 +728,7 @@ public class RabbitClient {
             return Future.failedFuture(createExchangeResult.toString());
           }
           LOGGER.debug("Success : Exchange created successfully.");
+          requestParams.isExchnageCreated = true;
           return setTopicPermissions(requestParams.vhost, requestParams.adaptorId,
               requestParams.userid);
         }).compose(topicPermissionsResult -> {
@@ -750,6 +751,11 @@ public class RabbitClient {
           promise.complete(response);
         }).onFailure(failure -> {
           LOGGER.info("Error : " + failure);
+          // Compensating call, delete adaptor if created;
+          if (requestParams.isExchnageCreated) {
+            JsonObject deleteJson = new JsonObject().put("exchangeName", requestParams.adaptorId);
+            Future.future(fu -> deleteExchange(deleteJson, vhost));
+          }
           promise.fail(failure);
         });
       } else {
@@ -772,6 +778,7 @@ public class RabbitClient {
     public String userid;
     public String adaptorId;
     public String vhost;
+    public boolean isExchnageCreated;
 
   }
 
@@ -1252,7 +1259,7 @@ public class RabbitClient {
               .withStatus(HttpStatus.SC_NOT_FOUND)
               .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
               .withDetail("user not exist.")
-              .withType(ResponseUrn.BAD_REQUEST_URN.getUrn())
+              .withUrn(ResponseUrn.BAD_REQUEST_URN.getUrn())
               .build();
           promise.fail(response.toString());
         } else {
@@ -1262,7 +1269,7 @@ public class RabbitClient {
               .withStatus(rmqResponse.statusCode())
               .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
               .withDetail("problem while getting user permissions")
-              .withType(ResponseUrn.BAD_REQUEST_URN.getUrn())
+              .withUrn(ResponseUrn.BAD_REQUEST_URN.getUrn())
               .build();
           promise.fail(response.toString());
         }
@@ -1271,7 +1278,7 @@ public class RabbitClient {
             .withStatus(HttpStatus.SC_BAD_REQUEST)
             .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
             .withDetail(handler.cause().getLocalizedMessage())
-            .withType(ResponseUrn.BAD_REQUEST_URN.getUrn())
+            .withUrn(ResponseUrn.BAD_REQUEST_URN.getUrn())
             .build();
         promise.fail(response.toString());
       }
@@ -1299,7 +1306,7 @@ public class RabbitClient {
                       .withStatus(HttpStatus.SC_NO_CONTENT)
                       .withTitle(ResponseUrn.SUCCESS_URN.getUrn())
                       .withDetail("Permission updated sucessfully.")
-                      .withType(ResponseUrn.SUCCESS_URN.getUrn())
+                      .withUrn(ResponseUrn.SUCCESS_URN.getUrn())
                       .build();
                   promise.complete(response.toJson());
                 } else {
@@ -1307,7 +1314,7 @@ public class RabbitClient {
                       .withStatus(rmqResponse.statusCode())
                       .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
                       .withDetail(rmqResponse.statusMessage())
-                      .withType(ResponseUrn.BAD_REQUEST_URN.getUrn())
+                      .withUrn(ResponseUrn.BAD_REQUEST_URN.getUrn())
                       .build();
                   promise.fail(response.toString());
                 }
@@ -1316,7 +1323,7 @@ public class RabbitClient {
                     .withStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR)
                     .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
                     .withDetail(updatePermissionHandler.cause().getMessage())
-                    .withType(ResponseUrn.BAD_REQUEST_URN.getUrn())
+                    .withUrn(ResponseUrn.BAD_REQUEST_URN.getUrn())
                     .build();
                 promise.fail(response.toString());
               }
