@@ -245,8 +245,8 @@ public class Constants {
   public static final Pattern ID_RN_REGEX = Pattern.compile("^[a-zA-Z0-9-_.]{4,100}$");
 
   public static final double VALIDATION_ALLOWED_DIST = 1000.0;
-  public static final int VALIDATION_PAGINATION_LIMIT_MAX = 10000;
-  public static final int VALIDATION_PAGINATION_OFFSET_MAX = 50000;
+  public static final int VALIDATION_PAGINATION_LIMIT_MAX = 5000;
+  public static final int VALIDATION_PAGINATION_OFFSET_MAX = 49999;
   public static final List<Object> VALIDATION_ALLOWED_GEOM =
       List.of("Point", "point", "Polygon", "polygon", "LineString", "linestring", "bbox");
   public static final List<Object> VALIDATION_ALLOWED_GEOPROPERTY = List.of("location", "Location");

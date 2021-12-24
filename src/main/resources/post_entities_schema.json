@@ -153,23 +153,7 @@
 			"minLength":1,
 			"default": "",
 			"pattern": "^.*$"
-		},
-		"offset": {
-            "$id": "#root/offset", 
-            "title": "offset",
-            "type": "integer",
-            "minimum":0,
-            "maximum":50000,
-            "default":0
-        },
-        "limit":{
-            "$id": "#root/limit", 
-            "title": "limit",
-            "type": "integer",
-            "minimum":0,
-            "maximum":10000,
-            "default":5000
-        }
+		}
 	},
 	"required":["entities","type"],
 	"additionalProperties":false
