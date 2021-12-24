@@ -896,7 +896,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
       JsonObject jsonObj = requestJson.copy();
-      jsonObj.put(userid, authInfo.getString(USER_ID));
+      jsonObj.put(USER_ID, authInfo.getString(USER_ID));
       Future<JsonObject> subsReq =
           subsService.appendSubscription(jsonObj, databroker, postgresService, authInfo);
       subsReq.onComplete(
