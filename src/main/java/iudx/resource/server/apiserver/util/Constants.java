@@ -39,7 +39,8 @@ public class Constants {
   // IUDX management endpoints
   public static final String IUDX_MANAGEMENT_URL = "/management";
   public static final String IUDX_ADAPTOR_URL = "/ngsi-ld/v1";
-  public static final String IUDX_AUDIT_URL = IUDX_ADAPTOR_URL + "/consumer/audit";
+  public static final String IUDX_CONSUMER_AUDIT_URL = IUDX_ADAPTOR_URL + "/consumer/audit";
+  public static final String IUDX_PROVIDER_AUDIT_URL = IUDX_ADAPTOR_URL + "/provider/audit";
   public static final String IUDX_MANAGEMENT_EXCHANGE_URL = IUDX_MANAGEMENT_URL + "/exchange";
   public static final String EXCHANGE_URL_REGEX = IUDX_MANAGEMENT_EXCHANGE_URL + "(.*)";
   public static final String IUDX_MANAGEMENT_QUEUE_URL = IUDX_MANAGEMENT_URL + "/queue";
@@ -57,6 +58,7 @@ public class Constants {
   public static final String RESET_URL_REGEX = IUDX_MANAGEMENT_RESET_PWD + "(.*)";
   /** API Documentation endpoint */
   public static final String ROUTE_STATIC_SPEC = "/apis/spec";
+
   public static final String ROUTE_DOC = "/apis";
   public static final List<String> bypassEndpoint = List.of(ROUTE_STATIC_SPEC, ROUTE_DOC);
   public static final List<String> openEndPoints =
@@ -65,7 +67,7 @@ public class Constants {
           "/ngsi-ld/v1/entities",
           "/ngsi-ld/v1/entityOperations/query");
   public static final String REVOKE_TOKEN_REGEX = "/admin/revoketoken" + "(.*)";
-  public static final String UNIQUE_ATTR_REGEX="/admin/resourceattribute";
+  public static final String UNIQUE_ATTR_REGEX = "/admin/resourceattribute";
 
 
   /** Accept Headers and CORS */
@@ -174,6 +176,8 @@ public class Constants {
   public static final String RESOURCE_GROUP = "resourceGroup";
   public static final String RESOURCE_NAME = "resourceName";
   public static final String USER_ID = "userid";
+  public static final String EXPIRY = "expiry";
+  public static final String IID = "iid";
   public static final String API = "api";
 
   // searchtype
@@ -252,4 +256,17 @@ public class Constants {
       List.of("after", "before", "during", "between");
 
   public static final String VALIDATION_Q_ATTR_PATTERN = "^[a-zA-Z0-9_]{1,100}+$";
+
+
+  // subscriptions queries
+  public static final String CREATE_SUB_SQL =
+      "INSERT INTO subscriptions(_id,_type,queue_name,entity,expiry) VALUES('$1','$2','$3','$4','$5')";
+
+  public static final String UPDATE_SUB_SQL =
+      "UPDATE subscriptions SET expiry='$1' where queue_name='$2' and entity='$3'";
+
+  public static final String APPEND_SUB_SQL =
+      "INSERT INTO subscriptions(_id,_type,queue_name,entity,expiry) VALUES('$1','$2','$3','$4','$5')";
+  
+  public static final String DELETE_SUB_SQL="DELETE FROM subscriptions where queue_name='$1'";
 }

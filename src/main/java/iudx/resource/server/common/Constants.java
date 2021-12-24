@@ -1,6 +1,10 @@
 package iudx.resource.server.common;
 
 public class Constants {
+  
+  /** service proxy addresses **/
+  public static String PG_SERVICE_ADD="iudx.rs.pgsql.service";
+  
 
 
   /* Broadcast exchanges and queues */

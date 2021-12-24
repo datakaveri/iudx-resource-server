@@ -1,19 +1,23 @@
 package iudx.resource.server.apiserver.subscription;
 
+import static iudx.resource.server.apiserver.util.Constants.APPEND_SUB_SQL;
+import static iudx.resource.server.apiserver.util.Constants.CREATE_SUB_SQL;
+import static iudx.resource.server.apiserver.util.Constants.DELETE_SUB_SQL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
+import static iudx.resource.server.apiserver.util.Constants.SUB_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.UPDATE_SUB_SQL;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.apiserver.response.ResponseType;
-import iudx.resource.server.apiserver.util.Constants;
-import iudx.resource.server.database.archives.DatabaseService;
+import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 
 /**
@@ -34,15 +38,15 @@ public class SubscriptionService {
    * @param databaseService database verticle object
    * @return an object of Subscription class
    */
-  private Subscription getSubscriptionContext(String type, DataBrokerService databroker,
-      DatabaseService databaseService) {
+  private Subscription getSubscriptionContext(SubsType type, DataBrokerService databroker,
+      PostgresService pgService) {
     LOGGER.info("getSubscriptionContext() method started");
-    if (type != null && type.equalsIgnoreCase(SubsType.CALLBACK.getMessage())) {
+    if (type != null && type.equals(SubsType.CALLBACK)) {
       LOGGER.info("callback subscription context");
-      return CallbackSubscription.getInstance(databroker, databaseService);
+      return CallbackSubscription.getInstance(databroker, pgService);
     } else {
       LOGGER.info("streaming subscription context");
-      return StreamingSubscription.getInstance(databroker, databaseService);
+      return StreamingSubscription.getInstance(databroker, pgService);
     }
   }
 
@@ -55,15 +59,33 @@ public class SubscriptionService {
    * @return a future of JsonObject
    */
   public Future<JsonObject> createSubscription(JsonObject json, DataBrokerService databroker,
-      DatabaseService databaseService) {
+      PostgresService pgService, JsonObject authInfo) {
     LOGGER.info("createSubscription() method started");
     Promise<JsonObject> promise = Promise.promise();
-    subscription =
-        getSubscriptionContext(json.getString(Constants.SUB_TYPE), databroker, databaseService);
+    SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
+    subscription = getSubscriptionContext(subType, databroker, pgService);
     assertNotNull(subscription);
     subscription.create(json).onComplete(handler -> {
       if (handler.succeeded()) {
-        promise.complete(handler.result());
+        JsonObject brokerSubResult = handler.result();
+
+        StringBuilder query = new StringBuilder(CREATE_SUB_SQL
+            .replace("$1", brokerSubResult.getString("id"))
+            .replace("$2", subType.type)
+            .replace("$3", brokerSubResult.getString("id"))
+            .replace("$4", json.getJsonArray("entities").getString(0))
+            .replace("$5", authInfo.getString("expiry")));
+
+        pgService.executeQuery(query.toString(), pgHandler -> {
+          if (pgHandler.succeeded()) {
+            promise.complete(brokerSubResult);
+          } else {
+            // TODO : rollback mechanism in case of pg error [to unbind/delete created sub]
+            JsonObject res = new JsonObject(pgHandler.cause().getMessage());
+            promise.fail(generateResponse(res).toString());
+          }
+        });
+
       } else {
         JsonObject res = new JsonObject(handler.cause().getMessage());
         promise.fail(generateResponse(res).toString());
@@ -81,20 +103,31 @@ public class SubscriptionService {
    * @return a future of josbObject
    */
   public Future<JsonObject> updateSubscription(JsonObject json, DataBrokerService databroker,
-      DatabaseService databaseService) {
+      PostgresService pgService, JsonObject authInfo) {
     LOGGER.info("updateSubscription() method started");
     Promise<JsonObject> promise = Promise.promise();
-    subscription =
-        getSubscriptionContext(json.getString(Constants.SUB_TYPE), databroker, databaseService);
-    assertNotNull(subscription);
-    subscription.update(json).onComplete(handler -> {
-      if (handler.succeeded()) {
-        promise.complete(handler.result());
+
+    StringBuilder query = new StringBuilder(UPDATE_SUB_SQL
+        .replace("$1", authInfo.getString("expiry"))
+        .replace("$2", json.getString(SUBSCRIPTION_ID))
+        .replace("$3", json.getJsonArray("entities").getString(0)));
+
+    LOGGER.info(query);
+    pgService.executeQuery(query.toString(), pgHandler -> {
+      if (pgHandler.succeeded()) {
+        JsonObject response = new JsonObject();
+        JsonArray entities = new JsonArray();
+        entities.add(json.getJsonArray("entities").getString(0));
+        response.put("entities", entities);
+        promise.complete(response);
       } else {
-        JsonObject res = new JsonObject(handler.cause().getMessage());
+        LOGGER.error(pgHandler.cause());
+        JsonObject res = new JsonObject(pgHandler.cause().getMessage());
         promise.fail(generateResponse(res).toString());
       }
     });
+
+
     return promise.future();
   }
 
@@ -107,15 +140,26 @@ public class SubscriptionService {
    * @return a future of josbObject
    */
   public Future<JsonObject> deleteSubscription(JsonObject json, DataBrokerService databroker,
-      DatabaseService databaseService) {
+      PostgresService pgService) {
     LOGGER.info("deleteSubscription() method started");
     Promise<JsonObject> promise = Promise.promise();
-    subscription =
-        getSubscriptionContext(json.getString(Constants.SUB_TYPE), databroker, databaseService);
+    SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
+    subscription = getSubscriptionContext(subType, databroker, pgService);
     assertNotNull(subscription);
     subscription.delete(json).onComplete(handler -> {
       if (handler.succeeded()) {
-        promise.complete(handler.result());
+        StringBuilder query = new StringBuilder(DELETE_SUB_SQL
+            .replace("$1", json.getString(SUBSCRIPTION_ID)));
+
+        LOGGER.info(query);
+        pgService.executeQuery(query.toString(), pgHandler -> {
+          if (pgHandler.succeeded()) {
+            promise.complete(handler.result());
+          } else {
+            JsonObject res = new JsonObject(pgHandler.cause().getMessage());
+            promise.fail(generateResponse(res).toString());
+          }
+        });
       } else {
         JsonObject res = new JsonObject(handler.cause().getMessage());
         promise.fail(generateResponse(res).toString());
@@ -133,11 +177,11 @@ public class SubscriptionService {
    * @return a future of josbObject
    */
   public Future<JsonObject> getSubscription(JsonObject json, DataBrokerService databroker,
-      DatabaseService databaseService) {
+      PostgresService pgService) {
     LOGGER.info("getSubscription() method started");
     Promise<JsonObject> promise = Promise.promise();
-    subscription =
-        getSubscriptionContext(json.getString(Constants.SUB_TYPE), databroker, databaseService);
+    SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
+    subscription = getSubscriptionContext(subType, databroker, pgService);
     assertNotNull(subscription);
     subscription.get(json).onComplete(handler -> {
       if (handler.succeeded()) {
@@ -159,15 +203,33 @@ public class SubscriptionService {
    * @return a future of josbObject
    */
   public Future<JsonObject> appendSubscription(JsonObject json, DataBrokerService databroker,
-      DatabaseService databaseService) {
+      PostgresService pgService, JsonObject authInfo) {
     LOGGER.info("appendSubscription() method started");
     Promise<JsonObject> promise = Promise.promise();
-    subscription =
-        getSubscriptionContext(json.getString(Constants.SUB_TYPE), databroker, databaseService);
+    SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
+    subscription = getSubscriptionContext(subType, databroker, pgService);
     assertNotNull(subscription);
     subscription.append(json).onComplete(handler -> {
       if (handler.succeeded()) {
         promise.complete(handler.result());
+        JsonObject brokerSubResult = handler.result();
+        StringBuilder query = new StringBuilder(APPEND_SUB_SQL
+            .replace("$1", json.getString(SUBSCRIPTION_ID))
+            .replace("$2", subType.type)
+            .replace("$3", json.getString(SUBSCRIPTION_ID))
+            .replace("$4", json.getJsonArray("entities").getString(0))
+            .replace("$5", authInfo.getString("expiry")));
+
+        LOGGER.info(query);
+        pgService.executeQuery(query.toString(), pgHandler -> {
+          if (pgHandler.succeeded()) {
+            promise.complete(brokerSubResult);
+          } else {
+            // TODO : rollback mechanism in case of pg error [to unbind/delete created sub]
+            JsonObject res = new JsonObject(pgHandler.cause().getMessage());
+            promise.fail(generateResponse(res).toString());
+          }
+        });
       } else {
         JsonObject res = new JsonObject(handler.cause().getMessage());
         promise.fail(generateResponse(res).toString());
@@ -179,15 +241,15 @@ public class SubscriptionService {
   private JsonObject generateResponse(JsonObject response) {
     JsonObject finalResponse = new JsonObject();
     int type = response.getInteger(JSON_TYPE);
-    String title=response.getString(JSON_TITLE);
-    switch(type) {
-      case 400:{
+    String title = response.getString(JSON_TITLE);
+    switch (type) {
+      case 400: {
         finalResponse.put(JSON_TYPE, type)
             .put(JSON_TITLE, ResponseType.fromCode(type).getMessage())
             .put(JSON_DETAIL, response.getString(JSON_DETAIL));
         break;
       }
-      case 404:{
+      case 404: {
         finalResponse.put(JSON_TYPE, type)
             .put(JSON_TITLE, ResponseType.fromCode(type).getMessage())
             .put(JSON_DETAIL, ResponseType.ResourceNotFound.getMessage());
@@ -195,7 +257,7 @@ public class SubscriptionService {
       }
       case 409: {
         finalResponse.put(JSON_TYPE, type)
-            .put(JSON_TITLE,  ResponseType.fromCode(type).getMessage())
+            .put(JSON_TITLE, ResponseType.fromCode(type).getMessage())
             .put(JSON_DETAIL, "Subscription " + ResponseType.AlreadyExists.getMessage());
         break;
       }

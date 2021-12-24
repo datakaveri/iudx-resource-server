@@ -1,12 +1,19 @@
 package iudx.resource.server.metering;
 
 import static iudx.resource.server.metering.util.Constants.API;
+import static iudx.resource.server.metering.util.Constants.CONSUMER_ID;
 import static iudx.resource.server.metering.util.Constants.DETAIL;
 import static iudx.resource.server.metering.util.Constants.DURING;
+import static iudx.resource.server.metering.util.Constants.ENDPOINT;
 import static iudx.resource.server.metering.util.Constants.END_TIME;
 import static iudx.resource.server.metering.util.Constants.ID;
+import static iudx.resource.server.metering.util.Constants.IID;
 import static iudx.resource.server.metering.util.Constants.INVALID_DATE_DIFFERENCE;
 import static iudx.resource.server.metering.util.Constants.INVALID_DATE_TIME;
+import static iudx.resource.server.metering.util.Constants.INVALID_PROVIDER_ID;
+import static iudx.resource.server.metering.util.Constants.INVALID_PROVIDER_REQUIRED;
+import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
+import static iudx.resource.server.metering.util.Constants.RESOURCE_ID;
 import static iudx.resource.server.metering.util.Constants.RESULTS;
 import static iudx.resource.server.metering.util.Constants.START_TIME;
 import static iudx.resource.server.metering.util.Constants.SUCCESS;
@@ -67,14 +74,31 @@ public class MeteringServiceTest {
     vertxTestContext.completeNow();
   }
 
-  private JsonObject readRequest() {
+  private JsonObject readConsumerRequest() {
     JsonObject jsonObject = new JsonObject();
     jsonObject.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
-    jsonObject.put(ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
+    jsonObject.put(RESOURCE_ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
     jsonObject.put(START_TIME, "2021-11-20T05:30:00+05:30[Asia/Kolkata]");
     jsonObject.put(END_TIME, "2021-12-02T02:00:00+05:30[Asia/Kolkata]");
     jsonObject.put(TIME_RELATION, DURING);
     jsonObject.put(API, "/ngsi-ld/v1/subscription");
+    jsonObject.put(ENDPOINT, "/ngsi-ld/v1/consumer/audit");
+
+    return jsonObject;
+  }
+
+  private JsonObject readProviderRequest() {
+    JsonObject jsonObject = new JsonObject();
+    jsonObject.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
+    jsonObject.put(RESOURCE_ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
+    jsonObject.put(START_TIME, "2021-11-20T05:30:00+05:30[Asia/Kolkata]");
+    jsonObject.put(END_TIME, "2021-12-02T02:00:00+05:30[Asia/Kolkata]");
+    jsonObject.put(TIME_RELATION, DURING);
+    jsonObject.put(API, "/ngsi-ld/v1/subscription");
+    jsonObject.put(PROVIDER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias");
+    jsonObject.put(CONSUMER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
+    jsonObject.put(IID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
+    jsonObject.put(ENDPOINT, "/ngsi-ld/v1/provider/audit");
     return jsonObject;
   }
 
@@ -87,7 +111,7 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query with invalid time interval")
   void readFromInvalidTimeInterval(VertxTestContext testContext) {
-    JsonObject request = readRequest();
+    JsonObject request = readConsumerRequest();
     request.put(START_TIME, "2021-11-01T05:30:00+05:30[Asia/Kolkata]");
     request.put(END_TIME, "2021-11-24T02:00:00+05:30[Asia/Kolkata]");
     meteringService.executeReadQuery(
@@ -106,7 +130,7 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query with given Time Interval")
   void readFromValidTimeInterval(VertxTestContext vertxTestContext) {
-    JsonObject request = readRequest();
+    JsonObject request = readConsumerRequest();
 
     meteringService.executeReadQuery(
         request,
@@ -122,7 +146,7 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query for missing userId")
   void readForMissingUserId(VertxTestContext vertxTestContext) {
-    JsonObject request = readRequest();
+    JsonObject request = readConsumerRequest();
     request.remove(USER_ID);
 
     meteringService.executeReadQuery(
@@ -141,7 +165,7 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query for missing time Relation")
   void readForMissingTimeRel(VertxTestContext vertxTestContext) {
-    JsonObject request = readRequest();
+    JsonObject request = readConsumerRequest();
     request.remove(TIME_RELATION);
 
     meteringService.executeReadQuery(
@@ -160,7 +184,7 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query for missing time")
   void readForMissingTime(VertxTestContext vertxTestContext) {
-    JsonObject request = readRequest();
+    JsonObject request = readConsumerRequest();
     request.remove(START_TIME);
 
     meteringService.executeReadQuery(
@@ -178,7 +202,7 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query with invalid start/end time")
   void readForInvalidStartTime(VertxTestContext vertxTestContext) {
-    JsonObject request = readRequest();
+    JsonObject request = readConsumerRequest();
     request.put(START_TIME, "2021-009-18T00:30:00+05:30[Asia/Kolkata]");
 
     meteringService.executeReadQuery(
@@ -199,8 +223,8 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query for given time.")
   void readForGivenTime(VertxTestContext vertxTestContext) {
-    JsonObject jsonObject = readRequest();
-    jsonObject.remove(ID);
+    JsonObject jsonObject = readConsumerRequest();
+    jsonObject.remove(RESOURCE_ID);
     jsonObject.remove(API);
     meteringService.executeReadQuery(
         jsonObject,
@@ -217,7 +241,7 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query for given time and id.")
   void readForGivenTimeAndId(VertxTestContext vertxTestContext) {
-    JsonObject jsonObject = readRequest();
+    JsonObject jsonObject = readConsumerRequest();
     jsonObject.remove(API);
     meteringService.executeReadQuery(
         jsonObject,
@@ -234,8 +258,8 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query for given time and api.")
   void readForGivenTimeAndApi(VertxTestContext vertxTestContext) {
-    JsonObject jsonObject = readRequest();
-    jsonObject.remove(ID);
+    JsonObject jsonObject = readConsumerRequest();
+    jsonObject.remove(RESOURCE_ID);
 
     meteringService.executeReadQuery(
         jsonObject,
@@ -250,9 +274,9 @@ public class MeteringServiceTest {
   }
 
   @Test
-  @DisplayName("Testing read query for given time,api and id.")
+  @DisplayName("Testing read query for given time,api and resourceId.")
   void readForGivenTimeApiAndID(VertxTestContext vertxTestContext) {
-    JsonObject jsonObject = readRequest();
+    JsonObject jsonObject = readConsumerRequest();
 
     meteringService.executeReadQuery(
         jsonObject,
@@ -269,7 +293,7 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query for given time,api and id.")
   void readForGivenTimeApiAndIDEmptyResponse(VertxTestContext vertxTestContext) {
-    JsonObject jsonObject = readRequest();
+    JsonObject jsonObject = readConsumerRequest();
     jsonObject.put(START_TIME, "2021-11-19T05:30:00+05:30[Asia/Kolkata]");
     jsonObject.put(END_TIME, "2021-11-21T02:00:00+05:30[Asia/Kolkata]");
 
@@ -288,8 +312,29 @@ public class MeteringServiceTest {
 
   @Test
   @DisplayName("Testing count query for given time,api and id.")
+  void countForGivenTimeApiAndIDEmptyResponse(VertxTestContext vertxTestContext) {
+    JsonObject jsonObject = readConsumerRequest();
+    jsonObject.put(START_TIME, "2021-11-19T05:30:00+05:30[Asia/Kolkata]");
+    jsonObject.put(END_TIME, "2021-11-21T02:00:00+05:30[Asia/Kolkata]");
+    jsonObject.put("options", "count");
+
+    meteringService.executeReadQuery(
+        jsonObject,
+        vertxTestContext.failing(
+            response ->
+                vertxTestContext.verify(
+                    () -> {
+                      LOGGER.info(
+                          "RESPONSE " + new JsonObject(response.getMessage()).getString(DETAIL));
+                      assertEquals(SUCCESS, new JsonObject(response.getMessage()).getString(TITLE));
+                      vertxTestContext.completeNow();
+                    })));
+  }
+
+  @Test
+  @DisplayName("Testing count query for given time,api and id.")
   void countForGivenTimeAndApiAndID(VertxTestContext vertxTestContext) {
-    JsonObject jsonObject = readRequest();
+    JsonObject jsonObject = readConsumerRequest();
     jsonObject.put("options", "count");
 
     meteringService.executeReadQuery(
@@ -320,6 +365,101 @@ public class MeteringServiceTest {
                     () -> {
                       LOGGER.info("RESPONSE" + response.getString("title"));
                       assertTrue(response.getString("title").equals("Success"));
+                      vertxTestContext.completeNow();
+                    })));
+  }
+
+  @Test
+  @DisplayName("Testing read query with missing providerId.")
+  void readForMissingProviderId(VertxTestContext vertxTestContext) {
+    JsonObject request = readProviderRequest();
+    request.remove(PROVIDER_ID);
+    meteringService.executeReadQuery(
+        request,
+        vertxTestContext.failing(
+            response ->
+                vertxTestContext.verify(
+                    () -> {
+                      LOGGER.info(
+                          "RESPONSE " + new JsonObject(response.getMessage()).getString(DETAIL));
+                      assertEquals(
+                          INVALID_PROVIDER_REQUIRED,
+                          new JsonObject(response.getMessage()).getString(DETAIL));
+                      vertxTestContext.completeNow();
+                    })));
+  }
+
+  @Test
+  @DisplayName("Testing read query with invalid providerId.")
+  void readForInvalidProviderId(VertxTestContext vertxTestContext) {
+    JsonObject request = readProviderRequest();
+    request.put(PROVIDER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-tsst-alias");
+
+    meteringService.executeReadQuery(
+        request,
+        vertxTestContext.failing(
+            response ->
+                vertxTestContext.verify(
+                    () -> {
+                      LOGGER.info(
+                          "RESPONSE " + new JsonObject(response.getMessage()).getString(DETAIL));
+                      assertEquals(
+                          INVALID_PROVIDER_ID,
+                          new JsonObject(response.getMessage()).getString(DETAIL));
+                      vertxTestContext.completeNow();
+                    })));
+  }
+
+  @Test
+  @DisplayName("Testing read query for given time,api and id.")
+  void readForGivenTimeApiIdConsumerProviderID(VertxTestContext vertxTestContext) {
+    JsonObject jsonObject = readProviderRequest();
+
+    meteringService.executeReadQuery(
+        jsonObject,
+        vertxTestContext.succeeding(
+            response ->
+                vertxTestContext.verify(
+                    () -> {
+                      LOGGER.info("RESPONSE" + response);
+                      assertTrue(response.getString(TITLE).equals(SUCCESS));
+                      vertxTestContext.completeNow();
+                    })));
+  }
+
+  @Test
+  @DisplayName("Testing count query for given time,api and id.")
+  void countForGivenTimeApiIdConsumerProviderID(VertxTestContext vertxTestContext) {
+    JsonObject jsonObject = readProviderRequest();
+    jsonObject.put("options", "count");
+
+    meteringService.executeReadQuery(
+        jsonObject,
+        vertxTestContext.succeeding(
+            response ->
+                vertxTestContext.verify(
+                    () -> {
+                      LOGGER.info("RESPONSE" + response);
+                      assertTrue(response.getString(TITLE).equals(SUCCESS));
+                      vertxTestContext.completeNow();
+                    })));
+  }
+
+  @Test
+  @DisplayName("Testing count query for given time,api and providerId.")
+  void readForGivenTimeApiAndProviderID(VertxTestContext vertxTestContext) {
+    JsonObject jsonObject = readProviderRequest();
+    jsonObject.remove(RESOURCE_ID);
+    jsonObject.remove(CONSUMER_ID);
+
+    meteringService.executeReadQuery(
+        jsonObject,
+        vertxTestContext.succeeding(
+            response ->
+                vertxTestContext.verify(
+                    () -> {
+                      LOGGER.info("RESPONSE" + response);
+                      assertTrue(response.getString(TITLE).equals(SUCCESS));
                       vertxTestContext.completeNow();
                     })));
   }

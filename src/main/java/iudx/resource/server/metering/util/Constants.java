@@ -26,22 +26,37 @@ public class Constants {
   public static final String QUERY_KEY = "query";
   public static final String TOTAL = "total";
   public static final String TYPE_KEY = "type";
+  public static final String PROVIDER_ID = "providerID";
+  public static final String CONSUMER_ID = "consumerID";
+  public static final String ENDPOINT = "endPoint";
+  public static final String IID = "iid";
+  public static final String RESOURCE_ID = "resourceId";
 
   /* Metering Service Constants*/
   public static final String TIME_RELATION_NOT_FOUND = "Time relation not found.";
   public static final String TIME_NOT_FOUND = "Time interval not found.";
   public static final String USERID_NOT_FOUND = "User Id not found.";
   public static final String INVALID_DATE_TIME = "invalid date-time";
+  public static final String INVALID_PROVIDER_ID = "invalid provider id.";
+  public static final String INVALID_PROVIDER_REQUIRED = "provider id required.";
   public static final String INVALID_DATE_DIFFERENCE =
       "Difference between dates cannot be greater than 14 days or less than zero day.";
   public static final String RESOURCE_QUERY = " and resourceId='$4';";
 
-  public static final String USERID_TIME_INTERVAL_COUNT_QUERY =
+  public static final String CONSUMERID_TIME_INTERVAL_COUNT_QUERY =
       "SELECT count() FROM rsauditingtable where epochtime>=$1 and epochtime<=$2 and userid='$3'";
 
-  public static final String USERID_TIME_INTERVAL_READ_QUERY =
+  public static final String PROVIDERID_TIME_INTERVAL_COUNT_QUERY =
+      "SELECT count() FROM rsauditingtable where epochtime>=$1 and epochtime<=$2 and providerid='$3'";
+
+  public static final String CONSUMERID_TIME_INTERVAL_READ_QUERY =
       "SELECT * FROM rsauditingtable where epochtime>=$1 and epochtime<=$2 and userid='$3'";
+
+  public static final String PROVIDERID_TIME_INTERVAL_READ_QUERY =
+      "SELECT * FROM rsauditingtable where epochtime>=$1 and epochtime<=$2 and providerid='$3'";
+
   public static final String API_QUERY = " and api='$5'";
+  public static final String USER_ID_QUERY = " and userid='$6'";
 
   public static final String API = "api";
   public static final String USER_ID = "userid";
