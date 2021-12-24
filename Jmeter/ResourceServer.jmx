@@ -53,7 +53,12 @@
         </HTTPSamplerProxy>
         <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
-            <collectionProp name="HeaderManager.headers"/>
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">token</stringProp>
+                <stringProp name="Header.value">${__P(puneToken)}</stringProp>
+              </elementProp>
+            </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:31:36.926</stringProp>
           </HeaderManager>
           <hashTree/>
@@ -80,7 +85,12 @@
         </HTTPSamplerProxy>
         <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
-            <collectionProp name="HeaderManager.headers"/>
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="token" elementType="Header">
+                <stringProp name="Header.name">token</stringProp>
+                <stringProp name="Header.value">${__P(puneToken)}</stringProp>
+              </elementProp>
+            </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:30:21.256</stringProp>
           </HeaderManager>
           <hashTree/>
@@ -107,7 +117,12 @@
         </HTTPSamplerProxy>
         <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
-            <collectionProp name="HeaderManager.headers"/>
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="token" elementType="Header">
+                <stringProp name="Header.name">token</stringProp>
+                <stringProp name="Header.value">${__P(puneToken)}</stringProp>
+              </elementProp>
+            </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:32:21.579</stringProp>
           </HeaderManager>
           <hashTree/>
@@ -137,7 +152,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">${__P(token)}</stringProp>
+                <stringProp name="Header.value">${__P(suratToken)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T22:49:35.811</stringProp>
@@ -169,7 +184,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">${__P(token)}</stringProp>
+                <stringProp name="Header.value">${__P(suratToken)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:10:57.241</stringProp>
@@ -181,21 +196,7 @@
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{
-    &quot;type&quot;: &quot;Query&quot;,
-    &quot;entities&quot;: [
-        {
-            &quot;id&quot;: &quot;iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&quot;
-        }
-    ],
-    &quot;geoQ&quot;: {
-        &quot;geometry&quot;: &quot;Point&quot;,
-        &quot;coordinates&quot;: [21.178,72.834],
-        &quot;georel&quot;: &quot;near;maxDistance=1000&quot;,
-        &quot;geoproperty&quot;: &quot;location&quot;
-    },
-    &quot;options&quot;:&quot;count&quot;
-}</stringProp>
+                <stringProp name="Argument.value">{     &quot;type&quot;: &quot;Query&quot;,     &quot;entities&quot;: [         {             &quot;id&quot;: &quot;iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&quot;         }     ],     &quot;geoQ&quot;: {         &quot;geometry&quot;: &quot;Point&quot;,         &quot;coordinates&quot;: [21.178,72.834],         &quot;georel&quot;: &quot;near;maxDistance=1000&quot;,         &quot;geoproperty&quot;: &quot;location&quot;     },     &quot;options&quot;:&quot;count&quot; }</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
@@ -222,7 +223,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">${__P(token)}</stringProp>
+                <stringProp name="Header.value">${__P(suratToken)}</stringProp>
               </elementProp>
               <elementProp name="Content-Type" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
@@ -258,7 +259,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">${__P(token)}</stringProp>
+                <stringProp name="Header.value">${__P(suratToken)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T22:40:36.73</stringProp>
@@ -290,7 +291,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">${__P(token)}</stringProp>
+                <stringProp name="Header.value">${__P(suratToken)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:09:25.404</stringProp>
@@ -302,20 +303,7 @@
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{
-    &quot;type&quot;: &quot;Query&quot;,
-    &quot;entities&quot;: [
-        {
-            &quot;id&quot;: &quot;iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&quot;
-        }
-    ],
-    &quot;geoQ&quot;: {
-        &quot;geometry&quot;: &quot;Point&quot;,
-        &quot;coordinates&quot;: [21.178,72.834],
-        &quot;georel&quot;: &quot;near;maxDistance=10&quot;,
-        &quot;geoproperty&quot;: &quot;location&quot;
-    }
-}</stringProp>
+                <stringProp name="Argument.value">{     &quot;type&quot;: &quot;Query&quot;,     &quot;entities&quot;: [         {             &quot;id&quot;: &quot;iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&quot;         }     ],     &quot;geoQ&quot;: {         &quot;geometry&quot;: &quot;Point&quot;,         &quot;coordinates&quot;: [21.178,72.834],         &quot;georel&quot;: &quot;near;maxDistance=10&quot;,         &quot;geoproperty&quot;: &quot;location&quot;     } }</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
               </elementProp>
@@ -342,7 +330,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">${__P(token)}</stringProp>
+                <stringProp name="Header.value">${__P(suratToken)}</stringProp>
               </elementProp>
               <elementProp name="Content-Type" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
@@ -378,7 +366,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">${__P(token)}</stringProp>
+                <stringProp name="Header.value">${__P(suratToken)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:12:08.113</stringProp>
@@ -410,7 +398,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">${__P(token)}</stringProp>
+                <stringProp name="Header.value">${__P(suratToken)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T22:48:36.441</stringProp>
@@ -442,7 +430,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">${__P(token)}</stringProp>
+                <stringProp name="Header.value">${__P(suratToken)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-22T13:47:35.613</stringProp>
@@ -474,7 +462,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">${__P(token)}</stringProp>
+                <stringProp name="Header.value">${__P(suratToken)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T22:38:50.443</stringProp>
@@ -506,7 +494,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">${__P(token)}</stringProp>
+                <stringProp name="Header.value">${__P(suratToken)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:34:08.257</stringProp>
@@ -538,7 +526,7 @@
             <collectionProp name="HeaderManager.headers">
               <elementProp name="token" elementType="Header">
                 <stringProp name="Header.name">token</stringProp>
-                <stringProp name="Header.value">${__P(token)}</stringProp>
+                <stringProp name="Header.value">${__P(suratToken)}</stringProp>
               </elementProp>
             </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:33:16.199</stringProp>
@@ -567,7 +555,12 @@
         </HTTPSamplerProxy>
         <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
-            <collectionProp name="HeaderManager.headers"/>
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="token" elementType="Header">
+                <stringProp name="Header.name">token</stringProp>
+                <stringProp name="Header.value">${__P(puneToken)}</stringProp>
+              </elementProp>
+            </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:27:47.737</stringProp>
           </HeaderManager>
           <hashTree/>
@@ -594,7 +587,12 @@
         </HTTPSamplerProxy>
         <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
-            <collectionProp name="HeaderManager.headers"/>
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="token" elementType="Header">
+                <stringProp name="Header.name">token</stringProp>
+                <stringProp name="Header.value">${__P(puneToken)}</stringProp>
+              </elementProp>
+            </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-20T23:28:40.306</stringProp>
           </HeaderManager>
           <hashTree/>
@@ -621,7 +619,12 @@
         </HTTPSamplerProxy>
         <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
-            <collectionProp name="HeaderManager.headers"/>
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="token" elementType="Header">
+                <stringProp name="Header.name">token</stringProp>
+                <stringProp name="Header.value">${__P(puneToken)}</stringProp>
+              </elementProp>
+            </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-16T13:02:14.041</stringProp>
           </HeaderManager>
           <hashTree/>
@@ -648,7 +651,12 @@
         </HTTPSamplerProxy>
         <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
-            <collectionProp name="HeaderManager.headers"/>
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="token" elementType="Header">
+                <stringProp name="Header.name">token</stringProp>
+                <stringProp name="Header.value">${__P(puneToken)}</stringProp>
+              </elementProp>
+            </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-16T13:02:36.392</stringProp>
           </HeaderManager>
           <hashTree/>
@@ -675,7 +683,12 @@
         </HTTPSamplerProxy>
         <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP HeaderManager" enabled="true">
-            <collectionProp name="HeaderManager.headers"/>
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="token" elementType="Header">
+                <stringProp name="Header.name">token</stringProp>
+                <stringProp name="Header.value">${__P(puneToken)}</stringProp>
+              </elementProp>
+            </collectionProp>
             <stringProp name="TestPlan.comments">Created from cURL on 2021-02-16T13:02:57.32</stringProp>
           </HeaderManager>
           <hashTree/>
