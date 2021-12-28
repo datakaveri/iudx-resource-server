@@ -884,7 +884,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     }).onFailure(failureHandler -> {
       LOGGER.error(failureHandler);
       Response response = new Response.Builder()
-          .withType(ResponseUrn.QUEUE_ERROR_URN.getUrn())
+          .withUrn(ResponseUrn.QUEUE_ERROR_URN.getUrn())
           .withStatus(HttpStatus.SC_BAD_REQUEST)
           .withDetail(failureHandler.getLocalizedMessage()).build();
       handler.handle(Future.failedFuture(response.toJson().toString()));

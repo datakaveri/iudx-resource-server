@@ -903,7 +903,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
       JsonObject jsonObj = requestJson.copy();
-      jsonObj.put(userid, authInfo.getString(USER_ID));
+      jsonObj.put(USER_ID, authInfo.getString(USER_ID));
       Future<JsonObject> subsReq =
           subsService.appendSubscription(jsonObj, databroker, postgresService, authInfo);
       subsReq.onComplete(
@@ -1112,8 +1112,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     if (resourceName != null) {
       adapterIdBuilder.append("/").append(resourceName);
     }
+
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+    String userId = authInfo.getString(USER_ID);
     Future<JsonObject> brokerResult =
-        managementApi.deleteAdapter(adapterIdBuilder.toString(), databroker);
+        managementApi.deleteAdapter(adapterIdBuilder.toString(), userId, databroker);
     brokerResult.onComplete(
         brokerResultHandler -> {
           if (brokerResultHandler.succeeded()) {

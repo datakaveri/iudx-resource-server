@@ -28,13 +28,10 @@ import static iudx.resource.server.databroker.util.Constants.USER_ID;
 import static iudx.resource.server.databroker.util.Constants.VHOST_IUDX;
 import static iudx.resource.server.databroker.util.Util.getResponseJson;
 import static iudx.resource.server.databroker.util.Util.getSha;
-
 import java.time.OffsetDateTime;
-
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
@@ -44,6 +41,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.databroker.util.Constants;
+import iudx.resource.server.databroker.util.PermissionOpType;
 
 public class SubscriptionService {
   private static final Logger LOGGER = LogManager.getLogger(SubscriptionService.class);
@@ -130,7 +128,8 @@ public class SubscriptionService {
                         array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
                       } else {
                         exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
-                        array.add(exchangeName+"/."+routingKey.substring(routingKey.lastIndexOf("/")+1));
+                        array.add(exchangeName + "/."
+                            + routingKey.substring(routingKey.lastIndexOf("/") + 1));
                       }
                       JsonObject json = new JsonObject();
                       json.put(EXCHANGE_NAME, exchangeName);
@@ -159,13 +158,38 @@ public class SubscriptionService {
                               }
                             });
                           } else if (totalBindSuccess == totalBindCount) {
-                            registerStreamingSubscriptionResponse.put(Constants.USER_NAME, streamingUserName);
-                            registerStreamingSubscriptionResponse.put(Constants.APIKEY, apiKey);
-                            registerStreamingSubscriptionResponse.put(Constants.ID, queueName);
-                            registerStreamingSubscriptionResponse.put(Constants.URL, this.amqpUrl);
-                            registerStreamingSubscriptionResponse.put(Constants.PORT, this.amqpPort);
-                            registerStreamingSubscriptionResponse.put(Constants.VHOST, this.vhost);
-                            promise.complete(registerStreamingSubscriptionResponse);
+                            rabbitClient
+                                .updateUserPermissions(userid, PermissionOpType.ADD_READ, queueName)
+                                .onComplete(userPermissionHandler -> {
+                                  if (userPermissionHandler.succeeded()) {
+                                    registerStreamingSubscriptionResponse.put(Constants.USER_NAME,
+                                        streamingUserName);
+                                    registerStreamingSubscriptionResponse.put(Constants.APIKEY,
+                                        apiKey);
+                                    registerStreamingSubscriptionResponse.put(Constants.ID,
+                                        queueName);
+                                    registerStreamingSubscriptionResponse.put(Constants.URL,
+                                        this.amqpUrl);
+                                    registerStreamingSubscriptionResponse.put(Constants.PORT,
+                                        this.amqpPort);
+                                    registerStreamingSubscriptionResponse.put(Constants.VHOST,
+                                        this.vhost);
+                                    promise.complete(registerStreamingSubscriptionResponse);
+                                  } else {
+                                    Future<JsonObject> resultDeletequeue =
+                                        rabbitClient.deleteQueue(requestjson, vhost);
+                                    resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
+                                      if (resultHandlerDeletequeue.succeeded()) {
+                                        promise
+                                            .fail(
+                                                getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA,
+                                                    BINDING_FAILED)
+                                                        .toString());
+                                      }
+                                    });
+                                  }
+                                });
+
                           }
                         } else if (resultHandlerbind.failed()) {
                           LOGGER.error("failed ::" + resultHandlerbind.cause());
@@ -272,7 +296,8 @@ public class SubscriptionService {
                             array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
                           } else {
                             exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
-                            array.add(exchangeName+"/."+routingKey.substring(routingKey.lastIndexOf("/")+1));
+                            array.add(exchangeName + "/."
+                                + routingKey.substring(routingKey.lastIndexOf("/") + 1));
                           }
                           JsonObject json = new JsonObject();
                           json.put(EXCHANGE_NAME, exchangeName);
@@ -300,9 +325,30 @@ public class SubscriptionService {
                                   }
                                 });
                               } else if (totalBindSuccess == totalBindCount) {
-                                updateStreamingSubscriptionResponse.put(Constants.ENTITIES,
-                                    entitites);
-                                promise.complete(updateStreamingSubscriptionResponse);
+
+
+                                rabbitClient
+                                    .updateUserPermissions(userid, PermissionOpType.ADD_READ,
+                                        queueName)
+                                    .onComplete(permissionHandler -> {
+                                      if (permissionHandler.succeeded()) {
+                                        updateStreamingSubscriptionResponse.put(Constants.ENTITIES,
+                                            entitites);
+                                        promise.complete(updateStreamingSubscriptionResponse);
+                                      } else {
+                                        LOGGER.error("failed ::" + permissionHandler.cause());
+                                        Future<JsonObject> resultDeletequeue =
+                                            rabbitClient.deleteQueue(requestjson, vhost);
+                                        resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
+                                          if (resultHandlerDeletequeue.succeeded()) {
+                                            promise.fail(
+                                                new JsonObject()
+                                                    .put(ERROR, "user Permission failed")
+                                                    .toString());
+                                          }
+                                        });
+                                      }
+                                    });
                               }
                             } else if (resultHandlerbind.failed()) {
                               LOGGER.error("failed ::" + resultHandlerbind.cause());
@@ -360,6 +406,7 @@ public class SubscriptionService {
     JsonObject requestjson = new JsonObject();
     if (request != null && !request.isEmpty()) {
       JsonArray entitites = request.getJsonArray(ENTITIES);
+      String userid = request.getString(USER_ID);
       LOGGER.debug("Info : Request Access for " + entitites);
       LOGGER.debug("Info : No of bindings to do : " + entitites.size());
       totalBindCount = entitites.size();
@@ -391,7 +438,8 @@ public class SubscriptionService {
                     array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
                   } else {
                     exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
-                    array.add(exchangeName+"/."+routingKey.substring(routingKey.lastIndexOf("/")+1));
+                    array.add(exchangeName + "/."
+                        + routingKey.substring(routingKey.lastIndexOf("/") + 1));
                   }
                   JsonObject json = new JsonObject();
                   json.put(EXCHANGE_NAME, exchangeName);
@@ -412,11 +460,30 @@ public class SubscriptionService {
                         LOGGER.error("failed ::" + resultHandlerbind.cause());
                         // promise.fail(new JsonObject().put(ERROR, "Binding Failed").toString());
                         promise.fail(
-                            getResponseJson(BAD_REQUEST_CODE, ResponseUrn.BAD_REQUEST_URN.getUrn(), BINDING_FAILED)
-                                .toString());
+                            getResponseJson(BAD_REQUEST_CODE, ResponseUrn.BAD_REQUEST_URN.getUrn(),
+                                BINDING_FAILED)
+                                    .toString());
                       } else if (totalBindSuccess == totalBindCount) {
-                        appendStreamingSubscriptionResponse.put(Constants.ENTITIES, entitites);
-                        promise.complete(appendStreamingSubscriptionResponse);
+                        rabbitClient.updateUserPermissions(userid,
+                            PermissionOpType.ADD_READ, queueName)
+                            .onComplete(permissionHandler -> {
+                              if (permissionHandler.succeeded()) {
+                                appendStreamingSubscriptionResponse.put(Constants.ENTITIES,
+                                    entitites);
+                                promise.complete(appendStreamingSubscriptionResponse);
+                              } else {
+                                LOGGER.error("failed ::" + permissionHandler.cause());
+                                Future<JsonObject> resultDeletequeue =
+                                    rabbitClient.deleteQueue(requestjson, vhost);
+                                resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
+                                  if (resultHandlerDeletequeue.succeeded()) {
+                                    promise.fail(
+                                        new JsonObject().put(ERROR, "user Permission failed")
+                                            .toString());
+                                  }
+                                });
+                              }
+                            });
                       }
                     } else if (resultHandlerbind.failed()) {
                       LOGGER.error("failed ::" + resultHandlerbind.cause());
@@ -455,6 +522,7 @@ public class SubscriptionService {
     JsonObject deleteStreamingSubscription = new JsonObject();
     if (request != null && !request.isEmpty()) {
       String queueName = request.getString(SUBSCRIPTION_ID);
+      String userid = request.getString(USER_ID);
       JsonObject requestBody = new JsonObject();
       requestBody.put(QUEUE_NAME, queueName);
       Future<JsonObject> result = rabbitClient.deleteQueue(requestBody, vhost);
@@ -466,8 +534,12 @@ public class SubscriptionService {
             LOGGER.debug("failed :: Response is " + deleteQueueResponse);
             promise.fail(deleteQueueResponse.toString());
           } else {
-            deleteStreamingSubscription.mergeIn(getResponseJson(HttpStatus.SC_OK, SUCCESS,
+            deleteStreamingSubscription.mergeIn(getResponseJson(ResponseUrn.SUCCESS_URN.getUrn(),HttpStatus.SC_OK ,SUCCESS,
                 "Subscription deleted Successfully"));
+            Future
+                .future(
+                    fu -> rabbitClient.updateUserPermissions(userid, PermissionOpType.DELETE_READ,
+                        queueName));
             promise.complete(deleteStreamingSubscription);
           }
         }
