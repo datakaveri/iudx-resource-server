@@ -26,7 +26,6 @@ import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
 import static iudx.resource.server.apiserver.util.Constants.USERSHA;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -34,13 +33,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
-
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -92,10 +88,10 @@ public class ValidatorsHandlersFactory {
         validator = getLatestRequestValidations(parameters, headers);
         break;
       case POST_TEMPORAL:
-        validator = getRequestSchemaValidator(vertx, body,requestType);
+        validator = getPostTemporalValidations(vertx, parameters, headers, body, requestType);
         break;
       case POST_ENTITIES:
-        validator = getRequestSchemaValidator(vertx, body,requestType);
+        validator =  getPostEntitiesValidations(vertx, parameters, headers, body, requestType);
         break;
       case SUBSCRIPTION:
         validator = getSubscriptionsValidations(vertx, body, headers);
@@ -197,6 +193,32 @@ public class ValidatorsHandlersFactory {
       LOGGER.error(ex);
       throw new DxRuntimeException(HttpStatusCode.BAD_REQUEST.getValue(), SCHEMA_READ_ERROR);
     }
+    return validators;
+  }
+  
+  private List<Validator> getPostTemporalValidations(Vertx vertx, final MultiMap parameters,
+      final MultiMap headers, final JsonObject body, final RequestType requestType) {
+
+    List<Validator> validators = new ArrayList<>();
+    // pagination optional fields
+    validators.add(new PaginationLimitTypeValidator(parameters.get(NGSILDQUERY_SIZE), false));
+    validators.add(new PaginationOffsetTypeValidator(parameters.get(NGSILDQUERY_FROM), false));
+    // request body validators.
+    validators.addAll(getRequestSchemaValidator(vertx, body, requestType));
+
+    return validators;
+  }
+  
+  private List<Validator> getPostEntitiesValidations(Vertx vertx, final MultiMap parameters,
+      final MultiMap headers, final JsonObject body, final RequestType requestType) {
+
+    List<Validator> validators = new ArrayList<>();
+    // pagination optional fields
+    validators.add(new PaginationLimitTypeValidator(parameters.get(NGSILDQUERY_SIZE), false));
+    validators.add(new PaginationOffsetTypeValidator(parameters.get(NGSILDQUERY_FROM), false));
+    // request body validators.
+    validators.addAll(getRequestSchemaValidator(vertx, body, requestType));
+
     return validators;
   }
 
