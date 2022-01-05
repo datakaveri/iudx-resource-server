@@ -841,12 +841,13 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     String password = Util.randomPassword.get();
     String userid = request.getString(USER_ID);
     Future<JsonObject> userFuture = webClient.getUserInDb(userid);
-
     userFuture.compose(checkUserFut -> {
       return webClient.resetPasswordInRMQ(userid, password);
     }).compose(rmqResetFut -> {
       return webClient.resetPwdInDb(userid, Util.getSha(password));
     }).onSuccess(successHandler -> {
+      response.put("type",ResponseUrn.SUCCESS_URN.getUrn());
+      response.put("userId", userid);
       response.put("password", password);
       handler.handle(Future.succeededFuture(response));
     }).onFailure(failurehandler -> {
