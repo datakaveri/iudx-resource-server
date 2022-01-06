@@ -34,11 +34,9 @@ private PaginationLimitTypeValidator paginationLimitTypeValidator;
         Arguments.of(null, false),
         Arguments.of("1000", false),
         Arguments.of("5000", false),
-        Arguments.of("7500", false),
-        Arguments.of("10000", false),
         Arguments.of("0", false));
   }
-  
+
   @ParameterizedTest
   @MethodSource("allowedValues")
   @Description("pagination limit type parameter allowed values.")
@@ -48,12 +46,14 @@ private PaginationLimitTypeValidator paginationLimitTypeValidator;
     assertTrue(paginationLimitTypeValidator.isValid());
     testContext.completeNow();
   }
-  
-  
+
+
   static Stream<Arguments> invalidValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
         Arguments.of("-1", false),
+        Arguments.of("7500", false),
+        Arguments.of("10000", false),
         Arguments.of("10001", false),
         Arguments.of("   ", false),
         Arguments.of("7896541233568796313611634", false),
