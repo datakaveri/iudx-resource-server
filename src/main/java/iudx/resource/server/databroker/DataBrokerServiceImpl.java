@@ -847,8 +847,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       return webClient.resetPwdInDb(userid, Util.getSha(password));
     }).onSuccess(successHandler -> {
       response.put("type",ResponseUrn.SUCCESS_URN.getUrn());
-      response.put("userId", userid);
-      response.put("password", password);
+      response.put("title","Successfully changes the password");
+      JsonArray result = new JsonArray()
+              .add(new JsonObject()
+                      .put("userId", userid)
+                      .put("password", password));
+      response.put("result",result);
       handler.handle(Future.succeededFuture(response));
     }).onFailure(failurehandler -> {
       JsonObject failureResponse = new JsonObject();
