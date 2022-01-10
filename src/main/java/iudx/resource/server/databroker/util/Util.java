@@ -1,9 +1,9 @@
 package iudx.resource.server.databroker.util;
 
 import static iudx.resource.server.databroker.util.Constants.DETAIL;
+import static iudx.resource.server.databroker.util.Constants.STATUS;
 import static iudx.resource.server.databroker.util.Constants.TITLE;
 import static iudx.resource.server.databroker.util.Constants.TYPE;
-
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -14,11 +14,9 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -94,10 +92,19 @@ public class Util {
     mergedArray.clear().addAll(((JsonArray) key1)).addAll(((JsonArray) key2));
     return mergedArray;
   };
-
+  
   public static JsonObject getResponseJson(int type, String title, String detail) {
     JsonObject json = new JsonObject();
     json.put(TYPE, type);
+    json.put(TITLE, title);
+    json.put(DETAIL, detail);
+    return json;
+  }
+
+  public static JsonObject getResponseJson(String type,int statusCode, String title, String detail) {
+    JsonObject json = new JsonObject();
+    json.put(TYPE, type);
+    json.put(STATUS, statusCode);
     json.put(TITLE, title);
     json.put(DETAIL, detail);
     return json;

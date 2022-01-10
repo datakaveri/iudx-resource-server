@@ -841,13 +841,18 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     String password = Util.randomPassword.get();
     String userid = request.getString(USER_ID);
     Future<JsonObject> userFuture = webClient.getUserInDb(userid);
-
     userFuture.compose(checkUserFut -> {
       return webClient.resetPasswordInRMQ(userid, password);
     }).compose(rmqResetFut -> {
       return webClient.resetPwdInDb(userid, Util.getSha(password));
     }).onSuccess(successHandler -> {
-      response.put("password", password);
+      response.put("type",ResponseUrn.SUCCESS_URN.getUrn());
+      response.put("title","Successfully changed the password");
+      JsonArray result = new JsonArray()
+              .add(new JsonObject()
+                      .put("username", userid)
+                      .put("apiKey", password));
+      response.put("result",result);
       handler.handle(Future.succeededFuture(response));
     }).onFailure(failurehandler -> {
       JsonObject failureResponse = new JsonObject();
@@ -884,7 +889,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     }).onFailure(failureHandler -> {
       LOGGER.error(failureHandler);
       Response response = new Response.Builder()
-          .withType(ResponseUrn.QUEUE_ERROR_URN.getUrn())
+          .withUrn(ResponseUrn.QUEUE_ERROR_URN.getUrn())
           .withStatus(HttpStatus.SC_BAD_REQUEST)
           .withDetail(failureHandler.getLocalizedMessage()).build();
       handler.handle(Future.failedFuture(response.toJson().toString()));

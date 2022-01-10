@@ -63,6 +63,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
           .maximumSize(1000)
           .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
           .build();
+  
+
 
   JwtAuthenticationServiceImpl(
       Vertx vertx, final JWTAuth jwtAuth, final WebClient webClient, final JsonObject config,
@@ -76,7 +78,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     WebClientOptions options = new WebClientOptions();
     options.setTrustAll(true).setVerifyHost(false).setSsl(true);
     catWebClient = WebClient.create(vertx, options);
-
     this.postgresService = postgresService;
   }
 
