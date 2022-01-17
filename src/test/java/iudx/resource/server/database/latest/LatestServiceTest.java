@@ -1,23 +1,23 @@
 package iudx.resource.server.database.latest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.configuration.Configuration;
 
-@ExtendWith({VertxExtension.class})
+@ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class LatestServiceTest {
   private static final Logger logger = LogManager.getLogger(LatestDataService.class);
   private static Vertx vertxObj;
@@ -27,6 +27,7 @@ public class LatestServiceTest {
 
   private static RedisClient redisClient;
   private static LatestDataService latest;
+  private static CacheService cacheService;
 
   @BeforeAll
   @DisplayName("Deploying Latest Test Verticle")
@@ -37,7 +38,8 @@ public class LatestServiceTest {
     attributeList = redisConfig.getJsonObject("attributeList");
     new RedisClient(vertx, redisConfig).start().onSuccess(handler -> {
       redisClient = handler;
-      latest = new LatestDataServiceImpl(redisClient, attributeList);
+      cacheService=Mockito.mock(CacheService.class);
+      latest = new LatestDataServiceImpl(redisClient, cacheService);
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failNow("fail to start vertx");

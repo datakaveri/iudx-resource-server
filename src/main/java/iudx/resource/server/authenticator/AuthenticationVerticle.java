@@ -1,6 +1,6 @@
 package iudx.resource.server.authenticator;
 
-import static iudx.resource.server.common.Constants.PG_SERVICE_ADD;
+import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
@@ -15,7 +15,7 @@ import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.serviceproxy.ServiceBinder;
-import iudx.resource.server.database.postgres.PostgresService;
+import iudx.resource.server.cache.CacheService;
 
 /**
  * The Authentication Verticle.
@@ -39,7 +39,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
   private MessageConsumer<JsonObject> consumer;
   private WebClient webClient;
 
-  private PostgresService postgresService;
+  private CacheService cacheService;
 
   static WebClient createWebClient(Vertx vertx, JsonObject config) {
     return createWebClient(vertx, config, false);
@@ -87,11 +87,10 @@ public class AuthenticationVerticle extends AbstractVerticle {
               }
               JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
-              postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADD);
-
+              cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
               jwtAuthenticationService =
                   new JwtAuthenticationServiceImpl(
-                      vertx, jwtAuth, createWebClient(vertx, config()), config(), postgresService);
+                      vertx, jwtAuth, createWebClient(vertx, config()), config(), cacheService);
 
               /* Publish the Authentication service with the Event Bus against an address. */
               consumer =

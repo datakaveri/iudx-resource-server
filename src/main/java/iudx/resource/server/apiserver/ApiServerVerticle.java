@@ -51,6 +51,7 @@ import static iudx.resource.server.common.Api.INGESTION;
 import static iudx.resource.server.common.Api.MANAGEMENT;
 import static iudx.resource.server.common.Api.NGSILD_BASE;
 import static iudx.resource.server.common.Api.SUBSCRIPTION;
+import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
 import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
@@ -137,7 +138,6 @@ public class ApiServerVerticle extends AbstractVerticle {
   private static final String BROKER_SERVICE_ADDRESS = "iudx.rs.broker.service";
   private static final String LATEST_SEARCH_ADDRESS = "iudx.rs.latest.service";
   private static final String METERING_SERVICE_ADDRESS = "iudx.rs.metering.service";
-  private static final String POSTGRES_SERVICE_ADDRESS = "iudx.rs.pgsql.service";
 
   private HttpServer server;
   private Router router;
@@ -453,7 +453,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     catalogueService = new CatalogueService(vertx, config());
     validator = new ParamsValidator(catalogueService);
 
-    postgresService = PostgresService.createProxy(vertx, POSTGRES_SERVICE_ADDRESS);
+    postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
 
     router.mountSubRouter(ADMIN.path,
         new AdminRestApi(vertx, databroker, postgresService, meteringService).init());

@@ -4,11 +4,10 @@ import static iudx.resource.server.authenticator.Constants.JSON_EXPIRY;
 import static iudx.resource.server.authenticator.Constants.JSON_IID;
 import static iudx.resource.server.authenticator.Constants.JSON_USERID;
 import static iudx.resource.server.authenticator.Constants.OPEN_ENDPOINTS;
-import static iudx.resource.server.authenticator.Constants.REVOKED_CLIENT_SQL;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.apache.http.HttpStatus;
@@ -37,7 +36,8 @@ import iudx.resource.server.authenticator.authorization.IudxRole;
 import iudx.resource.server.authenticator.authorization.JwtAuthorization;
 import iudx.resource.server.authenticator.authorization.Method;
 import iudx.resource.server.authenticator.model.JwtData;
-import iudx.resource.server.database.postgres.PostgresService;
+import iudx.resource.server.cache.CacheService;
+import iudx.resource.server.cache.cacheImpl.CacheType;
 
 public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
@@ -49,7 +49,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   final int port;
   final String path;
   final String audience;
-  final PostgresService postgresService;
+  final CacheService cache;
 
   // resourceGroupCache will contains ACL info about all resource group in a resource server
   Cache<String, String> resourceGroupCache =
@@ -63,12 +63,12 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
           .maximumSize(1000)
           .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES)
           .build();
-  
+
 
 
   JwtAuthenticationServiceImpl(
       Vertx vertx, final JWTAuth jwtAuth, final WebClient webClient, final JsonObject config,
-      final PostgresService postgresService) {
+      final CacheService cacheService) {
     this.jwtAuth = jwtAuth;
     this.audience = config.getString("host");
     this.host = config.getString("catServerHost");
@@ -78,7 +78,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     WebClientOptions options = new WebClientOptions();
     options.setTrustAll(true).setVerifyHost(false).setSsl(true);
     catWebClient = WebClient.create(vertx, options);
-    this.postgresService = postgresService;
+    this.cache = cacheService;
   }
 
   @Override
@@ -184,6 +184,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             user -> {
               JwtData jwtData = new JwtData(user.principal());
               jwtData.setExp(user.get("exp"));
+              jwtData.setIat(user.get("iat"));
               promise.complete(jwtData);
             })
         .onFailure(
@@ -305,38 +306,35 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   }
 
   Future<Boolean> isRevokedClientToken(JwtData jwtData) {
+    LOGGER.debug("isRevokedClientToken started param : " + jwtData);
     Promise<Boolean> promise = Promise.promise();
+    CacheType cacheType = CacheType.REVOKED_CLIENT;
+    String subId = jwtData.getSub();
+    JsonObject requestJson = new JsonObject().put("type", cacheType).put("key", subId);
 
-    StringBuilder query = new StringBuilder(REVOKED_CLIENT_SQL.replace("$1", jwtData.getSub()));
-
-    postgresService.executeQuery(query.toString(), handler -> {
+    LOGGER.debug("requestJson : " + requestJson);
+    cache.get(requestJson, handler -> {
       if (handler.succeeded()) {
-        LOGGER.info("result : " + handler.result());
-        JsonObject response = handler.result();
-        if (response.isEmpty() || response.getJsonArray("result").isEmpty()) {
-          promise.complete(true);
+        JsonObject responseJson = handler.result();
+        LOGGER.debug("responseJson : " + responseJson);
+        String timestamp = responseJson.getString("value");
+
+        LocalDateTime revokedAt = ZonedDateTime.parse(timestamp).toLocalDateTime();
+        LocalDateTime jwtIssuedAt = (LocalDateTime.ofInstant(
+            Instant.ofEpochSecond(jwtData.getIat()),
+            ZoneId.systemDefault()));
+
+        if (jwtIssuedAt.isBefore(revokedAt)) {
+          LOGGER.error("Privilages for client are revoked.");
+          JsonObject result = new JsonObject().put("401", "revoked token passes");
+          promise.fail(result.toString());
         } else {
-          JsonObject row = response.getJsonArray("result").getJsonObject(0);
-          LocalDateTime subExpiry4DB =
-              LocalDateTime.parse(row.getString("expiry"), DateTimeFormatter.ISO_DATE_TIME);
-
-          String subId = row.getString("_id");
-
-          LocalDateTime jwtExpiry = (LocalDateTime.ofInstant(
-              Instant.ofEpochSecond(Long.parseLong(jwtData.getExp().toString())),
-              ZoneId.systemDefault()));
-          if (subId.equals(jwtData.getSub()) && jwtExpiry.isBefore(subExpiry4DB)) {
-            LOGGER.error("revoked JWT token passed");
-            JsonObject result = new JsonObject().put("401", "revoked token passes");
-            promise.fail(result.toString());
-          } else {
-            promise.complete(true);
-          }
+          promise.complete(true);
         }
       } else {
-        LOGGER.error("failed to execute sql" + handler.cause());
-        JsonObject result = new JsonObject().put("401", "failed to execute sql");
-        promise.fail(result.toString());
+        // since no value in cache, this means client_id is valid and not revoked
+        LOGGER.debug("cache call result : [fail] " + handler.cause());
+        promise.complete(true);
       }
     });
     return promise.future();

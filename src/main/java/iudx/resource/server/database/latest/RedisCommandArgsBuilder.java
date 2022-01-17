@@ -10,7 +10,7 @@ public class RedisCommandArgsBuilder {
 
   private static final Logger LOGGER = LogManager.getLogger(RedisCommandArgsBuilder.class);
 
-  public RedisArgs getRedisCommandArgs(String id, boolean isGroup) {
+  public RedisArgs getRedisCommandArgs(String id, boolean isUniqueAttribueExist) {
     RedisArgs args = new RedisArgs();
 
     LOGGER.debug("In LatestSearch Redis");
@@ -23,7 +23,7 @@ public class RedisCommandArgsBuilder {
 
     StringBuilder pathParam = new StringBuilder();
 
-    if (isGroup) {
+    if (isUniqueAttribueExist) {
       // itms type resource
       pathParam.append(".");
     } else {

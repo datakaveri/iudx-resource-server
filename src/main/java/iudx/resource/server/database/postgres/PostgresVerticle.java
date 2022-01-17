@@ -1,5 +1,6 @@
 package iudx.resource.server.database.postgres;
 
+import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -9,8 +10,6 @@ import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.sqlclient.PoolOptions;
 
 public class PostgresVerticle extends AbstractVerticle{
-  
-  private static final String PGSQL_SERVICE_ADDRESS = "iudx.rs.pgsql.service";
   
   private MessageConsumer<JsonObject> consumer;
   private ServiceBinder binder;
@@ -55,7 +54,7 @@ public class PostgresVerticle extends AbstractVerticle{
     pgService=new PostgresServiceImpl(this.pool);
     
     binder = new ServiceBinder(vertx);
-    consumer =binder.setAddress(PGSQL_SERVICE_ADDRESS).register(PostgresService.class, pgService);
+    consumer =binder.setAddress(PG_SERVICE_ADDRESS).register(PostgresService.class, pgService);
   }
 
 }

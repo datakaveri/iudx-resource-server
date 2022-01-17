@@ -1,6 +1,6 @@
 package iudx.resource.server.authenticator;
 
-import static iudx.resource.server.common.Constants.PG_SERVICE_ADD;
+import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -8,6 +8,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import io.micrometer.core.ipc.http.HttpSender.Method;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
@@ -21,11 +23,12 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.authenticator.authorization.Api;
 import iudx.resource.server.authenticator.model.JwtData;
+import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.database.postgres.PostgresVerticle;
 
-@ExtendWith(VertxExtension.class)
+@ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class JwtAuthServiceImplTest {
 
   private static final Logger LOGGER = LogManager.getLogger(JwtAuthServiceImplTest.class);
@@ -36,6 +39,7 @@ public class JwtAuthServiceImplTest {
   private static String closeId;
   private static String invalidId;
   private static PostgresService pgService;
+  private static CacheService cacheService;
 
 
   @BeforeAll
@@ -52,7 +56,7 @@ public class JwtAuthServiceImplTest {
             .setConfig(pgconfig),
         pgDeployer -> {
           if (pgDeployer.succeeded()) {
-            pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADD);
+            pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
 
             JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
             jwtAuthOptions.addPubSecKey(
@@ -68,11 +72,12 @@ public class JwtAuthServiceImplTest {
                                                                      // test
             JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
-            PostgresService pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADD);
+            PostgresService pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
 
+            cacheService = Mockito.mock(CacheService.class);
             WebClient webClient = AuthenticationVerticle.createWebClient(vertx, authConfig, true);
             jwtAuthenticationService =
-                new JwtAuthenticationServiceImpl(vertx, jwtAuth, webClient, authConfig, pgService);
+                new JwtAuthenticationServiceImpl(vertx, jwtAuth, webClient, authConfig,cacheService);
 
             // since test token doesn't contains valid id's, so forcibly put some dummy id in cache
             // for

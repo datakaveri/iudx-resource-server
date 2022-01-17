@@ -219,7 +219,18 @@
 			<artifactId>elasticsearch-rest-high-level-client</artifactId>
 			<version>${elasticsearch-rest-high-level-client.version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>3.11.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-junit-jupiter</artifactId>
+			<version>3.11.1</version>
+			<scope>test</scope>
+		</dependency>
 
 	</dependencies>
 
@@ -262,7 +273,7 @@
 						<jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
 					</systemPropertyVariables>
 					<excludes>
-						<!-- classes are excluded since they are not testable or don't add
+						<!-- classes are excluded since they are not testable or don't add 
 							any value if test cases are written. -->
 						<!-- ApiServerVerticle testing is covered in integration for now. -->
 						<exclude>iudx/resource/server/apiserver/ApiServerVerticle.class</exclude>
@@ -275,7 +286,7 @@
 						<exclide>iudx/resource/server/database/archives/DatabaseService.class</exclide>
 						<exclide>iudx/resource/server/database/latest/LatestDataService.class</exclide>
 
-                        <!-- deployment helper classes -->
+						<!-- deployment helper classes -->
 						<exclude>iudx/resource/server/deploy/*.class</exclude>
 					</excludes>
 				</configuration>

@@ -146,14 +146,17 @@ public final class AdminRestApi {
       return;
     }
 
-    JsonObject queryparams = new JsonObject().put("id", id).put("attribute", attribute);
-
     JsonObject rmqMessage = new JsonObject();
     rmqMessage.put("id", id);
     rmqMessage.put("unique-attribute", attribute);
     rmqMessage.put("eventType", BroadcastEventType.CREATE);
     
-    pgService.executePreparedQuery(INSERT_UNIQUE_ATTR_SQL, queryparams, pghandler -> {
+    StringBuilder query = new StringBuilder(INSERT_UNIQUE_ATTR_SQL
+        .replace("$1", id)
+        .replace("$2", attribute));
+    
+    LOGGER.info("query : " + query.toString());
+    pgService.executeQuery(query.toString(), pghandler -> {
       if (pghandler.succeeded()) {
         RMQbrokerService.publishMessage(rmqMessage, UNIQUE_ATTR_EX, UNIQUE_ATTR_EX_ROUTING_KEY,
             rmqHandler -> {
