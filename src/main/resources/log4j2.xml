@@ -25,7 +25,7 @@
 		</RollingFile> -->
     </Appenders>
     <Loggers>
-        <logger name="iudx.resource.server" level="${env:LOG_LEVEL}"
+        <logger name="iudx.resource.server" level="${env:LOG_LEVEL:-WARN}"
             additivity="false">
             <appender-ref ref="ConsoleAppender" />
 			<!-- <appender-ref ref="RollingFile" /> -->
