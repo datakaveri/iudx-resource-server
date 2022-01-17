@@ -1,7 +1,9 @@
 package iudx.resource.server.authenticator;
 
-import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
@@ -9,9 +11,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 import io.micrometer.core.ipc.http.HttpSender.Method;
-import io.vertx.core.DeploymentOptions;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -26,7 +31,6 @@ import iudx.resource.server.authenticator.model.JwtData;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.database.postgres.PostgresService;
-import iudx.resource.server.database.postgres.PostgresVerticle;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class JwtAuthServiceImplTest {
@@ -49,56 +53,54 @@ public class JwtAuthServiceImplTest {
     authConfig = config.configLoader(1, vertx);
 
 
-    JsonObject pgconfig = config.configLoader(7, vertx);
-    vertx.deployVerticle(PostgresVerticle.class.getName(),
-        new DeploymentOptions()
-            .setInstances(1)
-            .setConfig(pgconfig),
-        pgDeployer -> {
-          if (pgDeployer.succeeded()) {
-            pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
+    JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
+    jwtAuthOptions.addPubSecKey(
+        new PubSecKeyOptions()
+            .setAlgorithm("ES256")
+            .setBuffer("-----BEGIN PUBLIC KEY-----\n" +
+                "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8BKf2HZ3wt6wNf30SIsbyjYPkkTS\n" +
+                "GGyyM2/MGF/zYTZV9Z28hHwvZgSfnbsrF36BBKnWszlOYW0AieyAUKaKdg==\n" +
+                "-----END PUBLIC KEY-----\n" +
+                ""));
+    jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);// ignore token expiration only
+                                                             // for
+                                                             // test
+    JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
-            JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
-            jwtAuthOptions.addPubSecKey(
-                new PubSecKeyOptions()
-                    .setAlgorithm("ES256")
-                    .setBuffer("-----BEGIN PUBLIC KEY-----\n" +
-                        "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8BKf2HZ3wt6wNf30SIsbyjYPkkTS\n" +
-                        "GGyyM2/MGF/zYTZV9Z28hHwvZgSfnbsrF36BBKnWszlOYW0AieyAUKaKdg==\n" +
-                        "-----END PUBLIC KEY-----\n" +
-                        ""));
-            jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);// ignore token expiration only
-                                                                     // for
-                                                                     // test
-            JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
+    cacheService = Mockito.mock(CacheService.class);
+    WebClient webClient = AuthenticationVerticle.createWebClient(vertx, authConfig, true);
+    jwtAuthenticationService =
+        new JwtAuthenticationServiceImpl(vertx, jwtAuth, webClient, authConfig, cacheService);
 
-            PostgresService pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
+    // since test token doesn't contains valid id's, so forcibly put some dummy id in cache
+    // for
+    // test.
+    openId =
+        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood";
+    closeId =
+        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information";
+    invalidId = "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group1";
 
-            cacheService = Mockito.mock(CacheService.class);
-            WebClient webClient = AuthenticationVerticle.createWebClient(vertx, authConfig, true);
-            jwtAuthenticationService =
-                new JwtAuthenticationServiceImpl(vertx, jwtAuth, webClient, authConfig,cacheService);
+    jwtAuthenticationService.resourceIdCache.put(openId, "OPEN");
+    jwtAuthenticationService.resourceIdCache.put(closeId, "CLOSED");
+    jwtAuthenticationService.resourceIdCache.put(invalidId, "CLOSED");
 
-            // since test token doesn't contains valid id's, so forcibly put some dummy id in cache
-            // for
-            // test.
-            openId =
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood";
-            closeId =
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information";
-            invalidId = "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group1";
+    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+    when(asyncResult.succeeded()).thenReturn(false);
 
-            jwtAuthenticationService.resourceIdCache.put(openId, "OPEN");
-            jwtAuthenticationService.resourceIdCache.put(closeId, "CLOSED");
-            jwtAuthenticationService.resourceIdCache.put(invalidId, "CLOSED");
+    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+      @SuppressWarnings("unchecked")
+      @Override
+      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
+        return null;
+      }
+    }).when(cacheService).get(any(), any());
 
 
-            LOGGER.info("Auth tests setup complete");
-            testContext.completeNow();
-          } else {
-            testContext.failNow("fail to deploy pg verticle fo JWT vertticle test");
-          }
-        });
+    LOGGER.info("Auth tests setup complete");
+    testContext.completeNow();
+
   }
 
 

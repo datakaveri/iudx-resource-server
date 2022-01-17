@@ -1,6 +1,9 @@
 package iudx.resource.server.database.latest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
@@ -8,7 +11,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -38,8 +45,9 @@ public class LatestServiceTest {
     attributeList = redisConfig.getJsonObject("attributeList");
     new RedisClient(vertx, redisConfig).start().onSuccess(handler -> {
       redisClient = handler;
-      cacheService=Mockito.mock(CacheService.class);
+      cacheService = Mockito.mock(CacheService.class);
       latest = new LatestDataServiceImpl(redisClient, cacheService);
+
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failNow("fail to start vertx");
@@ -54,11 +62,24 @@ public class LatestServiceTest {
   @Test
   @DisplayName("Testing Latest Data at resource level- flood")
   void searchLatestResourceflood(VertxTestContext testContext) {
-    String id = "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055";
+    String id =
+        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055";
     JsonObject request =
         new JsonObject()
             .put("id", new JsonArray().add(id))
             .put("searchType", "latestSearch");
+
+    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+    when(asyncResult.succeeded()).thenReturn(false);
+
+    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+      @SuppressWarnings("unchecked")
+      @Override
+      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
+        return null;
+      }
+    }).when(cacheService).get(any(), any());
 
     latest.getLatestData(request, handler -> {
       if (handler.succeeded()) {
@@ -73,11 +94,24 @@ public class LatestServiceTest {
   @Test
   @DisplayName("Testing Latest Data at resource level- flood (id not present in redis)")
   void searchLatestResourcefloodIdnotPresent(VertxTestContext testContext) {
-    String id = "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR018";
+    String id =
+        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR018";
     JsonObject request =
         new JsonObject()
             .put("id", new JsonArray().add(id))
             .put("searchType", "latestSearch");
+
+    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+    when(asyncResult.succeeded()).thenReturn(false);
+
+    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+      @SuppressWarnings("unchecked")
+      @Override
+      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
+        return null;
+      }
+    }).when(cacheService).get(any(), any());
 
     latest.getLatestData(request, handler -> {
       if (handler.succeeded()) {
@@ -97,6 +131,23 @@ public class LatestServiceTest {
         new JsonObject()
             .put("id", new JsonArray().add(id))
             .put("searchType", "latestSearch");
+
+    // prepare mocked response from database/postgres service.
+    JsonObject cacheResponse = new JsonObject();
+    cacheResponse.put("value", "license_plate");
+
+    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+    when(asyncResult.succeeded()).thenReturn(true);
+    when(asyncResult.result()).thenReturn(cacheResponse);
+
+    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+      @SuppressWarnings("unchecked")
+      @Override
+      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
+        return null;
+      }
+    }).when(cacheService).get(any(), any());
 
     latest.getLatestData(request, handler -> {
       if (handler.succeeded()) {
