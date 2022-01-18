@@ -68,7 +68,6 @@ public class AuthenticationVerticle extends AbstractVerticle {
         .onSuccess(
             handler -> {
               String cert = handler;
-              LOGGER.info("cert : " + cert);
               binder = new ServiceBinder(vertx);
 
               JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();

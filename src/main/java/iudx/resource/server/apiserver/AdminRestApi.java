@@ -133,7 +133,7 @@ public final class AdminRestApi {
   }
 
   private void createUniqueAttribute(RoutingContext context) {
-    LOGGER.debug("createUniqueAttribute() started");
+    LOGGER.trace("createUniqueAttribute() started");
     HttpServerResponse response = context.response();
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
     JsonObject requestBody = context.getBodyAsJson();

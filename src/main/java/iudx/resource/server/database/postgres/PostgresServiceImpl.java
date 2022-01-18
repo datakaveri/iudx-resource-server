@@ -36,19 +36,17 @@ public final class PostgresServiceImpl implements PostgresService {
     Collector<Row, ?, List<JsonObject>> rowCollector =
         Collectors.mapping(row -> row.toJson(), Collectors.toList());
 
-    LOGGER.info("execute query : "+query);
     client
         .withConnection(connection -> connection.query(query)
             .collecting(rowCollector)
             .execute()
             .map(row -> row.value()))
         .onSuccess(successHandler -> {
-          LOGGER.info("success"+successHandler);
           JsonArray response = new JsonArray(successHandler);
           handler.handle(Future.succeededFuture(new JsonObject().put("result", response)));
         })
         .onFailure(failureHandler -> {
-          LOGGER.info(failureHandler);
+          LOGGER.debug(failureHandler);
           Response response = new Response.Builder()
               .withUrn(ResponseUrn.DB_ERROR_URN.getUrn())
               .withStatus(HttpStatus.SC_BAD_REQUEST)

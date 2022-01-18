@@ -66,7 +66,7 @@ public class CacheServiceImpl implements CacheService {
    */
   @Override
   public CacheService put(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-    LOGGER.debug("message received from for cache put operation");
+    LOGGER.trace("message received from for cache put operation");
     LOGGER.debug("message : " + request);
 
     IudxCache cache = null;
@@ -94,7 +94,7 @@ public class CacheServiceImpl implements CacheService {
    */
   @Override
   public CacheService refresh(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-    LOGGER.debug("message received for cache refresh()");
+    LOGGER.trace("message received for cache refresh()");
     LOGGER.debug("message : " + request);
     IudxCache cache = null;
     try {

@@ -45,7 +45,7 @@ public class RevokedClientCache implements IudxCache {
 
   @Override
   public void refreshCache() {
-    LOGGER.debug(cacheType + " refreshCache() called");
+    LOGGER.trace(cacheType + " refreshCache() called");
     String query = Constants.SELECT_REVOKE_TOKEN_SQL;
     pgService.executeQuery(query, handler -> {
       if (handler.succeeded()) {

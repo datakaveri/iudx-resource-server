@@ -1,6 +1,8 @@
 package iudx.resource.server.database.postgres;
 
 import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -10,6 +12,8 @@ import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.sqlclient.PoolOptions;
 
 public class PostgresVerticle extends AbstractVerticle{
+  
+  private static final Logger LOGGER = LogManager.getLogger(PostgresService.class);
   
   private MessageConsumer<JsonObject> consumer;
   private ServiceBinder binder;
@@ -55,6 +59,7 @@ public class PostgresVerticle extends AbstractVerticle{
     
     binder = new ServiceBinder(vertx);
     consumer =binder.setAddress(PG_SERVICE_ADDRESS).register(PostgresService.class, pgService);
+    LOGGER.info("Postgres verticle started.");
   }
 
 }

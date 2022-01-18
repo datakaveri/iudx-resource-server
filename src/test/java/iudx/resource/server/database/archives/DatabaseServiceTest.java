@@ -30,7 +30,7 @@ import iudx.resource.server.database.archives.elastic.ElasticClient;
 
 @ExtendWith({VertxExtension.class})
 public class DatabaseServiceTest {
-  private static final Logger logger = LogManager.getLogger(DatabaseServiceTest.class);
+  private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceTest.class);
   private static DatabaseService dbService;
   private static Vertx vertxObj;
   private static ElasticClient client;
@@ -74,7 +74,7 @@ public class DatabaseServiceTest {
 
   @AfterEach
   public void finish(VertxTestContext testContext) {
-    logger.info("Finishing....");
+    LOGGER.info("Finishing....");
     vertxObj.close(testContext.succeeding(response -> testContext.completeNow()));
   }
 
@@ -447,13 +447,13 @@ public class DatabaseServiceTest {
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
     OffsetDateTime start = OffsetDateTime.parse(temporalStartDate, dateTimeFormatter);
     OffsetDateTime end = OffsetDateTime.parse(temporalEndDate, dateTimeFormatter);
-    logger.info("### start date: " + start);
+    LOGGER.info("### start date: " + start);
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
       OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonArray("results")
           .getJsonObject(5).getString("observationDateTime"), dateTimeFormatter);
       OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
-      logger.info("#### response Date " + resDateUtc);
+      LOGGER.info("#### response Date " + resDateUtc);
       assertTrue(!(resDateUtc.isBefore(start) || resDateUtc.isAfter(end)));
       testContext.completeNow();
     })));
@@ -471,13 +471,13 @@ public class DatabaseServiceTest {
 
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
     OffsetDateTime start = OffsetDateTime.parse(temporalEndDate, dateTimeFormatter);
-    logger.info("### start date: " + start);
+    LOGGER.info("### start date: " + start);
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
       OffsetDateTime resDate = OffsetDateTime.parse(response.getJsonArray("results")
           .getJsonObject(6).getString("observationDateTime"), dateTimeFormatter);
       OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
-      logger.info("#### response Date " + resDateUtc);
+      LOGGER.info("#### response Date " + resDateUtc);
       assertTrue(resDateUtc.isBefore(start));
       testContext.completeNow();
     })));
@@ -495,14 +495,14 @@ public class DatabaseServiceTest {
 
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
     OffsetDateTime start = OffsetDateTime.parse(temporalStartDate, dateTimeFormatter);
-    logger.info("### start date: " + start);
+    LOGGER.info("### start date: " + start);
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
       OffsetDateTime resDate =
           OffsetDateTime.parse(response.getJsonArray("results").getJsonObject(3)
               .getString("observationDateTime"), dateTimeFormatter);
       OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
-      logger.info("#### response Date " + resDateUtc);
+      LOGGER.info("#### response Date " + resDateUtc);
       assertTrue(resDateUtc.isAfter(start) || resDateUtc.isEqual(start));
       testContext.completeNow();
     })));
@@ -542,14 +542,14 @@ public class DatabaseServiceTest {
 
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
     OffsetDateTime start = OffsetDateTime.parse(temporalStartDate, dateTimeFormatter);
-    logger.info("### start date: " + start);
+    LOGGER.info("### start date: " + start);
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
       OffsetDateTime resDate =
           OffsetDateTime.parse(response.getJsonArray("results").getJsonObject(0)
               .getString("observationDateTime"), dateTimeFormatter);
       OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
-      logger.info("#### response Date " + resDateUtc);
+      LOGGER.info("#### response Date " + resDateUtc);
       assertTrue(resDateUtc.isEqual(start));
       testContext.completeNow();
     })));
@@ -587,12 +587,12 @@ public class DatabaseServiceTest {
             .put("time", "2020-09-29T10:00:00+05:30");
 
     ZonedDateTime start = ZonedDateTime.parse("2020-10-19T10:00:00+05:30");
-    logger.info("### start date: " + start);
+    LOGGER.info("### start date: " + start);
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
       ZonedDateTime resDate = ZonedDateTime.parse(response.getJsonArray("results")
           .getJsonObject(6).getString("observationDateTime"));
-      logger.info("#### response Date " + resDate);
+      LOGGER.info("#### response Date " + resDate);
       assertTrue(resDate.isBefore(start));
       testContext.completeNow();
     })));

@@ -1,7 +1,6 @@
 package iudx.resource.server.database.latest;
 
 import static iudx.resource.server.database.archives.Constants.DEFAULT_ATTRIBUTE;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,7 +12,7 @@ public class RedisCommandArgsBuilder {
   public RedisArgs getRedisCommandArgs(String id, boolean isUniqueAttribueExist) {
     RedisArgs args = new RedisArgs();
 
-    LOGGER.debug("In LatestSearch Redis");
+    LOGGER.trace("In LatestSearch Redis");
 
     String key = id.replace("-", "_")
         .replaceAll("/", "_")

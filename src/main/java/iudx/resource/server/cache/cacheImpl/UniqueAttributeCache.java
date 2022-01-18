@@ -45,7 +45,7 @@ public class UniqueAttributeCache implements IudxCache {
 
   @Override
   public void refreshCache() {
-    LOGGER.debug(cacheType + " refreshCache() called");
+    LOGGER.trace(cacheType + " refreshCache() called");
     String query = Constants.SELECT_UNIQUE_ATTRIBUTE;
     postgresService.executeQuery(query, handler -> {
       if (handler.succeeded()) {

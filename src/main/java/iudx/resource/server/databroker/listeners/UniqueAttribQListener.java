@@ -34,7 +34,7 @@ public class UniqueAttribQListener implements RMQListeners {
     client
         .start()
         .onSuccess(handler -> {
-          LOGGER.debug("starting Q listener for unique-attributes");
+          LOGGER.trace("starting Q listener for unique-attributes");
           client.basicConsumer(UNIQUE_ATTR_Q, options, rmqConsumer -> {
             if (rmqConsumer.succeeded()) {
               RabbitMQConsumer mqConsumer = rmqConsumer.result();
@@ -52,7 +52,7 @@ public class UniqueAttribQListener implements RMQListeners {
                   cacheJson.put("type", CacheType.UNIQUE_ATTRIBUTE);
 
                   if (event == null) {
-                    LOGGER.error("Invalid BroadcastEventType [" + eventType + "] ");
+                    LOGGER.error("Invalid BroadcastEventType [ null ] ");
                     return;
                   }
 
@@ -65,9 +65,9 @@ public class UniqueAttribQListener implements RMQListeners {
 
                   cache.refresh(cacheJson, cacheHandler -> {
                     if (cacheHandler.succeeded()) {
-                      LOGGER.info("unique attrib message published to Cache Verticle");
+                      LOGGER.debug("unique attrib message published to Cache Verticle");
                     } else {
-                      LOGGER.info("unique attrib message published to Cache Verticle fail");
+                      LOGGER.debug("unique attrib message published to Cache Verticle fail");
                     }
                   });
                 } else {

@@ -125,7 +125,7 @@ public class RabbitClient {
     this.pgSQLClient = pgSQLClient;
     client.start(clientStartupHandler -> {
       if (clientStartupHandler.succeeded()) {
-        LOGGER.debug("Info : rabbit MQ client started");
+        LOGGER.info("Info : rabbit MQ client started");
       } else if (clientStartupHandler.failed()) {
         LOGGER.fatal("Fail : rabbit MQ client startup failed.");
       }
@@ -144,7 +144,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    **/
   public Future<JsonObject> createExchange(JsonObject request, String vHost) {
-    LOGGER.debug("Info : RabbitClient#createExchage() started");
+    LOGGER.trace("Info : RabbitClient#createExchage() started");
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
       String exchangeName = request.getString("exchangeName");
@@ -181,7 +181,7 @@ public class RabbitClient {
   }
 
   Future<JsonObject> getExchangeDetails(JsonObject request, String vHost) {
-    LOGGER.debug("Info : RabbitClient#getExchange() started");
+    LOGGER.trace("Info : RabbitClient#getExchange() started");
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
       String exchangeName = request.getString("exchangeName");
@@ -234,7 +234,7 @@ public class RabbitClient {
           response.put("getExchange_error", result.cause());
           promise.fail("getExchange_error" + result.cause());
         }
-        LOGGER.info("getExchange method response : " + response);
+        LOGGER.debug("getExchange method response : " + response);
         promise.complete(response);
       });
 
@@ -253,7 +253,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> deleteExchange(JsonObject request, String vHost) {
-    LOGGER.debug("Info : RabbitClient#deleteExchange() started");
+    LOGGER.trace("Info : RabbitClient#deleteExchange() started");
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
       String exchangeName = request.getString("exchangeName");
@@ -290,7 +290,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> listExchangeSubscribers(JsonObject request, String vhost) {
-    LOGGER.debug("Info : RabbitClient#listExchangeSubscribers() started");
+    LOGGER.trace("Info : RabbitClient#listExchangeSubscribers() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
@@ -327,7 +327,7 @@ public class RabbitClient {
           promise.complete(finalResponse);
           LOGGER.debug("Success :" + finalResponse);
         } else {
-          LOGGER.error("Fail : Listing of Exchange failed - " + ar.cause());
+          LOGGER.error("Fail : Listing of Exchange failed - ", ar.cause());
           JsonObject error = Util.getResponseJson(500, FAILURE, "Internal server error");
           promise.fail(error.toString());
         }
@@ -344,7 +344,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> createQueue(JsonObject request, String vhost) {
-    LOGGER.debug("Info : RabbitClient#createQueue() started");
+    LOGGER.trace("Info : RabbitClient#createQueue() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
@@ -376,7 +376,7 @@ public class RabbitClient {
           promise.complete(finalResponse);
           LOGGER.info("Success : " + finalResponse);
         } else {
-          LOGGER.error("Fail : Creation of Queue failed - " + ar.cause());
+          LOGGER.error("Fail : Creation of Queue failed - ", ar.cause());
           finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, QUEUE_CREATE_ERROR));
           promise.fail(finalResponse.toString());
         }
@@ -394,7 +394,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> deleteQueue(JsonObject request, String vhost) {
-    LOGGER.debug("Info : RabbitClient#deleteQueue() started");
+    LOGGER.trace("Info : RabbitClient#deleteQueue() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
@@ -415,7 +415,7 @@ public class RabbitClient {
           LOGGER.info(finalResponse);
           promise.complete(finalResponse);
         } else {
-          LOGGER.error("Fail : deletion of queue failed - " + ar.cause());
+          LOGGER.error("Fail : deletion of queue failed - ", ar.cause());
           finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, QUEUE_DELETE_ERROR));
           promise.fail(finalResponse.toString());
         }
@@ -432,7 +432,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> bindQueue(JsonObject request, String vhost) {
-    LOGGER.debug("Info : RabbitClient#bindQueue() started");
+    LOGGER.trace("Info : RabbitClient#bindQueue() started");
     JsonObject finalResponse = new JsonObject();
     JsonObject requestBody = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
@@ -465,7 +465,7 @@ public class RabbitClient {
               promise.complete(finalResponse);
             }
           } else {
-            LOGGER.error("Fail : Binding of Queue failed - " + ar.cause());
+            LOGGER.error("Fail : Binding of Queue failed - ", ar.cause());
             finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, QUEUE_BIND_ERROR));
             promise.fail(finalResponse.toString());
           }
@@ -483,7 +483,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> unbindQueue(JsonObject request, String vhost) {
-    LOGGER.debug("Info : RabbitClient#unbindQueue() started");
+    LOGGER.trace("Info : RabbitClient#unbindQueue() started");
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
@@ -512,7 +512,7 @@ public class RabbitClient {
               promise.complete(finalResponse);
             }
           } else {
-            LOGGER.error("Fail : Unbinding of Queue failed" + ar.cause());
+            LOGGER.error("Fail : Unbinding of Queue failed", ar.cause());
             finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, QUEUE_BIND_ERROR));
             promise.fail(finalResponse.toString());
           }
@@ -529,7 +529,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> createvHost(JsonObject request) {
-    LOGGER.debug("Info : RabbitClient#createvHost() started");
+    LOGGER.trace("Info : RabbitClient#createvHost() started");
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
@@ -550,7 +550,7 @@ public class RabbitClient {
           promise.complete(finalResponse);
           LOGGER.info("Success : " + finalResponse);
         } else {
-          LOGGER.error(" Fail : Creation of vHost failed" + ar.cause());
+          LOGGER.error(" Fail : Creation of vHost failed", ar.cause());
           finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, VHOST_CREATE_ERROR));
           promise.fail(finalResponse.toString());
         }
@@ -566,7 +566,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> deletevHost(JsonObject request) {
-    LOGGER.debug("Info : RabbitClient#deletevHost() started");
+    LOGGER.trace("Info : RabbitClient#deletevHost() started");
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
@@ -587,7 +587,7 @@ public class RabbitClient {
           promise.complete(finalResponse);
           LOGGER.info("Success : " + finalResponse);
         } else {
-          LOGGER.error("Fail : Deletion of vHost failed -" + ar.cause());
+          LOGGER.error("Fail : Deletion of vHost failed -", ar.cause());
           finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, VHOST_DELETE_ERROR));
           promise.fail(finalResponse.toString());
         }
@@ -604,7 +604,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> listvHost(JsonObject request) {
-    LOGGER.debug("Info : RabbitClient#listvHost() started");
+    LOGGER.trace("Info : RabbitClient#listvHost() started");
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     if (request != null) {
@@ -633,10 +633,10 @@ public class RabbitClient {
               finalResponse.mergeIn(Util.getResponseJson(status, FAILURE, VHOST_NOT_FOUND));
             }
           }
-          LOGGER.info("Success : " + finalResponse);
+          LOGGER.debug("Success : " + finalResponse);
           promise.complete(finalResponse);
         } else {
-          LOGGER.error("Fail : Listing of vHost failed - " + ar.cause());
+          LOGGER.error("Fail : Listing of vHost failed - ", ar.cause());
           finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, VHOST_LIST_ERROR));
           promise.fail(finalResponse.toString());
         }
@@ -652,7 +652,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> listQueueSubscribers(JsonObject request, String vhost) {
-    LOGGER.debug("Info : RabbitClient#listQueueSubscribers() started");
+    LOGGER.trace("Info : RabbitClient#listQueueSubscribers() started");
     JsonObject finalResponse = new JsonObject();
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
@@ -701,7 +701,7 @@ public class RabbitClient {
   }
 
   public Future<JsonObject> registerAdapter(JsonObject request, String vhost) {
-    LOGGER.debug("Info : RabbitClient#registerAdaptor() started");
+    LOGGER.trace("Info : RabbitClient#registerAdaptor() started");
     LOGGER.debug("Request :" + request);
     Promise<JsonObject> promise = Promise.promise();
     String id = request.getJsonArray("entities").getString(0);// getting first and only id
@@ -750,7 +750,7 @@ public class RabbitClient {
           LOGGER.debug("Success : Adapter created successfully.");
           promise.complete(response);
         }).onFailure(failure -> {
-          LOGGER.info("Error : " + failure);
+          LOGGER.info("Error : ", failure);
           // Compensating call, delete adaptor if created;
           if (requestParams.isExchnageCreated) {
             JsonObject deleteJson = new JsonObject().put("exchangeName", requestParams.adaptorId);
@@ -783,7 +783,7 @@ public class RabbitClient {
   }
 
   Future<JsonObject> deleteAdapter(JsonObject json, String vhost) {
-    LOGGER.debug("Info : RabbitClient#deleteAdapter() started");
+    LOGGER.trace("Info : RabbitClient#deleteAdapter() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
     // System.out.println(json.toString());
@@ -846,7 +846,7 @@ public class RabbitClient {
    **/
 
   Future<JsonObject> createUserIfNotExist(String userid, String vhost) {
-    LOGGER.debug("Info : RabbitClient#createUserIfNotPresent() started");
+    LOGGER.trace("Info : RabbitClient#createUserIfNotPresent() started");
     Promise<JsonObject> promise = Promise.promise();
 
     String password = Util.randomPassword.get();
@@ -886,7 +886,7 @@ public class RabbitClient {
 
           getUserApiKey.onComplete(getUserApiKeyHandler -> {
             if (getUserApiKeyHandler.succeeded()) {
-              LOGGER.info("DATABASE_READ_SUCCESS");
+              LOGGER.debug("DATABASE_READ_SUCCESS");
               String apiKey = getUserApiKey.result().getString(APIKEY);
               readDbResponse.put(USER_ID, userid);
               readDbResponse.put(APIKEY, apiKey);
@@ -895,7 +895,7 @@ public class RabbitClient {
               readDbResponse.put(VHOST_PERMISSIONS, vhost);
               promise.complete(readDbResponse);
             } else {
-              LOGGER.info("DATABASE_READ_FAILURE");
+              LOGGER.debug("DATABASE_READ_FAILURE");
               readDbResponse
                   .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, DATABASE_READ_FAILURE));
               promise.fail(readDbResponse.toString());
@@ -923,7 +923,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    **/
   Future<JsonObject> createUser(String userid, String password, String vhost, String url) {
-    LOGGER.debug("Info : RabbitClient#createUser() started");
+    LOGGER.trace("Info : RabbitClient#createUser() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject response = new JsonObject();
     JsonObject arg = new JsonObject();
@@ -934,7 +934,7 @@ public class RabbitClient {
       if (ar.succeeded()) {
         /* Check if user is created */
         if (ar.result().statusCode() == HttpStatus.SC_CREATED) {
-          LOGGER.info("createUserRequest success");
+          LOGGER.debug("createUserRequest success");
           response.put(USER_ID, userid);
           response.put(PASSWORD, password);
           LOGGER.debug("Info : user created successfully");
@@ -951,28 +951,28 @@ public class RabbitClient {
                   promise.complete(response);
                 } else {
                   /* Handle error */
-                  LOGGER.error("Error : error in saving credentials. Cause : "
-                      + createUserinDbHandler.cause());
+                  LOGGER.error("Error : error in saving credentials. Cause : ",
+                      createUserinDbHandler.cause());
                   promise.fail("Error : error in saving credentials");
                 }
               });
             } else {
               /* Handle error */
-              LOGGER.error("Error : error in setting vhostPermissions. Cause : " + handler.cause());
+              LOGGER.error("Error : error in setting vhostPermissions. Cause : ", handler.cause());
               promise.fail("Error : error in setting vhostPermissions");
             }
           });
 
         } else {
           /* Handle error */
-          LOGGER.error("Error : createUser method - Some network error. cause" + ar.cause());
+          LOGGER.error("Error : createUser method - Some network error. cause", ar.cause());
           response.put(FAILURE, NETWORK_ISSUE);
           promise.fail(response.toString());
         }
       } else {
         /* Handle error */
         LOGGER
-            .info("Error : Something went wrong while creating user using mgmt API :" + ar.cause());
+            .info("Error : Something went wrong while creating user using mgmt API :", ar.cause());
         response.put(FAILURE, CHECK_CREDENTIALS);
         promise.fail(response.toString());
       }
@@ -981,7 +981,7 @@ public class RabbitClient {
   }
 
   Future<JsonObject> createUserInDb(String shaUsername, String password) {
-    LOGGER.debug("Info : RabbitClient#createUserInDb() started");
+    LOGGER.trace("Info : RabbitClient#createUserInDb() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject response = new JsonObject();
 
@@ -1004,7 +1004,7 @@ public class RabbitClient {
 
 
   Future<JsonObject> resetPasswordInRMQ(String userid, String password) {
-    LOGGER.debug("Info : RabbitClient#resetPassword() started");
+    LOGGER.trace("Info : RabbitClient#resetPassword() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject response = new JsonObject();
     JsonObject arg = new JsonObject();
@@ -1019,14 +1019,12 @@ public class RabbitClient {
           LOGGER.debug("user password changed");
           promise.complete(response);
         } else {
-          LOGGER.error(ar.result().statusCode());
-          LOGGER.error("Error :reset pwd method failed" + ar.cause());
+          LOGGER.error("Error :reset pwd method failed", ar.cause());
           response.put(FAILURE, NETWORK_ISSUE);
           promise.fail(response.toString());
         }
       } else {
-        LOGGER
-            .info("Error : Something went wrong while creating user using mgmt API :" + ar.cause());
+        LOGGER.error("User creation failed using mgmt API :", ar.cause());
         response.put(FAILURE, CHECK_CREDENTIALS);
         promise.fail(response.toString());
       }
@@ -1035,7 +1033,7 @@ public class RabbitClient {
   }
 
   Future<JsonObject> resetPwdInDb(String userid, String password) {
-    LOGGER.debug("Info : RabbitClient#resetpwdInDb() started");
+    LOGGER.trace("Info : RabbitClient#resetpwdInDb() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject response = new JsonObject();
 
@@ -1056,12 +1054,11 @@ public class RabbitClient {
   }
 
   Future<JsonObject> getUserInDb(String userid) {
-    LOGGER.debug("Info : RabbitClient#getUserInDb() started");
+    LOGGER.trace("Info : RabbitClient#getUserInDb() started");
 
     Promise<JsonObject> promise = Promise.promise();
     JsonObject response = new JsonObject();
     String query = SELECT_DATABROKER_USER.replace("$1", userid);
-    LOGGER.debug("Info : " + query);
     // Check in DB, get username and password
     pgSQLClient.executeAsync(query).onComplete(db -> {
       LOGGER.debug("Info : RabbitClient#getUserInDb()executeAsync completed");
@@ -1094,7 +1091,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    **/
   private Future<JsonObject> setTopicPermissions(String vhost, String adaptorID, String userID) {
-    LOGGER.debug("Info : RabbitClient#setTopicPermissions() started");
+    LOGGER.trace("Info : RabbitClient#setTopicPermissions() started");
     String url = "/api/permissions/" + vhost + "/" + encodeValue(userID);
     JsonObject param = new JsonObject();
     // set all mandatory fields
@@ -1143,7 +1140,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    **/
   private Future<JsonObject> setVhostPermissions(String shaUsername, String vhost) {
-    LOGGER.debug("Info : RabbitClient#setVhostPermissions() started");
+    LOGGER.trace("Info : RabbitClient#setVhostPermissions() started");
     /* Construct URL to use */
     String url = "/api/permissions/" + vhost + "/" + encodeValue(shaUsername);
     JsonObject vhostPermissions = new JsonObject();
@@ -1191,7 +1188,7 @@ public class RabbitClient {
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> queueBinding(String adaptorID, String vhost) {
-    LOGGER.info("RabbitClient#queueBinding() method started");
+    LOGGER.trace("RabbitClient#queueBinding() method started");
     Promise<JsonObject> promise = Promise.promise();
     String topics;
 
@@ -1224,7 +1221,7 @@ public class RabbitClient {
   }
 
   Future<Void> bindQueue(String queue, String adaptorID, String topics, String vhost) {
-    LOGGER.debug("Info : RabbitClient#bindQueue() started");
+    LOGGER.trace("Info : RabbitClient#bindQueue() started");
     LOGGER.debug("Info : data : " + queue + " adaptorID : " + adaptorID + " topics : " + topics);
     Promise<Void> promise = Promise.promise();
     String url =
@@ -1236,7 +1233,7 @@ public class RabbitClient {
       if (handler.succeeded()) {
         promise.complete();
       } else {
-        LOGGER.error("Error : Queue" + queue + " binding error : " + handler.cause());
+        LOGGER.error("Error : Queue" + queue + " binding error : " , handler.cause());
         promise.fail(handler.cause());
       }
     });
@@ -1244,7 +1241,7 @@ public class RabbitClient {
   }
 
   Future<JsonObject> getUserPermissions(String userId) {
-    LOGGER.debug("Info : RabbitClient#getUserpermissions() started");
+    LOGGER.trace("Info : RabbitClient#getUserpermissions() started");
     Promise<JsonObject> promise = Promise.promise();
     String url = "/api/users/" + encodeValue(userId) + "/permissions";
     webClient.requestAsync(REQUEST_GET, url).onComplete(handler -> {

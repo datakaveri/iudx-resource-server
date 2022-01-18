@@ -770,7 +770,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                       webClient.getRabbitMQClient().basicPublish(adaptor, routingKey, buffer,
                           resultHandler -> {
                             if (resultHandler.succeeded()) {
-                              LOGGER.info(
+                              LOGGER.debug(
                                   "publishHeartbeat - message published to queue [ " + queueName
                                       + " ] for routingKey [ " + routingKey + " ]");
                               response.put("type", "success");

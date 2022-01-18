@@ -52,6 +52,7 @@ public class LatestVerticle extends AbstractVerticle {
       latestData = new LatestDataServiceImpl(redisClient, cacheService);
       consumer = binder.setAddress(LATEST_SERVICE_ADDRESS)
           .register(LatestDataService.class, latestData);
+      LOGGER.info("Latest verticle deployed.");
     }).onFailure(handler -> {
       LOGGER.error("failed to start redis client");
     });

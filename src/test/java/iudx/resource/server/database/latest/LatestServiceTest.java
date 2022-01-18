@@ -26,7 +26,7 @@ import iudx.resource.server.configuration.Configuration;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class LatestServiceTest {
-  private static final Logger logger = LogManager.getLogger(LatestDataService.class);
+  private static final Logger LOGGER = LogManager.getLogger(LatestDataService.class);
   private static Vertx vertxObj;
   private static RedisClient client;
   private static Configuration config;
@@ -83,7 +83,7 @@ public class LatestServiceTest {
 
     latest.getLatestData(request, handler -> {
       if (handler.succeeded()) {
-        logger.debug("Got the data!");
+        LOGGER.debug("Got the data!");
         testContext.completeNow();
       } else {
         testContext.failNow(handler.cause());
@@ -151,7 +151,7 @@ public class LatestServiceTest {
 
     latest.getLatestData(request, handler -> {
       if (handler.succeeded()) {
-        logger.debug("Got the data!");
+        LOGGER.debug("Got the data!");
         testContext.completeNow();
       } else {
         testContext.failNow(handler.cause());

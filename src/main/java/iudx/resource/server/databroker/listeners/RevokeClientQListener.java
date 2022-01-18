@@ -34,7 +34,7 @@ public class RevokeClientQListener implements RMQListeners {
     client
         .start()
         .onSuccess(handler -> {
-          LOGGER.debug("starting Q listener for revoked clients");
+          LOGGER.trace("starting Q listener for revoked clients");
           client.basicConsumer(TOKEN_INVALID_Q, options, rmqConsumer -> {
             if (rmqConsumer.succeeded()) {
               RabbitMQConsumer mqConsumer = rmqConsumer.result();
@@ -53,9 +53,9 @@ public class RevokeClientQListener implements RMQListeners {
 
                   cache.refresh(cacheJson, cacheHandler -> {
                     if (cacheHandler.succeeded()) {
-                      LOGGER.info("revoked client message published to Cache Verticle");
+                      LOGGER.debug("revoked client message published to Cache Verticle");
                     } else {
-                      LOGGER.info("revoked client message published to Cache Verticle fail");
+                      LOGGER.debug("revoked client message published to Cache Verticle fail");
                     }
                   });
                 } else {
