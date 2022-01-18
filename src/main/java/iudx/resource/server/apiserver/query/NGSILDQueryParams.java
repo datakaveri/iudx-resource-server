@@ -1,10 +1,23 @@
 package iudx.resource.server.apiserver.query;
 
-import io.vertx.core.MultiMap;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import static iudx.resource.server.apiserver.util.Constants.IUDXQUERY_OPTIONS;
+import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_PARAM;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ATTRIBUTE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_COORDINATES;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ENDTIME;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_FROM;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOMETRY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOPROPERTY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOREL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ID;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_MAXDISTANCE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_MINDISTANCE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_Q;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_SIZE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEREL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TYPE;
+import static iudx.resource.server.apiserver.util.Util.toUriFunction;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -13,9 +26,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-
-import static iudx.resource.server.apiserver.util.Constants.*;
-import static iudx.resource.server.apiserver.util.Util.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import io.vertx.core.MultiMap;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 
 
@@ -167,7 +182,6 @@ public class NGSILDQueryParams {
 
     NGSILDQueryParams ng = new NGSILDQueryParams(json);
     QueryMapper qm = new QueryMapper();
-    // System.out.println(qm.toJson(ng, true));
   }
 
   private void create(JsonObject requestJson) {
@@ -214,7 +228,6 @@ public class NGSILDQueryParams {
           this.id = new ArrayList<URI>();
           this.idPattern = new ArrayList<String>();
           JsonObject entity = (JsonObject) iter.next();
-          // System.out.println(entity);
           String id = entity.getString("id");
           String idPattern = entity.getString("idPattern");
           if (id != null) {

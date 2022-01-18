@@ -158,7 +158,6 @@ public class RabbitClient {
           JsonObject responseJson = new JsonObject();
           HttpResponse<Buffer> response = requestHandler.result();
           int statusCode = response.statusCode();
-          // System.out.println(statusCode);
           if (statusCode == HttpStatus.SC_CREATED) {
             responseJson.put(EXCHANGE, exchangeName);
           } else if (statusCode == HttpStatus.SC_NO_CONTENT) {
@@ -786,7 +785,6 @@ public class RabbitClient {
     LOGGER.trace("Info : RabbitClient#deleteAdapter() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
-    // System.out.println(json.toString());
     Future<JsonObject> result = getExchange(json, vhost);
     result.onComplete(resultHandler -> {
       if (resultHandler.succeeded()) {

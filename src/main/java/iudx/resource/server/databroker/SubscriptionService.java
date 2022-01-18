@@ -240,7 +240,6 @@ public class SubscriptionService {
     JsonObject requestjson = new JsonObject();
     if (request != null && !request.isEmpty()) {
       String userid = request.getString(USER_ID);
-      System.out.println(request);
       // String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
       String queueName = userid + "/" + request.getString("name");
       Future<JsonObject> resultCreateUser = rabbitClient.createUserIfNotExist(userid, VHOST_IUDX);
