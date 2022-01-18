@@ -33,7 +33,7 @@ services:
     image: iudx/rs-dev:latest
     environment:
       - RS_URL=https://rs.iudx.org.in
-      - LOG_LEVEL=DEBUG
+      - LOG_LEVEL=INFO
       - RS_JAVA_OPTS=-Xmx1024m
     volumes:
       - ./configs/config-dev.json:/usr/share/app/configs/config.json
