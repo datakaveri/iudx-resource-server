@@ -187,7 +187,7 @@ public class NGSILDQueryParams {
   private void create(JsonObject requestJson) {
     LOGGER.info("create from json started");
     requestJson.forEach(entry -> {
-      LOGGER.info("key ::" + entry.getKey() + " value :: " + entry.getValue());
+      LOGGER.debug("key ::" + entry.getKey() + " value :: " + entry.getValue());
       if (entry.getKey().equalsIgnoreCase(NGSILDQUERY_Q)) {
         this.textQuery = requestJson.getString(NGSILDQUERY_Q);
       } else if (entry.getKey().equalsIgnoreCase(NGSILDQUERY_ATTRIBUTE)) {

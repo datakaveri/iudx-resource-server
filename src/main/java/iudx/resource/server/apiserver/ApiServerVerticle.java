@@ -505,7 +505,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     entries.put("api", request.getParam("api"));
 
     {
-      LOGGER.info(entries);
+      LOGGER.debug(entries);
       meteringService.executeReadQuery(
           entries,
           handler -> {
@@ -546,7 +546,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     entries.put("options", request.headers().get("options"));
 
     {
-      LOGGER.info(entries);
+      LOGGER.debug(entries);
       meteringService.executeReadQuery(
           entries,
           handler -> {

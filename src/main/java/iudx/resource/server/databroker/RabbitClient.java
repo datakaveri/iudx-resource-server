@@ -547,7 +547,7 @@ public class RabbitClient {
             }
           }
           promise.complete(finalResponse);
-          LOGGER.info("Success : " + finalResponse);
+          LOGGER.info("Successully created vhost : " + Constants.VHOST);
         } else {
           LOGGER.error(" Fail : Creation of vHost failed", ar.cause());
           finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, VHOST_CREATE_ERROR));
@@ -584,7 +584,7 @@ public class RabbitClient {
             }
           }
           promise.complete(finalResponse);
-          LOGGER.info("Success : " + finalResponse);
+          LOGGER.info("Successfully deleted vhost : " + Constants.VHOST);
         } else {
           LOGGER.error("Fail : Deletion of vHost failed -", ar.cause());
           finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, VHOST_DELETE_ERROR));

@@ -69,7 +69,7 @@ public class QueryBuilder {
     ZonedDateTime startZDT = ZonedDateTime.parse(startTime);
     ZonedDateTime endZDT = ZonedDateTime.parse(endTime);
 
-    LOGGER.info(
+    LOGGER.trace(
         "PERIOD between given time "
             + (zonedDateTimeDifference(startZDT, endZDT, ChronoUnit.DAYS)));
 
@@ -135,7 +135,7 @@ public class QueryBuilder {
     } else {
       tempQuery = query;
     }
-    LOGGER.info("Info: QUERY " + tempQuery);
+    LOGGER.trace("Info: QUERY " + tempQuery);
     return new JsonObject().put(QUERY_KEY, tempQuery);
   }
 
@@ -166,7 +166,7 @@ public class QueryBuilder {
                 .replace("$6", isoTime)
                 .replace("$7", providerID));
 
-    LOGGER.info("Info: Query " + query);
+    LOGGER.trace("Info: Query " + query);
     return new JsonObject().put(QUERY_KEY, query);
   }
 

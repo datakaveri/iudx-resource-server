@@ -30,7 +30,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.createExchange(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey("type")) {
           promise.complete(result);
         } else {
@@ -55,7 +55,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.deleteExchange(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey("type")) {
           promise.complete(result);
         } else {
@@ -81,7 +81,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.listExchangeSubscribers(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey(Constants.JSON_TYPE)) {
           promise.complete(result);
         } else {
@@ -104,7 +104,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.createQueue(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey(Constants.JSON_TYPE)) {
           promise.complete(result);
         } else {
@@ -129,7 +129,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.deleteQueue(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey(Constants.JSON_TYPE)) {
           promise.complete(result);
         } else {
@@ -154,7 +154,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.listQueueSubscribers(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey(Constants.JSON_TYPE)) {
           promise.complete(result);
         } else {
@@ -177,7 +177,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.bindQueue(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey(Constants.JSON_TYPE)) {
           promise.complete(result);
         } else {
@@ -197,11 +197,11 @@ public class ManagementApiImpl implements ManagementApi {
   @Override
   public Future<JsonObject> unbindQueue2Exchange(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
-    LOGGER.info("unbind request :: " + json);
+    LOGGER.trace("unbind request :: " + json);
     databroker.unbindQueue(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey(Constants.JSON_TYPE)) {
           promise.complete(result);
         } else {
@@ -224,7 +224,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.createvHost(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey(Constants.JSON_TYPE)) {
           promise.complete(result);
         } else {
@@ -249,7 +249,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.deletevHost(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey(Constants.JSON_TYPE)) {
           promise.complete(result);
         } else {
@@ -272,7 +272,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.registerAdaptor(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey(Constants.JSON_TYPE)) {
           promise.complete(result);
         } else {
@@ -298,7 +298,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.deleteAdaptor(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         promise.complete(generateResponse(result));
       } else if (handler.failed()) {
         String result = handler.cause().getMessage();
@@ -319,7 +319,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.listAdaptor(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey(Constants.JSON_TYPE)) {
           promise.complete(result);
         } else {
@@ -341,7 +341,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.publishHeartbeat(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = new JsonObject();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         if (result.containsKey(Constants.JSON_TYPE)
             && result.getString(Constants.JSON_TYPE).equalsIgnoreCase(Constants.SUCCCESS)) {
           promise.complete(result);
@@ -365,7 +365,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.publishHeartbeat(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = new JsonObject();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         if (result.getString(Constants.JSON_TYPE).equalsIgnoreCase(Constants.SUCCCESS)) {
           promise.complete(result);
         } else {
@@ -387,7 +387,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.publishHeartbeat(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = new JsonObject();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         if (result.getString(Constants.JSON_TYPE).equalsIgnoreCase(Constants.SUCCCESS)) {
           promise.complete(result);
         } else {
@@ -409,7 +409,7 @@ public class ManagementApiImpl implements ManagementApi {
     databroker.publishFromAdaptor(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = new JsonObject();
-        LOGGER.info("Result from databroker verticle :: " + result);
+        LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey(Constants.JSON_TYPE)) {
           promise.complete(result);
         } else {
