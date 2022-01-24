@@ -220,7 +220,7 @@ public class SubscriptionService {
             .replace("$4", json.getJsonArray("entities").getString(0))
             .replace("$5", authInfo.getString("expiry")));
 
-        LOGGER.info(query);
+        LOGGER.debug(query);
         pgService.executeQuery(query.toString(), pgHandler -> {
           if (pgHandler.succeeded()) {
             promise.complete(brokerSubResult);
