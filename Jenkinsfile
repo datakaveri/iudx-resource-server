@@ -1,4 +1,3 @@
-// properties([pipelineTriggers([githubPush()])])
 pipeline {
 
   environment {
@@ -7,6 +6,7 @@ pipeline {
     testRegistry = 'ghcr.io/karun-singh/iudx-resource-server:test'
     registryUri = 'https://ghcr.io'
     registryCredential = 'karun-ghcr'
+    GIT_HASH = GIT_COMMIT.take(7)
   }
 
   agent { 
@@ -91,44 +91,44 @@ pipeline {
       }
     }
 
-//     stage('Run Newman collection and ZAP test'){
-//       steps{
-//         node('master') {
-//           script{
-//             startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0', additionalConfigurations: ["pscans.org.zaproxy.zap.extension.enabled=false"]])
-//             catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-//               // sh 'rm -rf /var/lib/jenkins/iudx/rs/Newman/report/report.html'
-//               sh 'curl http://127.0.0.1:8090/JSON/pscan/action/disableScanners/?ids=10096'
-//               sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection_new.json -e /home/ubuntu/configs/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html'
-//             }
-//             runZapAttack()
-//           }
-//         }
-//       }
-//       post{
-//         always{
-//           node('master') {
-//             script{
-//               archiveZap failAllAlerts: 20
-//               publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: false, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: ''])
-//             }
-//           }
-//         }
-//       }
-//     }
-
-//     stage('Clean up'){
-//       steps{
-//         sh 'docker-compose down --remove-orphans'
-//       }
-//     }
+    // stage('Run Newman collection and ZAP test'){
+    //   steps{
+    //     node('master') {
+    //       script{
+    //         startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0', additionalConfigurations: ["pscans.org.zaproxy.zap.extension.enabled=false"]])
+    //         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+    //           // sh 'rm -rf /var/lib/jenkins/iudx/rs/Newman/report/report.html'
+    //           sh 'curl http://127.0.0.1:8090/JSON/pscan/action/disableScanners/?ids=10096'
+    //           sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection_new.json -e /home/ubuntu/configs/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html'
+    //         }
+    //         runZapAttack()
+    //       }
+    //     }
+    //   }
+    //   post{
+    //     always{
+    //       node('master') {
+    //         script{
+    //           archiveZap failAllAlerts: 20
+    //           publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportName: 'HTML Report', reportTitles: '', reportName: 'Integration Test Report'])
+    //         }
+    //       }
+    //       script{
+    //         sh 'docker-compose logs perfTest > rs.log'
+    //         sh 'scp rs.log jenkins@jenkins-master:/var/lib/jenkins/userContent/'
+    //         echo 'container logs (rs.log) can be found at jenkins-url/userContent'
+    //         sh 'docker-compose down --remove-orphans'
+    //       } 
+    //     }
+    //   }
+    // }
 
     stage('Push Images') {
       steps{
         script {
           docker.withRegistry( registryUri, registryCredential ) {
-            devImage.push()
-            deplImage.push()
+            devImage.push("3.0-${env.GIT_HASH}")
+            deplImage.push("3.0-${env.GIT_HASH}")
           }
         }
       }
