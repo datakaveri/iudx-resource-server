@@ -63,7 +63,7 @@ services:
       - /home/ubuntu/configs/keystore.jks:/usr/share/app/configs/keystore.jks
       - ./docker/runTests.sh:/usr/share/app/docker/runTests.sh
       - ${WORKSPACE}:/tmp/test
-    command: bash -c "docker/runTests.sh && cp -r target /tmp/test"
+    command: bash -c "docker/runTests.sh"
     networks: 
       - rs-net
     logging:
@@ -73,26 +73,27 @@ services:
              max-size: "100m"
   
   perfTest:
-    image: ghcr.io/karun-singh/iudx-resource-server:dev
+    image: ghcr.io/karun-singh/iudx-resource-server:test
     environment:
       - RS_URL=https://rs.iudx.org.in
       - LOG_LEVEL=DEBUG
       - RS_JAVA_OPTS=-Xmx1024m
     volumes:
-      - /home/ubuntu/configs/rs-config-test.json:/usr/share/app/configs/config.json
+      - /home/ubuntu/configs/rs-config-dev.json:/usr/share/app/configs/config-dev.json
       - /home/ubuntu/configs/keystore.jks:/usr/share/app/configs/keystore.jks
+      - ./src:/usr/share/app/src
     ports:
       - "8443:8080"
       - "9000:9000"
     restart: on-failure
-    networks: 
+    networks:
       - rs-net
     logging:
          driver: "json-file"
          options:
              max-file: "5"
              max-size: "100m"
-    command: bash -c "exec java $$RS_JAVA_OPTS  -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory -jar ./fatjar.jar  --host $$(hostname) -c configs/config.json"
+    command: bash -c "mvn clean compile exec:java@resource-server"
 
   zookeeper:
     image: zookeeper:latest
