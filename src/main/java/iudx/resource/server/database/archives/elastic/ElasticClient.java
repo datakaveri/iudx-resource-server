@@ -1,14 +1,16 @@
 package iudx.resource.server.database.archives.elastic;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.json.DecodeException;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import iudx.resource.server.database.archives.ResponseBuilder;
-
-import static iudx.resource.server.database.archives.Constants.*;
+import static iudx.resource.server.database.archives.Constants.BAD_PARAMETERS;
+import static iudx.resource.server.database.archives.Constants.COUNT;
+import static iudx.resource.server.database.archives.Constants.DB_ERROR_2XX;
+import static iudx.resource.server.database.archives.Constants.DOCS_KEY;
+import static iudx.resource.server.database.archives.Constants.EMPTY_RESPONSE;
+import static iudx.resource.server.database.archives.Constants.FAILED;
+import static iudx.resource.server.database.archives.Constants.FILTER_PATH;
+import static iudx.resource.server.database.archives.Constants.HITS;
+import static iudx.resource.server.database.archives.Constants.REQUEST_GET;
+import static iudx.resource.server.database.archives.Constants.SOURCE_FILTER_KEY;
+import static iudx.resource.server.database.archives.Constants.SUCCESS;
 import java.io.IOException;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -22,6 +24,13 @@ import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseListener;
 import org.elasticsearch.client.RestClient;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import iudx.resource.server.database.archives.ResponseBuilder;
 
 public class ElasticClient {
 
@@ -100,7 +109,7 @@ public class ElasticClient {
           responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbError);
           searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
         } catch (DecodeException jsonError) {
-          LOGGER.error("Json parsing exception: " + jsonError);
+          LOGGER.error("Json parsing exception: " , jsonError);
           responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
               .setMessage(BAD_PARAMETERS);
           searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
@@ -149,7 +158,7 @@ public class ElasticClient {
                   .setCount(responseJson.getInteger(COUNT));
           countHandler.handle(Future.succeededFuture(responseBuilder.getResponse()));
         } catch (IOException e) {
-          LOGGER.error("IO Execption from Database: " + e.getMessage());
+          LOGGER.error("IO Execption from Database: " , e.getMessage());
           JsonObject ioError = new JsonObject(e.getMessage());
           responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(ioError);
           countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
@@ -166,7 +175,7 @@ public class ElasticClient {
           responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbError);
           countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
         } catch (DecodeException jsonError) {
-          LOGGER.error("Json parsing exception: " + jsonError);
+          LOGGER.error("Json parsing exception: " , jsonError);
           responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
               .setMessage(BAD_PARAMETERS);
           countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));

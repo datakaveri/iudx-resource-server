@@ -1,12 +1,14 @@
 package iudx.resource.server.database.latest;
 
+import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.LATEST_SERVICE_ADDRESS;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceBinder;
-import iudx.resource.server.database.archives.Constants;
+import iudx.resource.server.cache.CacheService;
 
 public class LatestVerticle extends AbstractVerticle {
 
@@ -27,6 +29,8 @@ public class LatestVerticle extends AbstractVerticle {
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
   private static final Logger LOGGER = LogManager.getLogger(LatestVerticle.class);
+  
+  private CacheService cacheService;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
@@ -41,11 +45,14 @@ public class LatestVerticle extends AbstractVerticle {
 
     attributeList = config().getJsonObject("attributeList");
     new RedisClient(vertx, config()).start().onSuccess(handler -> {
+      
       redisClient = handler;
+      cacheService=CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
       binder = new ServiceBinder(vertx);
-      latestData = new LatestDataServiceImpl(redisClient, attributeList);
-      consumer = binder.setAddress(Constants.LATEST_DATA_SERVICE_ADDRESS)
+      latestData = new LatestDataServiceImpl(redisClient, cacheService);
+      consumer = binder.setAddress(LATEST_SERVICE_ADDRESS)
           .register(LatestDataService.class, latestData);
+      LOGGER.info("Latest verticle deployed.");
     }).onFailure(handler -> {
       LOGGER.error("failed to start redis client");
     });

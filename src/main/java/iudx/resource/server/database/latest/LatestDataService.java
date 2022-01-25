@@ -37,10 +37,6 @@ public interface LatestDataService {
     @Fluent
     LatestDataService getLatestData(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
-    @GenIgnore
-    static LatestDataService create(RedisClient client, JsonObject attributeList) {
-        return new LatestDataServiceImpl(client, attributeList);
-    }
 
     /**
      * The createProxy helps the code generation blocks to generate proxy code.

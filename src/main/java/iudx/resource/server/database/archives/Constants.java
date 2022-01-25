@@ -139,7 +139,6 @@ public class Constants {
   public static final String OPTIONS_NOT_FOUND = "options not found";
   public static final String OPTIONS = "options";
   public static final String EMPTY_OPTIONS = "options is empty";
-  public static final String LATEST_DATA_SERVICE_ADDRESS = "iudx.rs.latest.service";
   public static final String ATTRIBUTE_LIST = "attributeList";
   public static final String DEFAULT_ATTRIBUTE = "_d";
   public static final String KEY = "key";

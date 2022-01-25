@@ -19,7 +19,7 @@ public enum Api {
   RESET_PWD("/user/resetPassword"),
 
   ADMIN("/admin"),
-  REVOKE_TOKEN("/revoketoken"),
+  REVOKE_TOKEN("/revokeToken"),
   RESOURCE_ATTRIBS("/resourceattribute");
 
   

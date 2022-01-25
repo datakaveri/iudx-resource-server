@@ -10,18 +10,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.stream.Stream;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
+import org.mockito.Mockito;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
 import io.vertx.core.json.JsonObject;
@@ -40,7 +42,7 @@ public class ValidatorTest {
   JsonObject json = new JsonObject(
       "{\"type\": \"Query\",\"entities\": [{\"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"}],\"geoQ\": {\"geometry\": \"Point\",\"coordinates\": [21.178,72.834],\"georel\": \"near;maxDistance=1000\",\"geoproperty\": \"location\"},\"temporalQ\": {\"timerel\": \"during\",\"time\": \"2020-10-18T14:20:00Z\",\"endtime\": \"2020-10-19T14:20:00Z\",\"timeProperty\": \"observationDateTime\"},\"q\":\"speed>30.0\",\"attrs\":\"id,speed\"}");
 
-  private CatalogueService catalogueService;
+  private CatalogueService catalogueServiceMock;
   private ParamsValidator validator;
 
 
@@ -50,11 +52,16 @@ public class ValidatorTest {
     configuration = new Configuration();
     config = configuration.configLoader(1, vertx);
 
-    catalogueService = new CatalogueService(vertx, config);
-    validator = new ParamsValidator(catalogueService);
+    catalogueServiceMock = Mockito.mock(CatalogueService.class);
+    validator = new ParamsValidator(catalogueServiceMock);
 
-    assertNotNull(catalogueService);
+    assertNotNull(catalogueServiceMock);
     assertNotNull(validator);
+
+    doAnswer(Answer -> Future
+        .succeededFuture(new ArrayList<>(Arrays.asList("TEMPORAL", "SPATIAL", "ATTR"))))
+            .when(catalogueServiceMock)
+            .getApplicableFilters(any(String.class));
 
     testContext.completeNow();
   }

@@ -1,5 +1,6 @@
 package iudx.resource.server.database.archives;
 
+import static iudx.resource.server.common.Constants.DATABASE_SERVICE_ADDRESS;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -27,7 +28,6 @@ public class DatabaseVerticle extends AbstractVerticle {
   private String password;
   private String timeLimit;
   private int databasePort;
-  private static final String DATABASE_SERVICE_ADDRESS = "iudx.rs.database.service";
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
 

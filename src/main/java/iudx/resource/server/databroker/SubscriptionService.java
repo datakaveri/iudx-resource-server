@@ -72,7 +72,7 @@ public class SubscriptionService {
   }
 
   Future<JsonObject> registerStreamingSubscription(JsonObject request) {
-    LOGGER.debug("Info : SubscriptionService#registerStreamingSubscription() started");
+    LOGGER.trace("Info : SubscriptionService#registerStreamingSubscription() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject registerStreamingSubscriptionResponse = new JsonObject();
     JsonObject requestjson = new JsonObject();
@@ -234,13 +234,12 @@ public class SubscriptionService {
   }
 
   Future<JsonObject> updateStreamingSubscription(JsonObject request) {
-    LOGGER.debug("Info : SubscriptionService#updateStreamingSubscription() started");
+    LOGGER.trace("Info : SubscriptionService#updateStreamingSubscription() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject updateStreamingSubscriptionResponse = new JsonObject();
     JsonObject requestjson = new JsonObject();
     if (request != null && !request.isEmpty()) {
       String userid = request.getString(USER_ID);
-      System.out.println(request);
       // String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
       String queueName = userid + "/" + request.getString("name");
       Future<JsonObject> resultCreateUser = rabbitClient.createUserIfNotExist(userid, VHOST_IUDX);
@@ -400,7 +399,7 @@ public class SubscriptionService {
   }
 
   Future<JsonObject> appendStreamingSubscription(JsonObject request) {
-    LOGGER.debug("Info : SubscriptionService#appendStreamingSubscription() started");
+    LOGGER.trace("Info : SubscriptionService#appendStreamingSubscription() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject appendStreamingSubscriptionResponse = new JsonObject();
     JsonObject requestjson = new JsonObject();
@@ -451,7 +450,7 @@ public class SubscriptionService {
                     if (resultHandlerbind.succeeded()) {
                       // count++
                       totalBindSuccess += 1;
-                      LOGGER.info("sucess :: totalBindSuccess " + totalBindSuccess
+                      LOGGER.debug("sucess :: totalBindSuccess " + totalBindSuccess
                           + resultHandlerbind.result());
 
                       JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
@@ -517,7 +516,7 @@ public class SubscriptionService {
   }
 
   Future<JsonObject> deleteStreamingSubscription(JsonObject request) {
-    LOGGER.debug("Info : SubscriptionService#deleteStreamingSubscription() started");
+    LOGGER.trace("Info : SubscriptionService#deleteStreamingSubscription() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject deleteStreamingSubscription = new JsonObject();
     if (request != null && !request.isEmpty()) {
@@ -553,7 +552,7 @@ public class SubscriptionService {
   }
 
   Future<JsonObject> listStreamingSubscriptions(JsonObject request) {
-    LOGGER.debug("Info : SubscriptionService#listStreamingSubscriptions() started");
+    LOGGER.trace("Info : SubscriptionService#listStreamingSubscriptions() started");
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
       String queueName = request.getString(SUBSCRIPTION_ID);
@@ -582,7 +581,7 @@ public class SubscriptionService {
   }
 
   Future<JsonObject> registerCallbackSubscription(JsonObject request) {
-    LOGGER.debug("Info : SubscriptionService#registerCallbackSubscription() started");
+    LOGGER.trace("Info : SubscriptionService#registerCallbackSubscription() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject registerCallbackSubscriptionResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
@@ -624,7 +623,7 @@ public class SubscriptionService {
 
             for (Object currentEntity : entitites) {
               String routingKey = (String) currentEntity;
-              LOGGER.info("routingKey is " + routingKey);
+              LOGGER.debug("routingKey is " + routingKey);
               if (routingKey != null) {
                 if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
                     || routingKey.split("/").length != 5) {
@@ -678,7 +677,7 @@ public class SubscriptionService {
                                   if (resultHandler.succeeded()) {
                                     registerCallbackSubscriptionResponse.put("subscriptionID",
                                         subscriptionID);
-                                    LOGGER.info("Message published to queue");
+                                    LOGGER.debug("Message published to queue");
                                     promise.complete(registerCallbackSubscriptionResponse);
                                   } else {
                                     String deleteQuery =
@@ -738,7 +737,7 @@ public class SubscriptionService {
   }
 
   Future<JsonObject> updateCallbackSubscription(JsonObject request) {
-    LOGGER.debug("Info : SubscriptionService#updateCallbackSubscription() started");
+    LOGGER.trace("Info : SubscriptionService#updateCallbackSubscription() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject updateCallbackSubscriptionResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
@@ -848,7 +847,7 @@ public class SubscriptionService {
   }
 
   Future<JsonObject> deleteCallbackSubscription(JsonObject request) {
-    LOGGER.debug("Info : SubscriptionService#deleteCallbackSubscription() started");
+    LOGGER.trace("Info : SubscriptionService#deleteCallbackSubscription() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject deleteCallbackSubscriptionResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
@@ -918,7 +917,7 @@ public class SubscriptionService {
   }
 
   Future<JsonObject> listCallbackSubscription(JsonObject request) {
-    LOGGER.debug("Info : SubscriptionService#listCallbackSubscription() started");
+    LOGGER.trace("Info : SubscriptionService#listCallbackSubscription() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject listCallbackSubscriptionResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
