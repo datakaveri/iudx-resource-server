@@ -27,35 +27,20 @@ pipeline {
       }
     }
 
-    stage('Unit Tests'){
+    stage('Unit Tests and Code Coverage Test'){
       steps{
         script{
           sh 'docker-compose up test'
         }
-      }
-    }
-
-    stage('Capture Unit Test results'){
-      steps{
         xunit (
           thresholds: [ skipped(failureThreshold: '8'), failed(failureThreshold: '0') ],
           tools: [ JUnit(pattern: 'target/surefire-reports/*.xml') ]
         )
-      }
-      post{
-        failure{
-          error "Test failure. Stopping pipeline execution!"
-        }
-      }
-    }
-
-    stage('Capture Code Coverage'){
-      steps{
         jacoco classPattern: 'target/classes', execPattern: 'target/jacoco.exec', sourcePattern: 'src/main/java', exclusionPattern:'iudx/resource/server/apiserver/ApiServerVerticle.class,**/*VertxEBProxy.class,**/Constants.class,**/*VertxProxyHandler.class,**/*Verticle.class,iudx/resource/server/database/archives/DatabaseService.class,iudx/resource/server/database/latest/LatestDataService.class,iudx/resource/server/deploy/*.class'
       }
     }
 
-    stage('Start RS server for performance testing'){
+    stage('Start Resource-Server for Performance and Integration Testing'){
       steps{
         script{
           sh 'scp Jmeter/ResourceServer.jmx jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Jmeter/'
@@ -73,33 +58,18 @@ pipeline {
             sh 'rm -rf /var/lib/jenkins/iudx/rs/Jmeter/report ; mkdir -p /var/lib/jenkins/iudx/rs/Jmeter/report'
             sh "set +x;/var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t /var/lib/jenkins/iudx/rs/Jmeter/ResourceServer.jmx -l /var/lib/jenkins/iudx/rs/Jmeter/report/JmeterTest.jtl -e -o /var/lib/jenkins/iudx/rs/Jmeter/report/ -Jhost=jenkins-slave1 -JpuneToken=$env.puneToken -JsuratToken=$env.suratToken"
           }
-        }
-      }
-    }
-
-    stage('Capture Jmeter report'){
-      steps{
-        node('master') {
-          // perfReport filterRegex: '', sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'
           perfReport errorFailedThreshold: 0, errorUnstableThreshold: 0, filterRegex: '', showTrendGraphs: true, sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'
         }
       }
-      post{
-        failure{
-          error "Test failure. Stopping pipeline execution!"
-        }
-      }
     }
 
-    stage('Run Newman collection and ZAP test'){
+    stage('Integration Tests and OWASP ZAP pen test'){
       steps{
         node('master') {
           script{
             startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0', additionalConfigurations: ["pscans.org.zaproxy.zap.extension.enabled=false"]])
-            catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-              sh 'curl http://127.0.0.1:8090/JSON/pscan/action/disableScanners/?ids=10096'
-              sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection_new.json -e /home/ubuntu/configs/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html'
-            }
+            sh 'curl http://127.0.0.1:8090/JSON/pscan/action/disableScanners/?ids=10096'
+            sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection_new.json -e /home/ubuntu/configs/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html'
             runZapAttack()
           }
         }
@@ -112,9 +82,10 @@ pipeline {
               publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportTitles: '', reportName: 'Integration Test Report'])
             }
           }
+        }
+        cleanup{
           script{
             sh 'docker-compose down --remove-orphans'
-            cleanWs(patterns:[[pattern:'./target',type:'INCLUDE']])
           } 
         }
       }
