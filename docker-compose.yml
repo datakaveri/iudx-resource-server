@@ -52,7 +52,7 @@ services:
     command: bash -c "exec java $$RS_JAVA_OPTS  -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory -jar ./fatjar.jar  --host $$(hostname) -c configs/config.json"
 
   test:
-    image: ghcr.io/karun-singh/rs-test:latest
+    image: ghcr.io/datakaveri/rs-test:latest
     environment:
       - RS_URL=https://rs.iudx.org.in
       - LOG_LEVEL=INFO
@@ -73,7 +73,7 @@ services:
              max-size: "100m"
   
   perfTest:
-    image: ghcr.io/karun-singh/rs-test:latest
+    image: ghcr.io/datakaveri/rs-test:latest
     environment:
       - RS_URL=https://rs.iudx.org.in
       - LOG_LEVEL=INFO
