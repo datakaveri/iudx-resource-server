@@ -61,6 +61,10 @@ pipeline {
           perfReport errorFailedThreshold: 0, errorUnstableThreshold: 0, filterRegex: '', showTrendGraphs: true, sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'
         }
       }
+      post{
+        failure{
+          unstable 'Performance Test errors'
+      }
     }
 
     stage('Integration Tests and OWASP ZAP pen test'){
