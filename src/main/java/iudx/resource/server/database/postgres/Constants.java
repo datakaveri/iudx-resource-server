@@ -8,7 +8,7 @@ public class Constants {
           + "DO UPDATE SET expiry = '$2'";
 
   public static String INSERT_UNIQUE_ATTR_SQL =
-      "INSERT INTO unique_attributes(resource_id,unique_attribute) VALUES($1,$2)";
+      "INSERT INTO unique_attributes(resource_id,unique_attribute) VALUES('$1','$2')";
 
   public static String UPDATE_UNIQUE_ATTR_SQL =
       "UPDATE unique_attributes SET unique_attribute=$1 WHERE resource_id=$2";

@@ -1,8 +1,9 @@
 package iudx.resource.server.databroker;
 
+import static iudx.resource.server.common.Constants.BROKER_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -14,6 +15,10 @@ import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.sqlclient.PoolOptions;
+import iudx.resource.server.cache.CacheService;
+import iudx.resource.server.databroker.listeners.RMQListeners;
+import iudx.resource.server.databroker.listeners.RevokeClientQListener;
+import iudx.resource.server.databroker.listeners.UniqueAttribQListener;
 
 /**
  * The Data Broker Verticle.
@@ -29,7 +34,6 @@ import io.vertx.sqlclient.PoolOptions;
 
 public class DataBrokerVerticle extends AbstractVerticle {
 
-  private static final String BROKER_SERVICE_ADDRESS = "iudx.rs.broker.service";
   private static final Logger LOGGER = LogManager.getLogger(DataBrokerVerticle.class);
   private DataBrokerService databroker;
   private RabbitMQOptions config;
@@ -63,6 +67,8 @@ public class DataBrokerVerticle extends AbstractVerticle {
   private RabbitClient rabbitClient;
   private RabbitWebClient rabbitWebClient;
   private PostgresClient pgClient;
+  private CacheService cache;
+
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
@@ -158,9 +164,17 @@ public class DataBrokerVerticle extends AbstractVerticle {
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
     rabbitClient =
         new RabbitClient(vertx, config, rabbitWebClient, pgClient, config());
+
     binder = new ServiceBinder(vertx);
     databroker = new DataBrokerServiceImpl(rabbitClient, pgClient, config());
 
+    cache = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
+    RMQListeners revokeClientQListener=new RevokeClientQListener(client, cache);
+    RMQListeners uniqueAttrQListener=new UniqueAttribQListener(client, cache);
+    
+    //start
+    revokeClientQListener.start();
+    uniqueAttrQListener.start();
 
     /* Publish the Data Broker service with the Event Bus against an address. */
 

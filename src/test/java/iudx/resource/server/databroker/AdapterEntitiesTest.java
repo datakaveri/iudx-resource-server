@@ -9,11 +9,9 @@ import static iudx.resource.server.databroker.util.Constants.USER_NAME;
 import static iudx.resource.server.databroker.util.Constants.VHOST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
@@ -23,7 +21,6 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -86,7 +83,7 @@ public class AdapterEntitiesTest {
   private static PostgresClient pgClient;
   private static Configuration appConfig;
 
-  private static final Logger logger = LogManager.getLogger(AdapterEntitiesTest.class);
+  private static final Logger LOGGER = LogManager.getLogger(AdapterEntitiesTest.class);
 
   @BeforeAll
   @DisplayName("Initialize the Databroker class with web client and rabbitmq client")
@@ -120,7 +117,7 @@ public class AdapterEntitiesTest {
       poolSize = brokerConfig.getInteger("callbackpoolSize");
 
     } catch (Exception ex) {
-      logger.info(ex.toString());
+      LOGGER.info(ex.toString());
     }
 
     /* Configure the RabbitMQ Data Broker client with input from config files. */
@@ -212,7 +209,7 @@ public class AdapterEntitiesTest {
     databroker.registerAdaptor(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("inside  successRegisterAdaptor - RegisteAdaptor response is : " + response);
+        LOGGER.debug("inside  successRegisterAdaptor - RegisteAdaptor response is : " + response);
         assertTrue(response.containsKey(USER_NAME));
         assertTrue(response.containsKey(APIKEY));
         assertTrue(response.containsKey(URL));
@@ -237,11 +234,11 @@ public class AdapterEntitiesTest {
     expected.put(Constants.TYPE, 200);
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, Constants.EXCHANGE_FOUND);
-    System.out.println(id);
+    LOGGER.debug(id);
     databroker.getExchange(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("inside  successGetExchange - getExchange response : " + response);
+        LOGGER.debug("inside  successGetExchange - getExchange response : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -256,7 +253,7 @@ public class AdapterEntitiesTest {
     JsonObject request = new JsonObject();
     request.put(Constants.ID, id);
     request.put("exchangeName", id);// TODO : discuss conflict between impl and test code
-    System.out.println("request: " + request);
+    LOGGER.debug("request: " + request);
     JsonObject expected = new JsonObject();
     JsonArray adaptorLogs_entities = new JsonArray();
     JsonArray database_entities = new JsonArray();
@@ -271,7 +268,7 @@ public class AdapterEntitiesTest {
     databroker.listAdaptor(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("inside test - listAdaptor response is : " + response);
+        LOGGER.debug("inside test - listAdaptor response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -296,7 +293,7 @@ public class AdapterEntitiesTest {
     databroker.publishHeartbeat(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("inside test - publishHeartbeat response is : " + response);
+        LOGGER.debug("inside test - publishHeartbeat response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -327,7 +324,7 @@ public class AdapterEntitiesTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         anotherid = response.getString(Constants.ID);
-        logger.info(
+        LOGGER.debug(
             "inside  successRegisterAdaptor with existing user - RegisteAdaptor response is : "
                 + response);
         assertTrue(response.containsKey(USER_NAME));
@@ -345,7 +342,7 @@ public class AdapterEntitiesTest {
   @Order(6)
   void successGetExchangeExistingUser(VertxTestContext testContext) throws InterruptedException {
     JsonObject request = new JsonObject();
-    logger.info("Exchange name :"+anotherid);
+    LOGGER.debug("Exchange name :"+anotherid);
     request.put(Constants.ID, anotherid);
     JsonObject expected = new JsonObject();
     expected.put(Constants.TYPE, 200);
@@ -355,7 +352,7 @@ public class AdapterEntitiesTest {
     databroker.getExchange(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("inside  successGetExchange - getExchange response : " + response);
+        LOGGER.debug("inside  successGetExchange - getExchange response : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -385,7 +382,7 @@ public class AdapterEntitiesTest {
     databroker.listAdaptor(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("inside test - listAdaptor response is : " + response);
+        LOGGER.debug("inside test - listAdaptor response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -411,7 +408,7 @@ public class AdapterEntitiesTest {
     databroker.registerAdaptor(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("inside  failureRegisterAdaptorwithExistingUser - RegisteAdaptor response is : "
+        LOGGER.debug("inside  failureRegisterAdaptorwithExistingUser - RegisteAdaptor response is : "
             + response);
         assertEquals(expected, response);
       }
@@ -435,7 +432,7 @@ public class AdapterEntitiesTest {
     databroker.deleteAdaptor(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("inside test - DeleteAdaptor response is : " + response);
+        LOGGER.debug("inside test - DeleteAdaptor response is : " + response);
         assertEquals(ResponseType.Ok.getCode(), handler.result().getInteger(Constants.TYPE));
         testContext.completeNow();
       } else {
@@ -461,7 +458,7 @@ public class AdapterEntitiesTest {
     databroker.deleteAdaptor(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("inside test - DeleteAdaptor response is : " + response);
+        LOGGER.debug("inside test - DeleteAdaptor response is : " + response);
         assertEquals(200, response.getInteger(Constants.TYPE));
       }
       testContext.completeNow();
@@ -484,7 +481,7 @@ public class AdapterEntitiesTest {
     databroker.registerAdaptor(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("inside invalid ID test - RegisteAdaptor response is : " + response);
+        LOGGER.debug("inside invalid ID test - RegisteAdaptor response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -496,17 +493,17 @@ public class AdapterEntitiesTest {
   static void cleanUp(VertxTestContext testContext) {
     
     if (userName2Delete != null) {
-      logger.info("cleanup : delete user "+userName2Delete);
+      LOGGER.debug("cleanup : delete user "+userName2Delete);
       String url = "/api/users/bulk-delete";// + Util.encodeValue(userName2Delete);
       JsonObject request=new JsonObject();
       request.put("users", new JsonArray().add(userName2Delete));
       
       rabbitMQWebClient.requestAsync(Constants.REQUEST_DELETE, url,request).onComplete(handler -> {
         if (handler.succeeded()) {
-          logger.info(userName2Delete + " deleted");
+          LOGGER.debug(userName2Delete + " deleted");
         } else {
-          logger.error(handler.cause());
-          logger.info(userName2Delete + " deletion failed");
+          LOGGER.error(handler.cause());
+          LOGGER.debug(userName2Delete + " deletion failed");
         }
         testContext.completeNow();
       });

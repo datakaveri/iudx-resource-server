@@ -51,6 +51,7 @@ import static iudx.resource.server.common.Api.INGESTION;
 import static iudx.resource.server.common.Api.MANAGEMENT;
 import static iudx.resource.server.common.Api.NGSILD_BASE;
 import static iudx.resource.server.common.Api.SUBSCRIPTION;
+import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
 import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
@@ -137,7 +138,6 @@ public class ApiServerVerticle extends AbstractVerticle {
   private static final String BROKER_SERVICE_ADDRESS = "iudx.rs.broker.service";
   private static final String LATEST_SEARCH_ADDRESS = "iudx.rs.latest.service";
   private static final String METERING_SERVICE_ADDRESS = "iudx.rs.metering.service";
-  private static final String POSTGRES_SERVICE_ADDRESS = "iudx.rs.pgsql.service";
 
   private HttpServer server;
   private Router router;
@@ -408,7 +408,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     HttpServerOptions serverOptions = new HttpServerOptions();
 
     if (isSSL) {
-      LOGGER.debug("Info: Starting HTTPs server");
+      LOGGER.info("Info: Starting HTTPs server");
 
       /* Read the configuration and set the HTTPs server properties. */
 
@@ -422,7 +422,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword));
 
     } else {
-      LOGGER.debug("Info: Starting HTTP server");
+      LOGGER.info("Info: Starting HTTP server");
 
       /* Setup the HTTP server properties, APIs and port. */
 
@@ -453,7 +453,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     catalogueService = new CatalogueService(vertx, config());
     validator = new ParamsValidator(catalogueService);
 
-    postgresService = PostgresService.createProxy(vertx, POSTGRES_SERVICE_ADDRESS);
+    postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
 
     router.mountSubRouter(ADMIN.path,
         new AdminRestApi(vertx, databroker, postgresService, meteringService).init());
@@ -488,7 +488,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   private Future<Void> getConsumerAuditDetail(RoutingContext routingContext) {
-    LOGGER.info("Info: getConsumerAuditDetail Started.");
+    LOGGER.trace("Info: getConsumerAuditDetail Started.");
     Promise<Void> promise = Promise.promise();
     JsonObject entries = new JsonObject();
     JsonObject consumer = (JsonObject) routingContext.data().get("authInfo");
@@ -505,12 +505,12 @@ public class ApiServerVerticle extends AbstractVerticle {
     entries.put("api", request.getParam("api"));
 
     {
-      LOGGER.info(entries);
+      LOGGER.debug(entries);
       meteringService.executeReadQuery(
           entries,
           handler -> {
             if (handler.succeeded()) {
-              LOGGER.info("Table Reading Done.");
+              LOGGER.debug("Table Reading Done.");
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), handler.result().toString());
               promise.complete();
@@ -526,7 +526,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   private Future<Void> getProviderAuditDetail(RoutingContext routingContext) {
-    LOGGER.info("Info: getProviderAuditDetail Started.");
+    LOGGER.trace("Info: getProviderAuditDetail Started.");
     Promise<Void> promise = Promise.promise();
     JsonObject entries = new JsonObject();
     JsonObject provider = (JsonObject) routingContext.data().get("authInfo");
@@ -546,12 +546,12 @@ public class ApiServerVerticle extends AbstractVerticle {
     entries.put("options", request.headers().get("options"));
 
     {
-      LOGGER.info(entries);
+      LOGGER.debug(entries);
       meteringService.executeReadQuery(
           entries,
           handler -> {
             if (handler.succeeded()) {
-              LOGGER.info("Table Reading Done.");
+              LOGGER.debug("Table Reading Done.");
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), handler.result().toString());
               promise.complete();
@@ -567,7 +567,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   }
 
   private void handleLatestEntitiesQuery(RoutingContext routingContext) {
-    LOGGER.debug("Info:handleLatestEntitiesQuery method started.;");
+    LOGGER.trace("Info:handleLatestEntitiesQuery method started.;");
     /* Handles HTTP request from client */
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     HttpServerRequest request = routingContext.request();
@@ -615,7 +615,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param routingContext RoutingContext Object
    */
   private void handleEntitiesQuery(RoutingContext routingContext) {
-    LOGGER.debug("Info:handleEntitiesQuery method started.;");
+    LOGGER.trace("Info:handleEntitiesQuery method started.;");
     /* Handles HTTP request from client */
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     HttpServerRequest request = routingContext.request();
@@ -677,7 +677,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param routingContext routingContext
    */
   public void handlePostEntitiesQuery(RoutingContext routingContext) {
-    LOGGER.debug("Info: handlePostEntitiesQuery method started.");
+    LOGGER.trace("Info: handlePostEntitiesQuery method started.");
     HttpServerRequest request = routingContext.request();
     JsonObject requestJson = routingContext.getBodyAsJson();
     LOGGER.debug("Info: request Json :: ;" + requestJson);
@@ -795,7 +795,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param routingContext RoutingContext object
    */
   private void handleTemporalQuery(RoutingContext routingContext) {
-    LOGGER.debug("Info: handleTemporalQuery method started.");
+    LOGGER.trace("Info: handleTemporalQuery method started.");
     /* Handles HTTP request from client */
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
@@ -851,7 +851,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param routingContext routingContext
    */
   private void handleSubscriptions(RoutingContext routingContext) {
-    LOGGER.debug("Info: handleSubscription method started");
+    LOGGER.trace("Info: handleSubscription method started");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     JsonObject requestBody = routingContext.getBodyAsJson();
@@ -887,7 +887,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param routingContext routingContext
    */
   private void appendSubscription(RoutingContext routingContext) {
-    LOGGER.debug("Info: appendSubscription method started");
+    LOGGER.trace("Info: appendSubscription method started");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     String userid = request.getParam(USER_ID);
@@ -909,7 +909,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       subsReq.onComplete(
           subsRequestHandler -> {
             if (subsRequestHandler.succeeded()) {
-              LOGGER.info("Success: Appending subscription");
+              LOGGER.debug("Success: Appending subscription");
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response,
@@ -933,7 +933,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param routingContext routingContext
    */
   private void updateSubscription(RoutingContext routingContext) {
-    LOGGER.debug("Info: updateSubscription method started");
+    LOGGER.trace("Info: updateSubscription method started");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     String userid = request.getParam(USER_ID);
@@ -979,7 +979,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param routingContext routingContext
    */
   private void getSubscription(RoutingContext routingContext) {
-    LOGGER.debug("Info: getSubscription method started");
+    LOGGER.trace("Info: getSubscription method started");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     String domain = request.getParam(USER_ID);
@@ -1023,7 +1023,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param routingContext routingContext
    */
   private void deleteSubscription(RoutingContext routingContext) {
-    LOGGER.debug("Info: deleteSubscription method started;");
+    LOGGER.trace("Info: deleteSubscription method started;");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     String userid = request.getParam(USER_ID);
@@ -1063,7 +1063,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param routingContext routingContext
    */
   private void registerAdapter(RoutingContext routingContext) {
-    LOGGER.debug("Info: registerAdapter method started;");
+    LOGGER.trace("Info: registerAdapter method started;");
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
@@ -1094,7 +1094,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param routingContext routingContext
    */
   public void deleteAdapter(RoutingContext routingContext) {
-    LOGGER.debug("Info: deleteAdapter method starts;");
+    LOGGER.trace("Info: deleteAdapter method starts;");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
 
@@ -1137,7 +1137,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param routingContext routingContext
    */
   public void getAdapterDetails(RoutingContext routingContext) {
-    LOGGER.info("getAdapterDetails method starts");
+    LOGGER.trace("getAdapterDetails method starts");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     String domain = request.getParam(DOMAIN);
@@ -1176,7 +1176,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    *        error level logs
    */
   public void publishHeartbeat(RoutingContext routingContext) {
-    LOGGER.debug("Info: publishHeartbeat method starts;");
+    LOGGER.trace("Info: publishHeartbeat method starts;");
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
@@ -1191,7 +1191,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       brokerResult.onComplete(
           brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
-              LOGGER.debug("Success: Published heartbeat");
+              LOGGER.info("Success: Published heartbeat");
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
@@ -1214,7 +1214,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    *        error level logs
    */
   public void publishDownstreamIssue(RoutingContext routingContext) {
-    LOGGER.debug("Info: publishDownStreamIssue method started;");
+    LOGGER.trace("Info: publishDownStreamIssue method started;");
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
@@ -1230,18 +1230,18 @@ public class ApiServerVerticle extends AbstractVerticle {
       brokerResult.onComplete(
           brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
-              LOGGER.debug("Success: published downstream issue");
+              LOGGER.info("Success: published downstream issue");
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
             } else {
-              LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
+              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
               processBackendResponse(response, brokerResultHandler.cause().getMessage());
             }
           });
 
     } else {
-      LOGGER.debug("Fail: Unauthorized");
+      LOGGER.error("Fail: Unauthorized");
       handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
   }
@@ -1252,7 +1252,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param routingContext routingContext Note: All logs are debug level only
    */
   public void publishDataIssue(RoutingContext routingContext) {
-    LOGGER.debug("Info: publishDataIssue method started;");
+    LOGGER.trace("Info: publishDataIssue method started;");
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
@@ -1272,7 +1272,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
             } else {
-              LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
+              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
               processBackendResponse(response, brokerResultHandler.cause().getMessage());
             }
           });
@@ -1288,7 +1288,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * @param routingContext routingContext Note: All logs are debug level
    */
   public void publishDataFromAdapter(RoutingContext routingContext) {
-    LOGGER.debug("Info: publishDataFromAdapter method started;");
+    LOGGER.trace("Info: publishDataFromAdapter method started;");
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();

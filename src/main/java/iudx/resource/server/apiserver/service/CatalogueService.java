@@ -1,17 +1,13 @@
 package iudx.resource.server.apiserver.service;
 
 import static iudx.resource.server.apiserver.util.Util.toList;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -197,7 +193,7 @@ public class CatalogueService {
   }
 
   public Future<Boolean> isItemExist(String id) {
-    LOGGER.debug("isItemExist() started");
+    LOGGER.trace("isItemExist() started");
     Promise<Boolean> promise = Promise.promise();
     LOGGER.info("id : " + id);
     catWebClient.get(catPort, catHost, catItemPath).addQueryParam("id", id)

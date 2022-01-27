@@ -24,14 +24,11 @@ import static iudx.resource.server.database.archives.Constants.SEARCH_TYPE;
 import static iudx.resource.server.database.archives.Constants.SIZE_KEY;
 import static iudx.resource.server.database.archives.Constants.SOURCE_FILTER_KEY;
 import static iudx.resource.server.database.archives.Constants.TIME_LIMIT;
-
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -75,7 +72,7 @@ public class DatabaseServiceImpl implements DatabaseService {
   @Override
   public DatabaseService searchQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
 
-    LOGGER.debug("Info: searchQuery;" + request.toString());
+    LOGGER.trace("Info: searchQuery;" + request.toString());
 
     request.put(SEARCH_KEY, true);
     request.put(TIME_LIMIT, timeLimit);
@@ -196,7 +193,7 @@ public class DatabaseServiceImpl implements DatabaseService {
   @Override
   public DatabaseService countQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
 
-    LOGGER.debug("Info: countQuery;" + request.toString());
+    LOGGER.trace("Info: countQuery;" + request.toString());
 
     request.put(SEARCH_KEY, false);
     request.put(TIME_LIMIT, timeLimit);

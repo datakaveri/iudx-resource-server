@@ -3,15 +3,12 @@ package iudx.resource.server.apiserver.query;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.ResponseUrn.INVALID_ATTR_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_GEO_PARAM_URN;
-
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
@@ -38,7 +35,7 @@ public class QueryMapper {
    * @return JsonObject result.
    */
   public JsonObject toJson(NGSILDQueryParams params, boolean isTemporal) {
-    LOGGER.debug("Info QueryMapper#toJson() started");
+    LOGGER.trace("Info QueryMapper#toJson() started");
     LOGGER.debug("Info : params" + params);
     this.isTemporal = isTemporal;
     JsonObject json = new JsonObject();
@@ -138,15 +135,11 @@ public class QueryMapper {
   private void isValidTimeInterval(String timeRel, String time, String endTime) {
     long totalDaysAllowed = 0;
     if (timeRel.equalsIgnoreCase(Constants.JSON_DURING)) {
-      LOGGER.debug("Info : inside isValidTimeInterval ");
-      LOGGER.debug("Info : inside isValidTimeInterval time : " + time.isBlank());
-      LOGGER.debug("Info : inside isValidTimeInterval endTime : " + endTime);
       if (isNullorEmpty(time) || isNullorEmpty(endTime)) {
         throw new DxRuntimeException(BAD_REQUEST.getValue(), ResponseUrn.INVALID_TEMPORAL_PARAM_URN,
             "time and endTime both are mandatory for during Query.");
       }
 
-      LOGGER.debug("Info : inside isValidTimeInterval after check");
       try {
         ZonedDateTime start = ZonedDateTime.parse(time);
         ZonedDateTime end = ZonedDateTime.parse(endTime);
@@ -220,7 +213,7 @@ public class QueryMapper {
           startIndex = i;
           specialCharFound = true;
         } else {
-          LOGGER.info("Ignore " + c.toString());
+          LOGGER.debug("Ignore " + c.toString());
           throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_ATTR_PARAM_URN, "Operator not allowed.");
         }
       } else {

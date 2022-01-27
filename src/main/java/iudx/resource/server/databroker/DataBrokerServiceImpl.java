@@ -6,13 +6,10 @@ import static iudx.resource.server.databroker.util.Constants.ID;
 import static iudx.resource.server.databroker.util.Constants.STATUS;
 import static iudx.resource.server.databroker.util.Constants.TYPE;
 import static iudx.resource.server.databroker.util.Constants.USER_ID;
-
 import java.util.Map;
-
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -154,8 +151,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   }
 
   /**
-   * The listAdaptor implements the list of bindings for an exchange (source). This method has similar
-   * functionality as listExchangeSubscribers(JsonObject) method
+   * The listAdaptor implements the list of bindings for an exchange (source). This method has
+   * similar functionality as listExchangeSubscribers(JsonObject) method
    * 
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
@@ -773,8 +770,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                       webClient.getRabbitMQClient().basicPublish(adaptor, routingKey, buffer,
                           resultHandler -> {
                             if (resultHandler.succeeded()) {
-                              LOGGER.info("publishHeartbeat - message published to queue [ " + queueName
-                                  + " ] for routingKey [ " + routingKey + " ]");
+                              LOGGER.debug(
+                                  "publishHeartbeat - message published to queue [ " + queueName
+                                      + " ] for routingKey [ " + routingKey + " ]");
                               response.put("type", "success");
                               response.put("queueName", queueName);
                               response.put("routingKey", rk.toString());
@@ -846,17 +844,18 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     }).compose(rmqResetFut -> {
       return webClient.resetPwdInDb(userid, Util.getSha(password));
     }).onSuccess(successHandler -> {
-      response.put("type",ResponseUrn.SUCCESS_URN.getUrn());
-      response.put("title","Successfully changed the password");
+      response.put("type", ResponseUrn.SUCCESS_URN.getUrn());
+      response.put("title", "Successfully changed the password");
       JsonArray result = new JsonArray()
-              .add(new JsonObject()
-                      .put("username", userid)
-                      .put("apiKey", password));
-      response.put("result",result);
+          .add(new JsonObject()
+              .put("username", userid)
+              .put("apiKey", password));
+      response.put("result", result);
       handler.handle(Future.succeededFuture(response));
     }).onFailure(failurehandler -> {
       JsonObject failureResponse = new JsonObject();
-      failureResponse.put("type", 401).put("title", "not authorized").put("detail", "not authorized");
+      failureResponse.put("type", 401).put("title", "not authorized").put("detail",
+          "not authorized");
       handler.handle(Future.failedFuture(failureResponse.toString()));
     });
 
@@ -870,9 +869,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
     Future<Void> rabbitMqClientStartFuture;
 
-    JsonObject message = new JsonObject();
-    message.put("body", request.toString());
-    Buffer buffer = Buffer.buffer(message.toString());
+    Buffer buffer = Buffer.buffer(request.toString());
 
     RabbitMQClient client = webClient.getRabbitMQClient();
     if (!client.isConnected())
@@ -880,20 +877,21 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     else
       rabbitMqClientStartFuture = Future.succeededFuture();
 
-    rabbitMqClientStartFuture.compose(rabbitstartupFuture -> {
-      return client.basicPublish(toExchange, routingKey, buffer);
-    }).onSuccess(successHandler -> {
-      JsonObject json = new JsonObject();
-      json.put("type", ResponseUrn.SUCCESS_URN.getUrn());
-      handler.handle(Future.succeededFuture(json));
-    }).onFailure(failureHandler -> {
-      LOGGER.error(failureHandler);
-      Response response = new Response.Builder()
-          .withUrn(ResponseUrn.QUEUE_ERROR_URN.getUrn())
-          .withStatus(HttpStatus.SC_BAD_REQUEST)
-          .withDetail(failureHandler.getLocalizedMessage()).build();
-      handler.handle(Future.failedFuture(response.toJson().toString()));
-    });
+    rabbitMqClientStartFuture
+        .compose(rabbitstartupFuture -> {
+          return client.basicPublish(toExchange, routingKey, buffer);
+        }).onSuccess(successHandler -> {
+          JsonObject json = new JsonObject();
+          json.put("type", ResponseUrn.SUCCESS_URN.getUrn());
+          handler.handle(Future.succeededFuture(json));
+        }).onFailure(failureHandler -> {
+          LOGGER.error(failureHandler);
+          Response response = new Response.Builder()
+              .withUrn(ResponseUrn.QUEUE_ERROR_URN.getUrn())
+              .withStatus(HttpStatus.SC_BAD_REQUEST)
+              .withDetail(failureHandler.getLocalizedMessage()).build();
+          handler.handle(Future.failedFuture(response.toJson().toString()));
+        });
     return this;
   }
 }

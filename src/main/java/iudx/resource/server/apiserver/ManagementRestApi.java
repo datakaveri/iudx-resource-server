@@ -31,10 +31,8 @@ import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN_URN;
 import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN_URN;
 import static iudx.resource.server.common.Util.isValidName;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -142,7 +140,7 @@ public class ManagementRestApi {
    * @param routingContext routingContext
    */
   private void createExchange(RoutingContext routingContext) {
-    LOGGER.debug("Info: createExchange method started;");
+    LOGGER.trace("Info: createExchange method started;");
     JsonObject requestJson = routingContext.getBodyAsJson();
     LOGGER.info("request ::: " + requestJson);
     HttpServerRequest request = routingContext.request();
@@ -187,7 +185,7 @@ public class ManagementRestApi {
    * @param routingContext routingContext
    */
   private void deleteExchange(RoutingContext routingContext) {
-    LOGGER.debug("Info: deleteExchange method started;");
+    LOGGER.trace("Info: deleteExchange method started;");
     JsonObject requestJson = new JsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
@@ -224,7 +222,7 @@ public class ManagementRestApi {
    * @param routingContext routingContext
    */
   private void getExchangeDetails(RoutingContext routingContext) {
-    LOGGER.debug("Info: getExchange method started;");
+    LOGGER.trace("Info: getExchange method started;");
     JsonObject requestJson = new JsonObject();
     HttpServerRequest request = routingContext.request();
     JsonObject authenticationInfo = new JsonObject();
@@ -263,7 +261,7 @@ public class ManagementRestApi {
    * @param routingContext routingContext
    */
   private void createQueue(RoutingContext routingContext) {
-    LOGGER.debug("Info: createQueue method started;");
+    LOGGER.trace("Info: createQueue method started;");
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
@@ -309,7 +307,7 @@ public class ManagementRestApi {
    * @param routingContext routingContext.
    */
   private void deleteQueue(RoutingContext routingContext) {
-    LOGGER.debug("Info: deleteQueue method started;");
+    LOGGER.trace("Info: deleteQueue method started;");
     JsonObject requestJson = new JsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
@@ -383,7 +381,7 @@ public class ManagementRestApi {
    * @param routingContext routingContext
    */
   private void bindQueue2Exchange(RoutingContext routingContext) {
-    LOGGER.debug("Info: bindQueue2Exchange method started;");
+    LOGGER.trace("Info: bindQueue2Exchange method started;");
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
@@ -420,7 +418,7 @@ public class ManagementRestApi {
    * @param routingContext routingContext
    */
   private void unbindQueue2Exchange(RoutingContext routingContext) {
-    LOGGER.debug("Info: unbindQueue2Exchange method started;");
+    LOGGER.trace("Info: unbindQueue2Exchange method started;");
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
@@ -457,7 +455,7 @@ public class ManagementRestApi {
    * @param routingContext routingContext
    */
   private void createVHost(RoutingContext routingContext) {
-    LOGGER.debug("Info: createVHost method started;");
+    LOGGER.trace("Info: createVHost method started;");
     JsonObject requestJson = routingContext.getBodyAsJson();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
@@ -502,7 +500,7 @@ public class ManagementRestApi {
    * @param routingContext routingContext
    */
   private void deleteVHost(RoutingContext routingContext) {
-    LOGGER.debug("Info: deleteVHost method started;");
+    LOGGER.trace("Info: deleteVHost method started;");
     JsonObject requestJson = new JsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
@@ -537,7 +535,7 @@ public class ManagementRestApi {
 
 
   public void resetPassword(RoutingContext routingContext) {
-    LOGGER.debug("Info: resetPassword method started");
+    LOGGER.trace("Info: resetPassword method started");
 
     HttpServerResponse response = routingContext.response();
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
@@ -570,7 +568,7 @@ public class ManagementRestApi {
   }
 
   private void processBackendResponse(HttpServerResponse response, String failureMessage) {
-    LOGGER.debug("Info : " + failureMessage);
+    LOGGER.trace("Info : " + failureMessage);
     try {
       JsonObject json = new JsonObject(failureMessage);
       int type = json.getInteger(JSON_TYPE);
