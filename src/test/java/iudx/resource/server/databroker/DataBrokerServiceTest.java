@@ -28,11 +28,9 @@ import static iudx.resource.server.databroker.util.Constants.VHOST;
 import static iudx.resource.server.databroker.util.Constants.VHOST_IUDX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
@@ -42,7 +40,6 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -108,7 +105,7 @@ public class DataBrokerServiceTest {
   private static String BROKER_PRODUCTION_DOMAIN;
   private static int BROKER_PRODUCTION_PORT;
 
-  private static final Logger logger = LogManager.getLogger(DataBrokerServiceTest.class);
+  private static final Logger LOGGER = LogManager.getLogger(DataBrokerServiceTest.class);
 
   @BeforeAll
   @DisplayName("Deploy a verticle")
@@ -130,8 +127,8 @@ public class DataBrokerServiceTest {
     BROKER_PRODUCTION_DOMAIN = brokerConfig.getString("brokerAmqpIp");
     BROKER_PRODUCTION_PORT=brokerConfig.getInteger("brokerAmqpPort");
 
-    logger.info("Exchange Name is " + exchangeName);
-    logger.info("Queue Name is " + queueName);
+    LOGGER.debug("Exchange Name is " + exchangeName);
+    LOGGER.debug("Queue Name is " + queueName);
 
     /* Read the configuration and set the rabbitMQ server properties. */
     properties = new Properties();
@@ -164,7 +161,7 @@ public class DataBrokerServiceTest {
 
     } catch (Exception ex) {
 
-      logger.info(ex.toString());
+      LOGGER.error(ex.toString());
 
     }
 
@@ -254,7 +251,7 @@ public class DataBrokerServiceTest {
     databroker.createExchange(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Create Exchange response is : " + response);
+        LOGGER.debug("Create Exchange response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -277,7 +274,7 @@ public class DataBrokerServiceTest {
     databroker.createExchange(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Create Exchange response is : " + response);
+        LOGGER.debug("Create Exchange response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -298,7 +295,7 @@ public class DataBrokerServiceTest {
     databroker.createQueue(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Create Queue response is : " + response);
+        LOGGER.debug("Create Queue response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -322,7 +319,7 @@ public class DataBrokerServiceTest {
     databroker.createQueue(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Create Exchange response is : " + response);
+        LOGGER.debug("Create Exchange response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -347,7 +344,7 @@ public class DataBrokerServiceTest {
     databroker.bindQueue(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Bind Queue response is : " + response);
+        LOGGER.debug("Bind Queue response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -368,7 +365,7 @@ public class DataBrokerServiceTest {
     databroker.listExchangeSubscribers(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("List exchnage bindings response is : " + response);
+        LOGGER.debug("List exchnage bindings response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -392,7 +389,7 @@ public class DataBrokerServiceTest {
     databroker.listQueueSubscribers(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("List queue bindings response is : " + response);
+        LOGGER.debug("List queue bindings response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -418,7 +415,7 @@ public class DataBrokerServiceTest {
     databroker.unbindQueue(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Unbind Queue response is : " + response);
+        LOGGER.debug("Unbind Queue response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -440,7 +437,7 @@ public class DataBrokerServiceTest {
     databroker.deleteQueue(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Delete Queue response is : " + response);
+        LOGGER.debug("Delete Queue response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -464,7 +461,7 @@ public class DataBrokerServiceTest {
     databroker.deleteQueue(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Delete Queue response is : " + response);
+        LOGGER.debug("Delete Queue response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -486,7 +483,7 @@ public class DataBrokerServiceTest {
     databroker.deleteExchange(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Delete Exchange response is : " + response);
+        LOGGER.debug("Delete Exchange response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -510,7 +507,7 @@ public class DataBrokerServiceTest {
     databroker.deleteExchange(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Delete Exchange response is : " + response);
+        LOGGER.debug("Delete Exchange response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -532,7 +529,7 @@ public class DataBrokerServiceTest {
     databroker.createvHost(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Create vHost response is : " + response);
+        LOGGER.debug("Create vHost response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -554,7 +551,7 @@ public class DataBrokerServiceTest {
     databroker.deletevHost(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Delete vHost response is : " + response);
+        LOGGER.debug("Delete vHost response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -571,7 +568,7 @@ public class DataBrokerServiceTest {
     databroker.listvHost(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("List vHost response is : " + response);
+        LOGGER.debug("List vHost response is : " + response);
         assertTrue(response.containsKey(VHOST));
         assertTrue(response.getJsonArray(VHOST).size() > 1);
       }
@@ -614,7 +611,7 @@ public class DataBrokerServiceTest {
     databroker.publishFromAdaptor(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Message from adaptor response is : " + response);
+        LOGGER.debug("Message from adaptor response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -633,7 +630,7 @@ public class DataBrokerServiceTest {
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Register subscription response for empty request is : " + response);
+        LOGGER.debug("Register subscription response for empty request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -658,7 +655,7 @@ public class DataBrokerServiceTest {
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Register subscription response for invalid exchange request is : " + response);
+        LOGGER.debug("Register subscription response for invalid exchange request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -683,8 +680,8 @@ public class DataBrokerServiceTest {
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger
-            .info("Register subscription response for invalid routingKey request is : " + response);
+        LOGGER
+            .debug("Register subscription response for invalid routingKey request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -709,8 +706,8 @@ public class DataBrokerServiceTest {
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger
-            .info("Register subscription response for invalid routingKey request is : " + response);
+        LOGGER
+            .debug("Register subscription response for invalid routingKey request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -744,7 +741,7 @@ public class DataBrokerServiceTest {
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Register subscription response is : " + response);
+        LOGGER.debug("Register subscription response is : " + response);
         assertTrue(response.containsKey(USER_NAME));
         assertTrue(response.containsKey(APIKEY));
         assertTrue(response.containsKey(URL));
@@ -773,7 +770,7 @@ public class DataBrokerServiceTest {
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Register subscription response for already existing alias-name request is : "
+        LOGGER.debug("Register subscription response for already existing alias-name request is : "
             + response);
         assertEquals(expected, response);
       }
@@ -795,7 +792,7 @@ public class DataBrokerServiceTest {
     databroker.listStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("List subscription response is : " + response);
+        LOGGER.debug("List subscription response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -817,7 +814,7 @@ public class DataBrokerServiceTest {
     databroker.deleteStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("List subscription response is : " + response);
+        LOGGER.debug("List subscription response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -853,7 +850,7 @@ public class DataBrokerServiceTest {
     databroker.updateStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Update subscription response is : " + response);
+        LOGGER.debug("Update subscription response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -874,7 +871,7 @@ public class DataBrokerServiceTest {
     databroker.updateStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Update subscription response for empty request is : " + response);
+        LOGGER.debug("Update subscription response for empty request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -899,7 +896,7 @@ public class DataBrokerServiceTest {
     databroker.updateStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Update subscription response for invalid exchange request is : " + response);
+        LOGGER.debug("Update subscription response for invalid exchange request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -924,7 +921,7 @@ public class DataBrokerServiceTest {
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Update subscription response for invalid routingKey request is : " + response);
+        LOGGER.debug("Update subscription response for invalid routingKey request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -949,7 +946,7 @@ public class DataBrokerServiceTest {
     databroker.registerStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Update subscription response for invalid routingKey request is : " + response);
+        LOGGER.debug("Update subscription response for invalid routingKey request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -970,7 +967,7 @@ public class DataBrokerServiceTest {
     databroker.listStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Get subscription response is : " + response);
+        LOGGER.debug("Get subscription response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -997,7 +994,7 @@ public class DataBrokerServiceTest {
     databroker.appendStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Update (Append) subscription response is : " + response);
+        LOGGER.debug("Update (Append) subscription response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -1015,7 +1012,7 @@ public class DataBrokerServiceTest {
     databroker.appendStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Update (Append) subscription response for empty request is : " + response);
+        LOGGER.debug("Update (Append) subscription response for empty request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -1041,7 +1038,7 @@ public class DataBrokerServiceTest {
     databroker.appendStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info(
+        LOGGER.debug(
             "Update (Append) subscription response for invalid exchange request is : " + response);
         assertEquals(expected, response);
       }
@@ -1068,7 +1065,7 @@ public class DataBrokerServiceTest {
     databroker.appendStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Update (Append) subscription response for invalid routingKey request is : "
+        LOGGER.debug("Update (Append) subscription response for invalid routingKey request is : "
             + response);
         assertEquals(expected, response);
       }
@@ -1096,7 +1093,7 @@ public class DataBrokerServiceTest {
     databroker.appendStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info(
+        LOGGER.debug(
             "Update (append)subscription response for invalid routingKey request is : " + response);
         assertEquals(expected, response);
       }
@@ -1121,7 +1118,7 @@ public class DataBrokerServiceTest {
     databroker.listStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Get subscription (after append) response is : " + response);
+        LOGGER.debug("Get subscription (after append) response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -1148,7 +1145,7 @@ public class DataBrokerServiceTest {
     databroker.appendStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Update (Append) with invalid subscriptionID response is : " + response);
+        LOGGER.debug("Update (Append) with invalid subscriptionID response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -1168,7 +1165,7 @@ public class DataBrokerServiceTest {
     databroker.deleteStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Delete subscription response is : " + response);
+        LOGGER.debug("Delete subscription response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -1190,7 +1187,7 @@ public class DataBrokerServiceTest {
     databroker.deleteStreamingSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Delete subscription response is : " + response);
+        LOGGER.debug("Delete subscription response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();

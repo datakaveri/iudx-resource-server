@@ -56,16 +56,14 @@ import static iudx.resource.server.common.Api.REVOKE_TOKEN;
 import static iudx.resource.server.common.Api.SUBSCRIPTION;
 import static iudx.resource.server.common.Api.UNBIND;
 import static iudx.resource.server.common.Api.VHOST;
+import static iudx.resource.server.common.Constants.AUTH_SERVICE_ADDRESS;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN_URN;
 import static iudx.resource.server.common.ResponseUrn.RESOURCE_NOT_FOUND_URN;
-
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -82,7 +80,6 @@ public class AuthHandler implements Handler<RoutingContext> {
 
   private static final Logger LOGGER = LogManager.getLogger(AuthHandler.class);
 
-  private static final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
   private static final Pattern regexIDPattern = ID_REGEX;
   private static AuthenticationService authenticator;
   private final String AUTH_INFO = "authInfo";
@@ -130,17 +127,13 @@ public class AuthHandler implements Handler<RoutingContext> {
     for (String i : idArray) {
       ids.add(i);
     }
-    LOGGER.debug("id :" + ids);
 
     if (path.equals(MANAGEMENT.path + INGESTION.path)
         && HttpMethod.POST.name().equalsIgnoreCase(method)) {
       ids = requestJson.getJsonArray(JSON_ENTITIES);
     }
-    LOGGER.debug("id :1" + ids);
     requestJson.put(IDS, ids);
-    LOGGER.debug("id :2" + ids);
 
-    LOGGER.debug("request" + requestJson);
     authenticator.tokenInterospect(
         requestJson,
         authInfo,

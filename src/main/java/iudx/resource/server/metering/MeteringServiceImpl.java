@@ -24,7 +24,8 @@ import static iudx.resource.server.metering.util.Constants.TOTAL;
 import static iudx.resource.server.metering.util.Constants.USERID_COLUMN_NAME;
 import static iudx.resource.server.metering.util.Constants.USERID_NOT_FOUND;
 import static iudx.resource.server.metering.util.Constants.USER_ID;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -39,8 +40,6 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import iudx.resource.server.metering.util.QueryBuilder;
 import iudx.resource.server.metering.util.ResponseBuilder;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class MeteringServiceImpl implements MeteringService {
 
@@ -89,7 +88,7 @@ public class MeteringServiceImpl implements MeteringService {
   public MeteringService executeReadQuery(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
 
-    LOGGER.debug("Info: Count Query" + request.toString());
+    LOGGER.trace("Info: Count Query" + request.toString());
 
     if (request.getString(ENDPOINT).equals(IUDX_PROVIDER_AUDIT_URL)
         && request.getString(PROVIDER_ID) == null) {
@@ -204,7 +203,7 @@ public class MeteringServiceImpl implements MeteringService {
                     new ResponseBuilder(SUCCESS)
                         .setTypeAndTitle(200)
                         .setCount(response.getInteger(TOTAL));
-                LOGGER.info("Info: " + responseBuilder.getResponse().toString());
+                LOGGER.debug("Info: " + responseBuilder.getResponse().toString());
                 promise.complete(responseBuilder.getResponse());
               }
             })
@@ -246,7 +245,7 @@ public class MeteringServiceImpl implements MeteringService {
                     new ResponseBuilder(SUCCESS)
                         .setTypeAndTitle(200)
                         .setMessage(response.getString(MESSAGE));
-                LOGGER.info("Info: " + responseBuilder.getResponse().toString());
+                LOGGER.debug("Info: " + responseBuilder.getResponse().toString());
                 promise.complete(responseBuilder.getResponse());
               }
               if (rows.failed()) {

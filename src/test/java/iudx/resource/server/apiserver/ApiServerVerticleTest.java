@@ -1213,7 +1213,7 @@ public class ApiServerVerticleTest {
   @DisplayName("/subscription endpoint to get a subscription")
   public void testGetSubscription(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
-    System.out.println("subs  ID :" + subscriptionId);
+    LOGGER.debug("subs  ID :" + subscriptionId);
     client.get(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.type)
         .putHeader(Constants.HEADER_TOKEN, authToken).send(handler -> {
@@ -1231,7 +1231,7 @@ public class ApiServerVerticleTest {
   @DisplayName("/subscription endpoint to delete a subscription without type")
   public void testDeleteSubs400NoType(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
-    System.out.println("subs  ID :" + subscriptionId);
+    LOGGER.debug("subs  ID :" + subscriptionId);
     client.delete(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.type)
         .putHeader(Constants.HEADER_TOKEN, authToken).send(handler -> {
@@ -1255,7 +1255,7 @@ public class ApiServerVerticleTest {
   @DisplayName("/subscription endpoint to delete a subscription without token")
   public void testDeleteSubs401(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
-    System.out.println("subs  ID :" + subscriptionId);
+    LOGGER.debug("subs  ID :" + subscriptionId);
     client.delete(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, invalidauthToken)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.type).send(handler -> {
           if (handler.succeeded()) {
@@ -1279,7 +1279,7 @@ public class ApiServerVerticleTest {
   @DisplayName("/subscription endpoint to delete a subscription")
   public void testDeleteSubs(Vertx vertx, VertxTestContext testContext) {
     String apiUrl = Constants.NGSILD_SUBSCRIPTION_URL + "/" + subscriptionId;
-    System.out.println("subs  ID :" + subscriptionId);
+    LOGGER.debug("subs  ID :" + subscriptionId);
     client.delete(PORT, BASE_URL, apiUrl)
         .putHeader(Constants.HEADER_OPTIONS, SubsType.STREAMING.type)
         .putHeader(Constants.HEADER_TOKEN, authToken).send(handler -> {
@@ -1609,12 +1609,12 @@ public class ApiServerVerticleTest {
     request.put(Constants.JSON_EXCHANGE_NAME, exchangeName);
     request.put(Constants.JSON_QUEUE_NAME, queueName);
     request.put(Constants.JSON_ENTITIES, entities);
-    LOGGER.info(request);
+    LOGGER.debug(request);
     client.post(PORT, BASE_URL, apiUrl).putHeader(Constants.HEADER_TOKEN, authToken)
         .sendJsonObject(request, handler -> {
           if (handler.succeeded()) {
             JsonObject res = handler.result().bodyAsJsonObject();
-            LOGGER.info(res);
+            LOGGER.debug(res);
             assertEquals(ResponseType.Created.getCode(), handler.result().statusCode());
             /*
              * assertEquals(exchangeName, res.getString("exchange")); assertEquals(queueName,

@@ -2,10 +2,8 @@ package iudx.resource.server.databroker;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.InputStream;
 import java.util.Properties;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +12,6 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -75,7 +72,7 @@ public class CallbackSubscriptionTest {
   private static PostgresClient pgClient;
   private static Configuration appConfig;
 
-  private static final Logger logger = LoggerFactory.getLogger(CallbackSubscriptionTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CallbackSubscriptionTest.class);
 
   @BeforeAll
   @DisplayName("Initialize the Databroker class with web client and rabbitmq client")
@@ -112,7 +109,7 @@ public class CallbackSubscriptionTest {
       poolSize = callbackConfig.getInteger("callbackpoolSize");
 
     } catch (Exception ex) {
-      logger.info(ex.toString());
+      LOGGER.debug(ex.toString());
     }
 
     /* Configure the RabbitMQ Data Broker client with input from config files. */
@@ -191,7 +188,7 @@ public class CallbackSubscriptionTest {
     databroker.registerCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Register subscription response for empty request is : " + response);
+        LOGGER.debug("Register subscription response for empty request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -219,7 +216,7 @@ public class CallbackSubscriptionTest {
     databroker.registerCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Register callback subscription response for invalid exchange request is : "
+        LOGGER.debug("Register callback subscription response for invalid exchange request is : "
             + response);
         assertEquals(expected, response);
       }
@@ -247,7 +244,7 @@ public class CallbackSubscriptionTest {
     databroker.registerCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info(
+        LOGGER.debug(
             "Register callback subscription response invalid routingKey request is : " + response);
         assertEquals(expected, response);
         // assertTrue(response.getString(Constants.ERROR).equalsIgnoreCase("Invalid routingKey"));
@@ -277,7 +274,7 @@ public class CallbackSubscriptionTest {
     databroker.registerCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Register callback subscription response for invalid routingKey request is : "
+        LOGGER.debug("Register callback subscription response for invalid routingKey request is : "
             + response);
         assertEquals(expected, response);
       }
@@ -313,7 +310,7 @@ public class CallbackSubscriptionTest {
     databroker.registerCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("successregisterCallbackSubscription response is : " + response);
+        LOGGER.debug("successregisterCallbackSubscription response is : " + response);
         assertTrue(response.containsKey(Constants.SUBSCRIPTION_ID));
         // assertEquals(expected, response);
       }
@@ -341,7 +338,7 @@ public class CallbackSubscriptionTest {
     databroker.registerCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info(
+        LOGGER.debug(
             "Register callback subscription response for duplicate subscriptionID request is :  "
                 + response);
         assertEquals(expected, response);
@@ -381,7 +378,7 @@ public class CallbackSubscriptionTest {
     databroker.listCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("list subscription response is : " + response);
+        LOGGER.debug("list subscription response is : " + response);
         assertTrue(response.containsKey(Constants.SUBSCRIPTION_ID));
         assertTrue(response.containsKey(Constants.CALLBACKURL));
         // assertEquals(expected, response);
@@ -411,7 +408,7 @@ public class CallbackSubscriptionTest {
     databroker.listCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info(" list callback subscription response not valid subscriptionid request is : "
+        LOGGER.debug(" list callback subscription response not valid subscriptionid request is : "
             + response);
         assertEquals(expected, response);
       }
@@ -447,7 +444,7 @@ public class CallbackSubscriptionTest {
     databroker.updateCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Delete subscription response is : " + response);
+        LOGGER.debug("Delete subscription response is : " + response);
         assertTrue(response.containsKey(Constants.SUBSCRIPTION_ID));
         // assertEquals(expected, response);
       }
@@ -469,7 +466,7 @@ public class CallbackSubscriptionTest {
     databroker.deleteCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Delete subscription response is : " + response);
+        LOGGER.debug("Delete subscription response is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -490,7 +487,7 @@ public class CallbackSubscriptionTest {
     databroker.deleteCallbackSubscription(request, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        logger.info("Delete subscription response is : " + response);
+        LOGGER.debug("Delete subscription response is : " + response);
         assertTrue(response.containsKey(Constants.SUBSCRIPTION_ID));
         // assertEquals(expected, response);
       }

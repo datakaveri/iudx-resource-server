@@ -112,7 +112,7 @@ public class SubscriptionService {
         .replace("$2", json.getString(SUBSCRIPTION_ID))
         .replace("$3", json.getJsonArray("entities").getString(0)));
 
-    LOGGER.info(query);
+    LOGGER.debug(query);
     pgService.executeQuery(query.toString(), pgHandler -> {
       if (pgHandler.succeeded()) {
         JsonObject response = new JsonObject();
@@ -151,7 +151,7 @@ public class SubscriptionService {
         StringBuilder query = new StringBuilder(DELETE_SUB_SQL
             .replace("$1", json.getString(SUBSCRIPTION_ID)));
 
-        LOGGER.info(query);
+        LOGGER.debug(query);
         pgService.executeQuery(query.toString(), pgHandler -> {
           if (pgHandler.succeeded()) {
             promise.complete(handler.result());
@@ -220,7 +220,7 @@ public class SubscriptionService {
             .replace("$4", json.getJsonArray("entities").getString(0))
             .replace("$5", authInfo.getString("expiry")));
 
-        LOGGER.info(query);
+        LOGGER.debug(query);
         pgService.executeQuery(query.toString(), pgHandler -> {
           if (pgHandler.succeeded()) {
             promise.complete(brokerSubResult);

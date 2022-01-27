@@ -46,7 +46,7 @@ public final class PostgresServiceImpl implements PostgresService {
           handler.handle(Future.succeededFuture(new JsonObject().put("result", response)));
         })
         .onFailure(failureHandler -> {
-          LOGGER.error(failureHandler);
+          LOGGER.debug(failureHandler);
           Response response = new Response.Builder()
               .withUrn(ResponseUrn.DB_ERROR_URN.getUrn())
               .withStatus(HttpStatus.SC_BAD_REQUEST)

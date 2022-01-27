@@ -1,13 +1,28 @@
 package iudx.resource.server.apiserver.query;
 
-import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.util.Constants.JSON_ATTRIBUTE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_ATTR_QUERY;
+import static iudx.resource.server.apiserver.util.Constants.JSON_LAT;
+import static iudx.resource.server.apiserver.util.Constants.JSON_LON;
+import static iudx.resource.server.apiserver.util.Constants.JSON_OPERATOR;
+import static iudx.resource.server.apiserver.util.Constants.JSON_RADIUS;
+import static iudx.resource.server.apiserver.util.Constants.JSON_VALUE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ATTRIBUTE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_COORDINATES;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ENDTIME;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOMETRY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOPROPERTY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOREL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ID;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_Q;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEPROPERTY;
+import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEREL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.stream.Stream;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +30,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
@@ -40,7 +54,6 @@ public class QueryMapperTest {
   @Test
   public void testGetQueryTerms(Vertx vertx, VertxTestContext testContext) {
     String q = "speed>=300";
-    System.out.println(qm);
     JsonObject json = qm.getQueryTerms(q);
     assertEquals("speed", json.getString(JSON_ATTRIBUTE));
     assertEquals(">=", json.getString(JSON_OPERATOR));
@@ -55,7 +68,6 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_ID, "id1");
     map.add(NGSILDQUERY_ATTRIBUTE, "attr1");
     NGSILDQueryParams params = new NGSILDQueryParams(map);
-    System.out.println(qm);
     JsonObject json = qm.toJson(params, false);
 
     assertTrue(json.containsKey(NGSILDQUERY_ID));
@@ -148,7 +160,6 @@ public class QueryMapperTest {
     NGSILDQueryParams params = new NGSILDQueryParams(map);
 
     JsonObject json = qm.toJson(params, true);
-    System.out.println(json);
     assertTrue(json.containsKey(NGSILDQUERY_ID));
     assertTrue(json.containsKey(NGSILDQUERY_ATTRIBUTE));
     assertTrue(json.containsKey(NGSILDQUERY_TIMEREL));

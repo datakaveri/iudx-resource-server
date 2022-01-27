@@ -1,7 +1,6 @@
 package iudx.resource.server.callback;
 
-import static org.junit.jupiter.api.Assertions.*;
-import java.io.FileInputStream;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.InputStream;
 import java.util.Properties;
 import org.junit.jupiter.api.BeforeAll;
@@ -12,20 +11,16 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.ExtendWith;
-import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.spi.cluster.ClusterManager;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
-import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 import iudx.resource.server.configuration.Configuration;
 
 @ExtendWith(VertxExtension.class)
@@ -104,7 +99,7 @@ public class CallbackServiceTest {
       poolSize = callbackConfig.getInteger("callbackpoolSize");
 
     } catch (Exception ex) {
-      logger.info(ex.toString());
+      logger.error(ex.toString());
     }
 
     /* Configure the RabbitMQ Data Broker client with input from config files. */

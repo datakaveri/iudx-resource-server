@@ -25,18 +25,15 @@ import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME_PRO
 import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TYPE;
 import static iudx.resource.server.common.ResponseUrn.INVALID_GEO_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_GEO_VALUE_URN;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.wololo.jts2geojson.GeoJSONReader;
-
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
@@ -113,7 +110,6 @@ public class ParamsValidator {
   private boolean validateParams(MultiMap parameterMap) {
     final List<Entry<String, String>> entries = parameterMap.entries();
     for (final Entry<String, String> entry : entries) {
-      // System.out.println(entry.getKey());
       if (!validParams.contains(entry.getKey())) {
         return false;
       }
@@ -125,7 +121,7 @@ public class ParamsValidator {
   private boolean validateHeader(MultiMap headerMap) {
     final List<Entry<String, String>> entries = headerMap.entries();
     for (final Entry<String, String> entry : entries) {
-      // System.out.println(entry.getKey());
+      // 
       /*
        * if (!validHeaders.contains(entry.getKey())) { return false; }
        */
@@ -149,7 +145,7 @@ public class ParamsValidator {
           String coords = paramsMap.get(NGSILDQUERY_COORDINATES);
 
           if (geom != null && coords != null && !isValidCoordinatesForGeometry(geom, coords)) {
-            System.out.println("fail");
+            LOGGER.error("fail");
             promise.fail(MSG_BAD_QUERY);
           } else {
             promise.complete(true);
@@ -298,7 +294,6 @@ public class ParamsValidator {
   private boolean isValidCoordinates(String geoJson) {
     boolean isValid = false;
     try {
-      System.out.println("geo json : " + geoJson);
       GeoJSONReader reader = new GeoJSONReader();
       org.locationtech.jts.geom.Geometry geom = reader.read(geoJson);
       boolean isValidNosCoords = false;
