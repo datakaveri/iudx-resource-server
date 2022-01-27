@@ -63,7 +63,10 @@ pipeline {
       }
       post{
         failure{
-          unstable 'Performance Test errors'
+          catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+            sh "exit 1"
+          }
+        }
       }
     }
 
