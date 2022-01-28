@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "dbe1dc65-574e-44c1-95b3-676f623f751c",
+		"_postman_id": "469e5f77-4b06-4c29-89b7-66e7b6960a05",
 		"name": "IUDX-Resource-Server APIs",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -146,7 +146,169 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"itemId\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\",\n  \"itemType\": \"resource\",\n  \"role\": \"consumer\"\n}",
+							"raw": "{\n  \"itemId\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/sub-sample/sens_values\",\n  \"itemType\": \"resource\",\n  \"role\": \"delegate\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://authvertx.iudx.io/auth/v1/token",
+							"protocol": "https",
+							"host": [
+								"authvertx",
+								"iudx",
+								"io"
+							],
+							"path": [
+								"auth",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get token for creating an adaptor Resource",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJson=pm.response.json();",
+									"pm.globals.set(\"consumerToken\", responseJson.token);",
+									"pm.globals.set(\"adapterToken\", responseJson.token);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "grant_type",
+									"value": "authorization_code_with_pkce",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "queryParams",
+									"type": "string"
+								},
+								{
+									"key": "challengeAlgorithm",
+									"value": "S256",
+									"type": "string"
+								},
+								{
+									"key": "client_authentication",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "clientId",
+								"value": "bb0c11ce-a275-40c5-8ccf-8da20c6b7660",
+								"type": "default"
+							},
+							{
+								"key": "clientSecret",
+								"value": "f3615492a11affebc46fba42af4cb59a63aedb2e",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemId\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\",\n  \"itemType\": \"resource\",\n  \"role\": \"delegate\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://authvertx.iudx.io/auth/v1/token",
+							"protocol": "https",
+							"host": [
+								"authvertx",
+								"iudx",
+								"io"
+							],
+							"path": [
+								"auth",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get token for creating an adaptor Resource Group",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJson=pm.response.json();",
+									"pm.globals.set(\"consumerToken\", responseJson.token);",
+									"pm.globals.set(\"adapterToken\", responseJson.token);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "grant_type",
+									"value": "authorization_code_with_pkce",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "queryParams",
+									"type": "string"
+								},
+								{
+									"key": "challengeAlgorithm",
+									"value": "S256",
+									"type": "string"
+								},
+								{
+									"key": "client_authentication",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "clientId",
+								"value": "bb0c11ce-a275-40c5-8ccf-8da20c6b7660",
+								"type": "default"
+							},
+							{
+								"key": "clientSecret",
+								"value": "f3615492a11affebc46fba42af4cb59a63aedb2e",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemId\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information\",\n  \"itemType\": \"resource_group\",\n  \"role\": \"delegate\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -18804,6 +18966,247 @@
 								"v1",
 								"ingestion",
 								"{{adapter_id_RL}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "subscription",
+			"item": [
+				{
+					"name": "Create a Subscription",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "default"
+							},
+							{
+								"key": "options",
+								"value": "streaming",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"simple-sub-app\",\n    \"type\": \"subscription\",\n    \"entities\": [\n        \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/sub-sample/sens_values\"\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/subscription",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"subscription"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve a Subscription",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "default"
+							},
+							{
+								"key": "options",
+								"value": "streaming",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/subscription/15c7506f-c800-48d6-adeb-0542b03947c6/alias-name-of-application",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"subscription",
+								"15c7506f-c800-48d6-adeb-0542b03947c6",
+								"alias-name-of-application"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update a Subscription",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "default"
+							},
+							{
+								"key": "options",
+								"value": "streaming",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"alias-name-of-application\",\n    \"type\": \"subscription\",\n    \"entities\": [\n        \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/subscription/15c7506f-c800-48d6-adeb-0542b03947c6/alias-name-of-application",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"subscription",
+								"15c7506f-c800-48d6-adeb-0542b03947c6",
+								"alias-name-of-application"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Append a Subscription",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "default"
+							},
+							{
+								"key": "options",
+								"value": "streaming",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"alias-name-of-application\",\n    \"type\": \"subscription\",\n    \"entities\": [\n        \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/subscription/15c7506f-c800-48d6-adeb-0542b03947c6/alias-name-of-application",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"subscription",
+								"15c7506f-c800-48d6-adeb-0542b03947c6",
+								"alias-name-of-application"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a Subscription",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "default"
+							},
+							{
+								"key": "options",
+								"value": "streaming",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/subscription/15c7506f-c800-48d6-adeb-0542b03947c6/alias-name-of-application",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"subscription",
+								"15c7506f-c800-48d6-adeb-0542b03947c6",
+								"alias-name-of-application"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reset Password",
+			"item": [
+				{
+					"name": "Reset subscription/adaptor password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/management/user/resetPassword",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"management",
+								"user",
+								"resetPassword"
 							]
 						}
 					},
