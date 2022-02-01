@@ -5,6 +5,7 @@ public enum RequestType {
   ENTITY("entity"),
   TEMPORAL("temporal"),
   LATEST("latest"),
+  ASYNC("async"),
   POST_TEMPORAL("post_temporal_schema.json"),
   POST_ENTITIES("post_entities_schema.json"),
   SUBSCRIPTION("subscription_schema.json");
