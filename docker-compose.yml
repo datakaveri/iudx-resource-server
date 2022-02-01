@@ -83,7 +83,7 @@ services:
       - /home/ubuntu/configs/keystore.jks:/usr/share/app/configs/keystore.jks
       - ./src:/usr/share/app/src
     ports:
-      - "8443:8080"
+      - "8443:8443"
     restart: on-failure
     networks:
       - rs-net
