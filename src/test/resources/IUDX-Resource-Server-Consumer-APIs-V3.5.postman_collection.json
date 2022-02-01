@@ -1,10 +1,339 @@
 {
 	"info": {
-		"_postman_id": "dca1487c-8866-4f50-9aa7-b8ccf571222a",
-		"name": "IUDX-Resource-Server-Consumer-APIs-V3",
+		"_postman_id": "469e5f77-4b06-4c29-89b7-66e7b6960a05",
+		"name": "IUDX-Resource-Server APIs",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
+		{
+			"name": "Get Token",
+			"item": [
+				{
+					"name": "Get token for accessing the Open Resource",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJson=pm.response.json();",
+									"pm.globals.set(\"consumerToken\", responseJson.token);",
+									"pm.globals.set(\"adapterToken\", responseJson.token);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "grant_type",
+									"value": "authorization_code_with_pkce",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "queryParams",
+									"type": "string"
+								},
+								{
+									"key": "challengeAlgorithm",
+									"value": "S256",
+									"type": "string"
+								},
+								{
+									"key": "client_authentication",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "clientId",
+								"value": "bb0c11ce-a275-40c5-8ccf-8da20c6b7660",
+								"type": "default"
+							},
+							{
+								"key": "clientSecret",
+								"value": "f3615492a11affebc46fba42af4cb59a63aedb2e",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemId\": \"rs.iudx.io\",\n  \"itemType\": \"resource_server\",\n  \"role\": \"consumer\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://authvertx.iudx.io/auth/v1/token",
+							"protocol": "https",
+							"host": [
+								"authvertx",
+								"iudx",
+								"io"
+							],
+							"path": [
+								"auth",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get token for accessing the Secure Resource",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJson=pm.response.json();",
+									"pm.globals.set(\"consumerToken\", responseJson.token);",
+									"pm.globals.set(\"adapterToken\", responseJson.token);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "grant_type",
+									"value": "authorization_code_with_pkce",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "queryParams",
+									"type": "string"
+								},
+								{
+									"key": "challengeAlgorithm",
+									"value": "S256",
+									"type": "string"
+								},
+								{
+									"key": "client_authentication",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "clientId",
+								"value": "bb0c11ce-a275-40c5-8ccf-8da20c6b7660",
+								"type": "default"
+							},
+							{
+								"key": "clientSecret",
+								"value": "f3615492a11affebc46fba42af4cb59a63aedb2e",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemId\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/sub-sample/sens_values\",\n  \"itemType\": \"resource\",\n  \"role\": \"delegate\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://authvertx.iudx.io/auth/v1/token",
+							"protocol": "https",
+							"host": [
+								"authvertx",
+								"iudx",
+								"io"
+							],
+							"path": [
+								"auth",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get token for creating an adaptor Resource",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJson=pm.response.json();",
+									"pm.globals.set(\"consumerToken\", responseJson.token);",
+									"pm.globals.set(\"adapterToken\", responseJson.token);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "grant_type",
+									"value": "authorization_code_with_pkce",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "queryParams",
+									"type": "string"
+								},
+								{
+									"key": "challengeAlgorithm",
+									"value": "S256",
+									"type": "string"
+								},
+								{
+									"key": "client_authentication",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "clientId",
+								"value": "bb0c11ce-a275-40c5-8ccf-8da20c6b7660",
+								"type": "default"
+							},
+							{
+								"key": "clientSecret",
+								"value": "f3615492a11affebc46fba42af4cb59a63aedb2e",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemId\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\",\n  \"itemType\": \"resource\",\n  \"role\": \"delegate\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://authvertx.iudx.io/auth/v1/token",
+							"protocol": "https",
+							"host": [
+								"authvertx",
+								"iudx",
+								"io"
+							],
+							"path": [
+								"auth",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get token for creating an adaptor Resource Group",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJson=pm.response.json();",
+									"pm.globals.set(\"consumerToken\", responseJson.token);",
+									"pm.globals.set(\"adapterToken\", responseJson.token);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "grant_type",
+									"value": "authorization_code_with_pkce",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "queryParams",
+									"type": "string"
+								},
+								{
+									"key": "challengeAlgorithm",
+									"value": "S256",
+									"type": "string"
+								},
+								{
+									"key": "client_authentication",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "clientId",
+								"value": "bb0c11ce-a275-40c5-8ccf-8da20c6b7660",
+								"type": "default"
+							},
+							{
+								"key": "clientSecret",
+								"value": "f3615492a11affebc46fba42af4cb59a63aedb2e",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemId\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information\",\n  \"itemType\": \"resource_group\",\n  \"role\": \"delegate\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://authvertx.iudx.io/auth/v1/token",
+							"protocol": "https",
+							"host": [
+								"authvertx",
+								"iudx",
+								"io"
+							],
+							"path": [
+								"auth",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
 		{
 			"name": "Latest Data",
 			"item": [
@@ -3268,16 +3597,6 @@
 								{
 									"key": "endtime",
 									"value": "2020-10-19T14:20:00Z"
-								},
-								{
-									"key": "limit",
-									"value": "50",
-									"disabled": true
-								},
-								{
-									"key": "offset",
-									"value": "0",
-									"disabled": true
 								}
 							]
 						}
@@ -3681,13 +4000,13 @@
 									"value": "2020-10-19T12:00:00Z"
 								},
 								{
-									"key": "offset",
-									"value": "0",
+									"key": "",
+									"value": "",
 									"disabled": true
 								},
 								{
-									"key": "limit",
-									"value": "500",
+									"key": "",
+									"value": "",
 									"disabled": true
 								}
 							]
@@ -9648,16 +9967,6 @@
 								{
 									"key": "options",
 									"value": "count",
-									"disabled": true
-								},
-								{
-									"key": "offset",
-									"value": "0",
-									"disabled": true
-								},
-								{
-									"key": "limit",
-									"value": "400",
 									"disabled": true
 								}
 							]
@@ -18668,170 +18977,24 @@
 			"name": "subscription",
 			"item": [
 				{
-					"name": "201 (created successfully) - create exchange for Subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"//set exchange name to env variables.",
-									"var jsonData = pm.response.json(); ",
-									"pm.globals.set(\"exchange_id\",jsonData.id);",
-									"",
-									"// Test the response code",
-									"pm.test(\"response is 201 (created)\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information\");",
-									"});",
-									"",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
+					"name": "Create a Subscription",
 					"request": {
 						"method": "POST",
 						"header": [
 							{
 								"key": "token",
-								"type": "text",
-								"value": "{{groupAdapterToken}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"entities\": [\r\n        \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information\"\r\n    ]\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/ingestion",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"ingestion"
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "register adapter",
-							"originalRequest": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "token",
-										"value": "auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/9c86739bbb0f653aeed1d78d18d64841",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"resourceGroup\":\"surat-itms\",\r\n    \"resourceServer\":\"rs.iudx.io\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{base_url}}/iudx/v1/adapter/register",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"iudx",
-										"v1",
-										"adapter",
-										"register"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "content-type",
-									"value": "application/json"
-								},
-								{
-									"key": "content-length",
-									"value": "225"
-								}
-							],
-							"cookie": [],
-							"body": "{\n    \"username\": \"datakaveri.org/3ae88e7ba006938ffc38203d326b1711b892226d\",\n    \"apiKey\": \"123456\",\n    \"id\": \"rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms\",\n    \"URL\": \"databroker.iudx.io\",\n    \"port\": \"5671\",\n    \"vHost\": \"IUDX\"\n}"
-						}
-					]
-				},
-				{
-					"name": "201 (created) - create a streaming subscription RL",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"//set exchange name to env variables.",
-									"var jsonData = pm.response.json(); ",
-									"pm.globals.set(\"subscriptionID\",jsonData.id);",
-									"",
-									"// Test the response code",
-									"pm.test(\"response is 201 (created)\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"id\");",
-									"    pm.expect(body).to.have.property(\"username\");",
-									"});",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "token",
-								"type": "text",
-								"value": "{{resourceAdapterToken}}"
+								"value": "{{secureResourceToken}}",
+								"type": "default"
 							},
 							{
 								"key": "options",
-								"type": "text",
-								"value": "streaming"
+								"value": "streaming",
+								"type": "default"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"integration-test-alias-RL\",\r\n    \"type\": \"subscription\",\r\n    \"entities\": [\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"]\r\n}",
+							"raw": "{\n    \"name\": \"simple-sub-app\",\n    \"type\": \"subscription\",\n    \"entities\": [\n        \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/sub-sample/sens_values\"\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -18853,137 +19016,7 @@
 					"response": []
 				},
 				{
-					"name": "401 (not authorized) create a streaming subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test the response code",
-									"pm.test(\"response is 401 (Not Authorized)\", function () {",
-									"    pm.response.to.have.status(401);",
-									"});",
-									"",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Not Authorized\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "token",
-								"value": "public_1",
-								"type": "text"
-							},
-							{
-								"key": "options",
-								"value": "streaming",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"integration-test-alias-112233\",\r\n    \"type\": \"subscription\",\r\n    \"entities\": [\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/integration-test/*\"]\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"subscription"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "409 (Already exist) create a streaming subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"response is 409\", function () {",
-									"    pm.response.to.have.status(409);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "token",
-								"type": "text",
-								"value": "{{resourceAdapterToken}}"
-							},
-							{
-								"key": "options",
-								"type": "text",
-								"value": "streaming"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"integration-test-alias-RL\",\r\n    \"type\": \"subscription\",\r\n    \"entities\": [\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"]\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"subscription"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "200 (success) - Get streaming subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"response is 200 (OK)\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
+					"name": "Retrieve a Subscription",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -18992,13 +19025,13 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{groupSubscriberToken}}",
-								"type": "text"
+								"value": "{{secureResourceToken}}",
+								"type": "default"
 							},
 							{
 								"key": "options",
 								"value": "streaming",
-								"type": "text"
+								"type": "default"
 							}
 						],
 						"body": {
@@ -19011,7 +19044,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription/{{subscriptionID}}",
+							"raw": "{{base_url}}/ngsi-ld/v1/subscription/15c7506f-c800-48d6-adeb-0542b03947c6/alias-name-of-application",
 							"host": [
 								"{{base_url}}"
 							],
@@ -19019,54 +19052,109 @@
 								"ngsi-ld",
 								"v1",
 								"subscription",
-								"{{subscriptionID}}"
+								"15c7506f-c800-48d6-adeb-0542b03947c6",
+								"alias-name-of-application"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "401 (not authorized) - Get streaming subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test the response code",
-									"pm.test(\"response is 401 (Not Authorized)\", function () {",
-									"    pm.response.to.have.status(401);",
-									"});",
-									"",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Not Authorized\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
+					"name": "Update a Subscription",
 					"request": {
-						"method": "GET",
+						"method": "PUT",
 						"header": [
 							{
 								"key": "token",
-								"type": "text",
-								"value": "pubilc_1"
+								"value": "{{secureResourceToken}}",
+								"type": "default"
 							},
 							{
 								"key": "options",
-								"type": "text",
-								"value": "streaming"
+								"value": "streaming",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"alias-name-of-application\",\n    \"type\": \"subscription\",\n    \"entities\": [\n        \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/subscription/15c7506f-c800-48d6-adeb-0542b03947c6/alias-name-of-application",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"subscription",
+								"15c7506f-c800-48d6-adeb-0542b03947c6",
+								"alias-name-of-application"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Append a Subscription",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "default"
+							},
+							{
+								"key": "options",
+								"value": "streaming",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"alias-name-of-application\",\n    \"type\": \"subscription\",\n    \"entities\": [\n        \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/subscription/15c7506f-c800-48d6-adeb-0542b03947c6/alias-name-of-application",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"subscription",
+								"15c7506f-c800-48d6-adeb-0542b03947c6",
+								"alias-name-of-application"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a Subscription",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "default"
+							},
+							{
+								"key": "options",
+								"value": "streaming",
+								"type": "default"
 							}
 						],
 						"body": {
@@ -19079,7 +19167,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription/{{subscriptionID}}",
+							"raw": "{{base_url}}/ngsi-ld/v1/subscription/15c7506f-c800-48d6-adeb-0542b03947c6/alias-name-of-application",
 							"host": [
 								"{{base_url}}"
 							],
@@ -19087,732 +19175,8 @@
 								"ngsi-ld",
 								"v1",
 								"subscription",
-								"{{subscriptionID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "404 (not found) - Get streaming subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test the response code",
-									"pm.test(\"response is 404 (Not Found)\", function () {",
-									"    pm.response.to.have.status(404);",
-									"});",
-									"",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Not Found\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "token",
-								"type": "text",
-								"value": "{{groupSubscriberToken}}"
-							},
-							{
-								"key": "options",
-								"type": "text",
-								"value": "streaming"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription/{{subscriptionID}}invalidId",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"subscription",
-								"{{subscriptionID}}invalidId"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "201 (created) - Append streaming subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"response is 201 (created)\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{groupSubscriberToken}}",
-								"type": "text"
-							},
-							{
-								"key": "options",
-								"value": "streaming",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"integration-test-alias-RL\",\n    \"type\": \"subscription\",\n    \"entities\": [\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information\"]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription/{{subscriptionID}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"subscription",
-								"{{subscriptionID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "400 (invalid name) - Append streaming subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test the response code",
-									"pm.test(\"response is 400 (Bad Request Data)\", function () {",
-									"    pm.response.to.have.status(400);",
-									"});",
-									"",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "token",
-								"type": "text",
-								"value": "{{groupSubscriberToken}}"
-							},
-							{
-								"key": "options",
-								"type": "text",
-								"value": "streaming"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"integration-test-alias-invalid\",\n    \"type\": \"subscription\",\n    \"entities\": [\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information\"]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription/{{subscriptionID}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"subscription",
-								"{{subscriptionID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "401 (not authorized) append streaming subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test the response code",
-									"pm.test(\"response is 401 (Not Authorized)\", function () {",
-									"    pm.response.to.have.status(401);",
-									"});",
-									"",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Not Authorized\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "token",
-								"value": "public_1",
-								"type": "text"
-							},
-							{
-								"key": "options",
-								"value": "streaming",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"integration-test-alias\",\n    \"type\": \"subscription\",\n    \"entities\": [\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/*\"]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription/{{subscriptionID}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"subscription",
-								"{{subscriptionID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "404 (not found) append streaming subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test the response code",
-									"pm.test(\"response is 404 (Not Found)\", function () {",
-									"    pm.response.to.have.status(404);",
-									"});",
-									"",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Not Found\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{groupSubscriberToken}}",
-								"type": "text"
-							},
-							{
-								"key": "options",
-								"value": "streaming",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"integration-test-alias-RL-invalidId\",\n    \"type\": \"subscription\",\n    \"entities\": [\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information\"]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription/{{subscriptionID}}-invalidId",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"subscription",
-								"{{subscriptionID}}-invalidId"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "201 (created) - Update streaming subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"response is 201 (created)\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{groupSubscriberToken}}",
-								"type": "text"
-							},
-							{
-								"key": "options",
-								"value": "streaming",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"integration-test-alias-RL\",\n    \"type\": \"subscription\",\n    \"entities\": [\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information\"]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription/{{subscriptionID}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"subscription",
-								"{{subscriptionID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "400 (invalid name) - Update streaming subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test the response code",
-									"pm.test(\"response is 400 (Bad Request Data)\", function () {",
-									"    pm.response.to.have.status(400);",
-									"});",
-									"",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Bad Request\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "token",
-								"type": "text",
-								"value": "{{groupSubscriberToken}}"
-							},
-							{
-								"key": "options",
-								"type": "text",
-								"value": "streaming"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"integration-test-alias-invalid\",\n    \"type\": \"subscription\",\n    \"entities\": [\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information\"]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription/{{subscriptionID}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"subscription",
-								"{{subscriptionID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "401 (not authorized) - Update streaming subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test the response code",
-									"pm.test(\"response is 401 (Not Authorized)\", function () {",
-									"    pm.response.to.have.status(401);",
-									"});",
-									"",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Not Authorized\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "token",
-								"type": "text",
-								"value": "public_1"
-							},
-							{
-								"key": "options",
-								"type": "text",
-								"value": "streaming"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"integration-test-alias\",\n    \"type\": \"subscription\",\n    \"entities\": [\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/*\"]\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription/{{subscriptionID}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"subscription",
-								"{{subscriptionID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "200 (success) - Delete a subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test the response code",
-									"pm.test(\"response is 200 (OK)\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"type\", 200);",
-									"    pm.expect(body).to.have.property(\"title\", \"success\");",
-									"    pm.expect(body).to.have.property(\"detail\", \"Subscription deleted Successfully\");",
-									"});",
-									"",
-									"",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "options",
-								"type": "text",
-								"value": "streaming"
-							},
-							{
-								"key": "token",
-								"type": "text",
-								"value": "{{groupSubscriberToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription/{{subscriptionID}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"subscription",
-								"{{subscriptionID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "401 (not authorized) - Delete a subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test the response code",
-									"pm.test(\"response is 401 (Not Authorized)\", function () {",
-									"    pm.response.to.have.status(401);",
-									"});",
-									"",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Not Authorized\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "options",
-								"type": "text",
-								"value": "streaming"
-							},
-							{
-								"key": "token",
-								"type": "text",
-								"value": "public_1"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription/{{subscriptionID}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"subscription",
-								"{{subscriptionID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "404 (not found) - Delete a subscription",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test the response code",
-									"pm.test(\"response is 404 (Not Found)\", function () {",
-									"    pm.response.to.have.status(404);",
-									"});",
-									"",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Not Found\");",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "options",
-								"type": "text",
-								"value": "streaming"
-							},
-							{
-								"key": "token",
-								"type": "text",
-								"value": "{{groupSubscriberToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription/{{subscriptionID}}invalidId",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"subscription",
-								"{{subscriptionID}}invalidId"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "200 (success) - Delete exchange",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test the response code",
-									"pm.test(\"response is 200 (OK)\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"type\", 200);",
-									"    pm.expect(body).to.have.property(\"title\", \"Ok\");",
-									"});",
-									"",
-									"",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{groupAdapterToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/ingestion/{{exchange_id}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"ingestion",
-								"{{exchange_id}}"
+								"15c7506f-c800-48d6-adeb-0542b03947c6",
+								"alias-name-of-application"
 							]
 						}
 					},
@@ -19821,247 +19185,28 @@
 			]
 		},
 		{
-			"name": "reset pwd",
+			"name": "Reset Password",
 			"item": [
 				{
-					"name": "{{base_url}}/management/reset",
+					"name": "Reset subscription/adaptor password",
 					"request": {
 						"method": "POST",
 						"header": [
 							{
 								"key": "token",
-								"value": "{{groupSubscriberToken}}",
-								"type": "text"
+								"value": "{{secureResourceToken}}",
+								"type": "default"
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/management/reset",
+							"raw": "{{base_url}}/management/user/resetPassword",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"management",
-								"reset"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Audit",
-			"item": [
-				{
-					"name": "200 (success) Get Data Read Query",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{consumerToken}}",
-								"type": "text"
-							},
-							{
-								"key": "option",
-								"value": "count",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/user/audit?id=15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias&timerel=during&time=2021-11-20T14:20:00Z&endTime=2021-11-24T14:20:00Z&api=/ngsi-ld/v1/subscription",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
 								"user",
-								"audit"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias"
-								},
-								{
-									"key": "timerel",
-									"value": "during"
-								},
-								{
-									"key": "time",
-									"value": "2021-11-20T14:20:00Z"
-								},
-								{
-									"key": "endTime",
-									"value": "2021-11-24T14:20:00Z"
-								},
-								{
-									"key": "api",
-									"value": "/ngsi-ld/v1/subscription"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "200 (success) Get Data Count Query",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{consumerToken}}",
-								"type": "text"
-							},
-							{
-								"key": "options",
-								"value": "count",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/consumer/audit?id=15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias&timerel=during&time=2021-11-20T14:20:00Z&endTime=2021-11-24T14:20:00Z&api=/ngsi-ld/v1/subscription",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"consumer",
-								"audit"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias"
-								},
-								{
-									"key": "timerel",
-									"value": "during"
-								},
-								{
-									"key": "time",
-									"value": "2021-11-20T14:20:00Z"
-								},
-								{
-									"key": "endTime",
-									"value": "2021-11-24T14:20:00Z"
-								},
-								{
-									"key": "api",
-									"value": "/ngsi-ld/v1/subscription"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "201 (failure) Get Data Read Query",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{consumerToken}}",
-								"type": "text"
-							},
-							{
-								"key": "option",
-								"value": "count",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/consumer/audit?id=15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias&timerel=during&time=2021-10-20T14:20:00Z&endTime=2021-10-24T14:20:00Z&api=/ngsi-ld/v1/subscription",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"consumer",
-								"audit"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias"
-								},
-								{
-									"key": "timerel",
-									"value": "during"
-								},
-								{
-									"key": "time",
-									"value": "2021-10-20T14:20:00Z"
-								},
-								{
-									"key": "endTime",
-									"value": "2021-10-24T14:20:00Z"
-								},
-								{
-									"key": "api",
-									"value": "/ngsi-ld/v1/subscription"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "400 (failure) Get Data Read Query Copy",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{consumerToken}}",
-								"type": "text"
-							},
-							{
-								"key": "option",
-								"value": "count",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/consumer/audit?id=15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias&timerel=during&time=2021-10-20T14:20:00Z&endTime=2021-11-24T14:20:00Z&api=/ngsi-ld/v1/subscription",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"consumer",
-								"audit"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias"
-								},
-								{
-									"key": "timerel",
-									"value": "during"
-								},
-								{
-									"key": "time",
-									"value": "2021-10-20T14:20:00Z"
-								},
-								{
-									"key": "endTime",
-									"value": "2021-11-24T14:20:00Z"
-								},
-								{
-									"key": "api",
-									"value": "/ngsi-ld/v1/subscription"
-								}
+								"resetPassword"
 							]
 						}
 					},
