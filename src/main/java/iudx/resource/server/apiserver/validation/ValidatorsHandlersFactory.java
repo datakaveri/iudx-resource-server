@@ -96,6 +96,9 @@ public class ValidatorsHandlersFactory {
       case SUBSCRIPTION:
         validator = getSubscriptionsValidations(vertx, body, headers);
         break;
+      case ASYNC:
+        validator = getAsyncRequestValidations(parameters, headers);
+        break;
       default:
         break;
     }
@@ -203,6 +206,27 @@ public class ValidatorsHandlersFactory {
     return validators;
   }
 
+  private List<Validator> getAsyncRequestValidations(final MultiMap parameters, final MultiMap headers) {
+
+    List<Validator> validators = new ArrayList<>();
+    validators.add(new IDTypeValidator(parameters.get(NGSILDQUERY_ID), true));
+    validators.add(new AttrsTypeValidator(parameters.get(NGSILDQUERY_ATTRIBUTE), false));
+    validators.add(new OptionsTypeValidator(parameters.get(IUDXQUERY_OPTIONS), false));
+    // geo fields
+    validators.add(new GeoRelTypeValidator(parameters.get(NGSILDQUERY_GEOREL), false));
+    validators.add(new GeometryTypeValidator(parameters.get(NGSILDQUERY_GEOMETRY), false));
+    validators.add(new GeoPropertyTypeValidator(parameters.get(NGSILDQUERY_GEOPROPERTY), false));
+    validators.add(new QTypeValidator(parameters.get(NGSILDQUERY_Q), false));
+    validators.add(new DistanceTypeValidator(parameters.get(NGSILDQUERY_MAXDISTANCE), false, true));
+    validators.add(new DistanceTypeValidator(parameters.get("maxDistance"), false, true));
+    validators.add(new CoordinatesTypeValidator(parameters.get(NGSILDQUERY_COORDINATES), false));
+    // temporal fields
+    validators.add(new TimeRelTypeValidator(parameters.get(NGSILDQUERY_TIMEREL), false));
+    validators.add(new DateTypeValidator(parameters.get(NGSILDQUERY_TIME), false));
+    validators.add(new DateTypeValidator(parameters.get(NGSILDQUERY_ENDTIME), false));
+
+    return validators;
+  }
 
   private static Map<String, String> jsonSchemaMap = new HashMap<>();
 

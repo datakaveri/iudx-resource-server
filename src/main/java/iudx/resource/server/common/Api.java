@@ -20,9 +20,13 @@ public enum Api {
 
   ADMIN("/admin"),
   REVOKE_TOKEN("/revokeToken"),
-  RESOURCE_ATTRIBS("/resourceattribute");
+  RESOURCE_ATTRIBS("/resourceattribute"),
 
-  
+  //Async endpoints
+  ASYNC("/async"),
+  SEARCH("/search"),
+  STATUS("/status");
+
   public final String path;
 
   Api(String path) {

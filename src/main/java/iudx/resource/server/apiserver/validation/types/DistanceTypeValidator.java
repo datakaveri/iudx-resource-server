@@ -16,10 +16,18 @@ public final class DistanceTypeValidator implements Validator {
   
   private final String value;
   private final boolean required;
+  private final boolean noMaxDistanceLimit;
 
   public DistanceTypeValidator(final String value, final boolean required) {
     this.value = value;
     this.required = required;
+    noMaxDistanceLimit = false;
+  }
+
+  public DistanceTypeValidator(final String value, final boolean required, final boolean noMaxLimit) {
+    this.value = value;
+    this.required = required;
+    this.noMaxDistanceLimit = noMaxLimit;
   }
 
 
@@ -30,7 +38,7 @@ public final class DistanceTypeValidator implements Validator {
         LOGGER.error("Validation error : Invalid integer value (Integer overflow).");
         throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE_URN, failureMessage(value));
       }
-      if (distanceValue > VALIDATION_ALLOWED_DIST || distanceValue < 1) {
+      if ( !noMaxDistanceLimit && (distanceValue > VALIDATION_ALLOWED_DIST || distanceValue < 1)) {
         LOGGER.error("Validation error : Distance outside (1,1000)m range not allowed");
         throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE_URN, failureMessage(value));
       }

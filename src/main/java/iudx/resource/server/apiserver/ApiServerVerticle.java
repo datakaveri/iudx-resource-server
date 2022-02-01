@@ -51,6 +51,7 @@ import static iudx.resource.server.common.Api.INGESTION;
 import static iudx.resource.server.common.Api.MANAGEMENT;
 import static iudx.resource.server.common.Api.NGSILD_BASE;
 import static iudx.resource.server.common.Api.SUBSCRIPTION;
+import static iudx.resource.server.common.Api.ASYNC;
 import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
@@ -460,6 +461,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.mountSubRouter(MANAGEMENT.path,
         new ManagementRestApi(vertx, databroker, postgresService, meteringService, managementApi)
             .init());
+    router.mountSubRouter(ASYNC.path,
+            new AsyncRestApi(vertx).init());
 
     router.route().last().handler(requestHandler -> {
       HttpServerResponse response = requestHandler.response();
