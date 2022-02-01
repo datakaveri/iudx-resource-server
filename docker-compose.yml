@@ -73,15 +73,14 @@ services:
              max-size: "100m"
   
   perfTest:
-    image: ghcr.io/datakaveri/rs-test:latest
+    image: ghcr.io/datakaveri/rs-dev:latest
     environment:
       - RS_URL=https://rs.iudx.org.in
       - LOG_LEVEL=INFO
       - RS_JAVA_OPTS=-Xmx1024m
     volumes:
-      - /home/ubuntu/configs/rs-config-dev.json:/usr/share/app/configs/config-dev.json
+      - /home/ubuntu/configs/rs-config-dev.json:/usr/share/app/configs/config.json
       - /home/ubuntu/configs/keystore.jks:/usr/share/app/configs/keystore.jks
-      - ./src:/usr/share/app/src
     ports:
       - "8443:8443"
     restart: on-failure
@@ -92,7 +91,7 @@ services:
          options:
              max-file: "5"
              max-size: "100m"
-    command: bash -c "mvn clean compile exec:java@resource-server"
+    command: bash -c "exec java $$RS_JAVA_OPTS  -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.Log4j2LogDelegateFactory -jar ./fatjar.jar  --host $$(hostname) -c configs/config.json"
 
   zookeeper:
     image: zookeeper:latest

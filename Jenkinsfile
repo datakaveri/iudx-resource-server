@@ -60,27 +60,27 @@ pipeline {
       }
     }
     
-    // stage('Jmeter Performance Test'){
-    //   steps{
-    //     node('master') {
-    //       script{
-    //         sh 'rm -rf /var/lib/jenkins/iudx/rs/Jmeter/report ; mkdir -p /var/lib/jenkins/iudx/rs/Jmeter/report'
-    //         sh "set +x;/var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t /var/lib/jenkins/iudx/rs/Jmeter/ResourceServer.jmx -l /var/lib/jenkins/iudx/rs/Jmeter/report/JmeterTest.jtl -e -o /var/lib/jenkins/iudx/rs/Jmeter/report/ -Jhost=jenkins-slave1 -JpuneToken=$env.puneToken -JsuratToken=$env.suratToken"
-    //       }
-    //       catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-    //         perfReport errorFailedThreshold: 0, filterRegex: '', showTrendGraphs: true, sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'
-    //       }        
-    //     }
-    //   }
-    //   post{
-    //     failure{
-    //       script{
-    //         sh 'docker-compose down --remove-orphans'
-    //       }
-    //       error "Test failure. Stopping pipeline execution!"
-    //     }
-    //   }
-    // }
+    stage('Jmeter Performance Test'){
+      steps{
+        node('master') {
+          script{
+            sh 'rm -rf /var/lib/jenkins/iudx/rs/Jmeter/report ; mkdir -p /var/lib/jenkins/iudx/rs/Jmeter/report'
+            sh "set +x;/var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t /var/lib/jenkins/iudx/rs/Jmeter/ResourceServer.jmx -l /var/lib/jenkins/iudx/rs/Jmeter/report/JmeterTest.jtl -e -o /var/lib/jenkins/iudx/rs/Jmeter/report/ -Jhost=jenkins-slave1 -JpuneToken=$env.puneToken -JsuratToken=$env.suratToken"
+          }
+          catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+            perfReport errorFailedThreshold: 0, filterRegex: '', showTrendGraphs: true, sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'
+          }        
+        }
+      }
+      post{
+        failure{
+          script{
+            sh 'docker-compose down --remove-orphans'
+          }
+          error "Test failure. Stopping pipeline execution!"
+        }
+      }
+    }
 
     stage('Integration Tests and OWASP ZAP pen test'){
       steps{
