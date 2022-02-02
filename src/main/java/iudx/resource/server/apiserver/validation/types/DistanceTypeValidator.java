@@ -38,7 +38,9 @@ public final class DistanceTypeValidator implements Validator {
         LOGGER.error("Validation error : Invalid integer value (Integer overflow).");
         throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE_URN, failureMessage(value));
       }
-      if ( !noMaxDistanceLimit && (distanceValue > VALIDATION_ALLOWED_DIST || distanceValue < 1)) {
+      if(noMaxDistanceLimit)
+        return true;
+      if (distanceValue > VALIDATION_ALLOWED_DIST || distanceValue < 1) {
         LOGGER.error("Validation error : Distance outside (1,1000)m range not allowed");
         throw new DxRuntimeException(failureCode(), INVALID_GEO_VALUE_URN, failureMessage(value));
       }
