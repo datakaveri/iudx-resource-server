@@ -15,4 +15,7 @@ public class Constants {
 
   public static String DELETE_UNIQUE_ATTR_SQL =
       "DELETE FROM unique_attributes WHERE resource_id=$1";
+
+  public static String SELECT_UPLOAD_STATUS_SQL =
+          "SELECT status,url FROM s3_upload_url WHERE reference_id='$1'";
 }
