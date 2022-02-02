@@ -462,7 +462,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         new ManagementRestApi(vertx, databroker, postgresService, meteringService, managementApi)
             .init());
     router.mountSubRouter(ASYNC.path,
-            new AsyncRestApi(vertx).init());
+            new AsyncRestApi(vertx,postgresService).init());
 
     router.route().last().handler(requestHandler -> {
       HttpServerResponse response = requestHandler.response();
