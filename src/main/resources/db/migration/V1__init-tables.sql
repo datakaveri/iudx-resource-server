@@ -44,6 +44,14 @@ CREATE TABLE IF NOT EXISTS subscriptions
       entity
    )
 );
+-- s3 URL table
+CREATE TABLE IF NOT EXISTS s3_upload_url
+(
+    _id uuid NOT NULL,
+    status varchar NOT NULL,
+    url varchar NOT NULL,
+    CONSTRAINT upload_url_pk PRIMARY KEY (_id)
+);
 -- Functions for audit[new,update] on table/column
 -- modified_at column function
 CREATE
