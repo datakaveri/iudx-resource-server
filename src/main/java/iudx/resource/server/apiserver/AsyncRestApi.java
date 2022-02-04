@@ -27,6 +27,7 @@ import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
 import static iudx.resource.server.apiserver.util.Constants.ID;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.apiserver.util.Constants.API;
@@ -63,8 +64,8 @@ public class AsyncRestApi {
 
 		router
 				.get(Api.STATUS.path)
-				.handler(asyncSearchValidationHandler)
-				.handler(AuthHandler.create(vertx))
+//				.handler(asyncSearchValidationHandler)
+//				.handler(AuthHandler.create(vertx))     // TODO: how to authenticate?
 				.handler(this::handleAsyncStatusRequest)
 				.handler(validationsFailureHandler);
 
@@ -75,6 +76,7 @@ public class AsyncRestApi {
 	}
 
 	private void handleAsyncStatusRequest(RoutingContext routingContext) {
+		LOGGER.info("starting async status");
 		HttpServerRequest request = routingContext.request();
 		HttpServerResponse response = routingContext.response();
 		
@@ -84,13 +86,17 @@ public class AsyncRestApi {
 
 		pgService.executeQuery(query.toString(), pgHandler -> {
 			if (pgHandler.succeeded()) {
-				String status = pgHandler.result().getString("status");
-				String fileDownloadURL = pgHandler.result().getString("URL");
-				JsonObject result = new JsonObject()
-								.put("status",status);
+				if (pgHandler.result().getJsonArray("result").size() == 0) {
+					processBackendResponse(response, String.valueOf(new JsonObject().put("type",400).put("title","urn:dx:rs:badRequest").put("detail","Fail: Incorrect Reference ID")));
+					return;
+				}
+				JsonObject result = pgHandler.result();
+				String status = result.getJsonArray("result").getJsonObject(0).getString("status");
+				String fileDownloadURL = result.getJsonArray("result").getJsonObject(0).getString("url");
+				result.getJsonArray("result").getJsonObject(0).remove("url");
 
 				if(status.equalsIgnoreCase("ready")) {
-					result.put("file-download-url", fileDownloadURL);
+					result.getJsonArray("result").getJsonObject(0).put("file-download-url", fileDownloadURL);
 				}
 
 				Future.future(fu -> updateAuditTable(routingContext));
@@ -114,6 +120,7 @@ public class AsyncRestApi {
 			int type = json.getInteger(JSON_TYPE);
 			HttpStatusCode status = HttpStatusCode.getByValue(type);
 			String urnTitle = json.getString(JSON_TITLE);
+			String detail = json.getString(JSON_DETAIL);
 			ResponseUrn urn;
 			if (urnTitle != null) {
 				urn = ResponseUrn.fromCode(urnTitle);
@@ -124,7 +131,7 @@ public class AsyncRestApi {
 			response
 							.putHeader(CONTENT_TYPE, APPLICATION_JSON)
 							.setStatusCode(type)
-							.end(generateResponse(status, urn).toString());
+							.end(generateResponse(status, urn, detail).toString());
 		} catch (DecodeException ex) {
 			LOGGER.error("ERROR : Expecting Json from backend service [ jsonFormattingException ]");
 			handleResponse(response, HttpStatusCode.BAD_REQUEST, BACKING_SERVICE_FORMAT_URN);

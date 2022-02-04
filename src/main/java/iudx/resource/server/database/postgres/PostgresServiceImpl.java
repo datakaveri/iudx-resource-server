@@ -42,8 +42,12 @@ public final class PostgresServiceImpl implements PostgresService {
             .execute()
             .map(row -> row.value()))
         .onSuccess(successHandler -> {
-          JsonArray response = new JsonArray(successHandler);
-          handler.handle(Future.succeededFuture(new JsonObject().put("result", response)));
+          JsonArray result = new JsonArray(successHandler);
+          JsonObject responseJson = new JsonObject()
+                  .put("type",ResponseUrn.SUCCESS_URN.getUrn())
+                  .put("title",ResponseUrn.SUCCESS_URN.getMessage())
+                  .put("result",result);
+          handler.handle(Future.succeededFuture(responseJson));
         })
         .onFailure(failureHandler -> {
           LOGGER.debug(failureHandler);
