@@ -80,10 +80,10 @@ services:
       - RS_JAVA_OPTS=-Xmx1024m
     volumes:
       - /home/ubuntu/configs/rs-config-dev.json:/usr/share/app/configs/config-dev.json
-      - /home/ubuntu/configs/keystore.jks:/usr/share/app/configs/keystore.jks
+      - /home/ubuntu/configs/keystore-rs.jks:/usr/share/app/configs/keystore.jks
       - ./src:/usr/share/app/src
     ports:
-      - "8443:8080"
+      - "8443:8443"
     restart: on-failure
     networks:
       - rs-net

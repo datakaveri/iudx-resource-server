@@ -37,7 +37,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;q=speed%3E64&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -69,7 +69,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;q=speed%3E64&amp;offset=0&amp;limit=10</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -101,7 +101,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;attrs=trip_id,trip_direction,route_id&amp;offset=0&amp;limit=10</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -133,7 +133,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=within&amp;geometry=bbox&amp;coordinates=[[72.8296,21.2],[72.8297,21.15]]&amp;offset=0&amp;limit=10</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -165,7 +165,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=within&amp;geometry=bbox&amp;coordinates=[[72.8296,21.2],[72.8297,21.15]]&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -204,7 +204,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entityOperations/query</stringProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
@@ -240,7 +240,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=near;maxdistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;offset=0&amp;limit=10</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -272,7 +272,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=near;maxDistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -311,7 +311,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entityOperations/query?&amp;offset=0&amp;limit=10</stringProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
@@ -347,7 +347,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=intersects&amp;geometry=linestring&amp;coordinates=[[72.842,21.2],[72.923,20.8]]&amp;offset=0&amp;limit=10</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -379,7 +379,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=within&amp;geometry=Polygon&amp;coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]&amp;offset=0&amp;limit=10</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -411,7 +411,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=within&amp;geometry=Polygon&amp;coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -443,7 +443,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -475,7 +475,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=near;maxDistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;timerel=before&amp;time=2020-10-19T14:00:00Z&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -507,7 +507,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=near;maxDistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;timerel=before&amp;time=2020-10-19T14:00:00Z&amp;attrs=id,location,speed&amp;offset=0&amp;limit=10</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -539,7 +539,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;timerel=during&amp;time=2020-10-19T14:20:00Z&amp;endtime=2020-10-19T14:25:00Z&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -571,7 +571,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -603,7 +603,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&amp;timerel=during&amp;time=2020-10-18T14:20:00Z&amp;endtime=2020-10-19T14:20:00Z</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -635,7 +635,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&amp;timerel=during&amp;time=2020-10-18T14:20:00Z&amp;endtime=2020-10-19T14:20:00Z&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -667,7 +667,7 @@
           </elementProp>
           <stringProp name="HTTPSampler.domain">${__P(host)}</stringProp>
           <stringProp name="HTTPSampler.port">8443</stringProp>
-          <stringProp name="HTTPSampler.protocol">http</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
           <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;timerel=during&amp;time=2020-10-19T14:20:00Z&amp;endtime=2020-10-19T14:25:00Z</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>

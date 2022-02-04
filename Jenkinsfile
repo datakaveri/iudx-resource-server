@@ -16,6 +16,7 @@ pipeline {
   }
 
   stages {
+    
     stage('Build images') {
       steps{
         script {
@@ -38,6 +39,14 @@ pipeline {
         )
         jacoco classPattern: 'target/classes', execPattern: 'target/jacoco.exec', sourcePattern: 'src/main/java', exclusionPattern:'iudx/resource/server/apiserver/ApiServerVerticle.class,**/*VertxEBProxy.class,**/Constants.class,**/*VertxProxyHandler.class,**/*Verticle.class,iudx/resource/server/database/archives/DatabaseService.class,iudx/resource/server/database/latest/LatestDataService.class,iudx/resource/server/deploy/*.class'
       }
+      post{
+        failure{
+          script{
+            sh 'docker-compose down --remove-orphans'
+          }
+          error "Test failure. Stopping pipeline execution!"
+        }
+      }
     }
 
     stage('Start Resource-Server for Performance and Integration Testing'){
@@ -58,15 +67,13 @@ pipeline {
             sh 'rm -rf /var/lib/jenkins/iudx/rs/Jmeter/report ; mkdir -p /var/lib/jenkins/iudx/rs/Jmeter/report'
             sh "set +x;/var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t /var/lib/jenkins/iudx/rs/Jmeter/ResourceServer.jmx -l /var/lib/jenkins/iudx/rs/Jmeter/report/JmeterTest.jtl -e -o /var/lib/jenkins/iudx/rs/Jmeter/report/ -Jhost=jenkins-slave1 -JpuneToken=$env.puneToken -JsuratToken=$env.suratToken"
           }
-          catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-            perfReport errorFailedThreshold: 0, filterRegex: '', showTrendGraphs: true, sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'
-          }        
+          perfReport filterRegex: '', showTrendGraphs: true, sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'     
         }
       }
       post{
         failure{
-          catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-            sh "exit 1"
+          script{
+            sh 'docker-compose down --remove-orphans'
           }
         }
       }
@@ -76,7 +83,7 @@ pipeline {
       steps{
         node('master') {
           script{
-            startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0', additionalConfigurations: ["pscans.org.zaproxy.zap.extension.enabled=false"]])
+            startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0'])
             sh 'curl http://127.0.0.1:8090/JSON/pscan/action/disableScanners/?ids=10096'
             sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection_new.json -e /home/ubuntu/configs/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html --reporter-htmlextra-skipSensitiveData'
             runZapAttack()
@@ -91,6 +98,9 @@ pipeline {
               publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportTitles: '', reportName: 'Integration Test Report'])
             }
           }
+        }
+        failure{
+          error "Test failure. Stopping pipeline execution!"
         }
         cleanup{
           script{
