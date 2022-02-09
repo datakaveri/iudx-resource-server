@@ -1,6 +1,9 @@
 package iudx.resource.server.apiserver;
 
+import io.netty.handler.codec.http.HttpConstants;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.Future;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
@@ -12,8 +15,12 @@ import io.vertx.ext.web.RoutingContext;
 import iudx.resource.server.apiserver.handlers.AuthHandler;
 import iudx.resource.server.apiserver.handlers.FailureHandler;
 import iudx.resource.server.apiserver.handlers.ValidationHandler;
+import iudx.resource.server.apiserver.query.NGSILDQueryParams;
+import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
+import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.apiserver.util.RequestType;
+import iudx.resource.server.async.AsyncService;
 import iudx.resource.server.common.Api;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
@@ -22,31 +29,46 @@ import iudx.resource.server.metering.MeteringService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
 import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_HOST;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
 import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
+import static iudx.resource.server.apiserver.util.Constants.JSON_INSTANCEID;
 import static iudx.resource.server.apiserver.util.Constants.ID;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.apiserver.util.Constants.API;
 import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
+import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
+import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
 import static iudx.resource.server.database.postgres.Constants.SELECT_UPLOAD_STATUS_SQL;
 
 public class AsyncRestApi {
 
 	private static final Logger LOGGER = LogManager.getLogger(AsyncRestApi.class);
 
+	private static final String ASYNC_SERVICE_ADDRESS = "iudx.rs.async.service";
+
 	private final Vertx vertx;
 	private final Router router;
 	private final PostgresService pgService;
 	private MeteringService meteringService;
+	private AsyncService asyncService;
+	private final ParamsValidator validator;
+	private final CatalogueService catalogueService;
 
-	AsyncRestApi(Vertx vertx, PostgresService pgService) {
+	AsyncRestApi(Vertx vertx, PostgresService pgService, CatalogueService catalogueService, ParamsValidator validator) {
 		this.vertx = vertx;
 		this.pgService = pgService;
+		this.catalogueService = catalogueService;
+		this.validator = validator;
 		this.router = Router.router(vertx);
 	}
 
@@ -54,11 +76,11 @@ public class AsyncRestApi {
 
 		FailureHandler validationsFailureHandler = new FailureHandler();
 		ValidationHandler asyncSearchValidationHandler = new ValidationHandler(vertx, RequestType.ASYNC);
-
+		asyncService = AsyncService.createProxy(vertx, ASYNC_SERVICE_ADDRESS);
 		router
 				.get(Api.SEARCH.path)
 				.handler(asyncSearchValidationHandler)
-				.handler(AuthHandler.create(vertx))
+//				.handler(AuthHandler.create(vertx))
 				.handler(this::handleAsyncSearchRequest)
 				.handler(validationsFailureHandler);
 
@@ -73,10 +95,62 @@ public class AsyncRestApi {
 	}
 
 	private void handleAsyncSearchRequest(RoutingContext routingContext) {
+		LOGGER.trace("starting async search");
+		HttpServerRequest request = routingContext.request();
+		HttpServerResponse response = routingContext.response();
+
+		/* HTTP request instance/host details */
+		String instanceID = request.getHeader(HEADER_HOST);
+		// get query parameters
+		MultiMap params = getQueryParams(routingContext, response).get();
+		// validate request params
+		Future<Boolean> validationResult = validator.validate(params);
+		validationResult.onComplete(
+				validationHandler -> {
+					if (validationHandler.succeeded()) {
+						// parse query params
+						NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
+						// create json
+						QueryMapper queryMapper = new QueryMapper();
+						JsonObject json = queryMapper.toJson(ngsildquery, true, true);
+						Future<List<String>> filtersFuture =
+										catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
+						json.put(JSON_INSTANCEID, instanceID);
+						LOGGER.debug("Info: IUDX json query;" + json);
+						/* HTTP request body as Json */
+						JsonObject requestBody = new JsonObject();
+						requestBody.put("ids", json.getJsonArray("id"));
+						filtersFuture.onComplete(
+								filtersHandler -> {
+									if (filtersHandler.succeeded()) {
+										json.put("applicableFilters", filtersHandler.result());
+										executeSearchQuery(routingContext, json, response);
+									} else {
+										LOGGER.error("catalogue item/group doesn't have filters.");
+									}
+								});
+					} else if (validationHandler.failed()) {
+						LOGGER.error("Fail: Bad request;");
+						handleResponse(
+										response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
+					}
+				});
+	}
+
+	private void executeSearchQuery(RoutingContext routingContext, JsonObject json, HttpServerResponse response) {
+		asyncService.scrollQuery(json, handler -> {
+			if(handler.succeeded()) {
+				LOGGER.info("Success: Async Search Success");
+				handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+			} else {
+				LOGGER.error("Fail: Async search failed");
+				processBackendResponse(response, handler.cause().getMessage());
+			}
+		});
 	}
 
 	private void handleAsyncStatusRequest(RoutingContext routingContext) {
-		LOGGER.info("starting async status");
+		LOGGER.trace("starting async status");
 		HttpServerRequest request = routingContext.request();
 		HttpServerResponse response = routingContext.response();
 		
@@ -86,8 +160,11 @@ public class AsyncRestApi {
 
 		pgService.executeQuery(query.toString(), pgHandler -> {
 			if (pgHandler.succeeded()) {
-				if (pgHandler.result().getJsonArray("result").size() == 0) {
-					processBackendResponse(response, String.valueOf(new JsonObject().put("type",400).put("title","urn:dx:rs:badRequest").put("detail","Fail: Incorrect Reference ID")));
+				if (pgHandler.result().getJsonArray("result").isEmpty()) {
+					processBackendResponse(response, String.valueOf(new JsonObject()
+									.put("type",400)
+									.put("title","urn:dx:rs:badRequest")
+									.put("detail","Fail: Incorrect Reference ID")));
 					return;
 				}
 				JsonObject result = pgHandler.result();
@@ -134,8 +211,31 @@ public class AsyncRestApi {
 							.end(generateResponse(status, urn, detail).toString());
 		} catch (DecodeException ex) {
 			LOGGER.error("ERROR : Expecting Json from backend service [ jsonFormattingException ]");
-			handleResponse(response, HttpStatusCode.BAD_REQUEST, BACKING_SERVICE_FORMAT_URN);
+			handleResponse(response, BAD_REQUEST, BACKING_SERVICE_FORMAT_URN);
 		}
+	}
+
+	private Optional<MultiMap> getQueryParams(
+					RoutingContext routingContext, HttpServerResponse response) {
+		MultiMap queryParams = null;
+		try {
+			queryParams = MultiMap.caseInsensitiveMultiMap();
+			// Internally + sign is dropped and treated as space, replacing + with %2B do the trick
+			String uri = routingContext.request().uri().replaceAll("\\+", "%2B");
+			Map<String, List<String>> decodedParams =
+							new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET, true, 1024, true).parameters();
+			for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
+				LOGGER.debug("Info: param :" + entry.getKey() + " value : " + entry.getValue());
+				queryParams.add(entry.getKey(), entry.getValue());
+			}
+		} catch (IllegalArgumentException ex) {
+			response
+							.putHeader(CONTENT_TYPE, APPLICATION_JSON)
+							.setStatusCode(BAD_REQUEST.getValue())
+							.end(generateResponse(BAD_REQUEST, INVALID_PARAM_URN).toString());
+
+		}
+		return Optional.of(queryParams);
 	}
 
 	private void handleResponse(HttpServerResponse response, HttpStatusCode code, ResponseUrn urn) {

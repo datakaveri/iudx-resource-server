@@ -27,14 +27,19 @@ public class QueryMapper {
   private boolean isResponseFilter = false;
   private boolean isAttributeSearch = false;
 
+  public JsonObject toJson(NGSILDQueryParams params, boolean isTemporal) {
+    return toJson(params,isTemporal,false);
+  }
+
   /**
    * This method is used to create a json object from NGSILDQueryParams.
    * 
    * @param params A map of query parameters passed.
    * @param isTemporal flag indicating whether temporal or not.
+   * @param isAsync flag indicating whether the call is made for Async API or not.
    * @return JsonObject result.
    */
-  public JsonObject toJson(NGSILDQueryParams params, boolean isTemporal) {
+  public JsonObject toJson(NGSILDQueryParams params, boolean isTemporal, boolean isAsync) {
     LOGGER.trace("Info QueryMapper#toJson() started");
     LOGGER.debug("Info : params" + params);
     this.isTemporal = isTemporal;
@@ -90,8 +95,10 @@ public class QueryMapper {
         json.put(Constants.JSON_TIME, params.getTemporalRelation().getTime());
         json.put(Constants.JSON_ENDTIME, params.getTemporalRelation().getEndTime());
         json.put(Constants.JSON_TIMEREL, params.getTemporalRelation().getTemprel());
-        isValidTimeInterval(Constants.JSON_DURING, json.getString(Constants.JSON_TIME),
-            json.getString(Constants.JSON_ENDTIME));
+        if(!isAsync) {
+          isValidTimeInterval(Constants.JSON_DURING, json.getString(Constants.JSON_TIME),
+              json.getString(Constants.JSON_ENDTIME));
+        }
       } else {
         json.put(Constants.JSON_TIME, params.getTemporalRelation().getTime().toString());
         json.put(Constants.JSON_TIMEREL, params.getTemporalRelation().getTemprel());
