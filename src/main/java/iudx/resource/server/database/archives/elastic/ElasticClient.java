@@ -11,6 +11,8 @@ import static iudx.resource.server.database.archives.Constants.HITS;
 import static iudx.resource.server.database.archives.Constants.REQUEST_GET;
 import static iudx.resource.server.database.archives.Constants.SOURCE_FILTER_KEY;
 import static iudx.resource.server.database.archives.Constants.SUCCESS;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -20,10 +22,22 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.elasticsearch.action.search.ClearScrollRequest;
+import org.elasticsearch.action.search.ClearScrollResponse;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.Request;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.ResponseListener;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -35,8 +49,10 @@ import iudx.resource.server.database.archives.ResponseBuilder;
 public class ElasticClient {
 
   private final RestClient client;
+  private final RestHighLevelClient highLevelClient;
   private ResponseBuilder responseBuilder;
   private static final Logger LOGGER = LogManager.getLogger(ElasticClient.class);
+
   /**
    * ElasticClient - Elastic Low level wrapper.
    * 
@@ -47,8 +63,12 @@ public class ElasticClient {
   public ElasticClient(String databaseIP, int databasePort, String user, String password) {
     CredentialsProvider credentials = new BasicCredentialsProvider();
     credentials.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(user, password));
-    client = RestClient.builder(new HttpHost(databaseIP, databasePort)).setHttpClientConfigCallback(
-        httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentials)).build();
+    RestClientBuilder restClientBuilder =
+        RestClient.builder(new HttpHost(databaseIP, databasePort)).setHttpClientConfigCallback(
+            httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentials));
+    client = restClientBuilder.build();
+    highLevelClient = new RestHighLevelClient(restClientBuilder);
+
   }
 
   /**
@@ -109,7 +129,7 @@ public class ElasticClient {
           responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbError);
           searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
         } catch (DecodeException jsonError) {
-          LOGGER.error("Json parsing exception: " , jsonError);
+          LOGGER.error("Json parsing exception: ", jsonError);
           responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
               .setMessage(BAD_PARAMETERS);
           searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
@@ -158,7 +178,7 @@ public class ElasticClient {
                   .setCount(responseJson.getInteger(COUNT));
           countHandler.handle(Future.succeededFuture(responseBuilder.getResponse()));
         } catch (IOException e) {
-          LOGGER.error("IO Execption from Database: " , e.getMessage());
+          LOGGER.error("IO Execption from Database: ", e.getMessage());
           JsonObject ioError = new JsonObject(e.getMessage());
           responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(ioError);
           countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
@@ -175,13 +195,92 @@ public class ElasticClient {
           responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbError);
           countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
         } catch (DecodeException jsonError) {
-          LOGGER.error("Json parsing exception: " , jsonError);
+          LOGGER.error("Json parsing exception: ", jsonError);
           responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
               .setMessage(BAD_PARAMETERS);
           countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
         }
       }
     });
+    return this;
+  }
+
+
+  public ElasticClient scrollAsync(String index, QueryBuilder query) {
+
+    String scrollId = null;
+    File file = null;
+    try {
+
+
+
+      SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+      searchSourceBuilder.query(query);
+      searchSourceBuilder.fetchSource(new String[] {}, new String[] {"_index", "_type", "_score"});
+      searchSourceBuilder.size(50000); // max is 10000
+
+      SearchRequest searchRequest = new SearchRequest();
+      // searchRequest.addParameter(FILTER_PATH, "took,hits.hits._source");
+      searchRequest.indices(index);
+      searchRequest.source(searchSourceBuilder);
+      searchRequest.scroll(TimeValue.timeValueMinutes(5L));
+
+      RequestOptions rqo = RequestOptions.DEFAULT;
+      rqo.toBuilder().addParameter(FILTER_PATH, "took,hits.hits._source");
+
+      LOGGER.debug(searchRequest);
+      SearchResponse searchResponse = highLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+      scrollId = searchResponse.getScrollId();
+
+      LOGGER.debug("total hits" + searchResponse.getHits().getTotalHits().value);
+
+      SearchHit[] searchHits = searchResponse.getHits().getHits();
+
+      file = new File("/home/pranavrd/Downloads/response.json"); // TODO: get file path from config
+
+      FileWriter filew = new FileWriter(file);
+      int totalFiles = 0;
+      filew.write('[');
+
+      boolean appendComma = false;
+
+      while (searchHits != null && searchHits.length > 0) {
+        LOGGER.debug("results={} ({} new), scrollId={}",
+            totalFiles += searchHits.length,
+            searchHits.length,
+            scrollId);
+
+        for (SearchHit sh : searchHits) {
+          if (appendComma) {
+            filew.write("," + sh.getSourceAsString());
+          } else {
+            filew.write(sh.getSourceAsString());
+          }
+          appendComma = true;
+        }
+
+        SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId);
+        scrollRequest.scroll(TimeValue.timeValueMinutes(5L));
+        searchResponse = highLevelClient.scroll(scrollRequest, rqo);
+        scrollId = searchResponse.getScrollId();
+        searchHits = searchResponse.getHits().getHits();
+
+      }
+      filew.write(']');
+      filew.close();
+    } catch (IOException ex) {
+    } finally {
+      if (scrollId != null) {
+        ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
+        clearScrollRequest.addScrollId(scrollId);
+        try {
+          ClearScrollResponse clearScrollResponse =
+              highLevelClient.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+        }
+
+      }
+    }
     return this;
   }
 }
