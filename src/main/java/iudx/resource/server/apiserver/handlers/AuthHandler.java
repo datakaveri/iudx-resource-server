@@ -111,7 +111,8 @@ public class AuthHandler implements Handler<RoutingContext> {
     final String path = getNormalizedPath(request.path());
     final String method = context.request().method().toString();
 
-    if (token == null) token = "public";
+    if (token == null)
+      token = "public";
 
     JsonObject authInfo =
         new JsonObject().put(API_ENDPOINT, path).put(HEADER_TOKEN, token).put(API_METHOD, method);
@@ -191,7 +192,6 @@ public class AuthHandler implements Handler<RoutingContext> {
     String pathId = getId4rmPath(context);
     String paramId = getId4rmRequest();
     String bodyId = getId4rmBody(context, path);
-
     String id;
     if (pathId != null && !pathId.isBlank()) {
       id = pathId;
@@ -202,7 +202,6 @@ public class AuthHandler implements Handler<RoutingContext> {
         id = bodyId;
       }
     }
-
     if (path.matches(NGSILD_BASE.path + SUBSCRIPTION.path)
         && (!method.equalsIgnoreCase("GET") || !method.equalsIgnoreCase("DELETE"))) {
       id = bodyId;
@@ -213,7 +212,7 @@ public class AuthHandler implements Handler<RoutingContext> {
   private String getId4rmPath(RoutingContext context) {
     StringBuilder id = null;
     Map<String, String> pathParams = context.pathParams();
-    LOGGER.info("path params :" + pathParams);
+    LOGGER.debug("path params :" + pathParams);
     if (pathParams != null && !pathParams.isEmpty()) {
       if (pathParams.containsKey(DOMAIN)
           && pathParams.containsKey(USERSHA)
@@ -227,13 +226,13 @@ public class AuthHandler implements Handler<RoutingContext> {
         if (pathParams.containsKey(RESOURCE_NAME)) {
           id.append("/").append(pathParams.get(RESOURCE_NAME));
         }
-        LOGGER.info("id :" + id);
+        LOGGER.debug("id :" + id);
       } else if (pathParams.containsKey(USER_ID) && pathParams.containsKey(JSON_ALIAS)) {
         id = new StringBuilder();
         id.append(pathParams.get(USER_ID)).append("/").append(pathParams.get(JSON_ALIAS));
       }
     }
-    LOGGER.info("id :" + id);
+    LOGGER.debug("id :" + id);
     return id != null ? id.toString() : null;
   }
 
@@ -257,7 +256,7 @@ public class AuthHandler implements Handler<RoutingContext> {
         }
       }
     }
-    LOGGER.info("id : " + id);
+    LOGGER.debug("id : " + id);
     return id;
   }
 
@@ -296,11 +295,11 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = MANAGEMENT.path + RESET_PWD.path;
     } else if (url.matches(REVOKE_TOKEN_REGEX)) {
       path = ADMIN.path + REVOKE_TOKEN.path;
-    } else if(url.matches(UNIQUE_ATTR_REGEX)) {
-      path=ADMIN.path+RESOURCE_ATTRIBS.path;
+    } else if (url.matches(UNIQUE_ATTR_REGEX)) {
+      path = ADMIN.path + RESOURCE_ATTRIBS.path;
     } else if (url.matches(IUDX_CONSUMER_AUDIT_URL)) {
       path = IUDX_CONSUMER_AUDIT_URL;
-    }else if (url.matches(IUDX_PROVIDER_AUDIT_URL)) {
+    } else if (url.matches(IUDX_PROVIDER_AUDIT_URL)) {
       path = IUDX_PROVIDER_AUDIT_URL;
     }
     return path;
