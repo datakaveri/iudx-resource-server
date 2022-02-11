@@ -98,7 +98,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")))
             || endPoint.equalsIgnoreCase("/management/user/resetPassword")
             || endPoint.equalsIgnoreCase("/ngsi-ld/v1/consumer/audit")
-            || endPoint.equalsIgnoreCase("/admin/revoketoken")
+            || endPoint.equalsIgnoreCase("/admin/revokeToken")
             || endPoint.equalsIgnoreCase("/admin/resourceattribute")
             || endPoint.equalsIgnoreCase("/ngsi-ld/v1/provider/audit");
 
