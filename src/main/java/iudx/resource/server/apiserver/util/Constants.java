@@ -53,6 +53,8 @@ public class Constants {
   public static final String VHOST_URL_REGEX = IUDX_MANAGEMENT_VHOST_URL + "(.*)";
   public static final String IUDX_MANAGEMENT_ADAPTER_URL = IUDX_ADAPTOR_URL + "/ingestion";
   public static final String ADAPTER_URL_REGEX = IUDX_MANAGEMENT_ADAPTER_URL + "(.*)";
+  
+ 
   public static final String IUDX_MANAGEMENT_RESET_PWD =
       IUDX_MANAGEMENT_URL + "/user/resetPassword";
   public static final String RESET_URL_REGEX = IUDX_MANAGEMENT_RESET_PWD + "(.*)";
@@ -66,7 +68,7 @@ public class Constants {
           "/ngsi-ld/v1/temporal/entities",
           "/ngsi-ld/v1/entities",
           "/ngsi-ld/v1/entityOperations/query");
-  public static final String REVOKE_TOKEN_REGEX = "/admin/revoketoken" + "(.*)";
+  public static final String REVOKE_TOKEN_REGEX = "/admin/revokeToken" + "(.*)";
   public static final String UNIQUE_ATTR_REGEX = "/admin/resourceattribute";
 
 
