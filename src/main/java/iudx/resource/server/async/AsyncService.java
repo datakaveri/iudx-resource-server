@@ -8,6 +8,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * The Async Service.
@@ -37,6 +38,18 @@ public interface AsyncService {
 
 	@Fluent
 	AsyncService scrollQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
+	/**
+	 * The fetchURLFromDB checks for an already existing s3 url in the database.
+	 *
+	 * @param context which is the routingContext
+	 * @param scrollJson which is a JsonObject
+	 * @param handler which is a Request handler
+	 * @return AsyncService which is a service
+	 */
+
+	@Fluent
+	AsyncService fetchURLFromDB(RoutingContext context, JsonObject scrollJson, Handler<AsyncResult<JsonObject>> handler);
 
 	/**
 	 * The createProxy helps the code generation blocks to generate proxy code.
