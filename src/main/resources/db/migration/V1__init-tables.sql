@@ -48,8 +48,13 @@ CREATE TABLE IF NOT EXISTS subscriptions
 CREATE TABLE IF NOT EXISTS s3_upload_url
 (
     _id uuid NOT NULL,
+    search_id uuid NOT NULL,
+    request_id uuid NOT NULL,
     status varchar NOT NULL,
-    url varchar NOT NULL,
+    s3_url varchar,
+    expiry timestamp without time zone,
+    user_id varchar,
+    object_id varchar,
     CONSTRAINT upload_url_pk PRIMARY KEY (_id)
 );
 -- Functions for audit[new,update] on table/column

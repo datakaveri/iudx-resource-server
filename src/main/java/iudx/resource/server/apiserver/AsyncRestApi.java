@@ -48,7 +48,7 @@ import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
-import static iudx.resource.server.database.postgres.Constants.SELECT_UPLOAD_STATUS_SQL;
+import static iudx.resource.server.database.postgres.Constants.SELECT_S3_STATUS_SQL;
 
 public class AsyncRestApi {
 
@@ -124,7 +124,7 @@ public class AsyncRestApi {
 								filtersHandler -> {
 									if (filtersHandler.succeeded()) {
 										json.put("applicableFilters", filtersHandler.result());
-										executeSearchQuery(routingContext, json, response);
+										executeAsyncURLSearch(routingContext, json);
 									} else {
 										LOGGER.error("catalogue item/group doesn't have filters.");
 									}
@@ -137,14 +137,14 @@ public class AsyncRestApi {
 				});
 	}
 
-	private void executeSearchQuery(RoutingContext routingContext, JsonObject json, HttpServerResponse response) {
-		asyncService.scrollQuery(json, handler -> {
+	private void executeAsyncURLSearch(RoutingContext routingContext, JsonObject json) {
+		asyncService.fetchURLFromDB(routingContext, json, handler -> {
 			if(handler.succeeded()) {
 				LOGGER.info("Success: Async Search Success");
-				handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+				handleSuccessResponse(routingContext.response(), ResponseType.Ok.getCode(), handler.result().toString());
 			} else {
 				LOGGER.error("Fail: Async search failed");
-				processBackendResponse(response, handler.cause().getMessage());
+				processBackendResponse(routingContext.response(), handler.cause().getMessage());
 			}
 		});
 	}
@@ -155,7 +155,7 @@ public class AsyncRestApi {
 		HttpServerResponse response = routingContext.response();
 		
 		String referenceID = request.getParam("referenceID");
-		StringBuilder query = new StringBuilder(SELECT_UPLOAD_STATUS_SQL
+		StringBuilder query = new StringBuilder(SELECT_S3_STATUS_SQL
 				.replace("$1",referenceID));
 
 		pgService.executeQuery(query.toString(), pgHandler -> {

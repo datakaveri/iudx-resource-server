@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,10 +34,19 @@ public class DeployerDev {
     config.put("host", configs.getString("host"));
     String moduleName = config.getString("id");
     int numInstances = config.getInteger("verticleInstances");
-    vertx.deployVerticle(moduleName,
-                          new DeploymentOptions()
+    DeploymentOptions deploymentOptions = new DeploymentOptions()
                             .setInstances(numInstances)
-                            .setConfig(config),
+                            .setConfig(config);
+    if (moduleName.equalsIgnoreCase("iudx.resource.server.async.AsyncVerticle")) {
+      LOGGER.info("worker verticle : AsyncVerticle");
+      deploymentOptions.setWorkerPoolName("async-query-pool");
+      deploymentOptions.setWorkerPoolSize(5);
+      deploymentOptions.setWorker(true);
+      deploymentOptions.setMaxWorkerExecuteTime(30L);
+      deploymentOptions.setMaxWorkerExecuteTimeUnit(TimeUnit.MINUTES);
+    }
+    vertx.deployVerticle(moduleName,
+                         deploymentOptions,
                           ar -> {
       if (ar.succeeded()) {
         LOGGER.info("Deployed " + moduleName);

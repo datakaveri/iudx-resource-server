@@ -51,6 +51,7 @@ public class ElasticClient {
   private final RestClient client;
   private final RestHighLevelClient highLevelClient;
   private ResponseBuilder responseBuilder;
+  private String filePath;
   private static final Logger LOGGER = LogManager.getLogger(ElasticClient.class);
 
   /**
@@ -71,6 +72,10 @@ public class ElasticClient {
 
   }
 
+  public ElasticClient(String databaseIP, int databasePort, String user, String password, String filePath) {
+    this(databaseIP,databasePort,user,password);
+    this.filePath = filePath;
+  }
   /**
    * searchAsync - Wrapper around elasticsearch async search requests.
    * 
@@ -211,9 +216,6 @@ public class ElasticClient {
     String scrollId = null;
     File file = null;
     try {
-
-
-
       SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
       searchSourceBuilder.query(query);
       searchSourceBuilder.fetchSource(new String[] {}, new String[] {"_index", "_type", "_score"});
@@ -228,7 +230,6 @@ public class ElasticClient {
       RequestOptions rqo = RequestOptions.DEFAULT;
       rqo.toBuilder().addParameter(FILTER_PATH, "took,hits.hits._source");
 
-      LOGGER.debug(searchRequest);
       SearchResponse searchResponse = highLevelClient.search(searchRequest, RequestOptions.DEFAULT);
       scrollId = searchResponse.getScrollId();
 
@@ -236,7 +237,7 @@ public class ElasticClient {
 
       SearchHit[] searchHits = searchResponse.getHits().getHits();
 
-      file = new File("/home/pranavrd/Downloads/response.json"); // TODO: get file path from config
+      file = new File(filePath.concat("response.json"));
 
       FileWriter filew = new FileWriter(file);
       int totalFiles = 0;
@@ -245,10 +246,9 @@ public class ElasticClient {
       boolean appendComma = false;
 
       while (searchHits != null && searchHits.length > 0) {
-        LOGGER.debug("results={} ({} new), scrollId={}",
+        LOGGER.debug("results={} ({} new)",
             totalFiles += searchHits.length,
-            searchHits.length,
-            scrollId);
+            searchHits.length);
 
         for (SearchHit sh : searchHits) {
           if (appendComma) {
