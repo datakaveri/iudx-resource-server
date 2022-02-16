@@ -42,6 +42,7 @@ import static iudx.resource.server.apiserver.util.Constants.UNIQUE_ATTR_REGEX;
 import static iudx.resource.server.apiserver.util.Constants.USERSHA;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.apiserver.util.Constants.VHOST_URL_REGEX;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_ASYNC_SEARCH;
 import static iudx.resource.server.apiserver.util.Constants.bypassEndpoint;
 import static iudx.resource.server.common.Api.ADMIN;
 import static iudx.resource.server.common.Api.BIND;
@@ -301,6 +302,8 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = IUDX_CONSUMER_AUDIT_URL;
     } else if (url.matches(IUDX_PROVIDER_AUDIT_URL)) {
       path = IUDX_PROVIDER_AUDIT_URL;
+    } else if(url.matches(IUDX_ASYNC_SEARCH)) {
+      path = IUDX_ASYNC_SEARCH;
     }
     return path;
   }
