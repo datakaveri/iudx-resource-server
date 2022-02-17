@@ -6,7 +6,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.RoutingContext;
+import iudx.resource.server.async.util.Utilities;
 import iudx.resource.server.database.archives.ResponseBuilder;
 import iudx.resource.server.database.archives.elastic.ElasticClient;
 import iudx.resource.server.database.archives.elastic.QueryDecoder;
@@ -21,6 +21,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
+import java.io.File;
 import java.net.URL;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -75,30 +76,37 @@ public class AsyncServiceImpl implements AsyncService {
 	private JsonObject query;
 	private ResponseBuilder responseBuilder;
 	private String timeLimit;
+	private String filePath;
 	private final PostgresService pgService;
+	private final S3FileOpsHelper s3FileOpsHelper;
+	private final Utilities utilities;
 
 
 
-	public AsyncServiceImpl(ElasticClient client, PostgresService pgService, String timeLimit) {
+	public AsyncServiceImpl(ElasticClient client, PostgresService pgService,
+													S3FileOpsHelper s3FileOpsHelper, String timeLimit, String filePath) {
 		this.client = client;
 		this.pgService = pgService;
+		this.s3FileOpsHelper = s3FileOpsHelper;
 		this.timeLimit = timeLimit;
+		this.filePath = filePath;
+		this.utilities = new Utilities(pgService);
 	}
 
 	/**
 	 * Performs a fetch from DB of the URL if the given requestID already exists
-	 * @param routingContext Routing Context instance received from AsyncRestApi
+	 * @param requestID String received to identify incoming request
+	 * @param sub String received to identify user
+	 * @param scrollJson JsonObject received for scroll API flow
 	 * @param handler Handler to return URL in case of success
 	 *                and appropriate error message in case of failure
 	 */
 
 	@Override
-	public AsyncService fetchURLFromDB(RoutingContext routingContext, JsonObject scrollJson, Handler<AsyncResult<JsonObject>> handler) {
+	public AsyncService fetchURLFromDB(String requestID, String sub, JsonObject scrollJson, Handler<AsyncResult<JsonObject>> handler) {
 		LOGGER.trace("Info: fetch URL started");
 
 		ZonedDateTime zdt = ZonedDateTime.now();
-		String sub = ((JsonObject) routingContext.data().get("authInfo")).getString(USER_ID); // get sub from AuthHandler result
-		String requestID = UUID.fromString(routingContext.request().absoluteURI()).toString(); // generate UUID from the absolute URI of the HTTP Request
 
 		StringBuilder query = new StringBuilder(SELECT_S3_SEARCH_SQL
 				.replace("$1", requestID));
@@ -106,26 +114,28 @@ public class AsyncServiceImpl implements AsyncService {
 		pgService.executeQuery(query.toString(), pgHandler -> {
 			if(pgHandler.succeeded()) {
 				if(pgHandler.result().getJsonArray("result").isEmpty()) {
+					// write pending status to DB
+					String searchID = UUID.randomUUID().toString();
+					Future.future(future -> utilities.writeToDB(searchID, requestID));
+
 					// if db result does not have a matching requestID, ONLY then ES scroll API is called
 					scrollQuery(scrollJson, scrollHandler -> {
 						if(scrollHandler.succeeded()) {
-							String searchID = UUID.randomUUID().toString();
 							JsonArray responseJson = new JsonArray()
 									.add(new JsonObject().put("searchID",searchID));
-
-							// write pending status to DB
-							Future.future(future -> writeToDB(searchID, requestID));
 
 							// respond with searchID for /async/status
 							responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(201).setMessage(responseJson);
 							handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+
+							Future.future(future -> uploadScrollResultToS3(scrollJson.getJsonArray(ID).getString(0)));
 						} else {
 							handler.handle(Future.failedFuture(scrollHandler.cause()));
 						}
 					});
 				} else {
 					JsonArray results = pgHandler.result().getJsonArray("result");
-					String s3_url = checkExpiryAndUserID(results,zdt,sub);
+					String s3_url = checkExpiryAndUserID(results,zdt,sub);  // since request ID exists, get or generate the url based on user and/or the expiry of the url
 					JsonArray responseJson = new JsonArray()
 							.add(new JsonObject().put("file-download-url", s3_url));
 
@@ -135,6 +145,23 @@ public class AsyncServiceImpl implements AsyncService {
 			}
 		});
 		return null;
+	}
+
+	private Future<Void> uploadScrollResultToS3(String id) {
+		Promise<Void> promise = Promise.promise();
+
+		List<String> splitId = new LinkedList<>(Arrays.asList(id.split("/")));
+		String objectKey = String.join("__", splitId);
+		splitId.remove(splitId.size() - 1);
+		final String searchIndex = String.join("__", splitId);
+		String fileName = filePath
+//				.concat("/")
+//				.concat(searchIndex)
+				.concat("/response.json");
+		File file = new File(fileName);
+		s3FileOpsHelper.s3Upload(file, objectKey);
+
+		return promise.future();
 	}
 
 	private String checkExpiryAndUserID(JsonArray results, ZonedDateTime zdt, String sub) {
@@ -150,87 +177,28 @@ public class AsyncServiceImpl implements AsyncService {
 			if(userID.equalsIgnoreCase(sub) && zdt.isBefore(expiry)) {
 				return s3_url;
 			} else if(!userID.equalsIgnoreCase(sub) && zdt.isBefore(expiry)) {
-				Future.future(future -> writeToDB(sub, result));
+				Future.future(future -> utilities.writeToDB(sub, result));
 				return s3_url;
 			} else if(userID.equalsIgnoreCase(sub) && !zdt.isBefore(expiry)) {
 				String newS3_url = generateNewURL(object_id);
 				// TODO: change expiry to long?
 				String newExpiry = zdt.plusDays(1).toString();
-				Future.future(future -> updateDBRecord(_id, newS3_url, newExpiry));
+				Future.future(future -> utilities.updateDBRecord(_id, newS3_url, newExpiry));
 				return newS3_url;
 			} else if(!userID.equalsIgnoreCase(sub) && !zdt.isBefore(expiry)) {
 				String newS3_url = generateNewURL(object_id);
 				// TODO: change expiry to long?
 				String newExpiry = zdt.plusDays(1).toString();
-				Future.future(future -> writeToDB(sub, newS3_url, newExpiry, result));
+				Future.future(future -> utilities.writeToDB(sub, newS3_url, newExpiry, result));
 				return newS3_url;
 			}
 		}
 		return null;
 	}
 
-	private Future<Void> writeToDB(StringBuilder query) {
-		Promise<Void> promise = Promise.promise();
 
-		pgService.executeQuery(query.toString(), pgHandler -> {
-			if(pgHandler.succeeded()) {
-				promise.complete();
-			} else {
-				LOGGER.error("Insert/update into DB failed");
-				promise.fail("Insert/update fail");
-			}
-		});
-		return promise.future();
-	}
-
-	private Future<Void> writeToDB(String searchID, String requestID) {
-
-		StringBuilder query = new StringBuilder(INSERT_S3_PENDING_SQL
-				.replace("$1",UUID.randomUUID().toString())
-				.replace("$2", searchID)
-				.replace("$3", requestID)
-				.replace("$4", "Pending"));
-
-		return writeToDB(query);
-	}
-
-	private Future<Void> writeToDB(String sub, JsonObject result) {
-
-		StringBuilder query = new StringBuilder(INSERT_S3_READY_SQL
-				.replace("$1",UUID.randomUUID().toString())
-				.replace("$2",UUID.randomUUID().toString())
-				.replace("$3",result.getString("request_id"))
-				.replace("$4",result.getString("status"))
-				.replace("$5",result.getString("s3_url"))
-				.replace("$6", result.getString("expiry"))
-				.replace("$7",sub)
-				.replace("$8",result.getString("object_id")));
-
-		return writeToDB(query);
-	}
-
-	private Future<Void> writeToDB(String sub, String s3_url,String expiry, JsonObject result) {
-
-		result.remove("s3_url");
-		result.remove("expiry");
-		result.put("s3_url",s3_url);
-		result.put("expiry",expiry);
-
-		return writeToDB(sub,result);
-	}
-
-	private Future<Void> updateDBRecord(String _id, String s3_url, String expiry) {
-
-		StringBuilder query = new StringBuilder(UPDATE_S3_URL_SQL
-				.replace("$1",s3_url)
-				.replace("$2",expiry)
-				.replace("$3",_id));
-
-		return writeToDB(query);
-	}
 
 	private String generateNewURL(String object_id) {
-		S3FileOpsHelper s3FileOpsHelper = new S3FileOpsHelper();
 
 		long expiry = TimeUnit.DAYS.toMillis(1);
 		URL s3_url  = s3FileOpsHelper.generatePreSignedUrl(expiry,object_id);
@@ -312,91 +280,12 @@ public class AsyncServiceImpl implements AsyncService {
 		LOGGER.info("Info: index: "+ searchIndex);
 		LOGGER.info("Info: Query constructed: " + query.toString());
 
-		QueryBuilder queryBuilder = getESquery1(request, true);
+		QueryBuilder queryBuilder = utilities.getESquery1(request, true);
 
 		handler.handle(Future.succeededFuture());
 		Future.future(future -> client.scrollAsync(searchIndex, queryBuilder));
 		return null;
 	}
 
-	public QueryBuilder getESquery1(JsonObject json,boolean scrollRequest) {
-		LOGGER.debug(json);
-		String searchType = json.getString(SEARCH_TYPE);
-		Boolean isValidQuery = false;
-		JsonObject elasticQuery = new JsonObject();
 
-		boolean temporalQuery = false;
-
-		JsonArray id = json.getJsonArray(ID);
-
-		String timeLimit = json.getString(TIME_LIMIT).split(",")[1];
-		int numDays = Integer.valueOf(json.getString(TIME_LIMIT).split(",")[2]);
-
-		BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-		boolQuery.filter(QueryBuilders.termsQuery(ID, id.getString(0)));
-
-		if (searchType.matches(GEOSEARCH_REGEX)) {
-			boolQuery = new GeoQueryParser(boolQuery, json).parse();
-			isValidQuery = true;
-		}
-
-		if (searchType.matches(TEMPORAL_SEARCH_REGEX) && json.containsKey(REQ_TIMEREL)
-				&& json.containsKey(TIME_KEY)) {
-			boolQuery = new TemporalQueryParser(boolQuery, json).parse();
-			temporalQuery = true;
-			isValidQuery = true;
-		}
-
-		if (searchType.matches(ATTRIBUTE_SEARCH_REGEX)) {
-			boolQuery = new AttributeQueryParser(boolQuery, json).parse();
-			isValidQuery = true;
-		}
-
-		JsonArray responseFilters = null;
-		if (searchType.matches(RESPONSE_FILTER_REGEX)) {
-			LOGGER.debug("Info: Adding responseFilter");
-			isValidQuery = true;
-			if (!json.getBoolean(SEARCH_KEY)) {
-				return null;
-			}
-			if (json.containsKey(RESPONSE_ATTRS)) {
-				responseFilters = json.getJsonArray(RESPONSE_ATTRS);
-			} else {
-				return null;
-			}
-		}
-
-		/* checks if any valid search jsons have matched */
-		if (!isValidQuery) {
-			return null;
-		} else {
-			if (!temporalQuery && json.getJsonArray("applicableFilters").contains("TEMPORAL")) {
-				if (json.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(PROD_INSTANCE)) {
-					boolQuery
-							.filter(QueryBuilders.rangeQuery("observationDateTime")
-									.gte("now-" + timeLimit + "d/d"));
-
-				} else if (json.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(TEST_INSTANCE)) {
-					String endTime = json.getString(TIME_LIMIT).split(",")[1];
-					ZonedDateTime endTimeZ = ZonedDateTime.parse(endTime);
-					ZonedDateTime startTime = endTimeZ.minusDays(numDays);
-
-					boolQuery
-							.filter(QueryBuilders.rangeQuery("observationDateTime")
-									.lte(endTime)
-									.gte(startTime));
-
-				}
-
-			}
-		}
-
-//    elasticQuery.put(QUERY_KEY, new JsonObject(boolQuery.toString()));
-//
-//    if (responseFilters != null) {
-//      elasticQuery.put(SOURCE_FILTER_KEY, responseFilters);
-//    }
-
-		return boolQuery;
-	}
 }

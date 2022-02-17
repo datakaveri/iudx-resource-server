@@ -42,14 +42,15 @@ public interface AsyncService {
 	/**
 	 * The fetchURLFromDB checks for an already existing s3 url in the database.
 	 *
-	 * @param context which is the routingContext
+	 * @param requestID which is a String
+	 * @param sub which is a String
 	 * @param scrollJson which is a JsonObject
 	 * @param handler which is a Request handler
 	 * @return AsyncService which is a service
 	 */
 
 	@Fluent
-	AsyncService fetchURLFromDB(RoutingContext context, JsonObject scrollJson, Handler<AsyncResult<JsonObject>> handler);
+	AsyncService fetchURLFromDB(String requestID, String sub, JsonObject scrollJson, Handler<AsyncResult<JsonObject>> handler);
 
 	/**
 	 * The createProxy helps the code generation blocks to generate proxy code.
