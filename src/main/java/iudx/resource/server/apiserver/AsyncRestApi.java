@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
 import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
@@ -138,7 +139,12 @@ public class AsyncRestApi {
 	}
 
 	private void executeAsyncURLSearch(RoutingContext routingContext, JsonObject json) {
-		asyncService.fetchURLFromDB(routingContext, json, handler -> {
+		String sub = "844e251b-574b-46e6-9247-f76f1f70a637";
+//		String sub = ((JsonObject) routingContext.data().get("authInfo")).getString(USER_ID); // get sub from AuthHandler result
+		String requestURI = routingContext.request().absoluteURI();
+		String requestID = UUID.nameUUIDFromBytes(requestURI.getBytes()).toString(); // generate UUID from the absolute URI of the HTTP Request
+
+		asyncService.fetchURLFromDB(requestID, sub, json, handler -> {
 			if(handler.succeeded()) {
 				LOGGER.info("Success: Async Search Success");
 				handleSuccessResponse(routingContext.response(), ResponseType.Ok.getCode(), handler.result().toString());
