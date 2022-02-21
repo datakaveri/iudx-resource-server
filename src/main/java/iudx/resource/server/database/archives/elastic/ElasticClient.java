@@ -56,162 +56,176 @@ public class ElasticClient {
 
   /**
    * ElasticClient - Elastic Low level wrapper.
-   * 
+   *
    * @param databaseIP IP of the ElasticDB
    * @param databasePort Port of the ElasticDB
    */
-
   public ElasticClient(String databaseIP, int databasePort, String user, String password) {
     CredentialsProvider credentials = new BasicCredentialsProvider();
     credentials.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(user, password));
     RestClientBuilder restClientBuilder =
-        RestClient.builder(new HttpHost(databaseIP, databasePort)).setHttpClientConfigCallback(
-            httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentials));
+        RestClient.builder(new HttpHost(databaseIP, databasePort))
+            .setHttpClientConfigCallback(
+                httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentials));
     client = restClientBuilder.build();
     highLevelClient = new RestHighLevelClient(restClientBuilder);
-
   }
 
-  public ElasticClient(String databaseIP, int databasePort, String user, String password, String filePath) {
-    this(databaseIP,databasePort,user,password);
+  public ElasticClient(
+      String databaseIP, int databasePort, String user, String password, String filePath) {
+    this(databaseIP, databasePort, user, password);
     this.filePath = filePath;
   }
   /**
    * searchAsync - Wrapper around elasticsearch async search requests.
-   * 
+   *
    * @param index Index to search on
    * @param query Query
    * @param searchHandler JsonObject result {@link AsyncResult}
    */
-  public ElasticClient searchAsync(String index, String filterPathValue, String query,
+  public ElasticClient searchAsync(
+      String index,
+      String filterPathValue,
+      String query,
       Handler<AsyncResult<JsonObject>> searchHandler) {
 
     Request queryRequest = new Request(REQUEST_GET, index);
     queryRequest.addParameter(FILTER_PATH, filterPathValue);
     queryRequest.setJsonEntity(query);
 
-    client.performRequestAsync(queryRequest, new ResponseListener() {
-      @Override
-      public void onSuccess(Response response) {
-        JsonArray dbResponse = new JsonArray();
-        JsonObject jsonTemp;
-        try {
-          JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
-          if (!responseJson.containsKey(HITS) && !responseJson.containsKey(DOCS_KEY)) {
-            responseBuilder =
-                new ResponseBuilder(FAILED).setTypeAndTitle(204).setMessage(EMPTY_RESPONSE);
-            searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-            return;
+    client.performRequestAsync(
+        queryRequest,
+        new ResponseListener() {
+          @Override
+          public void onSuccess(Response response) {
+            JsonArray dbResponse = new JsonArray();
+            JsonObject jsonTemp;
+            try {
+              JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
+              if (!responseJson.containsKey(HITS) && !responseJson.containsKey(DOCS_KEY)) {
+                responseBuilder =
+                    new ResponseBuilder(FAILED).setTypeAndTitle(204).setMessage(EMPTY_RESPONSE);
+                searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+                return;
+              }
+              responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200);
+              JsonArray responseHits = new JsonArray();
+              if (responseJson.containsKey(HITS)) {
+                responseHits = responseJson.getJsonObject(HITS).getJsonArray(HITS);
+              } else if (responseJson.containsKey(DOCS_KEY)) {
+                responseHits = responseJson.getJsonArray(DOCS_KEY);
+              }
+              for (Object json : responseHits) {
+                jsonTemp = (JsonObject) json;
+                dbResponse.add(jsonTemp.getJsonObject(SOURCE_FILTER_KEY));
+              }
+              responseBuilder.setMessage(dbResponse);
+              searchHandler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+            } catch (IOException e) {
+              LOGGER.error("IO Execption from Database: " + e.getMessage());
+              JsonObject ioError = new JsonObject(e.getMessage());
+              responseBuilder =
+                  new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(ioError);
+              searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+            }
           }
-          responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200);
-          JsonArray responseHits = new JsonArray();
-          if (responseJson.containsKey(HITS)) {
-            responseHits = responseJson.getJsonObject(HITS).getJsonArray(HITS);
-          } else if (responseJson.containsKey(DOCS_KEY)) {
-            responseHits = responseJson.getJsonArray(DOCS_KEY);
-          }
-          for (Object json : responseHits) {
-            jsonTemp = (JsonObject) json;
-            dbResponse.add(jsonTemp.getJsonObject(SOURCE_FILTER_KEY));
-          }
-          responseBuilder.setMessage(dbResponse);
-          searchHandler.handle(Future.succeededFuture(responseBuilder.getResponse()));
-        } catch (IOException e) {
-          LOGGER.error("IO Execption from Database: " + e.getMessage());
-          JsonObject ioError = new JsonObject(e.getMessage());
-          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(ioError);
-          searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-        }
-      }
 
-      @Override
-      public void onFailure(Exception e) {
-        LOGGER.error(e.getLocalizedMessage());
-        try {
-          String error = e.getMessage().substring(e.getMessage().indexOf("{"),
-              e.getMessage().lastIndexOf("}") + 1);
-          JsonObject dbError = new JsonObject(error);
-          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbError);
-          searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-        } catch (DecodeException jsonError) {
-          LOGGER.error("Json parsing exception: ", jsonError);
-          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
-              .setMessage(BAD_PARAMETERS);
-          searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-        }
-      }
-    });
+          @Override
+          public void onFailure(Exception e) {
+            LOGGER.error(e.getLocalizedMessage());
+            try {
+              String error =
+                  e.getMessage()
+                      .substring(e.getMessage().indexOf("{"), e.getMessage().lastIndexOf("}") + 1);
+              JsonObject dbError = new JsonObject(error);
+              responseBuilder =
+                  new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbError);
+              searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+            } catch (DecodeException jsonError) {
+              LOGGER.error("Json parsing exception: ", jsonError);
+              responseBuilder =
+                  new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(BAD_PARAMETERS);
+              searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+            }
+          }
+        });
     return this;
   }
 
   /**
    * countAsync - Wrapper around elasticsearch async count requests.
-   * 
+   *
    * @param index Index to search on
    * @param query Query
    * @param countHandler JsonObject result {@link AsyncResult}
    */
-  public ElasticClient countAsync(String index, String query,
-      Handler<AsyncResult<JsonObject>> countHandler) {
+  public ElasticClient countAsync(
+      String index, String query, Handler<AsyncResult<JsonObject>> countHandler) {
 
     Request queryRequest = new Request(REQUEST_GET, index);
     queryRequest.setJsonEntity(query);
 
-    client.performRequestAsync(queryRequest, new ResponseListener() {
-      @Override
-      public void onSuccess(Response response) {
+    client.performRequestAsync(
+        queryRequest,
+        new ResponseListener() {
+          @Override
+          public void onSuccess(Response response) {
 
-        try {
-          int statusCode = response.getStatusLine().getStatusCode();
-          if (statusCode != 200 && statusCode != 204) {
-            countHandler.handle(Future.failedFuture(DB_ERROR_2XX));
-            responseBuilder =
-                new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(DB_ERROR_2XX);
-            countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-            return;
+            try {
+              int statusCode = response.getStatusLine().getStatusCode();
+              if (statusCode != 200 && statusCode != 204) {
+                countHandler.handle(Future.failedFuture(DB_ERROR_2XX));
+                responseBuilder =
+                    new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(DB_ERROR_2XX);
+                countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+                return;
+              }
+
+              JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
+              if (responseJson.getInteger(COUNT) == 0) {
+                responseBuilder =
+                    new ResponseBuilder(FAILED).setTypeAndTitle(204).setMessage(EMPTY_RESPONSE);
+                countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+                return;
+              }
+              responseBuilder =
+                  new ResponseBuilder(SUCCESS)
+                      .setTypeAndTitle(200)
+                      .setCount(responseJson.getInteger(COUNT));
+              countHandler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+            } catch (IOException e) {
+              LOGGER.error("IO Execption from Database: ", e.getMessage());
+              JsonObject ioError = new JsonObject(e.getMessage());
+              responseBuilder =
+                  new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(ioError);
+              countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+            }
           }
 
-          JsonObject responseJson = new JsonObject(EntityUtils.toString(response.getEntity()));
-          if (responseJson.getInteger(COUNT) == 0) {
-            responseBuilder =
-                new ResponseBuilder(FAILED).setTypeAndTitle(204).setMessage(EMPTY_RESPONSE);
-            countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-            return;
+          @Override
+          public void onFailure(Exception e) {
+            LOGGER.error(e.getLocalizedMessage());
+            try {
+              String error =
+                  e.getMessage()
+                      .substring(e.getMessage().indexOf("{"), e.getMessage().lastIndexOf("}") + 1);
+              JsonObject dbError = new JsonObject(error);
+              responseBuilder =
+                  new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbError);
+              countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+            } catch (DecodeException jsonError) {
+              LOGGER.error("Json parsing exception: ", jsonError);
+              responseBuilder =
+                  new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(BAD_PARAMETERS);
+              countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+            }
           }
-          responseBuilder =
-              new ResponseBuilder(SUCCESS).setTypeAndTitle(200)
-                  .setCount(responseJson.getInteger(COUNT));
-          countHandler.handle(Future.succeededFuture(responseBuilder.getResponse()));
-        } catch (IOException e) {
-          LOGGER.error("IO Execption from Database: ", e.getMessage());
-          JsonObject ioError = new JsonObject(e.getMessage());
-          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(ioError);
-          countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-        }
-      }
-
-      @Override
-      public void onFailure(Exception e) {
-        LOGGER.error(e.getLocalizedMessage());
-        try {
-          String error = e.getMessage().substring(e.getMessage().indexOf("{"),
-              e.getMessage().lastIndexOf("}") + 1);
-          JsonObject dbError = new JsonObject(error);
-          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbError);
-          countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-        } catch (DecodeException jsonError) {
-          LOGGER.error("Json parsing exception: ", jsonError);
-          responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400)
-              .setMessage(BAD_PARAMETERS);
-          countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-        }
-      }
-    });
+        });
     return this;
   }
 
-
-  public ElasticClient scrollAsync(String index, QueryBuilder query) {
+  public ElasticClient scrollAsync(
+      String index, QueryBuilder query, Handler<AsyncResult<JsonObject>> scrollHandler) {
 
     String scrollId = null;
     File file = null;
@@ -238,6 +252,7 @@ public class ElasticClient {
       SearchHit[] searchHits = searchResponse.getHits().getHits();
 
       file = new File(filePath.concat("response.json"));
+      LOGGER.debug(file.getAbsolutePath());
 
       FileWriter filew = new FileWriter(file);
       int totalFiles = 0;
@@ -246,9 +261,7 @@ public class ElasticClient {
       boolean appendComma = false;
 
       while (searchHits != null && searchHits.length > 0) {
-        LOGGER.debug("results={} ({} new)",
-            totalFiles += searchHits.length,
-            searchHits.length);
+        LOGGER.debug("results={} ({} new)", totalFiles += searchHits.length, searchHits.length);
 
         for (SearchHit sh : searchHits) {
           if (appendComma) {
@@ -264,11 +277,12 @@ public class ElasticClient {
         searchResponse = highLevelClient.scroll(scrollRequest, rqo);
         scrollId = searchResponse.getScrollId();
         searchHits = searchResponse.getHits().getHits();
-
       }
       filew.write(']');
       filew.close();
+      scrollHandler.handle(Future.succeededFuture());
     } catch (IOException ex) {
+      scrollHandler.handle(Future.failedFuture(ex));
     } finally {
       if (scrollId != null) {
         ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
@@ -277,8 +291,8 @@ public class ElasticClient {
           ClearScrollResponse clearScrollResponse =
               highLevelClient.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
+          scrollHandler.handle(Future.failedFuture(e));
         }
-
       }
     }
     return this;
