@@ -3,12 +3,12 @@ package iudx.resource.server.databroker;
 import static iudx.resource.server.databroker.util.Constants.ALLOW;
 import static iudx.resource.server.databroker.util.Constants.ALL_NOT_FOUND;
 import static iudx.resource.server.databroker.util.Constants.APIKEY;
+import static iudx.resource.server.databroker.util.Constants.API_KEY_MESSAGE;
 import static iudx.resource.server.databroker.util.Constants.AUTO_DELETE;
 import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_CODE;
 import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_DATA;
 import static iudx.resource.server.databroker.util.Constants.CHECK_CREDENTIALS;
 import static iudx.resource.server.databroker.util.Constants.CONFIGURE;
-import static iudx.resource.server.databroker.util.Constants.DATABASE_READ_FAILURE;
 import static iudx.resource.server.databroker.util.Constants.DATABASE_READ_SUCCESS;
 import static iudx.resource.server.databroker.util.Constants.DATA_ISSUE;
 import static iudx.resource.server.databroker.util.Constants.DATA_WILDCARD_ROUTINGKEY;
@@ -875,28 +875,13 @@ public class RabbitClient {
           });
 
         } else if (reply.result().statusCode() == HttpStatus.SC_OK) {
-          // user exists , So something useful can be done here
-          /* Handle the response if a user exists */
-          JsonObject readDbResponse = new JsonObject();
-          Future<JsonObject> getUserApiKey = getUserInDb(userid);
-
-          getUserApiKey.onComplete(getUserApiKeyHandler -> {
-            if (getUserApiKeyHandler.succeeded()) {
-              LOGGER.debug("DATABASE_READ_SUCCESS");
-              String apiKey = getUserApiKey.result().getString(APIKEY);
-              readDbResponse.put(USER_ID, userid);
-              readDbResponse.put(APIKEY, apiKey);
-              readDbResponse.mergeIn(
-                  getResponseJson(SUCCESS_CODE, DATABASE_READ_SUCCESS, DATABASE_READ_SUCCESS));
-              readDbResponse.put(VHOST_PERMISSIONS, vhost);
-              promise.complete(readDbResponse);
-            } else {
-              LOGGER.debug("DATABASE_READ_FAILURE");
-              readDbResponse
-                  .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, DATABASE_READ_FAILURE));
-              promise.fail(readDbResponse.toString());
-            }
-          });
+          LOGGER.debug("DATABASE_READ_SUCCESS");
+          response.put(USER_ID, userid);
+          response.put(APIKEY, API_KEY_MESSAGE);
+          response.mergeIn(
+              getResponseJson(SUCCESS_CODE, DATABASE_READ_SUCCESS, DATABASE_READ_SUCCESS));
+          response.put(VHOST_PERMISSIONS, vhost);
+          promise.complete(response);
         }
 
       } else {
