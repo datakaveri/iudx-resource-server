@@ -159,7 +159,8 @@ public class SubscriptionService {
                             });
                           } else if (totalBindSuccess == totalBindCount) {
                             rabbitClient
-                                .updateUserPermissions(userid, PermissionOpType.ADD_READ, queueName)
+                                .updateUserPermissions(vhost, userid, PermissionOpType.ADD_READ,
+                                    queueName)
                                 .onComplete(userPermissionHandler -> {
                                   if (userPermissionHandler.succeeded()) {
                                     registerStreamingSubscriptionResponse.put(Constants.USER_NAME,
@@ -327,7 +328,7 @@ public class SubscriptionService {
 
 
                                 rabbitClient
-                                    .updateUserPermissions(userid, PermissionOpType.ADD_READ,
+                                    .updateUserPermissions(vhost, userid, PermissionOpType.ADD_READ,
                                         queueName)
                                     .onComplete(permissionHandler -> {
                                       if (permissionHandler.succeeded()) {
@@ -463,7 +464,7 @@ public class SubscriptionService {
                                 BINDING_FAILED)
                                     .toString());
                       } else if (totalBindSuccess == totalBindCount) {
-                        rabbitClient.updateUserPermissions(userid,
+                        rabbitClient.updateUserPermissions(vhost, userid,
                             PermissionOpType.ADD_READ, queueName)
                             .onComplete(permissionHandler -> {
                               if (permissionHandler.succeeded()) {
@@ -533,11 +534,13 @@ public class SubscriptionService {
             LOGGER.debug("failed :: Response is " + deleteQueueResponse);
             promise.fail(deleteQueueResponse.toString());
           } else {
-            deleteStreamingSubscription.mergeIn(getResponseJson(ResponseUrn.SUCCESS_URN.getUrn(),HttpStatus.SC_OK ,SUCCESS,
-                "Subscription deleted Successfully"));
+            deleteStreamingSubscription.mergeIn(
+                getResponseJson(ResponseUrn.SUCCESS_URN.getUrn(), HttpStatus.SC_OK, SUCCESS,
+                    "Subscription deleted Successfully"));
             Future
                 .future(
-                    fu -> rabbitClient.updateUserPermissions(userid, PermissionOpType.DELETE_READ,
+                    fu -> rabbitClient.updateUserPermissions(vhost, userid,
+                        PermissionOpType.DELETE_READ,
                         queueName));
             promise.complete(deleteStreamingSubscription);
           }
