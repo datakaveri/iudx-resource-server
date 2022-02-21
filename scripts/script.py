@@ -1,3 +1,8 @@
+# below are the perequisite packages :
+# pip install requests
+# pip install psycopg2
+# pip install schedule
+
 import requests
 import json
 import time
@@ -7,18 +12,24 @@ from urllib.parse import quote
 
 from datetime import datetime as dt
 
-host = ''
-port = 0
-user = ''
-passwd = ''
-vhost=''
+dataBrokerHost = ''
+dataBrokerPort = 0
+dataBrokerUser = ''
+dataBrokerPassword = ''
+dataBrokerVhost=''
+
+dataBaseName=''
+dataBaseUser=''
+dataBasePassword=''
+dataBaseHost=''
+dataBasePort= 0
 
 
 
 def unbind():  
 
     #connection with the database
-    conn = psycopg2.connect(dbname="",user="",password="",host="",port="")
+    conn = psycopg2.connect(dbname=dataBaseName,user=dataBaseUser,password=dataBasePassword,host=dataBaseHost,port=dataBasePort)
 
     # Open a cursor to perform database operations
     cur = conn.cursor()
@@ -31,29 +42,28 @@ def unbind():
     records = cur.fetchall()
 
     #to unbind the queue and exchange for a routing key
-    def unbind_queue_exchange(host, port, user, passwd,vhost, exchange, queue, prop):
-      url = 'https://%s:%s/api/bindings/%s/e/%s/q/%s/%s' % (host, port,vhost,exchange,queue,prop)
-      r=requests.delete(url,auth=(user,passwd))
-      #if we have to delete the queue as well uncomment below code
-      #url = 'https://%s:%s/api/queues/%s/%s' % (host, port,vhost,queue)
-      #print(url)
-      #r=requests.delete(url,auth=(user,passwd))
+    def unbind_queue_exchange(dataBrokerHost, dataBrokerPort, dataBrokerUser, dataBrokerPassword,dataBrokerVhost, exchange, queue, routing_key):
+      url = 'https://%s:%s/api/bindings/%s/e/%s/q/%s/%s' % (dataBrokerHost, dataBrokerPort,dataBrokerVhost,exchange,queue,routing_key)
+      r=requests.delete(url,auth=(dataBrokerUser,dataBrokerPassword))
       return
 
     #to get list of binding between a queue and an exchange
-    def call_rabbitmq_api(host, port, user, passwd,vhost, exchange, queue):
-      url = 'https://%s:%s/api/bindings/%s/e/%s/q/%s' % (host, port,vhost,exchange,queue)
-      r = requests.get(url, auth=(user,passwd))
+    def call_rabbitmq_api(dataBrokerHost, dataBrokerPort, dataBrokerUser, dataBrokerPassword,dataBrokerVhost, exchange, queue):
+      url = 'https://%s:%s/api/bindings/%s/e/%s/q/%s' % (dataBrokerHost, dataBrokerPort,dataBrokerVhost,exchange,queue)
+      r = requests.get(url, auth=(dataBrokerUser,dataBrokerPassword))
       response=json.loads(r.text)
       for prop in response:
-        temp_prop=prop['properties_key']
-        unbind_queue_exchange(host,port,user,passwd,vhost,exchange,queue,temp_prop)
+        routing_key=prop['properties_key']
+        unbind_queue_exchange(dataBrokerHost,dataBrokerPort,dataBrokerUser,dataBrokerPassword,dataBrokerVhost,exchange,queue,routing_key)
       return
 
     queue_name=[]
+    #getting queue and exchange name from database response one at a time
     for row in records:
-      queue_name.append(row[0])
-      res = call_rabbitmq_api(host, port, user, passwd,vhost,quote(row[1],safe=''),quote(row[0],safe=''))
+      queue=row[0] 
+      exchange=row[1]
+      queue_name.append(queue)
+      res = call_rabbitmq_api(dataBrokerHost, dataBrokerPort, dataBrokerUser, dataBrokerPassword,dataBrokerVhost,quote(exchange,safe=''),quote(queue,safe=''))
 
     postgreSQL_delete_query="DELETE from subscriptions where queue_name IN {} and expiry < timestamp %s;"
     # Retrieve query results
