@@ -22,151 +22,158 @@ import static iudx.resource.server.database.postgres.Constants.*;
 
 public class Utilities {
 
-	private static final Logger LOGGER = LogManager.getLogger(Utilities.class);
-	private final PostgresService pgService;
+  private static final Logger LOGGER = LogManager.getLogger(Utilities.class);
+  private final PostgresService pgService;
 
-	public Utilities(PostgresService pgService) {
-		this.pgService = pgService;
-	}
+  public Utilities(PostgresService pgService) {
+    this.pgService = pgService;
+  }
 
-	public Future<Void> writeToDB(StringBuilder query) {
-		Promise<Void> promise = Promise.promise();
+  public Future<Void> writeToDB(StringBuilder query) {
+    Promise<Void> promise = Promise.promise();
 
-		pgService.executeQuery(query.toString(), pgHandler -> {
-			if(pgHandler.succeeded()) {
-				promise.complete();
-			} else {
-				LOGGER.error("Insert/update into DB failed");
-				promise.fail("Insert/update fail");
-			}
-		});
-		return promise.future();
-	}
+    pgService.executeQuery(
+        query.toString(),
+        pgHandler -> {
+          if (pgHandler.succeeded()) {
+            promise.complete();
+          } else {
+            LOGGER.error("Insert/update into DB failed");
+            promise.fail("Insert/update fail");
+          }
+        });
+    return promise.future();
+  }
 
-	public Future<Void> writeToDB(String searchID, String requestID) {
+  public Future<Void> writeToDB(String searchID, String requestID, String sub) {
 
-		StringBuilder query = new StringBuilder(INSERT_S3_PENDING_SQL
-				.replace("$1", UUID.randomUUID().toString())
-				.replace("$2", searchID)
-				.replace("$3", requestID)
-				.replace("$4", "Pending"));
+    StringBuilder query =
+        new StringBuilder(
+            INSERT_S3_PENDING_SQL
+                .replace("$1", UUID.randomUUID().toString())
+                .replace("$2", searchID)
+                .replace("$3", requestID)
+                .replace("$4", sub)
+                .replace("$5", "Pending"));
 
-		return writeToDB(query);
-	}
+    return writeToDB(query);
+  }
 
-	public Future<Void> writeToDB(String sub, JsonObject result) {
+  public Future<Void> writeToDB(String sub, JsonObject result) {
 
-		StringBuilder query = new StringBuilder(INSERT_S3_READY_SQL
-				.replace("$1",UUID.randomUUID().toString())
-				.replace("$2",UUID.randomUUID().toString())
-				.replace("$3",result.getString("request_id"))
-				.replace("$4",result.getString("status"))
-				.replace("$5",result.getString("s3_url"))
-				.replace("$6",result.getString("expiry"))
-				.replace("$7",sub)
-				.replace("$8",result.getString("object_id")));
+    StringBuilder query =
+        new StringBuilder(
+            INSERT_S3_READY_SQL
+                .replace("$1", UUID.randomUUID().toString())
+                .replace("$2", UUID.randomUUID().toString())
+                .replace("$3", result.getString("request_id"))
+                .replace("$4", result.getString("status"))
+                .replace("$5", result.getString("s3_url"))
+                .replace("$6", result.getString("expiry"))
+                .replace("$7", sub)
+                .replace("$8", result.getString("object_id")));
 
-		return writeToDB(query);
-	}
+    return writeToDB(query);
+  }
 
-	public Future<Void> writeToDB(String sub, String s3_url,String expiry, JsonObject result) {
+  public Future<Void> writeToDB(String sub, String s3_url, String expiry, JsonObject result) {
 
-		result.remove("s3_url");
-		result.remove("expiry");
-		result.put("s3_url",s3_url);
-		result.put("expiry",expiry);
+    result.remove("s3_url");
+    result.remove("expiry");
+    result.put("s3_url", s3_url);
+    result.put("expiry", expiry);
 
-		return writeToDB(sub,result);
-	}
+    return writeToDB(sub, result);
+  }
 
-	public Future<Void> updateDBRecord(String _id, String s3_url, String expiry) {
+  public Future<Void> updateDBRecord(
+      String searchID, String s3_url, String expiry, String objectKey) {
 
-		StringBuilder query = new StringBuilder(UPDATE_S3_URL_SQL
-				.replace("$1",s3_url)
-				.replace("$2",expiry)
-				.replace("$3",_id));
+    StringBuilder query =
+        new StringBuilder(
+            UPDATE_S3_URL_SQL
+                .replace("$1", s3_url)
+                .replace("$2", expiry)
+                .replace("$3", searchID)
+                .replace("$4", objectKey));
 
-		return writeToDB(query);
-	}
+    return writeToDB(query);
+  }
 
-	public QueryBuilder getESquery1(JsonObject json, boolean scrollRequest) {
-		LOGGER.debug(json);
-		String searchType = json.getString(SEARCH_TYPE);
-		Boolean isValidQuery = false;
-		JsonObject elasticQuery = new JsonObject();
+  public QueryBuilder getESquery1(JsonObject json, boolean scrollRequest) {
+    LOGGER.debug(json);
+    String searchType = json.getString(SEARCH_TYPE);
+    Boolean isValidQuery = false;
+    JsonObject elasticQuery = new JsonObject();
 
-		boolean temporalQuery = false;
+    boolean temporalQuery = false;
 
-		JsonArray id = json.getJsonArray(ID);
+    JsonArray id = json.getJsonArray(ID);
 
-		String timeLimit = json.getString(TIME_LIMIT).split(",")[1];
-		int numDays = Integer.valueOf(json.getString(TIME_LIMIT).split(",")[2]);
+    String timeLimit = json.getString(TIME_LIMIT).split(",")[1];
+    int numDays = Integer.valueOf(json.getString(TIME_LIMIT).split(",")[2]);
 
-		BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-		boolQuery.filter(QueryBuilders.termsQuery(ID, id.getString(0)));
+    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
+    boolQuery.filter(QueryBuilders.termsQuery(ID, id.getString(0)));
 
-		if (searchType.matches(GEOSEARCH_REGEX)) {
-			boolQuery = new GeoQueryParser(boolQuery, json).parse();
-			isValidQuery = true;
-		}
+    if (searchType.matches(GEOSEARCH_REGEX)) {
+      boolQuery = new GeoQueryParser(boolQuery, json).parse();
+      isValidQuery = true;
+    }
 
-		if (searchType.matches(TEMPORAL_SEARCH_REGEX) && json.containsKey(REQ_TIMEREL)
-				&& json.containsKey(TIME_KEY)) {
-			boolQuery = new TemporalQueryParser(boolQuery, json).parse();
-			temporalQuery = true;
-			isValidQuery = true;
-		}
+    if (searchType.matches(TEMPORAL_SEARCH_REGEX)
+        && json.containsKey(REQ_TIMEREL)
+        && json.containsKey(TIME_KEY)) {
+      boolQuery = new TemporalQueryParser(boolQuery, json).parse();
+      temporalQuery = true;
+      isValidQuery = true;
+    }
 
-		if (searchType.matches(ATTRIBUTE_SEARCH_REGEX)) {
-			boolQuery = new AttributeQueryParser(boolQuery, json).parse();
-			isValidQuery = true;
-		}
+    if (searchType.matches(ATTRIBUTE_SEARCH_REGEX)) {
+      boolQuery = new AttributeQueryParser(boolQuery, json).parse();
+      isValidQuery = true;
+    }
 
-		JsonArray responseFilters = null;
-		if (searchType.matches(RESPONSE_FILTER_REGEX)) {
-			LOGGER.debug("Info: Adding responseFilter");
-			isValidQuery = true;
-			if (!json.getBoolean(SEARCH_KEY)) {
-				return null;
-			}
-			if (json.containsKey(RESPONSE_ATTRS)) {
-				responseFilters = json.getJsonArray(RESPONSE_ATTRS);
-			} else {
-				return null;
-			}
-		}
+    JsonArray responseFilters = null;
+    if (searchType.matches(RESPONSE_FILTER_REGEX)) {
+      LOGGER.debug("Info: Adding responseFilter");
+      isValidQuery = true;
+      if (!json.getBoolean(SEARCH_KEY)) {
+        return null;
+      }
+      if (json.containsKey(RESPONSE_ATTRS)) {
+        responseFilters = json.getJsonArray(RESPONSE_ATTRS);
+      } else {
+        return null;
+      }
+    }
 
-		/* checks if any valid search jsons have matched */
-		if (!isValidQuery) {
-			return null;
-		} else {
-			if (!temporalQuery && json.getJsonArray("applicableFilters").contains("TEMPORAL")) {
-				if (json.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(PROD_INSTANCE)) {
-					boolQuery
-							.filter(QueryBuilders.rangeQuery("observationDateTime")
-									.gte("now-" + timeLimit + "d/d"));
+    /* checks if any valid search jsons have matched */
+    if (!isValidQuery) {
+      return null;
+    } else {
+      if (!temporalQuery && json.getJsonArray("applicableFilters").contains("TEMPORAL")) {
+        if (json.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(PROD_INSTANCE)) {
+          boolQuery.filter(
+              QueryBuilders.rangeQuery("observationDateTime").gte("now-" + timeLimit + "d/d"));
 
-				} else if (json.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(TEST_INSTANCE)) {
-					String endTime = json.getString(TIME_LIMIT).split(",")[1];
-					ZonedDateTime endTimeZ = ZonedDateTime.parse(endTime);
-					ZonedDateTime startTime = endTimeZ.minusDays(numDays);
+        } else if (json.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(TEST_INSTANCE)) {
+          String endTime = json.getString(TIME_LIMIT).split(",")[1];
+          ZonedDateTime endTimeZ = ZonedDateTime.parse(endTime);
+          ZonedDateTime startTime = endTimeZ.minusDays(numDays);
 
-					boolQuery
-							.filter(QueryBuilders.rangeQuery("observationDateTime")
-									.lte(endTime)
-									.gte(startTime));
+          boolQuery.filter(
+              QueryBuilders.rangeQuery("observationDateTime").lte(endTime).gte(startTime));
+        }
+      }
+    }
 
-				}
+    //    elasticQuery.put(QUERY_KEY, new JsonObject(boolQuery.toString()));
+    //
+    //    if (responseFilters != null) {
+    //      elasticQuery.put(SOURCE_FILTER_KEY, responseFilters);
+    //    }
 
-			}
-		}
-
-		//    elasticQuery.put(QUERY_KEY, new JsonObject(boolQuery.toString()));
-		//
-		//    if (responseFilters != null) {
-		//      elasticQuery.put(SOURCE_FILTER_KEY, responseFilters);
-		//    }
-
-		return boolQuery;
-	}
+    return boolQuery;
+  }
 }

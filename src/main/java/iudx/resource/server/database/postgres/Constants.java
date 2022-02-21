@@ -17,14 +17,14 @@ public class Constants {
       "DELETE FROM unique_attributes WHERE resource_id=$1";
 
   public static String INSERT_S3_PENDING_SQL =
-      "INSERT INTO s3_upload_url(_id, search_id, request_id, status) values('$1','$2','$3','$4')";
+      "INSERT INTO s3_upload_url(_id, search_id, request_id, user_id, status) values('$1','$2','$3','$4','$5')";
 
   public static String INSERT_S3_READY_SQL =
       "INSERT INTO s3_upload_url(_id, search_id, request_id, status, s3_url, expiry, user_id, object_id) " +
           "values('$1','$2','$3','$4','$5',$6,'$7','$8')";
 
   public static String UPDATE_S3_URL_SQL =
-      "UPDATE s3_upload_url SET s3_url=$1, expiry=$2 WHERE _id=$3";
+      "UPDATE s3_upload_url SET s3_url='$1', expiry='$2', status='ready', object_id='$4' WHERE search_id='$3'";
 
   public static String SELECT_S3_STATUS_SQL =
           "SELECT status,s3_url,search_id FROM s3_upload_url WHERE search_id='$1';";

@@ -8,59 +8,56 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.RoutingContext;
 
 /**
  * The Async Service.
+ *
  * <h1>Async Service</h1>
- * <p>
- *   The Async Service in the IUDX Resource Server defines the operations to be
- *   performed with the IUDX Async Server.
- * </p>
+ *
+ * <p>The Async Service in the IUDX Resource Server defines the operations to be performed with the
+ * IUDX Async Server.
  *
  * @see io.vertx.codegen.annotations.ProxyGen
  * @see io.vertx.codegen.annotations.VertxGen
  * @version 1.0
  * @since 2022-02-08
  */
-
 @VertxGen
 @ProxyGen
 public interface AsyncService {
 
-	/**
-	 * The scrollQuery implements the async scroll search with the database.
-	 *
-	 * @param request which is a JsonObject
-	 * @param handler which is a Request Handler
-	 * @return AsyncService which is a service
-	 */
+  /**
+   * The scrollQuery implements the async scroll search with the database.
+   *
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return AsyncService which is a service
+   */
+  @Fluent
+  AsyncService scrollQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
-	@Fluent
-	AsyncService scrollQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  /**
+   * The asyncSearch checks for an already existing s3 url in the database.
+   *
+   * @param requestID which is a String
+   * @param sub which is a String
+   * @param scrollJson which is a JsonObject
+   * @param handler which is a Request handler
+   * @return AsyncService which is a service
+   */
+  @Fluent
+  AsyncService asyncSearch(String requestID, String sub,
+                           JsonObject scrollJson, Handler<AsyncResult<JsonObject>> handler);
 
-	/**
-	 * The fetchURLFromDB checks for an already existing s3 url in the database.
-	 *
-	 * @param requestID which is a String
-	 * @param sub which is a String
-	 * @param scrollJson which is a JsonObject
-	 * @param handler which is a Request handler
-	 * @return AsyncService which is a service
-	 */
-
-	@Fluent
-	AsyncService fetchURLFromDB(String requestID, String sub, JsonObject scrollJson, Handler<AsyncResult<JsonObject>> handler);
-
-	/**
-	 * The createProxy helps the code generation blocks to generate proxy code.
-	 * @param vertx which is the vertx instance
-	 * @param address which is the proxy address
-	 * @return AsyncServiceVertxEBProxy which is a service proxy
-	 */
-
-	@GenIgnore
-	static AsyncService createProxy(Vertx vertx, String address) {
-		return new AsyncServiceVertxEBProxy(vertx, address);
-	}
+  /**
+   * The createProxy helps the code generation blocks to generate proxy code.
+   *
+   * @param vertx which is the vertx instance
+   * @param address which is the proxy address
+   * @return AsyncServiceVertxEBProxy which is a service proxy
+   */
+  @GenIgnore
+  static AsyncService createProxy(Vertx vertx, String address) {
+    return new AsyncServiceVertxEBProxy(vertx, address);
+  }
 }

@@ -127,7 +127,6 @@ public class ValidatorsHandlersFactory {
     validators.add(new PaginationOffsetTypeValidator(parameters.get(NGSILDQUERY_FROM), false));
 
     return validators;
-
   }
 
   private List<Validator> getTemporalRequestValidations(final MultiMap parameters,
@@ -206,7 +205,8 @@ public class ValidatorsHandlersFactory {
     return validators;
   }
 
-  private List<Validator> getAsyncRequestValidations(final MultiMap parameters, final MultiMap headers) {
+  private List<Validator> getAsyncRequestValidations(
+      final MultiMap parameters, final MultiMap headers) {
 
     List<Validator> validators = new ArrayList<>();
     validators.add(new IDTypeValidator(parameters.get(NGSILDQUERY_ID), true));
@@ -249,7 +249,6 @@ public class ValidatorsHandlersFactory {
     return validators;
   }
 
-
   private String loadJson(String filename) {
     String jsonStr = null;
     if (jsonSchemaMap.containsKey(filename)) {
@@ -266,5 +265,4 @@ public class ValidatorsHandlersFactory {
     }
     return jsonStr;
   }
-
 }
