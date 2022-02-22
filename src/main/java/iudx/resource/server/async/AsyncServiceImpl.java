@@ -26,6 +26,13 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static iudx.resource.server.async.util.Constants.EXPIRY;
+import static iudx.resource.server.async.util.Constants.USER_ID;
+import static iudx.resource.server.async.util.Constants.OBJECT_ID;
+import static iudx.resource.server.async.util.Constants.S3_URL;
+import static iudx.resource.server.async.util.Constants.FILE_DOWNLOAD_URL;
+import static iudx.resource.server.async.util.Constants.SEARCH_ID;
+import static iudx.resource.server.async.util.Constants.STATUS;
 import static iudx.resource.server.database.archives.Constants.SUCCESS;
 import static iudx.resource.server.database.archives.Constants.SEARCH_KEY;
 import static iudx.resource.server.database.archives.Constants.TIME_LIMIT;
@@ -62,12 +69,8 @@ public class AsyncServiceImpl implements AsyncService {
   private final S3FileOpsHelper s3FileOpsHelper;
   private final Utilities utilities;
 
-  public AsyncServiceImpl(
-      ElasticClient client,
-      PostgresService pgService,
-      S3FileOpsHelper s3FileOpsHelper,
-      String timeLimit,
-      String filePath) {
+  public AsyncServiceImpl(ElasticClient client, PostgresService pgService,
+      S3FileOpsHelper s3FileOpsHelper, String timeLimit, String filePath) {
     this.client = client;
     this.pgService = pgService;
     this.s3FileOpsHelper = s3FileOpsHelper;
@@ -103,16 +106,19 @@ public class AsyncServiceImpl implements AsyncService {
         query.toString(),
         pgHandler -> {
           if (pgHandler.succeeded()) {
-            if (pgHandler.result().getJsonArray("result").isEmpty()) {
-
-              String searchID = UUID.randomUUID().toString();
-              JsonArray responseJson =
-                  new JsonArray().add(new JsonObject().put("searchID", searchID));
+            JsonArray results = pgHandler.result().getJsonArray("result");
+            if (results.isEmpty()) {
 
               // respond with searchID for /async/status
+              String searchID = UUID.randomUUID().toString();
               responseBuilder =
-                  new ResponseBuilder(SUCCESS).setTypeAndTitle(201).setMessage(responseJson);
+                  new ResponseBuilder(SUCCESS)
+                      .setTypeAndTitle(201)
+                      .setMessage(new JsonArray().add(new JsonObject().put("searchID", searchID)));
               handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+
+              // write pending status to DB
+              Future.future(future -> utilities.writeToDB(searchID, requestID, sub));
 
               // if db result does not have a matching requestID, ONLY then ES scroll API is called
               scrollQuery(
@@ -120,41 +126,47 @@ public class AsyncServiceImpl implements AsyncService {
                   scrollHandler -> {
                     if (scrollHandler.succeeded()) {
 
-                      // write pending status to DB
-                      Future.future(future -> utilities.writeToDB(searchID, requestID, sub));
-
+                      // start upload to s3 after scroll request succeeds
                       uploadScrollResultToS3(
                           scrollJson.getJsonArray(ID).getString(0),
                           uploadHandler -> {
                             if (uploadHandler.succeeded()) {
+                              // update database record with status ready
                               utilities.updateDBRecord(
                                   searchID,
-                                  uploadHandler.result().getString("s3_url"),
-                                  uploadHandler.result().getString("expiry"),
-                                  uploadHandler.result().getString("object_id"));
+                                  uploadHandler.result().getString(S3_URL),
+                                  uploadHandler.result().getString(EXPIRY),
+                                  uploadHandler.result().getString(OBJECT_ID));
                             } else {
+                              LOGGER.error("upload failed");
+                              // delete entry on abrupt failure
+                              Future.future(future -> utilities.deleteEntry(searchID));
                               handler.handle(Future.failedFuture(uploadHandler.cause()));
                             }
                           });
                     } else {
+                      LOGGER.error("scroll search failed");
+                      // delete entry on abrupt failure
+                      Future.future(future -> utilities.deleteEntry(searchID));
                       handler.handle(Future.failedFuture(scrollHandler.cause()));
                     }
                   });
             } else {
-              JsonArray results = pgHandler.result().getJsonArray("result");
-              String s3_url =
-                  checkExpiryAndUserID(
-                      results, zdt,
-                      sub); // since request ID exists, get or generate the url based on user and/or
-              // the expiry of the url
-              JsonArray responseJson =
-                  new JsonArray()
-                      .add(
-                          new JsonObject()
-                              .put("file-download-url", s3_url != null ? s3_url : "dummy/url/123"));
+              // since request ID exists, get or generate the url based on user and/or the expiry of
+              // the url
+              JsonObject answer = checkExpiryAndUserID(results, zdt, sub);
 
-              responseBuilder =
-                  new ResponseBuilder(SUCCESS).setTypeAndTitle(200).setMessage(responseJson);
+              if (answer.containsKey(SEARCH_ID)) {
+                responseBuilder =
+                    new ResponseBuilder(SUCCESS)
+                        .setTypeAndTitle(201)
+                        .setMessage(new JsonArray().add(answer));
+              } else if (answer.containsKey(S3_URL)) {
+                responseBuilder =
+                    new ResponseBuilder(SUCCESS)
+                        .setTypeAndTitle(200)
+                        .setMessage(new JsonArray().add(answer));
+              }
               handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
             }
           }
@@ -167,7 +179,7 @@ public class AsyncServiceImpl implements AsyncService {
     String objectKey = String.join("__", splitId);
     splitId.remove(splitId.size() - 1);
     final String searchIndex = String.join("__", splitId);
-    String fileName = filePath.concat("response.json");
+    String fileName = filePath.concat(searchIndex).concat("/response.json");
     File file = new File(fileName);
 
     s3FileOpsHelper.s3Upload(
@@ -182,25 +194,28 @@ public class AsyncServiceImpl implements AsyncService {
         });
   }
 
-  private String checkExpiryAndUserID(JsonArray results, LocalDateTime zdt, String sub) {
+  private JsonObject checkExpiryAndUserID(JsonArray results, LocalDateTime zdt, String sub) {
 
     for (Object json : results) {
       JsonObject result = (JsonObject) json;
       String searchID = result.getString("search_id");
+      String userID = result.getString(USER_ID);
 
-      if (result.getString("s3_url") == null) {
+      if (result.getString(STATUS).equalsIgnoreCase("Pending")) {
+        if (userID.equalsIgnoreCase(sub)) {
+          return new JsonObject().put(SEARCH_ID, searchID);
+        }
         continue;
       }
-      String s3_url = result.getString("s3_url");
-      String userID = result.getString("user_id");
-      LocalDateTime expiry = LocalDateTime.parse(result.getString("expiry"));
-      String object_id = result.getString("object_id");
+      String s3_url = result.getString(S3_URL);
+      LocalDateTime expiry = LocalDateTime.parse(result.getString(EXPIRY));
+      String object_id = result.getString(OBJECT_ID);
 
       if (userID.equalsIgnoreCase(sub) && zdt.isBefore(expiry)) {
-        return s3_url;
+        return new JsonObject().put(FILE_DOWNLOAD_URL, s3_url);
       } else if (!userID.equalsIgnoreCase(sub) && zdt.isBefore(expiry)) {
         Future.future(future -> utilities.writeToDB(sub, result));
-        return s3_url;
+        return new JsonObject().put(FILE_DOWNLOAD_URL, s3_url);
       } else if (userID.equalsIgnoreCase(sub) && !zdt.isBefore(expiry)) {
         String newS3_url = generateNewURL(object_id);
         // TODO: change expiry to long?
@@ -208,16 +223,16 @@ public class AsyncServiceImpl implements AsyncService {
         Future.future(
             future ->
                 utilities.updateDBRecord(searchID, newS3_url, newExpiry.toString(), object_id));
-        return newS3_url;
+        return new JsonObject().put(FILE_DOWNLOAD_URL, newS3_url);
       } else if (!userID.equalsIgnoreCase(sub) && !zdt.isBefore(expiry)) {
         String newS3_url = generateNewURL(object_id);
         // TODO: change expiry to long?
         String newExpiry = zdt.plusDays(1).toString();
         Future.future(future -> utilities.writeToDB(sub, newS3_url, newExpiry, result));
-        return newS3_url;
+        return new JsonObject().put(FILE_DOWNLOAD_URL, newS3_url);
       }
     }
-    return null;
+    return new JsonObject();
   }
 
   private String generateNewURL(String object_id) {
