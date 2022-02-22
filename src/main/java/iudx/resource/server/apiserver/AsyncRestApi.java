@@ -148,11 +148,13 @@ public class AsyncRestApi {
         UUID.nameUUIDFromBytes(requestURI.getBytes())
             .toString(); // generate UUID from the absolute URI of the HTTP Request
 
+    LOGGER.debug("here 1");
     asyncService.asyncSearch(
         requestID,
         sub,
         json,
         handler -> {
+          LOGGER.debug("here 2");
           if (handler.succeeded()) {
             LOGGER.info("Success: Async Search Success");
             handleSuccessResponse(

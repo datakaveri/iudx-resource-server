@@ -251,7 +251,11 @@ public class ElasticClient {
 
       SearchHit[] searchHits = searchResponse.getHits().getHits();
 
-      file = new File(filePath.concat("response.json"));
+      File dir = new File(filePath.concat(index));
+      if(!dir.exists()) {
+        dir.mkdirs();
+      }
+      file = new File(dir,"response.json");
       LOGGER.debug(file.getAbsolutePath());
 
       FileWriter filew = new FileWriter(file);

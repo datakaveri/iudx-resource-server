@@ -17,8 +17,23 @@ import org.elasticsearch.index.query.QueryBuilders;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import static iudx.resource.server.database.archives.Constants.*;
-import static iudx.resource.server.database.postgres.Constants.*;
+import static iudx.resource.server.database.archives.Constants.SEARCH_TYPE;
+import static iudx.resource.server.database.archives.Constants.TIME_LIMIT;
+import static iudx.resource.server.database.archives.Constants.ID;
+import static iudx.resource.server.database.archives.Constants.GEOSEARCH_REGEX;
+import static iudx.resource.server.database.archives.Constants.TEMPORAL_SEARCH_REGEX;
+import static iudx.resource.server.database.archives.Constants.REQ_TIMEREL;
+import static iudx.resource.server.database.archives.Constants.TIME_KEY;
+import static iudx.resource.server.database.archives.Constants.ATTRIBUTE_SEARCH_REGEX;
+import static iudx.resource.server.database.archives.Constants.RESPONSE_FILTER_REGEX;
+import static iudx.resource.server.database.archives.Constants.SEARCH_KEY;
+import static iudx.resource.server.database.archives.Constants.RESPONSE_ATTRS;
+import static iudx.resource.server.database.archives.Constants.PROD_INSTANCE;
+import static iudx.resource.server.database.archives.Constants.TEST_INSTANCE;
+import static iudx.resource.server.database.postgres.Constants.INSERT_S3_PENDING_SQL;
+import static iudx.resource.server.database.postgres.Constants.INSERT_S3_READY_SQL;
+import static iudx.resource.server.database.postgres.Constants.UPDATE_S3_URL_SQL;
+import static iudx.resource.server.database.postgres.Constants.DELETE_S3_PENDING_SQL;
 
 public class Utilities {
 
@@ -38,8 +53,8 @@ public class Utilities {
           if (pgHandler.succeeded()) {
             promise.complete();
           } else {
-            LOGGER.error("Insert/update into DB failed");
-            promise.fail("Insert/update fail");
+            LOGGER.error("op on DB failed");
+            promise.fail("operation fail");
           }
         });
     return promise.future();
@@ -175,5 +190,11 @@ public class Utilities {
     //    }
 
     return boolQuery;
+  }
+
+  public Future<Void> deleteEntry(String searchID) {
+    StringBuilder query = new StringBuilder(DELETE_S3_PENDING_SQL.replace("$1", searchID));
+
+    return writeToDB(query);
   }
 }
