@@ -12,6 +12,7 @@ import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import iudx.resource.server.apiserver.handlers.AuthHandler;
 import iudx.resource.server.apiserver.handlers.FailureHandler;
 import iudx.resource.server.apiserver.handlers.ValidationHandler;
 import iudx.resource.server.apiserver.query.NGSILDQueryParams;
@@ -63,16 +64,8 @@ public class AsyncRestApi {
   private final ParamsValidator validator;
   private final CatalogueService catalogueService;
 
-<<<<<<< HEAD
-  AsyncRestApi(
-      Vertx vertx,
-      PostgresService pgService,
-      CatalogueService catalogueService,
-      ParamsValidator validator) {
-=======
   AsyncRestApi(Vertx vertx, PostgresService pgService,
       CatalogueService catalogueService, ParamsValidator validator) {
->>>>>>> fix: async search flow
     this.vertx = vertx;
     this.pgService = pgService;
     this.catalogueService = catalogueService;
@@ -85,72 +78,7 @@ public class AsyncRestApi {
     FailureHandler validationsFailureHandler = new FailureHandler();
     ValidationHandler asyncSearchValidationHandler =
         new ValidationHandler(vertx, RequestType.ASYNC);
-<<<<<<< HEAD
 
-    router
-        .get(Api.SEARCH.path)
-        .handler(asyncSearchValidationHandler)
-        .handler(AuthHandler.create(vertx))
-        .handler(this::handleAsyncSearchRequest)
-        .handler(validationsFailureHandler);
-
-    router
-        .get(Api.STATUS.path)
-        //				.handler(asyncSearchValidationHandler)
-        //				.handler(AuthHandler.create(vertx))     // TODO: how to authenticate?
-        .handler(this::handleAsyncStatusRequest)
-        .handler(validationsFailureHandler);
-
-    return router;
-  }
-
-  private void handleAsyncSearchRequest(RoutingContext routingContext) {
-    LOGGER.trace("starting async search");
-    HttpServerRequest request = routingContext.request();
-    HttpServerResponse response = routingContext.response();
-
-    /* HTTP request instance/host details */
-    String instanceID = request.getHeader(HEADER_HOST);
-    // get query parameters
-    MultiMap params = getQueryParams(routingContext, response).get();
-    // validate request params
-    Future<Boolean> validationResult = validator.validate(params);
-    validationResult.onComplete(
-        validationHandler -> {
-          if (validationHandler.succeeded()) {
-            // parse query params
-            NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
-            // create json
-            QueryMapper queryMapper = new QueryMapper();
-            JsonObject json = queryMapper.toJson(ngsildquery, true, true);
-            Future<List<String>> filtersFuture =
-                catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
-            json.put(JSON_INSTANCEID, instanceID);
-            LOGGER.debug("Info: IUDX json query;" + json);
-            /* HTTP request body as Json */
-            JsonObject requestBody = new JsonObject();
-            requestBody.put("ids", json.getJsonArray("id"));
-            filtersFuture.onComplete(
-                filtersHandler -> {
-                  if (filtersHandler.succeeded()) {
-                    json.put("applicableFilters", filtersHandler.result());
-                    executeAsyncURLSearch(routingContext, json);
-                  } else {
-                    LOGGER.error("catalogue item/group doesn't have filters.");
-                  }
-                });
-          } else if (validationHandler.failed()) {
-            LOGGER.error("Fail: Bad request;");
-            handleResponse(
-                response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
-          }
-        });
-  }
-
-  private void executeAsyncURLSearch(RoutingContext routingContext, JsonObject json) {
-    asyncService.fetchURLFromDB(
-        routingContext,
-=======
     asyncService = AsyncService.createProxy(vertx, ASYNC_SERVICE_ADDRESS);
     router
         .get(Api.SEARCH.path)
@@ -225,7 +153,6 @@ public class AsyncRestApi {
     asyncService.asyncSearch(
         requestID,
         sub,
->>>>>>> fix: async search flow
         json,
         handler -> {
           LOGGER.debug("here 2");
@@ -265,13 +192,8 @@ public class AsyncRestApi {
             JsonObject result = pgHandler.result();
             String status = result.getJsonArray("result").getJsonObject(0).getString("status");
             String fileDownloadURL =
-<<<<<<< HEAD
-                result.getJsonArray("result").getJsonObject(0).getString("url");
-            result.getJsonArray("result").getJsonObject(0).remove("url");
-=======
                 result.getJsonArray("result").getJsonObject(0).getString("s3_url");
             result.getJsonArray("result").getJsonObject(0).remove("s3_url");
->>>>>>> fix: async search flow
 
             if (status.equalsIgnoreCase("ready")) {
               result

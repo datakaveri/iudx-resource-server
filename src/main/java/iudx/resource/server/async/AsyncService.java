@@ -37,7 +37,7 @@ public interface AsyncService {
   AsyncService scrollQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The asyncSearch checks for an already existing s3 url in the database.
+   * The asyncSearch performs asynchronous search for a resource.
    *
    * @param requestID which is a String
    * @param sub which is a String
@@ -48,6 +48,14 @@ public interface AsyncService {
   @Fluent
   AsyncService asyncSearch(String requestID, String sub,
                            JsonObject scrollJson, Handler<AsyncResult<JsonObject>> handler);
+
+  /**
+   * The asyncStatus checks on the status of the corresponding async search
+   * @param searchID which is a String
+   * @return AsyncService which is a service
+   */
+  @Fluent
+  AsyncService asyncStatus(String searchID, Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The createProxy helps the code generation blocks to generate proxy code.
