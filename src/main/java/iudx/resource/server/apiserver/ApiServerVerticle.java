@@ -843,7 +843,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         });
 
   }
-
+  
 
   /**
    * Method used to handle all subscription requests.

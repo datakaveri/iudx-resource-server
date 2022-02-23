@@ -180,5 +180,8 @@ public class Constants {
   // sql errors
   public static final String SQL_ERROR = "SQL Error";
   public static final String DUPLICATE_KEY = "duplicate key value violates unique constraint";
+  
+  //message
+  public static final String API_KEY_MESSAGE="Use the apiKey returned on registration, if lost please use /resetPassword API";
 
 }

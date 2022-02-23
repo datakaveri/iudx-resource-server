@@ -93,7 +93,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);
 
 
-    boolean doCheckResourceAndId =
+    boolean skipResourceIdCheck =
         (endPoint.equalsIgnoreCase("/ngsi-ld/v1/subscription")
             && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")))
             || endPoint.equalsIgnoreCase("/management/user/resetPassword")
@@ -103,7 +103,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             || endPoint.equalsIgnoreCase("/ngsi-ld/v1/provider/audit");
 
 
-    LOGGER.debug("checkResourceFlag " + doCheckResourceAndId);
+    LOGGER.debug("checkResourceFlag " + skipResourceIdCheck);
 
     ResultContainer result = new ResultContainer();
 
@@ -123,7 +123,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             })
         .compose(
             revokeTokenHandler -> {
-              if (!doCheckResourceAndId
+              if (!skipResourceIdCheck
                   && !result.jwtData.getIss().equals(result.jwtData.getSub())) {
                 return isOpenResource(id);
               } else {
@@ -137,7 +137,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
                 JsonObject json = new JsonObject();
                 json.put(JSON_USERID, result.jwtData.getSub());
                 return Future.succeededFuture(true);
-              } else if (!doCheckResourceAndId && !result.isOpen) {
+              } else if (!skipResourceIdCheck
+                  && (!result.isOpen || endPoint.equalsIgnoreCase("/ngsi-ld/v1/subscription")
+                      || endPoint.equalsIgnoreCase("/ngsi-ld/v1/ingestion"))) {
                 return isValidId(result.jwtData, id);
               } else {
                 return Future.succeededFuture(true);
@@ -445,7 +447,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
                   LOGGER.debug("Info: Group ID valid : Catalogue item Found");
                   promise.complete(resourceACL);
                 } catch (Exception ignored) {
-                  LOGGER.error("Info: Group ID invalid : Empty response in results from Catalogue",ignored);
+                  LOGGER.error("Info: Group ID invalid : Empty response in results from Catalogue",
+                      ignored);
                   promise.fail("Resource not found");
                 }
               });

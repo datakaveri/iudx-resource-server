@@ -3,12 +3,12 @@ package iudx.resource.server.databroker;
 import static iudx.resource.server.databroker.util.Constants.ALLOW;
 import static iudx.resource.server.databroker.util.Constants.ALL_NOT_FOUND;
 import static iudx.resource.server.databroker.util.Constants.APIKEY;
+import static iudx.resource.server.databroker.util.Constants.API_KEY_MESSAGE;
 import static iudx.resource.server.databroker.util.Constants.AUTO_DELETE;
 import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_CODE;
 import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_DATA;
 import static iudx.resource.server.databroker.util.Constants.CHECK_CREDENTIALS;
 import static iudx.resource.server.databroker.util.Constants.CONFIGURE;
-import static iudx.resource.server.databroker.util.Constants.DATABASE_READ_FAILURE;
 import static iudx.resource.server.databroker.util.Constants.DATABASE_READ_SUCCESS;
 import static iudx.resource.server.databroker.util.Constants.DATA_ISSUE;
 import static iudx.resource.server.databroker.util.Constants.DATA_WILDCARD_ROUTINGKEY;
@@ -728,11 +728,7 @@ public class RabbitClient {
           }
           LOGGER.debug("Success : Exchange created successfully.");
           requestParams.isExchnageCreated = true;
-          return setTopicPermissions(requestParams.vhost, requestParams.adaptorId,
-              requestParams.userid);
-        }).compose(topicPermissionsResult -> {
-          LOGGER.debug("Success : topic permissions set.");
-          return updateUserPermissions(requestParams.userid, PermissionOpType.ADD_WRITE,
+          return updateUserPermissions(vhost, requestParams.userid, PermissionOpType.ADD_WRITE,
               requestParams.adaptorId);
         }).compose(userPermissionsResult -> {
           LOGGER.debug("Success : user permissions set.");
@@ -752,7 +748,8 @@ public class RabbitClient {
           LOGGER.info("Error : ", failure);
           // Compensating call, delete adaptor if created;
           if (requestParams.isExchnageCreated) {
-            JsonObject deleteJson = new JsonObject().put("exchangeName", requestParams.adaptorId);
+            JsonObject deleteJson =
+                new JsonObject().put("exchangeName", requestParams.adaptorId);
             Future.future(fu -> deleteExchange(deleteJson, vhost));
           }
           promise.fail(failure);
@@ -798,7 +795,8 @@ public class RabbitClient {
               LOGGER.debug("Info : " + exchangeID + " adaptor deleted successfully");
               finalResponse.mergeIn(getResponseJson(200, "success", "adaptor deleted"));
               Future.future(
-                  fu -> updateUserPermissions(userId, PermissionOpType.DELETE_WRITE, exchangeID));
+                  fu -> updateUserPermissions(vhost, userId, PermissionOpType.DELETE_WRITE,
+                      exchangeID));
             } else if (rh.failed()) {
               finalResponse.clear()
                   .mergeIn(getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Adaptor deleted",
@@ -877,28 +875,13 @@ public class RabbitClient {
           });
 
         } else if (reply.result().statusCode() == HttpStatus.SC_OK) {
-          // user exists , So something useful can be done here
-          /* Handle the response if a user exists */
-          JsonObject readDbResponse = new JsonObject();
-          Future<JsonObject> getUserApiKey = getUserInDb(userid);
-
-          getUserApiKey.onComplete(getUserApiKeyHandler -> {
-            if (getUserApiKeyHandler.succeeded()) {
-              LOGGER.debug("DATABASE_READ_SUCCESS");
-              String apiKey = getUserApiKey.result().getString(APIKEY);
-              readDbResponse.put(USER_ID, userid);
-              readDbResponse.put(APIKEY, apiKey);
-              readDbResponse.mergeIn(
-                  getResponseJson(SUCCESS_CODE, DATABASE_READ_SUCCESS, DATABASE_READ_SUCCESS));
-              readDbResponse.put(VHOST_PERMISSIONS, vhost);
-              promise.complete(readDbResponse);
-            } else {
-              LOGGER.debug("DATABASE_READ_FAILURE");
-              readDbResponse
-                  .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, DATABASE_READ_FAILURE));
-              promise.fail(readDbResponse.toString());
-            }
-          });
+          LOGGER.debug("DATABASE_READ_SUCCESS");
+          response.put(USER_ID, userid);
+          response.put(APIKEY, API_KEY_MESSAGE);
+          response.mergeIn(
+              getResponseJson(SUCCESS_CODE, DATABASE_READ_SUCCESS, DATABASE_READ_SUCCESS));
+          response.put(VHOST_PERMISSIONS, vhost);
+          promise.complete(response);
         }
 
       } else {
@@ -1145,8 +1128,8 @@ public class RabbitClient {
     // all keys are mandatory. empty strings used for configure,read as not
     // permitted.
     vhostPermissions.put(CONFIGURE, DENY);
-    vhostPermissions.put(WRITE, ALLOW);
-    vhostPermissions.put(READ, ALLOW);
+    vhostPermissions.put(WRITE, NONE);
+    vhostPermissions.put(READ, NONE);
     Promise<JsonObject> promise = Promise.promise();
     /* Construct a response object */
     JsonObject vhostPermissionResponse = new JsonObject();
@@ -1231,7 +1214,7 @@ public class RabbitClient {
       if (handler.succeeded()) {
         promise.complete();
       } else {
-        LOGGER.error("Error : Queue" + queue + " binding error : " , handler.cause());
+        LOGGER.error("Error : Queue" + queue + " binding error : ", handler.cause());
         promise.fail(handler.cause());
       }
     });
@@ -1281,12 +1264,12 @@ public class RabbitClient {
     return promise.future();
   }
 
-  Future<JsonObject> updateUserPermissions(String userId, PermissionOpType type,
+  Future<JsonObject> updateUserPermissions(String vHost, String userId, PermissionOpType type,
       String resourceId) {
     Promise<JsonObject> promise = Promise.promise();
     getUserPermissions(userId).onComplete(handler -> {
       if (handler.succeeded()) {
-        String url = "/api/permissions/IUDX/" + encodeValue(userId);
+        String url = "/api/permissions/" + vHost + "/" + encodeValue(userId);
         JsonObject existingPermissions = handler.result();
 
         JsonObject updatedPermission = getUpdatedPermission(existingPermissions, type, resourceId);
