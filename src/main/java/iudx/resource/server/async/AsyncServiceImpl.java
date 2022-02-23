@@ -33,6 +33,8 @@ import static iudx.resource.server.async.util.Constants.S3_URL;
 import static iudx.resource.server.async.util.Constants.FILE_DOWNLOAD_URL;
 import static iudx.resource.server.async.util.Constants.SEARCH_ID;
 import static iudx.resource.server.async.util.Constants.STATUS;
+import static iudx.resource.server.async.util.Constants.READY;
+import static iudx.resource.server.async.util.Constants.PENDING;
 import static iudx.resource.server.database.archives.Constants.SUCCESS;
 import static iudx.resource.server.database.archives.Constants.SEARCH_KEY;
 import static iudx.resource.server.database.archives.Constants.TIME_LIMIT;
@@ -45,6 +47,7 @@ import static iudx.resource.server.database.archives.Constants.SEARCHTYPE_NOT_FO
 import static iudx.resource.server.database.archives.Constants.MALFORMED_ID;
 import static iudx.resource.server.database.archives.Constants.ERROR;
 import static iudx.resource.server.database.postgres.Constants.SELECT_S3_SEARCH_SQL;
+import static iudx.resource.server.database.postgres.Constants.SELECT_S3_STATUS_SQL;
 
 /**
  * The Async Service Implementation.
@@ -69,8 +72,12 @@ public class AsyncServiceImpl implements AsyncService {
   private final S3FileOpsHelper s3FileOpsHelper;
   private final Utilities utilities;
 
-  public AsyncServiceImpl(ElasticClient client, PostgresService pgService,
-      S3FileOpsHelper s3FileOpsHelper, String timeLimit, String filePath) {
+  public AsyncServiceImpl(
+      ElasticClient client,
+      PostgresService pgService,
+      S3FileOpsHelper s3FileOpsHelper,
+      String timeLimit,
+      String filePath) {
     this.client = client;
     this.pgService = pgService;
     this.s3FileOpsHelper = s3FileOpsHelper;
@@ -155,18 +162,53 @@ public class AsyncServiceImpl implements AsyncService {
               // since request ID exists, get or generate the url based on user and/or the expiry of
               // the url
               JsonObject answer = checkExpiryAndUserID(results, zdt, sub);
-
+              LOGGER.debug(answer.encodePrettily());
               if (answer.containsKey(SEARCH_ID)) {
                 responseBuilder =
                     new ResponseBuilder(SUCCESS)
                         .setTypeAndTitle(201)
                         .setMessage(new JsonArray().add(answer));
-              } else if (answer.containsKey(S3_URL)) {
+              } else if (answer.containsKey(FILE_DOWNLOAD_URL)) {
                 responseBuilder =
                     new ResponseBuilder(SUCCESS)
                         .setTypeAndTitle(200)
                         .setMessage(new JsonArray().add(answer));
               }
+              handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+            }
+          }
+        });
+    return null;
+  }
+
+  @Override
+  public AsyncService asyncStatus(String searchID, Handler<AsyncResult<JsonObject>> handler) {
+
+    StringBuilder query = new StringBuilder(SELECT_S3_STATUS_SQL.replace("$1", searchID));
+
+    pgService.executeQuery(
+        query.toString(),
+        pgHandler -> {
+          if (pgHandler.succeeded()) {
+            JsonArray results = pgHandler.result().getJsonArray("result");
+            if (results.isEmpty()) {
+              responseBuilder =
+                  new ResponseBuilder(FAILED)
+                      .setTypeAndTitle(400)
+                      .setMessage("Fail: Incorrect search ID");
+              handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+            } else {
+              JsonObject answer = results.getJsonObject(0);
+              String status = answer.getString(STATUS);
+              if (status.equalsIgnoreCase(READY)) {
+                answer.put(FILE_DOWNLOAD_URL, answer.getValue(S3_URL));
+              }
+              answer.remove(S3_URL);
+
+              responseBuilder =
+                  new ResponseBuilder(SUCCESS)
+                      .setTypeAndTitle(200)
+                      .setMessage(new JsonArray().add(answer));
               handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
             }
           }
@@ -201,7 +243,7 @@ public class AsyncServiceImpl implements AsyncService {
       String searchID = result.getString("search_id");
       String userID = result.getString(USER_ID);
 
-      if (result.getString(STATUS).equalsIgnoreCase("Pending")) {
+      if (result.getString(STATUS).equalsIgnoreCase(PENDING)) {
         if (userID.equalsIgnoreCase(sub)) {
           return new JsonObject().put(SEARCH_ID, searchID);
         }

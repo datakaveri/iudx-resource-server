@@ -12,6 +12,7 @@ import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import iudx.resource.server.apiserver.handlers.AuthHandler;
 import iudx.resource.server.apiserver.handlers.FailureHandler;
 import iudx.resource.server.apiserver.handlers.ValidationHandler;
 import iudx.resource.server.apiserver.query.NGSILDQueryParams;
@@ -82,7 +83,7 @@ public class AsyncRestApi {
     router
         .get(Api.SEARCH.path)
         .handler(asyncSearchValidationHandler)
-        //				.handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx))
         .handler(this::handleAsyncSearchRequest)
         .handler(validationsFailureHandler);
 
@@ -140,23 +141,20 @@ public class AsyncRestApi {
   }
 
   private void executeAsyncURLSearch(RoutingContext routingContext, JsonObject json) {
-    String sub = "844e251b-574b-46e6-9247-f76f1f70a637";
-    //		String sub = ((JsonObject) routingContext.data().get("authInfo")).getString(USER_ID); // get
-    // sub from AuthHandler result
+    // get sub from AuthHandler result
+    String sub = ((JsonObject) routingContext.data().get("authInfo")).getString(USER_ID);
     String requestURI = routingContext.request().absoluteURI();
-    String requestID =
-        UUID.nameUUIDFromBytes(requestURI.getBytes())
-            .toString(); // generate UUID from the absolute URI of the HTTP Request
+    // generate UUID from the absolute URI of the HTTP Request
+    String requestID = UUID.nameUUIDFromBytes(requestURI.getBytes()).toString();
 
-    LOGGER.debug("here 1");
     asyncService.asyncSearch(
         requestID,
         sub,
         json,
         handler -> {
-          LOGGER.debug("here 2");
           if (handler.succeeded()) {
             LOGGER.info("Success: Async Search Success");
+            Future.future(fu -> updateAuditTable(routingContext));
             handleSuccessResponse(
                 routingContext.response(), ResponseType.Ok.getCode(), handler.result().toString());
           } else {
@@ -171,41 +169,18 @@ public class AsyncRestApi {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
 
-    String referenceID = request.getParam("referenceID");
-    StringBuilder query = new StringBuilder(SELECT_S3_STATUS_SQL.replace("$1", referenceID));
+    String searchID = request.getParam("searchID");
 
-    pgService.executeQuery(
-        query.toString(),
-        pgHandler -> {
-          if (pgHandler.succeeded()) {
-            if (pgHandler.result().getJsonArray("result").isEmpty()) {
-              processBackendResponse(
-                  response,
-                  String.valueOf(
-                      new JsonObject()
-                          .put("type", 400)
-                          .put("title", "urn:dx:rs:badRequest")
-                          .put("detail", "Fail: Incorrect Reference ID")));
-              return;
-            }
-            JsonObject result = pgHandler.result();
-            String status = result.getJsonArray("result").getJsonObject(0).getString("status");
-            String fileDownloadURL =
-                result.getJsonArray("result").getJsonObject(0).getString("s3_url");
-            result.getJsonArray("result").getJsonObject(0).remove("s3_url");
-
-            if (status.equalsIgnoreCase("ready")) {
-              result
-                  .getJsonArray("result")
-                  .getJsonObject(0)
-                  .put("file-download-url", fileDownloadURL);
-            }
-
+    asyncService.asyncStatus(
+        searchID,
+        handler -> {
+          if (handler.succeeded()) {
+            LOGGER.info("Success: Async status success");
             Future.future(fu -> updateAuditTable(routingContext));
-            handleSuccessResponse(response, ResponseType.Ok.getCode(), result.toString());
-          } else if (pgHandler.failed()) {
-            LOGGER.error("Fail: Search Fail");
-            processBackendResponse(response, pgHandler.cause().getMessage());
+            handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+          } else if (handler.failed()) {
+            LOGGER.error("Fail: Async status fail");
+            processBackendResponse(response, handler.cause().getMessage());
           }
         });
   }
