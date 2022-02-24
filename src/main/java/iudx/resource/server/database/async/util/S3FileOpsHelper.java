@@ -1,4 +1,4 @@
-package iudx.resource.server.database.archives;
+package iudx.resource.server.database.async.util;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 import java.time.ZonedDateTime;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

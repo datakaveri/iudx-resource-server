@@ -1,17 +1,16 @@
-package iudx.resource.server.async;
+package iudx.resource.server.database.async;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.async.util.Utilities;
+import iudx.resource.server.database.async.util.Utilities;
 import iudx.resource.server.database.archives.ResponseBuilder;
-import iudx.resource.server.database.archives.elastic.ElasticClient;
-import iudx.resource.server.database.archives.elastic.QueryDecoder;
+import iudx.resource.server.database.elastic.ElasticClient;
+import iudx.resource.server.database.elastic.QueryDecoder;
 import iudx.resource.server.database.postgres.PostgresService;
-import iudx.resource.server.database.archives.S3FileOpsHelper;
+import iudx.resource.server.database.async.util.S3FileOpsHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -26,15 +25,15 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static iudx.resource.server.async.util.Constants.EXPIRY;
-import static iudx.resource.server.async.util.Constants.USER_ID;
-import static iudx.resource.server.async.util.Constants.OBJECT_ID;
-import static iudx.resource.server.async.util.Constants.S3_URL;
-import static iudx.resource.server.async.util.Constants.FILE_DOWNLOAD_URL;
-import static iudx.resource.server.async.util.Constants.SEARCH_ID;
-import static iudx.resource.server.async.util.Constants.STATUS;
-import static iudx.resource.server.async.util.Constants.READY;
-import static iudx.resource.server.async.util.Constants.PENDING;
+import static iudx.resource.server.database.async.util.Constants.EXPIRY;
+import static iudx.resource.server.database.async.util.Constants.USER_ID;
+import static iudx.resource.server.database.async.util.Constants.OBJECT_ID;
+import static iudx.resource.server.database.async.util.Constants.S3_URL;
+import static iudx.resource.server.database.async.util.Constants.FILE_DOWNLOAD_URL;
+import static iudx.resource.server.database.async.util.Constants.SEARCH_ID;
+import static iudx.resource.server.database.async.util.Constants.STATUS;
+import static iudx.resource.server.database.async.util.Constants.READY;
+import static iudx.resource.server.database.async.util.Constants.PENDING;
 import static iudx.resource.server.database.archives.Constants.SUCCESS;
 import static iudx.resource.server.database.archives.Constants.SEARCH_KEY;
 import static iudx.resource.server.database.archives.Constants.TIME_LIMIT;
@@ -55,7 +54,7 @@ import static iudx.resource.server.database.postgres.Constants.SELECT_S3_STATUS_
  * <h1>Async Service Implementation</h1>
  *
  * <p>The Async Service implementation in the IUDX Resource Server implements the definitions of the
- * {@link iudx.resource.server.async.AsyncService}.
+ * {@link AsyncService}.
  *
  * @version 1.0
  * @since 2022-02-08

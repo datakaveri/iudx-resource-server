@@ -1,4 +1,4 @@
-package iudx.resource.server.async.util;
+package iudx.resource.server.database.async.util;
 
 public class Constants {
 

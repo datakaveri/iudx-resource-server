@@ -1,12 +1,12 @@
-package iudx.resource.server.async.util;
+package iudx.resource.server.database.async.util;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.database.archives.elastic.AttributeQueryParser;
-import iudx.resource.server.database.archives.elastic.GeoQueryParser;
-import iudx.resource.server.database.archives.elastic.TemporalQueryParser;
+import iudx.resource.server.database.elastic.AttributeQueryParser;
+import iudx.resource.server.database.elastic.GeoQueryParser;
+import iudx.resource.server.database.elastic.TemporalQueryParser;
 import iudx.resource.server.database.postgres.PostgresService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
