@@ -1,4 +1,4 @@
-package iudx.resource.server.database.archives.elastic.exception;
+package iudx.resource.server.database.elastic.exception;
 
 import org.apache.http.HttpStatus;
 

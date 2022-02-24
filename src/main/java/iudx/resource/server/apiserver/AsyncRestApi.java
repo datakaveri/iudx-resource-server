@@ -20,7 +20,7 @@ import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.apiserver.util.RequestType;
-import iudx.resource.server.async.AsyncService;
+import iudx.resource.server.database.async.AsyncService;
 import iudx.resource.server.common.Api;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
@@ -49,7 +49,6 @@ import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
-import static iudx.resource.server.database.postgres.Constants.SELECT_S3_STATUS_SQL;
 
 public class AsyncRestApi {
 

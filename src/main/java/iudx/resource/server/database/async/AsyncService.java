@@ -1,4 +1,4 @@
-package iudx.resource.server.async;
+package iudx.resource.server.database.async;
 
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;

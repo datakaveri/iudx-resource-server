@@ -1,4 +1,4 @@
-package iudx.resource.server.database.archives.elastic;
+package iudx.resource.server.database.elastic;
 
 import static iudx.resource.server.database.archives.Constants.ATTRIBUTE_SEARCH_REGEX;
 import static iudx.resource.server.database.archives.Constants.COUNT_UNSUPPORTED;

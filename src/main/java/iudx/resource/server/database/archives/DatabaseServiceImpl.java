@@ -33,8 +33,8 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.database.archives.elastic.ElasticClient;
-import iudx.resource.server.database.archives.elastic.QueryDecoder;
+import iudx.resource.server.database.elastic.ElasticClient;
+import iudx.resource.server.database.elastic.QueryDecoder;
 
 /**
  * The Database Service Implementation.
