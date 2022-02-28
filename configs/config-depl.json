@@ -5,6 +5,7 @@
     "modules": [
         {
             "id": "iudx.resource.server.database.archives.DatabaseVerticle",
+            "isWorkerVerticle":false,
             "verticleInstances": 2,
             "databaseIP": "",
             "databasePort": 123,
@@ -15,6 +16,7 @@
         },
         {
             "id": "iudx.resource.server.authenticator.AuthenticationVerticle",
+            "isWorkerVerticle":false,
             "verticleInstances": 1,
             "keystore": "configs/keystore.jks",
             "keystorePassword": "",
@@ -31,6 +33,7 @@
         },
         {
             "id": "iudx.resource.server.databroker.DataBrokerVerticle",
+            "isWorkerVerticle":false,
             "verticleInstances": 2,
             "dataBrokerIP": "",
             "dataBrokerPort": "",
@@ -56,6 +59,7 @@
         },
         {
             "id": "iudx.resource.server.callback.CallbackVerticle",
+            "isWorkerVerticle":false,
             "verticleInstances": 2,
             "dataBrokerIP": "",
             "dataBrokerPort": "",
@@ -78,6 +82,7 @@
         },
         {
             "id": "iudx.resource.server.apiserver.ApiServerVerticle",
+            "isWorkerVerticle":false,
             "ssl":true,
             "production": true,
             "keystore": "configs/keystore.jks",
@@ -90,6 +95,7 @@
         },
         {
             "id": "iudx.resource.server.database.latest.LatestVerticle",
+            "isWorkerVerticle":false,
             "verticleInstances": 2,
             "attributeList": {"itms-info": "some-attr"},
             "redisMode": "CLUSTER",
@@ -102,6 +108,7 @@
         },
         {
             "id": "iudx.resource.server.metering.MeteringVerticle",
+            "isWorkerVerticle":false,
             "verticleInstances": 1,
             "meteringDatabaseIP": "",
             "meteringDatabasePort": 1234,
@@ -112,6 +119,7 @@
         },
         {
             "id":"iudx.resource.server.database.postgres.PostgresVerticle",
+            "isWorkerVerticle":false,
             "verticleInstances": 1,
             "databaseIP": "localhost",
             "databasePort": 5432,
@@ -123,6 +131,7 @@
         },
         {
             "id": "iudx.resource.server.cache.CacheVerticle",
+            "isWorkerVerticle":false,
             "verticleInstances": 1
         },
         {

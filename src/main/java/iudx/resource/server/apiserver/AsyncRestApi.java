@@ -164,23 +164,23 @@ public class AsyncRestApi {
 
   private void handleAsyncStatusRequest(RoutingContext routingContext) {
     LOGGER.trace("starting async status");
+
+    String sub = ((JsonObject) routingContext.data().get("authInfo")).getString(USER_ID);
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
 
     String searchID = request.getParam("searchID");
 
-    asyncService.asyncStatus(
-        searchID,
-        handler -> {
-          if (handler.succeeded()) {
-            LOGGER.info("Success: Async status success");
-            Future.future(fu -> updateAuditTable(routingContext));
-            handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
-          } else if (handler.failed()) {
-            LOGGER.error("Fail: Async status fail");
-            processBackendResponse(response, handler.cause().getMessage());
-          }
-        });
+    asyncService.asyncStatus(sub, searchID, handler -> {
+      if (handler.succeeded()) {
+        LOGGER.info("Success: Async status success");
+        Future.future(fu -> updateAuditTable(routingContext));
+        handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+      } else if (handler.failed()) {
+        LOGGER.error("Fail: Async status fail");
+        processBackendResponse(response, handler.cause().getMessage());
+      }
+    });
   }
 
   private void handleSuccessResponse(HttpServerResponse response, int statusCode, String result) {

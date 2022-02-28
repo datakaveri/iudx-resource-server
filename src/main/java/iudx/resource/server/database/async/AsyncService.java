@@ -47,7 +47,7 @@ public interface AsyncService {
    * @return AsyncService which is a service
    */
   @Fluent
-  AsyncService asyncStatus(String searchID, Handler<AsyncResult<JsonObject>> handler);
+  AsyncService asyncStatus(String sub,String searchID, Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The createProxy helps the code generation blocks to generate proxy code.

@@ -30,6 +30,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.archives.ResponseBuilder;
 import iudx.resource.server.database.async.util.QueryProgress;
 import iudx.resource.server.database.async.util.S3FileOpsHelper;
@@ -64,7 +65,8 @@ public class AsyncServiceImpl implements AsyncService {
   }
 
   @Override
-  public AsyncService asyncStatus(String searchID, Handler<AsyncResult<JsonObject>> handler) {
+  public AsyncService asyncStatus(String sub, String searchID,
+      Handler<AsyncResult<JsonObject>> handler) {
     StringBuilder query = new StringBuilder(SELECT_S3_STATUS_SQL.replace("$1", searchID));
 
     pgService.executeQuery(
@@ -80,16 +82,26 @@ public class AsyncServiceImpl implements AsyncService {
               handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
             } else {
               JsonObject answer = results.getJsonObject(0);
-              String status = answer.getString(STATUS);
-              if (status.equalsIgnoreCase(QueryProgress.COMPLETE.toString())) {
-                answer.put(FILE_DOWNLOAD_URL, answer.getValue(S3_URL));
-              }
-              answer.remove(S3_URL);
 
-              responseBuilder = new ResponseBuilder("success")
-                  .setTypeAndTitle(200)
-                  .setMessage(new JsonArray().add(answer));
-              handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+              String user_id = answer.getString("user_id");
+              if (sub.equals(user_id)) {
+
+                String status = answer.getString(STATUS);
+                if (status.equalsIgnoreCase(QueryProgress.COMPLETE.toString())) {
+                  answer.put(FILE_DOWNLOAD_URL, answer.getValue(S3_URL));
+                }
+                answer.remove(S3_URL);
+                responseBuilder = new ResponseBuilder("success")
+                    .setTypeAndTitle(200)
+                    .setMessage(new JsonArray().add(answer));
+                handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+              } else {
+                responseBuilder = new ResponseBuilder("failed")
+                    .setTypeAndTitle(400,ResponseUrn.BAD_REQUEST_URN.getUrn())
+                    .setMessage(
+                        "Please use same user token to check status as used while calling search API");
+                handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+              }
             }
           }
         });
@@ -134,12 +146,12 @@ public class AsyncServiceImpl implements AsyncService {
 
                   executePGQuery(updateQuery.toString())
                       .onSuccess(recordUpdateHandler -> {
-                        // TODO : delete file from local
                         vertx.fileSystem().deleteBlocking(filePath + "/" + file.getName());
                       })
                       .onFailure(recordInsertFailure -> {
                         LOGGER.error(
-                            "File deletion operation failed for fileName : " + file.getName());
+                            "File deletion operation failed for fileName : " + file.getName()
+                                + " try to delete manually to reclaim disk-space");
                       });
                 } else {
                   // TODO: update DB with status FAILED with failure reason.
