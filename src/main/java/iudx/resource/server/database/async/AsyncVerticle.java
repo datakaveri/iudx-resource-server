@@ -1,5 +1,7 @@
 package iudx.resource.server.database.async;
 
+import static iudx.resource.server.common.Constants.ASYNC_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import com.amazonaws.regions.Regions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -8,9 +10,6 @@ import io.vertx.serviceproxy.ServiceBinder;
 import iudx.resource.server.database.async.util.S3FileOpsHelper;
 import iudx.resource.server.database.elastic.ElasticClient;
 import iudx.resource.server.database.postgres.PostgresService;
-
-import static iudx.resource.server.common.Constants.ASYNC_SERVICE_ADDRESS;
-import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 
 /**
  * The Async worker Verticle.
@@ -63,7 +62,7 @@ public class AsyncVerticle extends AbstractVerticle {
     pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
     fileOpsHelper = new S3FileOpsHelper(clientRegion, bucketName);
     binder = new ServiceBinder(vertx);
-    asyncService = new AsyncServiceImpl(client, pgService, fileOpsHelper, timeLimit, filePath);
+    asyncService = new AsyncServiceImpl(vertx,client, pgService, fileOpsHelper, timeLimit, filePath);
 
     consumer = binder.setAddress(ASYNC_SERVICE_ADDRESS).register(AsyncService.class, asyncService);
   }

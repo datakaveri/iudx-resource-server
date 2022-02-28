@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.google.common.base.Charsets;
@@ -70,6 +71,9 @@ public class ValidatorsHandlersFactory {
   private static final Logger LOGGER =
       LogManager.getLogger(ValidatorsHandlersFactory.class);
 
+  private static final Pattern UUID_PATTERN = Pattern
+      .compile(".*[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}");
+
   public List<Validator> build(final Vertx vertx, final RequestType requestType,
       final MultiMap parameters,
       final MultiMap headers, final JsonObject body) {
@@ -96,8 +100,11 @@ public class ValidatorsHandlersFactory {
       case SUBSCRIPTION:
         validator = getSubscriptionsValidations(vertx, body, headers);
         break;
-      case ASYNC:
+      case ASYNC_SEARCH:
         validator = getAsyncRequestValidations(parameters, headers);
+        break;
+      case ASYNC_STATUS:
+        validator = getAsyncStatusRequestValidator(parameters, headers);
         break;
       default:
         break;
@@ -225,6 +232,13 @@ public class ValidatorsHandlersFactory {
     validators.add(new DateTypeValidator(parameters.get(NGSILDQUERY_TIME), false));
     validators.add(new DateTypeValidator(parameters.get(NGSILDQUERY_ENDTIME), false));
 
+    return validators;
+  }
+
+  private List<Validator> getAsyncStatusRequestValidator(final MultiMap parameters,
+      final MultiMap headers) {
+    List<Validator> validators = new ArrayList<>();
+    validators.add(new StringTypeValidator(parameters.get("searchId"), true, UUID_PATTERN));
     return validators;
   }
 

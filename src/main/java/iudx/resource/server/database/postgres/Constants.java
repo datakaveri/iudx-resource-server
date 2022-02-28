@@ -24,13 +24,13 @@ public class Constants {
           + "values('$1','$2','$3','$4','$5',$6,'$7','$8')";
 
   public static String UPDATE_S3_URL_SQL =
-      "UPDATE s3_upload_url SET s3_url='$1', expiry='$2', status='ready', object_id='$4' WHERE search_id='$3'";
+      "UPDATE s3_upload_url SET s3_url='$1', expiry='$2', status='$3', object_id='$4' WHERE search_id='$5'";
 
   public static String SELECT_S3_STATUS_SQL =
       "SELECT status,s3_url,search_id FROM s3_upload_url WHERE search_id='$1';";
 
   public static String SELECT_S3_SEARCH_SQL =
-      "SELECT search_id, status, s3_url, expiry, user_id, object_id FROM s3_upload_url WHERE request_id='$1'";
+      "SELECT search_id, status, s3_url, expiry, user_id, object_id FROM s3_upload_url WHERE request_id='$1' and status='$2'";
 
   public static String DELETE_S3_PENDING_SQL = "DELETE from s3_upload_url WHERE search_id='$1'";
 }

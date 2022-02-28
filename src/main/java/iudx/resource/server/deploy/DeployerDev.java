@@ -5,10 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -37,7 +35,7 @@ public class DeployerDev {
     DeploymentOptions deploymentOptions = new DeploymentOptions()
                             .setInstances(numInstances)
                             .setConfig(config);
-    if (moduleName.equalsIgnoreCase("iudx.resource.server.async.AsyncVerticle")) {
+    if (moduleName.equalsIgnoreCase("iudx.resource.server.database.async.AsyncVerticle")) {
       LOGGER.info("worker verticle : AsyncVerticle");
       deploymentOptions.setWorkerPoolName("async-query-pool");
       deploymentOptions.setWorkerPoolSize(5);

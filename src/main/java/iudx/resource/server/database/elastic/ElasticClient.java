@@ -76,6 +76,7 @@ public class ElasticClient {
     this(databaseIP, databasePort, user, password);
     this.filePath = filePath;
   }
+
   /**
    * searchAsync - Wrapper around elasticsearch async search requests.
    *
@@ -225,10 +226,9 @@ public class ElasticClient {
   }
 
   public ElasticClient scrollAsync(
-      String index, QueryBuilder query, Handler<AsyncResult<JsonObject>> scrollHandler) {
+      File file, String index, QueryBuilder query, Handler<AsyncResult<JsonObject>> scrollHandler) {
 
     String scrollId = null;
-    File file = null;
     try {
       SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
       searchSourceBuilder.query(query);
@@ -251,11 +251,11 @@ public class ElasticClient {
 
       SearchHit[] searchHits = searchResponse.getHits().getHits();
 
-      File dir = new File(filePath.concat(index));
-      if(!dir.exists()) {
-        dir.mkdirs();
-      }
-      file = new File(dir,"response.json");
+//      File dir = new File(filePath.concat(index));
+//      if (!dir.exists()) {
+//        dir.mkdirs();
+//      }
+      // file = new File(dir, "response.json");
       LOGGER.debug(file.getAbsolutePath());
 
       FileWriter filew = new FileWriter(file);
@@ -287,6 +287,8 @@ public class ElasticClient {
       scrollHandler.handle(Future.succeededFuture());
     } catch (IOException ex) {
       scrollHandler.handle(Future.failedFuture(ex));
+    } catch (Exception ex) {
+      scrollHandler.handle(Future.failedFuture(ex));
     } finally {
       if (scrollId != null) {
         ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
@@ -294,7 +296,7 @@ public class ElasticClient {
         try {
           ClearScrollResponse clearScrollResponse =
               highLevelClient.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
-        } catch (IOException e) {
+        } catch (Exception e) {
           scrollHandler.handle(Future.failedFuture(e));
         }
       }

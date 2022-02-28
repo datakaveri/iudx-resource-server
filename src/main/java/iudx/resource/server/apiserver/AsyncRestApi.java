@@ -1,5 +1,30 @@
 package iudx.resource.server.apiserver;
 
+import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
+import static iudx.resource.server.apiserver.util.Constants.API;
+import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
+import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
+import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_HOST;
+import static iudx.resource.server.apiserver.util.Constants.ID;
+import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
+import static iudx.resource.server.apiserver.util.Constants.JSON_INSTANCEID;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.USER_ID;
+import static iudx.resource.server.apiserver.util.RequestType.ASYNC_SEARCH;
+import static iudx.resource.server.apiserver.util.RequestType.ASYNC_STATUS;
+import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
+import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
+import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import com.google.common.hash.Hashing;
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.Future;
@@ -9,6 +34,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -19,36 +45,12 @@ import iudx.resource.server.apiserver.query.NGSILDQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.service.CatalogueService;
-import iudx.resource.server.apiserver.util.RequestType;
-import iudx.resource.server.database.async.AsyncService;
 import iudx.resource.server.common.Api;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
+import iudx.resource.server.database.async.AsyncService;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.metering.MeteringService;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
-import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
-import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_HOST;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
-import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
-import static iudx.resource.server.apiserver.util.Constants.JSON_INSTANCEID;
-import static iudx.resource.server.apiserver.util.Constants.ID;
-import static iudx.resource.server.apiserver.util.Constants.USER_ID;
-import static iudx.resource.server.apiserver.util.Constants.API;
-import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
-import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
-import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
-import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
 
 public class AsyncRestApi {
 
@@ -76,23 +78,24 @@ public class AsyncRestApi {
   public Router init() {
 
     FailureHandler validationsFailureHandler = new FailureHandler();
-    ValidationHandler asyncSearchValidationHandler =
-        new ValidationHandler(vertx, RequestType.ASYNC);
 
     asyncService = AsyncService.createProxy(vertx, ASYNC_SERVICE_ADDRESS);
+
+    ValidationHandler asyncSearchValidation = new ValidationHandler(vertx, ASYNC_SEARCH);
     router
         .get(Api.SEARCH.path)
-        .handler(asyncSearchValidationHandler)
+        .handler(asyncSearchValidation)
         .handler(AuthHandler.create(vertx))
         .handler(this::handleAsyncSearchRequest)
-        .handler(validationsFailureHandler);
+        .failureHandler(validationsFailureHandler);
 
+    ValidationHandler asyncStatusValidation = new ValidationHandler(vertx, ASYNC_STATUS);
     router
         .get(Api.STATUS.path)
-        //				.handler(asyncSearchValidationHandler)
-        //				.handler(AuthHandler.create(vertx))     // TODO: how to authenticate?
+        .handler(asyncStatusValidation)
+        .handler(AuthHandler.create(vertx)) // TODO: how to authenticate?
         .handler(this::handleAsyncStatusRequest)
-        .handler(validationsFailureHandler);
+        .failureHandler(validationsFailureHandler);
 
     return router;
   }
@@ -102,25 +105,19 @@ public class AsyncRestApi {
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
 
-    /* HTTP request instance/host details */
     String instanceID = request.getHeader(HEADER_HOST);
-    // get query parameters
     MultiMap params = getQueryParams(routingContext, response).get();
-    // validate request params
     Future<Boolean> validationResult = validator.validate(params);
     validationResult.onComplete(
         validationHandler -> {
           if (validationHandler.succeeded()) {
-            // parse query params
             NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
-            // create json
             QueryMapper queryMapper = new QueryMapper();
             JsonObject json = queryMapper.toJson(ngsildquery, true, true);
             Future<List<String>> filtersFuture =
                 catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
             json.put(JSON_INSTANCEID, instanceID);
             LOGGER.debug("Info: IUDX json query;" + json);
-            /* HTTP request body as Json */
             JsonObject requestBody = new JsonObject();
             requestBody.put("ids", json.getJsonArray("id"));
             filtersFuture.onComplete(
@@ -141,27 +138,28 @@ public class AsyncRestApi {
   }
 
   private void executeAsyncURLSearch(RoutingContext routingContext, JsonObject json) {
-    // get sub from AuthHandler result
     String sub = ((JsonObject) routingContext.data().get("authInfo")).getString(USER_ID);
-    String requestURI = routingContext.request().absoluteURI();
-    // generate UUID from the absolute URI of the HTTP Request
-    String requestID = UUID.nameUUIDFromBytes(requestURI.getBytes()).toString();
 
-    asyncService.asyncSearch(
-        requestID,
-        sub,
-        json,
-        handler -> {
-          if (handler.succeeded()) {
-            LOGGER.info("Success: Async Search Success");
-            Future.future(fu -> updateAuditTable(routingContext));
-            handleSuccessResponse(
-                routingContext.response(), ResponseType.Ok.getCode(), handler.result().toString());
-          } else {
-            LOGGER.error("Fail: Async search failed");
-            processBackendResponse(routingContext.response(), handler.cause().getMessage());
-          }
-        });
+    String requestID = Hashing.sha256()
+        .hashString(json.toString(), StandardCharsets.UTF_8)
+        .toString();
+
+    String searchId = UUID.randomUUID().toString();
+
+    asyncService.asyncSearch(requestID, sub, searchId, json);
+
+
+    JsonObject response = new JsonObject();
+    response.put(JSON_TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+    response.put(JSON_TITLE, "success");
+    JsonArray resultArray = new JsonArray();
+    resultArray.add(new JsonObject().put("search-id", searchId));
+    response.put("result", resultArray);
+
+    Future.future(fu -> updateAuditTable(routingContext));
+    handleSuccessResponse(routingContext.response(), ResponseType.Created.getCode(),
+        response.toString());
+
   }
 
   private void handleAsyncStatusRequest(RoutingContext routingContext) {
