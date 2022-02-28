@@ -33,22 +33,23 @@ public class DeployerDev {
     String moduleName = config.getString("id");
     int numInstances = config.getInteger("verticleInstances");
     DeploymentOptions deploymentOptions = new DeploymentOptions()
-                            .setInstances(numInstances)
-                            .setConfig(config);
-    if (moduleName.equalsIgnoreCase("iudx.resource.server.database.async.AsyncVerticle")) {
-      LOGGER.info("worker verticle : AsyncVerticle");
-      deploymentOptions.setWorkerPoolName("async-query-pool");
-      deploymentOptions.setWorkerPoolSize(5);
+        .setInstances(numInstances)
+        .setConfig(config);
+
+    boolean isWorkerVerticle = config.getBoolean("isWorkerVerticle");
+    if (isWorkerVerticle) {
+      LOGGER.info("worker verticle : " + config.getString("id"));
+      deploymentOptions.setWorkerPoolName(config.getString("threadPoolName"));
+      deploymentOptions.setWorkerPoolSize(config.getInteger("threadPoolSize"));
       deploymentOptions.setWorker(true);
       deploymentOptions.setMaxWorkerExecuteTime(30L);
       deploymentOptions.setMaxWorkerExecuteTimeUnit(TimeUnit.MINUTES);
     }
-    vertx.deployVerticle(moduleName,
-                         deploymentOptions,
-                          ar -> {
+
+    vertx.deployVerticle(moduleName, deploymentOptions, ar -> {
       if (ar.succeeded()) {
         LOGGER.info("Deployed " + moduleName);
-        recursiveDeploy(vertx, configs, i+1);
+        recursiveDeploy(vertx, configs, i + 1);
       } else {
         LOGGER.fatal("Failed to deploy " + moduleName + " cause:", ar.cause());
       }
@@ -61,7 +62,7 @@ public class DeployerDev {
 
     String config;
     try {
-     config = new String(Files.readAllBytes(Paths.get(configPath)), StandardCharsets.UTF_8);
+      config = new String(Files.readAllBytes(Paths.get(configPath)), StandardCharsets.UTF_8);
     } catch (Exception e) {
       LOGGER.fatal("Couldn't read configuration file");
       return;

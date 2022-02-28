@@ -116,6 +116,24 @@
             "databasePassword": "",
             "poolSize": 25
         
+        },
+        {
+            "id": "iudx.resource.server.cache.CacheVerticle",
+            "verticleInstances": 1
+        },
+        {
+            "id": "iudx.resource.server.async.AsyncVerticle",
+            "isWorkerVerticle":true,
+            "threadPoolName":"async-query-pool",
+            "threadPoolSize":20,
+            "verticleInstances": 20,
+            "databaseIP": "",
+            "databasePort":998 ,
+            "dbUser": "",
+            "dbPassword": "",
+            "timeLimit": "",
+            "filePath": "/home/kailash/Downloads/",
+            "bucketName": ""
         }
     ]
 }
