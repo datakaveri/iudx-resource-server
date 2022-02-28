@@ -157,7 +157,7 @@
 			"verticleInstances": 1
 		},
 		{
-			"id": "iudx.resource.server.async.AsyncVerticle",
+			"id": "iudx.resource.server.database.async.AsyncVerticle",
 			"isWorkerVerticle": true,
 			"threadPoolName": "async-query-pool",
 			"threadPoolSize": 20,
