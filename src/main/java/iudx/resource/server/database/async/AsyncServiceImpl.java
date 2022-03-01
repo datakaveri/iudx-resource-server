@@ -181,7 +181,7 @@ public class AsyncServiceImpl implements AsyncService {
    * @param requestId
    * @return
    */
-  private Future<JsonArray> getRecord4RequestId(String requestId) {
+  Future<JsonArray> getRecord4RequestId(String requestId) {
     Promise<JsonArray> promise = Promise.promise();
 
     Map<String, String> result = new HashMap<>();
@@ -205,7 +205,7 @@ public class AsyncServiceImpl implements AsyncService {
 
   }
 
-  private Future<Void> executePGQuery(String query) {
+  Future<Void> executePGQuery(String query) {
     Promise<Void> promise = Promise.promise();
 
     pgService.executeQuery(query, handler -> {
@@ -219,7 +219,7 @@ public class AsyncServiceImpl implements AsyncService {
     return promise.future();
   }
 
-  private void process4ExistingRequestId(String requestId, String sub, String searchId,
+  void process4ExistingRequestId(String requestId, String sub, String searchId,
       JsonArray record) {
     String object_id = record.getJsonObject(0).getString(OBJECT_ID);
     String expiry = LocalDateTime.now().plusDays(1).toString();
