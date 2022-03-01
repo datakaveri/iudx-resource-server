@@ -153,7 +153,7 @@ public class AsyncRestApi {
     response.put(JSON_TYPE, ResponseUrn.SUCCESS_URN.getUrn());
     response.put(JSON_TITLE, "success");
     JsonArray resultArray = new JsonArray();
-    resultArray.add(new JsonObject().put("search-id", searchId));
+    resultArray.add(new JsonObject().put("searchID", searchId));
     response.put("result", resultArray);
 
     Future.future(fu -> updateAuditTable(routingContext));

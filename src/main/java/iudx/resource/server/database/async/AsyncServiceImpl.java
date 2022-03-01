@@ -229,7 +229,7 @@ public class AsyncServiceImpl implements AsyncService {
         .replace("$1", UUID.randomUUID().toString())
         .replace("$2", searchId)
         .replace("$3", requestId)
-        .replace("$4", "READY")
+        .replace("$4", QueryProgress.COMPLETE.toString())
         .replace("$5", newS3_url)
         .replace("$6", expiry)
         .replace("$7", sub)
