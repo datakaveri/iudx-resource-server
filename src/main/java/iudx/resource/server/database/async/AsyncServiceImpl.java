@@ -4,7 +4,6 @@ import static iudx.resource.server.database.async.util.Constants.FILE_DOWNLOAD_U
 import static iudx.resource.server.database.async.util.Constants.OBJECT_ID;
 import static iudx.resource.server.database.async.util.Constants.S3_URL;
 import static iudx.resource.server.database.async.util.Constants.STATUS;
-import static iudx.resource.server.database.postgres.Constants.INSERT_S3_PENDING_SQL;
 import static iudx.resource.server.database.postgres.Constants.INSERT_S3_READY_SQL;
 import static iudx.resource.server.database.postgres.Constants.SELECT_S3_SEARCH_SQL;
 import static iudx.resource.server.database.postgres.Constants.SELECT_S3_STATUS_SQL;
@@ -118,14 +117,8 @@ public class AsyncServiceImpl implements AsyncService {
         .onSuccess(handler -> {
           process4ExistingRequestId(requestId, sub, searchId, handler);
         }).onFailure(handler -> {
-          StringBuilder insertQuery = new StringBuilder(INSERT_S3_PENDING_SQL
-              .replace("$1", UUID.randomUUID().toString())
-              .replace("$2", searchId)
-              .replace("$3", requestId)
-              .replace("$4", sub)
-              .replace("$5", QueryProgress.STARTED.toString()));
 
-          Future.future(future -> executePGQuery(insertQuery.toString()));
+          Future.future(future -> utilities.writeToDB(searchId,requestId,sub));
 
           File file = new File(filePath + "/" + searchId + ".json");
           String objectId = UUID.randomUUID().toString();

@@ -5,10 +5,7 @@ import static iudx.resource.server.database.archives.Constants.ID;
 import static iudx.resource.server.database.archives.Constants.ID_NOT_FOUND;
 import static iudx.resource.server.database.archives.Constants.SEARCHTYPE_NOT_FOUND;
 import static iudx.resource.server.database.archives.Constants.SEARCH_TYPE;
-import static iudx.resource.server.database.postgres.Constants.DELETE_S3_PENDING_SQL;
 import static iudx.resource.server.database.postgres.Constants.INSERT_S3_PENDING_SQL;
-import static iudx.resource.server.database.postgres.Constants.INSERT_S3_READY_SQL;
-import static iudx.resource.server.database.postgres.Constants.UPDATE_S3_URL_SQL;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,58 +48,11 @@ public class Utilities {
                 .replace("$2", searchID)
                 .replace("$3", requestID)
                 .replace("$4", sub)
-                .replace("$5", "Pending"));
+                .replace("$5", QueryProgress.STARTED.toString()));
 
     return writeToDB(query);
   }
 
-  public Future<Void> writeToDB(String sub, JsonObject result) {
-
-    StringBuilder query =
-        new StringBuilder(
-            INSERT_S3_READY_SQL
-                .replace("$1", UUID.randomUUID().toString())
-                .replace("$2", UUID.randomUUID().toString())
-                .replace("$3", result.getString("request_id"))
-                .replace("$4", result.getString("status"))
-                .replace("$5", result.getString("s3_url"))
-                .replace("$6", result.getString("expiry"))
-                .replace("$7", sub)
-                .replace("$8", result.getString("object_id")));
-
-    return writeToDB(query);
-  }
-
-  public Future<Void> writeToDB(String sub, String s3_url, String expiry, JsonObject result) {
-
-    result.remove("s3_url");
-    result.remove("expiry");
-    result.put("s3_url", s3_url);
-    result.put("expiry", expiry);
-
-    return writeToDB(sub, result);
-  }
-
-  public Future<Void> updateDBRecord(
-      String searchID, String s3_url, String expiry, String objectKey) {
-
-    StringBuilder query =
-        new StringBuilder(
-            UPDATE_S3_URL_SQL
-                .replace("$1", s3_url)
-                .replace("$2", expiry)
-                .replace("$3", searchID)
-                .replace("$4", objectKey));
-
-    return writeToDB(query);
-  }
-
-  public Future<Void> deleteEntry(String searchID) {
-    StringBuilder query = new StringBuilder(DELETE_S3_PENDING_SQL.replace("$1", searchID));
-
-    return writeToDB(query);
-  }
-  
   public boolean isValidQuery(JsonObject query) {
     if (!query.containsKey(ID)) {
       LOGGER.debug("Info: " + ID_NOT_FOUND);
@@ -120,7 +70,7 @@ public class Utilities {
       LOGGER.error("Malformed ID: " + query.getJsonArray(ID).getString(0));
       return false;
     }
-    
+
     return true;
   }
 }

@@ -32,5 +32,4 @@ public class Constants {
   public static String SELECT_S3_SEARCH_SQL =
       "SELECT search_id, status, s3_url, expiry, user_id, object_id FROM s3_upload_url WHERE request_id='$1' and status='$2'";
 
-  public static String DELETE_S3_PENDING_SQL = "DELETE from s3_upload_url WHERE search_id='$1'";
 }

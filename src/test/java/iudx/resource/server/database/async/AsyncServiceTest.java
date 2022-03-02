@@ -225,7 +225,7 @@ public class AsyncServiceTest {
 
     verify(asyncServiceSpy,times(2)).process4ExistingRequestId(any(),any(),any(),any());
     verify(fileOpsHelper, times(3)).generatePreSignedUrl(anyLong(), any());
-    verify(asyncServiceSpy, times(4)).executePGQuery(any());
+    verify(asyncServiceSpy, times(3)).executePGQuery(any());
     testContext.completeNow();
   }
 
