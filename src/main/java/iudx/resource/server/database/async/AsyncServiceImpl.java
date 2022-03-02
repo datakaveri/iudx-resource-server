@@ -8,6 +8,7 @@ import static iudx.resource.server.database.postgres.Constants.INSERT_S3_READY_S
 import static iudx.resource.server.database.postgres.Constants.SELECT_S3_SEARCH_SQL;
 import static iudx.resource.server.database.postgres.Constants.SELECT_S3_STATUS_SQL;
 import static iudx.resource.server.database.postgres.Constants.UPDATE_S3_URL_SQL;
+import static iudx.resource.server.database.postgres.Constants.UPDATE_STATUS_SQL;
 import java.io.File;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -147,15 +148,19 @@ public class AsyncServiceImpl implements AsyncService {
                                 + " try to delete manually to reclaim disk-space");
                       });
                 } else {
-                  // TODO: update DB with status FAILED with failure reason.
                   LOGGER.error("File upload to S3 failed for fileName : " + file.getName());
-
+                  StringBuilder updateFailQuery = new StringBuilder(UPDATE_STATUS_SQL
+                      .replace("$1",QueryProgress.ERROR.toString())
+                      .replace("$2",searchId));
+                  Future.future(fu -> utilities.writeToDB(updateFailQuery));
                 }
               });
             } else {
-              // TODO : Update DB with scroll failure reasons.
               LOGGER.error("Scroll API operation failed for searchId : " + searchId);
-
+              StringBuilder updateFailQuery = new StringBuilder(UPDATE_STATUS_SQL
+                  .replace("$1",QueryProgress.ERROR.toString())
+                  .replace("$2",searchId));
+              Future.future(fu -> utilities.writeToDB(updateFailQuery));
             }
           });
 

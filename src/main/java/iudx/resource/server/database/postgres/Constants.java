@@ -26,6 +26,9 @@ public class Constants {
   public static String UPDATE_S3_URL_SQL =
       "UPDATE s3_upload_url SET s3_url='$1', expiry='$2', status='$3', object_id='$4' WHERE search_id='$5'";
 
+  public static String UPDATE_STATUS_SQL =
+      "UPDATE s3_upload_url SET status='$1' WHERE search_id='$2'";
+
   public static String SELECT_S3_STATUS_SQL =
       "SELECT status,s3_url,search_id,user_id FROM s3_upload_url WHERE search_id='$1';";
 
