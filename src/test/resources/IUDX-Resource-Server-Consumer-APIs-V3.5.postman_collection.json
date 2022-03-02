@@ -20658,73 +20658,9 @@
 									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    const status = resultsjsonData.status;\r",
-									"    pm.expect(status).to.be.oneOf(['pending','ready']);\r",
+									"    pm.expect(status).to.be.oneOf(['STARTED','COMPLETE','ERROR']);\r",
 									"    if(status === 'ready') {\r",
 									"        pm.expect(resultsjsonData).to.have.property(\"file-download-url\");\r",
-									"    }\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{secureResourceToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/async/status?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&searchID=ce619415-07bd-41dc-a827-8d3cd7cf7e9a",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"async",
-								"status"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
-								},
-								{
-									"key": "searchID",
-									"value": "ce619415-07bd-41dc-a827-8d3cd7cf7e9a"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "200 (Success) Async Search",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test the response code\r",
-									"pm.test(\"response is 200 (OK)\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"// Test the response header\r",
-									"pm.test(\"Check response header\", function () {\r",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
-									"});\r",
-									"\r",
-									"// Test the response\r",
-									"pm.test(\"Check response body\", function () {    \r",
-									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
-									"    const resultsjsonData = body.results[0];\r",
-									"    pm.expect(resultsjsonData).to.have.any.keys(\"file-download-url\",\"searchID\");\r",
-									"    if(body.results[0].has(\"searchID\")) {\r",
-									"        pm.globals.set(\"searchID\",resultsjsonData.searchID);\r",
 									"    }\r",
 									"});"
 								],
@@ -20742,7 +20678,69 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/async/search?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-10-19T14:20:00Z&endtime=2020-10-20T14:20:00Z",
+							"raw": "{{base_url}}/async/status?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&searchID={{searchID}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"async",
+								"status"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "searchID",
+									"value": "{{searchID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (Success) Async Search",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code\r",
+									"pm.test(\"response is 201 (Created)\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"// Test the response header\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"// Test the response\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"title\", \"success\");\r",
+									"    const resultsjsonData = body.results[0];\r",
+									"    pm.expect(resultsjsonData).to.have.property(\"searchID\");\r",
+									"    pm.globals.set(\"searchID\",resultsjsonData.searchID);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{consumerToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/async/search?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-10-10T14:20:00Z&endtime=2020-11-20T14:20:00Z",
 							"host": [
 								"{{base_url}}"
 							],
@@ -20761,11 +20759,11 @@
 								},
 								{
 									"key": "time",
-									"value": "2020-10-19T14:20:00Z"
+									"value": "2020-10-10T14:20:00Z"
 								},
 								{
 									"key": "endtime",
-									"value": "2020-10-20T14:20:00Z"
+									"value": "2020-11-20T14:20:00Z"
 								},
 								{
 									"key": "limit",
