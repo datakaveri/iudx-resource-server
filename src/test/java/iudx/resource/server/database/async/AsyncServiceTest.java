@@ -1,6 +1,5 @@
 package iudx.resource.server.database.async;
 
-import static iudx.resource.server.database.async.util.Constants.OBJECT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -11,7 +10,6 @@ import com.amazonaws.regions.Regions;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.file.FileSystem;
 import iudx.resource.server.database.async.util.S3FileOpsHelper;
 import iudx.resource.server.database.async.util.Utilities;
 import iudx.resource.server.database.elastic.ElasticClient;
@@ -37,7 +35,6 @@ import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.configuration.Configuration;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -83,7 +80,7 @@ public class AsyncServiceTest {
     asyncServiceSpy = spy(asyncService);
 
     asyncResult = mock(AsyncResult.class);
-//    when(asyncResult.succeeded()).thenReturn(false);
+    when(asyncResult.succeeded()).thenReturn(false);
 
     URL url = new URL("https://www.example.com");
     when(fileOpsHelper.generatePreSignedUrl(anyLong(), any())).thenReturn(url);
@@ -183,9 +180,27 @@ public class AsyncServiceTest {
 
     asyncServiceSpy.asyncSearch(requestId, sub, searchId, query);
 
-    verify(asyncServiceSpy, times(1)).process4ExistingRequestId(any(), any(), any(), any());
-    verify(asyncServiceSpy, times(1)).executePGQuery(any());
-    verify(fileOpsHelper, times(1)).generatePreSignedUrl(anyLong(), any());
+    verify(asyncServiceSpy, times(2)).process4ExistingRequestId(any(), any(), any(), any());
+    verify(asyncServiceSpy, times(2)).executePGQuery(any());
+    verify(fileOpsHelper, times(2)).generatePreSignedUrl(anyLong(), any());
+    testContext.completeNow();
+  }
+
+  @Test
+  @DisplayName("fail - async search for existing request id")
+  public void failAsyncSearchForExistingRecordTest(VertxTestContext testContext) {
+    String requestId = "682a3a42aaa1c8adadea4cc9ea16d968993fc8eee4edfc299d00bccf28117965";
+    String sub = "15c7506f-c800-48d6-adeb-0542b03947c6";
+    String searchId = "18cc743b-59a4-4c26-9f54-e243986ed709";
+    JsonArray record = record();
+    JsonObject query = query();
+
+    doAnswer(Answer -> Future.succeededFuture(record))
+        .when(asyncServiceSpy)
+        .getRecord4RequestId(any());
+    doAnswer(Answer -> Future.failedFuture("fail")).when(asyncServiceSpy).executePGQuery(any());
+
+    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query);
     testContext.completeNow();
   }
 
@@ -208,9 +223,27 @@ public class AsyncServiceTest {
 
     asyncServiceSpy.asyncSearch(requestId, sub, searchId, query);
 
-    verify(asyncServiceSpy,times(0)).process4ExistingRequestId(any(),any(),any(),any());
-    verify(fileOpsHelper, times(1)).generatePreSignedUrl(anyLong(), any());
-    verify(asyncServiceSpy, times(2)).executePGQuery(any());
+    verify(asyncServiceSpy,times(2)).process4ExistingRequestId(any(),any(),any(),any());
+    verify(fileOpsHelper, times(3)).generatePreSignedUrl(anyLong(), any());
+    verify(asyncServiceSpy, times(4)).executePGQuery(any());
+    testContext.completeNow();
+  }
+
+  @Test
+  @DisplayName("fail download from es - async search")
+  public void failDownloadForNewRequestId(Vertx vertx, VertxTestContext testContext) {
+    String requestId = "efb0b92cd5b50d0a75a939ffa997c6e4fccdc62414ad0177a020eec98f69144e";
+    String sub = "15c7506f-c800-48d6-adeb-0542b03947c6";
+    String searchId = "4b25aa92-47bb-4c91-98c0-47a1c7a51fbe";
+    JsonObject query = query();
+
+    doAnswer(Answer -> Future.failedFuture("record doesn't exist"))
+        .when(asyncServiceSpy)
+        .getRecord4RequestId(any());
+
+    when(asyncResult.succeeded()).thenReturn(false);
+
+    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query);
     testContext.completeNow();
   }
 
@@ -225,7 +258,80 @@ public class AsyncServiceTest {
     when(asyncResult.succeeded()).thenReturn(true);
     when(asyncResult.result()).thenReturn(new JsonObject().put("result",record));
 
-    asyncServiceSpy.asyncStatus(sub,searchId,handler -> {
+    asyncService.asyncStatus(sub,searchId,handler -> {
+      if(handler.succeeded()) {
+        testContext.completeNow();
+      } else {
+        testContext.failNow("fail");
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("async status fail - incorrect searchID")
+  public void asyncSearchIncorrectSearchID(VertxTestContext testContext) {
+
+    String sub = "15c7506f-c800-48d6-adeb-0542b03947c6";
+    String searchId = "4b25aa92-47bb-4c91-98c0-47a1c7a51234";
+
+    when(asyncResult.succeeded()).thenReturn(true);
+    when(asyncResult.result()).thenReturn(new JsonObject().put("result",new JsonArray()));
+
+    asyncService.asyncStatus(sub,searchId,handler ->{
+      if(handler.failed()) {
+        testContext.completeNow();
+      } else {
+        testContext.failNow("fail");
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("async status fail - incorrect user")
+  public void asyncSearchIncorrectUser(VertxTestContext testContext) {
+
+    String sub = "15c7506f-c800-48d6-adeb-0542b0394321";
+    String searchId = "4b25aa92-47bb-4c91-98c0-47a1c7a51fbe";
+    JsonArray record = record();
+
+    when(asyncResult.succeeded()).thenReturn(true);
+    when(asyncResult.result()).thenReturn(new JsonObject().put("result",record));
+
+    asyncService.asyncStatus(sub,searchId,handler ->{
+      if(handler.failed()) {
+        testContext.completeNow();
+      } else {
+        testContext.failNow("fail");
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("success - get record for request id")
+  public void testGetRecord4RequestId(VertxTestContext testContext) {
+    String requestId = "682a3a42aaa1c8adadea4cc9ea16d968993fc8eee4edfc299d00bccf28117965";
+    JsonArray record = record();
+
+    when(asyncResult.succeeded()).thenReturn(true);
+    when(asyncResult.result()).thenReturn(new JsonObject().put("result",record));
+
+    asyncService.getRecord4RequestId(requestId).onComplete(handler -> {
+      if(handler.succeeded()) {
+        testContext.completeNow();
+      } else {
+        testContext.failNow("fail");
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("success - execture pg query")
+  public void testExecutePGQuery(VertxTestContext testContext) {
+    String query = "SELECT * FROM s3_upload_url";
+
+    when(asyncResult.succeeded()).thenReturn(true);
+
+    asyncService.executePGQuery(query).onComplete(handler -> {
       if(handler.succeeded()) {
         testContext.completeNow();
       } else {

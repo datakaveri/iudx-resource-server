@@ -284,8 +284,8 @@ public class AsyncServiceImpl implements AsyncService {
       return this;
     }
 
-    LOGGER.info("Info: index: " + searchIndex);
-    LOGGER.info("Info: Query constructed: " + query.toString());
+    LOGGER.debug("Info: index: " + searchIndex);
+    LOGGER.debug("Info: Query constructed: " + query.toString());
 
 
     client.scrollAsync(file, searchIndex, query,
