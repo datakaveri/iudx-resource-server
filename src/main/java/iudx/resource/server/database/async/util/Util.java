@@ -48,7 +48,7 @@ public class Util {
                 .replace("$2", searchID)
                 .replace("$3", requestID)
                 .replace("$4", sub)
-                .replace("$5", QueryProgress.STARTED.toString()));
+                .replace("$5", QueryProgress.IN_PROGRESS.toString()));
 
     return writeToDB(query);
   }

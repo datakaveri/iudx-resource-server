@@ -9,7 +9,7 @@ CREATE TYPE sub_type AS ENUM
 );
 CREATE type Query_Progress as ENUM
 (
-   'STARTED',
+   'IN_PROGRESS',
    'ERROR',
    'COMPLETE'
 )

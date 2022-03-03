@@ -1,6 +1,6 @@
 package iudx.resource.server.database.archives;
 
-import static iudx.resource.server.database.archives.Constants.COUNT;
+import static iudx.resource.server.database.archives.Constants.TOTAL_HITS;
 import static iudx.resource.server.database.archives.Constants.DETAIL;
 import static iudx.resource.server.database.archives.Constants.ERROR;
 import static iudx.resource.server.database.archives.Constants.ERROR_TYPE;
@@ -75,7 +75,7 @@ public class ResponseBuilder {
   }
 
   public ResponseBuilder setCount(int count) {
-    response.put(RESULTS, new JsonArray().add(new JsonObject().put(COUNT, count)));
+    response.put(RESULTS, new JsonArray().add(new JsonObject().put(TOTAL_HITS, count)));
     return this;
   }
   
