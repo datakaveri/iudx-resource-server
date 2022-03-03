@@ -34,7 +34,7 @@ import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.archives.ResponseBuilder;
 import iudx.resource.server.database.async.util.QueryProgress;
 import iudx.resource.server.database.async.util.S3FileOpsHelper;
-import iudx.resource.server.database.async.util.Utilities;
+import iudx.resource.server.database.async.util.Util;
 import iudx.resource.server.database.elastic.ElasticClient;
 import iudx.resource.server.database.elastic.QueryDecoder;
 import iudx.resource.server.database.postgres.PostgresService;
@@ -50,7 +50,7 @@ public class AsyncServiceImpl implements AsyncService {
   private String filePath;
   private final PostgresService pgService;
   private final S3FileOpsHelper s3FileOpsHelper;
-  private final Utilities utilities;
+  private final Util util;
   private final Vertx vertx;
 
   public AsyncServiceImpl(Vertx vertx, ElasticClient client, PostgresService pgService,
@@ -61,7 +61,7 @@ public class AsyncServiceImpl implements AsyncService {
     this.s3FileOpsHelper = s3FileOpsHelper;
     this.timeLimit = timeLimit;
     this.filePath = filePath;
-    this.utilities = new Utilities(pgService);
+    this.util = new Util(pgService);
   }
 
   @Override
@@ -119,7 +119,7 @@ public class AsyncServiceImpl implements AsyncService {
           process4ExistingRequestId(requestId, sub, searchId, handler);
         }).onFailure(handler -> {
 
-          Future.future(future -> utilities.writeToDB(searchId,requestId,sub));
+          Future.future(future -> util.writeToDB(searchId,requestId,sub));
 
           File file = new File(filePath + "/" + searchId + ".json");
           String objectId = UUID.randomUUID().toString();
@@ -152,7 +152,7 @@ public class AsyncServiceImpl implements AsyncService {
                   StringBuilder updateFailQuery = new StringBuilder(UPDATE_STATUS_SQL
                       .replace("$1",QueryProgress.ERROR.toString())
                       .replace("$2",searchId));
-                  Future.future(fu -> utilities.writeToDB(updateFailQuery));
+                  Future.future(fu -> util.writeToDB(updateFailQuery));
                 }
               });
             } else {
@@ -160,7 +160,7 @@ public class AsyncServiceImpl implements AsyncService {
               StringBuilder updateFailQuery = new StringBuilder(UPDATE_STATUS_SQL
                   .replace("$1",QueryProgress.ERROR.toString())
                   .replace("$2",searchId));
-              Future.future(fu -> utilities.writeToDB(updateFailQuery));
+              Future.future(fu -> util.writeToDB(updateFailQuery));
             }
           });
 
@@ -255,7 +255,7 @@ public class AsyncServiceImpl implements AsyncService {
     request.put("search", true);
     request.put("timeLimit", "test,2020-10-22T00:00:00Z,10"); // TODO: what is time limit?
 
-    if (!utilities.isValidQuery(request)) {
+    if (!util.isValidQuery(request)) {
       responseBuilder = new ResponseBuilder("fail")
           .setTypeAndTitle(400)
           .setMessage("bad parameters");

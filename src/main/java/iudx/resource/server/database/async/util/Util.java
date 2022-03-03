@@ -14,12 +14,12 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.database.postgres.PostgresService;
 
-public class Utilities {
+public class Util {
 
-  private static final Logger LOGGER = LogManager.getLogger(Utilities.class);
+  private static final Logger LOGGER = LogManager.getLogger(Util.class);
   private final PostgresService pgService;
 
-  public Utilities(PostgresService pgService) {
+  public Util(PostgresService pgService) {
     this.pgService = pgService;
   }
 
