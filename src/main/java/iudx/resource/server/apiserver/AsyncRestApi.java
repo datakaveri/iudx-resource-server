@@ -60,16 +60,15 @@ public class AsyncRestApi {
 
   private final Vertx vertx;
   private final Router router;
-  private final PostgresService pgService;
-  private MeteringService meteringService;
+  private final MeteringService meteringService;
   private AsyncService asyncService;
   private final ParamsValidator validator;
   private final CatalogueService catalogueService;
 
-  AsyncRestApi(Vertx vertx, PostgresService pgService,
+  AsyncRestApi(Vertx vertx, MeteringService meteringService,
       CatalogueService catalogueService, ParamsValidator validator) {
     this.vertx = vertx;
-    this.pgService = pgService;
+    this.meteringService = meteringService;
     this.catalogueService = catalogueService;
     this.validator = validator;
     this.router = Router.router(vertx);
@@ -93,7 +92,7 @@ public class AsyncRestApi {
     router
         .get(Api.STATUS.path)
         .handler(asyncStatusValidation)
-        .handler(AuthHandler.create(vertx)) // TODO: how to authenticate?
+        .handler(AuthHandler.create(vertx))
         .handler(this::handleAsyncStatusRequest)
         .failureHandler(validationsFailureHandler);
 

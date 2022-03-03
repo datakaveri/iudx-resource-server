@@ -10,6 +10,4 @@ public class Constants {
   public static final String FILE_DOWNLOAD_URL = "file-download-url";
   public static final String USER_ID = "user_id";
   public static final String STATUS = "status";
-  public static final String READY = "Ready";
-  public static final String PENDING = "Pending";
 }
