@@ -18,7 +18,6 @@ CREATE type Query_Progress as ENUM
    'COMPLETE'
 )
 
-
 ---
 -- Token invalidation table
 ---
