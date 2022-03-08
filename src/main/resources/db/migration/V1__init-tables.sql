@@ -78,6 +78,25 @@ CREATE TABLE IF NOT EXISTS databroker
 ALTER TABLE databroker OWNER TO ${flyway:user};
 
 ---
+--gis table
+---
+CREATE TABLE IF NOT EXISTS gis
+(
+   iudx_resource_id character varying NOT NULL,
+   url varchar NOT NULL,
+   isOpen BOOLEAN NOT NULL,
+   port integer NOT NULL,
+   created_at timestamp without time zone NOT NULL,
+   modified_at timestamp without time zone NOT NULL,
+   username varchar,
+   password varchar,
+   tokenurl character varying,
+   CONSTRAINT gis_pk PRIMARY KEY (iudx_resource_id)
+)
+
+ALTER TABLE gis OWNER TO ${flyway:user};
+
+---
 -- Functions for audit[cerated,updated] on table/column
 ---
 
@@ -131,6 +150,11 @@ OR UPDATE ON
    databroker FOR EACH ROW EXECUTE PROCEDURE update_modified ();
    
    
+-- gis table
+CREATE TRIGGER update_gis_created BEFORE INSERT ON gis FOR EACH ROW EXECUTE PROCEDURE update_created ();
+CREATE TRIGGER update_gis_modified BEFORE INSERT OR UPDATE ON gis FOR EACH ROW EXECUTE PROCEDURE update_modified ();
+   
+   
  ---  
  -- grants
  ---
@@ -141,6 +165,7 @@ OR UPDATE ON
  GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE unique_attributes TO ${rsUser};
  GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE subscriptions TO ${rsUser};
  GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE databroker TO ${rsUser};
+ GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE gis TO ${rsUser};
  
  
    
