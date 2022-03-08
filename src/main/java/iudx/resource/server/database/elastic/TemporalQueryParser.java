@@ -1,4 +1,4 @@
-package iudx.resource.server.database.archives.elastic;
+package iudx.resource.server.database.elastic;
 
 import static iudx.resource.server.database.archives.Constants.AFTER;
 import static iudx.resource.server.database.archives.Constants.BEFORE;
@@ -10,11 +10,11 @@ import static iudx.resource.server.database.archives.Constants.TIME_KEY;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 
+import iudx.resource.server.database.elastic.exception.ESQueryDecodeException;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.database.archives.elastic.exception.ESQueryDecodeException;
 
 public class TemporalQueryParser implements QueryParser {
 

@@ -8,7 +8,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.database.archives.elastic.ElasticClient;
+import iudx.resource.server.database.elastic.ElasticClient;
 
 /**
  * The Database Service.

@@ -1,4 +1,4 @@
-package iudx.resource.server.database.archives.elastic;
+package iudx.resource.server.database.elastic;
 
 import static iudx.resource.server.database.archives.Constants.ATTRIBUTE_KEY;
 import static iudx.resource.server.database.archives.Constants.ATTRIBUTE_QUERY_KEY;
@@ -20,7 +20,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.common.ResponseUrn;
-import iudx.resource.server.database.archives.elastic.exception.ESQueryDecodeException;
+import iudx.resource.server.database.elastic.exception.ESQueryDecodeException;
 
 public class AttributeQueryParser implements QueryParser {
 

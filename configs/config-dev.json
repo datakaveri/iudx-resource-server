@@ -8,6 +8,7 @@
     "modules": [
         {
             "id": "iudx.resource.server.database.archives.DatabaseVerticle",
+            "isWorkerVerticle":false,
             "verticleInstances": 8,
             "databaseIP": "",
             "databasePort": 24034,
@@ -17,6 +18,7 @@
         },
         {
             "id": "iudx.resource.server.authenticator.AuthenticationVerticle",
+            "isWorkerVerticle":false,
             "verticleInstances": 1,
             "authServerHost": "",
             "catServerHost": "",
@@ -28,6 +30,7 @@
         },
         {
             "id": "iudx.resource.server.databroker.DataBrokerVerticle",
+            "isWorkerVerticle":false,
             "verticleInstances": 1,
             "dataBrokerIP": "",
             "dataBrokerPort": 29042,
@@ -53,6 +56,7 @@
         },
         {
             "id": "iudx.resource.server.callback.CallbackVerticle",
+            "isWorkerVerticle":false,
             "verticleInstances": 1,
             "dataBrokerIP": "",
             "dataBrokerPort": 29042,
@@ -75,6 +79,7 @@
         },
         {
             "id": "iudx.resource.server.apiserver.ApiServerVerticle",
+            "isWorkerVerticle":false,
             "ssl": true,
             "production": false,
             "keystore": "configs/keystore.jks",
@@ -86,6 +91,7 @@
         },
         {
            "id": "iudx.resource.server.database.latest.LatestVerticle",
+           "isWorkerVerticle":false,
             "verticleInstances": 2,
             "attributeList": {"itms-info": "some-attr"},
             "redisMode": "",
@@ -98,6 +104,7 @@
         },
         {
          	"id": "iudx.resource.server.metering.MeteringVerticle",
+         	"isWorkerVerticle":false,
             "verticleInstances": 1,
             "meteringDatabaseIP": "",
             "meteringDatabasePort": 32508,
@@ -108,6 +115,7 @@
         },
         {
             "id":"iudx.resource.server.database.postgres.PostgresVerticle",
+            "isWorkerVerticle":false,
             "verticleInstances": 1,
             "databaseIP": "localhost",
             "databasePort": 5432,
@@ -116,6 +124,25 @@
             "databasePassword": "",
             "poolSize": 25
         
+        },
+        {
+            "id": "iudx.resource.server.cache.CacheVerticle",
+            "isWorkerVerticle":false,
+            "verticleInstances": 1
+        },
+        {
+            "id": "iudx.resource.server.database.async.AsyncVerticle",
+            "isWorkerVerticle":true,
+            "threadPoolName":"async-query-pool",
+            "threadPoolSize":20,
+            "verticleInstances": 20,
+            "databaseIP": "",
+            "databasePort":998 ,
+            "dbUser": "",
+            "dbPassword": "",
+            "timeLimit": "",
+            "filePath": "/home/kailash/Downloads/",
+            "bucketName": ""
         }
     ]
 }

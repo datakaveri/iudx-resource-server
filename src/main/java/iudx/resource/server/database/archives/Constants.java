@@ -41,6 +41,7 @@ public class Constants {
   public static final String SEARCH_KEY = "search";
   public static final String ERROR = "Error";
   public static final String COUNT = "count";
+  public static final String TOTAL_HITS= "totalHits";
   public static final String DOC_ID = "_id";
   public static final String DOCS_KEY = "docs";
   public static final String SEARCH_REQ_PARAM = "/_search";

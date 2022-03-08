@@ -7,6 +7,7 @@ import static iudx.resource.server.authenticator.authorization.Api.RESET_PWD;
 import static iudx.resource.server.authenticator.authorization.Api.SUBSCRIPTION;
 import static iudx.resource.server.authenticator.authorization.Api.TEMPORAL;
 import static iudx.resource.server.authenticator.authorization.Api.USER_AUDIT;
+import static iudx.resource.server.authenticator.authorization.Api.ASYNC_SEARCH;
 import static iudx.resource.server.authenticator.authorization.Method.DELETE;
 import static iudx.resource.server.authenticator.authorization.Method.GET;
 import static iudx.resource.server.authenticator.authorization.Method.PATCH;
@@ -35,6 +36,7 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     apiAccessList.add(new AuthorizationRequest(POST, ENTITY_OPERATION));
     apiAccessList.add(new AuthorizationRequest(POST, ENTITY_OPERATION_TEMPORAL));
     apiAccessList.add(new AuthorizationRequest(GET,USER_AUDIT));
+    apiAccessList.add(new AuthorizationRequest(GET, ASYNC_SEARCH));
     consumerAuthorizationRules.put(IudxAccess.API.getAccess(), apiAccessList);
 
     // subscriptions access list/rules
@@ -57,6 +59,7 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
   public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData) {
     JsonArray access = jwtData.getCons() != null ? jwtData.getCons().getJsonArray("access") : null;
     boolean result = false;
+    LOGGER.debug(access);
     if (access == null) {
       return result;
     }

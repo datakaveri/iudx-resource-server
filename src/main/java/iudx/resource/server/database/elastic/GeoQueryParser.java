@@ -1,4 +1,4 @@
-package iudx.resource.server.database.archives.elastic;
+package iudx.resource.server.database.elastic;
 
 import static iudx.resource.server.database.archives.Constants.BBOX;
 import static iudx.resource.server.database.archives.Constants.COORDINATES_KEY;
@@ -12,13 +12,13 @@ import static iudx.resource.server.database.archives.Constants.LON;
 import static iudx.resource.server.database.archives.Constants.POLYGON;
 import static iudx.resource.server.database.archives.Constants.WITHIN;
 
+import iudx.resource.server.database.elastic.exception.ESQueryDecodeException;
 import org.elasticsearch.common.geo.ShapeRelation;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.database.archives.elastic.exception.ESQueryDecodeException;
 
 public class GeoQueryParser implements QueryParser {
 

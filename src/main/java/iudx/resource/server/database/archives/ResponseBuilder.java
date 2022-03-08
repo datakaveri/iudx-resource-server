@@ -1,6 +1,6 @@
 package iudx.resource.server.database.archives;
 
-import static iudx.resource.server.database.archives.Constants.COUNT;
+import static iudx.resource.server.database.archives.Constants.TOTAL_HITS;
 import static iudx.resource.server.database.archives.Constants.DETAIL;
 import static iudx.resource.server.database.archives.Constants.ERROR;
 import static iudx.resource.server.database.archives.Constants.ERROR_TYPE;
@@ -16,7 +16,6 @@ import static iudx.resource.server.database.archives.Constants.STATUS;
 import static iudx.resource.server.database.archives.Constants.SUCCESS;
 import static iudx.resource.server.database.archives.Constants.TITLE;
 import static iudx.resource.server.database.archives.Constants.TYPE_KEY;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -39,6 +38,12 @@ public class ResponseBuilder {
     } else if (FAILED.equalsIgnoreCase(status)) {
       response.put(TITLE, FAILED);
     }
+    return this;
+  }
+  
+  public ResponseBuilder setTypeAndTitle(int statusCode,String title) {
+    response.put(ERROR_TYPE, statusCode);
+    response.put(TITLE, title);
     return this;
   }
 
@@ -70,7 +75,7 @@ public class ResponseBuilder {
   }
 
   public ResponseBuilder setCount(int count) {
-    response.put(RESULTS, new JsonArray().add(new JsonObject().put(COUNT, count)));
+    response.put(RESULTS, new JsonArray().add(new JsonObject().put(TOTAL_HITS, count)));
     return this;
   }
   

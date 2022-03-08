@@ -9,16 +9,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
-
 import com.hazelcast.config.Config;
 import com.hazelcast.config.DiscoveryStrategyConfig;
 import com.hazelcast.zookeeper.ZookeeperDiscoveryProperties;
 import com.hazelcast.zookeeper.ZookeeperDiscoveryStrategyFactory;
-
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 // JVM metrics imports
@@ -58,14 +55,25 @@ public class Deployer {
     config.put("host", configs.getString("host"));
     String moduleName = config.getString("id");
     int numInstances = config.getInteger("verticleInstances");
-    vertx.deployVerticle(moduleName,
-                           new DeploymentOptions()
-                                  .setInstances(numInstances)
-                                  .setConfig(config),
-                          ar -> {
+
+    DeploymentOptions deploymentOptions = new DeploymentOptions()
+        .setInstances(numInstances)
+        .setConfig(config);
+
+    boolean isWorkerVerticle = config.getBoolean("isWorkerVerticle");
+    if (isWorkerVerticle) {
+      LOGGER.info("worker verticle : " + config.getString("id"));
+      deploymentOptions.setWorkerPoolName(config.getString("threadPoolName"));
+      deploymentOptions.setWorkerPoolSize(config.getInteger("threadPoolSize"));
+      deploymentOptions.setWorker(true);
+      deploymentOptions.setMaxWorkerExecuteTime(30L);
+      deploymentOptions.setMaxWorkerExecuteTimeUnit(TimeUnit.MINUTES);
+    }
+
+    vertx.deployVerticle(moduleName, deploymentOptions, ar -> {
       if (ar.succeeded()) {
         LOGGER.info("Deployed " + moduleName);
-        recursiveDeploy(vertx, configs, i+1);
+        recursiveDeploy(vertx, configs, i + 1);
       } else {
         LOGGER.fatal("Failed to deploy " + moduleName + " cause:", ar.cause());
       }
@@ -73,8 +81,8 @@ public class Deployer {
   }
 
   public static ClusterManager getClusterManager(String host,
-                                                  List<String> zookeepers,
-                                                  String clusterID) {
+      List<String> zookeepers,
+      String clusterID) {
     Config config = new Config();
     config.getNetworkConfig().getJoin().getMulticastConfig().setEnabled(false);
     config.getNetworkConfig().setPublicAddress(host);
@@ -83,12 +91,12 @@ public class Deployer {
     DiscoveryStrategyConfig discoveryStrategyConfig =
         new DiscoveryStrategyConfig(new ZookeeperDiscoveryStrategyFactory());
     discoveryStrategyConfig.addProperty(ZookeeperDiscoveryProperties.ZOOKEEPER_URL.key(),
-                                          String.join(",", zookeepers));
+        String.join(",", zookeepers));
     discoveryStrategyConfig.addProperty(ZookeeperDiscoveryProperties.GROUP.key(), clusterID);
     config.getNetworkConfig()
-          .getJoin()
-          .getDiscoveryConfig()
-          .addDiscoveryStrategyConfig(discoveryStrategyConfig);
+        .getJoin()
+        .getDiscoveryConfig()
+        .addDiscoveryStrategyConfig(discoveryStrategyConfig);
 
     return new HazelcastClusterManager(config);
   }
@@ -118,7 +126,7 @@ public class Deployer {
   public static void deploy(String configPath, String host) {
     String config;
     try {
-     config = new String(Files.readAllBytes(Paths.get(configPath)), StandardCharsets.UTF_8);
+      config = new String(Files.readAllBytes(Paths.get(configPath)), StandardCharsets.UTF_8);
     } catch (Exception e) {
       LOGGER.fatal("Couldn't read configuration file");
       return;
@@ -198,7 +206,7 @@ public class Deployer {
     try {
       latch_vertx.await(5, TimeUnit.SECONDS);
       // then shut down log4j
-      if( LogManager.getContext() instanceof LoggerContext ) {
+      if (LogManager.getContext() instanceof LoggerContext) {
         LOGGER.debug("Shutting down log4j2");
         LogManager.shutdown((LoggerContext) LogManager.getContext());
       } else
@@ -223,7 +231,7 @@ public class Deployer {
     if (commandLine.isValid() && !commandLine.isFlagEnabled("help")) {
       String configPath = commandLine.getOptionValue("config");
       String host = commandLine.getOptionValue("host");
-      deploy(configPath,host);
+      deploy(configPath, host);
       Runtime.getRuntime().addShutdownHook(new Thread(() -> gracefulShutdown()));
     } else {
       LOGGER.info(usageString);
@@ -231,6 +239,5 @@ public class Deployer {
   }
 
 }
-
 
 

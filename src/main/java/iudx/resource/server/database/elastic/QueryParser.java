@@ -1,4 +1,4 @@
-package iudx.resource.server.database.archives.elastic;
+package iudx.resource.server.database.elastic;
 
 import org.elasticsearch.index.query.BoolQueryBuilder;
 

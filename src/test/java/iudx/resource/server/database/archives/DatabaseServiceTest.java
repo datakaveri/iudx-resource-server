@@ -23,7 +23,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.configuration.Configuration;
-import iudx.resource.server.database.archives.elastic.ElasticClient;
+import iudx.resource.server.database.elastic.ElasticClient;
 
 @ExtendWith({VertxExtension.class})
 public class DatabaseServiceTest {
@@ -426,7 +426,7 @@ public class DatabaseServiceTest {
         .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
 
     dbService.countQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("count"));
+      assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("totalHits"));
       testContext.completeNow();
     })));
   }
@@ -521,7 +521,7 @@ public class DatabaseServiceTest {
         .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
 
     dbService.countQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("count"));
+      assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("totalHits"));
       testContext.completeNow();
     })));
   }
@@ -567,7 +567,7 @@ public class DatabaseServiceTest {
         .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
 
     dbService.countQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("count"));
+      assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("totalHits"));
       testContext.completeNow();
     })));
   }
@@ -685,7 +685,7 @@ public class DatabaseServiceTest {
         .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
 
     dbService.countQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("count"));
+      assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("totalHits"));
       testContext.completeNow();
     })));
   }

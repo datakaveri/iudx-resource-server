@@ -100,7 +100,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             || endPoint.equalsIgnoreCase("/ngsi-ld/v1/consumer/audit")
             || endPoint.equalsIgnoreCase("/admin/revokeToken")
             || endPoint.equalsIgnoreCase("/admin/resourceattribute")
-            || endPoint.equalsIgnoreCase("/ngsi-ld/v1/provider/audit");
+            || endPoint.equalsIgnoreCase("/ngsi-ld/v1/provider/audit")
+            || endPoint.equalsIgnoreCase("/async/status");
 
 
     LOGGER.debug("checkResourceFlag " + skipResourceIdCheck);

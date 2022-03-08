@@ -1,11 +1,18 @@
 -- random uuid extension for primary key.
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- constants enum
+-- subscription types
 CREATE TYPE sub_type AS ENUM
 (
    'STREAMING',
    'CALLBACK'
 );
+CREATE type Query_Progress as ENUM
+(
+   'IN_PROGRESS',
+   'ERROR',
+   'COMPLETE'
+)
 -- Token invalidation table
 -- TODO: decide max length for varchar
 CREATE TABLE IF NOT EXISTS revoked_tokens
@@ -44,6 +51,21 @@ CREATE TABLE IF NOT EXISTS subscriptions
       entity
    )
 );
+-- s3 URL table
+CREATE TABLE IF NOT EXISTS s3_upload_url
+(
+   _id uuid NOT NULL,
+   search_id uuid NOT NULL,
+   request_id TEXT NOT NULL,
+   status Query_Progress NOT NULL,
+   s3_url varchar,
+   expiry timestamp without time zone,
+   user_id varchar,
+   object_id varchar,
+   created_at timestamp without time zone NOT NULL,
+   modified_at timestamp without time zone NOT NULL,
+   CONSTRAINT upload_url_pk PRIMARY KEY (_id)
+);
 -- Functions for audit[new,update] on table/column
 -- modified_at column function
 CREATE
@@ -77,3 +99,8 @@ CREATE TRIGGER update_sub_created BEFORE INSERT ON subscriptions FOR EACH ROW EX
 CREATE TRIGGER update_sub_modified BEFORE INSERT
 OR UPDATE ON
    subscriptions FOR EACH ROW EXECUTE PROCEDURE update_modified ();
+-- s3_upload_url
+CREATE TRIGGER update_s3_url_created BEFORE INSERT ON s3_upload_url FOR EACH ROW EXECUTE PROCEDURE update_created ();
+CREATE TRIGGER update_s3_url_modified BEFORE INSERT
+OR UPDATE ON
+   s3_upload_url FOR EACH ROW EXECUTE PROCEDURE update_modified ();

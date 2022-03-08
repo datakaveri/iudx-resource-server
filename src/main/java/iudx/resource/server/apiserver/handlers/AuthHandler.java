@@ -16,6 +16,8 @@ import static iudx.resource.server.apiserver.util.Constants.ID;
 import static iudx.resource.server.apiserver.util.Constants.IDS;
 import static iudx.resource.server.apiserver.util.Constants.ID_REGEX;
 import static iudx.resource.server.apiserver.util.Constants.IID;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_ASYNC_SEARCH;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_ASYNC_STATUS;
 import static iudx.resource.server.apiserver.util.Constants.IUDX_CONSUMER_AUDIT_URL;
 import static iudx.resource.server.apiserver.util.Constants.IUDX_PROVIDER_AUDIT_URL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_ALIAS;
@@ -301,6 +303,10 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = IUDX_CONSUMER_AUDIT_URL;
     } else if (url.matches(IUDX_PROVIDER_AUDIT_URL)) {
       path = IUDX_PROVIDER_AUDIT_URL;
+    } else if(url.matches(IUDX_ASYNC_SEARCH)) {
+      path = IUDX_ASYNC_SEARCH;
+    }else if(url.matches(IUDX_ASYNC_STATUS)) {
+      path = IUDX_ASYNC_STATUS;
     }
     return path;
   }
