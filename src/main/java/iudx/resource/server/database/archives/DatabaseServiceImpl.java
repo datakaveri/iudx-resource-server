@@ -159,7 +159,7 @@ public class DatabaseServiceImpl implements DatabaseService {
           query.put(FROM_KEY, getOrDefault(request, PARAM_FROM, DEFAULT_FROM_VALUE));
           JsonObject countJson = countHandler.result();
           LOGGER.debug("count json : " + countJson);
-          int count = countJson.getJsonArray("results").getJsonObject(0).getInteger("count");
+          int count = countJson.getJsonArray("results").getJsonObject(0).getInteger("totalHits");
           client.searchAsync(searchIndex, FILTER_PATH_VAL, query.toString(),
               searchRes -> {
                 if (searchRes.succeeded()) {

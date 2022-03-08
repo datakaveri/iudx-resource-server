@@ -1,5 +1,27 @@
 package iudx.resource.server.database.async;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 import com.amazonaws.regions.Regions;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -14,24 +36,6 @@ import iudx.resource.server.database.async.util.S3FileOpsHelper;
 import iudx.resource.server.database.async.util.Util;
 import iudx.resource.server.database.elastic.ElasticClient;
 import iudx.resource.server.database.postgres.PostgresService;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.Answer;
-
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class AsyncServiceTest {
@@ -197,32 +201,6 @@ public class AsyncServiceTest {
     doAnswer(Answer -> Future.failedFuture("fail")).when(asyncServiceSpy).executePGQuery(any());
 
     asyncServiceSpy.asyncSearch(requestId, sub, searchId, query);
-    testContext.completeNow();
-  }
-
-  @Test
-  @DisplayName("success - async search for new request id")
-  public void successfulAsyncSearchForNewRequestIDTest(Vertx vertx, VertxTestContext testContext) {
-
-    String requestId = "efb0b92cd5b50d0a75a939ffa997c6e4fccdc62414ad0177a020eec98f69144e";
-    String sub = "15c7506f-c800-48d6-adeb-0542b03947c6";
-    String searchId = "4b25aa92-47bb-4c91-98c0-47a1c7a51fbe";
-    JsonObject query = query();
-
-    doAnswer(Answer -> Future.failedFuture("record doesn't exist"))
-        .when(asyncServiceSpy)
-        .getRecord4RequestId(any());
-
-    when(asyncResult1.succeeded()).thenReturn(true);
-    when(asyncResult2.succeeded()).thenReturn(true);
-
-    vertx.fileSystem().createFile(filePath + "/" + searchId + ".json");
-
-    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query);
-
-    verify(asyncServiceSpy, times(2)).process4ExistingRequestId(any(), any(), any(), any());
-    verify(fileOpsHelper, times(3)).generatePreSignedUrl(anyLong(), any());
-    verify(asyncServiceSpy, times(3)).executePGQuery(any());
     testContext.completeNow();
   }
 

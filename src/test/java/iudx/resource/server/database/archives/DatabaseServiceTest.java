@@ -426,7 +426,7 @@ public class DatabaseServiceTest {
         .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
 
     dbService.countQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("count"));
+      assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("totalHits"));
       testContext.completeNow();
     })));
   }
@@ -521,7 +521,7 @@ public class DatabaseServiceTest {
         .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
 
     dbService.countQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("count"));
+      assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("totalHits"));
       testContext.completeNow();
     })));
   }
@@ -567,7 +567,7 @@ public class DatabaseServiceTest {
         .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
 
     dbService.countQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("count"));
+      assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("totalHits"));
       testContext.completeNow();
     })));
   }
@@ -685,7 +685,7 @@ public class DatabaseServiceTest {
         .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
 
     dbService.countQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("count"));
+      assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("totalHits"));
       testContext.completeNow();
     })));
   }
