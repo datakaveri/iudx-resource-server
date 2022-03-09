@@ -51,7 +51,7 @@ public class RedisClient {
     
     RedisURI
         .append("redis://")
-        .append(config.getString("redisUsername"))
+        .append(URLEncoder.encode(config.getString("redisUsername"),StandardCharsets.UTF_8))
         .append(":")
         .append(URLEncoder.encode(config.getString("redisPassword"), StandardCharsets.UTF_8))
         .append("@")
