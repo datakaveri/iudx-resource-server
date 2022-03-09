@@ -1,10 +1,10 @@
 package iudx.resource.server.database.latest;
 
 import static iudx.resource.server.database.archives.Constants.FAILED;
-
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -48,10 +48,17 @@ public class RedisClient {
     Promise<RedisClient> promise = Promise.promise();
     StringBuilder RedisURI = new StringBuilder();
     RedisOptions options=null;
-    RedisURI.append("redis://").append(config.getString("redisUsername")).append(":")
-        .append(config.getString("redisPassword")).append("@")
-        .append(config.getString("redisHost")).append(":")
+    
+    RedisURI
+        .append("redis://")
+        .append(config.getString("redisUsername"))
+        .append(":")
+        .append(URLEncoder.encode(config.getString("redisPassword"), StandardCharsets.UTF_8))
+        .append("@")
+        .append(config.getString("redisHost"))
+        .append(":")
         .append(config.getInteger("redisPort").toString());
+    
     String mode = config.getString("redisMode");
     if (mode.equals("CLUSTER")) {
       options =
