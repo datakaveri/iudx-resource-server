@@ -16,7 +16,7 @@ services:
       - ./configs/config-depl.json:/usr/share/app/configs/config.json
       - ./configs/keystore.jks:/usr/share/app/configs/keystore.jks
     ports:
-      - "443:8443"
+      - "8443:8443"
       - "9000:9000"
     restart: on-failure
     networks: 

@@ -19,7 +19,7 @@ services:
     depends_on:
       - "zookeeper"
     ports:
-      - "80:80"
+      - "8080:8080"
       - "9000:9000"
     restart: on-failure
     networks: 
@@ -41,7 +41,7 @@ services:
       - ./configs/config-dev.json:/usr/share/app/configs/config.json
       - ./configs/keystore.jks:/usr/share/app/configs/keystore.jks
     ports:
-      - "8080:80"
+      - "8080:8080"
       - "9000:9000"
     restart: on-failure
     networks: 
