@@ -90,7 +90,13 @@ public class AsyncServiceImpl implements AsyncService {
                 if (status.equalsIgnoreCase(QueryProgress.COMPLETE.toString())) {
                   answer.put(FILE_DOWNLOAD_URL, answer.getValue(S3_URL));
                 }
+                answer.put("searchId", answer.getString("search_id"));
+                answer.put("userId", user_id);
+                
                 answer.remove(S3_URL);
+                answer.remove("search_id");
+                answer.remove(user_id);
+                
                 responseBuilder = new ResponseBuilder("success")
                     .setTypeAndTitle(200)
                     .setMessage(new JsonArray().add(answer));

@@ -84,6 +84,17 @@ tags:
   x-displayName: "Management"
   description: |
     Management APIs provide the ability to the users to reset streaming credentials.
+    
+- name: Async
+  x-display: "Async"
+  description: |
+    Async APIs provide the ability to the user to query resources using larger temporal period and greater spatial area.
+    
+- name: Metering
+  x-display: "Metering/Audit"
+  description: |
+    Metering APIs provide the ability to the user (Consumer/Provider) to query the audit data using temporal & resource-id query
+    
 
 paths:
       
@@ -1458,6 +1469,316 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
           description: 'Resource not found'
+          
+  /async/search:
+    get:
+      tags:
+      - Async
+      summary: Search 
+      operationId: async search
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+      - name: id
+        in: query
+        description: 'A <b> valid IUDX ID </b> of the resource. <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .'
+        required: true
+        schema:
+          type: string
+          maxLength: 512
+      - name: timerel
+        in: query
+        description: 'The temporal relation type of <b>timerel</b> to be performed.'
+        required: true
+        schema:
+          type: string
+          enum: [during]          
+      - name: time
+        in: query
+        description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
+        required: true
+        schema:
+          type: string
+      - name: endtime
+        in: query
+        description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
+        required: true
+        schema:
+          type: string
+          
+      responses:
+        201:
+          description: 'query submitted successfully'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/asyncsearchResponse'
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
+          
+  /async/status:
+    get:
+      tags:
+      - Async
+      summary: Search status
+      operationId: async search status
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+      - name: searchId
+        in: query
+        description: 'searchId returned while submitting request through `/async/search`'
+        required: true
+        style: simple
+        schema:
+          type: string
+          maxLength: 512
+          pattern: 
+          
+      responses:
+        200:
+          description: 'search status'
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/asyncsearchStatusComplete'
+                - $ref: '#/components/schemas/asyncsearchStatusInprogress'
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
+          
+  /ngsi-ld/v1/consumer/audit:
+    get:
+      tags: 
+      - Metering
+      summary: consumer search
+      operationId: consumer search
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+      - name: options
+        in: header
+        description: 'options parameter is used for obtaining the number of hits for a query'
+        style: simple
+        schema:
+          type: string
+          enum: [count]
+      - name: id
+        in: query
+        description: 'id of the resource in catalogue'
+        style: simple
+        schema:
+          type: string
+          maxLength: 512
+          pattern:
+      - name: api
+        in: query
+        description: 'Valid IUDX api [`/entities`, `/temporal/entities`, `/entityOperation/Query`, `/temporal/entityOperation/Query`] '
+        style: simple
+        schema:
+          type: string
+          maxLength: 512
+      - name: timerel
+        in: query
+        description: 'The temporal relation type of <b>timerel</b> to be performed.'
+        required: true
+        schema:
+          type: string
+          enum: [during]          
+      - name: time
+        in: query
+        description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
+        required: true
+        schema:
+          type: string
+      - name: endtime
+        in: query
+        description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: 'search status'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/meteringApiResponse'
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
+      description: Consumer API can be used by a user having consumer token to get audit details of API's.  
+          
+  /ngsi-ld/v1/provider/audit:
+    get:
+      tags: 
+      - Metering
+      summary: provider search
+      operationId: provider search
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX auth token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+      - name: options
+        in: header
+        description: 'options parameter is used for obtaining the number of hits for a query'
+        style: simple
+        schema:
+          type: string
+          enum: [count]
+      - name: id
+        in: query
+        description: 'id of the resource in catalogue'
+        style: simple
+        schema:
+          type: string
+          maxLength: 512
+          pattern:
+      - name: api
+        in: query
+        description: 'Valid IUDX api [`/entities`, `/temporal/entities`, `/entityOperation/Query`, `/temporal/entityOperation/Query`] '
+        style: simple
+        schema:
+          type: string
+          maxLength: 512
+      - name: timerel
+        in: query
+        description: 'The temporal relation type of <b>timerel</b> to be performed.'
+        required: true
+        schema:
+          type: string
+          enum: [during]          
+      - name: time
+        in: query
+        description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
+        required: true
+        schema:
+          type: string
+      - name: endtime
+        in: query
+        description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
+        required: true
+        schema:
+          type: string
+      - name: consumer
+        in: query
+        description: 'Id of consumer'
+        schema:
+          type: string
+      - name: providerId
+        in: query
+        required: true
+        description: 'Id of the provider'
+        schema:
+          type: string
+      responses:
+        200:
+          description: 'search status'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/meteringApiResponse'
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
+      description: Provider API can be used by a user having provider token to get audit details of API's.
 
 components:
   schemas:
@@ -2065,25 +2386,37 @@ components:
       - vHost
       type: object
       properties:
-        username:
+        type:
           type: string
-        apiKey:
+        title:
           type: string
-        id:
-          type: string
-        URL:
-          type: string
-        port:
-          type: string
-        vHost:
-          type: string
+        results:
+          type: object
+          properties:
+            username:
+              type: string
+            apiKey:
+              type: string
+            id:
+              type: string
+            URL:
+              type: string
+            port:
+              type: string
+            vHost:
+              type: string
       example:
-        username: iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d
-        apiKey: 123456
-        id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms
-        URL: databroker.iudx.io
-        port: 24567
-        vHost: IUDX
+        type: urn:dx:rs:success,
+        title: success,
+        results: [
+         { "username": "iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d",
+        "apiKey": "123456",
+        "id": "iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application",
+        "URL": "databroker.iudx.io",
+        "port": "24567",
+        "vHost": "IUDX"
+         }
+         ]
 
     retrieveadapter:
       title: retrieveadapter
@@ -2093,22 +2426,34 @@ components:
       - redis-latest
       type: object
       properties:
-        database:
-          type: array
-          items:
-            type: string
-        adaptorLogs:
-          type: array
-          items:
-            type: string
-        redis-latest:
-          type: array
-          items:
-            type: string
+        operties:
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          type: object
+          properties:
+            database:
+              type: array
+              items:
+                type: string
+            adaptorLogs:
+              type: array
+              items:
+                type: string
+            redis-latest:
+              type: array
+              items:
+                type: string
       example:
-        database: ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]
-        adaptorLogs: ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.dataIssue", "iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.downstreamIssue", "iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.heartbeat"]
-        redis-latest: ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]
+        type: urn:dx:rs:success,
+        title: success,
+        results: [
+        {"database": ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"],
+        "adaptorLogs": ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.dataIssue", "iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.downstreamIssue", "iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.heartbeat"],
+        "redis-latest": ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]
+        }]
 
     deleteadapter:
       title: deleteadapter
@@ -2140,25 +2485,38 @@ components:
       - vHost
       type: object
       properties:
-        username:
+        type:
           type: string
-        apiKey:
+        title:
           type: string
-        id:
-          type: string
-        URL:
-          type: string
-        port:
-          type: string
-        vHost:
-          type: string
+        results:
+          type: object
+          properties:
+            username:
+              type: string
+            apiKey:
+              type: string
+            id:
+              type: string
+            URL:
+              type: string
+            port:
+              type: string
+            vHost:
+              type: string
       example:
-        username: iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d
-        apiKey: 123456
-        id: iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application
-        URL: databroker.iudx.io
-        port: 24567
-        vHost: IUDX
+        type: urn:dx:rs:success,
+        title: success,
+        results: [
+         { "username": "iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d",
+        "apiKey": "123456",
+        "id": "iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application",
+        "URL": "databroker.iudx.io",
+        "port": "24567",
+        "vHost": "IUDX"
+         }
+         ]
+        
 
 
     retrievestreaming:
@@ -2167,12 +2525,24 @@ components:
       - entities
       type: object
       properties:
-        entities:
-          type: array
-          items:
-            type: string
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          type: object
+          properties:
+            entities:
+              type: array
+              items:
+                type: string
       example:
-        entities: ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]           
+        type: urn:dx:rs:success,
+        title: success,
+        results: [
+         { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"] 
+         }
+         ]
         
     appendstreaming:
       title: appendstreaming
@@ -2180,12 +2550,24 @@ components:
       - entities
       type: object
       properties:
-        entities:
-          type: array
-          items:
-            type: string
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          type: object
+          properties:
+            entities:
+              type: array
+              items:
+                type: string
       example:
-        entities: ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]  
+        type: urn:dx:rs:success,
+        title: success,
+        results: [
+         { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"] 
+         }
+         ]  
         
     updatestreaming:
       title: updatestreaming
@@ -2193,12 +2575,24 @@ components:
       - entities
       type: object
       properties:
-        entities:
-          type: array
-          items:
-            type: string
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          type: object
+          properties:
+            entities:
+              type: array
+              items:
+                type: string
       example:
-        entities: ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]  
+        type: urn:dx:rs:success,
+        title: success,
+        results: [
+         { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"] 
+         }
+         ]  
                  
     deletestreaming:
       title: deletestreaming
@@ -2222,13 +2616,152 @@ components:
     resetpassword:
       title: resetpassword
       required:
-      - password
+      - apiKey
       type: object
       properties:
-        password:
+        type:
           type: string
+        title:
+          type: string
+        results:
+          type: object
+          properties:
+            username:
+              type: string
+            apiKey:
+              type: string
       example:
-        password: as_23asd
+        type: urn:dx:rs:success
+        title: Successfully changed the password
+        results: [
+         {"username":"asasdasd-asdasd-aada-d23342",
+         "apiKey":"asass8a7s"
+         }
+         ]
+        
+    asyncsearchResponse:
+      title: asyncsearch
+      required:
+      - type
+      - title
+      - results
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          type: object
+          properties:
+            searchId:
+              type: string
+      example:
+        type: urn:dx:rs:success
+        title: query submitted successfully
+        results: [
+         {"searchId":"asasdasd-asdasd-a353f-dasdas5"
+         }
+         ]
+         
+    asyncsearchStatusComplete:
+      title: complete
+      required:
+      - type
+      - title
+      - details
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          type: object
+          properties:
+            status:
+              type: string
+            searchId:
+              type: string
+            userId:
+              type: string
+            file-download-url:
+              type: string
+      example:
+        type: urn:dx:rs:success
+        title: success
+        results: [
+         {"status":"COMPLETE",
+         "searchId":"asasdasd-asdasd-aasasd-dasdasd",
+         "userId":"aefvsdfsdf-exvsf-cezxcwscs-adasd",
+         "file-download-url":"https://example.io/filename"
+         }
+         ]
+         
+    asyncsearchStatusInprogress:
+      title: inprogress
+      required:
+      - type
+      - title
+      - details
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          type: object
+          properties:
+            status:
+              type: string
+            searchId:
+              type: string
+            userId:
+              type: string
+      example:
+        type: urn:dx:rs:success
+        title: success
+        results: [
+         {"status":"IN_PROGRESS",
+         "searchId":"asasdasd-asdasd-aasasd-dasdasd",
+         "userId":"aefvsdfsdf-exvsf-cezxcwscs-adasd"
+         }
+         ]
+    meteringApiResponse:
+      title: meteringresponse
+      required:
+      - type
+      - title
+      - details
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          type: object
+          properties:
+             id:
+               type: string
+             time:
+               type: string
+             api:
+               type: string
+             consumer:
+               type: string
+      example:
+        type: urn:dx:rs:success
+        title: success
+        results: [
+         {"id":"15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/",
+         "time":"2020-06-01T14:20:00Z",
+         "api":"/entities",
+         "consumer":"aefvsdfsdf-exvsf-cezxcwscs-adasd"
+         }
+         ]
+            
           
     standardBadRequestErrorResponse:
       title: standardBadRequestErrorResponse
