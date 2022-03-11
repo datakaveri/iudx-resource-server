@@ -25,6 +25,7 @@ import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_ENTITIES;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_BASE_PATH;
 import static iudx.resource.server.apiserver.util.Constants.NGSILD_ENTITIES_URL;
 import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_ENTITIES_QUERY_PATH;
 import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_TEMPORAL_QUERY_PATH;
@@ -58,6 +59,9 @@ import static iudx.resource.server.common.Api.REVOKE_TOKEN;
 import static iudx.resource.server.common.Api.SUBSCRIPTION;
 import static iudx.resource.server.common.Api.UNBIND;
 import static iudx.resource.server.common.Api.VHOST;
+import static iudx.resource.server.common.Api.ASYNC;
+import static iudx.resource.server.common.Api.SEARCH;
+import static iudx.resource.server.common.Api.STATUS;
 import static iudx.resource.server.common.Constants.AUTH_SERVICE_ADDRESS;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN_URN;
 import static iudx.resource.server.common.ResponseUrn.RESOURCE_NOT_FOUND_URN;
@@ -303,10 +307,10 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = IUDX_CONSUMER_AUDIT_URL;
     } else if (url.matches(IUDX_PROVIDER_AUDIT_URL)) {
       path = IUDX_PROVIDER_AUDIT_URL;
-    } else if(url.matches(IUDX_ASYNC_SEARCH)) {
-      path = IUDX_ASYNC_SEARCH;
-    }else if(url.matches(IUDX_ASYNC_STATUS)) {
-      path = IUDX_ASYNC_STATUS;
+    } else if (url.matches(IUDX_ASYNC_SEARCH)) {
+      path = NGSILD_BASE_PATH + ASYNC.path + SEARCH.path;
+    } else if (url.matches(IUDX_ASYNC_STATUS)) {
+      path = NGSILD_BASE_PATH + ASYNC.path + STATUS.path;
     }
     return path;
   }

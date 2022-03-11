@@ -149,7 +149,7 @@ public class AsyncRestApi {
 
     JsonObject response = new JsonObject();
     response.put(JSON_TYPE, ResponseUrn.SUCCESS_URN.getUrn());
-    response.put(JSON_TITLE, "success");
+    response.put(JSON_TITLE, "query submitted successfully");
     JsonArray resultArray = new JsonArray();
     resultArray.add(new JsonObject().put("searchId", searchId));
     response.put("result", resultArray);

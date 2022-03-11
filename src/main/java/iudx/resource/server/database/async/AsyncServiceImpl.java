@@ -4,6 +4,7 @@ import static iudx.resource.server.database.async.util.Constants.FILE_DOWNLOAD_U
 import static iudx.resource.server.database.async.util.Constants.OBJECT_ID;
 import static iudx.resource.server.database.async.util.Constants.S3_URL;
 import static iudx.resource.server.database.async.util.Constants.STATUS;
+import static iudx.resource.server.database.async.util.Constants.USER_ID;
 import static iudx.resource.server.database.postgres.Constants.INSERT_S3_READY_SQL;
 import static iudx.resource.server.database.postgres.Constants.SELECT_S3_SEARCH_SQL;
 import static iudx.resource.server.database.postgres.Constants.SELECT_S3_STATUS_SQL;
@@ -95,7 +96,7 @@ public class AsyncServiceImpl implements AsyncService {
                 
                 answer.remove(S3_URL);
                 answer.remove("search_id");
-                answer.remove(user_id);
+                answer.remove(USER_ID);
                 
                 responseBuilder = new ResponseBuilder("success")
                     .setTypeAndTitle(200)

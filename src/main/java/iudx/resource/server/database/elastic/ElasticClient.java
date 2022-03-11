@@ -233,7 +233,7 @@ public class ElasticClient {
       SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
       searchSourceBuilder.query(query);
       searchSourceBuilder.fetchSource(new String[] {}, new String[] {"_index", "_type", "_score"});
-      searchSourceBuilder.size(50000); // max is 10000
+      searchSourceBuilder.size(10000);
 
       SearchRequest searchRequest = new SearchRequest();
       // searchRequest.addParameter(FILTER_PATH, "took,hits.hits._source");
@@ -251,11 +251,6 @@ public class ElasticClient {
 
       SearchHit[] searchHits = searchResponse.getHits().getHits();
 
-//      File dir = new File(filePath.concat(index));
-//      if (!dir.exists()) {
-//        dir.mkdirs();
-//      }
-      // file = new File(dir, "response.json");
       LOGGER.debug(file.getAbsolutePath());
 
       FileWriter filew = new FileWriter(file);
@@ -286,8 +281,12 @@ public class ElasticClient {
       filew.close();
       scrollHandler.handle(Future.succeededFuture());
     } catch (IOException ex) {
+      LOGGER.error(ex);
+      LOGGER.error(ex.getMessage());
       scrollHandler.handle(Future.failedFuture(ex));
     } catch (Exception ex) {
+      LOGGER.error(ex);
+      LOGGER.error(ex.getMessage());
       scrollHandler.handle(Future.failedFuture(ex));
     } finally {
       if (scrollId != null) {
@@ -297,6 +296,8 @@ public class ElasticClient {
           ClearScrollResponse clearScrollResponse =
               highLevelClient.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
         } catch (Exception e) {
+          LOGGER.error(e);
+          LOGGER.error(e.getMessage());
           scrollHandler.handle(Future.failedFuture(e));
         }
       }
