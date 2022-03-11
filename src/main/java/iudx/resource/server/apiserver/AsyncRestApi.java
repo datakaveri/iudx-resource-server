@@ -49,7 +49,6 @@ import iudx.resource.server.common.Api;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.async.AsyncService;
-import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.metering.MeteringService;
 
 public class AsyncRestApi {
@@ -152,7 +151,7 @@ public class AsyncRestApi {
     response.put(JSON_TYPE, ResponseUrn.SUCCESS_URN.getUrn());
     response.put(JSON_TITLE, "success");
     JsonArray resultArray = new JsonArray();
-    resultArray.add(new JsonObject().put("searchID", searchId));
+    resultArray.add(new JsonObject().put("searchId", searchId));
     response.put("result", resultArray);
 
     Future.future(fu -> updateAuditTable(routingContext));
