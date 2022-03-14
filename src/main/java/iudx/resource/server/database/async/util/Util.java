@@ -32,8 +32,7 @@ public class Util {
           if (pgHandler.succeeded()) {
             promise.complete();
           } else {
-            LOGGER.error("op on DB failed");
-            promise.fail("operation fail");
+            promise.fail("failed query execution" + pgHandler.cause());
           }
         });
     return promise.future();

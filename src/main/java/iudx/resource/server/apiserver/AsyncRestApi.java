@@ -172,7 +172,6 @@ public class AsyncRestApi {
     asyncService.asyncStatus(sub, searchID, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("Success: Async status success");
-        Future.future(fu -> updateAuditTable(routingContext));
         handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
       } else if (handler.failed()) {
         LOGGER.error("Fail: Async status fail");

@@ -20655,10 +20655,10 @@
 									"// Test the response\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:rs:success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    const status = resultsjsonData.status;\r",
-									"    pm.expect(status).to.be.oneOf(['STARTED','COMPLETE','ERROR']);\r",
+									"    pm.expect(status).to.be.oneOf(['IN_PROGRESS','COMPLETE','ERROR']);\r",
 									"    if(status === 'ready') {\r",
 									"        pm.expect(resultsjsonData).to.have.property(\"file-download-url\");\r",
 									"    }\r",
@@ -20678,19 +20678,17 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/async/status?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&searchID={{searchID}}",
+							"raw": "{{base_url}}/ngsi-ld/v1/async/status?searchID={{searchID}}",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
+								"ngsi-ld",
+								"v1",
 								"async",
 								"status"
 							],
 							"query": [
-								{
-									"key": "id",
-									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
-								},
 								{
 									"key": "searchID",
 									"value": "{{searchID}}"
@@ -20720,10 +20718,11 @@
 									"// Test the response\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"success\");\r",
-									"    const resultsjsonData = body.results[0];\r",
-									"    pm.expect(resultsjsonData).to.have.property(\"searchID\");\r",
-									"    pm.globals.set(\"searchID\",resultsjsonData.searchID);\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:rs:success\");\r",
+									"    const resultsjsonData = body.result[0];\r",
+									"    pm.expect(resultsjsonData).to.have.property(\"searchId\");\r",
+									"    const searchID = resultsjsonData.searchId;\r",
+									"    pm.globals.set(\"searchID\",searchID);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -20740,11 +20739,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/async/search?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-10-10T14:20:00Z&endtime=2020-11-20T14:20:00Z",
+							"raw": "{{base_url}}/ngsi-ld/v1/async/search?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-10-10T14:20:00Z&endtime=2020-10-13T14:20:00Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
+								"ngsi-ld",
+								"v1",
 								"async",
 								"search"
 							],
@@ -20763,17 +20764,7 @@
 								},
 								{
 									"key": "endtime",
-									"value": "2020-11-20T14:20:00Z"
-								},
-								{
-									"key": "limit",
-									"value": "50",
-									"disabled": true
-								},
-								{
-									"key": "offset",
-									"value": "0",
-									"disabled": true
+									"value": "2020-10-13T14:20:00Z"
 								}
 							]
 						}
