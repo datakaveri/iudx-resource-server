@@ -70,8 +70,8 @@ public class AsyncServiceImpl implements AsyncService {
   }
 
   @Override
-  public AsyncService asyncStatus(String sub, String searchID,
-      Handler<AsyncResult<JsonObject>> handler) {
+  public AsyncService asyncStatus(
+      String sub, String searchID, Handler<AsyncResult<JsonObject>> handler) {
     StringBuilder query = new StringBuilder(SELECT_S3_STATUS_SQL.replace("$1", searchID));
 
     pgService.executeQuery(
@@ -138,7 +138,12 @@ public class AsyncServiceImpl implements AsyncService {
                   .onSuccess(
                       successHandler -> {
                         process4NewRequestId(searchId, query);
+                      })
+                  .onFailure(
+                      errorHandler -> {
+                        LOGGER.error(errorHandler);
                       });
+              ;
             });
 
     return this;
@@ -252,14 +257,19 @@ public class AsyncServiceImpl implements AsyncService {
                     executePGQuery(updateQuery.toString())
                         .onSuccess(
                             recordUpdateHandler -> {
-                              vertx.fileSystem().deleteBlocking(filePath + "/" + file.getName());
+                              try {
+                                vertx.fileSystem().deleteBlocking(filePath + "/" + file.getName());
+                              } catch (Exception ex) {
+                                LOGGER.error(
+                                    "File deletion operation failed for fileName : "
+                                        + file.getName()
+                                        + " try to delete manually to reclaim disk-space");
+                              }
                             })
                         .onFailure(
                             recordInsertFailure -> {
-                              LOGGER.error(
-                                  "File deletion operation failed for fileName : "
-                                      + file.getName()
-                                      + " try to delete manually to reclaim disk-space");
+                              LOGGER.error("Postgres insert failure [COMPLETE status]"
+                                  + recordInsertFailure);
                             });
                   } else {
                     LOGGER.error("File upload to S3 failed for fileName : " + file.getName());
