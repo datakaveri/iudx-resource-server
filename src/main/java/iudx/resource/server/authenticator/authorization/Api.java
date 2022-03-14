@@ -11,7 +11,7 @@ public enum Api {
   INGESTION("/ngsi-ld/v1/ingestion"),
   RESET_PWD("/management/user/resetPassword"),
   USER_AUDIT("/ngsi-ld/v1/consumer/audit"),
-  ASYNC_SEARCH("/async/search");
+  ASYNC_SEARCH("/ngsi-ld/v1/async/search");
 
   private final String endpoint;
 

@@ -37,8 +37,8 @@ public class Constants {
   public static final String ENTITIES_POST_QUERY_URL_REGEX =
       NGSILD_POST_ENTITIES_QUERY_PATH + "(.*)";
   // Async endpoints
-  public static final String IUDX_ASYNC_SEARCH = "/async/search";
-  public static final String IUDX_ASYNC_STATUS = "/async/status";
+  public static final String IUDX_ASYNC_SEARCH = "(.*)/async/search";
+  public static final String IUDX_ASYNC_STATUS = "(.*)/async/status";
   // IUDX management endpoints
   public static final String IUDX_MANAGEMENT_URL = "/management";
   public static final String IUDX_ADAPTOR_URL = "/ngsi-ld/v1";

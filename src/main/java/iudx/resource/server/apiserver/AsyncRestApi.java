@@ -149,7 +149,7 @@ public class AsyncRestApi {
 
     JsonObject response = new JsonObject();
     response.put(JSON_TYPE, ResponseUrn.SUCCESS_URN.getUrn());
-    response.put(JSON_TITLE, "success");
+    response.put(JSON_TITLE, "query submitted successfully");
     JsonArray resultArray = new JsonArray();
     resultArray.add(new JsonObject().put("searchId", searchId));
     response.put("result", resultArray);
@@ -172,7 +172,6 @@ public class AsyncRestApi {
     asyncService.asyncStatus(sub, searchID, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("Success: Async status success");
-        Future.future(fu -> updateAuditTable(routingContext));
         handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
       } else if (handler.failed()) {
         LOGGER.error("Fail: Async status fail");
