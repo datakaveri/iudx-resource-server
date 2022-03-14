@@ -46,6 +46,11 @@ pipeline {
           }
           error "Test failure. Stopping pipeline execution!"
         }
+        cleanup{
+          script{
+            sh 'sudo rm -rf target/'
+          }
+        }        
       }
     }
 
