@@ -4,7 +4,6 @@
 		"zookeeper"
 	],
 	"clusterId": "iudx-rs-cluster",
-	"host": "server",
 	"modules": [
 		{
 			"id": "iudx.resource.server.database.archives.DatabaseVerticle",
@@ -25,6 +24,7 @@
 			"id": "iudx.resource.server.authenticator.AuthenticationVerticle",
 			"isWorkerVerticle":false,
 			"verticleInstances": 2,
+			"audience": "server",
 			"keystore": "",
 			"keystorePassword": "",
 			"authServerHost": "",

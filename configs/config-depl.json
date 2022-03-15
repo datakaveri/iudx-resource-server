@@ -18,6 +18,7 @@
             "id": "iudx.resource.server.authenticator.AuthenticationVerticle",
             "isWorkerVerticle":false,
             "verticleInstances": 1,
+            "audience": "rs.iudx.io",
             "keystore": "configs/keystore.jks",
             "keystorePassword": "",
             "authServerHost": "",

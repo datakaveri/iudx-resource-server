@@ -4,7 +4,6 @@
         "zookeeper"
     ],
     "clusterId": "iudx-rs-cluster",
-    "host": "rs.iudx.io",
     "modules": [
         {
             "id": "iudx.resource.server.database.archives.DatabaseVerticle",
@@ -20,6 +19,7 @@
             "id": "iudx.resource.server.authenticator.AuthenticationVerticle",
             "isWorkerVerticle":false,
             "verticleInstances": 1,
+            "audience": "rs.iudx.io",
             "authServerHost": "",
             "catServerHost": "",
             "catServerPort": 443,
@@ -50,7 +50,7 @@
             "callbackDatabaseUserName": "",
             "callbackDatabasePassword": "",
             "callbackpoolSize": 25,
-            
+
             "brokerAmqpIp":"",
             "brokerAmqpPort":1234
         },
@@ -123,7 +123,7 @@
             "databaseUserName": "",
             "databasePassword": "",
             "poolSize": 25
-        
+
         },
         {
             "id": "iudx.resource.server.cache.CacheVerticle",
