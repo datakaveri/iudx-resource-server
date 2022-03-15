@@ -15,6 +15,8 @@
 		<apache-commons-lang3.version>3.12.0</apache-commons-lang3.version>
 		<junit-jupiter-engine.version>5.7.1</junit-jupiter-engine.version>
 		<apache-log4j-core.version>2.17.1</apache-log4j-core.version>
+		<apache-log4j-api.version>2.17.1</apache-log4j-api.version>
+		<apache-log4j-slf4j-impl.version>2.17.1</apache-log4j-slf4j-impl.version>
 		<lmax-disruptor.version>3.4.4</lmax-disruptor.version>
 		<jacoco-maven-plugin.version>0.8.7</jacoco-maven-plugin.version>
 		<checkstyle.version>8.42</checkstyle.version>
@@ -142,14 +144,14 @@
 			<artifactId>vertx-pg-client</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j.version}</version>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>${apache-log4j-slf4j-impl.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>${slf4j.version}</version>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>${apache-log4j-api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
