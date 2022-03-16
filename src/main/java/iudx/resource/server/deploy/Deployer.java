@@ -76,7 +76,6 @@ public class Deployer {
       return;
     }
     JsonObject config = configs.getJsonArray("modules").getJsonObject(i);
-    config.put("host", configs.getString("host"));
     String moduleName = config.getString("id");
     int numInstances = config.getInteger("verticleInstances");
 
