@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.google.common.base.Charsets;
@@ -70,6 +71,9 @@ public class ValidatorsHandlersFactory {
   private static final Logger LOGGER =
       LogManager.getLogger(ValidatorsHandlersFactory.class);
 
+  private static final Pattern UUID_PATTERN = Pattern
+      .compile(".*[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}");
+
   public List<Validator> build(final Vertx vertx, final RequestType requestType,
       final MultiMap parameters,
       final MultiMap headers, final JsonObject body) {
@@ -95,6 +99,12 @@ public class ValidatorsHandlersFactory {
         break;
       case SUBSCRIPTION:
         validator = getSubscriptionsValidations(vertx, body, headers);
+        break;
+      case ASYNC_SEARCH:
+        validator = getAsyncRequestValidations(parameters, headers);
+        break;
+      case ASYNC_STATUS:
+        validator = getAsyncStatusRequestValidator(parameters, headers);
         break;
       default:
         break;
@@ -124,7 +134,6 @@ public class ValidatorsHandlersFactory {
     validators.add(new PaginationOffsetTypeValidator(parameters.get(NGSILDQUERY_FROM), false));
 
     return validators;
-
   }
 
   private List<Validator> getTemporalRequestValidations(final MultiMap parameters,
@@ -203,6 +212,35 @@ public class ValidatorsHandlersFactory {
     return validators;
   }
 
+  private List<Validator> getAsyncRequestValidations(
+      final MultiMap parameters, final MultiMap headers) {
+
+    List<Validator> validators = new ArrayList<>();
+    validators.add(new IDTypeValidator(parameters.get(NGSILDQUERY_ID), true));
+    validators.add(new AttrsTypeValidator(parameters.get(NGSILDQUERY_ATTRIBUTE), false));
+    validators.add(new OptionsTypeValidator(parameters.get(IUDXQUERY_OPTIONS), false));
+    // geo fields
+    validators.add(new GeoRelTypeValidator(parameters.get(NGSILDQUERY_GEOREL), false));
+    validators.add(new GeometryTypeValidator(parameters.get(NGSILDQUERY_GEOMETRY), false));
+    validators.add(new GeoPropertyTypeValidator(parameters.get(NGSILDQUERY_GEOPROPERTY), false));
+    validators.add(new QTypeValidator(parameters.get(NGSILDQUERY_Q), false));
+    validators.add(new DistanceTypeValidator(parameters.get(NGSILDQUERY_MAXDISTANCE), false, true));
+    validators.add(new DistanceTypeValidator(parameters.get("maxDistance"), false, true));
+    validators.add(new CoordinatesTypeValidator(parameters.get(NGSILDQUERY_COORDINATES), false));
+    // temporal fields
+    validators.add(new TimeRelTypeValidator(parameters.get(NGSILDQUERY_TIMEREL), false));
+    validators.add(new DateTypeValidator(parameters.get(NGSILDQUERY_TIME), false));
+    validators.add(new DateTypeValidator(parameters.get(NGSILDQUERY_ENDTIME), false));
+
+    return validators;
+  }
+
+  private List<Validator> getAsyncStatusRequestValidator(final MultiMap parameters,
+      final MultiMap headers) {
+    List<Validator> validators = new ArrayList<>();
+    validators.add(new StringTypeValidator(parameters.get("searchId"), true, UUID_PATTERN));
+    return validators;
+  }
 
   private static Map<String, String> jsonSchemaMap = new HashMap<>();
 
@@ -225,7 +263,6 @@ public class ValidatorsHandlersFactory {
     return validators;
   }
 
-
   private String loadJson(String filename) {
     String jsonStr = null;
     if (jsonSchemaMap.containsKey(filename)) {
@@ -242,5 +279,4 @@ public class ValidatorsHandlersFactory {
     }
     return jsonStr;
   }
-
 }

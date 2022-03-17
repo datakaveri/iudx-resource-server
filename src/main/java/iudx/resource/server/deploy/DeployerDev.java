@@ -4,10 +4,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
-
+import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -33,14 +32,24 @@ public class DeployerDev {
     config.put("host", configs.getString("host"));
     String moduleName = config.getString("id");
     int numInstances = config.getInteger("verticleInstances");
-    vertx.deployVerticle(moduleName,
-                          new DeploymentOptions()
-                            .setInstances(numInstances)
-                            .setConfig(config),
-                          ar -> {
+    DeploymentOptions deploymentOptions = new DeploymentOptions()
+        .setInstances(numInstances)
+        .setConfig(config);
+
+    boolean isWorkerVerticle = config.getBoolean("isWorkerVerticle");
+    if (isWorkerVerticle) {
+      LOGGER.info("worker verticle : " + config.getString("id"));
+      deploymentOptions.setWorkerPoolName(config.getString("threadPoolName"));
+      deploymentOptions.setWorkerPoolSize(config.getInteger("threadPoolSize"));
+      deploymentOptions.setWorker(true);
+      deploymentOptions.setMaxWorkerExecuteTime(30L);
+      deploymentOptions.setMaxWorkerExecuteTimeUnit(TimeUnit.MINUTES);
+    }
+
+    vertx.deployVerticle(moduleName, deploymentOptions, ar -> {
       if (ar.succeeded()) {
         LOGGER.info("Deployed " + moduleName);
-        recursiveDeploy(vertx, configs, i+1);
+        recursiveDeploy(vertx, configs, i + 1);
       } else {
         LOGGER.fatal("Failed to deploy " + moduleName + " cause:", ar.cause());
       }
@@ -53,7 +62,7 @@ public class DeployerDev {
 
     String config;
     try {
-     config = new String(Files.readAllBytes(Paths.get(configPath)), StandardCharsets.UTF_8);
+      config = new String(Files.readAllBytes(Paths.get(configPath)), StandardCharsets.UTF_8);
     } catch (Exception e) {
       LOGGER.fatal("Couldn't read configuration file");
       return;

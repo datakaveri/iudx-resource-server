@@ -15,4 +15,24 @@ public class Constants {
 
   public static String DELETE_UNIQUE_ATTR_SQL =
       "DELETE FROM unique_attributes WHERE resource_id=$1";
+
+  public static String INSERT_S3_PENDING_SQL =
+      "INSERT INTO s3_upload_url(_id, search_id, request_id, user_id, status) values('$1','$2','$3','$4','$5')";
+
+  public static String INSERT_S3_READY_SQL =
+      "INSERT INTO s3_upload_url(_id, search_id, request_id, status, s3_url, expiry, user_id, object_id) "
+          + "values('$1','$2','$3','$4','$5','$6','$7','$8')";
+
+  public static String UPDATE_S3_URL_SQL =
+      "UPDATE s3_upload_url SET s3_url='$1', expiry='$2', status='$3', object_id='$4' WHERE search_id='$5'";
+
+  public static String UPDATE_STATUS_SQL =
+      "UPDATE s3_upload_url SET status='$1' WHERE search_id='$2'";
+
+  public static String SELECT_S3_STATUS_SQL =
+      "SELECT status,s3_url,search_id,user_id FROM s3_upload_url WHERE search_id='$1';";
+
+  public static String SELECT_S3_SEARCH_SQL =
+      "SELECT search_id, status, s3_url, expiry, user_id, object_id FROM s3_upload_url WHERE request_id='$1' and status='$2'";
+
 }

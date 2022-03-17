@@ -51,6 +51,7 @@ import static iudx.resource.server.common.Api.INGESTION;
 import static iudx.resource.server.common.Api.MANAGEMENT;
 import static iudx.resource.server.common.Api.NGSILD_BASE;
 import static iudx.resource.server.common.Api.SUBSCRIPTION;
+import static iudx.resource.server.common.Api.ASYNC;
 import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
@@ -460,6 +461,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.mountSubRouter(MANAGEMENT.path,
         new ManagementRestApi(vertx, databroker, postgresService, meteringService, managementApi)
             .init());
+    router.mountSubRouter(NGSILD_BASE.path + ASYNC.path,
+            new AsyncRestApi(vertx,meteringService, catalogueService, validator).init());
 
     router.route().last().handler(requestHandler -> {
       HttpServerResponse response = requestHandler.response();
@@ -704,7 +707,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 filtersHandler -> {
                   if (filtersHandler.succeeded()) {
                     json.put("applicableFilters", filtersHandler.result());
-                    // Add limit and offset value for pagination 
+                    // Add limit and offset value for pagination
                     if(params.contains("limit") && params.contains("offset")) {
                     	json.put("limit", params.get("limit"));
                     	json.put("offset", params.get("offset"));
@@ -843,7 +846,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         });
 
   }
-  
+
 
   /**
    * Method used to handle all subscription requests.

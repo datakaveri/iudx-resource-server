@@ -10,7 +10,8 @@ public enum Api {
   SUBSCRIPTION("/ngsi-ld/v1/subscription"),
   INGESTION("/ngsi-ld/v1/ingestion"),
   RESET_PWD("/management/user/resetPassword"),
-  USER_AUDIT("/ngsi-ld/v1/consumer/audit");
+  USER_AUDIT("/ngsi-ld/v1/consumer/audit"),
+  ASYNC_SEARCH("/ngsi-ld/v1/async/search");
 
   private final String endpoint;
 

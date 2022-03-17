@@ -36,6 +36,9 @@ public class Constants {
       NGSILD_BASE_PATH + "/entityOperations/query";
   public static final String ENTITIES_POST_QUERY_URL_REGEX =
       NGSILD_POST_ENTITIES_QUERY_PATH + "(.*)";
+  // Async endpoints
+  public static final String IUDX_ASYNC_SEARCH = "(.*)/async/search";
+  public static final String IUDX_ASYNC_STATUS = "(.*)/async/status";
   // IUDX management endpoints
   public static final String IUDX_MANAGEMENT_URL = "/management";
   public static final String IUDX_ADAPTOR_URL = "/ngsi-ld/v1";
@@ -231,6 +234,7 @@ public class Constants {
           "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z.]{4,100}/{1}[a-zA-Z-_.]{4,100}/{1}[a-zA-Z0-9-_.]{4,100}$");
   public static final int VALIDATION_MAX_ATTRS = 5;
   public static final int VALIDATION_MAX_DAYS_INTERVAL_ALLOWED = 10;
+  public static final int VALIDATION_MAX_DAYS_INTERVAL_ALLOWED_FOR_ASYNC = 365;
   public static final int VALIDATION_COORDINATE_PRECISION_ALLOWED = 6;
   public static final int VALIDATIONS_MAX_ATTR_LENGTH = 100;
   public static final int VALIDATION_ALLOWED_COORDINATES = 10;
@@ -247,6 +251,7 @@ public class Constants {
   public static final Pattern ID_RN_REGEX = Pattern.compile("^[a-zA-Z0-9-_.]{4,100}$");
 
   public static final double VALIDATION_ALLOWED_DIST = 1000.0;
+  public static final double VALIDATION_ALLOWED_DIST_FOR_ASYNC = 10000.0;
   public static final int VALIDATION_PAGINATION_LIMIT_MAX = 5000;
   public static final int VALIDATION_PAGINATION_OFFSET_MAX = 49999;
   public static final List<Object> VALIDATION_ALLOWED_GEOM =
