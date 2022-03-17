@@ -21,13 +21,15 @@ WORKDIR /usr/share/app
 # Copying openapi docs 
 COPY docs docs
 
-# Copying dev fatjar from builder stage to final image
+# Copying clustered fatjar from builder stage to final image
 COPY --from=builder /usr/share/app/target/${JAR} ./fatjar.jar
 
-EXPOSE 8080
-EXPOSE 8443
+EXPOSE 8080 8443
 # Creating a non-root user
-RUN useradd -r -u 1001 -g root rs-user
+RUN  useradd -r -u 1001 -g root rs-user
+# Create storage directory and owned by rs-user
+RUN mkdir -p /usr/share/app/storage/temp-dir && chown rs-user /usr/share/app/storage/temp-dir
+# hint for volume mount 
+VOLUME /usr/share/app/storage/temp-dir
 # Setting non-root user to use when container starts
 USER rs-user
-

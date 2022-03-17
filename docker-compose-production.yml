@@ -9,17 +9,16 @@ services:
 
   prod:
     image: iudx/rs-depl:latest
-    environment:
-      - RS_URL=https://rs.iudx.org.in
-      - LOG_LEVEL=INFO
-      - RS_JAVA_OPTS=-Xmx4096m
+    env_file:
+      - ./.rs.env
     volumes:
       - ./configs/config-depl.json:/usr/share/app/configs/config.json
       - ./configs/keystore.jks:/usr/share/app/configs/keystore.jks
-    depends_on:
-      - "zookeeper"
+      - type: volume
+        source: rs-volume
+        target: /usr/share/app/storage/temp-dir
     ports:
-      - "8080:8080"
+      - "8080:80"
       - "9000:9000"
     restart: on-failure
     networks: 
@@ -33,13 +32,14 @@ services:
 
   dev:
     image: iudx/rs-dev:latest
-    environment:
-      - RS_URL=https://rs.iudx.org.in
-      - LOG_LEVEL=INFO
-      - RS_JAVA_OPTS=-Xmx1024m
+    env_file:
+      - ./.rs.env
     volumes:
-      - ./configs/config-dev.json:/usr/share/app/configs/config.json
+      - ./configs/config-depl.json:/usr/share/app/configs/config.json
       - ./configs/keystore.jks:/usr/share/app/configs/keystore.jks
+      - type: volume
+        source: rs-volume
+        target: /usr/share/app/storage/temp-dir
     ports:
       - "8080:8080"
       - "9000:9000"
@@ -60,3 +60,7 @@ services:
       - "2181"
     networks:
       - overlay-net
+
+volumes:
+  rs-volume:
+
