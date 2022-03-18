@@ -168,6 +168,9 @@ $RECYCLE.BIN/
 .idea/
 iudx.resource.server.iml
 
+# ignore environment file
+.rs.env
+
 # End of https://www.gitignore.io/api/git,java,maven,eclipse,windows
 1. A butt or mark to shoot at, as for practice, or to test the accuracy of a firearm, or the force of a projectile.
 2. A goal or objective.
