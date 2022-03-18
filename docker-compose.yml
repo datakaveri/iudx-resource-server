@@ -60,7 +60,7 @@ services:
   test:
     image: ghcr.io/datakaveri/rs-test:latest
     env_file:
-      - /home/ubuntu/configs/.rs-env
+      - /home/ubuntu/configs/.rs.env
     volumes:
       - ./src/:/usr/share/app/src
       - /home/ubuntu/configs/rs-config-test.json:/usr/share/app/configs/config-test.json
@@ -79,7 +79,7 @@ services:
   perfTest:
     image: ghcr.io/datakaveri/rs-test:latest
     env_file:
-      - /home/ubuntu/configs/.rs-env
+      - /home/ubuntu/configs/.rs.env
     volumes:
       - /home/ubuntu/configs/rs-config-dev.json:/usr/share/app/configs/config-dev.json
       - /home/ubuntu/configs/keystore-rs.jks:/usr/share/app/configs/keystore.jks
