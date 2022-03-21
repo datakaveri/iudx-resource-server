@@ -93,7 +93,7 @@
 			"id": "iudx.resource.server.apiserver.ApiServerVerticle",
 			"isWorkerVerticle":false,
 			"ssl": true,
-			"production": true,
+			"httpPort": 8443,
 			"keystore": "",
 			"keystorePassword": "",
 			"rsAdmin": "",

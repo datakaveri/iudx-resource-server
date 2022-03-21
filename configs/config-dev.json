@@ -81,10 +81,10 @@
             "id": "iudx.resource.server.apiserver.ApiServerVerticle",
             "isWorkerVerticle":false,
             "ssl": true,
-            "production": false,
             "keystore": "configs/keystore.jks",
             "keystorePassword": "",
             "rsAdmin": "",
+	    "httpPort": 8443,
             "verticleInstances": 8,
             "catServerHost": "",
             "catServerPort": 443

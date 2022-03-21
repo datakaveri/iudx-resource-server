@@ -142,8 +142,8 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   private HttpServer server;
   private Router router;
-  private int port = 8443;
-  private boolean isSSL, isProduction;
+  private int port;
+  private boolean isSSL;
   private String keystore;
   private String keystorePassword;
   private ManagementApi managementApi;
@@ -403,36 +403,37 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* Read ssl configuration. */
     isSSL = config().getBoolean("ssl");
 
-    /* Read server deployment configuration. */
-    isProduction = config().getBoolean("production");
 
     HttpServerOptions serverOptions = new HttpServerOptions();
-
     if (isSSL) {
-      LOGGER.info("Info: Starting HTTPs server");
 
       /* Read the configuration and set the HTTPs server properties. */
 
       keystore = config().getString("keystore");
       keystorePassword = config().getString("keystorePassword");
 
+      /*
+       * Default port when ssl is enabled is 8443. If set through config, then that value is taken
+       */
+      port = config().getInteger("httpPort") == null ? 8443 : config().getInteger("httpPort");
+
       /* Setup the HTTPs server properties, APIs and port. */
 
-      serverOptions
-          .setSsl(true)
+      serverOptions.setSsl(true)
           .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword));
+      LOGGER.info("Info: Starting HTTPs server at port"+ port);
 
     } else {
-      LOGGER.info("Info: Starting HTTP server");
 
       /* Setup the HTTP server properties, APIs and port. */
 
       serverOptions.setSsl(false);
-      if (isProduction) {
-        port = 80;
-      } else {
-        port = 8080;
-      }
+      /*
+       * Default port when ssl is disabled is 8080. If set through config, then that value is taken
+       */
+      port = config().getInteger("httpPort") == null ? 8080 : config().getInteger("httpPort");
+      LOGGER.info("Info: Starting HTTP server at port"+ port);
+
     }
 
     serverOptions.setCompressionSupported(true).setCompressionLevel(5);
