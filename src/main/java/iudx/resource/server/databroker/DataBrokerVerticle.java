@@ -16,6 +16,7 @@ import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.sqlclient.PoolOptions;
 import iudx.resource.server.cache.CacheService;
+import iudx.resource.server.common.VHosts;
 import iudx.resource.server.databroker.listeners.RMQListeners;
 import iudx.resource.server.databroker.listeners.RevokeClientQListener;
 import iudx.resource.server.databroker.listeners.UniqueAttribQListener;
@@ -169,11 +170,15 @@ public class DataBrokerVerticle extends AbstractVerticle {
     databroker = new DataBrokerServiceImpl(rabbitClient, pgClient, config());
 
     cache = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
-    RMQListeners revokeClientQListener=new RevokeClientQListener(client, cache);
-    RMQListeners uniqueAttrQListener=new UniqueAttribQListener(client, cache);
-    
-    //start
-    revokeClientQListener.start();
+
+
+    String internalVhost = config().getString(VHosts.IUDX_INTERNAL.value);
+    RMQListeners revokeQListener = new RevokeClientQListener(vertx, cache, config, internalVhost);
+    RMQListeners uniqueAttrQListener =
+        new UniqueAttribQListener(vertx, cache, config, internalVhost);
+
+    // start
+    revokeQListener.start();
     uniqueAttrQListener.start();
 
     /* Publish the Data Broker service with the Event Bus against an address. */

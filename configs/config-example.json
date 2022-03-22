@@ -33,7 +33,11 @@
             "verticleInstances": 1,
             "dataBrokerIP": "",
             "dataBrokerPort": 1234,
-            "dataBrokerVhost": "",
+            
+            "prodVhost":"", 
+            "internalVhost": "",
+            "externalVhost":"",
+            
             "dataBrokerUserName": "",
             "dataBrokerPassword": "",
             "dataBrokerManagementPort": 30042,

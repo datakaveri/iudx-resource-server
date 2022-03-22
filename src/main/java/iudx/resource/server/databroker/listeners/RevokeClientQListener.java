@@ -3,11 +3,13 @@ package iudx.resource.server.databroker.listeners;
 import static iudx.resource.server.common.Constants.TOKEN_INVALID_Q;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rabbitmq.QueueOptions;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQConsumer;
+import io.vertx.rabbitmq.RabbitMQOptions;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.cache.cacheImpl.CacheType;
 
@@ -23,8 +25,10 @@ public class RevokeClientQListener implements RMQListeners {
           .setMaxInternalQueueSize(1000)
           .setKeepMostRecent(true);
 
-  public RevokeClientQListener(RabbitMQClient client, CacheService cache) {
-    this.client = client;
+  public RevokeClientQListener(Vertx vertx, CacheService cache, RabbitMQOptions config,
+      String vhost) {
+    config.setVirtualHost(vhost);
+    this.client = RabbitMQClient.create(vertx, config);
     this.cache = cache;
   }
 
@@ -66,7 +70,7 @@ public class RevokeClientQListener implements RMQListeners {
           });
         })
         .onFailure(handler -> {
-          LOGGER.error("Rabbit client startup failed.");
+          LOGGER.error("Rabbit client startup failed."+handler);
         });
   }
 

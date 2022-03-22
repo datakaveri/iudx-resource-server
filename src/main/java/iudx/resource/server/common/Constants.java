@@ -14,13 +14,13 @@ public class Constants {
 
 
   /* Broadcast exchanges and queues */
-  public static String TOKEN_INVALID_EX = "rs-token-invalidation";
-  public static String TOKEN_INVALID_EX_ROUTING_KEY = "rs-token-invalidation";
-  public static String TOKEN_INVALID_Q = "invalid-tokens";
+  public static String TOKEN_INVALID_EX = "invalid-sub";
+  public static String TOKEN_INVALID_EX_ROUTING_KEY = "invalid-sub";
+  public static String TOKEN_INVALID_Q = "rs-invalid-sub";
 
   public static String UNIQUE_ATTR_EX = "latest-data-unique-attributes";
   public static String UNIQUE_ATTR_EX_ROUTING_KEY = "unique-attribute";
-  public static String UNIQUE_ATTR_Q = "unique-attribute";
+  public static String UNIQUE_ATTR_Q = "rs-unique-attributes";
 
 
   // postgres queries

@@ -36,7 +36,8 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService registerAdaptor(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService registerAdaptor(JsonObject request, String vhost,
+      Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The updateAdaptor implements the adaptor update operation with the data broker.
@@ -47,7 +48,8 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService updateAdaptor(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService updateAdaptor(JsonObject request, String vhost,
+      Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The deleteAdaptor implements the adaptor delete operation with the data broker.
@@ -58,7 +60,8 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService deleteAdaptor(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService deleteAdaptor(JsonObject request, String vhost,
+      Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The listAdaptor implements the adaptor list operation with the data broker.
@@ -69,11 +72,12 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService listAdaptor(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService listAdaptor(JsonObject request, String vhost,
+      Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The registerStreamingSubscription implements the registration of streaming subscription operation
-   * with the data broker.
+   * The registerStreamingSubscription implements the registration of streaming subscription
+   * operation with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -86,8 +90,8 @@ public interface DataBrokerService {
 
 
   /**
-   * The updateStreamingSubscription implements the updation of streaming subscription operation with
-   * the data broker.
+   * The updateStreamingSubscription implements the updation of streaming subscription operation
+   * with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -95,7 +99,7 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService updateStreamingSubscription(JsonObject request,
+  DataBrokerService updateStreamingSubscription(JsonObject request, 
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
@@ -112,8 +116,8 @@ public interface DataBrokerService {
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The deleteStreamingSubscription implements the deletion of streaming subscription operation with
-   * the data broker.
+   * The deleteStreamingSubscription implements the deletion of streaming subscription operation
+   * with the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -121,12 +125,12 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService deleteStreamingSubscription(JsonObject request,
+  DataBrokerService deleteStreamingSubscription(JsonObject request, 
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
-   * The listStreamingSubscription implements the listing of streaming subscription operation with the
-   * data broker.
+   * The listStreamingSubscription implements the listing of streaming subscription operation with
+   * the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
@@ -160,7 +164,7 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService updateCallbackSubscription(JsonObject request,
+  DataBrokerService updateCallbackSubscription(JsonObject request, 
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
@@ -173,7 +177,7 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService deleteCallbackSubscription(JsonObject request,
+  DataBrokerService deleteCallbackSubscription(JsonObject request, 
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
@@ -186,7 +190,7 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService listCallbackSubscription(JsonObject request,
+  DataBrokerService listCallbackSubscription(JsonObject request, 
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
@@ -198,7 +202,8 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService createExchange(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService createExchange(JsonObject request, String vhost,
+      Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The updateExchange implements the updation of exchange operation with the data broker.
@@ -209,7 +214,8 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService updateExchange(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService updateExchange(JsonObject request, String vhost,
+      Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The deleteExchange implements the deletion of exchange operation with the data broker.
@@ -220,7 +226,8 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService deleteExchange(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService deleteExchange(JsonObject request, String vhost,
+      Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The listExchange implements the listing of exchange operation with the data broker.
@@ -231,7 +238,7 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService listExchangeSubscribers(JsonObject request,
+  DataBrokerService listExchangeSubscribers(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
@@ -243,7 +250,8 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService createQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService createQueue(JsonObject request, String vhost,
+      Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The updateQueue implements the updation of queue operation with the data broker.
@@ -254,7 +262,8 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService updateQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService updateQueue(JsonObject request, String vhost,
+      Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The deleteQueue implements the deletion of queue operation with the data broker.
@@ -265,7 +274,8 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService deleteQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService deleteQueue(JsonObject request, String vhost,
+      Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The bindQueue implements the binding of queue operation with the data broker.
@@ -276,7 +286,8 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService bindQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService bindQueue(JsonObject request, String vhost,
+      Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The unbindQueue implements the unbinding of queue operation with the data broker.
@@ -287,7 +298,8 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService unbindQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService unbindQueue(JsonObject request, String vhost,
+      Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The createvHost implements the creation of vHost operation with the data broker.
@@ -298,7 +310,8 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService createvHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService createvHost(JsonObject request, 
+      Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The updatevHost implements the updation of vHost operation with the data broker.
@@ -309,7 +322,8 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService updatevHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService updatevHost(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The deletevHost implements the deletion of vHost operation with the data broker.
@@ -320,7 +334,8 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService deletevHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService deletevHost(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The listvHost implements the listing of vHost operation with the data broker.
@@ -331,19 +346,20 @@ public interface DataBrokerService {
    */
 
   @Fluent
-  DataBrokerService listvHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService listvHost(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
 
 
   /**
-   * The listExchangeSubscribers implements the listing of all bindings of a queue operation with the
-   * data broker.
+   * The listExchangeSubscribers implements the listing of all bindings of a queue operation with
+   * the data broker.
    * 
    * @param request which is a JsonObject
    * @param handler which is a Request Handler
    * @return DataBrokerService which is a Service
    */
   @Fluent
-  DataBrokerService listQueueSubscribers(JsonObject request,
+  DataBrokerService listQueueSubscribers(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler);
 
   /**
@@ -354,11 +370,12 @@ public interface DataBrokerService {
    * @return DataBrokerService which is a Service
    **/
   @Fluent
-  DataBrokerService publishFromAdaptor(JsonObject request,
+  DataBrokerService publishFromAdaptor(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler);
 
   @Fluent
-  DataBrokerService resetPassword(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService resetPassword(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler);
 
   @GenIgnore
   static DataBrokerService createProxy(Vertx vertx, String address) {
@@ -366,14 +383,16 @@ public interface DataBrokerService {
   }
 
   @Fluent
-  DataBrokerService getExchange(JsonObject request,
+  DataBrokerService getExchange(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler);
 
   @Fluent
-  DataBrokerService publishHeartbeat(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  DataBrokerService publishHeartbeat(JsonObject request, String vhost,
+      Handler<AsyncResult<JsonObject>> handler);
 
   @Fluent
-  DataBrokerService publishMessage(JsonObject body, String toExchange, String routingKey,
+  DataBrokerService publishMessage(JsonObject body, String toExchange,
+      String routingKey,
       Handler<AsyncResult<JsonObject>> handler);
 
 }

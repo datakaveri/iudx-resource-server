@@ -40,6 +40,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import iudx.resource.server.common.ResponseUrn;
+import iudx.resource.server.common.VHosts;
 import iudx.resource.server.databroker.util.Constants;
 import iudx.resource.server.databroker.util.PermissionOpType;
 
@@ -66,7 +67,7 @@ public class SubscriptionService {
   SubscriptionService(RabbitClient rabbitClient, PostgresClient pgSQLClient, JsonObject config) {
     this.rabbitClient = rabbitClient;
     this.pgSQLClient = pgSQLClient;
-    this.vhost = config.getString("dataBrokerVhost");
+    this.vhost = config.getString(VHosts.IUDX_PROD.value);
     this.amqpUrl = config.getString("brokerAmqpIp");
     this.amqpPort = config.getInteger("brokerAmqpPort");
   }

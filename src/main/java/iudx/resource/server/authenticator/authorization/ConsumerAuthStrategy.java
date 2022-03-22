@@ -1,5 +1,6 @@
 package iudx.resource.server.authenticator.authorization;
 
+import static iudx.resource.server.authenticator.authorization.Api.ASYNC_SEARCH;
 import static iudx.resource.server.authenticator.authorization.Api.ENTITIES;
 import static iudx.resource.server.authenticator.authorization.Api.ENTITY_OPERATION;
 import static iudx.resource.server.authenticator.authorization.Api.ENTITY_OPERATION_TEMPORAL;
@@ -7,7 +8,6 @@ import static iudx.resource.server.authenticator.authorization.Api.RESET_PWD;
 import static iudx.resource.server.authenticator.authorization.Api.SUBSCRIPTION;
 import static iudx.resource.server.authenticator.authorization.Api.TEMPORAL;
 import static iudx.resource.server.authenticator.authorization.Api.USER_AUDIT;
-import static iudx.resource.server.authenticator.authorization.Api.ASYNC_SEARCH;
 import static iudx.resource.server.authenticator.authorization.Method.DELETE;
 import static iudx.resource.server.authenticator.authorization.Method.GET;
 import static iudx.resource.server.authenticator.authorization.Method.PATCH;
@@ -52,6 +52,12 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     List<AuthorizationRequest> mgmtAccessList=new ArrayList<>();
     mgmtAccessList.add(new AuthorizationRequest(POST, RESET_PWD));
     consumerAuthorizationRules.put(IudxAccess.MANAGEMENT.getAccess(), mgmtAccessList);
+    
+    //async access list
+    List<AuthorizationRequest> asyncAccessList=new ArrayList<>();
+    asyncAccessList.add(new AuthorizationRequest(POST, ASYNC_SEARCH));
+    consumerAuthorizationRules.put(IudxAccess.ASYNC.getAccess(), asyncAccessList);
+    
   }
 
 
@@ -65,8 +71,8 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     }
     String endpoint = authRequest.getApi().getApiEndpoint();
     Method method = authRequest.getMethod();
-    LOGGER.debug("authorization request for : " + endpoint + " with method : " + method.name());
-    LOGGER.debug("allowed access : " + access);
+    LOGGER.info("authorization request for : " + endpoint + " with method : " + method.name());
+    LOGGER.info("allowed access : " + access);
 
     if (!result && access.contains(IudxAccess.API.getAccess())) {
       result = consumerAuthorizationRules.get(IudxAccess.API.getAccess()).contains(authRequest);
@@ -76,6 +82,9 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     }
     if(!result) {
       result=consumerAuthorizationRules.get(IudxAccess.MANAGEMENT.getAccess()).contains(authRequest);
+    }
+    if(!result) {
+      result=consumerAuthorizationRules.get(IudxAccess.ASYNC.getAccess()).contains(authRequest);
     }
 
     return result;
