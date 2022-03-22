@@ -14,7 +14,7 @@
 		<curator.version>5.1.0</curator.version>
 		<apache-commons-lang3.version>3.12.0</apache-commons-lang3.version>
 		<junit-jupiter-engine.version>5.7.1</junit-jupiter-engine.version>
-		<apache-log4j-core.version>2.17.1</apache-log4j-core.version>
+		<apache-log4j2.version>2.17.1</apache-log4j2.version>
 		<lmax-disruptor.version>3.4.4</lmax-disruptor.version>
 		<jacoco-maven-plugin.version>0.8.7</jacoco-maven-plugin.version>
 		<checkstyle.version>8.42</checkstyle.version>
@@ -27,7 +27,6 @@
 		<maven-surefire-report-plugin.version>3.0.0-M5</maven-surefire-report-plugin.version>
 		<elastic-search-rest-client>7.7.1</elastic-search-rest-client>
 		<junit-jupiter.params>5.5.2</junit-jupiter.params>
-		<slf4j.version>1.7.25</slf4j.version>
 		<jts2geojson.version>0.16.1</jts2geojson.version>
 		<elasticsearch-rest-client.version>7.12.1</elasticsearch-rest-client.version>
 		<elasticsearch-rest-high-level-client.version>7.12.1</elasticsearch-rest-high-level-client.version>
@@ -46,6 +45,14 @@
 				<version>${vertx.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<!--  log4j2 bom to keep org.apache.logging.log4j artifacts version in sync -->
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-bom</artifactId>
+				<version>${apache-log4j2.version}</version>
+				<scope>import</scope>
+				<type>pom</type>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -69,10 +76,6 @@
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
-			<artifactId>vertx-hazelcast</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.vertx</groupId>
 			<artifactId>vertx-service-discovery</artifactId>
 		</dependency>
 
@@ -88,7 +91,7 @@
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-core</artifactId>
 		</dependency>
-		<!-- <dependency> <groupId>io.vertx</groupId> <artifactId>vertx-lang-js</artifactId> 
+		<!-- <dependency> <groupId>io.vertx</groupId> <artifactId>vertx-lang-js</artifactId>
 			</dependency> -->
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -141,20 +144,25 @@
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-pg-client</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>${slf4j.version}</version>
-		</dependency>
+		<!-- log4j2 logging dependencies-->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
-			<version>${apache-log4j-core.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+		</dependency>
+		<!-- slf4j to log4j2 bridge adapter, needed for 'io.netty' logs -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+		</dependency>
+		<!--LMAX Disruptor for enabling Asynchronous log4j2 Logging  -->
+		<dependency>
+			<groupId>com.lmax</groupId>
+			<artifactId>disruptor</artifactId>
+			<version>${lmax-disruptor.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -170,10 +178,10 @@
 			<artifactId>micrometer-registry-prometheus</artifactId>
 			<version>${micrometer.version}</version>
 		</dependency>
+		<!-- Packages for Hazelcast clustering based on Zookeeper discovery -->
 		<dependency>
-			<groupId>com.lmax</groupId>
-			<artifactId>disruptor</artifactId>
-			<version>${lmax-disruptor.version}</version>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-hazelcast</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.hazelcast</groupId>
@@ -185,6 +193,7 @@
 			<artifactId>curator-x-discovery</artifactId>
 			<version>${curator.version}</version>
 		</dependency>
+		<!-- -->
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-web-validation</artifactId>
