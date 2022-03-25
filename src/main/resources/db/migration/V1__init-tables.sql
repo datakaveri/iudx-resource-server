@@ -15,7 +15,8 @@ CREATE type Query_Progress as ENUM
 (
    'IN_PROGRESS',
    'ERROR',
-   'COMPLETE'
+   'COMPLETE',
+   'PENDING'
 )
 
 ---
@@ -77,6 +78,7 @@ CREATE TABLE IF NOT EXISTS s3_upload_url
    search_id uuid NOT NULL,
    request_id TEXT NOT NULL,
    status Query_Progress NOT NULL,
+   progress float(2) NOT NULL,
    s3_url varchar,
    expiry timestamp without time zone,
    user_id varchar,

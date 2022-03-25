@@ -33,13 +33,21 @@ The consumers can access data from the resource server using HTTPs and AMQPs.
 ## API Docs 
 The api docs can be found [here](https://rs.iudx.org.in/apis).
 
-## Get Started
+## Prerequisites 
+### External Dependencies Installation 
 
-### Prerequisite - Make configuration
-Make a config file based on the template in `./configs/config-example.json` 
-- Generate a certificate using Lets Encrypt or other methods
-- Make a Java Keystore File and mention its path and password in the appropriate sections
-- Modify the database url and associated credentials in the appropriate sections
+The Resource Server connects with various external dependencies namely
+- ELK stack 
+- PostgreSQL
+- ImmuDB
+- RabbitMQ
+- Redis
+- AWS S3
+
+Find the installations of the above along with the configurations to modify the database url, port and associated credentials in the appropriate sections
+ [here](SETUP.md)
+
+## Get Started
 
 ### Docker based
 1. Install docker and docker-compose

@@ -48,12 +48,12 @@
             "requestedChannelMax": 5,
             "networkRecoveryInterval": 500,
             "automaticRecoveryEnabled": "true",
-            "callbackDatabaseIP": "",
-            "callbackDatabasePort": 5432,
-            "callbackDatabaseName": "",
-            "callbackDatabaseUserName": "",
-            "callbackDatabasePassword": "",
-            "callbackpoolSize": 25,
+            "postgresDatabaseIP": "",
+            "postgresDatabasePort": 5432,
+            "postgresDatabaseName": "",
+            "postgresDatabaseUserName": "",
+            "postgresDatabasePassword": "",
+            "postgrespoolSize": 25,
 
             "brokerAmqpIp":"",
             "brokerAmqpPort":1234

@@ -94,12 +94,12 @@ public class DataBrokerVerticle extends AbstractVerticle {
     requestedChannelMax = config().getInteger("requestedChannelMax");
     networkRecoveryInterval =
         config().getInteger("networkRecoveryInterval");
-    databaseIP = config().getString("callbackDatabaseIP");
-    databasePort = config().getInteger("callbackDatabasePort");
-    databaseName = config().getString("callbackDatabaseName");
-    databaseUserName = config().getString("callbackDatabaseUserName");
-    databasePassword = config().getString("callbackDatabasePassword");
-    poolSize = config().getInteger("callbackpoolSize");
+    databaseIP = config().getString("postgresDatabaseIP");
+    databasePort = config().getInteger("postgresDatabasePort");
+    databaseName = config().getString("postgresDatabaseName");
+    databaseUserName = config().getString("postgresDatabaseUserName");
+    databasePassword = config().getString("postgresDatabasePassword");
+    poolSize = config().getInteger("postgrespoolSize");
 
     /* Configure the RabbitMQ Data Broker client with input from config files. */
 
