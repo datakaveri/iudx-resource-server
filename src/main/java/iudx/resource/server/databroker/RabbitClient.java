@@ -98,6 +98,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import iudx.resource.server.common.Response;
 import iudx.resource.server.common.ResponseUrn;
+import iudx.resource.server.common.VHosts;
 import iudx.resource.server.databroker.util.Constants;
 import iudx.resource.server.databroker.util.PermissionOpType;
 import iudx.resource.server.databroker.util.Util;
@@ -120,6 +121,8 @@ public class RabbitClient {
     this.amqpPort = configs.getInteger("brokerAmqpPort");
     this.vhost = configs.getString("dataBrokerVhost");
 
+    String internalVhost = configs.getString(VHosts.IUDX_INTERNAL.name());
+    rabbitConfigs.setVirtualHost(internalVhost);
     this.client = getRabbitMQClient(vertx, rabbitConfigs);
     this.webClient = webClient;
     this.pgSQLClient = pgSQLClient;
@@ -701,7 +704,7 @@ public class RabbitClient {
 
   public Future<JsonObject> registerAdapter(JsonObject request, String vhost) {
     LOGGER.trace("Info : RabbitClient#registerAdaptor() started");
-    LOGGER.debug("Request :" + request);
+    LOGGER.debug("Request :" + request + " vhost : " + vhost);
     Promise<JsonObject> promise = Promise.promise();
     String id = request.getJsonArray("entities").getString(0);// getting first and only id
     AdaptorResultContainer requestParams = new AdaptorResultContainer();
@@ -728,8 +731,8 @@ public class RabbitClient {
           }
           LOGGER.debug("Success : Exchange created successfully.");
           requestParams.isExchnageCreated = true;
-          return updateUserPermissions(vhost, requestParams.userid, PermissionOpType.ADD_WRITE,
-              requestParams.adaptorId);
+          return updateUserPermissions(requestParams.vhost, requestParams.userid,
+              PermissionOpType.ADD_WRITE,requestParams.adaptorId);
         }).compose(userPermissionsResult -> {
           LOGGER.debug("Success : user permissions set.");
           return queueBinding(requestParams.adaptorId, vhost);
@@ -741,7 +744,7 @@ public class RabbitClient {
               .put(Constants.ID, requestParams.adaptorId)
               .put(Constants.URL, this.amqpUrl)
               .put(Constants.PORT, this.amqpPort)
-              .put(Constants.VHOST, this.vhost);
+              .put(Constants.VHOST, requestParams.vhost);
           LOGGER.debug("Success : Adapter created successfully.");
           promise.complete(response);
         }).onFailure(failure -> {

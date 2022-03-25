@@ -7,7 +7,8 @@ public enum IudxAccess {
   API("api"),
   SUBSCRIPTION("sub"),
   INGESTION("ingestion"),
-  MANAGEMENT("management");
+  MANAGEMENT("management"),
+  ASYNC("async");
 
   private final String access;
 

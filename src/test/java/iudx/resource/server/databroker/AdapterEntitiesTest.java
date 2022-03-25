@@ -34,6 +34,7 @@ import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.PoolOptions;
 import iudx.resource.server.apiserver.response.ResponseType;
+import iudx.resource.server.common.VHosts;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.databroker.util.Constants;
 
@@ -206,7 +207,9 @@ public class AdapterEntitiesTest {
     expected.put(Constants.ID, id);
     expected.put(Constants.VHOST, Constants.VHOST_IUDX);
 
-    databroker.registerAdaptor(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    
+    databroker.registerAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("inside  successRegisterAdaptor - RegisteAdaptor response is : " + response);
@@ -235,7 +238,8 @@ public class AdapterEntitiesTest {
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, Constants.EXCHANGE_FOUND);
     LOGGER.debug(id);
-    databroker.getExchange(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.getExchange(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("inside  successGetExchange - getExchange response : " + response);
@@ -265,7 +269,8 @@ public class AdapterEntitiesTest {
     expected.put(Constants.QUEUE_DATA, database_entities);
     expected.put(Constants.REDIS_LATEST, database_entities);
 
-    databroker.listAdaptor(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.listAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("inside test - listAdaptor response is : " + response);
@@ -289,8 +294,8 @@ public class AdapterEntitiesTest {
     expected.put(Constants.ROUTING_KEY, id + ".heartbeat");
     expected.put(Constants.DETAIL, "routingKey matched");
 
-
-    databroker.publishHeartbeat(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.publishHeartbeat(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("inside test - publishHeartbeat response is : " + response);
@@ -319,8 +324,8 @@ public class AdapterEntitiesTest {
     expected.put(Constants.APIKEY, Constants.APIKEY_TEST_EXAMPLE);
     expected.put(Constants.ID, anotherid);
     expected.put(Constants.VHOST, Constants.VHOST_IUDX);
-
-    databroker.registerAdaptor(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.registerAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         anotherid = response.getString(Constants.ID);
@@ -348,8 +353,8 @@ public class AdapterEntitiesTest {
     expected.put(Constants.TYPE, 200);
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, Constants.EXCHANGE_FOUND);
-
-    databroker.getExchange(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.getExchange(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("inside  successGetExchange - getExchange response : " + response);
@@ -378,8 +383,8 @@ public class AdapterEntitiesTest {
     expected.put(Constants.QUEUE_ADAPTOR_LOGS, adaptorLogs_entities);
     expected.put(Constants.QUEUE_DATA, database_entities);
     expected.put(Constants.REDIS_LATEST, database_entities);
-
-    databroker.listAdaptor(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.listAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("inside test - listAdaptor response is : " + response);
@@ -404,8 +409,8 @@ public class AdapterEntitiesTest {
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.DETAILS, Constants.EXCHANGE_EXISTS);
-
-    databroker.registerAdaptor(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.registerAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("inside  failureRegisterAdaptorwithExistingUser - RegisteAdaptor response is : "
@@ -428,8 +433,8 @@ public class AdapterEntitiesTest {
 
     JsonObject request = new JsonObject();
     request.put(Constants.ID, id);
-
-    databroker.deleteAdaptor(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.deleteAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("inside test - DeleteAdaptor response is : " + response);
@@ -454,8 +459,8 @@ public class AdapterEntitiesTest {
 
     JsonObject request = new JsonObject();
     request.put(Constants.ID, anotherid);
-
-    databroker.deleteAdaptor(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.deleteAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("inside test - DeleteAdaptor response is : " + response);
@@ -477,8 +482,8 @@ public class AdapterEntitiesTest {
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "invalid id");
-
-    databroker.registerAdaptor(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.registerAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("inside invalid ID test - RegisteAdaptor response is : " + response);

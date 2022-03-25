@@ -52,6 +52,7 @@ import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.PoolOptions;
+import iudx.resource.server.common.VHosts;
 import iudx.resource.server.configuration.Configuration;
 
 @ExtendWith(VertxExtension.class)
@@ -247,8 +248,8 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(EXCHANGE_NAME, exchangeName);
-
-    databroker.createExchange(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.createExchange(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("Create Exchange response is : " + response);
@@ -270,8 +271,8 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(EXCHANGE_NAME, exchangeName);
-
-    databroker.createExchange(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.createExchange(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("Create Exchange response is : " + response);
@@ -291,8 +292,8 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(QUEUE_NAME, queueName);
-
-    databroker.createQueue(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.createQueue(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("Create Queue response is : " + response);
@@ -315,8 +316,8 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(QUEUE_NAME, queueName);
-
-    databroker.createQueue(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.createQueue(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("Create Exchange response is : " + response);
@@ -340,8 +341,8 @@ public class DataBrokerServiceTest {
     request.put(QUEUE_NAME, queueName);
     request.put(EXCHANGE_NAME, exchangeName);
     request.put(ENTITIES, entities);
-
-    databroker.bindQueue(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.bindQueue(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("Bind Queue response is : " + response);
@@ -361,8 +362,8 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(ID, exchangeName);
-
-    databroker.listExchangeSubscribers(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.listExchangeSubscribers(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("List exchnage bindings response is : " + response);
@@ -385,8 +386,8 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(QUEUE_NAME, queueName);
-
-    databroker.listQueueSubscribers(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.listQueueSubscribers(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("List queue bindings response is : " + response);
@@ -411,8 +412,8 @@ public class DataBrokerServiceTest {
     request.put(QUEUE_NAME, queueName);
     request.put(EXCHANGE_NAME, exchangeName);
     request.put(ENTITIES, entities);
-
-    databroker.unbindQueue(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.unbindQueue(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("Unbind Queue response is : " + response);
@@ -433,8 +434,8 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(QUEUE_NAME, queueName);
-
-    databroker.deleteQueue(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.deleteQueue(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("Delete Queue response is : " + response);
@@ -457,8 +458,8 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(QUEUE_NAME, queueName);
-
-    databroker.deleteQueue(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.deleteQueue(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("Delete Queue response is : " + response);
@@ -479,8 +480,8 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(EXCHANGE_NAME, exchangeName);
-
-    databroker.deleteExchange(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.deleteExchange(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("Delete Exchange response is : " + response);
@@ -503,8 +504,8 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(EXCHANGE_NAME, exchangeName);
-
-    databroker.deleteExchange(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.deleteExchange(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("Delete Exchange response is : " + response);
@@ -607,8 +608,8 @@ public class DataBrokerServiceTest {
     request.put("O2", 19.66);
     request.put("NO2", 50.62);
 
-
-    databroker.publishFromAdaptor(request, handler -> {
+    String vhost=VHosts.IUDX_PROD.name();
+    databroker.publishFromAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("Message from adaptor response is : " + response);

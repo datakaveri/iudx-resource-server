@@ -10,6 +10,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.util.Constants;
+import iudx.resource.server.common.VHosts;
 import iudx.resource.server.databroker.DataBrokerService;
 
 /**
@@ -27,7 +28,7 @@ public class ManagementApiImpl implements ManagementApi {
   public Future<JsonObject> createExchange(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     LOGGER.info("data broker ::: " + databroker);
-    databroker.createExchange(json, handler -> {
+    databroker.createExchange(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
@@ -52,7 +53,7 @@ public class ManagementApiImpl implements ManagementApi {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_EXCHANGE_NAME, exchangeid);
-    databroker.deleteExchange(json, handler -> {
+    databroker.deleteExchange(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
@@ -78,7 +79,7 @@ public class ManagementApiImpl implements ManagementApi {
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_EXCHANGE_NAME, exchangeid);
     json.put("id", exchangeid);
-    databroker.listExchangeSubscribers(json, handler -> {
+    databroker.listExchangeSubscribers(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
@@ -101,7 +102,7 @@ public class ManagementApiImpl implements ManagementApi {
   @Override
   public Future<JsonObject> createQueue(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
-    databroker.createQueue(json, handler -> {
+    databroker.createQueue(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
@@ -126,7 +127,7 @@ public class ManagementApiImpl implements ManagementApi {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_QUEUE_NAME, queueId);
-    databroker.deleteQueue(json, handler -> {
+    databroker.deleteQueue(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
@@ -151,7 +152,7 @@ public class ManagementApiImpl implements ManagementApi {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_QUEUE_NAME, queueId);
-    databroker.listQueueSubscribers(json, handler -> {
+    databroker.listQueueSubscribers(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
@@ -174,7 +175,7 @@ public class ManagementApiImpl implements ManagementApi {
   @Override
   public Future<JsonObject> bindQueue2Exchange(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
-    databroker.bindQueue(json, handler -> {
+    databroker.bindQueue(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
@@ -198,7 +199,7 @@ public class ManagementApiImpl implements ManagementApi {
   public Future<JsonObject> unbindQueue2Exchange(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     LOGGER.trace("unbind request :: " + json);
-    databroker.unbindQueue(json, handler -> {
+    databroker.unbindQueue(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
@@ -269,7 +270,7 @@ public class ManagementApiImpl implements ManagementApi {
   @Override
   public Future<JsonObject> registerAdapter(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
-    databroker.registerAdaptor(json, handler -> {
+    databroker.registerAdaptor(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
@@ -295,7 +296,7 @@ public class ManagementApiImpl implements ManagementApi {
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_ID, adapterId);
     json.put(Constants.USER_ID, userId);
-    databroker.deleteAdaptor(json, handler -> {
+    databroker.deleteAdaptor(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
@@ -316,7 +317,7 @@ public class ManagementApiImpl implements ManagementApi {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_ID, adapterId);
-    databroker.listAdaptor(json, handler -> {
+    databroker.listAdaptor(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
@@ -338,7 +339,7 @@ public class ManagementApiImpl implements ManagementApi {
   @Override
   public Future<JsonObject> publishHeartbeat(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
-    databroker.publishHeartbeat(json, handler -> {
+    databroker.publishHeartbeat(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = new JsonObject();
         LOGGER.debug("Result from databroker verticle :: " + result);
@@ -362,7 +363,7 @@ public class ManagementApiImpl implements ManagementApi {
   @Override
   public Future<JsonObject> publishDownstreamIssues(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
-    databroker.publishHeartbeat(json, handler -> {
+    databroker.publishHeartbeat(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = new JsonObject();
         LOGGER.debug("Result from databroker verticle :: " + result);
@@ -384,7 +385,7 @@ public class ManagementApiImpl implements ManagementApi {
   @Override
   public Future<JsonObject> publishDataIssue(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
-    databroker.publishHeartbeat(json, handler -> {
+    databroker.publishHeartbeat(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = new JsonObject();
         LOGGER.debug("Result from databroker verticle :: " + result);
@@ -406,7 +407,7 @@ public class ManagementApiImpl implements ManagementApi {
   @Override
   public Future<JsonObject> publishDataFromAdapter(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
-    databroker.publishFromAdaptor(json, handler -> {
+    databroker.publishFromAdaptor(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = new JsonObject();
         LOGGER.debug("Result from databroker verticle :: " + result);

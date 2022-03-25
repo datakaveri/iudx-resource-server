@@ -19,6 +19,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.rabbitmq.RabbitMQClient;
 import iudx.resource.server.common.Response;
 import iudx.resource.server.common.ResponseUrn;
+import iudx.resource.server.common.VHosts;
 import iudx.resource.server.databroker.util.Util;
 
 /**
@@ -42,7 +43,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       Util.getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, BAD_REQUEST_DATA);
   private String user;
   private String password;
-  private String vhost;
+
+  private JsonObject config;
+
   private int totalBindCount;
   private int totalBindSuccess;
   private int totalUnBindCount;
@@ -56,7 +59,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   public DataBrokerServiceImpl(RabbitClient webClient, PostgresClient pgClient, JsonObject config) {
     this.webClient = webClient;
     this.pgClient = pgClient;
-    this.vhost = config.getString("dataBrokerVhost");
+    this.config = config;
     this.subscriptionService = new SubscriptionService(this.webClient, pgClient, config);
 
   }
@@ -68,10 +71,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @return response which is a Future object of promise of Json type
    */
   @Override
-  public DataBrokerService registerAdaptor(JsonObject request,
+  public DataBrokerService registerAdaptor(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler) {
+    String virtualHost = getVhost(vhost);
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = webClient.registerAdapter(request, vhost);
+      Future<JsonObject> result = webClient.registerAdapter(request, virtualHost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));
@@ -90,7 +94,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
 
   @Override
-  public DataBrokerService updateAdaptor(JsonObject request,
+  public DataBrokerService updateAdaptor(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler) {
 
     return null;
@@ -104,10 +108,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @return response which is a Future object of promise of Json type
    */
   @Override
-  public DataBrokerService getExchange(JsonObject request,
+  public DataBrokerService getExchange(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler) {
+    String virtualHost = getVhost(vhost);
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = webClient.getExchange(request, vhost);
+      Future<JsonObject> result = webClient.getExchange(request, virtualHost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));
@@ -132,10 +137,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @return response which is a Future object of promise of Json type
    */
   @Override
-  public DataBrokerService deleteAdaptor(JsonObject request,
+  public DataBrokerService deleteAdaptor(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler) {
+    String virtualHost = getVhost(vhost);
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = webClient.deleteAdapter(request, vhost);
+      Future<JsonObject> result = webClient.deleteAdapter(request, virtualHost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));
@@ -158,11 +164,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    * @return response which is a Future object of promise of Json type
    */
   @Override
-  public DataBrokerService listAdaptor(JsonObject request,
+  public DataBrokerService listAdaptor(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler) {
     JsonObject finalResponse = new JsonObject();
+    String virtualHost = getVhost(vhost);
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = webClient.listExchangeSubscribers(request, vhost);
+      Future<JsonObject> result = webClient.listExchangeSubscribers(request, virtualHost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));
@@ -412,10 +419,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
 
   @Override
-  public DataBrokerService createExchange(JsonObject request,
+  public DataBrokerService createExchange(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler) {
+    String virtualHost = getVhost(vhost);
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = webClient.createExchange(request, vhost);
+      Future<JsonObject> result = webClient.createExchange(request, virtualHost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));
@@ -434,7 +442,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
 
   @Override
-  public DataBrokerService updateExchange(JsonObject request,
+  public DataBrokerService updateExchange(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler) {
 
     return null;
@@ -445,10 +453,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
 
   @Override
-  public DataBrokerService deleteExchange(JsonObject request,
+  public DataBrokerService deleteExchange(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler) {
+    String virtualHost = getVhost(vhost);
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = webClient.deleteExchange(request, vhost);
+      Future<JsonObject> result = webClient.deleteExchange(request, virtualHost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));
@@ -467,10 +476,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
 
   @Override
-  public DataBrokerService listExchangeSubscribers(JsonObject request,
+  public DataBrokerService listExchangeSubscribers(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler) {
+    String virtualHost = getVhost(vhost);
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = webClient.listExchangeSubscribers(request, vhost);
+      Future<JsonObject> result = webClient.listExchangeSubscribers(request, virtualHost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));
@@ -489,10 +499,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
 
   @Override
-  public DataBrokerService createQueue(JsonObject request,
+  public DataBrokerService createQueue(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler) {
+    String virtualHost = getVhost(vhost);
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = webClient.createQueue(request, vhost);
+      Future<JsonObject> result = webClient.createQueue(request, virtualHost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));
@@ -512,7 +523,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
 
   @Override
-  public DataBrokerService updateQueue(JsonObject request,
+  public DataBrokerService updateQueue(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler) {
 
     return null;
@@ -523,10 +534,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
 
   @Override
-  public DataBrokerService deleteQueue(JsonObject request,
+  public DataBrokerService deleteQueue(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler) {
+    String virtualHost = getVhost(vhost);
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = webClient.deleteQueue(request, vhost);
+      Future<JsonObject> result = webClient.deleteQueue(request, virtualHost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));
@@ -545,9 +557,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
 
   @Override
-  public DataBrokerService bindQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+  public DataBrokerService bindQueue(JsonObject request, String vhost,
+      Handler<AsyncResult<JsonObject>> handler) {
+    String virtualHost = getVhost(vhost);
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = webClient.bindQueue(request, vhost);
+      Future<JsonObject> result = webClient.bindQueue(request, virtualHost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));
@@ -567,10 +581,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
 
   @Override
-  public DataBrokerService unbindQueue(JsonObject request,
+  public DataBrokerService unbindQueue(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler) {
+    String virtualHost = getVhost(vhost);
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = webClient.unbindQueue(request, vhost);
+      Future<JsonObject> result = webClient.unbindQueue(request, virtualHost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
 
@@ -649,7 +664,8 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
 
   @Override
-  public DataBrokerService listvHost(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+  public DataBrokerService listvHost(JsonObject request,
+      Handler<AsyncResult<JsonObject>> handler) {
     if (request != null) {
       Future<JsonObject> result = webClient.listvHost(request);
       result.onComplete(resultHandler -> {
@@ -682,10 +698,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
 
   @Override
-  public DataBrokerService listQueueSubscribers(JsonObject request,
+  public DataBrokerService listQueueSubscribers(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler) {
+    String virtualHost = getVhost(vhost);
     if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = webClient.listQueueSubscribers(request, vhost);
+      Future<JsonObject> result = webClient.listQueueSubscribers(request, virtualHost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
           handler.handle(Future.succeededFuture(resultHandler.result()));
@@ -704,7 +721,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
    */
 
   @Override
-  public DataBrokerService publishFromAdaptor(JsonObject request,
+  public DataBrokerService publishFromAdaptor(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler) {
     JsonObject finalResponse = new JsonObject();
     JsonObject json = new JsonObject();
@@ -736,22 +753,23 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   }
 
   @Override
-  public DataBrokerService publishHeartbeat(JsonObject request,
+  public DataBrokerService publishHeartbeat(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler) {
     JsonObject response = new JsonObject();
+    String virtualHost = getVhost(vhost);
     if (request != null && !request.isEmpty()) {
       String adaptor = request.getString(ID);
       String routingKey = request.getString("status");
       if (adaptor != null && !adaptor.isEmpty() && routingKey != null && !routingKey.isEmpty()) {
         JsonObject json = new JsonObject();
         Future<JsonObject> future1 =
-            webClient.getExchange(json.put("id", adaptor), vhost);
+            webClient.getExchange(json.put("id", adaptor), virtualHost);
         future1.onComplete(ar -> {
           if (ar.result().getInteger("type") == HttpStatus.SC_OK) {
             json.put("exchangeName", adaptor);
             // exchange found, now get list of all queues which are bound with this exchange
             Future<JsonObject> future2 =
-                webClient.listExchangeSubscribers(json, vhost);
+                webClient.listExchangeSubscribers(json, virtualHost);
             future2.onComplete(rh -> {
               JsonObject queueList = rh.result();
               if (queueList != null && queueList.size() > 0) {
@@ -862,9 +880,12 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     return this;
   }
 
+  /**
+   * This method will only publish messages to internal-communication exchanges. 
+   */
   @Override
-  // TODO : complete implementation
-  public DataBrokerService publishMessage(JsonObject request, String toExchange, String routingKey,
+  public DataBrokerService publishMessage(JsonObject request, String toExchange,
+      String routingKey,
       Handler<AsyncResult<JsonObject>> handler) {
 
     Future<Void> rabbitMqClientStartFuture;
@@ -893,5 +914,11 @@ public class DataBrokerServiceImpl implements DataBrokerService {
           handler.handle(Future.failedFuture(response.toJson().toString()));
         });
     return this;
+  }
+
+
+  private String getVhost(String vhost) {
+    String vhostKey = VHosts.valueOf(vhost).value;
+    return this.config.getString(vhostKey);
   }
 }

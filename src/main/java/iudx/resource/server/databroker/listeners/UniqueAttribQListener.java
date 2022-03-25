@@ -3,11 +3,13 @@ package iudx.resource.server.databroker.listeners;
 import static iudx.resource.server.common.Constants.UNIQUE_ATTR_Q;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rabbitmq.QueueOptions;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQConsumer;
+import io.vertx.rabbitmq.RabbitMQOptions;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.cache.cacheImpl.CacheType;
 import iudx.resource.server.common.BroadcastEventType;
@@ -24,8 +26,10 @@ public class UniqueAttribQListener implements RMQListeners {
           .setMaxInternalQueueSize(1000)
           .setKeepMostRecent(true);
 
-  public UniqueAttribQListener(RabbitMQClient client, CacheService cache) {
-    this.client = client;
+  public UniqueAttribQListener(Vertx vertx, CacheService cache, RabbitMQOptions config,
+      String vhost) {
+    config.setVirtualHost(vhost);
+    this.client = RabbitMQClient.create(vertx, config);
     this.cache = cache;
   }
 
@@ -71,7 +75,7 @@ public class UniqueAttribQListener implements RMQListeners {
                     }
                   });
                 } else {
-                  LOGGER.error("Empty json received from revoke_token queue");
+                  LOGGER.info("Empty json received from revoke_token queue");
                 }
               });
             }
