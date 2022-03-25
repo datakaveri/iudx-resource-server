@@ -152,12 +152,12 @@ public class DataBrokerServiceTest {
       handshakeTimeout = brokerConfig.getInteger("handshakeTimeout");
       requestedChannelMax = brokerConfig.getInteger("requestedChannelMax");
       networkRecoveryInterval = brokerConfig.getInteger("networkRecoveryInterval");
-      databaseIP = brokerConfig.getString("callbackDatabaseIP");
-      databasePort = brokerConfig.getInteger("callbackDatabasePort");
-      databaseName = brokerConfig.getString("callbackDatabaseName");
-      databaseUserName = brokerConfig.getString("callbackDatabaseUserName");
-      databasePassword = brokerConfig.getString("callbackDatabasePassword");
-      poolSize = brokerConfig.getInteger("callbackpoolSize");
+      databaseIP = brokerConfig.getString("postgresDatabaseIP");
+      databasePort = brokerConfig.getInteger("postgresDatabasePort");
+      databaseName = brokerConfig.getString("postgresDatabaseName");
+      databaseUserName = brokerConfig.getString("postgresDatabaseUserName");
+      databasePassword = brokerConfig.getString("postgresDatabasePassword");
+      poolSize = brokerConfig.getInteger("postgrespoolSize");
 
     } catch (Exception ex) {
 
