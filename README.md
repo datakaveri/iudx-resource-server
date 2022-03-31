@@ -15,7 +15,7 @@ It allows data providers to publish their data *resources* in accordance to the 
 The consumers can access data from the resource server using HTTPs and AMQPs.
 
 <p align="center">
-<img src="./docs/rs_overview.png">
+<img src="./readme/images/rs-architecture.png">
 </p>
 
 
