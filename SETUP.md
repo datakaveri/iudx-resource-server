@@ -5,7 +5,7 @@ This document contains the installation and configuration processes
 of the external modules of each Verticle in IUDX Resource Server.
 
 <p align="center">
-<img src="./docs/rs_overview.png">
+<img src="./readme/images/rs-architecture.png">
 </p>
 
 The Resource Server connects with various external dependencies namely
