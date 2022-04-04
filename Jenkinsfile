@@ -117,32 +117,15 @@ pipeline {
 
     stage('Push Images') {
       when{
-        anyOf{
-          expression {
-            return env.GIT_BRANCH == 'origin/master';
-          }
-          expression {
-            return env.GIT_BRANCH == 'origin/v3.5.0';
-          }
+        expression {
+          return env.GIT_BRANCH == 'origin/master';
         }
       }
       steps{
         script {
-          echo 'Pulled - ' + env.GIT_BRANCH
-          if (env.GIT_BRANCH == 'origin/master') {
-            docker.withRegistry( registryUri, registryCredential ) {
-              devImage.push("4.0-alpha-${env.GIT_HASH}")
-              deplImage.push("4.0-alpha-${env.GIT_HASH}")
-            }
-          }
-          else if (env.GIT_BRANCH == 'origin/v3.5.0') {
-            docker.withRegistry( registryUri, registryCredential ) {
-              devImage.push("3.5.0-${env.GIT_HASH}")
-              deplImage.push("3.5.0-${env.GIT_HASH}")
-            }
-          } 
-          else {
-            echo 'Image not pushed'
+          docker.withRegistry( registryUri, registryCredential ) {
+            devImage.push("4.0-alpha-${env.GIT_HASH}")
+            deplImage.push("4.0-alpha-${env.GIT_HASH}")
           }
         }
       }
