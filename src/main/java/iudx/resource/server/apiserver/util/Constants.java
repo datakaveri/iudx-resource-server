@@ -144,6 +144,7 @@ public class Constants {
   public static final String JSON_MAXDISTANCE = "maxdistance";
   public static final String JSON_MINDISTANCE = "mindistance";
   public static final String JSON_DURING = "during";
+  public static final String JSON_BETWEEN = "between";
   public static final String JSON_TIME = "time";
   public static final String JSON_ENDTIME = "endtime";
   public static final String JSON_TIMEREL = "timerel";

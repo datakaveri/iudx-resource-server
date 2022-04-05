@@ -55,6 +55,7 @@ public class Constants {
   public static final String TIME_KEY = "time";
   public static final String END_TIME = "endtime";
   public static final String DURING = "during";
+  public static final String BETWEEN = "between";
   public static final String AFTER = "after";
   public static final String BEFORE = "before";
   public static final String TEQUALS = "tequals";
