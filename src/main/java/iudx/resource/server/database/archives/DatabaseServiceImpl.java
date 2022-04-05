@@ -119,6 +119,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     try {
       query = new QueryDecoder().getESquery(request);
     } catch (Exception e) {
+      LOGGER.error("query decode error",e);
       responseBuilder =
           new ResponseBuilder(FAILED)
               .setTypeAndTitle(400)

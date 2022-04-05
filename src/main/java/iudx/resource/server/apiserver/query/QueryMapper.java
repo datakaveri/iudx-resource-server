@@ -28,7 +28,7 @@ public class QueryMapper {
   private boolean isAttributeSearch = false;
 
   public JsonObject toJson(NGSILDQueryParams params, boolean isTemporal) {
-    return toJson(params,isTemporal,false);
+    return toJson(params, isTemporal, false);
   }
 
   /**
@@ -89,15 +89,16 @@ public class QueryMapper {
     if (isTemporal && params.getTemporalRelation().getTemprel() != null
         && params.getTemporalRelation().getTime() != null) {
       isTemporal = true;
-      if (params.getTemporalRelation().getTemprel().equalsIgnoreCase(Constants.JSON_DURING)) {
+      if (params.getTemporalRelation().getTemprel().equalsIgnoreCase(Constants.JSON_DURING)
+          || params.getTemporalRelation().getTemprel().equalsIgnoreCase(Constants.JSON_BETWEEN)) {
         LOGGER.debug("Info : inside during ");
 
         json.put(Constants.JSON_TIME, params.getTemporalRelation().getTime());
         json.put(Constants.JSON_ENDTIME, params.getTemporalRelation().getEndTime());
         json.put(Constants.JSON_TIMEREL, params.getTemporalRelation().getTemprel());
 
-          isValidTimeInterval(Constants.JSON_DURING, json.getString(Constants.JSON_TIME),
-              json.getString(Constants.JSON_ENDTIME),isAsyncQuery);
+        isValidTimeInterval(Constants.JSON_DURING, json.getString(Constants.JSON_TIME),
+            json.getString(Constants.JSON_ENDTIME), isAsyncQuery);
       } else {
         json.put(Constants.JSON_TIME, params.getTemporalRelation().getTime().toString());
         json.put(Constants.JSON_TIMEREL, params.getTemporalRelation().getTemprel());
@@ -138,7 +139,8 @@ public class QueryMapper {
    * check for a valid days interval for temporal queries
    */
   // TODO : decide how to enforce for before and after queries.
-  private void isValidTimeInterval(String timeRel, String time, String endTime,boolean isAsyncQuery) {
+  private void isValidTimeInterval(String timeRel, String time, String endTime,
+      boolean isAsyncQuery) {
     long totalDaysAllowed = 0;
     if (timeRel.equalsIgnoreCase(Constants.JSON_DURING)) {
       if (isNullorEmpty(time) || isNullorEmpty(endTime)) {
@@ -161,7 +163,8 @@ public class QueryMapper {
     } else if (timeRel.equalsIgnoreCase("before")) {
 
     }
-    if(isAsyncQuery && totalDaysAllowed > Constants.VALIDATION_MAX_DAYS_INTERVAL_ALLOWED_FOR_ASYNC) {
+    if (isAsyncQuery
+        && totalDaysAllowed > Constants.VALIDATION_MAX_DAYS_INTERVAL_ALLOWED_FOR_ASYNC) {
       throw new DxRuntimeException(BAD_REQUEST.getValue(), ResponseUrn.INVALID_TEMPORAL_PARAM_URN,
           "time interval greater than 1 year is not allowed");
     }
@@ -224,7 +227,8 @@ public class QueryMapper {
           specialCharFound = true;
         } else {
           LOGGER.debug("Ignore " + c.toString());
-          throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_ATTR_PARAM_URN, "Operator not allowed.");
+          throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_ATTR_PARAM_URN,
+              "Operator not allowed.");
         }
       } else {
         if (specialCharFound && (Character.isLetter(c) || Character.isDigit(c))) {
@@ -236,7 +240,8 @@ public class QueryMapper {
 
     }
     if (!allowedOperators.contains(json.getString(Constants.JSON_OPERATOR))) {
-      throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_ATTR_PARAM_URN, "Operator not allowed.");
+      throw new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_ATTR_PARAM_URN,
+          "Operator not allowed.");
     }
     return json;
   }
