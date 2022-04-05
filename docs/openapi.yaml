@@ -388,11 +388,11 @@ paths:
 
       - name: timerel
         in: query
-        description: 'The temporal relation type of <b>timerel</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> If the relation is <b> during </b> it should be always accomodated with a <b> time </b> and <b> endtime </b> property.  <br/> If the relation is <b> before </b> or <b> after </b>it should be always accomodated <b> only</b> with a <b> time </b> property.'
+        description: 'The temporal relation type of <b>timerel</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> If the relation is <b> between </b> it should be always accomodated with a <b> time </b> and <b> endtime </b> property.  <br/> If the relation is <b> before </b> or <b> after </b>it should be always accomodated <b> only</b> with a <b> time </b> property.'
         required: true
         schema:
           type: string
-          enum: [during, before, after]          
+          enum: [between, before, after]          
       - name: time
         in: query
         description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
@@ -401,7 +401,7 @@ paths:
           type: string
       - name: endtime
         in: query
-        description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query. <br/>If <b>timerel</b> is `during` time and endtime are mandatory'
+        description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query. <br/>If <b>timerel</b> is `between` time and endtime are mandatory'
         schema:
           type: string
 
@@ -497,9 +497,9 @@ paths:
           description: 'Resource not found'
 
       x-codeSamples:
-        - lang: 'search by during'
+        - lang: 'search by between'
           source: |
-            https://rs.iudx.org.in/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&timerel=during&time=2020-06-01T14:20:00Z&endtime=2020-06-06T14:20:00Z
+            https://rs.iudx.org.in/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&timerel=between&time=2020-06-01T14:20:00Z&endtime=2020-06-06T14:20:00Z
         - lang: 'search by before'
           source: |
             https://rs.iudx.org.in/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&timerel=before&time=2020-06-01T14:20:01Z
@@ -532,9 +532,9 @@ paths:
 
         #### Temporal search
         Temporal search accepts time property based queries which are specified in ISO 8601 format. The params and their accepted values are -
-          - <b>timerel</b>: The time relation of the query. Should be either `during`, `before` or `after`.
+          - <b>timerel</b>: The time relation of the query. Should be either `between`, `before` or `after`.
           - <b>time</b>: Start time for the temporal query in `ISO 8601` format. 
-          - <b>endtime</b>: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = during`. 
+          - <b>endtime</b>: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = between`. 
           - Note, The time difference between `time` and `endtime` should be less than `10 days`. For `before` and `after` queries, `10 days` of data `before` or `after` the specified time will be provided.
 
       
@@ -756,7 +756,7 @@ paths:
                 georel: near;maxDistance=1000
                 geoproperty: geoJsonLocation
               temporalQ:
-                timerel: "during"
+                timerel: "between"
                 time: "2020-06-01T14:20:00Z"
                 endtime: "2020-06-03T15:00:00Z"
                 timeProperty: "observationDateTime"
@@ -807,9 +807,9 @@ paths:
         
         #### Temporal search
         Temporal search accepts time property based queries which are specified in ISO 8601 format. The params and their accepted values are -
-          - <b>timerel</b>: The time relation of the query. Should be either `during`, `before` or `after`.
+          - <b>timerel</b>: The time relation of the query. Should be either `between`, `before` or `after`.
           - <b>time</b>: Start time for the temporal query in `ISO 8601` format. 
-          - <b>endtime</b>: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = during`. 
+          - <b>endtime</b>: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = between`. 
           - Note, The time difference between `time` and `endtime` should be less than `10 days`. For `before` and `after` queries, `10 days` of data `before` or `after` the specified time will be provided.
       
         #### Spatial (Geo) Search
@@ -1499,7 +1499,7 @@ paths:
         required: true
         schema:
           type: string
-          enum: [during]          
+          enum: [between]          
       - name: time
         in: query
         description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
@@ -1641,7 +1641,7 @@ paths:
         required: true
         schema:
           type: string
-          enum: [during]          
+          enum: [between]          
       - name: time
         in: query
         description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
@@ -1727,7 +1727,7 @@ paths:
         required: true
         schema:
           type: string
-          enum: [during]          
+          enum: [between]          
       - name: time
         in: query
         description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
@@ -2128,8 +2128,8 @@ components:
           georel: near;maxDistance=1000
           geoproperty: geoJsonLocation
         attrs: resource-id,longitude,latitude
-    temporal-duringrequest:
-      title: temporal-duringrequest
+    temporal-betweenrequest:
+      title: temporal-betweenrequest
       required:
       - type
       - entities
@@ -2150,7 +2150,7 @@ components:
         entities:
         - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         temporalQ:
-          timerel: during
+          timerel: between
           time: 2020-06-01T14:20:00Z
           endtime: 2020-06-03T15:00:00Z
           timeProperty: timeProperty
@@ -2165,19 +2165,19 @@ components:
       properties:
         timerel:
           type: string
-          enum: [during, before, after]    
-          description: 'The temporal relation type of <b>timerel</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> If the relation is <b> during </b> it should be always accomodated with a <b> time </b> and <b> endtime </b> property.  <br/> If the relation is <b> before </b> or <b> after </b>it should be always accomodated <b> only</b> with a <b> time </b> property.'      
+          enum: [between, before, after]    
+          description: 'The temporal relation type of <b>timerel</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> If the relation is <b> between </b> it should be always accomodated with a <b> time </b> and <b> endtime </b> property.  <br/> If the relation is <b> before </b> or <b> after </b>it should be always accomodated <b> only</b> with a <b> time </b> property.'      
         time:
           type: string
           description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
         endtime:
           type: string
-          description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query. <br/>If <b>timerel</b> is `during` time and endtime are mandatory'
+          description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query. <br/>If <b>timerel</b> is `between` time and endtime are mandatory'
         timeProperty:
           type: string
           enum: [observationDateTime]
       example:
-        timerel: during
+        timerel: between
         time: 2020-06-01T14:20:00Z
         endtime: 2020-06-03T15:00:00Z
         timeProperty: observationDateTime
@@ -2270,7 +2270,7 @@ components:
           georel: near;maxDistance=1000
           geoproperty: geoJsonLocation
         temporalQ:
-          timerel: during
+          timerel: between
           time: 2020-06-01T14:20:00Z
           endtime: 2020-06-03T15:00:00Z
           timeProperty: timeProperty
