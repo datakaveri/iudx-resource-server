@@ -147,6 +147,11 @@ public class ElasticClient {
               responseBuilder =
                   new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(BAD_PARAMETERS);
               searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+            } catch (Exception ex) {
+              LOGGER.error("elastic exception: ", ex);
+              responseBuilder =
+                  new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(BAD_PARAMETERS);
+              searchHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
             }
           }
         });
@@ -216,6 +221,11 @@ public class ElasticClient {
               countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
             } catch (DecodeException jsonError) {
               LOGGER.error("Json parsing exception: ", jsonError);
+              responseBuilder =
+                  new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(BAD_PARAMETERS);
+              countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+            }catch (Exception ex) {
+              LOGGER.error("elastic exception: ", ex);
               responseBuilder =
                   new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(BAD_PARAMETERS);
               countHandler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));

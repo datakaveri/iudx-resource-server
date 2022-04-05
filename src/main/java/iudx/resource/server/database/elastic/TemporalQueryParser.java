@@ -2,19 +2,17 @@ package iudx.resource.server.database.elastic;
 
 import static iudx.resource.server.database.archives.Constants.AFTER;
 import static iudx.resource.server.database.archives.Constants.BEFORE;
+import static iudx.resource.server.database.archives.Constants.BETWEEN;
 import static iudx.resource.server.database.archives.Constants.DURING;
 import static iudx.resource.server.database.archives.Constants.END_TIME;
 import static iudx.resource.server.database.archives.Constants.REQ_TIMEREL;
 import static iudx.resource.server.database.archives.Constants.TIME_KEY;
-
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
-
-import iudx.resource.server.database.elastic.exception.ESQueryDecodeException;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.database.elastic.exception.ESQueryDecodeException;
 
 public class TemporalQueryParser implements QueryParser {
 
@@ -43,20 +41,20 @@ public class TemporalQueryParser implements QueryParser {
       throw new ESQueryDecodeException("exception while parsing date/time");
     }
 
-    if (DURING.equalsIgnoreCase(timeRelation)) {
+    if (DURING.equalsIgnoreCase(timeRelation) || BETWEEN.equalsIgnoreCase(timeRelation)) {
       ZonedDateTime endzdt;
       endTime = json.getString(END_TIME);
       startTime = time;
-      
       try {
         endzdt = ZonedDateTime.parse(endTime);
       } catch (DateTimeParseException e) {
         throw new ESQueryDecodeException("exception while parsing date/time");
       }
-
+      
       if (zdt.isAfter(endzdt)) {
         throw new ESQueryDecodeException("end date is before start date");
       }
+      
     } else if (BEFORE.equalsIgnoreCase(timeRelation)) {
       zdt = ZonedDateTime.parse(time);
       startTime = zdt.minusDays(10).toString();
