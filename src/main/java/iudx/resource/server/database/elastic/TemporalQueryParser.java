@@ -45,7 +45,6 @@ public class TemporalQueryParser implements QueryParser {
       ZonedDateTime endzdt;
       endTime = json.getString(END_TIME);
       startTime = time;
-      System.out.println("zdt : "+json.getString(TIME_KEY)+" endzdt : "+json.getString(END_TIME));
       try {
         endzdt = ZonedDateTime.parse(endTime);
       } catch (DateTimeParseException e) {
