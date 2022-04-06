@@ -168,14 +168,14 @@ public class Constants {
       " UPDATE registercallback SET entities = '$1' WHERE subscriptionID = '$2'";
 
   public static final String INSERT_DATABROKER_USER =
-      "INSERT INTO databroker (username  ,password) VALUES ('$1', '$2')";
+      "INSERT INTO subscription_users (username  ,password) VALUES ('$1', '$2')";
   public static final String INSERT_DATABROKER_USER_TEST =
-      "INSERT INTO databroker (username,password) VALUES ('user-test', 'password-test')";
+      "INSERT INTO subscription_users (username,password) VALUES ('user-test', 'password-test')";
   public static final String SELECT_DATABROKER_USER_TEST =
-      "SELECT * FROM databroker WHERE username='user-test'";
+      "SELECT * FROM subscription_users WHERE username='user-test'";
   public static final String SELECT_DATABROKER_USER =
-      "SELECT * FROM databroker WHERE username='$1'";
-  public static final String RESET_PWD="UPDATE databroker SET password='$1' where username='$2'";
+      "SELECT * FROM subscription_users WHERE username='$1'";
+  public static final String RESET_PWD="UPDATE subscription_users SET password='$1' where username='$2'";
   
   // sql errors
   public static final String SQL_ERROR = "SQL Error";
