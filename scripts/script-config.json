@@ -9,5 +9,7 @@
     "dataBaseUser":"",
     "dataBasePassword":"",
     "dataBaseHost":"",
-    "dataBasePort": 0
+    "dataBasePort": 0,
+
+    "schedule_time": 60
 }

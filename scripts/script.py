@@ -27,6 +27,8 @@ dataBasePassword = config["dataBasePassword"]
 dataBaseHost = config["dataBaseHost"]
 dataBasePort = config["dataBasePort"]
 
+scheduleTime = config["scheduleTime"]
+
 
 
 def unbind():  
@@ -79,7 +81,7 @@ def unbind():
 
     return
 
-schedule.every(60).minutes.do(unbind)
+schedule.every(scheduleTime).minutes.do(unbind)
 
 # Loop so that the scheduling task
 # keeps on running all time.
