@@ -17,7 +17,7 @@ CREATE type Query_Progress as ENUM
    'ERROR',
    'COMPLETE',
    'PENDING'
-)
+);
 
 ---
 -- Token invalidation table
@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS subscriptions
       entity
    )
 );
-
+ALTER TABLE subscriptions OWNER TO ${flyway:user};
 ---
 -- s3 URL table
 ---
@@ -88,22 +88,22 @@ CREATE TABLE IF NOT EXISTS s3_upload_url
    CONSTRAINT upload_url_pk PRIMARY KEY (_id)
 );
 
-ALTER TABLE subscriptions OWNER TO ${flyway:user};
+ALTER TABLE s3_upload_url OWNER TO ${flyway:user};
 
 ---
--- databroker table
+-- subscription_users table
 ---
-CREATE TABLE IF NOT EXISTS databroker
+CREATE TABLE IF NOT EXISTS subscription_users
 (
    username character varying (255) NOT NULL,
    password character varying (50) NOT NULL,
    created_at timestamp without time zone NOT NULL,
    modified_at timestamp without time zone NOT NULL,
-   CONSTRAINT databroker_pkey PRIMARY KEY (username),
-   CONSTRAINT databroker_username_key UNIQUE (username)
+   CONSTRAINT sub_user_pkey PRIMARY KEY (username),
+   CONSTRAINT sub_user_username_key UNIQUE (username)
 );
 
-ALTER TABLE databroker OWNER TO ${flyway:user};
+ALTER TABLE subscription_users OWNER TO ${flyway:user};
 
 ---
 --gis table
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS gis
    password varchar,
    tokenurl character varying,
    CONSTRAINT gis_pk PRIMARY KEY (iudx_resource_id)
-)
+);
 
 ALTER TABLE gis OWNER TO ${flyway:user};
 
@@ -177,11 +177,11 @@ OR UPDATE ON
    s3_upload_url FOR EACH ROW EXECUTE PROCEDURE update_modified ();
 
 
---databroker table
-CREATE TRIGGER update_user_created BEFORE INSERT ON databroker FOR EACH ROW EXECUTE PROCEDURE update_created ();
+--subscription_user table
+CREATE TRIGGER update_user_created BEFORE INSERT ON subscription_users FOR EACH ROW EXECUTE PROCEDURE update_created ();
 CREATE TRIGGER update_user_modified BEFORE INSERT
 OR UPDATE ON
-   databroker FOR EACH ROW EXECUTE PROCEDURE update_modified ();
+   subscription_users FOR EACH ROW EXECUTE PROCEDURE update_modified ();
    
    
 -- gis table
@@ -198,6 +198,6 @@ CREATE TRIGGER update_gis_modified BEFORE INSERT OR UPDATE ON gis FOR EACH ROW E
  GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE revoked_tokens TO ${rsUser};
  GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE unique_attributes TO ${rsUser};
  GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE subscriptions TO ${rsUser};
- GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE databroker TO ${rsUser};
+ GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE subscription_users TO ${rsUser};
  GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE gis TO ${rsUser};
  
