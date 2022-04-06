@@ -95,6 +95,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
     networkRecoveryInterval =
         config().getInteger("networkRecoveryInterval");
     databaseIP = config().getString("postgresDatabaseIP");
+      LOGGER.debug(config().encodePrettily());
     databasePort = config().getInteger("postgresDatabasePort");
     databaseName = config().getString("postgresDatabaseName");
     databaseUserName = config().getString("postgresDatabaseUserName");

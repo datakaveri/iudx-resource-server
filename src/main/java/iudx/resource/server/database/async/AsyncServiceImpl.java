@@ -235,6 +235,7 @@ public class AsyncServiceImpl implements AsyncService {
     scrollQuery(
         file,
         query,
+        searchId,
         scrollHandler -> {
           if (scrollHandler.succeeded()) {
             s3FileOpsHelper.s3Upload(
@@ -301,7 +302,7 @@ public class AsyncServiceImpl implements AsyncService {
   }
 
   public AsyncService scrollQuery(
-      File file, JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+      File file, JsonObject request, String searchId, Handler<AsyncResult<JsonObject>> handler) {
     QueryBuilder query;
 
     request.put("search", true);
@@ -337,6 +338,7 @@ public class AsyncServiceImpl implements AsyncService {
         file,
         searchIndex,
         query,
+        searchId,
         scrollHandler -> {
           if (scrollHandler.succeeded()) {
             handler.handle(Future.succeededFuture());

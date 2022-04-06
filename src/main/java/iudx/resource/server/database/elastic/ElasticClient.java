@@ -11,9 +11,13 @@ import static iudx.resource.server.database.archives.Constants.HITS;
 import static iudx.resource.server.database.archives.Constants.REQUEST_GET;
 import static iudx.resource.server.database.archives.Constants.SOURCE_FILTER_KEY;
 import static iudx.resource.server.database.archives.Constants.SUCCESS;
+import static iudx.resource.server.database.postgres.Constants.UPDATE_S3_PROGRESS_SQL;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
+import io.vertx.core.Promise;
+import iudx.resource.server.database.postgres.PostgresService;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -51,6 +55,7 @@ public class ElasticClient {
   private final RestClient client;
   private final RestHighLevelClient highLevelClient;
   private ResponseBuilder responseBuilder;
+  private PostgresService pgService;
   private String filePath;
   private static final Logger LOGGER = LogManager.getLogger(ElasticClient.class);
 
@@ -72,8 +77,9 @@ public class ElasticClient {
   }
 
   public ElasticClient(
-      String databaseIP, int databasePort, String user, String password, String filePath) {
+      String databaseIP, int databasePort, String user, String password, String filePath, PostgresService pgService) {
     this(databaseIP, databasePort, user, password);
+    this.pgService = pgService;
     this.filePath = filePath;
   }
 
@@ -226,7 +232,7 @@ public class ElasticClient {
   }
 
   public ElasticClient scrollAsync(
-      File file, String index, QueryBuilder query, Handler<AsyncResult<JsonObject>> scrollHandler) {
+      File file, String index, QueryBuilder query,String searchId, Handler<AsyncResult<JsonObject>> scrollHandler) {
 
     String scrollId = null;
     try {
@@ -247,7 +253,8 @@ public class ElasticClient {
       SearchResponse searchResponse = highLevelClient.search(searchRequest, RequestOptions.DEFAULT);
       scrollId = searchResponse.getScrollId();
 
-      LOGGER.debug("total hits" + searchResponse.getHits().getTotalHits().value);
+      long totalHits = searchResponse.getHits().getTotalHits().value;
+      LOGGER.debug("Total hits : " + totalHits);
 
       SearchHit[] searchHits = searchResponse.getHits().getHits();
 
@@ -259,9 +266,20 @@ public class ElasticClient {
 
       boolean appendComma = false;
 
+      double totalIterations = totalHits/10000.0;
+      double iterationCount = 0.0;
+      double progress = 0.0;
+      LOGGER.debug(iterationCount + "\t" + totalIterations + "\t" + progress);
       while (searchHits != null && searchHits.length > 0) {
-        LOGGER.debug("results={} ({} new)", totalFiles += searchHits.length, searchHits.length);
+        LOGGER.debug("results = {} ( {} new)", totalFiles += searchHits.length, searchHits.length);
+        // keep appending to a stack
+        iterationCount += 1;
+        progress = iterationCount/totalIterations;
+        LOGGER.debug(iterationCount + "\t" + totalIterations + "\t" + progress);
+        double finalProgress = progress;
+        Future.future(fu -> updateProgress(searchId, finalProgress));
 
+        // +=searchHits/totalHits*(0.9)
         for (SearchHit sh : searchHits) {
           if (appendComma) {
             filew.write("," + sh.getSourceAsString());
@@ -303,5 +321,23 @@ public class ElasticClient {
       }
     }
     return this;
+  }
+
+  private Future<Void> updateProgress(String searchId, double progress) {
+    Promise<Void> promise = Promise.promise();
+    StringBuilder query = new StringBuilder(UPDATE_S3_PROGRESS_SQL.replace("$1", String.valueOf(progress)).replace("$2",searchId));
+    LOGGER.debug("updating progress : " + progress);
+    pgService.executeQuery(
+        query.toString(),
+        pgHandler -> {
+          if(pgHandler.succeeded()) {
+            promise.complete();
+          } else {
+            promise.fail(pgHandler.cause());
+          }
+        }
+    );
+
+    return promise.future();
   }
 }

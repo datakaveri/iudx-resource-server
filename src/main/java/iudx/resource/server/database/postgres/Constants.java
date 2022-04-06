@@ -30,9 +30,11 @@ public class Constants {
       "UPDATE s3_upload_url SET status='$1' WHERE search_id='$2'";
 
   public static String SELECT_S3_STATUS_SQL =
-      "SELECT status,s3_url,search_id,user_id FROM s3_upload_url WHERE search_id='$1';";
+      "SELECT status,s3_url,search_id,user_id,progress FROM s3_upload_url WHERE search_id='$1';";
 
   public static String SELECT_S3_SEARCH_SQL =
       "SELECT search_id, status, s3_url, expiry, user_id, object_id FROM s3_upload_url WHERE request_id='$1' and status='$2'";
 
+  public static String UPDATE_S3_PROGRESS_SQL =
+      "UPDATE s3_upload_url SET progress=$1 WHERE search_id='$2'";
 }
