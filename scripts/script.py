@@ -12,17 +12,20 @@ from urllib.parse import quote
 
 from datetime import datetime as dt
 
-dataBrokerHost = ''
-dataBrokerPort = 0
-dataBrokerUser = ''
-dataBrokerPassword = ''
-dataBrokerVhost=''
+with open("script-config.json") as file:
+  config=json.load(file)
 
-dataBaseName=''
-dataBaseUser=''
-dataBasePassword=''
-dataBaseHost=''
-dataBasePort= 0
+dataBrokerHost = config["dataBrokerHost"]
+dataBrokerPort = config["dataBrokerPort"]
+dataBrokerUser = config["dataBrokerUser"]
+dataBrokerPassword = config["dataBrokerPassword"]
+dataBrokerVhost = config["dataBrokerVhost"]
+
+dataBaseName = config["dataBaseName"]
+dataBaseUser = config["dataBaseUser"]
+dataBasePassword = config["dataBasePassword"]
+dataBaseHost = config["dataBaseHost"]
+dataBasePort = config["dataBasePort"]
 
 
 

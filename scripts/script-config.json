@@ -1,0 +1,13 @@
+{
+    "dataBrokerHost" : "",
+    "dataBrokerPort" : 0,
+    "dataBrokerUser" : "",
+    "dataBrokerPassword" : "",
+    "dataBrokerVhost":"",
+
+    "dataBaseName":"",
+    "dataBaseUser":"",
+    "dataBasePassword":"",
+    "dataBaseHost":"",
+    "dataBasePort": 0
+}
