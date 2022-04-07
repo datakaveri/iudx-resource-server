@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS s3_upload_url
    search_id uuid NOT NULL,
    request_id TEXT NOT NULL,
    status Query_Progress NOT NULL,
-   progress numeric(5,2),
+   progress float(2) NOT NULL,
    s3_url varchar,
    expiry timestamp without time zone,
    user_id varchar,

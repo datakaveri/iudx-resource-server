@@ -269,14 +269,13 @@ public class ElasticClient {
       double totalIterations = totalHits/10000.0;
       double iterationCount = 0.0;
       double progress = 0.0;
-      LOGGER.debug(iterationCount + "\t" + totalIterations + "\t" + progress);
       while (searchHits != null && searchHits.length > 0) {
         LOGGER.debug("results = {} ( {} new)", totalFiles += searchHits.length, searchHits.length);
-        // keep appending to a stack
+        // TODO: keep appending to a stack
         iterationCount += 1;
         progress = iterationCount/totalIterations;
-        LOGGER.debug(iterationCount + "\t" + totalIterations + "\t" + progress);
-        double finalProgress = progress;
+        // keeping progress at 90% of actual to update the last 10% after upload to external storage (s3)
+        double finalProgress = progress * 0.9;
         Future.future(fu -> updateProgress(searchId, finalProgress));
 
         // +=searchHits/totalHits*(0.9)
