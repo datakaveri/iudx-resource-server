@@ -266,7 +266,7 @@ public class ElasticClient {
 
       boolean appendComma = false;
 
-      double totalIterations = totalHits/10000.0;
+      double totalIterations = totalHits < 10000 ? 1 : totalHits/10000.0;
       double iterationCount = 0.0;
       double progress = 0.0;
       while (searchHits != null && searchHits.length > 0) {
