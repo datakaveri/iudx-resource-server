@@ -27,7 +27,7 @@ dataBasePassword = config["dataBasePassword"]
 dataBaseHost = config["dataBaseHost"]
 dataBasePort = config["dataBasePort"]
 
-scheduleTime = config["scheduleTime"]
+scheduleTime = config["schedule_time"]
 
 
 
