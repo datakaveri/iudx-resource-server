@@ -24,7 +24,7 @@ public class Constants {
           + "values('$1','$2','$3','$4','$5','$6','$7','$8',$9)";
 
   public static String UPDATE_S3_URL_SQL =
-      "UPDATE s3_upload_url SET s3_url='$1', expiry='$2', status='$3', object_id='$4', progress=$5 WHERE search_id='$6'";
+      "UPDATE s3_upload_url SET s3_url='$1', expiry='$2', status='$3', object_id='$4', progress=$5 WHERE search_id='$6' and progress<$5";
 
   public static String UPDATE_STATUS_SQL =
       "UPDATE s3_upload_url SET status='$1' WHERE search_id='$2'";
