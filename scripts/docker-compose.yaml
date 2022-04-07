@@ -1,0 +1,21 @@
+version: '3.7'
+
+networks:
+  overlay-net:
+          external: true
+          driver: overlay
+
+services:
+
+  refresh-script:
+    image: ghcr.io/datakaveri/rs-refresh-script:3.5.0-alpha
+    volumes:
+      - ./script-config.json:/home/script-config.json
+    restart: on-failure
+    networks:
+      - overlay-net
+    logging:
+         driver: "json-file"
+         options:
+             max-file: "5"
+             max-size: "100m"

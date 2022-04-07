@@ -12,7 +12,7 @@ from urllib.parse import quote
 
 from datetime import datetime as dt
 
-with open("script-config.json") as file:
+with open("/home/script-config.json") as file:
   config=json.load(file)
 
 dataBrokerHost = config["dataBrokerHost"]
