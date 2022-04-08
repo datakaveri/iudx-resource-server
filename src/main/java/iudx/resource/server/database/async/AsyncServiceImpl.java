@@ -215,7 +215,8 @@ public class AsyncServiceImpl implements AsyncService {
                 .replace("$5", newS3_url)
                 .replace("$6", expiry)
                 .replace("$7", sub)
-                .replace("$8", object_id));
+                .replace("$8", object_id)
+                .replace("$9", String.valueOf(1.0)));
 
     executePGQuery(queryBuilder.toString())
         .onSuccess(
@@ -235,6 +236,7 @@ public class AsyncServiceImpl implements AsyncService {
     scrollQuery(
         file,
         query,
+        searchId,
         scrollHandler -> {
           if (scrollHandler.succeeded()) {
             s3FileOpsHelper.s3Upload(
@@ -252,7 +254,8 @@ public class AsyncServiceImpl implements AsyncService {
                                 .replace("$2", expiry)
                                 .replace("$3", QueryProgress.COMPLETE.toString())
                                 .replace("$4", objectId)
-                                .replace("$5", searchId));
+                                .replace("$5", String.valueOf(1.0))
+                                .replace("$6", searchId));
 
                     executePGQuery(updateQuery.toString())
                         .onSuccess(
@@ -301,7 +304,7 @@ public class AsyncServiceImpl implements AsyncService {
   }
 
   public AsyncService scrollQuery(
-      File file, JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+      File file, JsonObject request, String searchId, Handler<AsyncResult<JsonObject>> handler) {
     QueryBuilder query;
 
     request.put("search", true);
@@ -337,6 +340,7 @@ public class AsyncServiceImpl implements AsyncService {
         file,
         searchIndex,
         query,
+        searchId,
         scrollHandler -> {
           if (scrollHandler.succeeded()) {
             handler.handle(Future.succeededFuture());
