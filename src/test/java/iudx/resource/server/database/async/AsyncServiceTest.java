@@ -101,12 +101,12 @@ public class AsyncServiceTest {
               @SuppressWarnings("unchecked")
               @Override
               public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
-                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(3)).handle(asyncResult1);
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(4)).handle(asyncResult1);
                 return null;
               }
             })
         .when(client)
-        .scrollAsync(any(File.class), any(), any(QueryBuilder.class), any());
+        .scrollAsync(any(File.class), any(), any(QueryBuilder.class), any(), any());
 
     Mockito.doAnswer(
             new Answer<AsyncResult<JsonObject>>() {

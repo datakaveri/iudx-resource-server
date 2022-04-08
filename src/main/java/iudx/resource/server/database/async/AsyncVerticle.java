@@ -58,8 +58,8 @@ public class AsyncVerticle extends AbstractVerticle {
     clientRegion = Regions.AP_SOUTH_1;
     bucketName = config().getString("bucketName");
 
-    client = new ElasticClient(databaseIP, databasePort, user, password, filePath);
     pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
+    client = new ElasticClient(databaseIP, databasePort, user, password, filePath, pgService);
     fileOpsHelper = new S3FileOpsHelper(clientRegion, bucketName);
     binder = new ServiceBinder(vertx);
     asyncService = new AsyncServiceImpl(vertx,client, pgService, fileOpsHelper, timeLimit, filePath);

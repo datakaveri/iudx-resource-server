@@ -1,0 +1,1 @@
+ALTER TABLE s3_upload_url ALTER COLUMN progress type numeric(5,2);
