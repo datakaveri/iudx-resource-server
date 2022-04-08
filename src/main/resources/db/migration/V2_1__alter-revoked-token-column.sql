@@ -1,0 +1,1 @@
+ALTER TABLE revoked_tokens ALTER COLUMN expiry type timestamp without time zone;

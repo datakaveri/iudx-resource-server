@@ -7,7 +7,6 @@ import static iudx.resource.server.authenticator.Constants.OPEN_ENDPOINTS;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import org.apache.http.HttpStatus;
@@ -317,12 +316,13 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         LOGGER.debug("responseJson : " + responseJson);
         String timestamp = responseJson.getString("value");
 
-        LocalDateTime revokedAt = ZonedDateTime.parse(timestamp).toLocalDateTime();
+        LocalDateTime revokedAt = LocalDateTime.parse(timestamp);
         LocalDateTime jwtIssuedAt = (LocalDateTime.ofInstant(
             Instant.ofEpochSecond(jwtData.getIat()),
             ZoneId.systemDefault()));
-
+        
         if (jwtIssuedAt.isBefore(revokedAt)) {
+          LOGGER.info("jwt issued at : "+jwtIssuedAt+" revokedAt : "+revokedAt);
           LOGGER.error("Privilages for client are revoked.");
           JsonObject result = new JsonObject().put("401", "revoked token passes");
           promise.fail(result.toString());
