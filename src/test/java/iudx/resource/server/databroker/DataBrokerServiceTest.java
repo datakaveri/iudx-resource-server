@@ -743,11 +743,13 @@ public class DataBrokerServiceTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("Register subscription response is : " + response);
-        assertTrue(response.containsKey(USER_NAME));
-        assertTrue(response.containsKey(APIKEY));
-        assertTrue(response.containsKey(URL));
-        assertTrue(response.containsKey(PORT));
-        assertTrue(response.containsKey(VHOST));
+        JsonObject brokerResponse=response.getJsonArray("results").getJsonObject(0);
+        
+        assertTrue(brokerResponse.containsKey(USER_NAME));
+        assertTrue(brokerResponse.containsKey(APIKEY));
+        assertTrue(brokerResponse.containsKey(URL));
+        assertTrue(brokerResponse.containsKey(PORT));
+        assertTrue(brokerResponse.containsKey(VHOST));
       }
       testContext.completeNow();
     });
@@ -794,7 +796,7 @@ public class DataBrokerServiceTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("List subscription response is : " + response);
-        assertEquals(expected, response);
+        assertEquals(expected, response.getJsonArray("results").getJsonObject(0));
       }
       testContext.completeNow();
     });

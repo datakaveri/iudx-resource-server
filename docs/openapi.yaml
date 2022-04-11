@@ -95,6 +95,10 @@ tags:
   description: |
     Metering APIs provide the ability to the user (Consumer/Provider) to query the audit data using temporal & resource-id query
     
+- name: Admin
+  x-display: "Admin"
+  description: |
+    Admin API provides the ability to the admin user to perform administrative tasks such as invalidating a user token, create unique attribute setting for resource group or resource item.    
 
 paths:
       
@@ -1561,11 +1565,9 @@ paths:
         in: query
         description: 'searchId returned while submitting request through `/async/search`'
         required: true
-        style: simple
         schema:
           type: string
           maxLength: 512
-          pattern: 
           
       responses:
         200:
@@ -1623,15 +1625,12 @@ paths:
       - name: id
         in: query
         description: 'id of the resource in catalogue'
-        style: simple
         schema:
           type: string
           maxLength: 512
-          pattern:
       - name: api
         in: query
         description: 'Valid IUDX api [`/entities`, `/temporal/entities`, `/entityOperation/Query`, `/temporal/entityOperation/Query`] '
-        style: simple
         schema:
           type: string
           maxLength: 512
@@ -1709,15 +1708,12 @@ paths:
       - name: id
         in: query
         description: 'id of the resource in catalogue'
-        style: simple
         schema:
           type: string
           maxLength: 512
-          pattern:
       - name: api
         in: query
         description: 'Valid IUDX api [`/entities`, `/temporal/entities`, `/entityOperation/Query`, `/temporal/entityOperation/Query`] '
-        style: simple
         schema:
           type: string
           maxLength: 512
@@ -1780,6 +1776,194 @@ paths:
           description: 'Resource not found'
       description: Provider API can be used by a user having provider token to get audit details of API's.
 
+  /admin/revokeToken:
+    post:
+      tags: 
+      - Admin
+      summary: revoke token
+      operationId: revoke user token
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX admin token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/revokeToken'
+            example:
+              sub: dde234bd-d752-4fff-9de7-0c02e032eb9d
+        required: true
+      responses:
+        200:
+          description: 'api success response'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/standardSuccessResponse'
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+      description: revoke token API used by admin user to revoke token of user in certain cases.
+  
+  /admin/resourceattribute:
+    post:
+      tags: 
+      - Admin
+      summary: Create unique attribute. 
+      operationId: create an unique attribute setting for resource.
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX admin token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/unique-attribute'
+            example:
+              id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta
+              attribute: license_plate
+        required: true
+      responses:
+        200:
+          description: 'api success response'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/standardSuccessResponse'
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+      description: The `resourceattribute` API used by admin user to create unique attribute for a resource in IUDX.
+      
+    put:
+      tags: 
+      - Admin
+      summary: Update unique attribute 
+      operationId: update a unique attribute setting for resource
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX admin token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/unique-attribute'
+            example:
+              id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta
+              attribute: license_plate
+        required: true
+      responses:
+        200:
+          description: 'api success response'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/standardSuccessResponse'
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+      description: The `resourceattribute` API used by admin user to update unique attribute for a resource in IUDX.
+    
+    delete:
+      tags: 
+      - Admin
+      summary: Delete unique attribute
+      operationId: delete a unique attribute setting for resource
+      parameters:
+      - name: token
+        in: header
+        description: 'IUDX admin token for accessing the API'
+        required: true
+        style: simple
+        schema:
+          type: string
+          maxLength: 512
+          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+      - name: id
+        in : query
+        description: 'Valid IUDX resource id'
+        required : true
+        schema:
+          type: string
+          maxLength: 512
+      responses:
+        200:
+          description: 'api success response'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/standardSuccessResponse'
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+      description: The `resourceattribute` API used by admin user to update unique attribute for a resource in IUDX.
+    
+    
+  
 components:
   schemas:
     createastreamingsubscriptionrequest:
@@ -2426,7 +2610,6 @@ components:
       - redis-latest
       type: object
       properties:
-        operties:
         type:
           type: string
         title:
@@ -2761,7 +2944,46 @@ components:
          "consumer":"aefvsdfsdf-exvsf-cezxcwscs-adasd"
          }
          ]
-            
+    
+    revokeToken:
+      title: revoke-token
+      required:
+      - sub
+      type: object
+      properties:
+        sub:
+          type: string
+      example:
+        sub: ase2132-2342323-2423
+        
+    unique-attribute:
+      title: unique-attribute
+      required:
+      - id
+      - attribute
+      type: object
+      properties:
+        id:
+          type: string
+        attribute:
+          type: string
+      example:
+        id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta
+        attribute: license_plate
+    
+    standardSuccessResponse:
+      title: standardSuccessResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:success
+        title: Success
+        detail: Success
           
     standardBadRequestErrorResponse:
       title: standardBadRequestErrorResponse

@@ -18,11 +18,13 @@ import static iudx.resource.server.databroker.util.Constants.QUEUE_CREATE_ERROR;
 import static iudx.resource.server.databroker.util.Constants.QUEUE_DELETE_ERROR;
 import static iudx.resource.server.databroker.util.Constants.QUEUE_LIST_ERROR;
 import static iudx.resource.server.databroker.util.Constants.QUEUE_NAME;
+import static iudx.resource.server.databroker.util.Constants.RESULTS;
 import static iudx.resource.server.databroker.util.Constants.SELECT_CALLBACK;
 import static iudx.resource.server.databroker.util.Constants.SQL_ERROR;
 import static iudx.resource.server.databroker.util.Constants.SUBSCRIPTION_ID;
 import static iudx.resource.server.databroker.util.Constants.SUCCESS;
 import static iudx.resource.server.databroker.util.Constants.TITLE;
+import static iudx.resource.server.databroker.util.Constants.TYPE;
 import static iudx.resource.server.databroker.util.Constants.UPDATE_CALLBACK;
 import static iudx.resource.server.databroker.util.Constants.USER_ID;
 import static iudx.resource.server.databroker.util.Constants.VHOST_IUDX;
@@ -176,7 +178,14 @@ public class SubscriptionService {
                                         this.amqpPort);
                                     registerStreamingSubscriptionResponse.put(Constants.VHOST,
                                         this.vhost);
-                                    promise.complete(registerStreamingSubscriptionResponse);
+
+                                    JsonObject response = new JsonObject();
+                                    response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+                                    response.put(TITLE, "success");
+                                    response.put(RESULTS,
+                                        new JsonArray().add(registerStreamingSubscriptionResponse));
+
+                                    promise.complete(response);
                                   } else {
                                     Future<JsonObject> resultDeletequeue =
                                         rabbitClient.deleteQueue(requestjson, vhost);
@@ -335,7 +344,14 @@ public class SubscriptionService {
                                       if (permissionHandler.succeeded()) {
                                         updateStreamingSubscriptionResponse.put(Constants.ENTITIES,
                                             entitites);
-                                        promise.complete(updateStreamingSubscriptionResponse);
+                                        
+                                        JsonObject response = new JsonObject();
+                                        response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+                                        response.put(TITLE, "success");
+                                        response.put(RESULTS,
+                                            new JsonArray().add(updateStreamingSubscriptionResponse));
+                                        
+                                        promise.complete(response);
                                       } else {
                                         LOGGER.error("failed ::" + permissionHandler.cause());
                                         Future<JsonObject> resultDeletequeue =
@@ -471,7 +487,14 @@ public class SubscriptionService {
                               if (permissionHandler.succeeded()) {
                                 appendStreamingSubscriptionResponse.put(Constants.ENTITIES,
                                     entitites);
-                                promise.complete(appendStreamingSubscriptionResponse);
+                                
+                                JsonObject response = new JsonObject();
+                                response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+                                response.put(TITLE, "success");
+                                response.put(RESULTS,
+                                    new JsonArray().add(appendStreamingSubscriptionResponse));
+                                
+                                promise.complete(response);
                               } else {
                                 LOGGER.error("failed ::" + permissionHandler.cause());
                                 Future<JsonObject> resultDeletequeue =
@@ -572,7 +595,13 @@ public class SubscriptionService {
             promise.fail(listQueueResponse.toString());
           } else {
             LOGGER.debug(listQueueResponse);
-            promise.complete(listQueueResponse);
+            JsonObject response = new JsonObject();
+            response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+            response.put(TITLE, "success");
+            response.put(RESULTS,
+                new JsonArray().add(listQueueResponse));
+            
+            promise.complete(response);
           }
         }
         if (resultHandler.failed()) {

@@ -9,6 +9,9 @@ import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
 import static iudx.resource.server.apiserver.util.Constants.SUB_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.UPDATE_SUB_SQL;
+import static iudx.resource.server.databroker.util.Constants.RESULTS;
+import static iudx.resource.server.databroker.util.Constants.TITLE;
+import static iudx.resource.server.databroker.util.Constants.TYPE;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,6 +20,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.apiserver.response.ResponseType;
+import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 
@@ -67,18 +71,19 @@ public class SubscriptionService {
     assertNotNull(subscription);
     subscription.create(json).onComplete(handler -> {
       if (handler.succeeded()) {
-        JsonObject brokerSubResult = handler.result();
+        JsonObject response = handler.result();
+        JsonObject brokerResponse=response.getJsonArray("results").getJsonObject(0);
 
         StringBuilder query = new StringBuilder(CREATE_SUB_SQL
-            .replace("$1", brokerSubResult.getString("id"))
+            .replace("$1", brokerResponse.getString("id"))
             .replace("$2", subType.type)
-            .replace("$3", brokerSubResult.getString("id"))
+            .replace("$3", brokerResponse.getString("id"))
             .replace("$4", json.getJsonArray("entities").getString(0))
             .replace("$5", authInfo.getString("expiry")));
 
         pgService.executeQuery(query.toString(), pgHandler -> {
           if (pgHandler.succeeded()) {
-            promise.complete(brokerSubResult);
+            promise.complete(response);
           } else {
             // TODO : rollback mechanism in case of pg error [to unbind/delete created sub]
             JsonObject res = new JsonObject(pgHandler.cause().getMessage());
@@ -117,8 +122,16 @@ public class SubscriptionService {
       if (pgHandler.succeeded()) {
         JsonObject response = new JsonObject();
         JsonArray entities = new JsonArray();
+
         entities.add(json.getJsonArray("entities").getString(0));
-        response.put("entities", entities);
+        
+        JsonObject results=new JsonObject();
+        results.put("entities", entities);
+        
+        response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+        response.put(TITLE, "success");
+        response.put(RESULTS,new JsonArray().add(results));
+        
         promise.complete(response);
       } else {
         LOGGER.error(pgHandler.cause());
