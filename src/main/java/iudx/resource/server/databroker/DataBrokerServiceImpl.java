@@ -172,6 +172,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       Future<JsonObject> result = webClient.listExchangeSubscribers(request, virtualHost);
       result.onComplete(resultHandler -> {
         if (resultHandler.succeeded()) {
+        
           handler.handle(Future.succeededFuture(resultHandler.result()));
         }
         if (resultHandler.failed()) {

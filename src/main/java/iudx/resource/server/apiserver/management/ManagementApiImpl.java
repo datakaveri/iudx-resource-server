@@ -3,13 +3,18 @@ package iudx.resource.server.apiserver.management;
 import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
+import static iudx.resource.server.databroker.util.Constants.RESULTS;
+import static iudx.resource.server.databroker.util.Constants.TITLE;
+import static iudx.resource.server.databroker.util.Constants.TYPE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.util.Constants;
+import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.common.VHosts;
 import iudx.resource.server.databroker.DataBrokerService;
 
@@ -275,7 +280,13 @@ public class ManagementApiImpl implements ManagementApi {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey(Constants.JSON_TYPE)) {
-          promise.complete(result);
+          
+          JsonObject iudxResponse=new JsonObject();
+          iudxResponse.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+          iudxResponse.put(TITLE, "Success");
+          iudxResponse.put(RESULTS, new JsonArray().add(result));
+          
+          promise.complete(iudxResponse);
         } else {
           promise.fail(generateResponse(result).toString());
         }
@@ -300,7 +311,13 @@ public class ManagementApiImpl implements ManagementApi {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
-        promise.complete(generateResponse(result));
+        
+        JsonObject iudxResponse=new JsonObject();
+        iudxResponse.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+        iudxResponse.put(TITLE, "Success");
+        iudxResponse.put(RESULTS, "Adapter deleted");
+        
+        promise.complete(iudxResponse);
       } else if (handler.failed()) {
         String result = handler.cause().getMessage();
         promise.fail(generateResponse(new JsonObject(result)).toString());
@@ -322,7 +339,14 @@ public class ManagementApiImpl implements ManagementApi {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey(Constants.JSON_TYPE)) {
-          promise.complete(result);
+          
+          
+          JsonObject iudxResponse=new JsonObject();
+          iudxResponse.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+          iudxResponse.put(TITLE, "Success");
+          iudxResponse.put(RESULTS, new JsonArray().add(result));
+          
+          promise.complete(iudxResponse);
         } else {
           promise.fail(generateResponse(result).toString());
         }
