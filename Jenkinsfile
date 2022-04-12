@@ -118,7 +118,7 @@ pipeline {
     stage('Push Images') {
       when{
         expression {
-          return env.GIT_BRANCH == 'origin/v3.5.0';
+          return env.GIT_BRANCH == 'origin/3.5.0';
         }
       }
       steps{
