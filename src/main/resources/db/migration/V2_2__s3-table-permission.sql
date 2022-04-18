@@ -1,0 +1,1 @@
+ GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE s3_upload_url TO ${rsUser};
