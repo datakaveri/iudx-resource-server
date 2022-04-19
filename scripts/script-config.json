@@ -1,0 +1,15 @@
+{
+    "dataBrokerHost" : "",
+    "dataBrokerPort" : 123,
+    "dataBrokerUser" : "",
+    "dataBrokerPassword" : "",
+    "dataBrokerVhost":"",
+
+    "dataBaseName":"",
+    "dataBaseUser":"",
+    "dataBasePassword":"",
+    "dataBaseHost":"",
+    "dataBasePort": 123,
+
+    "schedule_time": 60
+}
