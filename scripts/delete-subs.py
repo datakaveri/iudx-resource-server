@@ -20,7 +20,7 @@ class DeleteSubscription:
 
     #function to detch all records from DB to be deleted [expiry less than current time]
     def fetchSubsFromDB(self,pgConnection):
-        logging.debug("fetching records for DB")
+        logging.debug("fetching records from DB")
         cur = pgConnection.cursor()
         #query to get all the queues and exchange present
         postgreSQL_select_query="Select queue_name,entity from subscriptions where expiry < timestamp %s"
@@ -109,7 +109,7 @@ class DeleteSubscription:
             cur.execute(temp_query,(time,))
             pgConnection.commit()
             logging.debug("deleting records from DB done")
-            #pgConnection.close()
+            pgConnection.close()
         logging.info("script execution completed")
         return
 
@@ -122,7 +122,7 @@ logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S')
 
 #reading configuration file from system
-with open("script-config.json") as file:
+with open("/home/script-config.json") as file:
   config=json.load(file)
 
 
