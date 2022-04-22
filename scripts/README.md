@@ -15,8 +15,8 @@ docker-compose -f up -d
 
 ```
 # create secret 
-kubectl create secret generic rs-script-config --from-file=./script-config.json
+kubectl create secret generic -n rs rs-script-config --from-file=./script-config.json
 
 # deploy 
-kubectl apply -f Deployment.yaml
+kubectl apply -f -n rs  Deployment.yaml
 ```  
