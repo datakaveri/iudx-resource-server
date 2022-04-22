@@ -1,11 +1,12 @@
 FROM python:3.8-slim
-
-COPY requirements.txt /home/
+WORKDIR /usr/share/app
+COPY requirements.txt .
 
 RUN apt-get update \
     && apt-get -y install libpq-dev gcc \
-    && pip install -r /home/requirements.txt
+    && pip install -r requirements.txt
 
-COPY delete-subs.py /home/
-
-CMD ["python","/home/delete-subs.py"] 
+COPY delete-subs.py .
+RUN useradd -r -u 1001 -g root rs-refresh-user
+USER rs-refresh-user
+CMD ["python","delete-subs.py"] 

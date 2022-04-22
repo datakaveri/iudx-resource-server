@@ -24,12 +24,8 @@ spec:
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: rs-script-config
-              mountPath: /home/script-config.json
-              subPath: script-config.json       
+              mountPath: /usr/share/app
       volumes:
         - name: rs-script-config
           secret:
             secretName: rs-script-config
-            items:
-            - key: script-config.json
-              path: script-config.json

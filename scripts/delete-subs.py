@@ -74,7 +74,7 @@ class DeleteSubscription:
             password=dataBasePassword,
             host=dataBaseHost,
             port=dataBasePort,
-            connect_timeout=3,
+            connect_timeout=10,
             keepalives=1,
             keepalives_idle=5,
             keepalives_interval=2,
@@ -114,15 +114,8 @@ class DeleteSubscription:
         return
 
 
-
-
-#setting logging configs
-logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s',
-        level=logging.DEBUG,
-        datefmt='%Y-%m-%d %H:%M:%S')
-
 #reading configuration file from system
-with open("/home/script-config.json") as file:
+with open("script-config.json") as file:
   config=json.load(file)
 
 
@@ -142,8 +135,15 @@ dataBaseUser = config["dataBaseUser"]
 dataBasePassword = config["dataBasePassword"]
 dataBaseHost = config["dataBaseHost"]
 dataBasePort = config["dataBasePort"]
-
+logLevel = config["logLevel"]
 scheduleTime = config["schedule_time"]
+
+# Loglevel string to number conversion
+logDict={'ERROR':40,'CRITICAL':50, 'WARNING':30, 'INFO':20, 'DEBUG':10}
+#setting logging configs
+logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s',
+        level=logDict[logLevel],
+        datefmt='%Y-%m-%d %H:%M:%S')
 
 #create a scheduler to run every <scheduleTime> minutes
 schedule.every(scheduleTime).minutes.do(lambda : DeleteSubscription().run())
