@@ -277,4 +277,6 @@ public class Constants {
       "INSERT INTO subscriptions(_id,_type,queue_name,entity,expiry) VALUES('$1','$2','$3','$4','$5')";
   
   public static final String DELETE_SUB_SQL="DELETE FROM subscriptions where queue_name='$1'";
+  
+  public static final String SELECT_SUB_SQL="SELECT * from subscriptions where queue_name='$1' and entity='$2'";
 }
