@@ -6,6 +6,7 @@ import static iudx.resource.server.apiserver.util.Constants.DELETE_SUB_SQL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.SELECT_SUB_SQL;
 import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
 import static iudx.resource.server.apiserver.util.Constants.SUB_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.UPDATE_SUB_SQL;
@@ -112,34 +113,60 @@ public class SubscriptionService {
     LOGGER.info("updateSubscription() method started");
     Promise<JsonObject> promise = Promise.promise();
 
-    StringBuilder query = new StringBuilder(UPDATE_SUB_SQL
-        .replace("$1", authInfo.getString("expiry"))
-        .replace("$2", json.getString(SUBSCRIPTION_ID))
-        .replace("$3", json.getJsonArray("entities").getString(0)));
+    String queueName = json.getString(SUBSCRIPTION_ID);
+    String entity = json.getJsonArray("entities").getString(0);
+    
+    StringBuilder selectQuery = new StringBuilder(SELECT_SUB_SQL
+        .replace("$1", queueName)
+        .replace("$2", entity));
 
-    LOGGER.debug(query);
-    pgService.executeQuery(query.toString(), pgHandler -> {
-      if (pgHandler.succeeded()) {
-        JsonObject response = new JsonObject();
-        JsonArray entities = new JsonArray();
+    LOGGER.debug(selectQuery);
+    pgService
+        .executeQuery(selectQuery.toString(), handler -> {
+          if (handler.succeeded()) {
+            JsonArray resultArray = handler.result().getJsonArray("result");
+            if (resultArray.size() == 0) {
+              JsonObject res = new JsonObject();
+              res
+                  .put(JSON_TYPE, 404)
+                  .put(JSON_TITLE, ResponseUrn.RESOURCE_NOT_FOUND_URN.getUrn())
+                  .put(JSON_DETAIL, "Subscription not found for [queue,entity]");
+              promise.fail(res.toString());
+            } else {
+              StringBuilder updateQuery = new StringBuilder(UPDATE_SUB_SQL
+                  .replace("$1", authInfo.getString("expiry"))
+                  .replace("$2", queueName)
+                  .replace("$3", entity));
+              LOGGER.debug(updateQuery);
+              pgService
+                  .executeQuery(updateQuery.toString(), pgHandler -> {
+                    if (pgHandler.succeeded()) {
+                      JsonObject response = new JsonObject();
+                      JsonArray entities = new JsonArray();
 
-        entities.add(json.getJsonArray("entities").getString(0));
-        
-        JsonObject results=new JsonObject();
-        results.put("entities", entities);
-        
-        response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
-        response.put(TITLE, "success");
-        response.put(RESULTS,new JsonArray().add(results));
-        
-        promise.complete(response);
-      } else {
-        LOGGER.error(pgHandler.cause());
-        JsonObject res = new JsonObject(pgHandler.cause().getMessage());
-        promise.fail(generateResponse(res).toString());
-      }
-    });
+                      entities.add(json.getJsonArray("entities").getString(0));
 
+                      JsonObject results = new JsonObject();
+                      results.put("entities", entities);
+
+                      response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+                      response.put(TITLE, "success");
+                      response.put(RESULTS, new JsonArray().add(results));
+
+                      promise.complete(response);
+                    } else {
+                      LOGGER.error(pgHandler.cause());
+                      JsonObject res = new JsonObject(pgHandler.cause().getMessage());
+                      promise.fail(generateResponse(res).toString());
+                    }
+                  });
+            }
+          } else {
+            LOGGER.error(handler.cause());
+            JsonObject res = new JsonObject(handler.cause().getMessage());
+            promise.fail(generateResponse(res).toString());
+          }
+        });
 
     return promise.future();
   }
