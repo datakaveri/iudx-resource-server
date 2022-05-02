@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rs-refresh-script
+  labels: 
+    app.kubernetes.io/component: refresh-script
+    app: rs-refresh-script
+spec:
+  replicas: 1
+  selector:
+    matchLabels: 
+      app: rs-refresh-script
+  template:
+    metadata:
+      labels:
+        app: rs-refresh-script
+        app.kubernetes.io/component: refresh-script
+    spec:
+      nodeSelector:
+        node.kubernetes.io/instance-type: t3.medium
+      containers:
+        - name: rs-refresh-script
+          image: ghcr.io/datakaveri/rs-refresh-script:3.5.0-alpha
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: rs-script-config
+              mountPath: /usr/share/app
+      volumes:
+        - name: rs-script-config
+          secret:
+            secretName: rs-script-config
