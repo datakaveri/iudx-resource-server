@@ -1500,22 +1500,58 @@ paths:
       - name: timerel
         in: query
         description: 'The temporal relation type of <b>timerel</b> to be performed.'
-        required: true
+        #required: true
         schema:
           type: string
-          enum: [between]          
+          enum: [between, before, after]          
       - name: time
         in: query
         description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
-        required: true
+        #required: true
         schema:
           type: string
       - name: endtime
         in: query
         description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
-        required: true
+        #required: true
         schema:
           type: string
+      - name: geoproperty
+        in: query
+        description: 'Name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
+        schema:
+          type: string
+          enum: [location]
+      - name: georel
+        in: query
+        description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'
+        schema:
+          type: string
+          enum: [near;maxdistance=<distance_in_meters>, within, intersects]
+
+      - name: geometry
+        in: query
+        description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b> '
+        schema:
+          type: string
+          enum: [Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox]
+
+      - name: coordinates
+        in: query
+        description: 'The coordinates for a specific geometry query type. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array.<br/> Maximum precision allowed is upto 6 decimal places.'
+        schema:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            type: number
+          format: double
+      - name: q
+        in: query
+        description: 'The attribute query is used for querying <b> allowed quantitative</b> properties. <br/> Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`!=`, `==` operators. <br/> For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value, attribute != value and attribute == value. <br/> Allowed values for all operators is double. <br/> For the operator `==` if the query is on `id` then the only value allowed is an `IUDX ID` of a resource.'
+        schema:
+          type: string
+          maxLength: 512
           
       responses:
         201:
