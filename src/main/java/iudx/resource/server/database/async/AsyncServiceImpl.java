@@ -1,5 +1,6 @@
 package iudx.resource.server.database.async;
 
+import static iudx.resource.server.database.archives.Constants.RESPONSE_ATTRS;
 import static iudx.resource.server.database.async.util.Constants.FILE_DOWNLOAD_URL;
 import static iudx.resource.server.database.async.util.Constants.OBJECT_ID;
 import static iudx.resource.server.database.async.util.Constants.S3_URL;
@@ -271,8 +272,9 @@ public class AsyncServiceImpl implements AsyncService {
                             })
                         .onFailure(
                             recordInsertFailure -> {
-                              LOGGER.error("Postgres insert failure [COMPLETE status]"
-                                  + recordInsertFailure);
+                              LOGGER.error(
+                                  "Postgres insert failure [COMPLETE status]"
+                                      + recordInsertFailure);
                             });
                   } else {
                     LOGGER.error("File upload to S3 failed for fileName : " + file.getName());
@@ -308,7 +310,6 @@ public class AsyncServiceImpl implements AsyncService {
     QueryBuilder query;
 
     request.put("search", true);
-    request.put("timeLimit", "test,2020-10-22T00:00:00Z,10"); // TODO: what is time limit?
 
     if (!util.isValidQuery(request)) {
       responseBuilder =
@@ -336,10 +337,21 @@ public class AsyncServiceImpl implements AsyncService {
     LOGGER.debug("Info: index: " + searchIndex);
     LOGGER.debug("Info: Query constructed: " + query.toString());
 
+    String[] sourceFilters = null;
+    if (request.containsKey(RESPONSE_ATTRS)) {
+      JsonArray responseFilters = request.getJsonArray(RESPONSE_ATTRS);
+      sourceFilters = new String[responseFilters.size()];
+      for (int i = 0; i < sourceFilters.length; i++) {
+        sourceFilters[i] = responseFilters.getString(i);
+        LOGGER.debug(sourceFilters[i]);
+      }
+    }
+
     client.scrollAsync(
         file,
         searchIndex,
         query,
+        sourceFilters,
         searchId,
         scrollHandler -> {
           if (scrollHandler.succeeded()) {

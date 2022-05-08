@@ -33,7 +33,7 @@ public class QueryMapper {
 
   /**
    * This method is used to create a json object from NGSILDQueryParams.
-   * 
+   *
    * @param params A map of query parameters passed.
    * @param isTemporal flag indicating whether temporal or not.
    * @param isAsyncQuery flag indicating whether the call is made for Async API or not.
@@ -130,7 +130,7 @@ public class QueryMapper {
       json.put(Constants.NGSILDQUERY_SIZE, params.getPageSize());
     }
 
-    json.put(Constants.JSON_SEARCH_TYPE, getSearchType());
+    json.put(Constants.JSON_SEARCH_TYPE, getSearchType(isAsyncQuery));
     LOGGER.debug("Info : json " + json);
     return json;
   }
@@ -192,11 +192,11 @@ public class QueryMapper {
     return (value == null) ? def : value;
   }
 
-  private String getSearchType() {
+  private String getSearchType(boolean isAsyncQuery) {
     StringBuilder searchType = new StringBuilder();
     if (isTemporal) {
       searchType.append(Constants.JSON_TEMPORAL_SEARCH);
-    } else {
+    } else if(!isTemporal && !isAsyncQuery){
       searchType.append(Constants.JSON_LATEST_SEARCH);
     }
     if (isGeoSearch) {
