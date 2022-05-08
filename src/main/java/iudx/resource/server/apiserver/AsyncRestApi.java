@@ -111,7 +111,7 @@ public class AsyncRestApi {
           if (validationHandler.succeeded()) {
             NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
             QueryMapper queryMapper = new QueryMapper();
-            JsonObject json = queryMapper.toJson(ngsildquery, true, true);
+            JsonObject json = queryMapper.toJson(ngsildquery, ngsildquery.getTemporalRelation().getTemprel() != null, true);
             Future<List<String>> filtersFuture =
                 catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
             json.put(JSON_INSTANCEID, instanceID);

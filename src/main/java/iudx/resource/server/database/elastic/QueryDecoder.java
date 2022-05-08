@@ -54,7 +54,8 @@ public class QueryDecoder {
       isValidQuery = true;
     }
 
-    if (searchType.matches(TEMPORAL_SEARCH_REGEX) && json.containsKey(REQ_TIMEREL)
+    if (searchType.matches(TEMPORAL_SEARCH_REGEX)
+        && json.containsKey(REQ_TIMEREL)
         && json.containsKey(TIME_KEY)) {
       boolQuery = new TemporalQueryParser(boolQuery, json).parse();
       temporalQuery = true;
@@ -86,22 +87,17 @@ public class QueryDecoder {
     } else {
       if (!temporalQuery && json.getJsonArray("applicableFilters").contains("TEMPORAL")) {
         if (json.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(PROD_INSTANCE)) {
-          boolQuery
-              .filter(QueryBuilders.rangeQuery("observationDateTime")
-                  .gte("now-" + timeLimit + "d/d"));
+          boolQuery.filter(
+              QueryBuilders.rangeQuery("observationDateTime").gte("now-" + timeLimit + "d/d"));
 
         } else if (json.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(TEST_INSTANCE)) {
           String endTime = json.getString(TIME_LIMIT).split(",")[1];
           ZonedDateTime endTimeZ = ZonedDateTime.parse(endTime);
           ZonedDateTime startTime = endTimeZ.minusDays(numDays);
 
-          boolQuery
-              .filter(QueryBuilders.rangeQuery("observationDateTime")
-                  .lte(endTime)
-                  .gte(startTime));
-
+          boolQuery.filter(
+              QueryBuilders.rangeQuery("observationDateTime").lte(endTime).gte(startTime));
         }
-
       }
     }
 
@@ -113,7 +109,7 @@ public class QueryDecoder {
 
     return elasticQuery;
   }
-  
+
   public QueryBuilder getESquery4Scroll(JsonObject json) {
     LOGGER.debug(json);
     String searchType = json.getString(SEARCH_TYPE);
@@ -122,9 +118,6 @@ public class QueryDecoder {
     boolean temporalQuery = false;
 
     JsonArray id = json.getJsonArray(ID);
-
-    String timeLimit = json.getString(TIME_LIMIT).split(",")[1];
-    int numDays = Integer.valueOf(json.getString(TIME_LIMIT).split(",")[2]);
 
     BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
     boolQuery.filter(QueryBuilders.termsQuery(ID, id.getString(0)));
@@ -164,24 +157,8 @@ public class QueryDecoder {
     /* checks if any valid search jsons have matched */
     if (!isValidQuery) {
       throw new ESQueryDecodeException("invalid query");
-    } else {
-      if (!temporalQuery && json.getJsonArray("applicableFilters").contains("TEMPORAL")) {
-        if (json.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(PROD_INSTANCE)) {
-          boolQuery.filter(
-              QueryBuilders.rangeQuery("observationDateTime").gte("now-" + timeLimit + "d/d"));
-
-        } else if (json.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(TEST_INSTANCE)) {
-          String endTime = json.getString(TIME_LIMIT).split(",")[1];
-          ZonedDateTime endTimeZ = ZonedDateTime.parse(endTime);
-          ZonedDateTime startTime = endTimeZ.minusDays(numDays);
-
-          boolQuery.filter(
-              QueryBuilders.rangeQuery("observationDateTime").lte(endTime).gte(startTime));
-        }
-      }
     }
 
     return boolQuery;
   }
-
 }
