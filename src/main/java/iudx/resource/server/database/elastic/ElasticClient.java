@@ -242,13 +242,13 @@ public class ElasticClient {
   }
 
   public ElasticClient scrollAsync(
-      File file, String index, QueryBuilder query,String searchId, Handler<AsyncResult<JsonObject>> scrollHandler) {
+      File file, String index, QueryBuilder query,String[] source, String searchId, Handler<AsyncResult<JsonObject>> scrollHandler) {
 
     String scrollId = null;
     try {
       SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
       searchSourceBuilder.query(query);
-      searchSourceBuilder.fetchSource(new String[] {}, new String[] {"_index", "_type", "_score"});
+      searchSourceBuilder.fetchSource(source, new String[] {"_index", "_type", "_score"});
       searchSourceBuilder.size(10000);
 
       SearchRequest searchRequest = new SearchRequest();
@@ -276,9 +276,9 @@ public class ElasticClient {
 
       boolean appendComma = false;
 
-      double totalIterations = totalHits < 10000 ? 1 : totalHits/10000.0;
+      int totalIterations = totalHits < 10000 ? 1 : (int) Math.ceil(totalHits / 10000.0);
       double iterationCount = 0.0;
-      double progress = 0.0;
+      double progress;
       while (searchHits != null && searchHits.length > 0) {
         LOGGER.debug("results = {} ( {} new)", totalFiles += searchHits.length, searchHits.length);
         // TODO: keep appending to a stack
@@ -334,7 +334,7 @@ public class ElasticClient {
 
   private Future<Void> updateProgress(String searchId, double progress) {
     Promise<Void> promise = Promise.promise();
-    StringBuilder query = new StringBuilder(UPDATE_S3_PROGRESS_SQL.replace("$1", String.valueOf(progress)).replace("$2",searchId));
+    StringBuilder query = new StringBuilder(UPDATE_S3_PROGRESS_SQL.replace("$1", String.valueOf(progress * 100.0)).replace("$2",searchId));
     LOGGER.debug("updating progress : " + progress);
     pgService.executeQuery(
         query.toString(),
