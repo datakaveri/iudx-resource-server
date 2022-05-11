@@ -62,11 +62,11 @@ public class Constants {
   public static final String USER_ID = "userid";
   public static final String WRITE_QUERY =
       "INSERT INTO rsauditingtable (id,api,userid,epochtime,resourceid,isotime,providerid) VALUES ('$1','$2','$3',$4,'$5','$6','$7')";
-  public static final String COUNT_COLUMN_NAME = "(metering.rsauditingtable.col0)";
-  public static final String RESOURCEID_COLUMN_NAME = "(metering.rsauditingtable.resourceid)";
-  public static final String API_COLUMN_NAME = "(metering.rsauditingtable.api)";
-  public static final String USERID_COLUMN_NAME = "(metering.rsauditingtable.userid)";
-  public static final String TIME_COLUMN_NAME = "(metering.rsauditingtable.isotime)";
+  public static final StringBuilder COUNT_COLUMN = new StringBuilder("rsauditingtable.col0)");
+  public static final StringBuilder RESOURCEID_COLUMN = new StringBuilder("rsauditingtable.resourceid)");
+  public static final StringBuilder API_COLUMN = new StringBuilder("rsauditingtable.api)");
+  public static final StringBuilder USERID_COLUMN = new StringBuilder("rsauditingtable.userid)");
+  public static final StringBuilder TIME_COLUMN = new StringBuilder("rsauditingtable.isotime)");
 
   public static final String MESSAGE = "message";
 }
