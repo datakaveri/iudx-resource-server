@@ -5,6 +5,7 @@ import static iudx.resource.server.apiserver.util.Constants.IUDX_PROVIDER_AUDIT_
 import static iudx.resource.server.metering.util.Constants.API_COLUMN;
 import static iudx.resource.server.metering.util.Constants.COUNT_COLUMN;
 import static iudx.resource.server.metering.util.Constants.DURING;
+import static iudx.resource.server.metering.util.Constants.BETWEEN;
 import static iudx.resource.server.metering.util.Constants.ENDPOINT;
 import static iudx.resource.server.metering.util.Constants.END_TIME;
 import static iudx.resource.server.metering.util.Constants.ERROR;
@@ -112,7 +113,8 @@ public class MeteringServiceImpl implements MeteringService {
     }
 
     if (request.getString(TIME_RELATION) == null
-        || !request.getString(TIME_RELATION).equals(DURING)) {
+        || !(request.getString(TIME_RELATION).equals(DURING)
+            || request.getString(TIME_RELATION).equals(BETWEEN))) {
       LOGGER.debug("Info: " + TIME_RELATION_NOT_FOUND);
       responseBuilder =
           new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(TIME_RELATION_NOT_FOUND);
