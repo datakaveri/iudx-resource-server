@@ -25,7 +25,6 @@
 		<maven-pmd-plugin.version>3.14.0</maven-pmd-plugin.version>
 		<maven-checkstyle-plugin-google.version>3.1.2</maven-checkstyle-plugin-google.version>
 		<maven-surefire-report-plugin.version>3.0.0-M5</maven-surefire-report-plugin.version>
-		<elastic-search-rest-client>7.7.1</elastic-search-rest-client>
 		<junit-jupiter.params>5.5.2</junit-jupiter.params>
 		<jts2geojson.version>0.16.1</jts2geojson.version>
 		<elasticsearch-rest-client.version>7.12.1</elasticsearch-rest-client.version>
