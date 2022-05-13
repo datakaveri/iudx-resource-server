@@ -62,4 +62,10 @@ public class PostgresVerticle extends AbstractVerticle{
     LOGGER.info("Postgres verticle started.");
   }
 
+
+  @Override
+  public void stop() {
+        binder.unregister(consumer);
+  }
 }
+

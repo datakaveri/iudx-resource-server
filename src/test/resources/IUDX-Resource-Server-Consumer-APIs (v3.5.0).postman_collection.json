@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "ad61fa1b-3364-4081-a216-48540d111061",
+		"_postman_id": "257257d0-a723-417f-909c-51ba04420738",
 		"name": "IUDX-Resource-Server-Consumer-APIs(v3.5.0)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -20144,13 +20144,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/management/reset",
+							"raw": "{{base_url}}/management/user/resetPassword",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"management",
-								"reset"
+								"user",
+								"resetPassword"
 							]
 						}
 					},
@@ -20172,43 +20173,43 @@
 								"type": "text"
 							},
 							{
-								"key": "option",
+								"key": "options",
 								"value": "count",
 								"type": "text",
 								"disabled": true
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/user/audit?id=15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias&timerel=between&time=2021-11-20T14:20:00Z&endTime=2021-11-24T14:20:00Z&api=/ngsi-ld/v1/subscription",
+							"raw": "{{base_url}}/ngsi-ld/v1/consumer/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2022-03-20T14:20:00Z&endTime=2022-03-24T14:20:00Z&api=/ngsi-ld/v1/temporal/entities",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"ngsi-ld",
 								"v1",
-								"user",
+								"consumer",
 								"audit"
 							],
 							"query": [
 								{
 									"key": "id",
-									"value": "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"
 								},
 								{
 									"key": "timerel",
-									"value": "between"
+									"value": "during"
 								},
 								{
 									"key": "time",
-									"value": "2021-11-20T14:20:00Z"
+									"value": "2022-03-20T14:20:00Z"
 								},
 								{
 									"key": "endTime",
-									"value": "2021-11-24T14:20:00Z"
+									"value": "2022-03-24T14:20:00Z"
 								},
 								{
 									"key": "api",
-									"value": "/ngsi-ld/v1/subscription"
+									"value": "/ngsi-ld/v1/temporal/entities"
 								}
 							]
 						}
@@ -20232,7 +20233,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/consumer/audit?id=15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/&timerel=between&time=2021-11-20T14:20:00Z&endTime=2021-12-02T14:20:00Z&api=/ngsi-ld/v1/subscription",
+							"raw": "{{base_url}}/ngsi-ld/v1/consumer/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2022-03-20T14:20:00Z&endTime=2022-03-24T14:20:00Z&api=/ngsi-ld/v1/temporal/entities",
 							"host": [
 								"{{base_url}}"
 							],
@@ -20245,23 +20246,23 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"
 								},
 								{
 									"key": "timerel",
-									"value": "between"
+									"value": "during"
 								},
 								{
 									"key": "time",
-									"value": "2021-11-20T14:20:00Z"
+									"value": "2022-03-20T14:20:00Z"
 								},
 								{
 									"key": "endTime",
-									"value": "2021-12-02T14:20:00Z"
+									"value": "2022-03-24T14:20:00Z"
 								},
 								{
 									"key": "api",
-									"value": "/ngsi-ld/v1/subscription"
+									"value": "/ngsi-ld/v1/temporal/entities"
 								}
 							]
 						}
@@ -20286,7 +20287,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/consumer/audit?id=15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias&timerel=between&time=2021-10-20T14:20:00Z&endTime=2021-10-24T14:20:00Z&api=/ngsi-ld/v1/subscription",
+							"raw": "{{base_url}}/ngsi-ld/v1/consumer/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2021-10-20T14:20:00Z&endTime=2021-10-24T14:20:00Z&api=/ngsi-ld/v1/temporal/entities",
 							"host": [
 								"{{base_url}}"
 							],
@@ -20299,11 +20300,11 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"
 								},
 								{
 									"key": "timerel",
-									"value": "between"
+									"value": "during"
 								},
 								{
 									"key": "time",
@@ -20315,7 +20316,7 @@
 								},
 								{
 									"key": "api",
-									"value": "/ngsi-ld/v1/subscription"
+									"value": "/ngsi-ld/v1/temporal/entities"
 								}
 							]
 						}
@@ -20340,7 +20341,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/consumer/audit?id=15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias&timerel=between&time=2021-10-20T14:20:00Z&endTime=2021-11-24T14:20:00Z&api=/ngsi-ld/v1/subscription",
+							"raw": "{{base_url}}/ngsi-ld/v1/consumer/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2021-10-20T14:20:00Z&endTime=2021-11-24T14:20:00Z&api=/ngsi-ld/v1/temporal/entities",
 							"host": [
 								"{{base_url}}"
 							],
@@ -20353,11 +20354,11 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias"
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"
 								},
 								{
 									"key": "timerel",
-									"value": "between"
+									"value": "during"
 								},
 								{
 									"key": "time",
@@ -20369,7 +20370,7 @@
 								},
 								{
 									"key": "api",
-									"value": "/ngsi-ld/v1/subscription"
+									"value": "/ngsi-ld/v1/temporal/entities"
 								}
 							]
 						}
@@ -20399,7 +20400,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=between&time=2021-11-20T14:20:00Z&endTime=2021-12-02T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86",
+							"raw": "{{base_url}}/ngsi-ld/v1/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2021-11-20T14:20:00Z&endTime=2021-12-02T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86",
 							"host": [
 								"{{base_url}}"
 							],
@@ -20416,7 +20417,7 @@
 								},
 								{
 									"key": "timerel",
-									"value": "between"
+									"value": "during"
 								},
 								{
 									"key": "time",
@@ -20461,7 +20462,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=between&time=2021-11-20T14:20:00Z&endTime=2021-12-02T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86",
+							"raw": "{{base_url}}/ngsi-ld/v1/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2021-11-20T14:20:00Z&endTime=2021-12-02T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86",
 							"host": [
 								"{{base_url}}"
 							],
@@ -20478,7 +20479,7 @@
 								},
 								{
 									"key": "timerel",
-									"value": "between"
+									"value": "during"
 								},
 								{
 									"key": "time",
@@ -20523,7 +20524,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=between&time=2021-11-20T14:20:00Z&endTime=2021-11-24T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86",
+							"raw": "{{base_url}}/ngsi-ld/v1/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2020-11-20T14:20:00Z&endTime=2020-11-24T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86",
 							"host": [
 								"{{base_url}}"
 							],
@@ -20540,15 +20541,15 @@
 								},
 								{
 									"key": "timerel",
-									"value": "between"
+									"value": "during"
 								},
 								{
 									"key": "time",
-									"value": "2021-11-20T14:20:00Z"
+									"value": "2020-11-20T14:20:00Z"
 								},
 								{
 									"key": "endTime",
-									"value": "2021-11-24T14:20:00Z"
+									"value": "2020-11-24T14:20:00Z"
 								},
 								{
 									"key": "api",
@@ -20585,7 +20586,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=between&time=2021-11-20T14:20:00Z&endTime=2021-11-02T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86",
+							"raw": "{{base_url}}/ngsi-ld/v1/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2021-11-20T14:20:00Z&endTime=2021-11-02T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86",
 							"host": [
 								"{{base_url}}"
 							],
@@ -20602,7 +20603,7 @@
 								},
 								{
 									"key": "timerel",
-									"value": "between"
+									"value": "during"
 								},
 								{
 									"key": "time",
