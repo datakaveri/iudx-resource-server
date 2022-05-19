@@ -101,7 +101,7 @@ public class AsyncServiceTest {
               @SuppressWarnings("unchecked")
               @Override
               public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
-                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(5)).handle(asyncResult1);
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(6)).handle(asyncResult1);
                 return null;
               }
             })
