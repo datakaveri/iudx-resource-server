@@ -11,13 +11,9 @@ import static iudx.resource.server.database.archives.Constants.HITS;
 import static iudx.resource.server.database.archives.Constants.REQUEST_GET;
 import static iudx.resource.server.database.archives.Constants.SOURCE_FILTER_KEY;
 import static iudx.resource.server.database.archives.Constants.SUCCESS;
-import static iudx.resource.server.database.postgres.Constants.UPDATE_S3_PROGRESS_SQL;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-
-import io.vertx.core.Promise;
-import iudx.resource.server.database.postgres.PostgresService;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -27,7 +23,6 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.action.search.ClearScrollRequest;
-import org.elasticsearch.action.search.ClearScrollResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
@@ -49,6 +44,8 @@ import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.database.archives.ResponseBuilder;
+import iudx.resource.server.database.async.ProgressListener;
+import iudx.resource.server.database.postgres.PostgresService;
 
 public class ElasticClient {
 
@@ -242,7 +239,8 @@ public class ElasticClient {
   }
 
   public ElasticClient scrollAsync(
-      File file, String index, QueryBuilder query,String[] source, String searchId, Handler<AsyncResult<JsonObject>> scrollHandler) {
+      File file, String index, QueryBuilder query,String[] source, String searchId,
+      ProgressListener progressListener,Handler<AsyncResult<JsonObject>> scrollHandler) {
 
     String scrollId = null;
     try {
@@ -286,7 +284,7 @@ public class ElasticClient {
         progress = iterationCount/totalIterations;
         // keeping progress at 90% of actual to update the last 10% after upload to external storage (s3)
         double finalProgress = progress * 0.9;
-        Future.future(fu -> updateProgress(searchId, finalProgress));
+        Future.future(handler->progressListener.updateProgress(finalProgress));
 
         // +=searchHits/totalHits*(0.9)
         for (SearchHit sh : searchHits) {
@@ -320,33 +318,13 @@ public class ElasticClient {
         ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
         clearScrollRequest.addScrollId(scrollId);
         try {
-          ClearScrollResponse clearScrollResponse =
               highLevelClient.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
         } catch (Exception e) {
           LOGGER.error(e);
           LOGGER.error(e.getMessage());
-          scrollHandler.handle(Future.failedFuture(e));
         }
       }
     }
     return this;
-  }
-
-  private Future<Void> updateProgress(String searchId, double progress) {
-    Promise<Void> promise = Promise.promise();
-    StringBuilder query = new StringBuilder(UPDATE_S3_PROGRESS_SQL.replace("$1", String.valueOf(progress * 100.0)).replace("$2",searchId));
-    LOGGER.debug("updating progress : " + progress);
-    pgService.executeQuery(
-        query.toString(),
-        pgHandler -> {
-          if(pgHandler.succeeded()) {
-            promise.complete();
-          } else {
-            promise.fail(pgHandler.cause());
-          }
-        }
-    );
-
-    return promise.future();
   }
 }
