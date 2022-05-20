@@ -143,8 +143,7 @@ public class AsyncServiceImpl implements AsyncService {
                   .onFailure(
                       errorHandler -> {
                         LOGGER.error(errorHandler);
-                      });
-              ;
+                      });;
             });
 
     return this;
@@ -233,11 +232,14 @@ public class AsyncServiceImpl implements AsyncService {
   private void process4NewRequestId(String searchId, JsonObject query) {
     File file = new File(filePath + "/" + searchId + ".json");
     String objectId = UUID.randomUUID().toString();
-
+    
+    
+    ProgressListener progressListener = new AsyncFileScrollProgressListener(searchId, pgService);
     scrollQuery(
         file,
         query,
         searchId,
+        progressListener,
         scrollHandler -> {
           if (scrollHandler.succeeded()) {
             s3FileOpsHelper.s3Upload(
@@ -248,6 +250,7 @@ public class AsyncServiceImpl implements AsyncService {
                     String s3_url = generateNewURL(objectId);
                     String expiry = LocalDateTime.now().plusDays(1).toString();
                     // update DB for search ID and requestId;
+                    progressListener.finish();
                     StringBuilder updateQuery =
                         new StringBuilder(
                             UPDATE_S3_URL_SQL
@@ -255,14 +258,15 @@ public class AsyncServiceImpl implements AsyncService {
                                 .replace("$2", expiry)
                                 .replace("$3", QueryProgress.COMPLETE.toString())
                                 .replace("$4", objectId)
-                                .replace("$5", String.valueOf(1.0))
+                                .replace("$5", String.valueOf(100.0))
                                 .replace("$6", searchId));
-
                     executePGQuery(updateQuery.toString())
                         .onSuccess(
                             recordUpdateHandler -> {
+                              LOGGER.debug("updated status in postgres");
                               try {
                                 vertx.fileSystem().deleteBlocking(filePath + "/" + file.getName());
+                                
                               } catch (Exception ex) {
                                 LOGGER.error(
                                     "File deletion operation failed for fileName : "
@@ -276,6 +280,7 @@ public class AsyncServiceImpl implements AsyncService {
                                   "Postgres insert failure [COMPLETE status]"
                                       + recordInsertFailure);
                             });
+                    
                   } else {
                     LOGGER.error("File upload to S3 failed for fileName : " + file.getName());
                     StringBuilder updateFailQuery =
@@ -306,7 +311,8 @@ public class AsyncServiceImpl implements AsyncService {
   }
 
   public AsyncService scrollQuery(
-      File file, JsonObject request, String searchId, Handler<AsyncResult<JsonObject>> handler) {
+      File file, JsonObject request, String searchId, ProgressListener progressListener,
+      Handler<AsyncResult<JsonObject>> handler) {
     QueryBuilder query;
 
     request.put("search", true);
@@ -353,6 +359,7 @@ public class AsyncServiceImpl implements AsyncService {
         query,
         sourceFilters,
         searchId,
+        progressListener,
         scrollHandler -> {
           if (scrollHandler.succeeded()) {
             handler.handle(Future.succeededFuture());

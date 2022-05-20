@@ -6,11 +6,6 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 import java.time.ZonedDateTime;
 import java.util.Date;
-
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.amazonaws.AmazonClientException;
@@ -27,6 +22,10 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 import com.amazonaws.services.s3.transfer.Upload;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 
 public class S3FileOpsHelper {
 
@@ -67,6 +66,7 @@ public class S3FileOpsHelper {
       LOGGER.info("Object upload started");
       // upload.addProgressListener(uploadProgressListener);
       upload.waitForCompletion();
+      
       LOGGER.info("Object upload complete");
       ZonedDateTime zdt = ZonedDateTime.now();
       zdt = zdt.plusDays(1);
