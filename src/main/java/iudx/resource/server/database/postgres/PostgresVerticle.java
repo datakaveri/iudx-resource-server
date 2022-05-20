@@ -49,7 +49,7 @@ public class PostgresVerticle extends AbstractVerticle{
             .setUser(databaseUserName)
             .setPassword(databasePassword)
             .setReconnectAttempts(2)
-            .setReconnectInterval(1000);
+            .setReconnectInterval(1000L);
     
     
     this.poolOptions = new PoolOptions().setMaxSize(poolSize);
