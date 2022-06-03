@@ -152,6 +152,7 @@ public class MeteringServiceImpl implements MeteringService {
     request.put(TABLE_NAME, databaseTableName);
     query = queryBuilder.buildReadingQuery(request);
 
+    LOGGER.info(query);
     if (query.containsKey(ERROR)) {
       LOGGER.error("Fail: Query returned with an error: " + query.getString(ERROR));
       responseBuilder =
