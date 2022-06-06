@@ -87,7 +87,7 @@ public class AuthHandler implements Handler<RoutingContext> {
   private static final Logger LOGGER = LogManager.getLogger(AuthHandler.class);
 
   private static final Pattern regexIDPattern = ID_REGEX;
-  private static AuthenticationService authenticator;
+  static AuthenticationService authenticator;
   private final String AUTH_INFO = "authInfo";
   private final List<String> noAuthRequired = bypassEndpoint;
   private HttpServerRequest request;
@@ -120,8 +120,7 @@ public class AuthHandler implements Handler<RoutingContext> {
     if (token == null)
       token = "public";
 
-    JsonObject authInfo =
-        new JsonObject().put(API_ENDPOINT, path).put(HEADER_TOKEN, token).put(API_METHOD, method);
+    JsonObject authInfo = new JsonObject().put(API_ENDPOINT, path).put(HEADER_TOKEN, token).put(API_METHOD, method);
 
     LOGGER.debug("Info :" + context.request().path());
     LOGGER.debug("Info :" + context.request().path().split("/").length);
@@ -189,7 +188,7 @@ public class AuthHandler implements Handler<RoutingContext> {
    * extract id from request (path/query or body )
    *
    *
-   * @param ctx current routing context
+   * @param ctx     current routing context
    * @param forPath endpoint called for
    * @return id extraced fro path if present
    */
