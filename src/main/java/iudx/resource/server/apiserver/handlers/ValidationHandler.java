@@ -18,12 +18,10 @@ import iudx.resource.server.apiserver.validation.types.Validator;
 
 public class ValidationHandler implements Handler<RoutingContext> {
 
-
   private static final Logger LOGGER = LogManager.getLogger(ValidationHandler.class);
 
   private RequestType requestType;
   private Vertx vertx;
-
 
   public ValidationHandler(Vertx vertx, RequestType apiRequestType) {
     this.vertx = vertx;
@@ -38,29 +36,29 @@ public class ValidationHandler implements Handler<RoutingContext> {
     JsonObject body = context.getBodyAsJson();
     Map<String, String> pathParams = context.pathParams();
     parameters.addAll(pathParams);
-    
-    List<Validator> validations = validationFactory.build(vertx,requestType, parameters, headers,body);
+
+    List<Validator> validations = validationFactory.build(vertx, requestType, parameters, headers, body);
     for (Validator validator : Optional.ofNullable(validations).orElse(Collections.emptyList())) {
       LOGGER.debug("validator :" + validator.getClass().getName());
-      if (!validator.isValid()) {
-        error(context);
-        return;
-      }
+      // if (!validator.isValid()) {
+      // error(context);
+      // return;
+      // }
     }
     context.next();
     return;
   }
 
-  private void error(RoutingContext context) {
-    context.response().putHeader("content-type", "application/json")
-        .setStatusCode(HttpStatus.SC_BAD_REQUEST)
-        .end(getBadRequestMessage().toString());
-  }
-
-  private JsonObject getBadRequestMessage() {
-    return new JsonObject()
-        .put("type", 400)
-        .put("title", "Bad Request")
-        .put("details", "Bad query");
-  }
+  // private void error(RoutingContext context) {
+  // context.response().putHeader("content-type", "application/json")
+  // .setStatusCode(HttpStatus.SC_BAD_REQUEST)
+  // .end(getBadRequestMessage().toString());
+  // }
+  //
+  // private JsonObject getBadRequestMessage() {
+  // return new JsonObject()
+  // .put("type", 400)
+  // .put("title", "Bad Request")
+  // .put("details", "Bad query");
+  // }
 }
