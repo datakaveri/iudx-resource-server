@@ -31,7 +31,7 @@ public class CatalogueService {
 
   private static final Logger LOGGER = LogManager.getLogger(CatalogueService.class);
 
-  private WebClient catWebClient;
+  static WebClient catWebClient;
   private long cacheTimerid;
   private static String catHost;
   private static int catPort;;
@@ -52,7 +52,10 @@ public class CatalogueService {
 
     WebClientOptions options =
         new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
-    catWebClient = WebClient.create(vertx, options);
+    if(catWebClient == null)
+    {
+      catWebClient = WebClient.create(vertx, options);
+    }
     populateCache();
     cacheTimerid = vertx.setPeriodic(TimeUnit.DAYS.toMillis(1), handler -> {
       populateCache();
@@ -223,7 +226,7 @@ public class CatalogueService {
 
     CompositeFuture.all(futures).onComplete(handler -> {
       if (handler.succeeded()) {
-        promise.complete();
+        promise.complete(true);
       } else {
         promise.fail(handler.cause());
       }
