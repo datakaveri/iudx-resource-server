@@ -33,14 +33,14 @@ public class SubscriptionService {
 
   private static final Logger LOGGER = LogManager.getLogger(SubscriptionService.class);
 
-  Subscription subscription = null;
+  Subscription subscription;
 
   /**
    * get the context of subscription according to the type passed in message body.
    * 
    * @param type type of subscription either <strong>streaming</strong> or <strong>callback</strong>
    * @param databroker databroker verticle object
-   * @param databaseService database verticle object
+   * @param pgService database verticle object
    * @return an object of Subscription class
    */
   private Subscription getSubscriptionContext(SubsType type, DataBrokerService databroker,
@@ -60,7 +60,7 @@ public class SubscriptionService {
    * 
    * @param json subscription json
    * @param databroker databroker verticle object
-   * @param databaseService database verticle object
+   * @param pgService database verticle object
    * @return a future of JsonObject
    */
   public Future<JsonObject> createSubscription(JsonObject json, DataBrokerService databroker,
@@ -68,7 +68,10 @@ public class SubscriptionService {
     LOGGER.info("createSubscription() method started");
     Promise<JsonObject> promise = Promise.promise();
     SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
-    subscription = getSubscriptionContext(subType, databroker, pgService);
+    if (subscription == null)
+    {
+      subscription = getSubscriptionContext(subType, databroker, pgService);
+    }
     assertNotNull(subscription);
     subscription.create(json).onComplete(handler -> {
       if (handler.succeeded()) {
@@ -105,7 +108,7 @@ public class SubscriptionService {
    * 
    * @param json subscription json
    * @param databroker databroker verticle object
-   * @param databaseService database verticle object
+   * @param pgService database verticle object
    * @return a future of josbObject
    */
   public Future<JsonObject> updateSubscription(JsonObject json, DataBrokerService databroker,
@@ -176,7 +179,7 @@ public class SubscriptionService {
    * 
    * @param json subscription json
    * @param databroker databroker verticle object
-   * @param databaseService database verticle object
+   * @param pgService database verticle object
    * @return a future of josbObject
    */
   public Future<JsonObject> deleteSubscription(JsonObject json, DataBrokerService databroker,
@@ -184,7 +187,10 @@ public class SubscriptionService {
     LOGGER.info("deleteSubscription() method started");
     Promise<JsonObject> promise = Promise.promise();
     SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
-    subscription = getSubscriptionContext(subType, databroker, pgService);
+    if (subscription == null)
+    {
+      subscription = getSubscriptionContext(subType, databroker, pgService);
+    }
     assertNotNull(subscription);
     subscription.delete(json).onComplete(handler -> {
       if (handler.succeeded()) {
@@ -213,7 +219,7 @@ public class SubscriptionService {
    * 
    * @param json subscription json
    * @param databroker databroker verticle object
-   * @param databaseService database verticle object
+   * @param pgService database verticle object
    * @return a future of josbObject
    */
   public Future<JsonObject> getSubscription(JsonObject json, DataBrokerService databroker,
@@ -221,7 +227,10 @@ public class SubscriptionService {
     LOGGER.info("getSubscription() method started");
     Promise<JsonObject> promise = Promise.promise();
     SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
-    subscription = getSubscriptionContext(subType, databroker, pgService);
+    if (subscription == null)
+    {
+      subscription = getSubscriptionContext(subType, databroker, pgService);
+    }
     assertNotNull(subscription);
     subscription.get(json).onComplete(handler -> {
       if (handler.succeeded()) {
@@ -239,7 +248,7 @@ public class SubscriptionService {
    * 
    * @param json subscription json
    * @param databroker databroker verticle object
-   * @param databaseService database verticle object
+   * @param pgService database verticle object
    * @return a future of josbObject
    */
   public Future<JsonObject> appendSubscription(JsonObject json, DataBrokerService databroker,
@@ -247,12 +256,15 @@ public class SubscriptionService {
     LOGGER.info("appendSubscription() method started");
     Promise<JsonObject> promise = Promise.promise();
     SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
-    subscription = getSubscriptionContext(subType, databroker, pgService);
+    if (subscription == null)
+    {
+      subscription = getSubscriptionContext(subType, databroker, pgService);
+    }
     assertNotNull(subscription);
     subscription.append(json).onComplete(handler -> {
       if (handler.succeeded()) {
-        promise.complete(handler.result());
-        JsonObject brokerSubResult = handler.result();
+        JsonObject response = handler.result();
+        JsonObject brokerSubResult = response.getJsonArray("results").getJsonObject(0);
         StringBuilder query = new StringBuilder(APPEND_SUB_SQL
             .replace("$1", json.getString(SUBSCRIPTION_ID))
             .replace("$2", subType.type)
