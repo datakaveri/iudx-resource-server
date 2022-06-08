@@ -14,6 +14,7 @@ public class Constants {
   public static final String API_ENDPOINT = "apiEndpoint";
   public static final String API_METHOD = "method";
   public static final String ID = "id";
+  public static final String RESPONSE_SIZE = "response_size";
   public static final String IDS = "ids";
 
   // config
@@ -56,8 +57,7 @@ public class Constants {
   public static final String VHOST_URL_REGEX = IUDX_MANAGEMENT_VHOST_URL + "(.*)";
   public static final String IUDX_MANAGEMENT_ADAPTER_URL = IUDX_ADAPTOR_URL + "/ingestion";
   public static final String ADAPTER_URL_REGEX = IUDX_MANAGEMENT_ADAPTER_URL + "(.*)";
-  
- 
+
   public static final String IUDX_MANAGEMENT_RESET_PWD =
       IUDX_MANAGEMENT_URL + "/user/resetPassword";
   public static final String RESET_URL_REGEX = IUDX_MANAGEMENT_RESET_PWD + "(.*)";
@@ -73,7 +73,6 @@ public class Constants {
           "/ngsi-ld/v1/entityOperations/query");
   public static final String REVOKE_TOKEN_REGEX = "/admin/revokeToken" + "(.*)";
   public static final String UNIQUE_ATTR_REGEX = "/admin/resourceattribute";
-
 
   /** Accept Headers and CORS */
   public static final String MIME_APPLICATION_JSON = "application/json";
@@ -265,7 +264,6 @@ public class Constants {
 
   public static final String VALIDATION_Q_ATTR_PATTERN = "^[a-zA-Z0-9_]{1,100}+$";
 
-
   // subscriptions queries
   public static final String CREATE_SUB_SQL =
       "INSERT INTO subscriptions(_id,_type,queue_name,entity,expiry) VALUES('$1','$2','$3','$4','$5')";
@@ -275,8 +273,9 @@ public class Constants {
 
   public static final String APPEND_SUB_SQL =
       "INSERT INTO subscriptions(_id,_type,queue_name,entity,expiry) VALUES('$1','$2','$3','$4','$5')";
-  
-  public static final String DELETE_SUB_SQL="DELETE FROM subscriptions where queue_name='$1'";
-  
-  public static final String SELECT_SUB_SQL="SELECT * from subscriptions where queue_name='$1' and entity='$2'";
+
+  public static final String DELETE_SUB_SQL = "DELETE FROM subscriptions where queue_name='$1'";
+
+  public static final String SELECT_SUB_SQL =
+      "SELECT * from subscriptions where queue_name='$1' and entity='$2'";
 }
