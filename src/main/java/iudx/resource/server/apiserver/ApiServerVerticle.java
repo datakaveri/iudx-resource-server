@@ -39,6 +39,7 @@ import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
+import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
 import static iudx.resource.server.apiserver.util.Constants.ROUTE_DOC;
 import static iudx.resource.server.apiserver.util.Constants.ROUTE_STATIC_SPEC;
 import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
@@ -47,11 +48,11 @@ import static iudx.resource.server.apiserver.util.Constants.USERSHA;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
 import static iudx.resource.server.common.Api.ADMIN;
+import static iudx.resource.server.common.Api.ASYNC;
 import static iudx.resource.server.common.Api.INGESTION;
 import static iudx.resource.server.common.Api.MANAGEMENT;
 import static iudx.resource.server.common.Api.NGSILD_BASE;
 import static iudx.resource.server.common.Api.SUBSCRIPTION;
-import static iudx.resource.server.common.Api.ASYNC;
 import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
@@ -59,14 +60,7 @@ import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN
 import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TEMPORAL_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN_URN;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
@@ -108,14 +102,21 @@ import iudx.resource.server.database.latest.LatestDataService;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.metering.MeteringService;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * The Resource Server API Verticle.
  *
  * <h1>Resource Server API Verticle</h1>
  *
- * <p>
- * The API Server verticle implements the IUDX Resource Server APIs. It handles the API requests
+ * <p>The API Server verticle implements the IUDX Resource Server APIs. It handles the API requests
  * from the clients and interacts with the associated Service to respond.
  *
  * @see io.vertx.core.Vertx
@@ -403,7 +404,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* Read ssl configuration. */
     isSSL = config().getBoolean("ssl");
 
-
     HttpServerOptions serverOptions = new HttpServerOptions();
     if (isSSL) {
 
@@ -419,9 +419,10 @@ public class ApiServerVerticle extends AbstractVerticle {
 
       /* Setup the HTTPs server properties, APIs and port. */
 
-      serverOptions.setSsl(true)
+      serverOptions
+          .setSsl(true)
           .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword));
-      LOGGER.info("Info: Starting HTTPs server at port"+ port);
+      LOGGER.info("Info: Starting HTTPs server at port" + port);
 
     } else {
 
@@ -432,8 +433,7 @@ public class ApiServerVerticle extends AbstractVerticle {
        * Default port when ssl is disabled is 8080. If set through config, then that value is taken
        */
       port = config().getInteger("httpPort") == null ? 8080 : config().getInteger("httpPort");
-      LOGGER.info("Info: Starting HTTP server at port"+ port);
-
+      LOGGER.info("Info: Starting HTTP server at port" + port);
     }
 
     serverOptions.setCompressionSupported(true).setCompressionLevel(5);
@@ -457,21 +457,15 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
 
-    router.mountSubRouter(ADMIN.path,
-        new AdminRestApi(vertx, databroker, postgresService, meteringService).init());
-    router.mountSubRouter(MANAGEMENT.path,
+    router.mountSubRouter(
+        ADMIN.path, new AdminRestApi(vertx, databroker, postgresService, meteringService).init());
+    router.mountSubRouter(
+        MANAGEMENT.path,
         new ManagementRestApi(vertx, databroker, postgresService, meteringService, managementApi)
             .init());
-    router.mountSubRouter(NGSILD_BASE.path + ASYNC.path,
-            new AsyncRestApi(vertx,meteringService, catalogueService, validator).init());
-
-    router.route().last().handler(requestHandler -> {
-      HttpServerResponse response = requestHandler.response();
-      response.putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
-          .setStatusCode(404)
-          .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
-              .toString());
-    });
+    router.mountSubRouter(
+        NGSILD_BASE.path + ASYNC.path,
+        new AsyncRestApi(vertx, meteringService, catalogueService, validator).init());
 
     router
         .route()
@@ -483,9 +477,24 @@ public class ApiServerVerticle extends AbstractVerticle {
                   .putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
                   .setStatusCode(404)
                   .end(
-                      generateResponse(HttpStatusCode.NOT_FOUND,
-                          ResponseUrn.YET_NOT_IMPLEMENTED_URN)
-                              .toString());
+                      generateResponse(
+                              HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
+                          .toString());
+            });
+
+    router
+        .route()
+        .last()
+        .handler(
+            requestHandler -> {
+              HttpServerResponse response = requestHandler.response();
+              response
+                  .putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
+                  .setStatusCode(404)
+                  .end(
+                      generateResponse(
+                              HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
+                          .toString());
             });
 
     LOGGER.info("API server deployed on :" + serverOptions.getPort());
@@ -601,16 +610,17 @@ public class ApiServerVerticle extends AbstractVerticle {
     json.put(JSON_ID, new JsonArray().add(id));
     json.put(JSON_SEARCH_TYPE, "latestSearch");
     LOGGER.debug("Info: IUDX query json;" + json);
-    filtersFuture.onComplete(filtersHandler -> {
-      if (filtersHandler.succeeded()) {
-        json.put("applicableFilters", filtersHandler.result());
-        executeLatestSearchQuery(routingContext, json, response);
-      } else {
-        LOGGER.error("catalogue item/group doesn't have filters.");
-        handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN,
-            filtersHandler.cause().getMessage());
-      }
-    });
+    filtersFuture.onComplete(
+        filtersHandler -> {
+          if (filtersHandler.succeeded()) {
+            json.put("applicableFilters", filtersHandler.result());
+            executeLatestSearchQuery(routingContext, json, response);
+          } else {
+            LOGGER.error("catalogue item/group doesn't have filters.");
+            handleResponse(
+                response, BAD_REQUEST, INVALID_PARAM_URN, filtersHandler.cause().getMessage());
+          }
+        });
   }
 
   /**
@@ -630,49 +640,56 @@ public class ApiServerVerticle extends AbstractVerticle {
     MultiMap headerParams = request.headers();
     // validate request parameters
     Future<Boolean> validationResult = validator.validate(params);
-    validationResult.onComplete(validationHandler -> {
-      if (validationHandler.succeeded()) {
-        // parse query params
-        NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
-        if (isTemporalParamsPresent(ngsildquery)) {
-          DxRuntimeException ex =
-              new DxRuntimeException(BAD_REQUEST.getValue(), INVALID_TEMPORAL_PARAM_URN,
-                  "Temporal parameters are not allowed in entities query.");
-          routingContext.fail(ex);
-        }
-        // create json
-        QueryMapper queryMapper = new QueryMapper();
-        JsonObject json = queryMapper.toJson(ngsildquery, false);
-        Future<List<String>> filtersFuture =
-            catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
-        /* HTTP request instance/host details */
-        String instanceID = request.getHeader(HEADER_HOST);
-        json.put(JSON_INSTANCEID, instanceID);
-        LOGGER.debug("Info: IUDX query json;" + json);
-        /* HTTP request body as Json */
-        JsonObject requestBody = new JsonObject();
-        requestBody.put("ids", json.getJsonArray("id"));
-        filtersFuture.onComplete(filtersHandler -> {
-          if (filtersHandler.succeeded()) {
-            json.put("applicableFilters", filtersHandler.result());
-            if (json.containsKey(IUDXQUERY_OPTIONS)
-                && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
-              executeCountQuery(routingContext, json, response);
-            } else {
-              executeSearchQuery(routingContext, json, response);
+    validationResult.onComplete(
+        validationHandler -> {
+          if (validationHandler.succeeded()) {
+            // parse query params
+            NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
+            if (isTemporalParamsPresent(ngsildquery)) {
+              DxRuntimeException ex =
+                  new DxRuntimeException(
+                      BAD_REQUEST.getValue(),
+                      INVALID_TEMPORAL_PARAM_URN,
+                      "Temporal parameters are not allowed in entities query.");
+              routingContext.fail(ex);
             }
+            // create json
+            QueryMapper queryMapper = new QueryMapper();
+            JsonObject json = queryMapper.toJson(ngsildquery, false);
+            Future<List<String>> filtersFuture =
+                catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
+            /* HTTP request instance/host details */
+            String instanceID = request.getHeader(HEADER_HOST);
+            json.put(JSON_INSTANCEID, instanceID);
+            LOGGER.debug("Info: IUDX query json;" + json);
+            /* HTTP request body as Json */
+            JsonObject requestBody = new JsonObject();
+            requestBody.put("ids", json.getJsonArray("id"));
+            filtersFuture.onComplete(
+                filtersHandler -> {
+                  if (filtersHandler.succeeded()) {
+                    json.put("applicableFilters", filtersHandler.result());
+                    if (json.containsKey(IUDXQUERY_OPTIONS)
+                        && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
+                      executeCountQuery(routingContext, json, response);
+                    } else {
+                      executeSearchQuery(routingContext, json, response);
+                    }
+                  } else if (validationHandler.failed()) {
+                    LOGGER.error("Fail: Validation failed");
+                    handleResponse(
+                        response,
+                        BAD_REQUEST,
+                        INVALID_PARAM_URN,
+                        validationHandler.cause().getMessage());
+                  }
+                });
           } else if (validationHandler.failed()) {
             LOGGER.error("Fail: Validation failed");
             handleResponse(
                 response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
           }
         });
-      } else if (validationHandler.failed()) {
-        LOGGER.error("Fail: Validation failed");
-        handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN,
-            validationHandler.cause().getMessage());
-      }
-    });
   }
 
   /**
@@ -709,9 +726,9 @@ public class ApiServerVerticle extends AbstractVerticle {
                   if (filtersHandler.succeeded()) {
                     json.put("applicableFilters", filtersHandler.result());
                     // Add limit and offset value for pagination
-                    if(params.contains("limit") && params.contains("offset")) {
-                    	json.put("limit", params.get("limit"));
-                    	json.put("offset", params.get("offset"));
+                    if (params.contains("limit") && params.contains("offset")) {
+                      json.put("limit", params.get("limit"));
+                      json.put("offset", params.get("offset"));
                     }
                     if (json.containsKey(IUDXQUERY_OPTIONS)
                         && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
@@ -731,7 +748,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         });
   }
 
-
   /**
    * Execute a count query in DB
    *
@@ -745,8 +761,9 @@ public class ApiServerVerticle extends AbstractVerticle {
         handler -> {
           if (handler.succeeded()) {
             LOGGER.info("Success: Count Success");
-            Future.future(fu -> updateAuditTable(context));
             handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+            context.data().put(RESPONSE_SIZE, response.bytesWritten());
+            Future.future(fu -> updateAuditTable(context));
           } else if (handler.failed()) {
             LOGGER.error("Fail: Count Fail");
             processBackendResponse(response, handler.cause().getMessage());
@@ -767,8 +784,9 @@ public class ApiServerVerticle extends AbstractVerticle {
         handler -> {
           if (handler.succeeded()) {
             LOGGER.info("Success: Search Success");
-            Future.future(fu -> updateAuditTable(context));
             handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+            context.data().put(RESPONSE_SIZE, response.bytesWritten());
+            Future.future(fu -> updateAuditTable(context));
           } else if (handler.failed()) {
             LOGGER.error("Fail: Search Fail");
             processBackendResponse(response, handler.cause().getMessage());
@@ -783,8 +801,9 @@ public class ApiServerVerticle extends AbstractVerticle {
         handler -> {
           if (handler.succeeded()) {
             LOGGER.info("Latest data search succeeded");
-            Future.future(fu -> updateAuditTable(context));
             handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+            context.data().put(RESPONSE_SIZE, response.bytesWritten());
+            Future.future(fu -> updateAuditTable(context));
           } else {
             LOGGER.error("Fail: Search Fail");
             processBackendResponse(response, handler.cause().getMessage());
@@ -845,9 +864,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
           }
         });
-
   }
-
 
   /**
    * Method used to handle all subscription requests.
@@ -916,9 +933,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               LOGGER.debug("Success: Appending subscription");
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
-                  response,
-                  ResponseType.Created.getCode(),
-                  subsRequestHandler.result().toString());
+                  response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
             } else {
               LOGGER.error("Fail: Appending subscription");
               processBackendResponse(response, subsRequestHandler.cause().getMessage());
@@ -928,7 +943,6 @@ public class ApiServerVerticle extends AbstractVerticle {
       LOGGER.error("Fail: Bad request");
       handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_NAME);
     }
-
   }
 
   /**
@@ -962,9 +976,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               LOGGER.info("result : " + subsRequestHandler.result());
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
-                  response,
-                  ResponseType.Created.getCode(),
-                  subsRequestHandler.result().toString());
+                  response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
             } else {
               LOGGER.error("Fail: Bad request");
               processBackendResponse(response, subsRequestHandler.cause().getMessage());
@@ -974,7 +986,6 @@ public class ApiServerVerticle extends AbstractVerticle {
       LOGGER.error("Fail: Bad request");
       handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_NAME);
     }
-
   }
 
   /**
@@ -1177,7 +1188,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * publish heartbeat details to Rabbit MQ.
    *
    * @param routingContext routingContext Note: This is too frequent an operation to have info or
-   *        error level logs
+   *     error level logs
    */
   public void publishHeartbeat(RoutingContext routingContext) {
     LOGGER.trace("Info: publishHeartbeat method starts;");
@@ -1215,7 +1226,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * publish downstream issues to Rabbit MQ.
    *
    * @param routingContext routingContext Note: This is too frequent an operation to have info or
-   *        error level logs
+   *     error level logs
    */
   public void publishDownstreamIssue(RoutingContext routingContext) {
     LOGGER.trace("Info: publishDownStreamIssue method started;");
@@ -1397,7 +1408,6 @@ public class ApiServerVerticle extends AbstractVerticle {
           .putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(HttpStatusCode.BAD_REQUEST.getValue())
           .end(generateResponse(HttpStatusCode.BAD_REQUEST, INVALID_PARAM_URN).toString());
-
     }
     return Optional.of(queryParams);
   }
@@ -1416,11 +1426,11 @@ public class ApiServerVerticle extends AbstractVerticle {
   private Future<Void> updateAuditTable(RoutingContext context) {
     Promise<Void> promise = Promise.promise();
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
-
     JsonObject request = new JsonObject();
     request.put(USER_ID, authInfo.getValue(USER_ID));
     request.put(ID, authInfo.getValue(ID));
     request.put(API, authInfo.getValue(API_ENDPOINT));
+    request.put(RESPONSE_SIZE, context.data().get(RESPONSE_SIZE));
     meteringService.executeWriteQuery(
         request,
         handler -> {

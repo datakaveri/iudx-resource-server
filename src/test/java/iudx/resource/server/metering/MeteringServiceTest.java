@@ -1,5 +1,6 @@
 package iudx.resource.server.metering;
 
+ import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
 import static iudx.resource.server.metering.util.Constants.API;
 import static iudx.resource.server.metering.util.Constants.CONSUMER_ID;
 import static iudx.resource.server.metering.util.Constants.DETAIL;
@@ -17,6 +18,7 @@ import static iudx.resource.server.metering.util.Constants.RESOURCE_ID;
 import static iudx.resource.server.metering.util.Constants.RESULTS;
 import static iudx.resource.server.metering.util.Constants.START_TIME;
 import static iudx.resource.server.metering.util.Constants.SUCCESS;
+import static iudx.resource.server.metering.util.Constants.TABLE_NAME;
 import static iudx.resource.server.metering.util.Constants.TIME_NOT_FOUND;
 import static iudx.resource.server.metering.util.Constants.TIME_RELATION;
 import static iudx.resource.server.metering.util.Constants.TIME_RELATION_NOT_FOUND;
@@ -53,6 +55,7 @@ public class MeteringServiceTest {
   private static String databaseUserName;
   private static String databasePassword;
   private static int databasePoolSize;
+  private static String databaseTableName;
   private static Configuration config;
 
   @BeforeAll
@@ -67,6 +70,7 @@ public class MeteringServiceTest {
     databaseUserName = dbConfig.getString("meteringDatabaseUserName");
     databasePassword = dbConfig.getString("meteringDatabasePassword");
     databasePoolSize = dbConfig.getInteger("meteringPoolSize");
+    databaseTableName = dbConfig.getString("meteringDatabaseTableName");
     meteringService = new MeteringServiceImpl(dbConfig, vertxObj);
     userId = UUID.randomUUID().toString();
     id = "89a36273d77dac4cf38114fca1bbe64392547f86";
@@ -77,8 +81,8 @@ public class MeteringServiceTest {
     JsonObject jsonObject = new JsonObject();
     jsonObject.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
     jsonObject.put(RESOURCE_ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
-    jsonObject.put(START_TIME, "2021-11-20T05:30:00+05:30[Asia/Kolkata]");
-    jsonObject.put(END_TIME, "2021-12-02T02:00:00+05:30[Asia/Kolkata]");
+    jsonObject.put(START_TIME, "2022-05-29T05:30:00+05:30[Asia/Kolkata]");
+    jsonObject.put(END_TIME, "2022-06-04T02:00:00+05:30[Asia/Kolkata]");
     jsonObject.put(TIME_RELATION, DURING);
     jsonObject.put(API, "/ngsi-ld/v1/subscription");
     jsonObject.put(ENDPOINT, "/ngsi-ld/v1/consumer/audit");
@@ -90,8 +94,8 @@ public class MeteringServiceTest {
     JsonObject jsonObject = new JsonObject();
     jsonObject.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
     jsonObject.put(RESOURCE_ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
-    jsonObject.put(START_TIME, "2021-11-20T05:30:00+05:30[Asia/Kolkata]");
-    jsonObject.put(END_TIME, "2021-12-02T02:00:00+05:30[Asia/Kolkata]");
+    jsonObject.put(START_TIME, "2022-05-29T05:30:00+05:30[Asia/Kolkata]");
+    jsonObject.put(END_TIME, "2022-06-04T02:00:00+05:30[Asia/Kolkata]");
     jsonObject.put(TIME_RELATION, DURING);
     jsonObject.put(API, "/ngsi-ld/v1/subscription");
     jsonObject.put(PROVIDER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias");
@@ -356,6 +360,7 @@ public class MeteringServiceTest {
     request.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
     request.put(ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
     request.put(API, "/ngsi-ld/v1/subscription");
+    request.put(RESPONSE_SIZE,12);
     meteringService.executeWriteQuery(
         request,
         vertxTestContext.succeeding(
