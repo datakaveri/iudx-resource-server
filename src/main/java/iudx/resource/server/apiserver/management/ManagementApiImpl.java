@@ -365,7 +365,7 @@ public class ManagementApiImpl implements ManagementApi {
     Promise<JsonObject> promise = Promise.promise();
     databroker.publishHeartbeat(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
-        JsonObject result = new JsonObject();
+        JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
         if (result.containsKey(Constants.JSON_TYPE)
             && result.getString(Constants.JSON_TYPE).equalsIgnoreCase(Constants.SUCCCESS)) {
@@ -389,7 +389,7 @@ public class ManagementApiImpl implements ManagementApi {
     Promise<JsonObject> promise = Promise.promise();
     databroker.publishHeartbeat(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
-        JsonObject result = new JsonObject();
+        JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
         if (result.getString(Constants.JSON_TYPE).equalsIgnoreCase(Constants.SUCCCESS)) {
           promise.complete(result);
@@ -411,7 +411,7 @@ public class ManagementApiImpl implements ManagementApi {
     Promise<JsonObject> promise = Promise.promise();
     databroker.publishHeartbeat(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
-        JsonObject result = new JsonObject();
+        JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
         if (result.getString(Constants.JSON_TYPE).equalsIgnoreCase(Constants.SUCCCESS)) {
           promise.complete(result);
@@ -433,7 +433,7 @@ public class ManagementApiImpl implements ManagementApi {
     Promise<JsonObject> promise = Promise.promise();
     databroker.publishFromAdaptor(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
-        JsonObject result = new JsonObject();
+        JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey(Constants.JSON_TYPE)) {
           promise.complete(result);
