@@ -1,6 +1,5 @@
 package iudx.resource.server.apiserver.subscription;
 
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
