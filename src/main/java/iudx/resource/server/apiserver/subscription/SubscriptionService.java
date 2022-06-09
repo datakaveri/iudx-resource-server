@@ -51,7 +51,7 @@ public class SubscriptionService {
       return CallbackSubscription.getInstance(databroker, pgService);
     } else {
       LOGGER.info("streaming subscription context");
-      return StreamingSubscription.getInstance(databroker, pgService);
+      return new StreamingSubscription(databroker, pgService);
     }
   }
 
