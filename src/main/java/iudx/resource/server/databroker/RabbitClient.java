@@ -195,11 +195,12 @@ public class RabbitClient {
           int statusCode = response.statusCode();
           if (statusCode == HttpStatus.SC_OK) {
             responseJson = new JsonObject(response.body().toString());
+            LOGGER.debug("Success : " + responseJson);
+            promise.complete(responseJson);
           } else {
             responseJson = Util.getResponseJson(statusCode, FAILURE, EXCHANGE_NOT_FOUND);
+            promise.fail(responseJson.toString());
           }
-          LOGGER.debug("Success : " + responseJson);
-          promise.complete(responseJson);
         } else {
           JsonObject errorJson =
               Util.getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR, EXCHANGE_NOT_FOUND);
@@ -288,7 +289,7 @@ public class RabbitClient {
    * The listExchangeSubscribers implements the list of bindings for an exchange (source).
    * 
    * @param request which is a Json object
-   * @param vHost virtual-host
+   * @param vhost virtual-host
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> listExchangeSubscribers(JsonObject request, String vhost) {
@@ -342,7 +343,7 @@ public class RabbitClient {
    * The createQueue implements the create queue operation.
    * 
    * @param request which is a Json object
-   * @param vHost virtual-host
+   * @param vhost virtual-host
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> createQueue(JsonObject request, String vhost) {
@@ -839,7 +840,7 @@ public class RabbitClient {
   /**
    * The createUserIfNotExist implements the create user if does not exist.
    * 
-   * @param userName which is a String
+   * @param userid which is a String
    * @param vhost which is a String
    * @return response which is a Future object of promise of Json type
    **/
@@ -902,7 +903,7 @@ public class RabbitClient {
   /**
    * CreateUserIfNotPresent's helper method which creates user if not present.
    * 
-   * @param userName which is a String
+   * @param userid which is a String
    * @param vhost which is a String
    * @return response which is a Future object of promise of Json type
    **/
@@ -1071,7 +1072,7 @@ public class RabbitClient {
    * 
    * @param vhost which is a String
    * @param adaptorID which is a String
-   * @param shaUsername which is a String
+   * @param userID which is a String
    * @return response which is a Future object of promise of Json type
    **/
   private Future<JsonObject> setTopicPermissions(String vhost, String adaptorID, String userID) {
