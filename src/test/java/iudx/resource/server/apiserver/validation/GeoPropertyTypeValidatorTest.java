@@ -54,6 +54,8 @@ public class GeoPropertyTypeValidatorTest {
     return Stream.of(
         Arguments.of("", true),
         Arguments.of("  ", true),
+            Arguments.of("", false),
+            Arguments.of("  ", false),
         Arguments.of("around", true),
         Arguments.of("bypass", true),
         Arguments.of("1=1", true),
