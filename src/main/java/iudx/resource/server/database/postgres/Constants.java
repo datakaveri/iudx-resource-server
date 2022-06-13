@@ -17,7 +17,7 @@ public class Constants {
       "DELETE FROM unique_attributes WHERE resource_id=$1";
 
   public static String INSERT_S3_PENDING_SQL =
-      "INSERT INTO s3_upload_url(_id, search_id, request_id, user_id, status, progress) values('$1','$2','$3','$4','$5', $6)";
+      "INSERT INTO s3_upload_url(_id, search_id, request_id, user_id, status, progress,query) values('$1','$2','$3','$4','$5', $6, '$7'::JSON)";
 
   public static String INSERT_S3_READY_SQL =
       "INSERT INTO s3_upload_url(_id, search_id, request_id, status, s3_url, expiry, user_id, object_id, progress) "

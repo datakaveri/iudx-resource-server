@@ -17,6 +17,7 @@ import static iudx.resource.server.apiserver.util.RequestType.ASYNC_STATUS;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
+import static iudx.resource.server.database.postgres.Constants.INSERT_S3_PENDING_SQL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,9 @@ import iudx.resource.server.common.Api;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.async.AsyncService;
+import iudx.resource.server.database.async.util.QueryProgress;
+import iudx.resource.server.database.postgres.PostgresService;
+import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.metering.MeteringService;
 
 public class AsyncRestApi {
@@ -63,13 +67,17 @@ public class AsyncRestApi {
   private AsyncService asyncService;
   private final ParamsValidator validator;
   private final CatalogueService catalogueService;
+  private final PostgresService postgresService;
+  private final DataBrokerService databroker;
 
-  AsyncRestApi(Vertx vertx, MeteringService meteringService,
-      CatalogueService catalogueService, ParamsValidator validator) {
+  AsyncRestApi(Vertx vertx, MeteringService meteringService, CatalogueService catalogueService,
+      PostgresService postgresService, DataBrokerService databroker, ParamsValidator validator) {
     this.vertx = vertx;
     this.meteringService = meteringService;
     this.catalogueService = catalogueService;
     this.validator = validator;
+    this.postgresService = postgresService;
+    this.databroker = databroker;
     this.router = Router.router(vertx);
   }
 
@@ -111,7 +119,8 @@ public class AsyncRestApi {
           if (validationHandler.succeeded()) {
             NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
             QueryMapper queryMapper = new QueryMapper();
-            JsonObject json = queryMapper.toJson(ngsildquery, ngsildquery.getTemporalRelation().getTemprel() != null, true);
+            JsonObject json = queryMapper.toJson(ngsildquery,
+                ngsildquery.getTemporalRelation().getTemprel() != null, true);
             Future<List<String>> filtersFuture =
                 catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
             json.put(JSON_INSTANCEID, instanceID);
@@ -138,25 +147,50 @@ public class AsyncRestApi {
   private void executeAsyncURLSearch(RoutingContext routingContext, JsonObject json) {
     String sub = ((JsonObject) routingContext.data().get("authInfo")).getString(USER_ID);
 
-    String requestID = Hashing.sha256()
+    String requestId = Hashing.sha256()
         .hashString(json.toString(), StandardCharsets.UTF_8)
         .toString();
 
     String searchId = UUID.randomUUID().toString();
 
-    asyncService.asyncSearch(requestID, sub, searchId, json);
+    StringBuilder insert_query =
+        new StringBuilder(INSERT_S3_PENDING_SQL.replace("$1", UUID.randomUUID().toString())
+            .replace("$2", searchId)
+            .replace("$3", requestId)
+            .replace("$4", sub)
+            .replace("$5", QueryProgress.SUBMITTED.toString())
+            .replace("$6", String.valueOf(0.0))
+            .replace("$7", json.toString()));
 
+    JsonObject rmqQueryMessage = new JsonObject()
+        .put("searchId", searchId)
+        .put("requestId", requestId)
+        .put("user", sub)
+        .put("query", json);
 
-    JsonObject response = new JsonObject();
-    response.put(JSON_TYPE, ResponseUrn.SUCCESS_URN.getUrn());
-    response.put(JSON_TITLE, "query submitted successfully");
-    JsonArray resultArray = new JsonArray();
-    resultArray.add(new JsonObject().put("searchId", searchId));
-    response.put("result", resultArray);
+    postgresService
+        .executeQuery(insert_query.toString(), pgInsertHandler -> {
+          if (pgInsertHandler.succeeded()) {
+            databroker.publishMessage(rmqQueryMessage, "async-query", "#", rmqPublishHandler -> {
+              if (rmqPublishHandler.succeeded()) {
+                JsonObject response = new JsonObject();
+                response.put(JSON_TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+                response.put(JSON_TITLE, "query submitted successfully");
+                JsonArray resultArray = new JsonArray();
+                resultArray.add(new JsonObject().put("searchId", searchId));
+                response.put("result", resultArray);
 
-    Future.future(fu -> updateAuditTable(routingContext));
-    handleSuccessResponse(routingContext.response(), ResponseType.Created.getCode(),
-        response.toString());
+                Future.future(fu -> updateAuditTable(routingContext));
+                handleSuccessResponse(routingContext.response(), ResponseType.Created.getCode(),
+                    response.toString());
+              } else {
+                LOGGER.error("message published failed", rmqPublishHandler);
+              }
+            });
+          } else {
+            LOGGER.error("message save to postgres failed", pgInsertHandler);
+          }
+        });
 
   }
 

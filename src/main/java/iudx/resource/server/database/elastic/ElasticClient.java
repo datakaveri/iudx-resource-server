@@ -73,9 +73,8 @@ public class ElasticClient {
     highLevelClient = new RestHighLevelClient(restClientBuilder);
   }
 
-  public ElasticClient(
-      String databaseIP, int databasePort, String user, String password, String filePath,
-      PostgresService pgService) {
+  public ElasticClient(String databaseIP, int databasePort, String user, String password,
+      String filePath, PostgresService pgService) {
     this(databaseIP, databasePort, user, password);
     this.pgService = pgService;
     this.filePath = filePath;
@@ -88,10 +87,7 @@ public class ElasticClient {
    * @param query Query
    * @param searchHandler JsonObject result {@link AsyncResult}
    */
-  public ElasticClient searchAsync(
-      String index,
-      String filterPathValue,
-      String query,
+  public ElasticClient searchAsync(String index, String filterPathValue, String query,
       Handler<AsyncResult<JsonObject>> searchHandler) {
 
     Request queryRequest = new Request(REQUEST_GET, index);
@@ -169,8 +165,8 @@ public class ElasticClient {
    * @param query Query
    * @param countHandler JsonObject result {@link AsyncResult}
    */
-  public ElasticClient countAsync(
-      String index, String query, Handler<AsyncResult<JsonObject>> countHandler) {
+  public ElasticClient countAsync(String index, String query,
+      Handler<AsyncResult<JsonObject>> countHandler) {
 
     Request queryRequest = new Request(REQUEST_GET, index);
     queryRequest.setJsonEntity(query);
@@ -239,9 +235,9 @@ public class ElasticClient {
     return this;
   }
 
-  public ElasticClient scrollAsync(
-      File file, String index, QueryBuilder query, String[] source, String searchId,
-      ProgressListener progressListener,Handler<AsyncResult<JsonObject>> scrollHandler) {
+  public ElasticClient scrollAsync(File file, String index, QueryBuilder query, String[] source,
+      String searchId, ProgressListener progressListener,
+      Handler<AsyncResult<JsonObject>> scrollHandler) {
 
     String scrollId = null;
     try {
@@ -280,15 +276,12 @@ public class ElasticClient {
       double progress;
       while (searchHits != null && searchHits.length > 0) {
         LOGGER.debug("results = {} ( {} new)", totalFiles += searchHits.length, searchHits.length);
-        // TODO: keep appending to a stack
         iterationCount += 1;
         progress = iterationCount / totalIterations;
         // keeping progress at 90% of actual to update the last 10% after upload to external storage
         // (s3)
         double finalProgress = progress * 0.9;
-        // Future.future(fu -> updateProgress(searchId, finalProgress));
-        Future.future(handler->progressListener.updateProgress(finalProgress));
-        // +=searchHits/totalHits*(0.9)
+        Future.future(handler -> progressListener.updateProgress(finalProgress));
         for (SearchHit sh : searchHits) {
           if (appendComma) {
             filew.write("," + sh.getSourceAsString());
@@ -320,7 +313,7 @@ public class ElasticClient {
         ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
         clearScrollRequest.addScrollId(scrollId);
         try {
-             highLevelClient.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
+          highLevelClient.clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
         } catch (Exception e) {
           LOGGER.error(e);
           LOGGER.error(e.getMessage());
@@ -330,21 +323,21 @@ public class ElasticClient {
     return this;
   }
 
-//  private Future<Void> updateProgress(String searchId, double progress) {
-//    Promise<Void> promise = Promise.promise();
-//    StringBuilder query = new StringBuilder(UPDATE_S3_PROGRESS_SQL
-//        .replace("$1", String.valueOf(progress * 100.0)).replace("$2", searchId));
-//    LOGGER.debug("updating progress : " + progress);
-//    pgService.executeQuery(
-//        query.toString(),
-//        pgHandler -> {
-//          if (pgHandler.succeeded()) {
-//            promise.complete();
-//          } else {
-//            promise.fail(pgHandler.cause());
-//          }
-//        });
-//
-//    return promise.future();
-//  }
+  // private Future<Void> updateProgress(String searchId, double progress) {
+  // Promise<Void> promise = Promise.promise();
+  // StringBuilder query = new StringBuilder(UPDATE_S3_PROGRESS_SQL
+  // .replace("$1", String.valueOf(progress * 100.0)).replace("$2", searchId));
+  // LOGGER.debug("updating progress : " + progress);
+  // pgService.executeQuery(
+  // query.toString(),
+  // pgHandler -> {
+  // if (pgHandler.succeeded()) {
+  // promise.complete();
+  // } else {
+  // promise.fail(pgHandler.cause());
+  // }
+  // });
+  //
+  // return promise.future();
+  // }
 }

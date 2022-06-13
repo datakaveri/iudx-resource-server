@@ -60,7 +60,14 @@ import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN
 import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TEMPORAL_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN_URN;
-
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
@@ -102,21 +109,14 @@ import iudx.resource.server.database.latest.LatestDataService;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.metering.MeteringService;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * The Resource Server API Verticle.
  *
  * <h1>Resource Server API Verticle</h1>
  *
- * <p>The API Server verticle implements the IUDX Resource Server APIs. It handles the API requests
+ * <p>
+ * The API Server verticle implements the IUDX Resource Server APIs. It handles the API requests
  * from the clients and interacts with the associated Service to respond.
  *
  * @see io.vertx.core.Vertx
@@ -465,7 +465,8 @@ public class ApiServerVerticle extends AbstractVerticle {
             .init());
     router.mountSubRouter(
         NGSILD_BASE.path + ASYNC.path,
-        new AsyncRestApi(vertx, meteringService, catalogueService, validator).init());
+        new AsyncRestApi(vertx, meteringService, catalogueService, postgresService, databroker,
+            validator).init());
 
     router
         .route()
@@ -478,8 +479,8 @@ public class ApiServerVerticle extends AbstractVerticle {
                   .setStatusCode(404)
                   .end(
                       generateResponse(
-                              HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
-                          .toString());
+                          HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
+                              .toString());
             });
 
     router
@@ -493,8 +494,8 @@ public class ApiServerVerticle extends AbstractVerticle {
                   .setStatusCode(404)
                   .end(
                       generateResponse(
-                              HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
-                          .toString());
+                          HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
+                              .toString());
             });
 
     LOGGER.info("API server deployed on :" + serverOptions.getPort());
@@ -1188,7 +1189,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * publish heartbeat details to Rabbit MQ.
    *
    * @param routingContext routingContext Note: This is too frequent an operation to have info or
-   *     error level logs
+   *        error level logs
    */
   public void publishHeartbeat(RoutingContext routingContext) {
     LOGGER.trace("Info: publishHeartbeat method starts;");
@@ -1226,7 +1227,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * publish downstream issues to Rabbit MQ.
    *
    * @param routingContext routingContext Note: This is too frequent an operation to have info or
-   *     error level logs
+   *        error level logs
    */
   public void publishDownstreamIssue(RoutingContext routingContext) {
     LOGGER.trace("Info: publishDownStreamIssue method started;");
