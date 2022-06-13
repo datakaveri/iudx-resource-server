@@ -296,6 +296,11 @@
 						<exclude>**/*VertxProxyHandler.class</exclude>
 						<exclude>**/*Verticle.class</exclude>
 
+						<!-- classes to be tested using Postman. -->
+						<exclude>iudx/resource/server/apiserver/ManagementRestApi.class</exclude>
+						<exclude>iudx/resource/server/apiserver/AdminRestApi.class</exclude>
+						<exclude>iudx/resource/server/apiserver/AsyncRestApi.class</exclude>
+
 						<!-- service proxy interfaces -->
 						<exclide>iudx/resource/server/database/archives/DatabaseService.class</exclide>
 						<exclide>iudx/resource/server/database/latest/LatestDataService.class</exclide>
