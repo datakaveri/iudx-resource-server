@@ -51,9 +51,7 @@ public class SubscriptionServiceTest {
     AsyncResult<JsonObject> asyncResult1;
     @Mock
     AsyncResult<Void> voidAsyncResul;
-    @Mock
-    RowSet<Row> result;
-    JsonObject request;
+    static JsonObject request;
     JsonArray jsonArray;
     @Mock
     Future<JsonObject> jsonObjectFuture;
@@ -181,19 +179,146 @@ public class SubscriptionServiceTest {
         });
     }
 
-    @Disabled
     @Test
-    @DisplayName("Test deleteCallbackSubscription method : Success")
-    public void testDeleteCallbackSubscriptionSuccess(VertxTestContext vertxTestContext) {
+    @DisplayName("Test appendStreamingSubscription method : Success")
+    public void testAppendStreamingSubscriptionSuccess(VertxTestContext vertxTestContext) {
 
-        service.deleteCallbackSubscription(request).onComplete(handler -> {
-            if (handler.failed()) {
-//                assertEquals(expected.toString(), handler.cause().getMessage());
+        when(rabbitClient.listQueueSubscribers(any(), anyString())).thenReturn(jsonObjectFuture);
+        when(rabbitClient.bindQueue(any(), anyString())).thenReturn(jsonObjectFuture);
+        when(rabbitClient.updateUserPermissions(anyString(), anyString(), any(), anyString())).thenReturn(jsonObjectFuture);
+        when(asyncResult1.succeeded()).thenReturn(true);
+        when(asyncResult1.result()).thenReturn(request);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult1);
+                return null;
+            }
+        }).when(jsonObjectFuture).onComplete(any());
+
+        service.appendStreamingSubscription(request).onComplete(handler -> {
+            if (handler.succeeded()) {
+                assertEquals("{\"type\":\"urn:dx:rs:success\",\"title\":\"success\",\"results\":[{\"entities\":[\"ABCD/ABCD/ABCD/ABCD/ABCD\",\"EFGH/EFGH/EFGH/EFGH/EFGH\"]}]}",
+                        handler.result().toString());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
             }
         });
-        vertxTestContext.completeNow();
     }
+
+
+    @Test
+    @DisplayName("Test appendStreamingSubscription method : for empty request")
+    public void testAppendStreamingSubscriptionWithInvalidInput(VertxTestContext vertxTestContext) {
+        service.appendStreamingSubscription(new JsonObject()).onComplete(handler -> {
+            if (handler.failed()) {
+                assertEquals("{\"type\":400,\"title\":\"error\",\"detail\":\"Invalid request payload\"}", handler.cause().getMessage());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("Test appendStreamingSubscription method : listQueueSubscribers Failure")
+    public void testAppendStreamingSubscriptionWithInvalidPayload(VertxTestContext vertxTestContext) {
+
+        when(rabbitClient.listQueueSubscribers(any(), anyString())).thenReturn(jsonObjectFuture);
+
+        when(asyncResult1.succeeded()).thenReturn(false);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult1);
+                return null;
+            }
+        }).when(jsonObjectFuture).onComplete(any());
+
+        service.appendStreamingSubscription(request).onComplete(handler -> {
+            if (handler.failed()) {
+                assertEquals("{\"type\":400,\"title\":\"error\",\"detail\":\"Invalid request payload\"}",
+                        handler.cause().getMessage());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("Test registerCallbackSubscription method: Null request")
+    public void testRegisterCallbackSubscriptionWithInvalidInput(VertxTestContext vertxTestContext)
+    {
+        service.registerCallbackSubscription(null).onComplete( handler ->{
+            if(handler.succeeded())
+            {
+                vertxTestContext.failNow(handler.cause());
+            }
+            else
+            {
+                assertEquals("{\"type\":400,\"title\":\"error\",\"detail\":\"Invalid request payload\"}",
+                        handler.cause().getMessage());
+                vertxTestContext.completeNow();
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("Test deleteCallbackSubscription method: Null request")
+    public void testDeleteCallbackSubscriptionWithInvalidInput(VertxTestContext vertxTestContext)
+    {
+        service.deleteCallbackSubscription(null).onComplete( handler ->{
+            if(handler.succeeded())
+            {
+                vertxTestContext.failNow(handler.cause());
+            }
+            else
+            {
+                assertEquals("{\"type\":400,\"title\":\"error\",\"detail\":\"Invalid request payload\"}",
+                        handler.cause().getMessage());
+                vertxTestContext.completeNow();
+            }
+        });
+    }
+
+    static Stream<Arguments> listCallbackInputValues()
+    {
+        return Stream.of(
+                Arguments.of(new JsonObject(), "{\"type\":400,\"title\":\"error\",\"detail\":\"Invalid request payload\"}"),
+                Arguments.of(SubscriptionServiceTest.request, "{\"type\":400,\"title\":\"error\",\"detail\":\"Invalid request payload\"}")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("listCallbackInputValues")
+    @DisplayName("Test listCallbackSubscription method: with different input requests")
+    public void testListCallbackSubscription(JsonObject input, String expected, VertxTestContext vertxTestContext)
+    {
+        lenient().when(pgSQLClient.executeAsync(anyString())).thenReturn(rowSetFuture);
+        lenient().when(asyncResult.succeeded()).thenReturn(false);
+        lenient().when(asyncResult.cause()).thenReturn(throwable);
+        lenient().when(throwable.getMessage()).thenReturn("Dummy failure message");
+        lenient().doAnswer(new Answer<AsyncResult<RowSet<Row>>>() {
+            @Override
+            public AsyncResult<RowSet<Row>> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<RowSet<Row>>>) arg0.getArgument(0)).handle(asyncResult);
+                return null;
+            }
+        }).when(rowSetFuture).onComplete(any());
+        service.listCallbackSubscription(input).onComplete( handler ->{
+            if(handler.succeeded())
+            {
+                vertxTestContext.failNow(handler.cause());
+            }
+            else
+            {
+                assertEquals(expected, handler.cause().getMessage());
+                vertxTestContext.completeNow();
+            }
+        });
+    }
+
+
 }
