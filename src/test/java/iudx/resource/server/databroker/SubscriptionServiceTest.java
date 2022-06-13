@@ -179,17 +179,16 @@ public class SubscriptionServiceTest {
         });
     }
 
-    @Disabled
     @Test
     @DisplayName("Test appendStreamingSubscription method : Success")
     public void testAppendStreamingSubscriptionSuccess(VertxTestContext vertxTestContext) {
 
-        lenient().when(rabbitClient.listQueueSubscribers(any(), anyString())).thenReturn(jsonObjectFuture);
-        lenient().when(rabbitClient.bindQueue(any(), anyString())).thenReturn(jsonObjectFuture);
-        lenient().when(rabbitClient.updateUserPermissions(anyString(), anyString(), any(), anyString())).thenReturn(jsonObjectFuture);
-        lenient().when(asyncResult1.succeeded()).thenReturn(true);
-        lenient().when(asyncResult1.result()).thenReturn(request);
-        lenient().doAnswer(new Answer<AsyncResult<JsonObject>>() {
+        when(rabbitClient.listQueueSubscribers(any(), anyString())).thenReturn(jsonObjectFuture);
+        when(rabbitClient.bindQueue(any(), anyString())).thenReturn(jsonObjectFuture);
+        when(rabbitClient.updateUserPermissions(anyString(), anyString(), any(), anyString())).thenReturn(jsonObjectFuture);
+        when(asyncResult1.succeeded()).thenReturn(true);
+        when(asyncResult1.result()).thenReturn(request);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
             @Override
             public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
                 ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult1);
