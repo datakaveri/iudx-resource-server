@@ -944,7 +944,7 @@ public class SubscriptionService {
       LOGGER.error("Fail : Error in payload");
       deleteCallbackSubscriptionResponse.clear()
           .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, PAYLOAD_ERROR));
-      promise.complete(deleteCallbackSubscriptionResponse);
+      promise.fail(deleteCallbackSubscriptionResponse.toString());
     }
     return promise.future();
   }
