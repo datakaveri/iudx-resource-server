@@ -31,7 +31,7 @@ import io.vertx.sqlclient.SqlConnection;
  * The Callback Service implementation in the IUDX Resource Server implements the definitions of the
  * {@link iudx.resource.server.callback.CallbackService}.
  * </p>
- * 
+ *
  * @version 1.0
  * @since 2020-07-15
  */
@@ -47,23 +47,23 @@ public class CallbackServiceImpl implements CallbackService {
   private String databaseUserName;
   private String databasePassword;
   private int databasePoolSize;
-  private PgPool pgClient;
+  static PgPool pgClient;
   private PoolOptions poolOptions;
   private PgConnectOptions connectOptions;
 
   /* Cache */
-  private HashMap<String, JsonObject> pgCache;
+  static HashMap<String, JsonObject> pgCache;
 
   /**
    * This is a constructor which is used by the Callback Verticle to instantiate a RabbitMQ client.
-   * 
+   *
    * @param clientInstance which is a RabbitMQ client
    * @param webClientInstance which is a Vertex Web client
    * @param propObj which is a properties JsonObject
    * @param vertxInstance which is a Vertx Instance
    */
   public CallbackServiceImpl(RabbitMQClient clientInstance, WebClient webClientInstance,
-      JsonObject propObj, Vertx vertxInstance) {
+                             JsonObject propObj, Vertx vertxInstance) {
 
     LOGGER.trace("Got the RabbitMQ Client instance");
     client = clientInstance;
@@ -91,7 +91,7 @@ public class CallbackServiceImpl implements CallbackService {
 
   @Override
   public CallbackService connectToCallbackNotificationQueue(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
+                                                            Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
       Future<JsonObject> result = connectToCallbackNotificationQueue(request);
       result.onComplete(resultHandler -> {
@@ -100,7 +100,7 @@ public class CallbackServiceImpl implements CallbackService {
         }
         if (resultHandler.failed()) {
           LOGGER.error("connectToCallbackNotificationQueue resultHandler failed : "
-              + resultHandler.cause().getMessage().toString());
+                  + resultHandler.cause().getMessage().toString());
           handler.handle(Future.failedFuture(resultHandler.cause().getMessage().toString()));
         }
       });
@@ -120,7 +120,7 @@ public class CallbackServiceImpl implements CallbackService {
    *
    * @param request which is a JSON object
    * @return response which is a Future object of promise of JSON type
-   * 
+   *
    */
   public Future<JsonObject> connectToCallbackNotificationQueue(JsonObject request) {
     JsonObject finalResponse = new JsonObject();
@@ -129,7 +129,7 @@ public class CallbackServiceImpl implements CallbackService {
     if (request != null && !request.isEmpty()) {
       /* Set Queue Options */
       QueueOptions options =
-          new QueueOptions().setMaxInternalQueueSize(1000).setKeepMostRecent(true);
+              new QueueOptions().setMaxInternalQueueSize(1000).setKeepMostRecent(true);
       /* Get Queue Name from request */
       String queueName = request.getString(Constants.QUEUE_NAME);
 
@@ -160,7 +160,7 @@ public class CallbackServiceImpl implements CallbackService {
                   /* Check for operation */
                   if (operation != null && !operation.isEmpty() && !operation.isBlank()) {
                     if (operation.equals(Constants.CREATE) || operation.equals(Constants.UPDATE)
-                        || operation.equals(Constants.DELETE)) {
+                            || operation.equals(Constants.DELETE)) {
 
                       /* Create request object for Query DataBase */
                       JsonObject requestObj = new JsonObject();
@@ -172,12 +172,12 @@ public class CallbackServiceImpl implements CallbackService {
                         if (resultHandler.succeeded()) {
                           LOGGER.debug(Constants.DATABASE_QUERY_RESULT + resultHandler.result());
                           finalResponse.put(Constants.DATABASE_QUERY_RESULT,
-                              Constants.CACHE_UPDATE_SUCCESS);
+                                  Constants.CACHE_UPDATE_SUCCESS);
                         } else {
                           LOGGER.error(Constants.DATABASE_QUERY_RESULT + Constants.COLON,
-                              resultHandler.cause());
+                                  resultHandler.cause());
                           finalResponse.put(Constants.DATABASE_QUERY_RESULT,
-                              Constants.DATABASE_QUERY_FAIL);
+                                  Constants.DATABASE_QUERY_FAIL);
                           promise.fail(finalResponse.toString());
                         }
                       });
@@ -195,20 +195,25 @@ public class CallbackServiceImpl implements CallbackService {
               });
               LOGGER.info(Constants.QUEUE_EMPTY);
               finalResponse.put(Constants.DATABASE_QUERY_RESULT,
-                  Constants.CONNECT_TO_CALLBACK_NOTIFICATION_QUEUE);
-              promise.complete(finalResponse);
+                      Constants.CONNECT_TO_CALLBACK_NOTIFICATION_QUEUE);
+              promise.tryComplete(finalResponse);
+              /**
+               * Changed promise.complete(finalResponse) to
+               * promise.tryComplete(finalResponse) to avoid
+               * java.lang.IllegalStateException: Result is already complete
+               */
             } else {
               LOGGER.error(Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON + queueName);
               LOGGER.error(Constants.ERROR + rabbitMQConsumerAsyncResult.cause());
               finalResponse.put(Constants.ERROR,
-                  Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON + queueName);
+                      Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON + queueName);
               promise.fail(finalResponse.toString());
             }
           });
         } else {
           LOGGER.error(Constants.QUEUE_CONNECTION_FAIL + Constants.COLON + queueName);
           finalResponse.put(Constants.ERROR,
-              Constants.QUEUE_CONNECTION_FAIL + Constants.COLON + queueName);
+                  Constants.QUEUE_CONNECTION_FAIL + Constants.COLON + queueName);
           promise.fail(finalResponse.toString());
         }
       });
@@ -218,7 +223,7 @@ public class CallbackServiceImpl implements CallbackService {
 
   @Override
   public CallbackService connectToCallbackDataQueue(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
+                                                    Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
       Future<JsonObject> result = connectToCallbackDataQueue(request);
       result.onComplete(resultHandler -> {
@@ -227,7 +232,7 @@ public class CallbackServiceImpl implements CallbackService {
         }
         if (resultHandler.failed()) {
           LOGGER.error("connectToCallbackDataQueue resultHandler failed : "
-              + resultHandler.cause().getMessage().toString());
+                  + resultHandler.cause().getMessage().toString());
           handler.handle(Future.failedFuture(resultHandler.cause().getMessage().toString()));
         }
       });
@@ -248,7 +253,7 @@ public class CallbackServiceImpl implements CallbackService {
    *
    * @param request which is a JSON object
    * @return response which is a Future object of promise of JSON type
-   * 
+   *
    */
   public Future<JsonObject> connectToCallbackDataQueue(JsonObject request) {
 
@@ -258,7 +263,7 @@ public class CallbackServiceImpl implements CallbackService {
     if (request != null && !request.isEmpty()) {
       /* Set Queue Options */
       QueueOptions options =
-          new QueueOptions().setMaxInternalQueueSize(1000).setKeepMostRecent(true);
+              new QueueOptions().setMaxInternalQueueSize(1000).setKeepMostRecent(true);
       /* Get Queue Name from request */
       String queueName = request.getString(Constants.QUEUE_NAME);
 
@@ -296,7 +301,7 @@ public class CallbackServiceImpl implements CallbackService {
                   callBackJsonObj = pgCache.get(routingKey);
 
                   LOGGER.debug(
-                      Constants.ROUTING_KEY + Constants.COLON + message.envelope().getRoutingKey());
+                          Constants.ROUTING_KEY + Constants.COLON + message.envelope().getRoutingKey());
                   LOGGER.debug(Constants.MESSAGE + Constants.COLON + currentBodyJsonObj);
 
                   /* Creating Request Object */
@@ -310,21 +315,21 @@ public class CallbackServiceImpl implements CallbackService {
                     result.onComplete(resultHandler -> {
                       if (resultHandler.succeeded()) {
                         LOGGER.debug(Constants.CALLBACK_URL_RESPONSE + Constants.COLON
-                            + resultHandler.result());
+                                + resultHandler.result());
                         finalResponse.put(Constants.SUCCESS,
-                            Constants.DATA_SEND_TO_CALLBACK_URL_SUCCESS);
+                                Constants.DATA_SEND_TO_CALLBACK_URL_SUCCESS);
                       } else {
                         LOGGER.error(Constants.CALLBACK_URL_RESPONSE + resultHandler.cause());
                         finalResponse.put(Constants.ERROR,
-                            Constants.DATA_SEND_TO_CALLBACK_URL_FAIL);
+                                Constants.DATA_SEND_TO_CALLBACK_URL_FAIL);
                         promise.fail(finalResponse.toString());
                       }
                     });
                   } else {
                     LOGGER.error(
-                        Constants.NO_CALLBACK_URL_FOR_ROUTING_KEY + Constants.COLON + routingKey);
+                            Constants.NO_CALLBACK_URL_FOR_ROUTING_KEY + Constants.COLON + routingKey);
                     finalResponse.put(Constants.ERROR,
-                        Constants.NO_CALLBACK_URL_FOR_ROUTING_KEY + routingKey);
+                            Constants.NO_CALLBACK_URL_FOR_ROUTING_KEY + routingKey);
                     promise.fail(finalResponse.toString());
                   }
                 } else {
@@ -335,11 +340,16 @@ public class CallbackServiceImpl implements CallbackService {
               });
               LOGGER.info(Constants.QUEUE_EMPTY);
               finalResponse.put(Constants.DATABASE_QUERY_RESULT,
-                  Constants.CONNECT_TO_CALLBACK_DATA_QUEUE);
-              promise.complete(finalResponse);
+                      Constants.CONNECT_TO_CALLBACK_DATA_QUEUE);
+              /**
+               * Changed promise.complete(finalResponse) to
+               * promise.tryComplete(finalResponse) to avoid
+               * java.lang.IllegalStateException: Result is already complete
+               */
+              promise.tryComplete(finalResponse);
             } else {
               LOGGER.error(Constants.ERROR + Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON
-                  + queueName);
+                      + queueName);
               finalResponse.put(Constants.ERROR, Constants.CONSUME_QUEUE_MESSAGE_FAIL + queueName);
               promise.fail(finalResponse.toString());
             }
@@ -356,7 +366,7 @@ public class CallbackServiceImpl implements CallbackService {
 
   @Override
   public CallbackService sendDataToCallBackSubscriber(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
+                                                      Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
       Future<JsonObject> result = sendDataToCallBackSubscriber(request);
       result.onComplete(resultHandler -> {
@@ -365,7 +375,7 @@ public class CallbackServiceImpl implements CallbackService {
         }
         if (resultHandler.failed()) {
           LOGGER.error("sendDataToCallBackSubscriber resultHandler failed : "
-              + resultHandler.cause().getMessage().toString());
+                  + resultHandler.cause().getMessage().toString());
           handler.handle(Future.failedFuture(resultHandler.cause().getMessage().toString()));
         }
       });
@@ -385,7 +395,7 @@ public class CallbackServiceImpl implements CallbackService {
    *
    * @param request which is a JSON object
    * @return response which is a Future object of promise of JSON type
-   * 
+   *
    */
   public Future<JsonObject> sendDataToCallBackSubscriber(JsonObject request) {
     JsonObject finalResponse = new JsonObject();
@@ -400,7 +410,7 @@ public class CallbackServiceImpl implements CallbackService {
 
       JsonObject callBackJsonObj = request.getJsonObject(Constants.CALLBACK_JSON_OBJECT);
       JsonObject currentMessageJsonObj =
-          request.getJsonObject(Constants.CURRENT_MESSAGE_JSON_OBJECT);
+              request.getJsonObject(Constants.CURRENT_MESSAGE_JSON_OBJECT);
 
       if (callBackJsonObj != null && !callBackJsonObj.isEmpty()) {
         callBackUrl = callBackJsonObj.getString(Constants.CALLBACK_URL);
@@ -412,7 +422,7 @@ public class CallbackServiceImpl implements CallbackService {
         if (callBackUrl != null && !callBackUrl.isEmpty() && !callBackUrl.isBlank()) {
           if (userName != null && password != null && !userName.isBlank() && !password.isBlank()) {
             webRequest =
-                webClient.postAbs(callBackUrl.toString()).basicAuthentication(userName, password);
+                    webClient.postAbs(callBackUrl.toString()).basicAuthentication(userName, password);
           } else {
             webRequest = webClient.postAbs(callBackUrl.toString());
           }
@@ -430,7 +440,7 @@ public class CallbackServiceImpl implements CallbackService {
                     /* Callback URL 200 OK Status */
                     String responseBody = result.bodyAsString();
                     LOGGER.debug(Constants.RESPONSE_BODY + Constants.COLON + Constants.NEW_LINE
-                        + responseBody);
+                            + responseBody);
                     LOGGER.debug(Constants.STATUS + Constants.COLON + status);
                     finalResponse.put(Constants.TYPE, status);
                     finalResponse.put(Constants.TITLE, Constants.SUCCESS);
@@ -465,7 +475,7 @@ public class CallbackServiceImpl implements CallbackService {
             });
           } else {
             LOGGER.error(
-                Constants.ERROR + Constants.COLON + Constants.CREATE_CALLBACK_REQUEST_OBJECT_FAIL);
+                    Constants.ERROR + Constants.COLON + Constants.CREATE_CALLBACK_REQUEST_OBJECT_FAIL);
             finalResponse.put(Constants.ERROR, Constants.CREATE_CALLBACK_REQUEST_OBJECT_FAIL);
             promise.fail(finalResponse.toString());
           }
@@ -506,7 +516,7 @@ public class CallbackServiceImpl implements CallbackService {
 
   @Override
   public CallbackService queryCallBackDataBase(JsonObject request,
-      Handler<AsyncResult<JsonObject>> handler) {
+                                               Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
       Future<JsonObject> result = queryCallBackDataBase(request);
       result.onComplete(resultHandler -> {
@@ -515,7 +525,7 @@ public class CallbackServiceImpl implements CallbackService {
         }
         if (resultHandler.failed()) {
           LOGGER.error("queryCallBackDataBase resultHandler failed : "
-              + resultHandler.cause());
+                  + resultHandler.cause());
           handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
         }
       });
@@ -530,10 +540,10 @@ public class CallbackServiceImpl implements CallbackService {
    * <li>Create instance of pgClient and Query callback database</li>
    * <li>Update Cache for entity and callBackDataObj</li>
    * </p>
-   * 
+   *
    * @param request which is a JSON object
    * @return response which is a Future object of promise of JSON type
-   * 
+   *
    */
   public Future<JsonObject> queryCallBackDataBase(JsonObject request) {
     JsonObject finalResponse = new JsonObject();
@@ -545,7 +555,7 @@ public class CallbackServiceImpl implements CallbackService {
     /* Set Connection Object */
     if (connectOptions == null) {
       connectOptions = new PgConnectOptions().setPort(databasePort).setHost(databaseIP)
-          .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
+              .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
     }
 
     /* Pool options */
@@ -554,8 +564,10 @@ public class CallbackServiceImpl implements CallbackService {
     }
 
     /* Create the client pool */
-    pgClient = PgPool.pool(vertx, connectOptions, poolOptions);
-
+    if(pgClient == null)
+    {
+      pgClient = PgPool.pool(vertx, connectOptions, poolOptions);
+    }
     if (pgClient != null) {
       try {
         /* Execute simple query */
