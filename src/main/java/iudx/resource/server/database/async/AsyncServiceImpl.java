@@ -53,13 +53,9 @@ public class AsyncServiceImpl implements AsyncService {
   private final Util util;
   private final Vertx vertx;
 
-  public AsyncServiceImpl(
-          Vertx vertx,
-          ElasticClient client,
-          PostgresService pgService,
-          S3FileOpsHelper s3FileOpsHelper,
-          String timeLimit,
-          String filePath) {
+
+  public AsyncServiceImpl(Vertx vertx, ElasticClient client, PostgresService pgService,
+      S3FileOpsHelper s3FileOpsHelper, String timeLimit, String filePath) {
     this.vertx = vertx;
     this.client = client;
     this.pgService = pgService;
@@ -123,10 +119,7 @@ public class AsyncServiceImpl implements AsyncService {
 
   @Override
   public AsyncService asyncSearch(String requestId, String sub, String searchId, JsonObject query) {
-    // check DB whether requestId exist in DB
-    // If yes, create a new Row with searchId with same requestId, new S3Url from objectId and
-    // status COMPLETE
-    // If No, create new row in DB with status as pending and start scroll request.
+
     getRecord4RequestId(requestId)
         .onSuccess(handler -> {
           process4ExistingRequestId(requestId, sub, searchId, handler);
@@ -239,11 +232,13 @@ public class AsyncServiceImpl implements AsyncService {
 
 
     ProgressListener progressListener = new AsyncFileScrollProgressListener(searchId, pgService);
+
     scrollQuery(file, query, searchId, progressListener, scrollHandler -> {
       if (scrollHandler.succeeded()) {
         s3FileOpsHelper.s3Upload(file, objectId, s3UploadHandler -> {
           if (s3UploadHandler.succeeded()) {
-            String s3_url = generateNewURL(objectId);
+            JsonObject uploadResult = s3UploadHandler.result();
+            String s3_url = uploadResult.getString("s3_url");
             String expiry = LocalDateTime.now().plusDays(1).toString();
             // update DB for search ID and requestId;
             progressListener.finish();
@@ -261,7 +256,6 @@ public class AsyncServiceImpl implements AsyncService {
                   LOGGER.debug("updated status in postgres");
                   try {
                     vertx.fileSystem().deleteBlocking(filePath + "/" + file.getName());
-
                   } catch (Exception ex) {
                     LOGGER.error(
                         "File deletion operation failed for fileName : {} try to delete manually to reclaim disk-space",
@@ -293,15 +287,7 @@ public class AsyncServiceImpl implements AsyncService {
       }
     });
   }
-
-  private String generateNewURL(String object_id) {
-
-    long expiry = ZonedDateTime.now().toEpochSecond() * 1000 + TimeUnit.DAYS.toMillis(1);
-    URL s3_url = s3FileOpsHelper.generatePreSignedUrl(expiry, object_id);
-    return s3_url.toString();
-  }
-
-
+  
   public AsyncService scrollQuery(File file, JsonObject request, String searchId,
       ProgressListener progressListener, Handler<AsyncResult<JsonObject>> handler) {
 

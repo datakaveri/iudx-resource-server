@@ -250,7 +250,7 @@ public class ElasticClient {
       // searchRequest.addParameter(FILTER_PATH, "took,hits.hits._source");
       searchRequest.indices(index);
       searchRequest.source(searchSourceBuilder);
-      searchRequest.scroll(TimeValue.timeValueMinutes(5L));
+      searchRequest.scroll(TimeValue.timeValueMinutes(15L));
 
       RequestOptions rqo = RequestOptions.DEFAULT;
       rqo.toBuilder().addParameter(FILTER_PATH, "took,hits.hits._source");
@@ -292,7 +292,7 @@ public class ElasticClient {
         }
 
         SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId);
-        scrollRequest.scroll(TimeValue.timeValueMinutes(5L));
+        scrollRequest.scroll(TimeValue.timeValueMinutes(15L));
         searchResponse = highLevelClient.scroll(scrollRequest, rqo);
         scrollId = searchResponse.getScrollId();
         searchHits = searchResponse.getHits().getHits();
@@ -322,22 +322,4 @@ public class ElasticClient {
     }
     return this;
   }
-
-  // private Future<Void> updateProgress(String searchId, double progress) {
-  // Promise<Void> promise = Promise.promise();
-  // StringBuilder query = new StringBuilder(UPDATE_S3_PROGRESS_SQL
-  // .replace("$1", String.valueOf(progress * 100.0)).replace("$2", searchId));
-  // LOGGER.debug("updating progress : " + progress);
-  // pgService.executeQuery(
-  // query.toString(),
-  // pgHandler -> {
-  // if (pgHandler.succeeded()) {
-  // promise.complete();
-  // } else {
-  // promise.fail(pgHandler.cause());
-  // }
-  // });
-  //
-  // return promise.future();
-  // }
 }
