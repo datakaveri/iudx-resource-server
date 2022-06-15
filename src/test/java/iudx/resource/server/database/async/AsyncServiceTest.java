@@ -1,13 +1,11 @@
 package iudx.resource.server.database.async;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,6 +16,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -59,6 +60,16 @@ public class AsyncServiceTest {
   private static String filePath;
   private static String bucketName;
   private static AsyncResult<JsonObject> asyncResult1, asyncResult2;
+  static AsyncServiceImpl asyncService2;
+  static AsyncFileScrollProgressListener listener;
+  @Mock
+  static PostgresService postgresService;
+  @Mock
+  Throwable throwable;
+  @Mock
+  JsonArray jsonArray;
+  @Mock
+  JsonObject jsonObject;
 
   @BeforeAll
   @DisplayName("Initialize vertx and deploy async verticle")
@@ -348,4 +359,92 @@ public class AsyncServiceTest {
               }
             });
   }
+
+  @Test
+  @DisplayName("Test getRecord4RequestId method : Failure")
+  public void testGetRecord4RequestIdFailure(VertxTestContext vertxTestContext) {
+    when(asyncResult2.succeeded()).thenReturn(true);
+    when(asyncResult2.result()).thenReturn(jsonObject);
+    when(jsonObject.getJsonArray(anyString())).thenReturn(jsonArray);
+    doAnswer(new Answer<AsyncResult<JsonObject>>() {
+      @Override
+      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult2);
+        return null;
+      }
+    }).when(postgresService).executeQuery(anyString(), any());
+    when(jsonArray.isEmpty()).thenReturn(true);
+    asyncService2 = new AsyncServiceImpl(Vertx.vertx(), client, postgresService, fileOpsHelper, timeLimit, filePath);
+    asyncService2.getRecord4RequestId("Dummy ID").onComplete(handler -> {
+      if (handler.failed()) {
+        assertEquals("Record doesn't exist in db for requestId.", handler.cause().getMessage());
+        vertxTestContext.completeNow();
+      } else {
+        vertxTestContext.failNow(handler.cause());
+      }
+    });
+
+  }
+
+  @Test
+  @DisplayName("Test executePGQuery method : failure")
+  public void testExecutePgQueryFailure(VertxTestContext vertxTestContext) {
+    asyncService2 = new AsyncServiceImpl(Vertx.vertx(), client, postgresService, fileOpsHelper, timeLimit, filePath);
+    when(asyncResult2.succeeded()).thenReturn(false);
+    when(asyncResult2.cause()).thenReturn(throwable);
+    doAnswer(new Answer<AsyncResult<JsonObject>>() {
+      @Override
+      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult2);
+        return null;
+      }
+    }).when(postgresService).executeQuery(anyString(), any());
+
+    asyncService2.executePGQuery("Dummy Query").onComplete(handler -> {
+      if (handler.succeeded()) {
+        vertxTestContext.failNow(handler.cause());
+      } else {
+        assertEquals("failed query execution throwable", handler.cause().getMessage());
+        vertxTestContext.completeNow();
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("Test scrollQuery method : for Invalid Query")
+  public void testScrollQueryWithInvalidQuery(VertxTestContext vertxTestContext) {
+    ProgressListener progressListener = mock(ProgressListener.class);
+    asyncService2 = new AsyncServiceImpl(Vertx.vertx(), client, postgresService, fileOpsHelper, timeLimit, filePath);
+    when(jsonObject.put(anyString(), anyBoolean())).thenReturn(jsonObject);
+    asyncService2.scrollQuery(file, jsonObject, "Dummy SearchID", progressListener, handler -> {
+      if (handler.succeeded()) {
+        vertxTestContext.failNow(handler.cause());
+      } else {
+        assertEquals("{\"type\":400,\"detail\":\"bad parameters\"}", handler.cause().getMessage());
+        vertxTestContext.completeNow();
+      }
+    });
+  }
+
+
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true,false})
+  @DisplayName("Test updateProgress method : Different boolean values")
+  public void testUpdateProgressFailure(boolean value,VertxTestContext vertxTestContext) {
+    AsyncFileScrollProgressListener.executionCounter = mock(AsyncFileScrollProgressListener.ExecutionCounter.class);
+    when(asyncResult2.succeeded()).thenReturn(value);
+    lenient().when(asyncResult2.cause()).thenReturn(throwable);
+    lenient().doAnswer(new Answer<AsyncResult<JsonObject>>() {
+      @Override
+      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult2);
+        return null;
+      }
+    }).when(postgresService).executeQuery(anyString(), any());
+    listener = new AsyncFileScrollProgressListener("Dummy search ID", postgresService);
+    listener.updateProgress(0.55);
+    vertxTestContext.completeNow();
+  }
+
 }
