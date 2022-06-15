@@ -17,7 +17,7 @@ public class AsyncFileScrollProgressListener implements ProgressListener {
 
   private PriorityQueue<Double> progressQueue;
   private PostgresService postgresService;
-  private ExecutionCounter executionCounter;
+  static ExecutionCounter executionCounter;
   private final String searchId;
   private ExecutorService executor;
 
@@ -26,7 +26,10 @@ public class AsyncFileScrollProgressListener implements ProgressListener {
     progressQueue.add(0.1);
     this.searchId = searchId;
     this.postgresService = service;
-    this.executionCounter = new ExecutionCounter();
+    if (executionCounter == null)
+    {
+      executionCounter = new ExecutionCounter();
+    }
     executor = Executors.newSingleThreadExecutor();
   }
 
@@ -50,15 +53,15 @@ public class AsyncFileScrollProgressListener implements ProgressListener {
 
       executor.execute(() -> {
         updateProgress(progress, executionCounter)
-            .onComplete(handler -> {
-              try {
-                // sleep for 5s to avoid request flooding in PG or pool connection exhaustion.
-                Thread.sleep(5000);
-              } catch (InterruptedException e) {
-                e.printStackTrace();
-              }
-              executionCounter.isExecuting = false;
-            });
+                .onComplete(handler -> {
+                  try {
+                    // sleep for 5s to avoid request flooding in PG or pool connection exhaustion.
+                    Thread.sleep(5000);
+                  } catch (InterruptedException e) {
+                    e.printStackTrace();
+                  }
+                  executionCounter.isExecuting = false;
+                });
       });
     }
   }
@@ -66,22 +69,22 @@ public class AsyncFileScrollProgressListener implements ProgressListener {
   private Future<Void> updateProgress(double progress, ExecutionCounter executionCounter) {
     Promise<Void> promise = Promise.promise();
     StringBuilder query = new StringBuilder(UPDATE_S3_PROGRESS_SQL
-        .replace("$1", String.valueOf(progress * 100.0))
-        .replace("$2", searchId));
+            .replace("$1", String.valueOf(progress * 100.0))
+            .replace("$2", searchId));
     LOGGER.debug("updating progress : " + query.toString());
     postgresService
-        .executeQuery(query.toString(), pgHandler -> {
-          LOGGER.debug(pgHandler);
-          if (pgHandler.succeeded()) {
-            LOGGER.debug("updated success for progress :" + progress);
-            LOGGER.debug("execution status : " + executionCounter.isExecuting);
-            promise.complete();
-          } else {
-            LOGGER.error(pgHandler);
-            executionCounter.isExecuting = false;
-            promise.fail(pgHandler.cause());
-          }
-        });
+            .executeQuery(query.toString(), pgHandler -> {
+              LOGGER.debug(pgHandler);
+              if (pgHandler.succeeded()) {
+                LOGGER.debug("updated success for progress :" + progress);
+                LOGGER.debug("execution status : " + executionCounter.isExecuting);
+                promise.complete();
+              } else {
+                LOGGER.error(pgHandler);
+                executionCounter.isExecuting = false;
+                promise.fail(pgHandler.cause());
+              }
+            });
     return promise.future();
   }
 
