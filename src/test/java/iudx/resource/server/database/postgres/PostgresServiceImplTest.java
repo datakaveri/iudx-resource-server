@@ -7,10 +7,9 @@ import io.vertx.junit5.VertxTestContext;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
-import iudx.resource.server.configuration.Configuration;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -20,64 +19,47 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(VertxExtension.class)
 public class PostgresServiceImplTest {
 
-    private static final Logger LOGGER = LogManager.getLogger(PostgresServiceImplTest.class);
-    private static PostgresServiceImpl pgService;
-    private static PostgreSQLContainer<?> postgresContainer;
-    public static String CONTAINER = "postgres:12.11";
-    public static String database = "iudx";
-    private static Configuration config;
-    private static JsonObject dbConfig;
-
-    @BeforeAll
-    static void setup(Vertx vertx, VertxTestContext testContext) {
-
-        config = new Configuration();
-        dbConfig = config.configLoader(2, vertx);
-
-        dbConfig.put("databaseIp", "localhost");
-        dbConfig.put("databasePort", 5432);
-        dbConfig.put("databaseName", database);
-        dbConfig.put("databaseUserName", "iudx_user");
-        dbConfig.put("databasePassword", "pg@postgres.dk");
-        dbConfig.put("poolSize", 25);
-
-        postgresContainer = new PostgreSQLContainer<>(CONTAINER).withInitScript("pg_test_schema.sql");
-
-        postgresContainer.withUsername(dbConfig.getString("databaseUserName"));
-        postgresContainer.withPassword(dbConfig.getString("databasePassword"));
-        postgresContainer.withDatabaseName(dbConfig.getString("databaseName"));
-        postgresContainer.withExposedPorts(dbConfig.getInteger("databasePort"));
+    PostgresServiceImpl pgService;
+    @Container
+    PostgreSQLContainer container = new PostgreSQLContainer<>("postgres:12.11")
+            .withInitScript("pg_test_schema.sql");
 
 
-        postgresContainer.start();
-        if (postgresContainer.isRunning()) {
-            dbConfig.put("databasePort", postgresContainer.getFirstMappedPort());
+    @BeforeEach
+    public void setUp(VertxTestContext vertxTestContext) {
+        // Now we have an address and port for Postgresql, no matter where it is running
+        Integer port = container.getFirstMappedPort();
+        String host = container.getHost();
+        String db = container.getDatabaseName();
+        String user = container.getUsername();
+        String password = container.getPassword();
 
-            PgConnectOptions connectOptions =
-                    new PgConnectOptions()
-                            .setPort(dbConfig.getInteger("databasePort"))
-                            .setHost(dbConfig.getString("databaseIp"))
-                            .setDatabase(dbConfig.getString("databaseName"))
-                            .setUser(dbConfig.getString("databaseUserName"))
-                            .setPassword(dbConfig.getString("databasePassword"))
-                            .setReconnectAttempts(2)
-                            .setReconnectInterval(1000);
+        PgConnectOptions connectOptions = new PgConnectOptions()
+                .setPort(port)
+                .setHost(host)
+                .setDatabase(db)
+                .setUser(user)
+                .setPassword(password);
 
+        PoolOptions poolOptions = new PoolOptions()
+                .setMaxSize(10);
 
-            PoolOptions poolOptions = new PoolOptions().setMaxSize(dbConfig.getInteger("poolSize"));
-            PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
+        Vertx vertxObj = Vertx.vertx();
 
-            pgService = new PostgresServiceImpl(pool);
-            testContext.completeNow();
-        }
+        PgPool pool = PgPool.pool(vertxObj, connectOptions, poolOptions);
+
+        pgService = new PostgresServiceImpl(pool);
+        vertxTestContext.completeNow();
     }
+
     @Test
     @DisplayName("Test executeQuery method : Success")
     public void testExecuteQuerySuccess(VertxTestContext vertxTestContext) {
