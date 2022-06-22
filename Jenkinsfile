@@ -58,7 +58,7 @@ pipeline {
       steps{
         script{
           sh 'scp Jmeter/ResourceServer.jmx jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Jmeter/'
-          sh 'scp src/test/resources/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection_new.json jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Newman/'
+          sh 'scp src/test/resources/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection.json jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Newman/'
           sh 'docker-compose -f docker-compose.test.yml up -d perfTest'
           sh 'sleep 45'
         }
