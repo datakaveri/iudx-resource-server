@@ -3,9 +3,9 @@ package iudx.resource.server.metering;
 import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
 import static iudx.resource.server.apiserver.util.Constants.IUDX_PROVIDER_AUDIT_URL;
 import static iudx.resource.server.metering.util.Constants.API_COLUMN;
-import static iudx.resource.server.metering.util.Constants.BETWEEN;
 import static iudx.resource.server.metering.util.Constants.COUNT_COLUMN;
 import static iudx.resource.server.metering.util.Constants.DURING;
+import static iudx.resource.server.metering.util.Constants.BETWEEN;
 import static iudx.resource.server.metering.util.Constants.ENDPOINT;
 import static iudx.resource.server.metering.util.Constants.END_TIME;
 import static iudx.resource.server.metering.util.Constants.ERROR;
@@ -69,6 +69,12 @@ public class MeteringServiceImpl implements MeteringService {
   private String databaseTableName;
   private ResponseBuilder responseBuilder;
 
+  public final String _COUNT_COLUMN;
+  public final String _RESOURCEID_COLUMN;
+  public final String _API_COLUMN;
+  public final String _USERID_COLUMN;
+  public final String _TIME_COLUMN;
+  
   public MeteringServiceImpl(JsonObject propObj, Vertx vertxInstance) {
 
     if (propObj != null && !propObj.isEmpty()) {
