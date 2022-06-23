@@ -20,11 +20,11 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-//@Testcontainers
+@Testcontainers
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(VertxExtension.class)
 public class PostgresServiceImplTest {
-/**
+
     static PostgresServiceImpl pgService;
     @Container
     static PostgreSQLContainer container = new PostgreSQLContainer<>("postgres:12.11")
@@ -140,5 +140,5 @@ public class PostgresServiceImplTest {
             }
         });
     }
-**/
+
 }
