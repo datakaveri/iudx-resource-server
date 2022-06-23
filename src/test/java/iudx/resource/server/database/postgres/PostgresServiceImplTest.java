@@ -7,10 +7,7 @@ import io.vertx.junit5.VertxTestContext;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -23,20 +20,19 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Disabled
 @Testcontainers
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(VertxExtension.class)
 public class PostgresServiceImplTest {
 
-    PostgresServiceImpl pgService;
+    static PostgresServiceImpl pgService;
     @Container
-    PostgreSQLContainer container = new PostgreSQLContainer<>("postgres:12.11")
+    static PostgreSQLContainer container = new PostgreSQLContainer<>("postgres:12.11")
             .withInitScript("pg_test_schema.sql");
 
 
-    @BeforeEach
-    public void setUp(VertxTestContext vertxTestContext) {
+    @BeforeAll
+    public static void  setUp(VertxTestContext vertxTestContext) {
         // Now we have an address and port for Postgresql, no matter where it is running
         Integer port = container.getFirstMappedPort();
         String host = container.getHost();
