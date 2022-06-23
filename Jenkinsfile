@@ -58,7 +58,7 @@ pipeline {
       steps{
         script{
           sh 'scp Jmeter/ResourceServer.jmx jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Jmeter/'
-          sh 'scp src/test/resources/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection_new.json jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Newman/'
+          sh 'scp src/test/resources/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection.json jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Newman/'
           sh 'docker-compose -f docker-compose.test.yml up -d perfTest'
           sh 'sleep 45'
         }
@@ -90,7 +90,7 @@ pipeline {
           script{
             startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0'])
             sh 'curl http://127.0.0.1:8090/JSON/pscan/action/disableScanners/?ids=10096'
-            sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection_new.json -e /home/ubuntu/configs/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html --reporter-htmlextra-skipSensitiveData'
+            sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection.json -e /home/ubuntu/configs/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html --reporter-htmlextra-skipSensitiveData'
             runZapAttack()
           }
         }
@@ -99,7 +99,7 @@ pipeline {
         always{
           node('master') {
             script{
-              archiveZap failHighAlerts: 1, failMediumAlerts: 1, failLowAlerts: 1
+              archiveZap failHighAlerts: 1, failMediumAlerts: 1, failLowAlerts: 2
               publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportTitles: '', reportName: 'Integration Test Report'])
             }
           }
