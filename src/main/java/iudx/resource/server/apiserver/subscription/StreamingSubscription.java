@@ -22,21 +22,21 @@ public class StreamingSubscription implements Subscription {
   private PostgresService pgService;
   private static volatile StreamingSubscription instance;
 
-  private StreamingSubscription(DataBrokerService databroker, PostgresService pgService) {
+  public StreamingSubscription(DataBrokerService databroker, PostgresService pgService) {
     this.databroker = databroker;
     this.pgService=pgService;
   }
 
-  public static StreamingSubscription getInstance(DataBrokerService databroker,
-      PostgresService pgService) {
-    if (instance == null) {
-      synchronized (StreamingSubscription.class) {
-        if (instance == null)
-          instance = new StreamingSubscription(databroker, pgService);
-      }
-    }
-    return instance;
-  }
+//  public static StreamingSubscription getInstance(DataBrokerService databroker,
+//      PostgresService pgService) {
+//    if (instance == null) {
+//      synchronized (StreamingSubscription.class) {
+//        if (instance == null)
+//          instance = new StreamingSubscription(databroker, pgService);
+//      }
+//    }
+//    return instance;
+//  }
 
   /**
    * create a streaming subscription.

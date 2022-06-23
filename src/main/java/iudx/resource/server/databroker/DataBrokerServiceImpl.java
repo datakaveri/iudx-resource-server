@@ -53,7 +53,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   private boolean bindingSuccessful;
   private RabbitClient webClient;
   private PostgresClient pgClient;
-  private SubscriptionService subscriptionService;
+  static SubscriptionService subscriptionService;
 
 
   public DataBrokerServiceImpl(RabbitClient webClient, PostgresClient pgClient, JsonObject config) {
