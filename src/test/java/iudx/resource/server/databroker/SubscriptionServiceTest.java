@@ -67,6 +67,8 @@ public class SubscriptionServiceTest {
         jsonArray.add("ABCD/ABCD/ABCD/ABCD/ABCD");
         jsonArray.add("EFGH/EFGH/EFGH/EFGH/EFGH");
 
+        request.put(Constants.SUBSCRIPTION_ID, "Dummy_Queue_Name");
+        request.put(Constants.USER_ID,"Dummy_User_ID");
         request.put(Constants.CONSUMER, "Dummy@consumer");
         request.put(Constants.NAME, "Dummy name");
         request.put(Constants.CALLBACKURL, "Dummy callbackurl");
