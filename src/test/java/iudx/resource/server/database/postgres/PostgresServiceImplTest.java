@@ -23,7 +23,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
+@Disabled
 @Testcontainers
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(VertxExtension.class)
