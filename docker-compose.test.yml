@@ -15,14 +15,12 @@ services:
       - /home/ubuntu/configs/keystore.jks:/usr/share/app/configs/keystore.jks
       - ./docker/runTests.sh:/usr/share/app/docker/runTests.sh
       - ${WORKSPACE}:/tmp/test
+      - /var/run/docker.sock:/var/run/docker.sock
       - type: volume
         source: rs-volume
         target: /usr/share/app/storage/temp-dir
-
-
     command: bash -c "docker/runTests.sh"
-    networks: 
-      - rs-net
+    network_mode: host
     logging:
          driver: "json-file"
          options:
