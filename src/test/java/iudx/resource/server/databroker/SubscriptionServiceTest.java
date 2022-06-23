@@ -179,7 +179,7 @@ public class SubscriptionServiceTest {
         });
     }
 
-    @Disabled
+
     @Test
     @DisplayName("Test appendStreamingSubscription method : Success")
     public void testAppendStreamingSubscriptionSuccess(VertxTestContext vertxTestContext) {
