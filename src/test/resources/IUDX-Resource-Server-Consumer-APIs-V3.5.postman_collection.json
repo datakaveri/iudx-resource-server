@@ -1,10 +1,135 @@
 {
 	"info": {
-		"_postman_id": "cadfc029-a0b1-4502-9abf-0ea8f91ec66e",
-		"name": "IUDX-Resource-Server-Consumer-APIs-V3",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"_postman_id": "454bafc5-45ed-413e-8dc5-7453a35349ba",
+		"name": "IUDX-Resource-Server-Consumer-APIs-V3.5",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "3868286"
 	},
 	"item": [
+		{
+			"name": "Get Tokens",
+			"item": [
+				{
+					"name": "Get token for accessing an Open Resource",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"openResourceToken\", jsonData.results.accessToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "clientId",
+								"value": "{{clientID}}",
+								"type": "text"
+							},
+							{
+								"key": "clientSecret",
+								"value": "{{clientSecret}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemId\": \"rs.iudx.io\",\n  \"itemType\": \"resource_server\",\n  \"role\": \"consumer\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{auth-url}}/auth/v1/token",
+							"protocol": "https",
+							"host": [
+								"{{auth-url}}"
+							],
+							"path": [
+								"auth",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get token for accessing a Secure Resource",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"secureResourceToken\", jsonData.results.accessToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "clientId",
+								"value": "{{clientID}}",
+								"type": "text"
+							},
+							{
+								"key": "clientSecret",
+								"value": "{{clientSecret}}",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemId\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\", \n  \"itemType\": \"resource\",\n  \"role\": \"consumer\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{auth-url}}/auth/v1/token",
+							"protocol": "https",
+							"host": [
+								"{{auth-url}}"
+							],
+							"path": [
+								"auth",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
 		{
 			"name": "Spatial Search",
 			"item": [
@@ -9964,6 +10089,56 @@
 							""
 						]
 					}
+				}
+			]
+		},
+		{
+			"name": "Consumer Audit",
+			"item": [
+				{
+					"name": "Get total API calls made",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							},
+							{
+								"key": "options",
+								"value": "count",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/consumer/audit?timerel=between&time=2022-06-20T00:00:00Z&endTime=2022-06-21T16:00:00Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"consumer",
+								"audit"
+							],
+							"query": [
+								{
+									"key": "timerel",
+									"value": "between"
+								},
+								{
+									"key": "time",
+									"value": "2022-06-20T00:00:00Z"
+								},
+								{
+									"key": "endTime",
+									"value": "2022-06-21T16:00:00Z"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}

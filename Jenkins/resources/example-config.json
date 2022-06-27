@@ -1,0 +1,15 @@
+{
+	"clientID": "",
+	"clientSecret": "",
+    "auth-server-url": "https://auth-host/auth/v1/token",
+    "pune-request-body": {
+        "itemId": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood",
+        "itemType": "resource_group",
+        "role": "consumer"
+    },
+    "surat-request-body": {
+        "itemId": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+        "itemType": "resource",
+        "role": "consumer"
+    }
+}
