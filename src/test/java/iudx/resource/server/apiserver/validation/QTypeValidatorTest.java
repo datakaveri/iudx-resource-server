@@ -27,18 +27,20 @@ public class QTypeValidatorTest {
   static Stream<Arguments> invalidValues() {
     // Add any invalid value which will throw error.
     return Stream.of(
-        Arguments.of("", true),
-        Arguments.of("    ", true),
-        Arguments.of(RandomStringUtils.random(600), true),
-        Arguments.of("referenceLevel<>15.0", true),
-        Arguments.of("referenceLevel>>15.0", true),
-        Arguments.of("referenceLevel===15.0", true),
-        Arguments.of("referenceLevel+15.0", true),
-        Arguments.of("referenceLevel/15.0", true),
-        Arguments.of("referenceLevel*15.0", true),
-        Arguments.of("reference_Level$>15.0", true),
-        Arguments.of("reference$Level>15.0", true),
-        Arguments.of("referenceLevel!<15.0", true));
+            Arguments.of("", true),
+            Arguments.of("    ", true),
+            Arguments.of(RandomStringUtils.random(600), true),
+            Arguments.of("referenceLevel<>15.0", true),
+            Arguments.of("referenceLevel>>15.0", true),
+            Arguments.of("referenceLevel===15.0", true),
+            Arguments.of("referenceLevel+15.0", true),
+            Arguments.of("referenceLevel/15.0", true),
+            Arguments.of("referenceLevel*15.0", true),
+            Arguments.of("reference_Level$>15.0", true),
+            Arguments.of("reference$Level>15.0", true),
+            Arguments.of("referenceLevel!<15.0", true),
+            Arguments.of("",false),
+            Arguments.of(null,true));
   }
 
 
@@ -51,7 +53,7 @@ public class QTypeValidatorTest {
   @MethodSource("invalidValues")
   @Description("q parameter type failure for different invalid values.")
   public void testInvalidQTypeValue(String value, boolean required, Vertx vertx,
-      VertxTestContext testContext) {
+                                    VertxTestContext testContext) {
     qTypeValidator = new QTypeValidator(value, required);
     assertThrows(DxRuntimeException.class, () -> qTypeValidator.isValid());
     testContext.completeNow();
@@ -59,23 +61,26 @@ public class QTypeValidatorTest {
 
   static Stream<Arguments> validValues() {
     return Stream.of(
-        Arguments.of("referenceLevel>15.0", true),
-        Arguments.of("reference_Level>15.0", true),
-        Arguments.of(
-            "id==iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055",
-            true),
-        Arguments.of(null, false));
+            Arguments.of("referenceLevel>15.0", true),
+            Arguments.of("reference_Level>15.0", true),
+            Arguments.of(
+                    "id==iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055",
+                    true),
+            Arguments.of(null, false));
   }
 
   @ParameterizedTest
   @MethodSource("validValues")
   @Description("success for valid q query")
   public void testValidQValue(String value, boolean required, Vertx vertx,
-      VertxTestContext testContext) {
+                              VertxTestContext testContext) {
     qTypeValidator = new QTypeValidator(value, required);
     assertTrue(qTypeValidator.isValid());
     testContext.completeNow();
   }
+
+
+
 
 
 }
