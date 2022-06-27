@@ -1,5 +1,6 @@
 package iudx.resource.server.databroker;
 
+import static iudx.resource.server.common.Constants.ASYNC_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.BROKER_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
 import org.apache.logging.log4j.LogManager;
@@ -17,6 +18,8 @@ import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.sqlclient.PoolOptions;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.common.VHosts;
+import iudx.resource.server.database.async.AsyncService;
+import iudx.resource.server.databroker.listeners.AsyncQueryListener;
 import iudx.resource.server.databroker.listeners.RMQListeners;
 import iudx.resource.server.databroker.listeners.RevokeClientQListener;
 import iudx.resource.server.databroker.listeners.UniqueAttribQListener;
@@ -69,6 +72,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
   private RabbitWebClient rabbitWebClient;
   private PostgresClient pgClient;
   private CacheService cache;
+  private AsyncService asyncService;
 
 
   /**
@@ -170,16 +174,19 @@ public class DataBrokerVerticle extends AbstractVerticle {
     databroker = new DataBrokerServiceImpl(rabbitClient, pgClient, config());
 
     cache = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
-
+    asyncService = AsyncService.createProxy(vertx, ASYNC_SERVICE_ADDRESS);
 
     String internalVhost = config().getString(VHosts.IUDX_INTERNAL.value);
     RMQListeners revokeQListener = new RevokeClientQListener(vertx, cache, config, internalVhost);
     RMQListeners uniqueAttrQListener =
         new UniqueAttribQListener(vertx, cache, config, internalVhost);
+    RMQListeners asyncQueryQListener =
+        new AsyncQueryListener(vertx, config, internalVhost, asyncService);
 
     // start
     revokeQListener.start();
     uniqueAttrQListener.start();
+    asyncQueryQListener.start();
 
     /* Publish the Data Broker service with the Event Bus against an address. */
 
