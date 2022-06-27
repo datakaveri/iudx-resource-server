@@ -19,7 +19,8 @@ public class Constants {
           "/ngsi-ld/v1/entityOperations/query",
           "/ngsi-ld/v1/temporal/entityOperations/query",
           "/ngsi-ld/v1/async/status",
-          "/ngsi-ld/v1/consumer/audit");
+          "/ngsi-ld/v1/consumer/audit",
+          "/ngsi-ld/v1/async/search");
   public static final String AUTH_TIP_PATH = "/auth/v1/token/introspect";
   public static final List<String> CLOSED_ENDPOINTS =
       List.of("/ngsi-ld/v1/ingestion", "/ngsi-ld/v1/subscription");
