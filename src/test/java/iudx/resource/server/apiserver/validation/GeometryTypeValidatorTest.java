@@ -32,21 +32,21 @@ public class GeometryTypeValidatorTest {
   static Stream<Arguments> allowedValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
-        Arguments.of("point", true),
-        Arguments.of("Point", true),
-        Arguments.of("polygon", true),
-        Arguments.of("Polygon", true),
-        Arguments.of("LineString", true),
-        Arguments.of("linestring", true),
-        Arguments.of("bbox", true),
-        Arguments.of(null, false));
+            Arguments.of("point", true),
+            Arguments.of("Point", true),
+            Arguments.of("polygon", true),
+            Arguments.of("Polygon", true),
+            Arguments.of("LineString", true),
+            Arguments.of("linestring", true),
+            Arguments.of("bbox", true),
+            Arguments.of(null, false));
   }
 
   @ParameterizedTest
   @MethodSource("allowedValues")
   @Description("geometry type parameter allowed values.")
   public void testValidGeomTypeValue(String value, boolean required, Vertx vertx,
-      VertxTestContext testContext) {
+                                     VertxTestContext testContext) {
     geomTypeValidator = new GeometryTypeValidator(value, required);
     assertTrue(geomTypeValidator.isValid());
     testContext.completeNow();
@@ -57,21 +57,24 @@ public class GeometryTypeValidatorTest {
     // Add any valid value which will pass successfully.
     String random600Id = RandomStringUtils.random(600);
     return Stream.of(
-        Arguments.of("", true),
-        Arguments.of("  ", true),
-        Arguments.of("around", true),
-        Arguments.of("bypass", true),
-        Arguments.of("1=1", true),
-        Arguments.of("AND XYZ=XYZ", true),
-        Arguments.of(random600Id, true),
-        Arguments.of("%2cX%2c", true));
+            Arguments.of("", true),
+            Arguments.of("  ", true),
+            Arguments.of("around", true),
+            Arguments.of("bypass", true),
+            Arguments.of("1=1", true),
+            Arguments.of("AND XYZ=XYZ", true),
+            Arguments.of(random600Id, true),
+            Arguments.of("%2cX%2c", true),
+            Arguments.of("",true),
+            Arguments.of(null,true),
+            Arguments.of("",false));
   }
 
   @ParameterizedTest
   @MethodSource("invalidValues")
   @Description("geometry type parameter invalid values.")
   public void testInvalidGeomTypeValue(String value, boolean required, Vertx vertx,
-      VertxTestContext testContext) {
+                                       VertxTestContext testContext) {
     geomTypeValidator = new GeometryTypeValidator(value, required);
     assertThrows(DxRuntimeException.class, () -> geomTypeValidator.isValid());
     testContext.completeNow();
