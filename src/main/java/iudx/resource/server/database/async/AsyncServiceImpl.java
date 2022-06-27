@@ -176,7 +176,7 @@ public class AsyncServiceImpl implements AsyncService {
       if (pgHandler.succeeded()) {
         JsonArray results = pgHandler.result().getJsonArray("result");
         if (results.isEmpty()) {
-          promise.fail("Record doesn,t exist in db for requestId.");
+          promise.fail("Record doesn't exist in db for requestId.");
         } else {
           LOGGER.debug("record : " + results);
           promise.complete(results);
