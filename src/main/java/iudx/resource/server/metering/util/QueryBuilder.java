@@ -158,7 +158,7 @@ public class QueryBuilder {
     long time = getEpochTime(zst);
     String isoTime =
         LocalDateTime.now()
-            .atZone(ZoneId.systemDefault())
+            .atZone(ZoneId.of("Asia/Kolkata"))
             .truncatedTo(ChronoUnit.SECONDS)
             .toString();
     long response_size = request.getLong(RESPONSE_SIZE);

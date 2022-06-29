@@ -63,7 +63,7 @@ public class MeteringServiceTest {
   static void startVertex(Vertx vertx, VertxTestContext vertxTestContext) {
     vertxObj = vertx;
     config = new Configuration();
-    JsonObject dbConfig = config.configLoader(6, vertx);
+    JsonObject dbConfig = config.configLoader(5, vertx);
     databaseIP = dbConfig.getString("meteringDatabaseIP");
     databasePort = dbConfig.getInteger("meteringDatabasePort");
     databaseName = dbConfig.getString("meteringDatabaseName");
@@ -450,7 +450,7 @@ public class MeteringServiceTest {
   }
 
   @Test
-  @DisplayName("Testing count query for given time,api and providerId.")
+  @DisplayName("Testing read query for given time,api and providerId.")
   void readForGivenTimeApiAndProviderID(VertxTestContext vertxTestContext) {
     JsonObject jsonObject = readProviderRequest();
     jsonObject.remove(RESOURCE_ID);
