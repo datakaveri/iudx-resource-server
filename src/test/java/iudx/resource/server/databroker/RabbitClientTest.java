@@ -5,6 +5,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.junit5.VertxExtension;
@@ -27,6 +28,7 @@ import org.mockito.stubbing.Answer;
 
 import java.util.stream.Stream;
 
+import static iudx.resource.server.databroker.util.Constants.USER_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -61,6 +63,9 @@ public class RabbitClientTest {
     AsyncResult<RowSet<Row>> rowSetAsyncResult;
     @Mock
     Throwable throwable;
+    JsonObject request;
+    JsonArray jsonArray;
+    String vHost;
     PermissionOpType type;
 
     @BeforeEach
@@ -68,9 +73,20 @@ public class RabbitClientTest {
         userID = "Dummy UserID";
         password = "Dummy password";
         vertxObj = Vertx.vertx();
+        vHost = "Dummy vHost";
         when(configs.getString(anyString())).thenReturn("Dummy string");
         when(configs.getInteger(anyString())).thenReturn(400);
         when(rabbitConfigs.setVirtualHost(anyString())).thenReturn(rabbitConfigs);
+        request = new JsonObject();
+        jsonArray = new JsonArray();
+        jsonArray.add("ABCD/ABCD/ABCD/ABCD/ABCD");
+        jsonArray.add("EFGH/EFGH/EFGH/EFGH/EFGH");        request.put("exchangeName", "Dummy exchangeName");
+        request.put("queueName","Dummy Queue name");
+        request.put("resourceGroup","Dummy Resource Group");
+        request.put("id","Dummy ID");
+        request.put(USER_ID,"Dummy userID");
+        request.put("vHost","Dummy vHost");
+        request.put("entities",jsonArray);
         rabbitClient = new RabbitClient(vertxObj, rabbitConfigs, webClient, pgSQLClient, configs);
         vertxTestContext.completeNow();
     }
@@ -203,8 +219,8 @@ public class RabbitClientTest {
 
     static Stream<Arguments> booleanValues() {
         return Stream.of(
-                Arguments.of(true, "{\"type\":\"urn:dx:rs:badRequest\",\"status\":500,\"title\":\"urn:dx:rs:badRequest\",\"detail\":\"Dummy status message\"}"),
-                Arguments.of(false, "{\"type\":\"urn:dx:rs:badRequest\",\"status\":500,\"title\":\"urn:dx:rs:badRequest\",\"detail\":\"Dummy failure message\"}")
+                Arguments.of(true, "{\"type\":\"urn:dx:rs:badRequest\",\"status\":400,\"title\":\"urn:dx:rs:badRequest\",\"detail\":\"problem while getting user permissions\"}"),
+                Arguments.of(false, "{\"type\":\"urn:dx:rs:badRequest\",\"status\":400,\"title\":\"urn:dx:rs:badRequest\",\"detail\":\"problem while getting user permissions\"}")
         );
     }
 
@@ -217,29 +233,10 @@ public class RabbitClientTest {
         HttpResponse<Buffer> bufferHttpResponse1 = mock(HttpResponse.class);
 
         when(webClient.requestAsync(anyString(), anyString())).thenReturn(httpResponseFuture1);
-        when(webClient.requestAsync(anyString(), anyString(), any())).thenReturn(httpResponseFuture);
-        lenient().when(httpResponseAsyncResult.result()).thenReturn(bufferHttpResponse);
-        lenient().when(bufferHttpResponse.statusCode()).thenReturn(500);
-        lenient().when(bufferHttpResponse.statusMessage()).thenReturn("Dummy status message");
-        lenient().when(httpResponseAsyncResult.cause()).thenReturn(throwable);
-        lenient().when(throwable.getMessage()).thenReturn("Dummy failure message");
-
         when(httpResponseAsyncResult1.succeeded()).thenReturn(true);
         when(httpResponseAsyncResult1.result()).thenReturn(bufferHttpResponse1);
-        when(bufferHttpResponse1.statusCode()).thenReturn(200);
-        when(bufferHttpResponse1.body()).thenReturn(buffer);
-        when(buffer.toString()).thenReturn("[\n" +
-                "  {\n" +
-                "    \"write\" : \"Dummy response\"\n" +
-                "   }\n" +
-                "]");
-        doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
-            @Override
-            public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
-                ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0)).handle(httpResponseAsyncResult);
-                return null;
-            }
-        }).when(httpResponseFuture).onComplete(any());
+        when(bufferHttpResponse1.statusCode()).thenReturn(400);
+
         doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
             @Override
             public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
@@ -247,7 +244,6 @@ public class RabbitClientTest {
                 return null;
             }
         }).when(httpResponseFuture1).onComplete(any());
-        when(httpResponseAsyncResult.succeeded()).thenReturn(booleanValue);
         type = PermissionOpType.ADD_WRITE;
 
         rabbitClient.updateUserPermissions(userID, userID, type, userID).onComplete(handler -> {
@@ -325,4 +321,268 @@ public class RabbitClientTest {
         });
 
     }
+    @Test
+    @DisplayName("Test deleteExchange method : when status code is 204")
+    public void testDeleteExchangeWhenSC_NO_CONTENT (VertxTestContext vertxTestContext)
+    {
+        when(webClient.requestAsync(anyString(),anyString())).thenReturn(httpResponseFuture);
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(httpResponseAsyncResult.result()).thenReturn(bufferHttpResponse);
+        when(bufferHttpResponse.statusCode()).thenReturn(204);
+
+        doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+            @Override
+            public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0)).handle(httpResponseAsyncResult);
+                return null;
+            }
+        }).when(httpResponseFuture).onComplete(any());
+        rabbitClient.deleteExchange(request,vHost).onComplete(handler -> {
+            if(handler.succeeded())
+            {
+                assertEquals("{\"exchange\":\"Dummy exchangeName\"}",handler.result().toString());
+                vertxTestContext.completeNow();
+            }
+            else
+            {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    static Stream<Arguments> statusCodeInput()
+    {
+        return Stream.of(
+                Arguments.of(204, "{\"queue\":\"Dummy Queue name\"}"),
+                Arguments.of(404, "{\"type\":404,\"title\":\"failure\",\"detail\":\"Queue does not exist\"}")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("statusCodeInput")
+    @DisplayName("Test deleteQueue method : with different status code")
+    public void testDeleteQueue (int code, String expected, VertxTestContext vertxTestContext)
+    {
+        when(webClient.requestAsync(anyString(),anyString())).thenReturn(httpResponseFuture);
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(httpResponseAsyncResult.result()).thenReturn(bufferHttpResponse);
+        when(bufferHttpResponse.statusCode()).thenReturn(code);
+
+        doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+            @Override
+            public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0)).handle(httpResponseAsyncResult);
+                return null;
+            }
+        }).when(httpResponseFuture).onComplete(any());
+        rabbitClient.deleteQueue(request,vHost).onComplete(handler -> {
+            if(handler.succeeded())
+            {
+                assertEquals(expected,handler.result().toString());
+                vertxTestContext.completeNow();
+            }
+            else
+            {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+    static Stream<Arguments> statusCodes()
+    {
+        return Stream.of(
+                Arguments.of(201, "{\"exchange\":\"Dummy exchangeName\",\"queue\":\"Dummy Queue name\",\"entities\":[\"ABCD/ABCD/ABCD/ABCD/ABCD\",\"EFGH/EFGH/EFGH/EFGH/EFGH\"]}"),
+                Arguments.of(404, "{\"type\":404,\"title\":\"failure\",\"detail\":\"Queue/Exchange does not exist\"}")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("statusCodes")
+    @DisplayName("Test bindQueue method : with different status code")
+    public void testBindQueue (int code, String expected, VertxTestContext vertxTestContext)
+    {
+        when(webClient.requestAsync(anyString(),anyString(), any())).thenReturn(httpResponseFuture);
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(httpResponseAsyncResult.result()).thenReturn(bufferHttpResponse);
+        when(bufferHttpResponse.statusCode()).thenReturn(code);
+
+        doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+            @Override
+            public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0)).handle(httpResponseAsyncResult);
+                return null;
+            }
+        }).when(httpResponseFuture).onComplete(any());
+        rabbitClient.bindQueue(request,vHost).onComplete(handler -> {
+            if(handler.succeeded())
+            {
+                assertEquals(expected,handler.result().toString());
+                vertxTestContext.completeNow();
+            }
+            else
+            {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("Test registerAdapter method : Success")
+    public void testRegisterAdapterSuccess(VertxTestContext vertxTestContext)
+    {
+        Future<HttpResponse<Buffer>> httpResponseFuture1 = mock(Future.class);
+        AsyncResult<HttpResponse<Buffer>> httpResponseAsyncResult1 = mock(AsyncResult.class);
+        HttpResponse<Buffer> bufferHttpResponse1 = mock(HttpResponse.class);
+
+        when(webClient.requestAsync(anyString(),anyString())).thenReturn(httpResponseFuture);
+        when(httpResponseAsyncResult.result()).thenReturn(bufferHttpResponse);
+        when(bufferHttpResponse.body()).thenReturn(buffer);
+        when(buffer.toString()).thenReturn("[{\"write\" : \"Dummy ADD_WRITE\"},{ \"key\" :  \"value\"}]");
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(bufferHttpResponse.statusCode()).thenReturn(200);
+
+        when(webClient.requestAsync(anyString(),anyString(),any())).thenReturn(httpResponseFuture1);
+        when(httpResponseAsyncResult1.result()).thenReturn(bufferHttpResponse1);
+        when(httpResponseAsyncResult1.succeeded()).thenReturn(true);
+        when(bufferHttpResponse1.statusCode()).thenReturn(201);
+        doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+            @Override
+            public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0)).handle(httpResponseAsyncResult);
+                return null;
+            }
+        }).when(httpResponseFuture).onComplete(any());
+        doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+            @Override
+            public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0)).handle(httpResponseAsyncResult1);
+                return null;
+            }
+        }).when(httpResponseFuture1).onComplete(any());
+        rabbitClient.registerAdapter(request,vHost).onComplete(handler -> {
+            if(handler.succeeded())
+            {
+                assertEquals("{\"username\":\"Dummy userID\",\"apiKey\":\"Use the apiKey returned on registration, if lost please use /resetPassword API\",\"id\":\"ABCD/ABCD/ABCD/ABCD/ABCD\",\"URL\":\"Dummy string\",\"port\":400,\"vHost\":\"Dummy vHost\"}",handler.result().toString());
+                vertxTestContext.completeNow();
+
+            }
+            else
+            {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("Test deleteAdapter method : Success")
+    public void testDeleteAdapterSuccess(VertxTestContext vertxTestContext)
+    {
+        when(httpResponseAsyncResult.result()).thenReturn(bufferHttpResponse);
+        when(bufferHttpResponse.statusCode()).thenReturn(200);
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(webClient.requestAsync(anyString(),anyString())).thenReturn(httpResponseFuture);
+        doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+            @Override
+            public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0)).handle(httpResponseAsyncResult);
+                return null;
+            }
+        }).when(httpResponseFuture).onComplete(any());
+        rabbitClient.deleteAdapter(request,vHost).onComplete(handler -> {
+            if(handler.succeeded())
+            {
+                assertEquals("{\"type\":200,\"title\":\"success\",\"detail\":\"adaptor deleted\"}",handler.result().toString());
+                vertxTestContext.completeNow();
+            }
+            else
+            {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("Test createUser method : Success")
+    public void testCreateUserSuccess(VertxTestContext vertxTestContext)
+    {
+        when(pgSQLClient.executeAsync(anyString())).thenReturn(rowSetFuture);
+        when(httpResponseAsyncResult.result()).thenReturn(bufferHttpResponse);
+        when(bufferHttpResponse.statusCode()).thenReturn(201);
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(webClient.requestAsync(anyString(),anyString(),any())).thenReturn(httpResponseFuture);
+        when(rowSetAsyncResult.succeeded()).thenReturn(true);
+        doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+            @Override
+            public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0)).handle(httpResponseAsyncResult);
+                return null;
+            }
+        }).when(httpResponseFuture).onComplete(any());
+        doAnswer(new Answer<AsyncResult<RowSet<Row>>>() {
+            @Override
+            public AsyncResult<RowSet<Row>> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<RowSet<Row>>>) arg0.getArgument(0)).handle(rowSetAsyncResult);
+                return null;
+            }
+        }).when(rowSetFuture).onComplete(any());
+        rabbitClient.createUser(userID,password,vHost,"Dummy/ABCD/ABCD/ABCD").onComplete(handler -> {
+            if(handler.succeeded())
+            {
+                assertEquals("{\"userid\":\"Dummy UserID\",\"password\":\"Dummy password\",\"type\":200,\"title\":\"vhostPermissions\",\"detail\":\"write permission set\"}",handler.result().toString());
+                vertxTestContext.completeNow();
+            }
+            else
+            {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+    
+    @Test
+    @DisplayName("Test updateUserPermissions method : Success")
+    public void testUpdateUserPermissionsSuccess(VertxTestContext vertxTestContext)
+    {
+        Future<HttpResponse<Buffer>> httpResponseFuture1 = mock(Future.class);
+        AsyncResult<HttpResponse<Buffer>> httpResponseAsyncResult1 = mock(AsyncResult.class);
+        HttpResponse<Buffer> bufferHttpResponse1 = mock(HttpResponse.class);
+
+        when(webClient.requestAsync(anyString(),anyString())).thenReturn(httpResponseFuture);
+        when(httpResponseAsyncResult.result()).thenReturn(bufferHttpResponse);
+        when(bufferHttpResponse.body()).thenReturn(buffer);
+        when(buffer.toString()).thenReturn("[{\"write\" : \"Dummy DELETE_WRITE\"},{ \"key\" :  \"value\"}]");
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(bufferHttpResponse.statusCode()).thenReturn(200);
+
+        when(webClient.requestAsync(anyString(),anyString(),any())).thenReturn(httpResponseFuture1);
+        when(httpResponseAsyncResult1.result()).thenReturn(bufferHttpResponse1);
+        when(httpResponseAsyncResult1.succeeded()).thenReturn(true);
+        when(bufferHttpResponse1.statusCode()).thenReturn(204);
+        doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+            @Override
+            public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0)).handle(httpResponseAsyncResult);
+                return null;
+            }
+        }).when(httpResponseFuture).onComplete(any());
+        doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+            @Override
+            public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0)).handle(httpResponseAsyncResult1);
+                return null;
+            }
+        }).when(httpResponseFuture1).onComplete(any());
+        rabbitClient.updateUserPermissions(vHost,userID,PermissionOpType.DELETE_WRITE,"Dummy/ABCD/ABCD/ABCD").onComplete(handler -> {
+            if(handler.succeeded())
+            {
+                assertEquals("{\"type\":\"urn:dx:rs:success\",\"status\":204,\"title\":\"urn:dx:rs:success\",\"detail\":\"Permission updated successfully.\"}",handler.result().toString());
+                vertxTestContext.completeNow();
+
+            }
+            else
+            {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+
 }
