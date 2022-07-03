@@ -102,7 +102,7 @@ public class SubscriptionService {
               LOGGER.debug("success :: Create Queue " + resultHandlerqueue.result());
               JsonObject createQueueResponse = (JsonObject) resultHandlerqueue.result();
               if (createQueueResponse.containsKey(TITLE)
-                  && createQueueResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
+                      && createQueueResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
                 LOGGER.error("failed ::" + resultHandlerqueue.cause());
                 promise.fail(createQueueResponse.toString());
               } else {
@@ -115,11 +115,11 @@ public class SubscriptionService {
                     if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == "") {
                       LOGGER.error("failed :: Invalid (or) NULL routingKey");
                       Future<JsonObject> resultDeletequeue =
-                          rabbitClient.deleteQueue(requestjson, vhost);
+                              rabbitClient.deleteQueue(requestjson, vhost);
                       resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                         if (resultHandlerDeletequeue.succeeded()) {
                           promise.fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA,
-                              INVALID_ROUTING_KEY)
+                                  INVALID_ROUTING_KEY)
                                   .toString());
                         }
                       });
@@ -132,7 +132,7 @@ public class SubscriptionService {
                       } else {
                         exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
                         array.add(exchangeName + "/."
-                            + routingKey.substring(routingKey.lastIndexOf("/") + 1));
+                                + routingKey.substring(routingKey.lastIndexOf("/") + 1));
                       }
                       JsonObject json = new JsonObject();
                       json.put(EXCHANGE_NAME, exchangeName);
@@ -144,73 +144,77 @@ public class SubscriptionService {
                           // count++
                           totalBindSuccess += 1;
                           LOGGER.debug("sucess :: totalBindSuccess " + totalBindSuccess
-                              + resultHandlerbind.result());
+                                  + resultHandlerbind.result());
 
                           JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
                           if (bindResponse.containsKey(TITLE)
-                              && bindResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
+                                  && bindResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
                             LOGGER.error("failed ::" + resultHandlerbind.cause());
                             Future<JsonObject> resultDeletequeue =
-                                rabbitClient.deleteQueue(requestjson, vhost);
+                                    rabbitClient.deleteQueue(requestjson, vhost);
                             resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                               if (resultHandlerDeletequeue.succeeded()) {
                                 promise
-                                    .fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA,
-                                        BINDING_FAILED)
-                                            .toString());
+                                        .fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA,
+                                                BINDING_FAILED)
+                                                .toString());
                               }
                             });
                           } else if (totalBindSuccess == totalBindCount) {
                             rabbitClient
-                                .updateUserPermissions(vhost, userid, PermissionOpType.ADD_READ,
-                                    queueName)
-                                .onComplete(userPermissionHandler -> {
-                                  if (userPermissionHandler.succeeded()) {
-                                    registerStreamingSubscriptionResponse.put(Constants.USER_NAME,
-                                        streamingUserName);
-                                    registerStreamingSubscriptionResponse.put(Constants.APIKEY,
-                                        apiKey);
-                                    registerStreamingSubscriptionResponse.put(Constants.ID,
-                                        queueName);
-                                    registerStreamingSubscriptionResponse.put(Constants.URL,
-                                        this.amqpUrl);
-                                    registerStreamingSubscriptionResponse.put(Constants.PORT,
-                                        this.amqpPort);
-                                    registerStreamingSubscriptionResponse.put(Constants.VHOST,
-                                        this.vhost);
+                                    .updateUserPermissions(vhost, userid, PermissionOpType.ADD_READ,
+                                            queueName)
+                                    .onComplete(userPermissionHandler -> {
+                                      if (userPermissionHandler.succeeded()) {
+                                        registerStreamingSubscriptionResponse.put(Constants.USER_NAME,
+                                                streamingUserName);
+                                        registerStreamingSubscriptionResponse.put(Constants.APIKEY,
+                                                apiKey);
+                                        registerStreamingSubscriptionResponse.put(Constants.ID,
+                                                queueName);
+                                        registerStreamingSubscriptionResponse.put(Constants.URL,
+                                                this.amqpUrl);
+                                        registerStreamingSubscriptionResponse.put(Constants.PORT,
+                                                this.amqpPort);
+                                        registerStreamingSubscriptionResponse.put(Constants.VHOST,
+                                                this.vhost);
 
-                                    JsonObject response = new JsonObject();
-                                    response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
-                                    response.put(TITLE, "success");
-                                    response.put(RESULTS,
-                                        new JsonArray().add(registerStreamingSubscriptionResponse));
+                                        JsonObject response = new JsonObject();
+                                        response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+                                        response.put(TITLE, "success");
+                                        response.put(RESULTS,
+                                                new JsonArray().add(registerStreamingSubscriptionResponse));
 
-                                    promise.complete(response);
-                                  } else {
-                                    Future<JsonObject> resultDeletequeue =
-                                        rabbitClient.deleteQueue(requestjson, vhost);
-                                    resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-                                      if (resultHandlerDeletequeue.succeeded()) {
-                                        promise
-                                            .fail(
-                                                getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA,
-                                                    BINDING_FAILED)
-                                                        .toString());
+                                        promise.complete(response);
+                                      } else {
+                                        Future<JsonObject> resultDeletequeue =
+                                                rabbitClient.deleteQueue(requestjson, vhost);
+                                        resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
+                                          if (resultHandlerDeletequeue.succeeded()) {
+                                            promise
+                                                    .fail(
+                                                            getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA,
+                                                                    BINDING_FAILED)
+                                                                    .toString());
+                                          }
+                                        });
                                       }
                                     });
-                                  }
-                                });
 
                           }
                         } else if (resultHandlerbind.failed()) {
                           LOGGER.error("failed ::" + resultHandlerbind.cause());
                           Future<JsonObject> resultDeletequeue =
-                              rabbitClient.deleteQueue(requestjson, vhost);
+                                  rabbitClient.deleteQueue(requestjson, vhost);
                           resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                             if (resultHandlerDeletequeue.succeeded()) {
-                              promise.fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA,
-                                  BINDING_FAILED)
-                                      .toString());
+                              /**
+                               * used promise.tryFail() instead of promise.fail()
+                               * to avoid java.lang.IllegalStateException: Result is already complete
+                               */
+                              promise.tryFail((getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA,
+                                      BINDING_FAILED)
+                                      .toString()));
                             }
                           });
                         }
@@ -219,12 +223,12 @@ public class SubscriptionService {
                   } else {
                     LOGGER.error("failed :: Invalid (or) NULL routingKey");
                     Future<JsonObject> resultDeletequeue =
-                        rabbitClient.deleteQueue(requestjson, vhost);
+                            rabbitClient.deleteQueue(requestjson, vhost);
                     resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                       if (resultHandlerDeletequeue.succeeded()) {
-                        promise.fail(
-                            getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, INVALID_ROUTING_KEY)
-                                .toString());
+                        promise.tryFail(
+                                getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, INVALID_ROUTING_KEY)
+                                        .toString());
                       }
                     });
                   }
@@ -277,7 +281,7 @@ public class SubscriptionService {
                   LOGGER.debug("success :: Create Queue " + resultHandlerqueue.result());
                   JsonObject createQueueResponse = (JsonObject) resultHandlerqueue.result();
                   if (createQueueResponse.containsKey(TITLE)
-                      && createQueueResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
+                          && createQueueResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
                     LOGGER.error("failed ::" + resultHandlerqueue.cause());
                     promise.fail(createQueueResponse.toString());
                   } else {
@@ -290,12 +294,13 @@ public class SubscriptionService {
                           LOGGER.error("failed :: Invalid (or) NULL routingKey");
 
                           Future<JsonObject> resultDeletequeue =
-                              rabbitClient.deleteQueue(requestjson, vhost);
+                                  rabbitClient.deleteQueue(requestjson, vhost);
+
                           resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                             if (resultHandlerDeletequeue.succeeded()) {
                               promise.fail(
-                                  getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY)
-                                      .toString());
+                                      getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY)
+                                              .toString());
                             }
                           });
                         } else {
@@ -307,7 +312,7 @@ public class SubscriptionService {
                           } else {
                             exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
                             array.add(exchangeName + "/."
-                                + routingKey.substring(routingKey.lastIndexOf("/") + 1));
+                                    + routingKey.substring(routingKey.lastIndexOf("/") + 1));
                           }
                           JsonObject json = new JsonObject();
                           json.put(EXCHANGE_NAME, exchangeName);
@@ -320,62 +325,61 @@ public class SubscriptionService {
                               // count++
                               totalBindSuccess += 1;
                               LOGGER.info("sucess :: totalBindSuccess " + totalBindSuccess
-                                  + resultHandlerbind.result());
+                                      + resultHandlerbind.result());
 
                               JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
                               if (bindResponse.containsKey(TITLE)
-                                  && bindResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
+                                      && bindResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
                                 LOGGER.error("failed ::" + resultHandlerbind.cause());
                                 Future<JsonObject> resultDeletequeue =
-                                    rabbitClient.deleteQueue(requestjson, vhost);
+                                        rabbitClient.deleteQueue(requestjson, vhost);
                                 resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                                   if (resultHandlerDeletequeue.succeeded()) {
-                                    promise.fail(
-                                        new JsonObject().put(ERROR, "Binding Failed").toString());
+                                    promise.tryFail(
+                                            new JsonObject().put(ERROR, "Binding Failed").toString());
                                   }
                                 });
                               } else if (totalBindSuccess == totalBindCount) {
 
 
                                 rabbitClient
-                                    .updateUserPermissions(vhost, userid, PermissionOpType.ADD_READ,
-                                        queueName)
-                                    .onComplete(permissionHandler -> {
-                                      if (permissionHandler.succeeded()) {
-                                        updateStreamingSubscriptionResponse.put(Constants.ENTITIES,
-                                            entitites);
-                                        
-                                        JsonObject response = new JsonObject();
-                                        response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
-                                        response.put(TITLE, "success");
-                                        response.put(RESULTS,
-                                            new JsonArray().add(updateStreamingSubscriptionResponse));
-                                        
-                                        promise.complete(response);
-                                      } else {
-                                        LOGGER.error("failed ::" + permissionHandler.cause());
-                                        Future<JsonObject> resultDeletequeue =
-                                            rabbitClient.deleteQueue(requestjson, vhost);
-                                        resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-                                          if (resultHandlerDeletequeue.succeeded()) {
-                                            promise.fail(
-                                                new JsonObject()
-                                                    .put(ERROR, "user Permission failed")
-                                                    .toString());
+                                        .updateUserPermissions(vhost, userid, PermissionOpType.ADD_READ,
+                                                queueName)
+                                        .onComplete(permissionHandler -> {
+                                          if (permissionHandler.succeeded()) {
+                                            updateStreamingSubscriptionResponse.put(Constants.ENTITIES,
+                                                    entitites);
+
+                                            JsonObject response = new JsonObject();
+                                            response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+                                            response.put(TITLE, "success");
+                                            response.put(RESULTS,
+                                                    new JsonArray().add(updateStreamingSubscriptionResponse));
+                                            promise.complete(response);
+                                          } else {
+                                            LOGGER.error("failed ::" + permissionHandler.cause());
+                                            Future<JsonObject> resultDeletequeue =
+                                                    rabbitClient.deleteQueue(requestjson, vhost);
+                                            resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
+                                              if (resultHandlerDeletequeue.succeeded()) {
+                                                promise.fail(
+                                                        new JsonObject()
+                                                                .put(ERROR, "user Permission failed")
+                                                                .toString());
+                                              }
+                                            });
                                           }
                                         });
-                                      }
-                                    });
                               }
                             } else if (resultHandlerbind.failed()) {
                               LOGGER.error("failed ::" + resultHandlerbind.cause());
                               Future<JsonObject> resultDeletequeue =
-                                  rabbitClient.deleteQueue(requestjson, vhost);
+                                      rabbitClient.deleteQueue(requestjson, vhost);
                               resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                                 if (resultHandlerDeletequeue.succeeded()) {
                                   promise
-                                      .fail(getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED)
-                                          .toString());
+                                          .tryFail(getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED)
+                                                  .toString());
                                 }
                               });
                             }
@@ -384,12 +388,12 @@ public class SubscriptionService {
                       } else {
                         LOGGER.error("failed :: Invalid (or) NULL routingKey");
                         Future<JsonObject> resultDeletequeue =
-                            rabbitClient.deleteQueue(requestjson, vhost);
+                                rabbitClient.deleteQueue(requestjson, vhost);
                         resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                           if (resultHandlerDeletequeue.succeeded()) {
                             promise
-                                .fail(getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY)
-                                    .toString());
+                                    .fail(getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY)
+                                            .toString());
                           }
                         });
                       }
@@ -398,13 +402,13 @@ public class SubscriptionService {
                 } else if (resultHandlerqueue.failed()) {
                   LOGGER.error("failed ::" + resultHandlerqueue.cause());
                   promise.fail(
-                      getResponseJson(INTERNAL_ERROR_CODE, ERROR, QUEUE_CREATE_ERROR).toString());
+                          getResponseJson(INTERNAL_ERROR_CODE, ERROR, QUEUE_CREATE_ERROR).toString());
                 }
               });
             } else if (deleteQueuehandler.failed()) {
               LOGGER.error("failed ::" + deleteQueuehandler.cause());
               promise
-                  .fail(getResponseJson(INTERNAL_ERROR_CODE, ERROR, QUEUE_DELETE_ERROR).toString());
+                      .fail(getResponseJson(INTERNAL_ERROR_CODE, ERROR, QUEUE_DELETE_ERROR).toString());
             }
           });
         }
@@ -436,7 +440,7 @@ public class SubscriptionService {
           JsonObject listQueueResponse = (JsonObject) resultHandlerqueue.result();
           LOGGER.debug("Info : " + listQueueResponse);
           if (listQueueResponse.containsKey(TITLE)
-              && listQueueResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
+                  && listQueueResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
             promise.fail(listQueueResponse.toString());
           } else {
             for (Object currentEntity : entitites) {
@@ -446,7 +450,7 @@ public class SubscriptionService {
                 if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == "") {
                   LOGGER.error("failed :: Invalid (or) NULL routingKey");
                   promise.fail(
-                      getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY).toString());
+                          getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY).toString());
                 } else {
                   JsonArray array = new JsonArray();
                   String exchangeName;
@@ -456,7 +460,7 @@ public class SubscriptionService {
                   } else {
                     exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
                     array.add(exchangeName + "/."
-                        + routingKey.substring(routingKey.lastIndexOf("/") + 1));
+                            + routingKey.substring(routingKey.lastIndexOf("/") + 1));
                   }
                   JsonObject json = new JsonObject();
                   json.put(EXCHANGE_NAME, exchangeName);
@@ -469,50 +473,50 @@ public class SubscriptionService {
                       // count++
                       totalBindSuccess += 1;
                       LOGGER.debug("sucess :: totalBindSuccess " + totalBindSuccess
-                          + resultHandlerbind.result());
+                              + resultHandlerbind.result());
 
                       JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
                       if (bindResponse.containsKey(TITLE)
-                          && bindResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
+                              && bindResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
                         LOGGER.error("failed ::" + resultHandlerbind.cause());
                         // promise.fail(new JsonObject().put(ERROR, "Binding Failed").toString());
-                        promise.fail(
-                            getResponseJson(BAD_REQUEST_CODE, ResponseUrn.BAD_REQUEST_URN.getUrn(),
-                                BINDING_FAILED)
-                                    .toString());
+                        promise.tryFail(
+                                getResponseJson(BAD_REQUEST_CODE, ResponseUrn.BAD_REQUEST_URN.getUrn(),
+                                        BINDING_FAILED)
+                                        .toString());
                       } else if (totalBindSuccess == totalBindCount) {
                         rabbitClient.updateUserPermissions(vhost, userid,
-                            PermissionOpType.ADD_READ, queueName)
-                            .onComplete(permissionHandler -> {
-                              if (permissionHandler.succeeded()) {
-                                appendStreamingSubscriptionResponse.put(Constants.ENTITIES,
-                                    entitites);
-                                
-                                JsonObject response = new JsonObject();
-                                response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
-                                response.put(TITLE, "success");
-                                response.put(RESULTS,
-                                    new JsonArray().add(appendStreamingSubscriptionResponse));
-                                
-                                promise.complete(response);
-                              } else {
-                                LOGGER.error("failed ::" + permissionHandler.cause());
-                                Future<JsonObject> resultDeletequeue =
-                                    rabbitClient.deleteQueue(requestjson, vhost);
-                                resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
-                                  if (resultHandlerDeletequeue.succeeded()) {
-                                    promise.fail(
-                                        new JsonObject().put(ERROR, "user Permission failed")
-                                            .toString());
+                                        PermissionOpType.ADD_READ, queueName)
+                                .onComplete(permissionHandler -> {
+                                  if (permissionHandler.succeeded()) {
+                                    appendStreamingSubscriptionResponse.put(Constants.ENTITIES,
+                                            entitites);
+
+                                    JsonObject response = new JsonObject();
+                                    response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+                                    response.put(TITLE, "success");
+                                    response.put(RESULTS,
+                                            new JsonArray().add(appendStreamingSubscriptionResponse));
+
+                                    promise.complete(response);
+                                  } else {
+                                    LOGGER.error("failed ::" + permissionHandler.cause());
+                                    Future<JsonObject> resultDeletequeue =
+                                            rabbitClient.deleteQueue(requestjson, vhost);
+                                    resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
+                                      if (resultHandlerDeletequeue.succeeded()) {
+                                        promise.fail(
+                                                new JsonObject().put(ERROR, "user Permission failed")
+                                                        .toString());
+                                      }
+                                    });
                                   }
                                 });
-                              }
-                            });
                       }
                     } else if (resultHandlerbind.failed()) {
                       LOGGER.error("failed ::" + resultHandlerbind.cause());
-                      promise.fail(
-                          getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED).toString());
+                      promise.tryFail(
+                              getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED).toString());
                     }
                   });
                 }
@@ -522,7 +526,7 @@ public class SubscriptionService {
                 resultDeletequeue.onComplete(resultHandlerDeletequeue -> {
                   if (resultHandlerDeletequeue.succeeded()) {
                     promise.fail(
-                        getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY).toString());
+                            getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY).toString());
                   }
                 });
               }
@@ -554,18 +558,18 @@ public class SubscriptionService {
         if (resultHandler.succeeded()) {
           JsonObject deleteQueueResponse = (JsonObject) resultHandler.result();
           if (deleteQueueResponse.containsKey(TITLE)
-              && deleteQueueResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
+                  && deleteQueueResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
             LOGGER.debug("failed :: Response is " + deleteQueueResponse);
             promise.fail(deleteQueueResponse.toString());
           } else {
             deleteStreamingSubscription.mergeIn(
-                getResponseJson(ResponseUrn.SUCCESS_URN.getUrn(), HttpStatus.SC_OK, SUCCESS,
-                    "Subscription deleted Successfully"));
+                    getResponseJson(ResponseUrn.SUCCESS_URN.getUrn(), HttpStatus.SC_OK, SUCCESS,
+                            "Subscription deleted Successfully"));
             Future
-                .future(
-                    fu -> rabbitClient.updateUserPermissions(vhost, userid,
-                        PermissionOpType.DELETE_READ,
-                        queueName));
+                    .future(
+                            fu -> rabbitClient.updateUserPermissions(vhost, userid,
+                                    PermissionOpType.DELETE_READ,
+                                    queueName));
             promise.complete(deleteStreamingSubscription);
           }
         }
@@ -590,7 +594,7 @@ public class SubscriptionService {
         if (resultHandler.succeeded()) {
           JsonObject listQueueResponse = (JsonObject) resultHandler.result();
           if (listQueueResponse.containsKey(TITLE)
-              && listQueueResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
+                  && listQueueResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
             LOGGER.error("failed :: Response is " + listQueueResponse);
             promise.fail(listQueueResponse.toString());
           } else {
@@ -599,8 +603,8 @@ public class SubscriptionService {
             response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
             response.put(TITLE, "success");
             response.put(RESULTS,
-                new JsonArray().add(listQueueResponse));
-            
+                    new JsonArray().add(listQueueResponse));
+
             promise.complete(response);
           }
         }
@@ -621,7 +625,7 @@ public class SubscriptionService {
       String userName = request.getString(Constants.CONSUMER);
       String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
       String subscriptionID =
-          domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
+              domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
       JsonObject publishjson = new JsonObject();
       publishjson.put(Constants.SUBSCRIPTION_ID, subscriptionID);
       publishjson.put(Constants.OPERATION, "create");
@@ -635,14 +639,15 @@ public class SubscriptionService {
           RowSet<Row> result = resultHandlerSelectID.result();
           /* Iterating Rows for getting entity, callbackurl, username and password */
           String subscriptionIDdb = null;
-          for (Row row : result) {
-            subscriptionIDdb = row.getString(0);
-            LOGGER.debug(subscriptionIDdb);
-          }
+          if (result.size() > 0)
+            for (Row row : result) {
+              subscriptionIDdb = row.getString(0);
+              LOGGER.debug(subscriptionIDdb);
+            }
           if (subscriptionID.equalsIgnoreCase(subscriptionIDdb)) {
             LOGGER.error("error : Call Back registration has duplicate ID");
             registerCallbackSubscriptionResponse.clear()
-                .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, SQL_ERROR, DUPLICATE_KEY));
+                    .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, SQL_ERROR, DUPLICATE_KEY));
             promise.fail(registerCallbackSubscriptionResponse.toString());
           } else {
 
@@ -659,10 +664,10 @@ public class SubscriptionService {
               LOGGER.debug("routingKey is " + routingKey);
               if (routingKey != null) {
                 if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
-                    || routingKey.split("/").length != 5) {
+                        || routingKey.split("/").length != 5) {
                   LOGGER.error("failed :: Invalid (or) NULL routingKey");
                   registerCallbackSubscriptionResponse.clear()
-                      .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, INVALID_ROUTING_KEY));
+                          .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, INVALID_ROUTING_KEY));
                   promise.fail(registerCallbackSubscriptionResponse.toString());
                 } else {
                   LOGGER.debug("Info : Valid ID :: Call Back registration starts");
@@ -679,24 +684,24 @@ public class SubscriptionService {
                     if (resultHandlerbind.succeeded()) {
                       totalBindSuccess += 1;
                       LOGGER.debug("sucess :: totalBindSuccess " + totalBindSuccess
-                          + resultHandlerbind.result());
+                              + resultHandlerbind.result());
                       JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
                       if (bindResponse.containsKey(Constants.TITLE) && bindResponse
-                          .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+                              .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
                         LOGGER.error("failed ::" + resultHandlerbind.cause());
                         String deleteQuery = DELETE_CALLBACK.replace("$1", subscriptionID);
                         pgSQLClient.executeAsync(deleteQuery).onComplete(resulthandlerdel -> {
                           if (resulthandlerdel.succeeded()) {
                             registerCallbackSubscriptionResponse.clear().mergeIn(
-                                getResponseJson(INTERNAL_ERROR_CODE, ERROR, BINDING_FAILED));
-                            promise.fail(registerCallbackSubscriptionResponse.toString());
+                                    getResponseJson(INTERNAL_ERROR_CODE, ERROR, BINDING_FAILED));
+                            promise.tryFail(registerCallbackSubscriptionResponse.toString());
                           }
                         });
                       } else if (totalBindSuccess == totalBindCount) {
                         String insertQuery = INSERT_CALLBACK.replace("$1", subscriptionID)
-                            .replace("$2", callbackUrl).replace("$3", entitites.toString())
-                            .replace("$4", dateTime.toString()).replace("$5", dateTime.toString())
-                            .replace("$6", dateTime.toString());
+                                .replace("$2", callbackUrl).replace("$3", entitites.toString())
+                                .replace("$4", dateTime.toString()).replace("$5", dateTime.toString())
+                                .replace("$6", dateTime.toString());
                         pgSQLClient.executeAsync(insertQuery).onComplete(ar -> {
                           if (ar.succeeded()) {
                             String exchangename = "callback.notification";
@@ -706,55 +711,62 @@ public class SubscriptionService {
                             jsonpg.put("body", publishjson.toString());
                             Buffer messageBuffer = Buffer.buffer(jsonpg.toString());
                             rabbitClient.getRabbitMQClient().basicPublish(exchangename, routingkey,
-                                messageBuffer, resultHandler -> {
-                                  if (resultHandler.succeeded()) {
-                                    registerCallbackSubscriptionResponse.put("subscriptionID",
-                                        subscriptionID);
-                                    LOGGER.debug("Message published to queue");
-                                    promise.complete(registerCallbackSubscriptionResponse);
-                                  } else {
-                                    String deleteQuery =
-                                        DELETE_CALLBACK.replace("$1", subscriptionID);
-                                    pgSQLClient.executeAsync(deleteQuery).onComplete(deletepg -> {
-                                      if (deletepg.succeeded()) {
-                                        registerCallbackSubscriptionResponse.clear()
-                                            .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR,
-                                                MSG_PUBLISH_FAILED));
-                                        promise
-                                            .fail(registerCallbackSubscriptionResponse.toString());
+                                    messageBuffer, resultHandler -> {
+                                      if (resultHandler.succeeded()) {
+                                        registerCallbackSubscriptionResponse.put("subscriptionID",
+                                                subscriptionID);
+                                        LOGGER.debug("Message published to queue");
+                                        promise.complete(registerCallbackSubscriptionResponse);
+                                      } else {
+                                        String deleteQuery =
+                                                DELETE_CALLBACK.replace("$1", subscriptionID);
+                                        pgSQLClient.executeAsync(deleteQuery).onComplete(deletepg -> {
+                                          if (deletepg.succeeded()) {
+                                            registerCallbackSubscriptionResponse.clear()
+                                                    .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR,
+                                                            MSG_PUBLISH_FAILED));
+                                            promise
+                                                    .fail(registerCallbackSubscriptionResponse.toString());
+                                          }
+                                        });
                                       }
                                     });
-                                  }
-                                });
                           } else {
                             LOGGER.error("failed ::" + ar.cause().getMessage());
                             String deleteQuery = DELETE_CALLBACK.replace("$1", subscriptionID);
                             pgSQLClient.executeAsync(deleteQuery)
-                                .onComplete(resultHandlerDeletequeuepg -> {
-                                  if (resultHandlerDeletequeuepg.succeeded()) {
-                                    registerCallbackSubscriptionResponse.clear()
-                                        .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, SQL_ERROR,
-                                            DUPLICATE_KEY));
-                                    promise.fail(registerCallbackSubscriptionResponse.toString());
-                                  }
-                                });
+                                    .onComplete(resultHandlerDeletequeuepg -> {
+                                      if (resultHandlerDeletequeuepg.succeeded()) {
+                                        registerCallbackSubscriptionResponse.clear()
+                                                .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, SQL_ERROR,
+                                                        DUPLICATE_KEY));
+                                        promise.fail(registerCallbackSubscriptionResponse.toString());
+                                      }
+                                    });
                           }
                         });
                       }
                     } else if (resultHandlerbind.failed()) {
                       LOGGER.error("failed ::" + resultHandlerbind.cause());
                       registerCallbackSubscriptionResponse.clear()
-                          .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED));
-                      promise.fail(registerCallbackSubscriptionResponse.toString());
+                              .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED));
+                      promise.tryFail(registerCallbackSubscriptionResponse.toString());
                     }
                   });
                 }
               } else {
                 // TODO : DOUBT : why future passing even its handler failed ?.
+                /**
+                 * The future was passing because of promise.complete()
+                 * in the else condition
+                 * Even though the routing key is NULL
+                 */
                 LOGGER.error("failed :: Invalid (or) NULL routingKey");
                 registerCallbackSubscriptionResponse.clear()
-                    .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY));
-                promise.complete(registerCallbackSubscriptionResponse);
+                        .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY));
+//                promise.complete(registerCallbackSubscriptionResponse);
+                promise.fail(registerCallbackSubscriptionResponse.toString());
+
               }
             }
           }
@@ -763,7 +775,7 @@ public class SubscriptionService {
     } else {
       LOGGER.error("Fail : Error in payload");
       registerCallbackSubscriptionResponse.clear()
-          .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, PAYLOAD_ERROR));
+              .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, PAYLOAD_ERROR));
       promise.fail(registerCallbackSubscriptionResponse.toString());
     }
     return promise.future();
@@ -791,10 +803,10 @@ public class SubscriptionService {
         LOGGER.debug("Info : routingKey is " + routingKey);
         if (routingKey != null) {
           if (routingKey.isEmpty() || routingKey.isBlank() || routingKey == ""
-              || routingKey.split("/").length != 5) {
+                  || routingKey.split("/").length != 5) {
             LOGGER.error("failed :: Invalid (or) NULL routingKey");
             updateCallbackSubscriptionResponse.clear()
-                .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY));
+                    .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY));
             promise.fail(updateCallbackSubscriptionResponse.toString());
           } else {
 
@@ -811,19 +823,19 @@ public class SubscriptionService {
                 // count++
                 totalBindSuccess += 1;
                 LOGGER.debug(
-                    "sucess :: totalBindSuccess " + totalBindSuccess + resultHandlerbind.result());
+                        "sucess :: totalBindSuccess " + totalBindSuccess + resultHandlerbind.result());
                 JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
                 if (bindResponse.containsKey(Constants.TITLE) && bindResponse
-                    .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+                        .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
                   LOGGER.error("failed ::" + resultHandlerbind.cause());
 
                   updateCallbackSubscriptionResponse.put(Constants.ERROR, "Binding Failed");
                   updateCallbackSubscriptionResponse.clear()
-                      .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED));
-                  promise.fail(updateCallbackSubscriptionResponse.toString());
+                          .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED));
+                  promise.tryFail(updateCallbackSubscriptionResponse.toString());
                 } else if (totalBindSuccess == totalBindCount) {
                   String updateQuery = UPDATE_CALLBACK.replace("$1", entities.toString())
-                      .replace("$2", subscriptionID);
+                          .replace("$2", subscriptionID);
                   pgSQLClient.executeAsync(updateQuery).onComplete(ar -> {
                     if (ar.succeeded()) {
                       String exchangename = "callback.notification";
@@ -833,23 +845,23 @@ public class SubscriptionService {
                       jsonpg.put("body", publishjson.toString());
                       Buffer messageBuffer = Buffer.buffer(jsonpg.toString());
                       rabbitClient.getRabbitMQClient().basicPublish(exchangename, routingkey,
-                          messageBuffer, resultHandler -> {
-                            if (resultHandler.succeeded()) {
-                              updateCallbackSubscriptionResponse.put("subscriptionID",
-                                  subscriptionID);
-                              LOGGER.debug("Info : Message published to queue");
-                              promise.complete(updateCallbackSubscriptionResponse);
-                            } else {
-                              LOGGER.error("Fail : Message published failed");
-                              updateCallbackSubscriptionResponse.clear().mergeIn(
-                                  getResponseJson(INTERNAL_ERROR_CODE, ERROR, MSG_PUBLISH_FAILED));
-                              promise.fail(updateCallbackSubscriptionResponse.toString());
-                            }
-                          });
+                              messageBuffer, resultHandler -> {
+                                if (resultHandler.succeeded()) {
+                                  updateCallbackSubscriptionResponse.put("subscriptionID",
+                                          subscriptionID);
+                                  LOGGER.debug("Info : Message published to queue");
+                                  promise.complete(updateCallbackSubscriptionResponse);
+                                } else {
+                                  LOGGER.error("Fail : Message published failed");
+                                  updateCallbackSubscriptionResponse.clear().mergeIn(
+                                          getResponseJson(INTERNAL_ERROR_CODE, ERROR, MSG_PUBLISH_FAILED));
+                                  promise.fail(updateCallbackSubscriptionResponse.toString());
+                                }
+                              });
                     } else {
                       LOGGER.error("failed ::" + ar.cause().getMessage());
                       updateCallbackSubscriptionResponse.clear()
-                          .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, SQL_ERROR, DUPLICATE_KEY));
+                              .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, SQL_ERROR, DUPLICATE_KEY));
                       promise.fail(updateCallbackSubscriptionResponse.toString());
                     }
                   });
@@ -857,7 +869,7 @@ public class SubscriptionService {
               } else if (resultHandlerbind.failed()) {
                 LOGGER.error("failed ::" + resultHandlerbind.cause());
                 updateCallbackSubscriptionResponse.clear()
-                    .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED));
+                        .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED));
                 promise.fail(updateCallbackSubscriptionResponse.toString());
               }
             });
@@ -865,7 +877,7 @@ public class SubscriptionService {
         } else {
           LOGGER.error("failed :: Invalid (or) NULL routingKey");
           updateCallbackSubscriptionResponse.clear()
-              .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY));
+                  .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, INVALID_ROUTING_KEY));
           promise.fail(updateCallbackSubscriptionResponse.toString());
         }
       }
@@ -873,7 +885,7 @@ public class SubscriptionService {
     } else {
       LOGGER.error("Error in payload");
       updateCallbackSubscriptionResponse.clear()
-          .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, PAYLOAD_ERROR));
+              .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, PAYLOAD_ERROR));
       promise.fail(updateCallbackSubscriptionResponse.toString());
     }
     return promise.future();
@@ -887,7 +899,7 @@ public class SubscriptionService {
       String userName = request.getString(Constants.CONSUMER);
       String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
       String subscriptionID =
-          domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
+              domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
       LOGGER.debug("Info : Call Back registration ID check starts");
       String selectQuery = SELECT_CALLBACK.replace("$1", subscriptionID);
       pgSQLClient.executeAsync(selectQuery).onComplete(resultHandlerSelectID -> {
@@ -895,11 +907,12 @@ public class SubscriptionService {
           RowSet<Row> result = resultHandlerSelectID.result();
           /* Iterating Rows for getting entity, callbackurl, username and password */
           String subscriptionIDdb = null;
-          for (Row row : result) {
-            subscriptionIDdb = row.getString(0);
-            LOGGER.debug("Info : " + subscriptionIDdb);
-          }
-          if (!subscriptionID.equalsIgnoreCase(subscriptionIDdb)) {
+          if(result.size()>0)
+            for (Row row : result) {
+              subscriptionIDdb = row.getString(0);
+              LOGGER.debug("Info : " + subscriptionIDdb);
+            }
+          if (!subscriptionID.equalsIgnoreCase(subscriptionIDdb) && subscriptionIDdb != null) {
             LOGGER.debug("Info : Call Back ID not found");
             deleteCallbackSubscriptionResponse.put(Constants.ERROR, "Call Back ID not found");
             promise.fail(deleteCallbackSubscriptionResponse.toString());
@@ -916,25 +929,26 @@ public class SubscriptionService {
                 jsonpg.put("body", publishjson.toString());
                 Buffer messageBuffer = Buffer.buffer(jsonpg.toString());
                 rabbitClient.getRabbitMQClient().basicPublish(exchangename, routingkey,
-                    messageBuffer,
-                    resultHandler -> {
-                      if (resultHandler.succeeded()) {
-                        deleteCallbackSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
-                            subscriptionID);
-                        LOGGER.debug("Info : Message published to queue");
-                      } else {
-                        LOGGER.debug("Info : Message published failed");
-                        deleteCallbackSubscriptionResponse.clear().mergeIn(
-                            getResponseJson(INTERNAL_ERROR_CODE, ERROR, MSG_PUBLISH_FAILED));
-                      }
-                      promise.complete(deleteCallbackSubscriptionResponse);
-                    });
+                        messageBuffer,
+                        resultHandler -> {
+                          if (resultHandler.succeeded()) {
+                            deleteCallbackSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
+                                    subscriptionID);
+                            LOGGER.debug("Info : Message published to queue");
+                          } else {
+                            LOGGER.debug("Info : Message published failed");
+                            deleteCallbackSubscriptionResponse.clear().mergeIn(
+                                    getResponseJson(INTERNAL_ERROR_CODE, ERROR, MSG_PUBLISH_FAILED));
+                            promise.tryFail(deleteCallbackSubscriptionResponse.toString());
+                          }
+                          promise.tryComplete(deleteCallbackSubscriptionResponse);
+                        });
               } else {
                 LOGGER.error("failed ::" + ar.cause().getMessage());
                 deleteCallbackSubscriptionResponse.put(Constants.ERROR, "delete failed");
                 deleteCallbackSubscriptionResponse.clear()
-                    .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, FAILURE));
-                promise.complete(deleteCallbackSubscriptionResponse);
+                        .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, FAILURE));
+                promise.fail(deleteCallbackSubscriptionResponse.toString());
               }
             });
           }
@@ -943,7 +957,7 @@ public class SubscriptionService {
     } else {
       LOGGER.error("Fail : Error in payload");
       deleteCallbackSubscriptionResponse.clear()
-          .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, PAYLOAD_ERROR));
+              .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, PAYLOAD_ERROR));
       promise.fail(deleteCallbackSubscriptionResponse.toString());
     }
     return promise.future();
@@ -957,14 +971,14 @@ public class SubscriptionService {
       String userName = request.getString(Constants.CONSUMER);
       String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
       String subscriptionID =
-          domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
+              domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
       String selectQuery = SELECT_CALLBACK.replace("$1", subscriptionID);
       pgSQLClient.executeAsync(selectQuery).onComplete(ar -> {
         if (ar.succeeded()) {
           RowSet<Row> result = ar.result();
           LOGGER.debug("Info : " + ar.result().size() + " rows");
           /* Iterating Rows for getting entity, callbackurl, username and password */
-          if (ar.result().size() > 0) {
+          if (result.size() > 0) {
             for (Row row : result) {
               String subscriptionIDdb = row.getString(0);
               String callBackUrl = row.getString(1);
@@ -977,20 +991,20 @@ public class SubscriptionService {
           } else {
             LOGGER.error("Error :payload error" + ar.cause());
             listCallbackSubscriptionResponse.clear()
-                .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, PAYLOAD_ERROR));
+                    .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, PAYLOAD_ERROR));
             promise.fail(listCallbackSubscriptionResponse.toString());
           }
         } else {
           LOGGER.error("Error :payload error" + ar.cause());
           listCallbackSubscriptionResponse.clear()
-              .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, PAYLOAD_ERROR));
+                  .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, PAYLOAD_ERROR));
           promise.fail(listCallbackSubscriptionResponse.toString());
         }
       });
     } else {
       LOGGER.error("Error :payload error");
       listCallbackSubscriptionResponse.clear()
-          .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, PAYLOAD_ERROR));
+              .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, PAYLOAD_ERROR));
       promise.fail(listCallbackSubscriptionResponse.toString());
     }
     return promise.future();

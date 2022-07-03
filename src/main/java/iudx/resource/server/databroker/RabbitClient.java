@@ -949,7 +949,7 @@ public class RabbitClient {
           });
 
         }
-        
+
         else {
           /* Handle error */
           LOGGER.error("Error : createUser method - Some network error. cause", ar.cause());
