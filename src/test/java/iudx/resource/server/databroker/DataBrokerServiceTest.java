@@ -33,12 +33,7 @@ import java.util.Properties;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -122,8 +117,8 @@ public class DataBrokerServiceTest {
 
     appConfig = new Configuration();
     JsonObject brokerConfig = appConfig.configLoader(2, vertx);
-     BROKER_PRODUCTION_DOMAIN = brokerConfig.getString("brokerAmqpIp");
-     BROKER_PRODUCTION_PORT=brokerConfig.getInteger("brokerAmqpPort");
+    BROKER_PRODUCTION_DOMAIN = brokerConfig.getString("brokerAmqpIp");
+    BROKER_PRODUCTION_PORT=brokerConfig.getInteger("brokerAmqpPort");
 
     BROKER_PRODUCTION_DOMAIN = brokerConfig.getString("brokerAmqpIp");
     BROKER_PRODUCTION_PORT=brokerConfig.getInteger("brokerAmqpPort");
@@ -144,7 +139,7 @@ public class DataBrokerServiceTest {
       dataBrokerIP = brokerConfig.getString("dataBrokerIP");
       dataBrokerPort = brokerConfig.getInteger("dataBrokerPort");
       dataBrokerManagementPort =
-          brokerConfig.getInteger("dataBrokerManagementPort");
+              brokerConfig.getInteger("dataBrokerManagementPort");
       dataBrokerVhost = brokerConfig.getString("dataBrokerVhost");
       dataBrokerUserName = brokerConfig.getString("dataBrokerUserName");
       dataBrokerPassword = brokerConfig.getString("dataBrokerPassword");
@@ -201,7 +196,7 @@ public class DataBrokerServiceTest {
     /* Set Connection Object */
     if (connectOptions == null) {
       connectOptions = new PgConnectOptions().setPort(databasePort).setHost(databaseIP)
-          .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
+              .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
     }
 
     /* Pool options */
@@ -595,7 +590,7 @@ public class DataBrokerServiceTest {
     request.put("PM10", 4.83);
     request.put("Rainfall", 0);
     request.put("id",
-        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/aqm/EM_01_0103_01");
+            "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/aqm/EM_01_0103_01");
     request.put("SoundMin", 73.54);
     request.put("Avg_Humidity", 100);
     request.put("SO2", 17.95);
@@ -661,6 +656,8 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
+    testContext.completeNow();
+
   }
 
   @Test
@@ -682,11 +679,12 @@ public class DataBrokerServiceTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER
-            .debug("Register subscription response for invalid routingKey request is : " + response);
+                .debug("Register subscription response for invalid routingKey request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
     });
+    testContext.completeNow();
   }
 
   @Test
@@ -708,11 +706,13 @@ public class DataBrokerServiceTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER
-            .debug("Register subscription response for invalid routingKey request is : " + response);
+                .debug("Register subscription response for invalid routingKey request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
     });
+    testContext.completeNow();
+
   }
 
   @Test
@@ -744,7 +744,7 @@ public class DataBrokerServiceTest {
         JsonObject response = handler.result();
         LOGGER.debug("Register subscription response is : " + response);
         JsonObject brokerResponse=response.getJsonArray("results").getJsonObject(0);
-        
+
         assertTrue(brokerResponse.containsKey(USER_NAME));
         assertTrue(brokerResponse.containsKey(APIKEY));
         assertTrue(brokerResponse.containsKey(URL));
@@ -753,6 +753,8 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
+    testContext.completeNow();
+
   }
 
   @Test
@@ -774,11 +776,13 @@ public class DataBrokerServiceTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("Register subscription response for already existing alias-name request is : "
-            + response);
+                + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
     });
+    testContext.completeNow();
+
   }
 
   @Test
@@ -858,6 +862,8 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
+    testContext.completeNow();
+
   }
 
 
@@ -904,6 +910,8 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
+    testContext.completeNow();
+
   }
 
   @Test
@@ -929,6 +937,8 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
+    testContext.completeNow();
+
   }
 
   @Test
@@ -954,6 +964,8 @@ public class DataBrokerServiceTest {
       }
       testContext.completeNow();
     });
+    testContext.completeNow();
+
   }
 
   @Test
@@ -1042,7 +1054,7 @@ public class DataBrokerServiceTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug(
-            "Update (Append) subscription response for invalid exchange request is : " + response);
+                "Update (Append) subscription response for invalid exchange request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -1069,7 +1081,7 @@ public class DataBrokerServiceTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("Update (Append) subscription response for invalid routingKey request is : "
-            + response);
+                + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -1097,7 +1109,7 @@ public class DataBrokerServiceTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug(
-            "Update (append)subscription response for invalid routingKey request is : " + response);
+                "Update (append)subscription response for invalid routingKey request is : " + response);
         assertEquals(expected, response);
       }
       testContext.completeNow();
@@ -1111,9 +1123,9 @@ public class DataBrokerServiceTest {
     JsonObject expected = new JsonObject();
     JsonArray routingKeys = new JsonArray();
     routingKeys.add(
-        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
+            "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm/.*");
     routingKeys.add(
-        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
+            "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
     expected.put(ENTITIES, routingKeys);
 
     JsonObject request = new JsonObject();
@@ -1136,7 +1148,7 @@ public class DataBrokerServiceTest {
     String queueName = "non-existing-queue";
     JsonArray array = new JsonArray();
     array.add(
-        "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
+            "rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.varanasi.iudx.org.in/varanasi-aqm1/.*");
 
     JsonObject expected = new JsonObject();
     expected.put(ERROR, "Invalid routingKey");
