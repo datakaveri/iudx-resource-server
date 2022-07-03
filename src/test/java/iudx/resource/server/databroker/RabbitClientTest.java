@@ -536,7 +536,7 @@ public class RabbitClientTest {
             }
         });
     }
-    
+
     @Test
     @DisplayName("Test updateUserPermissions method : Success")
     public void testUpdateUserPermissionsSuccess(VertxTestContext vertxTestContext)
