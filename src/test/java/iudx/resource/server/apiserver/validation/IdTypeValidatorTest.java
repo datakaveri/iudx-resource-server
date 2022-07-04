@@ -83,7 +83,10 @@ public class IdTypeValidatorTest {
             true),
         Arguments.of(
             "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86$/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
-            true));
+            true),
+            Arguments.of("",true),
+            Arguments.of(null,true),
+            Arguments.of("",false));
   }
 
   @ParameterizedTest

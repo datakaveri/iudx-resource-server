@@ -37,12 +37,29 @@ public class DistanceTypeValidatorTest {
             Arguments.of(null, false));
   }
 
+
   @ParameterizedTest
   @MethodSource("allowedValues")
   @Description("distance parameter allowed values.")
   public void testValidDistanceValue(String value, boolean required, Vertx vertx,
                                      VertxTestContext testContext) {
     distanceTypeValidator = new DistanceTypeValidator(value, required);
+    assertTrue(distanceTypeValidator.isValid());
+    testContext.completeNow();
+  }
+ static Stream<Arguments> allowedValuesForAsync() {
+    // Add any valid value which will pass successfully.
+    return Stream.of(
+            Arguments.of("1", true,true),
+            Arguments.of("500", true,true),
+            Arguments.of(null, false,true));
+  }
+  @ParameterizedTest
+  @MethodSource("allowedValuesForAsync")
+  @Description("distance parameter allowed values.")
+  public void testValidDistanceValueAsyncQuery(String value, boolean required,boolean isAsyncQuery, Vertx vertx,
+                                     VertxTestContext testContext) {
+    distanceTypeValidator = new DistanceTypeValidator(value, required,isAsyncQuery);
     assertTrue(distanceTypeValidator.isValid());
     testContext.completeNow();
   }
@@ -75,6 +92,4 @@ public class DistanceTypeValidatorTest {
     assertThrows(DxRuntimeException.class, () -> distanceTypeValidator.isValid());
     testContext.completeNow();
   }
-
-
 }
