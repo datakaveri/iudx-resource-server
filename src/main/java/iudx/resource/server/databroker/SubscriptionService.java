@@ -912,7 +912,7 @@ public class SubscriptionService {
               subscriptionIDdb = row.getString(0);
               LOGGER.debug("Info : " + subscriptionIDdb);
             }
-          if (!subscriptionID.equalsIgnoreCase(subscriptionIDdb) && subscriptionIDdb != null) {
+          if (!subscriptionID.equalsIgnoreCase(subscriptionIDdb) && subscriptionID == null) {
             LOGGER.debug("Info : Call Back ID not found");
             deleteCallbackSubscriptionResponse.put(Constants.ERROR, "Call Back ID not found");
             promise.fail(deleteCallbackSubscriptionResponse.toString());
