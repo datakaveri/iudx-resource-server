@@ -158,6 +158,7 @@ pipeline {
             script {
               sh 'cd /home/ubuntu/iudx-deployment/; git pull'
               sh "helm upgrade resource-server /home/ubuntu/iudx-deployment/K8s-deployment/Charts/resource-server --reuse-values --set image.tag=4.0-alpha-$env.GIT_HASH -n rs "
+              sh 'sleep 20'
             }
           }
         }
