@@ -450,7 +450,7 @@ public class MeteringServiceTest {
   }
 
   @Test
-  @DisplayName("Testing count query for given time,api and providerId.")
+  @DisplayName("Testing read query for given time,api and providerId.")
   void readForGivenTimeApiAndProviderID(VertxTestContext vertxTestContext) {
     JsonObject jsonObject = readProviderRequest();
     jsonObject.remove(RESOURCE_ID);

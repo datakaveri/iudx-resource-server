@@ -152,7 +152,7 @@ public class MeteringServiceImpl implements MeteringService {
     request.put(TABLE_NAME, databaseTableName);
     query = queryBuilder.buildReadingQuery(request);
 
-    LOGGER.info(query);
+    LOGGER.trace(query);
     if (query.containsKey(ERROR)) {
       LOGGER.error("Fail: Query returned with an error: " + query.getString(ERROR));
       responseBuilder =
@@ -202,7 +202,6 @@ public class MeteringServiceImpl implements MeteringService {
               } else {
                 responseBuilder =
                     new ResponseBuilder(SUCCESS).setTypeAndTitle(200).setData(jsonArray);
-                //                LOGGER.info("Info: " + responseBuilder.getResponse().toString());
                 promise.complete(responseBuilder.getResponse());
               }
             })
