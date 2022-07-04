@@ -116,7 +116,7 @@ public class RabbitClient {
 
 
   public RabbitClient(Vertx vertx, RabbitMQOptions rabbitConfigs, RabbitWebClient webClient,
-      PostgresClient pgSQLClient, JsonObject configs) {
+                      PostgresClient pgSQLClient, JsonObject configs) {
     this.amqpUrl = configs.getString("brokerAmqpIp");
     this.amqpPort = configs.getInteger("brokerAmqpPort");
     this.vhost = configs.getString("dataBrokerVhost");
@@ -141,7 +141,7 @@ public class RabbitClient {
 
   /**
    * The createExchange implements the create exchange.
-   * 
+   *
    * @param request which is a Json object
    * @Param vHost virtual-host
    * @return response which is a Future object of promise of Json type
@@ -167,13 +167,13 @@ public class RabbitClient {
             responseJson = Util.getResponseJson(HttpStatus.SC_CONFLICT, FAILURE, EXCHANGE_EXISTS);
           } else if (statusCode == HttpStatus.SC_BAD_REQUEST) {
             responseJson = Util.getResponseJson(statusCode, FAILURE,
-                EXCHANGE_EXISTS_WITH_DIFFERENT_PROPERTIES);
+                    EXCHANGE_EXISTS_WITH_DIFFERENT_PROPERTIES);
           }
           LOGGER.debug("Success : " + responseJson);
           promise.complete(responseJson);
         } else {
           JsonObject errorJson = Util.getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR,
-              EXCHANGE_CREATE_ERROR);
+                  EXCHANGE_CREATE_ERROR);
           LOGGER.error("Fail : " + requestHandler.cause());
           promise.fail(errorJson.toString());
         }
@@ -203,7 +203,7 @@ public class RabbitClient {
           }
         } else {
           JsonObject errorJson =
-              Util.getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR, EXCHANGE_NOT_FOUND);
+                  Util.getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR, EXCHANGE_NOT_FOUND);
           LOGGER.error("Error : " + requestHandler.cause());
           promise.fail(errorJson.toString());
         }
@@ -238,7 +238,7 @@ public class RabbitClient {
           promise.fail("getExchange_error" + result.cause());
         }
         LOGGER.debug("getExchange method response : " + response);
-        promise.complete(response);
+        promise.tryComplete(response);
       });
 
     } else {
@@ -250,7 +250,7 @@ public class RabbitClient {
 
   /**
    * The deleteExchange implements the delete exchange operation.
-   * 
+   *
    * @param request which is a Json object
    * @Param VHost virtual-host
    * @return response which is a Future object of promise of Json type
@@ -276,7 +276,7 @@ public class RabbitClient {
           promise.complete(responseJson);
         } else {
           JsonObject errorJson = Util.getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR,
-              EXCHANGE_DELETE_ERROR);
+                  EXCHANGE_DELETE_ERROR);
           LOGGER.error("Error : " + requestHandler.cause());
           promise.fail(errorJson.toString());
         }
@@ -287,7 +287,7 @@ public class RabbitClient {
 
   /**
    * The listExchangeSubscribers implements the list of bindings for an exchange (source).
-   * 
+   *
    * @param request which is a Json object
    * @param vhost virtual-host
    * @return response which is a Future object of promise of Json type
@@ -299,7 +299,7 @@ public class RabbitClient {
     if (request != null && !request.isEmpty()) {
       String exchangeName = request.getString(ID);
       String url =
-          "/api/exchanges/" + vhost + "/" + Util.encodeValue(exchangeName) + "/bindings/source";
+              "/api/exchanges/" + vhost + "/" + Util.encodeValue(exchangeName) + "/bindings/source";
       webClient.requestAsync(REQUEST_GET, url).onComplete(ar -> {
         if (ar.succeeded()) {
           HttpResponse<Buffer> response = ar.result();
@@ -310,21 +310,21 @@ public class RabbitClient {
               if (body != null) {
                 JsonArray jsonBody = new JsonArray(body.toString());
                 Map res = jsonBody.stream().map(JsonObject.class::cast)
-                    .collect(Collectors.toMap(json -> json.getString("destination"),
-                        json -> new JsonArray().add(json.getString("routing_key")),
-                        Util.bindingMergeOperator));
+                        .collect(Collectors.toMap(json -> json.getString("destination"),
+                                json -> new JsonArray().add(json.getString("routing_key")),
+                                Util.bindingMergeOperator));
                 LOGGER.debug("Info : exchange subscribers : " + jsonBody);
                 finalResponse.clear().mergeIn(new JsonObject(res));
                 LOGGER.debug("Info : final Response : " + finalResponse);
                 if (finalResponse.isEmpty()) {
                   finalResponse.clear().mergeIn(
-                      Util.getResponseJson(HttpStatus.SC_NOT_FOUND, FAILURE, EXCHANGE_NOT_FOUND),
-                      true);
+                          Util.getResponseJson(HttpStatus.SC_NOT_FOUND, FAILURE, EXCHANGE_NOT_FOUND),
+                          true);
                 }
               }
             } else if (status == HttpStatus.SC_NOT_FOUND) {
               finalResponse.mergeIn(
-                  Util.getResponseJson(HttpStatus.SC_NOT_FOUND, FAILURE, EXCHANGE_NOT_FOUND), true);
+                      Util.getResponseJson(HttpStatus.SC_NOT_FOUND, FAILURE, EXCHANGE_NOT_FOUND), true);
             }
           }
           promise.complete(finalResponse);
@@ -341,7 +341,7 @@ public class RabbitClient {
 
   /**
    * The createQueue implements the create queue operation.
-   * 
+   *
    * @param request which is a Json object
    * @param vhost virtual-host
    * @return response which is a Future object of promise of Json type
@@ -356,8 +356,8 @@ public class RabbitClient {
       JsonObject configProp = new JsonObject();
       JsonObject arguments = new JsonObject();
       arguments.put(Constants.X_MESSAGE_TTL_NAME, Constants.X_MESSAGE_TTL_VALUE)
-          .put(Constants.X_MAXLENGTH_NAME, Constants.X_MAXLENGTH_VALUE)
-          .put(Constants.X_QUEUE_MODE_NAME, Constants.X_QUEUE_MODE_VALUE);
+              .put(Constants.X_MAXLENGTH_NAME, Constants.X_MAXLENGTH_VALUE)
+              .put(Constants.X_QUEUE_MODE_NAME, Constants.X_QUEUE_MODE_VALUE);
       configProp.put(Constants.X_QUEUE_TYPE, true);
       configProp.put(Constants.X_QUEUE_ARGUMENTS, arguments);
       webClient.requestAsync(REQUEST_PUT, url, configProp).onComplete(ar -> {
@@ -369,11 +369,11 @@ public class RabbitClient {
               finalResponse.put(Constants.QUEUE, queueName);
             } else if (status == HttpStatus.SC_NO_CONTENT) {
               finalResponse.mergeIn(
-                  Util.getResponseJson(HttpStatus.SC_CONFLICT, FAILURE, QUEUE_ALREADY_EXISTS),
-                  true);
+                      Util.getResponseJson(HttpStatus.SC_CONFLICT, FAILURE, QUEUE_ALREADY_EXISTS),
+                      true);
             } else if (status == HttpStatus.SC_BAD_REQUEST) {
               finalResponse.mergeIn(Util.getResponseJson(status, FAILURE,
-                  QUEUE_ALREADY_EXISTS_WITH_DIFFERENT_PROPERTIES), true);
+                      QUEUE_ALREADY_EXISTS_WITH_DIFFERENT_PROPERTIES), true);
             }
           }
           promise.complete(finalResponse);
@@ -391,7 +391,7 @@ public class RabbitClient {
 
   /**
    * The deleteQueue implements the delete queue operation.
-   * 
+   *
    * @param request which is a Json object
    * @param vhost virtual-host
    * @return response which is a Future object of promise of Json type
@@ -429,7 +429,7 @@ public class RabbitClient {
 
   /**
    * The bindQueue implements the bind queue to exchange by routing key.
-   * 
+   *
    * @param request which is a Json object
    * @param vhost virtual-host
    * @return response which is a Future object of promise of Json type
@@ -445,7 +445,7 @@ public class RabbitClient {
       JsonArray entities = request.getJsonArray("entities");
       int arrayPos = entities.size() - 1;
       String url = "/api/bindings/" + vhost + "/e/" + encodeValue(exchangeName) + "/q/"
-          + Util.encodeValue(queueName);
+              + Util.encodeValue(queueName);
       for (Object rkey : entities) {
         requestBody.put("routing_key", rkey.toString());
         webClient.requestAsync(REQUEST_POST, url, requestBody).onComplete(ar -> {
@@ -460,7 +460,7 @@ public class RabbitClient {
                 finalResponse.put(Constants.ENTITIES, entities);
               } else if (status == HttpStatus.SC_NOT_FOUND) {
                 finalResponse
-                    .mergeIn(Util.getResponseJson(status, FAILURE, QUEUE_EXCHANGE_NOT_FOUND));
+                        .mergeIn(Util.getResponseJson(status, FAILURE, QUEUE_EXCHANGE_NOT_FOUND));
               }
             }
             if (rkey == entities.getValue(arrayPos)) {
@@ -480,7 +480,7 @@ public class RabbitClient {
 
   /**
    * The unbindQueue implements the unbind queue to exchange by routing key.
-   * 
+   *
    * @param request which is a Json object
    * @param vhost virtual-host
    * @return response which is a Future object of promise of Json type
@@ -496,7 +496,7 @@ public class RabbitClient {
       int arrayPos = entities.size() - 1;
       for (Object rkey : entities) {
         String url = "/api/bindings/" + vhost + "/e/" + encodeValue(exchangeName) + "/q/"
-            + Util.encodeValue(queueName) + "/" + encodeValue((String) rkey);
+                + Util.encodeValue(queueName) + "/" + encodeValue((String) rkey);
         webClient.requestAsync(REQUEST_DELETE, url).onComplete(ar -> {
           if (ar.succeeded()) {
             HttpResponse<Buffer> response = ar.result();
@@ -527,7 +527,7 @@ public class RabbitClient {
 
   /**
    * The createvHost implements the create virtual host operation.
-   * 
+   *
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
@@ -547,7 +547,7 @@ public class RabbitClient {
               finalResponse.put(Constants.VHOST, vhost);
             } else if (status == HttpStatus.SC_NO_CONTENT) {
               finalResponse.mergeIn(
-                  Util.getResponseJson(HttpStatus.SC_CONFLICT, FAILURE, VHOST_ALREADY_EXISTS));
+                      Util.getResponseJson(HttpStatus.SC_CONFLICT, FAILURE, VHOST_ALREADY_EXISTS));
             }
           }
           promise.complete(finalResponse);
@@ -564,7 +564,7 @@ public class RabbitClient {
 
   /**
    * The deletevHost implements the delete virtual host operation.
-   * 
+   *
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
@@ -602,7 +602,7 @@ public class RabbitClient {
 
   /**
    * The listvHost implements the list of virtual hosts .
-   * 
+   *
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
@@ -650,7 +650,7 @@ public class RabbitClient {
 
   /**
    * The listQueueSubscribers implements the list of bindings for a queue.
-   * 
+   *
    * @param request which is a Json object
    * @return response which is a Future object of promise of Json type
    */
@@ -683,12 +683,12 @@ public class RabbitClient {
                   finalResponse.put(Constants.ENTITIES, oroutingKeys);
                 } else {
                   finalResponse.clear().mergeIn(Util.getResponseJson(HttpStatus.SC_NOT_FOUND,
-                      FAILURE, QUEUE_DOES_NOT_EXISTS));
+                          FAILURE, QUEUE_DOES_NOT_EXISTS));
                 }
               }
             } else if (status == HttpStatus.SC_NOT_FOUND) {
               finalResponse.clear()
-                  .mergeIn(Util.getResponseJson(status, FAILURE, QUEUE_DOES_NOT_EXISTS));
+                      .mergeIn(Util.getResponseJson(status, FAILURE, QUEUE_DOES_NOT_EXISTS));
             }
           }
           LOGGER.debug("Info : " + finalResponse);
@@ -717,7 +717,7 @@ public class RabbitClient {
     requestParams.adaptorId = id;
     if (isValidId.test(requestParams.adaptorId)) {
       if (requestParams.adaptorId != null && !requestParams.adaptorId.isEmpty()
-          && !requestParams.adaptorId.isBlank()) {
+              && !requestParams.adaptorId.isBlank()) {
         Future<JsonObject> userCreationFuture = createUserIfNotExist(requestParams.userid, vhost);
         userCreationFuture.compose(userCreationResult -> {
           requestParams.apiKey = userCreationResult.getString("apiKey");
@@ -733,19 +733,19 @@ public class RabbitClient {
           LOGGER.debug("Success : Exchange created successfully.");
           requestParams.isExchnageCreated = true;
           return updateUserPermissions(requestParams.vhost, requestParams.userid,
-              PermissionOpType.ADD_WRITE,requestParams.adaptorId);
+                  PermissionOpType.ADD_WRITE,requestParams.adaptorId);
         }).compose(userPermissionsResult -> {
           LOGGER.debug("Success : user permissions set.");
           return queueBinding(requestParams.adaptorId, vhost);
         }).onSuccess(success -> {
           LOGGER.debug("Success : queue bindings done.");
           JsonObject response = new JsonObject()
-              .put(USER_NAME, requestParams.userid)
-              .put(Constants.APIKEY, requestParams.apiKey)
-              .put(Constants.ID, requestParams.adaptorId)
-              .put(Constants.URL, this.amqpUrl)
-              .put(Constants.PORT, this.amqpPort)
-              .put(Constants.VHOST, requestParams.vhost);
+                  .put(USER_NAME, requestParams.userid)
+                  .put(Constants.APIKEY, requestParams.apiKey)
+                  .put(Constants.ID, requestParams.adaptorId)
+                  .put(Constants.URL, this.amqpUrl)
+                  .put(Constants.PORT, this.amqpPort)
+                  .put(Constants.VHOST, requestParams.vhost);
           LOGGER.debug("Success : Adapter created successfully.");
           promise.complete(response);
         }).onFailure(failure -> {
@@ -753,20 +753,20 @@ public class RabbitClient {
           // Compensating call, delete adaptor if created;
           if (requestParams.isExchnageCreated) {
             JsonObject deleteJson =
-                new JsonObject().put("exchangeName", requestParams.adaptorId);
+                    new JsonObject().put("exchangeName", requestParams.adaptorId);
             Future.future(fu -> deleteExchange(deleteJson, vhost));
           }
           promise.fail(failure);
         });
       } else {
         promise.fail(
-            getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, "Invalid/Missing Parameters")
-                .toString());
+                getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, "Invalid/Missing Parameters")
+                        .toString());
       }
     } else {
       promise
-          .fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, "Invalid/Missing Parameters")
-              .toString());
+              .fail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, "Invalid/Missing Parameters")
+                      .toString());
     }
     return promise.future();
   }
@@ -799,12 +799,12 @@ public class RabbitClient {
               LOGGER.debug("Info : " + exchangeID + " adaptor deleted successfully");
               finalResponse.mergeIn(getResponseJson(200, "success", "adaptor deleted"));
               Future.future(
-                  fu -> updateUserPermissions(vhost, userId, PermissionOpType.DELETE_WRITE,
-                      exchangeID));
+                      fu -> updateUserPermissions(vhost, userId, PermissionOpType.DELETE_WRITE,
+                              exchangeID));
             } else if (rh.failed()) {
               finalResponse.clear()
-                  .mergeIn(getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Adaptor deleted",
-                      rh.cause().toString()));
+                      .mergeIn(getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Adaptor deleted",
+                              rh.cause().toString()));
               LOGGER.error("Error : Adaptor deletion failed cause - " + rh.cause());
               promise.fail(finalResponse.toString());
             } else {
@@ -812,12 +812,12 @@ public class RabbitClient {
               finalResponse.mergeIn(getResponseJson(400, "bad request", "nothing to delete"));
               promise.fail(finalResponse.toString());
             }
-            promise.complete(finalResponse);
+            promise.tryComplete(finalResponse);
           });
 
         } else if (status == 404) { // exchange not found
           finalResponse.clear().mergeIn(
-              getResponseJson(status, "not found", resultHandler.result().getString("detail")));
+                  getResponseJson(status, "not found", resultHandler.result().getString("detail")));
           LOGGER.error("Error : Exchange not found cause ");
           promise.fail(finalResponse.toString());
         } else { // some other issue
@@ -829,7 +829,7 @@ public class RabbitClient {
       if (resultHandler.failed()) {
         LOGGER.error("Error : deleteAdaptor - resultHandler failed : " + resultHandler.cause());
         finalResponse
-            .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, "bad request", "nothing to delete"));
+                .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, "bad request", "nothing to delete"));
         promise.fail(finalResponse.toString());
 
       }
@@ -839,7 +839,7 @@ public class RabbitClient {
 
   /**
    * The createUserIfNotExist implements the create user if does not exist.
-   * 
+   *
    * @param userid which is a String
    * @param vhost which is a String
    * @return response which is a Future object of promise of Json type
@@ -883,7 +883,7 @@ public class RabbitClient {
           response.put(USER_ID, userid);
           response.put(APIKEY, API_KEY_MESSAGE);
           response.mergeIn(
-              getResponseJson(SUCCESS_CODE, DATABASE_READ_SUCCESS, DATABASE_READ_SUCCESS));
+                  getResponseJson(SUCCESS_CODE, DATABASE_READ_SUCCESS, DATABASE_READ_SUCCESS));
           response.put(VHOST_PERMISSIONS, vhost);
           promise.complete(response);
         }
@@ -891,7 +891,7 @@ public class RabbitClient {
       } else {
         /* Handle API error */
         LOGGER.error(
-            "Error : Something went wrong while finding user using mgmt API: " + reply.cause());
+                "Error : Something went wrong while finding user using mgmt API: " + reply.cause());
         promise.fail(reply.cause().toString());
       }
     });
@@ -902,7 +902,7 @@ public class RabbitClient {
 
   /**
    * CreateUserIfNotPresent's helper method which creates user if not present.
-   * 
+   *
    * @param userid which is a String
    * @param vhost which is a String
    * @return response which is a Future object of promise of Json type
@@ -928,7 +928,7 @@ public class RabbitClient {
           vhostPermission.onComplete(handler -> {
             if (handler.succeeded()) {
               response.mergeIn(getResponseJson(SUCCESS_CODE, VHOST_PERMISSIONS,
-                  handler.result().getString(DETAIL)));
+                      handler.result().getString(DETAIL)));
               // Call the DB method to store username and password
               Future<JsonObject> createUserinDb = createUserInDb(userid, Util.getSha(password));
               createUserinDb.onComplete(createUserinDbHandler -> {
@@ -937,7 +937,7 @@ public class RabbitClient {
                 } else {
                   /* Handle error */
                   LOGGER.error("Error : error in saving credentials. Cause : ",
-                      createUserinDbHandler.cause());
+                          createUserinDbHandler.cause());
                   promise.fail("Error : error in saving credentials");
                 }
               });
@@ -948,7 +948,9 @@ public class RabbitClient {
             }
           });
 
-        } else {
+        }
+
+        else {
           /* Handle error */
           LOGGER.error("Error : createUser method - Some network error. cause", ar.cause());
           response.put(FAILURE, NETWORK_ISSUE);
@@ -957,7 +959,7 @@ public class RabbitClient {
       } else {
         /* Handle error */
         LOGGER
-            .info("Error : Something went wrong while creating user using mgmt API :", ar.cause());
+                .info("Error : Something went wrong while creating user using mgmt API :", ar.cause());
         response.put(FAILURE, CHECK_CREDENTIALS);
         promise.fail(response.toString());
       }
@@ -1069,13 +1071,18 @@ public class RabbitClient {
 
   /**
    * set topic permissions.
-   * 
+   *
    * @param vhost which is a String
    * @param adaptorID which is a String
    * @param userID which is a String
    * @return response which is a Future object of promise of Json type
    **/
-  private Future<JsonObject> setTopicPermissions(String vhost, String adaptorID, String userID) {
+  /**
+   *
+   * changed the access modifier to default as
+   * setTopicPermissions is not being called anywhere
+   */
+  Future<JsonObject> setTopicPermissions(String vhost, String adaptorID, String userID) {
     LOGGER.trace("Info : RabbitClient#setTopicPermissions() started");
     String url = "/api/permissions/" + vhost + "/" + encodeValue(userID);
     JsonObject param = new JsonObject();
@@ -1092,25 +1099,25 @@ public class RabbitClient {
         /* Check if request was a success */
         if (result.result().statusCode() == HttpStatus.SC_CREATED) {
           response.mergeIn(
-              getResponseJson(SUCCESS_CODE, TOPIC_PERMISSION, TOPIC_PERMISSION_SET_SUCCESS));
+                  getResponseJson(SUCCESS_CODE, TOPIC_PERMISSION, TOPIC_PERMISSION_SET_SUCCESS));
           LOGGER.debug("Success : Topic permission set");
           promise.complete(response);
         } else if (result.result()
-            .statusCode() == HttpStatus.SC_NO_CONTENT) { /* Check if request was already served */
+                .statusCode() == HttpStatus.SC_NO_CONTENT) { /* Check if request was already served */
           response.mergeIn(
-              getResponseJson(SUCCESS_CODE, TOPIC_PERMISSION, TOPIC_PERMISSION_ALREADY_SET));
+                  getResponseJson(SUCCESS_CODE, TOPIC_PERMISSION, TOPIC_PERMISSION_ALREADY_SET));
           promise.complete(response);
         } else { /* Check if request has an error */
           LOGGER.error(
-              "Error : error in setting topic permissions" + result.result().statusMessage());
+                  "Error : error in setting topic permissions" + result.result().statusMessage());
           response.mergeIn(
-              getResponseJson(INTERNAL_ERROR_CODE, TOPIC_PERMISSION, TOPIC_PERMISSION_SET_ERROR));
+                  getResponseJson(INTERNAL_ERROR_CODE, TOPIC_PERMISSION, TOPIC_PERMISSION_SET_ERROR));
           promise.fail(response.toString());
         }
       } else { /* Check if request has an error */
         LOGGER.error("Error : error in setting topic permission : " + result.cause());
         response.mergeIn(
-            getResponseJson(INTERNAL_ERROR_CODE, TOPIC_PERMISSION, TOPIC_PERMISSION_SET_ERROR));
+                getResponseJson(INTERNAL_ERROR_CODE, TOPIC_PERMISSION, TOPIC_PERMISSION_SET_ERROR));
         promise.fail(response.toString());
       }
     });
@@ -1119,7 +1126,7 @@ public class RabbitClient {
 
   /**
    * set vhost permissions for given userName.
-   * 
+   *
    * @param shaUsername which is a String
    * @param vhost which is a String
    * @return response which is a Future object of promise of Json type
@@ -1142,23 +1149,23 @@ public class RabbitClient {
         /* Check if permission was set */
         if (handler.result().statusCode() == HttpStatus.SC_CREATED) {
           LOGGER.debug("Success :write permission set for user [ " + shaUsername + " ] in vHost [ "
-              + vhost + "]");
+                  + vhost + "]");
           vhostPermissionResponse
-              .mergeIn(getResponseJson(SUCCESS_CODE, VHOST_PERMISSIONS, VHOST_PERMISSIONS_WRITE));
+                  .mergeIn(getResponseJson(SUCCESS_CODE, VHOST_PERMISSIONS, VHOST_PERMISSIONS_WRITE));
           promise.complete(vhostPermissionResponse);
         } else {
           LOGGER.error("Error : error in write permission set for user [ " + shaUsername
-              + " ] in vHost [ " + vhost + " ]");
+                  + " ] in vHost [ " + vhost + " ]");
           vhostPermissionResponse.mergeIn(
-              getResponseJson(INTERNAL_ERROR_CODE, VHOST_PERMISSIONS, VHOST_PERMISSION_SET_ERROR));
+                  getResponseJson(INTERNAL_ERROR_CODE, VHOST_PERMISSIONS, VHOST_PERMISSION_SET_ERROR));
           promise.fail(vhostPermissions.toString());
         }
       } else {
         /* Check if request has an error */
         LOGGER.error("Error : error in write permission set for user [ " + shaUsername
-            + " ] in vHost [ " + vhost + " ]");
+                + " ] in vHost [ " + vhost + " ]");
         vhostPermissionResponse.mergeIn(
-            getResponseJson(INTERNAL_ERROR_CODE, VHOST_PERMISSIONS, VHOST_PERMISSION_SET_ERROR));
+                getResponseJson(INTERNAL_ERROR_CODE, VHOST_PERMISSIONS, VHOST_PERMISSION_SET_ERROR));
         promise.fail(vhostPermissions.toString());
       }
     });
@@ -1167,9 +1174,9 @@ public class RabbitClient {
 
   /**
    * Helper method which bind registered exchange with predefined queues
-   * 
+   *
    * @param adaptorID which is a String object
-   * 
+   *
    * @return response which is a Future object of promise of Json type
    */
   Future<JsonObject> queueBinding(String adaptorID, String vhost) {
@@ -1184,24 +1191,24 @@ public class RabbitClient {
     }
 
     bindQueue(QUEUE_DATA, adaptorID, topics, vhost)
-        .compose(databaseResult -> bindQueue(REDIS_LATEST, adaptorID, topics, vhost))
-        .compose(queueDataResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + HEARTBEAT,
-            vhost))
-        .compose(heartBeatResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + DATA_ISSUE,
-            vhost))
-        .compose(dataIssueResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID,
-            adaptorID + DOWNSTREAM_ISSUE, vhost))
-        .onSuccess(successHandler -> {
-          JsonObject response = new JsonObject();
-          response.mergeIn(getResponseJson(SUCCESS_CODE, "Queue_Database",
-              QUEUE_DATA + " queue bound to " + adaptorID));
-          LOGGER.debug("Success : " + response);
-          promise.complete(response);
-        }).onFailure(failureHandler -> {
-          LOGGER.error("Error : queue bind error : " + failureHandler.getCause().toString());
-          JsonObject response = getResponseJson(INTERNAL_ERROR_CODE, ERROR, QUEUE_BIND_ERROR);
-          promise.fail(response.toString());
-        });
+            .compose(databaseResult -> bindQueue(REDIS_LATEST, adaptorID, topics, vhost))
+            .compose(queueDataResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + HEARTBEAT,
+                    vhost))
+            .compose(heartBeatResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + DATA_ISSUE,
+                    vhost))
+            .compose(dataIssueResult -> bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID,
+                    adaptorID + DOWNSTREAM_ISSUE, vhost))
+            .onSuccess(successHandler -> {
+              JsonObject response = new JsonObject();
+              response.mergeIn(getResponseJson(SUCCESS_CODE, "Queue_Database",
+                      QUEUE_DATA + " queue bound to " + adaptorID));
+              LOGGER.debug("Success : " + response);
+              promise.complete(response);
+            }).onFailure(failureHandler -> {
+              LOGGER.error("Error : queue bind error : " + failureHandler.getCause().toString());
+              JsonObject response = getResponseJson(INTERNAL_ERROR_CODE, ERROR, QUEUE_BIND_ERROR);
+              promise.fail(response.toString());
+            });
     return promise.future();
   }
 
@@ -1210,7 +1217,7 @@ public class RabbitClient {
     LOGGER.debug("Info : data : " + queue + " adaptorID : " + adaptorID + " topics : " + topics);
     Promise<Void> promise = Promise.promise();
     String url =
-        "/api/bindings/" + vhost + "/e/" + encodeValue(adaptorID) + "/q/" + encodeValue(queue);
+            "/api/bindings/" + vhost + "/e/" + encodeValue(adaptorID) + "/q/" + encodeValue(queue);
     JsonObject bindRequest = new JsonObject();
     bindRequest.put("routing_key", topics);
 
@@ -1238,30 +1245,30 @@ public class RabbitClient {
           promise.complete(permissionArray.getJsonObject(0));
         } else if (handler.result().statusCode() == HttpStatus.SC_NOT_FOUND) {
           Response response = new Response.Builder()
-              .withStatus(HttpStatus.SC_NOT_FOUND)
-              .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
-              .withDetail("user not exist.")
-              .withUrn(ResponseUrn.BAD_REQUEST_URN.getUrn())
-              .build();
+                  .withStatus(HttpStatus.SC_NOT_FOUND)
+                  .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
+                  .withDetail("user not exist.")
+                  .withUrn(ResponseUrn.BAD_REQUEST_URN.getUrn())
+                  .build();
           promise.fail(response.toString());
         } else {
           LOGGER.error(handler.cause());
           LOGGER.error(handler.result());
           Response response = new Response.Builder()
-              .withStatus(rmqResponse.statusCode())
-              .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
-              .withDetail("problem while getting user permissions")
-              .withUrn(ResponseUrn.BAD_REQUEST_URN.getUrn())
-              .build();
+                  .withStatus(rmqResponse.statusCode())
+                  .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
+                  .withDetail("problem while getting user permissions")
+                  .withUrn(ResponseUrn.BAD_REQUEST_URN.getUrn())
+                  .build();
           promise.fail(response.toString());
         }
       } else {
         Response response = new Response.Builder()
-            .withStatus(HttpStatus.SC_BAD_REQUEST)
-            .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
-            .withDetail(handler.cause().getLocalizedMessage())
-            .withUrn(ResponseUrn.BAD_REQUEST_URN.getUrn())
-            .build();
+                .withStatus(HttpStatus.SC_BAD_REQUEST)
+                .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
+                .withDetail(handler.cause().getLocalizedMessage())
+                .withUrn(ResponseUrn.BAD_REQUEST_URN.getUrn())
+                .build();
         promise.fail(response.toString());
       }
     });
@@ -1269,7 +1276,7 @@ public class RabbitClient {
   }
 
   Future<JsonObject> updateUserPermissions(String vHost, String userId, PermissionOpType type,
-      String resourceId) {
+                                           String resourceId) {
     Promise<JsonObject> promise = Promise.promise();
     getUserPermissions(userId).onComplete(handler -> {
       if (handler.succeeded()) {
@@ -1280,36 +1287,46 @@ public class RabbitClient {
 
         LOGGER.debug("updated permission json :" + updatedPermission);
         webClient.requestAsync(REQUEST_PUT, url, updatedPermission)
-            .onComplete(updatePermissionHandler -> {
-              if (updatePermissionHandler.succeeded()) {
-                HttpResponse<Buffer> rmqResponse = updatePermissionHandler.result();
-                if (rmqResponse.statusCode() == HttpStatus.SC_NO_CONTENT) {
-                  Response response = new Response.Builder()
-                      .withStatus(HttpStatus.SC_NO_CONTENT)
-                      .withTitle(ResponseUrn.SUCCESS_URN.getUrn())
-                      .withDetail("Permission updated sucessfully.")
-                      .withUrn(ResponseUrn.SUCCESS_URN.getUrn())
-                      .build();
-                  promise.complete(response.toJson());
-                } else {
-                  Response response = new Response.Builder()
-                      .withStatus(rmqResponse.statusCode())
-                      .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
-                      .withDetail(rmqResponse.statusMessage())
-                      .withUrn(ResponseUrn.BAD_REQUEST_URN.getUrn())
-                      .build();
-                  promise.fail(response.toString());
-                }
-              } else {
-                Response response = new Response.Builder()
-                    .withStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-                    .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
-                    .withDetail(updatePermissionHandler.cause().getMessage())
-                    .withUrn(ResponseUrn.BAD_REQUEST_URN.getUrn())
-                    .build();
-                promise.fail(response.toString());
-              }
-            });
+                .onComplete(updatePermissionHandler -> {
+                  if (updatePermissionHandler.succeeded()) {
+                    HttpResponse<Buffer> rmqResponse = updatePermissionHandler.result();
+                    if (rmqResponse.statusCode() == HttpStatus.SC_NO_CONTENT) {
+                      Response response = new Response.Builder()
+                              .withStatus(HttpStatus.SC_NO_CONTENT)
+                              .withTitle(ResponseUrn.SUCCESS_URN.getUrn())
+                              .withDetail("Permission updated successfully.")
+                              .withUrn(ResponseUrn.SUCCESS_URN.getUrn())
+                              .build();
+                      promise.complete(response.toJson());
+                    }
+                    else if (rmqResponse.statusCode() == HttpStatus.SC_CREATED) {
+                      Response response = new Response.Builder()
+                              .withStatus(HttpStatus.SC_CREATED)
+                              .withTitle(ResponseUrn.SUCCESS_URN.getUrn())
+                              .withDetail("Permission updated successfully.")
+                              .withUrn(ResponseUrn.SUCCESS_URN.getUrn())
+                              .build();
+                      promise.complete(response.toJson());
+                    }
+                    else {
+                      Response response = new Response.Builder()
+                              .withStatus(rmqResponse.statusCode())
+                              .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
+                              .withDetail(rmqResponse.statusMessage())
+                              .withUrn(ResponseUrn.BAD_REQUEST_URN.getUrn())
+                              .build();
+                      promise.fail(response.toString());
+                    }
+                  } else {
+                    Response response = new Response.Builder()
+                            .withStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+                            .withTitle(ResponseUrn.BAD_REQUEST_URN.getUrn())
+                            .withDetail(updatePermissionHandler.cause().getMessage())
+                            .withUrn(ResponseUrn.BAD_REQUEST_URN.getUrn())
+                            .build();
+                    promise.fail(response.toString());
+                  }
+                });
       } else {
         promise.fail(handler.cause().getMessage());
       }
@@ -1318,7 +1335,7 @@ public class RabbitClient {
   }
 
   private JsonObject getUpdatedPermission(JsonObject permissionsJson, PermissionOpType type,
-      String resourceId) {
+                                          String resourceId) {
     LOGGER.debug("existing permissions : " + permissionsJson);
     switch (type) {
       case ADD_READ:
@@ -1344,8 +1361,8 @@ public class RabbitClient {
         if (permissionsArray.length > 0) {
           Stream<String> stream = Arrays.stream(permissionsArray);
           String updatedPermission = stream
-              .filter(item -> !item.equals(resourceId))
-              .collect(Collectors.joining("|"));
+                  .filter(item -> !item.equals(resourceId))
+                  .collect(Collectors.joining("|"));
           permissionsJson.put(type.permission, updatedPermission);
         }
         break;
