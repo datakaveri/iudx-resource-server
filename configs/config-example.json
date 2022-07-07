@@ -118,6 +118,7 @@
             "meteringDatabaseName": "",
             "meteringDatabaseUserName": "",
             "meteringDatabasePassword": "",
+            "meteringDatabaseTableName": "",
             "meteringpoolSize": 25
         },
         {

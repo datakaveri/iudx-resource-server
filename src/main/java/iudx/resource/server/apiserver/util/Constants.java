@@ -18,6 +18,7 @@ public class Constants {
 
   // config
   public static final String CONFIG_FILE = "config.properties";
+  public static final String RESPONSE_SIZE = "response_size";
 
   // NGSI-LD endpoints
   public static final String NGSILD_BASE_PATH = "/ngsi-ld/v1";

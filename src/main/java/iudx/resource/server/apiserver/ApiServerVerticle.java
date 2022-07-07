@@ -39,6 +39,7 @@ import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
+import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
 import static iudx.resource.server.apiserver.util.Constants.ROUTE_DOC;
 import static iudx.resource.server.apiserver.util.Constants.ROUTE_STATIC_SPEC;
 import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
@@ -745,8 +746,9 @@ public class ApiServerVerticle extends AbstractVerticle {
         handler -> {
           if (handler.succeeded()) {
             LOGGER.info("Success: Count Success");
-            Future.future(fu -> updateAuditTable(context));
             handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+            context.data().put(RESPONSE_SIZE, response.bytesWritten());
+            Future.future(fu -> updateAuditTable(context));
           } else if (handler.failed()) {
             LOGGER.error("Fail: Count Fail");
             processBackendResponse(response, handler.cause().getMessage());
@@ -767,8 +769,9 @@ public class ApiServerVerticle extends AbstractVerticle {
         handler -> {
           if (handler.succeeded()) {
             LOGGER.info("Success: Search Success");
-            Future.future(fu -> updateAuditTable(context));
             handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+            context.data().put(RESPONSE_SIZE, response.bytesWritten());
+            Future.future(fu -> updateAuditTable(context));
           } else if (handler.failed()) {
             LOGGER.error("Fail: Search Fail");
             processBackendResponse(response, handler.cause().getMessage());
@@ -783,8 +786,9 @@ public class ApiServerVerticle extends AbstractVerticle {
         handler -> {
           if (handler.succeeded()) {
             LOGGER.info("Latest data search succeeded");
-            Future.future(fu -> updateAuditTable(context));
             handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+            context.data().put(RESPONSE_SIZE, response.bytesWritten());
+            Future.future(fu -> updateAuditTable(context));
           } else {
             LOGGER.error("Fail: Search Fail");
             processBackendResponse(response, handler.cause().getMessage());
@@ -1421,6 +1425,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     request.put(USER_ID, authInfo.getValue(USER_ID));
     request.put(ID, authInfo.getValue(ID));
     request.put(API, authInfo.getValue(API_ENDPOINT));
+    request.put(RESPONSE_SIZE, context.data().get(RESPONSE_SIZE));
     meteringService.executeWriteQuery(
         request,
         handler -> {
