@@ -54,7 +54,10 @@ public class AttrsTypeValidatorTest {
         Arguments.of("refrenceLeval,Co2,NO2,SO2,CO,ABC", true),
         Arguments.of(RandomStringUtils.random(102) + ",refrenceLeval,Co2,NO2,SO2", true),
         Arguments.of("refrence$Leval,Co2,NO2,SO2", true),
-        Arguments.of("refrenceLeval,Co2,NO2,S*&O2", true));
+        Arguments.of("refrenceLeval,Co2,NO2,S*&O2", true),
+            Arguments.of(null, true),
+            Arguments.of("", false)
+            );
   }
 
   @ParameterizedTest
