@@ -14,6 +14,7 @@ import static iudx.resource.server.metering.util.Constants.INVALID_PROVIDER_ID;
 import static iudx.resource.server.metering.util.Constants.INVALID_PROVIDER_REQUIRED;
 import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
 import static iudx.resource.server.metering.util.Constants.RESOURCE_ID;
+import static iudx.resource.server.metering.util.Constants.RESPONSE_SIZE;
 import static iudx.resource.server.metering.util.Constants.RESULTS;
 import static iudx.resource.server.metering.util.Constants.START_TIME;
 import static iudx.resource.server.metering.util.Constants.SUCCESS;
@@ -53,6 +54,7 @@ public class MeteringServiceTest {
   private static String databaseUserName;
   private static String databasePassword;
   private static int databasePoolSize;
+  private static String databaseTableName;
   private static Configuration config;
 
   @BeforeAll
@@ -67,6 +69,7 @@ public class MeteringServiceTest {
     databaseUserName = dbConfig.getString("meteringDatabaseUserName");
     databasePassword = dbConfig.getString("meteringDatabasePassword");
     databasePoolSize = dbConfig.getInteger("meteringPoolSize");
+    databaseTableName = dbConfig.getString("meteringDatabaseTableName");
     meteringService = new MeteringServiceImpl(dbConfig, vertxObj);
     userId = UUID.randomUUID().toString();
     id = "89a36273d77dac4cf38114fca1bbe64392547f86";
@@ -358,6 +361,7 @@ public class MeteringServiceTest {
     request.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
     request.put(ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
     request.put(API, "/ngsi-ld/v1/subscription");
+    request.put(RESPONSE_SIZE,12);
     meteringService.executeWriteQuery(
         request,
         vertxTestContext.succeeding(
