@@ -154,7 +154,7 @@ public class QueryBuilder {
     String providerID =
         resourceId.substring(0, resourceId.indexOf('/', resourceId.indexOf('/') + 1));
     String api = request.getString(API);
-    ZonedDateTime zst = ZonedDateTime.now();
+    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
     long time = getEpochTime(zst);
     String isoTime =
         LocalDateTime.now()
