@@ -62,7 +62,7 @@ public class MeteringServiceTest {
   static void startVertex(Vertx vertx, VertxTestContext vertxTestContext) {
     vertxObj = vertx;
     config = new Configuration();
-    JsonObject dbConfig = config.configLoader(6, vertx);
+    JsonObject dbConfig = config.configLoader(5, vertx);
     databaseIP = dbConfig.getString("meteringDatabaseIP");
     databasePort = dbConfig.getInteger("meteringDatabasePort");
     databaseName = dbConfig.getString("meteringDatabaseName");
@@ -80,8 +80,8 @@ public class MeteringServiceTest {
     JsonObject jsonObject = new JsonObject();
     jsonObject.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
     jsonObject.put(RESOURCE_ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
-    jsonObject.put(START_TIME, "2021-11-20T05:30:00+05:30[Asia/Kolkata]");
-    jsonObject.put(END_TIME, "2021-12-02T02:00:00+05:30[Asia/Kolkata]");
+    jsonObject.put(START_TIME, "2022-06-25T05:30:00+05:30[Asia/Kolkata]");
+    jsonObject.put(END_TIME, "2022-07-08T02:00:00+05:30[Asia/Kolkata]");
     jsonObject.put(TIME_RELATION, DURING);
     jsonObject.put(API, "/ngsi-ld/v1/subscription");
     jsonObject.put(ENDPOINT, "/ngsi-ld/v1/consumer/audit");
@@ -93,8 +93,8 @@ public class MeteringServiceTest {
     JsonObject jsonObject = new JsonObject();
     jsonObject.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
     jsonObject.put(RESOURCE_ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
-    jsonObject.put(START_TIME, "2021-11-20T05:30:00+05:30[Asia/Kolkata]");
-    jsonObject.put(END_TIME, "2021-12-02T02:00:00+05:30[Asia/Kolkata]");
+    jsonObject.put(START_TIME, "2022-06-25T05:30:00+05:30[Asia/Kolkata]");
+    jsonObject.put(END_TIME, "2022-07-08T02:00:00+05:30[Asia/Kolkata]");
     jsonObject.put(TIME_RELATION, DURING);
     jsonObject.put(API, "/ngsi-ld/v1/subscription");
     jsonObject.put(PROVIDER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias");
