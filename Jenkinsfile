@@ -73,25 +73,17 @@ pipeline {
     }
     
     stage('Jmeter Performance Test'){
-      stages{
-        stage('get token'){
-          steps{
-            script{
-              env.puneToken = sh(returnStdout: true, script: 'python3 Jenkins/resources/get-token.py --pune').trim()
-              env.suratToken = sh(returnStdout: true, script: 'python3 Jenkins/resources/get-token.py --surat').trim()
-            }
-          }
+      steps{
+        script{
+          env.puneToken = sh(returnStdout: true, script: 'python3 Jenkins/resources/get-token.py --pune').trim()
+          env.suratToken = sh(returnStdout: true, script: 'python3 Jenkins/resources/get-token.py --surat').trim()
         }
-        stage('Performance Test'){
-          steps{
-            node('master') {
-              script{
-                sh 'rm -rf /var/lib/jenkins/iudx/rs/Jmeter/report ; mkdir -p /var/lib/jenkins/iudx/rs/Jmeter/report'
-                sh "set +x;/var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t /var/lib/jenkins/iudx/rs/Jmeter/ResourceServer.jmx -l /var/lib/jenkins/iudx/rs/Jmeter/report/JmeterTest.jtl -e -o /var/lib/jenkins/iudx/rs/Jmeter/report/ -Jhost=jenkins-slave1 -JpuneToken=$env.puneToken -JsuratToken=$env.suratToken"
-              }
-              perfReport filterRegex: '', showTrendGraphs: true, sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'     
-            }
+        node('master') {
+          script{
+            sh 'rm -rf /var/lib/jenkins/iudx/rs/Jmeter/report ; mkdir -p /var/lib/jenkins/iudx/rs/Jmeter/report'
+            sh "set +x;/var/lib/jenkins/apache-jmeter-5.4.1/bin/jmeter.sh -n -t /var/lib/jenkins/iudx/rs/Jmeter/ResourceServer.jmx -l /var/lib/jenkins/iudx/rs/Jmeter/report/JmeterTest.jtl -e -o /var/lib/jenkins/iudx/rs/Jmeter/report/ -Jhost=jenkins-slave1 -JpuneToken=$env.puneToken -JsuratToken=$env.suratToken"
           }
+          perfReport filterRegex: '', showTrendGraphs: true, sourceDataFiles: '/var/lib/jenkins/iudx/rs/Jmeter/report/*.jtl'     
         }
       }
       post{
@@ -134,17 +126,64 @@ pipeline {
       }
     }
 
-    stage('Push Images') {
-      when{
-        expression {
-          return env.GIT_BRANCH == 'origin/master';
+    stage('Continuous Deployment') {
+      when {
+        allOf {
+          anyOf {
+            changeset "docker/**"
+            changeset "docs/**"
+            changeset "pom.xml"
+            changeset "src/main/**"
+            triggeredBy cause: 'UserIdCause'
+          }
+          expression {
+            return env.GIT_BRANCH == 'origin/master';
+          }
         }
       }
-      steps{
-        script {
-          docker.withRegistry( registryUri, registryCredential ) {
-            devImage.push("4.0-alpha-${env.GIT_HASH}")
-            deplImage.push("4.0-alpha-${env.GIT_HASH}")
+      stages {
+        stage('Push Images') {
+          steps {
+            script {
+              docker.withRegistry( registryUri, registryCredential ) {
+                devImage.push("4.0-alpha-${env.GIT_HASH}")
+                deplImage.push("4.0-alpha-${env.GIT_HASH}")
+              }
+            }
+          }
+        }
+        stage('Docker Swarm deployment') {
+          steps {
+            script {
+              sh "ssh azureuser@docker-swarm 'docker service update rs_rs --image ghcr.io/datakaveri/rs-depl:4.0-alpha-${env.GIT_HASH}'"
+              sh 'sleep 10'
+            }
+            post{
+              failure{
+                error "Failed to deploy image in Docker Swarm"
+              }
+            }
+          }
+        }
+        stage('Integration test on swarm deployment') {
+          steps {
+            node('master') {
+              script{
+                sh 'newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V3.5.postman_collection.json -e /home/ubuntu/configs/cd/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/cd-report.html --reporter-htmlextra-skipSensitiveData'
+              }
+            }
+          }
+          post{
+            always{
+              node('master') {
+                script{
+                  publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'cd-report.html', reportTitles: '', reportName: 'Docker-Swarm Integration Test Report'])
+                }
+              }
+            }
+            failure{
+              error "Test failure. Stopping pipeline execution!"
+            }
           }
         }
       }
