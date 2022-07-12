@@ -336,7 +336,7 @@ public class DataBrokerServiceImplTest {
                 return null;
             }
         }).when(jsonObjectFuture).onComplete(any());
-
+        expected = expected_success();
         databroker.getExchange(request, vHost, handler -> {
             if (handler.succeeded()) {
                 assertEquals(expected, handler.result());
