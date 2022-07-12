@@ -6,12 +6,14 @@ import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.rabbitmq.RabbitMQClient;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -45,12 +47,14 @@ public class DataBrokerServiceImplTest {
     @Mock
     AsyncResult<Void> asyncResult1;
     DataBrokerServiceImpl databrokerSpy;
+    JsonObject expected;
 
     @BeforeEach
     public void setUp(VertxTestContext vertxTestContext) {
         vHost = "IUDX_INTERNAL";
         JsonObject config = mock(JsonObject.class);
         request = new JsonObject();
+        expected = new JsonObject();
         request.put("Dummy key", "Dummy value");
         request.put(ID, "Dummy ID");
         request.put("status", "Dummy status");
@@ -332,14 +336,25 @@ public class DataBrokerServiceImplTest {
                 return null;
             }
         }).when(jsonObjectFuture).onComplete(any());
+
         databroker.getExchange(request, vHost, handler -> {
             if (handler.succeeded()) {
-                assertEquals("{\"Dummy key\":\"Dummy value\",\"id\":\"Dummy ID\",\"status\":\"Dummy status\",\"routingKey\":\"routingKeyValue\",\"type\":200}", handler.result().toString());
+                assertEquals(expected, handler.result());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
             }
         });
+    }
+
+    public JsonObject expected_success()
+    {
+        expected.put("Dummy key","Dummy value");
+        expected.put("id","Dummy ID");
+        expected.put("status","Dummy status");
+        expected.put("type",200);
+        expected.put("routingKey","routingKeyValue");
+        return expected;
     }
 
     @Test
@@ -356,9 +371,10 @@ public class DataBrokerServiceImplTest {
                 return null;
             }
         }).when(jsonObjectFuture).onComplete(any());
+        expected = expected_success();
         databroker.deleteAdaptor(request, vHost, handler -> {
             if (handler.succeeded()) {
-                assertEquals("{\"Dummy key\":\"Dummy value\",\"id\":\"Dummy ID\",\"status\":\"Dummy status\",\"routingKey\":\"routingKeyValue\",\"type\":200}", handler.result().toString());
+                assertEquals(expected, handler.result());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -380,9 +396,10 @@ public class DataBrokerServiceImplTest {
                 return null;
             }
         }).when(jsonObjectFuture).onComplete(any());
+        expected = expected_success();
         databroker.listAdaptor(request, vHost, handler -> {
             if (handler.succeeded()) {
-                assertEquals("{\"Dummy key\":\"Dummy value\",\"id\":\"Dummy ID\",\"status\":\"Dummy status\",\"routingKey\":\"routingKeyValue\",\"type\":200}", handler.result().toString());
+                assertEquals(expected, handler.result());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -405,9 +422,10 @@ public class DataBrokerServiceImplTest {
                 return null;
             }
         }).when(jsonObjectFuture).onComplete(any());
+        expected = expected_success();
         databroker.updateStreamingSubscription(request, handler -> {
             if (handler.succeeded()) {
-                assertEquals("{\"Dummy key\":\"Dummy value\",\"id\":\"Dummy ID\",\"status\":\"Dummy status\",\"routingKey\":\"routingKeyValue\",\"type\":200}", handler.result().toString());
+                assertEquals(expected, handler.result());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -430,9 +448,10 @@ public class DataBrokerServiceImplTest {
                 return null;
             }
         }).when(jsonObjectFuture).onComplete(any());
+        expected = expected_success();
         databroker.deleteStreamingSubscription(request, handler -> {
             if (handler.succeeded()) {
-                assertEquals("{\"Dummy key\":\"Dummy value\",\"id\":\"Dummy ID\",\"status\":\"Dummy status\",\"routingKey\":\"routingKeyValue\",\"type\":200}", handler.result().toString());
+                assertEquals(expected, handler.result());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -455,9 +474,10 @@ public class DataBrokerServiceImplTest {
                 return null;
             }
         }).when(jsonObjectFuture).onComplete(any());
+        expected = expected_success();
         databroker.appendStreamingSubscription(request, handler -> {
             if (handler.succeeded()) {
-                assertEquals("{\"Dummy key\":\"Dummy value\",\"id\":\"Dummy ID\",\"status\":\"Dummy status\",\"routingKey\":\"routingKeyValue\",\"type\":200}", handler.result().toString());
+                assertEquals(expected, handler.result());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -517,9 +537,10 @@ public class DataBrokerServiceImplTest {
                 return null;
             }
         }).when(jsonObjectFuture).onComplete(any());
+        expected = expected_success();
         databroker.listStreamingSubscription(request, handler -> {
             if (handler.succeeded()) {
-                assertEquals("{\"Dummy key\":\"Dummy value\",\"id\":\"Dummy ID\",\"status\":\"Dummy status\",\"routingKey\":\"routingKeyValue\",\"type\":200}", handler.result().toString());
+                assertEquals(expected, handler.result());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -541,9 +562,10 @@ public class DataBrokerServiceImplTest {
                 return null;
             }
         }).when(jsonObjectFuture).onComplete(any());
+        expected = expected_success();
         databroker.registerAdaptor(request, vHost, handler -> {
             if (handler.succeeded()) {
-                assertEquals("{\"Dummy key\":\"Dummy value\",\"id\":\"Dummy ID\",\"status\":\"Dummy status\",\"routingKey\":\"routingKeyValue\",\"type\":200}", handler.result().toString());
+                assertEquals(expected, handler.result());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -568,7 +590,8 @@ public class DataBrokerServiceImplTest {
         }).when(jsonObjectFuture).onComplete(any());
         databroker.registerStreamingSubscription(request, handler -> {
             if (handler.succeeded()) {
-                assertEquals("{\"Dummy key\":\"Dummy value\",\"id\":\"Dummy ID\",\"status\":\"Dummy status\",\"routingKey\":\"routingKeyValue\",\"type\":200}", handler.result().toString());
+                expected = expected_success();
+                assertEquals(expected, handler.result());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -1020,13 +1043,21 @@ public class DataBrokerServiceImplTest {
         });
     }
 
+    public JsonObject expected_failure()
+    {
+        expected.put("type",400);
+        expected.put("title","Bad Request data");
+        expected.put("detail","Bad Request data");
+        return expected;
+    }
     @Test
     @Order(42)
     @DisplayName("Test deleteStreamingSubscription method : When request is empty")
     public void test_deleteStreamingSubscription_with_empty_request(VertxTestContext vertxTestContext) {
+        expected = expected_failure();
         databroker.deleteStreamingSubscription(new JsonObject(), handler -> {
             if (handler.failed()) {
-                assertEquals("{\"type\":400,\"title\":\"Bad Request data\",\"detail\":\"Bad Request data\"}", handler.cause().getMessage());
+                assertEquals(expected.toString(), handler.cause().getMessage());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -1038,9 +1069,10 @@ public class DataBrokerServiceImplTest {
     @Order(42)
     @DisplayName("Test listStreamingSubscription method : When request is empty")
     public void test_listStreamingSubscription_with_empty_request(VertxTestContext vertxTestContext) {
+        expected = expected_failure();
         databroker.listStreamingSubscription(new JsonObject(), handler -> {
             if (handler.failed()) {
-                assertEquals("{\"type\":400,\"title\":\"Bad Request data\",\"detail\":\"Bad Request data\"}", handler.cause().getMessage());
+                assertEquals(expected.toString(), handler.cause().getMessage());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -1052,9 +1084,10 @@ public class DataBrokerServiceImplTest {
     @Order(43)
     @DisplayName("Test registerCallbackSubscription method : When request is empty")
     public void test_registerCallbackSubscription_with_empty_request(VertxTestContext vertxTestContext) {
+        expected = expected_failure();
         databroker.registerCallbackSubscription(new JsonObject(), handler -> {
             if (handler.failed()) {
-                assertEquals("{\"type\":400,\"title\":\"Bad Request data\",\"detail\":\"Bad Request data\"}", handler.cause().getMessage());
+                assertEquals(expected.toString(), handler.cause().getMessage());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -1066,9 +1099,10 @@ public class DataBrokerServiceImplTest {
     @Order(44)
     @DisplayName("Test deleteCallbackSubscription method : When request is empty")
     public void test_deleteCallbackSubscription_with_empty_request(VertxTestContext vertxTestContext) {
+        expected = expected_failure();
         databroker.deleteCallbackSubscription(new JsonObject(), handler -> {
             if (handler.failed()) {
-                assertEquals("{\"type\":400,\"title\":\"Bad Request data\",\"detail\":\"Bad Request data\"}", handler.cause().getMessage());
+                assertEquals(expected.toString(), handler.cause().getMessage());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -1080,9 +1114,10 @@ public class DataBrokerServiceImplTest {
     @Order(45)
     @DisplayName("Test listCallbackSubscription method : When request is empty")
     public void test_listCallbackSubscription_with_empty_request(VertxTestContext vertxTestContext) {
+        expected = expected_failure();
         databroker.listCallbackSubscription(new JsonObject(), handler -> {
             if (handler.failed()) {
-                assertEquals("{\"type\":400,\"title\":\"Bad Request data\",\"detail\":\"Bad Request data\"}", handler.cause().getMessage());
+                assertEquals(expected.toString(), handler.cause().getMessage());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -1094,9 +1129,10 @@ public class DataBrokerServiceImplTest {
     @Order(46)
     @DisplayName("Test updateCallbackSubscription method : When request is empty")
     public void test_updateCallbackSubscription_with_empty_request(VertxTestContext vertxTestContext) {
+        expected = expected_failure();
         databroker.updateCallbackSubscription(new JsonObject(), handler -> {
             if (handler.failed()) {
-                assertEquals("{\"type\":400,\"title\":\"Bad Request data\",\"detail\":\"Bad Request data\"}", handler.cause().getMessage());
+                assertEquals(expected.toString(), handler.cause().getMessage());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -1125,9 +1161,10 @@ public class DataBrokerServiceImplTest {
                 return null;
             }
         }).when(rabbitMQClient).basicPublish(anyString(), anyString(), any(Buffer.class), any(Handler.class));
+        expected.put("status", 200);
         databroker.publishFromAdaptor(request, vHost, handler -> {
             if (handler.succeeded()) {
-                assertEquals("{\"status\":200}", handler.result().toString());
+                assertEquals(expected, handler.result());
                 assertEquals(200, handler.result().getInteger("status"));
                 vertxTestContext.completeNow();
             } else {
@@ -1165,10 +1202,14 @@ public class DataBrokerServiceImplTest {
                 return null;
             }
         }).when(jsonObjectFuture).onComplete(any());
+        expected.put("type","success");
+        expected.put("queueName","efgh");
+        expected.put("routingKey","Dummy status");
+        expected.put("detail","routingKey matched");
         databroker.publishHeartbeat(request, vHost, handler -> {
             if (handler.succeeded()) {
                 assertEquals("success", handler.result().getString("type"));
-                assertEquals("{\"type\":\"success\",\"queueName\":\"efgh\",\"routingKey\":\"Dummy status\",\"detail\":\"routingKey matched\"}", handler.result().toString());
+                assertEquals(expected, handler.result());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -1207,9 +1248,13 @@ public class DataBrokerServiceImplTest {
                 return null;
             }
         }).when(jsonObjectFuture).onComplete(any());
+        expected.put("messagePublished","failed");
+        expected.put("type","error");
+        expected.put("detail","routingKey not matched");
         databroker.publishHeartbeat(request, vHost, handler -> {
             if (handler.failed()) {
-                assertEquals("{\"messagePublished\":\"failed\",\"type\":\"error\",\"detail\":\"routingKey not matched\"}", handler.cause().getMessage());
+                System.out.println(handler.cause().getMessage());
+                assertEquals(expected.toString(), handler.cause().getMessage());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -1345,9 +1390,12 @@ public class DataBrokerServiceImplTest {
 
         request.put(USER_ID, "Dummy User ID");
         doAnswer(Answer -> Future.succeededFuture(true)).when(webClient).getUserInDb(anyString());
+        expected.put("type",401);
+        expected.put("title","not authorized");
+        expected.put("detail","not authorized");
         databroker.resetPassword(request, handler -> {
             if (handler.failed()) {
-                assertEquals("{\"type\":401,\"title\":\"not authorized\",\"detail\":\"not authorized\"}", handler.cause().getMessage());
+                assertEquals(expected.toString(), handler.cause().getMessage());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
@@ -1390,7 +1438,6 @@ public class DataBrokerServiceImplTest {
         doAnswer(Answer -> Future.succeededFuture()).when(rabbitMQClient).basicPublish(anyString(), anyString(), any(Buffer.class));
         databroker.publishMessage(request, "Dummy string to Exchange", "Dummy routing Key", handler -> {
             if (handler.succeeded()) {
-                System.out.println(handler.result());
                 assertTrue(handler.result().containsKey("type"));
                 assertEquals("urn:dx:rs:success", handler.result().getString("type"));
                 vertxTestContext.completeNow();
@@ -1408,12 +1455,16 @@ public class DataBrokerServiceImplTest {
         when(rabbitMQClient.isConnected()).thenReturn(true);
         doAnswer(Answer -> Future.failedFuture("Dummy failure message")).when(rabbitMQClient).basicPublish(anyString(), anyString(), any(Buffer.class));
         databroker.publishMessage(request, "Dummy string to Exchange", "Dummy routing Key", handler -> {
+            expected.put("type","urn:dx:rs:QueueError");
+            expected.put("status",400);
+            expected.put("title",null);
+            expected.put("detail","Dummy failure message");
             if (handler.failed()) {
                 JsonObject expected = new JsonObject(handler.cause().getMessage());
                 assertEquals("Dummy failure message",expected.getString("detail"));
                 assertEquals("urn:dx:rs:QueueError",expected.getString("type"));
                 assertEquals(400,expected.getInteger("status"));
-                assertEquals("{\"type\":\"urn:dx:rs:QueueError\",\"status\":400,\"title\":null,\"detail\":\"Dummy failure message\"}",handler.cause().getMessage());
+                assertEquals(expected.toString(),handler.cause().getMessage());
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
