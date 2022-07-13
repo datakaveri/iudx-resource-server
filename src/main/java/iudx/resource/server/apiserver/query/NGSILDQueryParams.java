@@ -164,25 +164,7 @@ public class NGSILDQueryParams {
       }
     }
   }
-
-  public static void main(String[] args) {
-    JsonObject json = new JsonObject();
-    json.put("type", "query")
-        .put("temporalQ",
-            new JsonObject().put("timerel", "during").put("time", "2020-06-01T14:20:00Z")
-                .put("endtime", "2020-06-03T15:00:00Z").put("timeProperty", "timeProperty"))
-        .put("geoQ",
-            new JsonObject()
-                .put("geometry", "point")
-                .put("coordinates", new JsonArray().add(25.319768).add(82.987988))
-                .put("georel", "near;maxDistance=1000")
-                .put("geoproperty", "geoJsonObject"))
-        .put("entities", new JsonArray().add(new JsonObject().put("id",
-            "rs.varanasi.iudx.org.in/varanasi-swm-vehicles/varanasi-swm-vehicles-live")));
-
-    NGSILDQueryParams ng = new NGSILDQueryParams(json);
-    QueryMapper qm = new QueryMapper();
-  }
+  
 
   private void create(JsonObject requestJson) {
     LOGGER.info("create from json started");
