@@ -10,7 +10,7 @@ import iudx.resource.server.databroker.DataBrokerService;
 
 /**
  * class containing methods to create callback subscriptions in system.
- * 
+ *
  *
  */
 public class CallbackSubscription implements Subscription {
@@ -22,25 +22,14 @@ public class CallbackSubscription implements Subscription {
 
   private static volatile CallbackSubscription instance = null;
 
-  private CallbackSubscription(DataBrokerService databroker, PostgresService pgService) {
+  public CallbackSubscription(DataBrokerService databroker, PostgresService pgService) {
     this.databroker = databroker;
     this.pgService = pgService;
   }
 
-  public static CallbackSubscription getInstance(DataBrokerService databroker,
-      PostgresService pgService) {
-    if (instance == null) {
-      synchronized (CallbackSubscription.class) {
-        if (instance == null)
-          instance = new CallbackSubscription(databroker, pgService);
-      }
-    }
-    return instance;
-  }
-
   /**
    * create a callback subscription.
-   * 
+   *
    * {@inheritDoc}
    */
   @Override
@@ -59,7 +48,7 @@ public class CallbackSubscription implements Subscription {
 
   /**
    * update a callback subscription.
-   * 
+   *
    * {@inheritDoc}
    */
   @Override
@@ -78,7 +67,7 @@ public class CallbackSubscription implements Subscription {
 
   /**
    * append a callback subscription.
-   * 
+   *
    * {@inheritDoc}
    */
   @Override
@@ -97,9 +86,9 @@ public class CallbackSubscription implements Subscription {
 
   /**
    * delete a callback subscription.
-   * 
+   *
    * {@inheritDoc}
-   * 
+   *
    */
   @Override
   public Future<JsonObject> delete(JsonObject subscription) {
@@ -117,7 +106,7 @@ public class CallbackSubscription implements Subscription {
 
   /**
    * get a callback subscription.
-   * 
+   *
    * {@inheritDoc}
    */
   @Override
