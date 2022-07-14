@@ -1,7 +1,6 @@
 package iudx.resource.server.database.latest;
 
 import static iudx.resource.server.database.archives.Constants.FAILED;
-import java.util.ArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.AsyncResult;
@@ -70,15 +69,6 @@ public class RedisClient {
     ClusteredClient = Redis.createClient(vertx, options);
     ClusteredClient.connect(conn -> {
       redis = RedisAPI.api(conn.result());
-
-      vertx.setPeriodic(30 * 1000, handler -> {
-        redis.ping(new ArrayList<>(), result -> {
-          if (result.failed()) {
-            LOGGER.error("Redis error " + result.cause().getMessage());
-          }
-        });
-      });
-
       promise.complete(this);
     });
     return promise.future();
