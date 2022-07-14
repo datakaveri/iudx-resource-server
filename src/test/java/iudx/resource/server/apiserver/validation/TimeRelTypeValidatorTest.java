@@ -35,7 +35,8 @@ public class TimeRelTypeValidatorTest {
         Arguments.of("after", true),
         Arguments.of("before", true),
         Arguments.of("during", true),
-        Arguments.of("between", true));
+        Arguments.of("between", true),
+            Arguments.of(null,false));
   }
 
   @ParameterizedTest
@@ -61,7 +62,8 @@ public class TimeRelTypeValidatorTest {
         Arguments.of("bypass", true),
         Arguments.of("1=1", true),
         Arguments.of("AND XYZ=XYZ", true),
-        Arguments.of(random600Id, true));
+        Arguments.of(random600Id, true),
+            Arguments.of(null,true));
   }
 
 

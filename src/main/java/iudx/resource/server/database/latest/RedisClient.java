@@ -1,10 +1,8 @@
 package iudx.resource.server.database.latest;
 
 import static iudx.resource.server.database.archives.Constants.FAILED;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -40,24 +38,27 @@ public class RedisClient {
    */
 
   public RedisClient(Vertx vertx, JsonObject config) {
-    this.vertx=vertx;
-    this.config=config;
+    this.vertx = vertx;
+    this.config = config;
   }
-  
+
   public Future<RedisClient> start() {
     Promise<RedisClient> promise = Promise.promise();
     StringBuilder RedisURI = new StringBuilder();
-    RedisOptions options=null;
+    RedisOptions options = null;
     RedisURI.append("redis://").append(config.getString("redisUsername")).append(":")
         .append(config.getString("redisPassword")).append("@")
         .append(config.getString("redisHost")).append(":")
         .append(config.getInteger("redisPort").toString());
     String mode = config.getString("redisMode");
+
     if (mode.equals("CLUSTER")) {
-      options =
-          new RedisOptions().setType(RedisClientType.CLUSTER).setUseReplicas(RedisReplicas.SHARE);
+      options = new RedisOptions()
+          .setType(RedisClientType.CLUSTER)
+          .setUseReplicas(RedisReplicas.SHARE);
     } else if (mode.equals("STANDALONE")) {
-      options = new RedisOptions().setType(RedisClientType.STANDALONE);
+      options = new RedisOptions()
+          .setType(RedisClientType.STANDALONE);
     } else {
       LOGGER.error("Invalid/Unsupported mode");
       promise.fail("Invalid/Unsupported mode");
@@ -72,6 +73,7 @@ public class RedisClient {
     });
     return promise.future();
   }
+
   /**
    * searchAsync - Wrapper around Redis async search requests.
    *
@@ -80,7 +82,8 @@ public class RedisClient {
    * @param searchHandler JsonObject result {@link AsyncResult}
    */
 
-  public RedisClient searchAsync(String key, String pathParam, Handler<AsyncResult<JsonObject>> searchHandler) {
+  public RedisClient searchAsync(String key, String pathParam,
+      Handler<AsyncResult<JsonObject>> searchHandler) {
     // using get command
     get(key, pathParam).onComplete(resultRedis -> {
       if (resultRedis.succeeded()) {
