@@ -48,7 +48,7 @@ public class SubscriptionService {
     LOGGER.info("getSubscriptionContext() method started");
     if (type != null && type.equals(SubsType.CALLBACK)) {
       LOGGER.info("callback subscription context");
-      return CallbackSubscription.getInstance(databroker, pgService);
+      return new CallbackSubscription(databroker, pgService);
     } else {
       LOGGER.info("streaming subscription context");
       return new StreamingSubscription(databroker, pgService);
