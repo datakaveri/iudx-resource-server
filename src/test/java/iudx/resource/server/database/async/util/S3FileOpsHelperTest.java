@@ -60,23 +60,13 @@ public class S3FileOpsHelperTest {
         when(file.length()).thenReturn(30302000L);
         opsHelper.s3Upload(file, objectKey, handler -> {
             if (handler.succeeded()) {
-                System.out.println("Success in test_s3Upload_AmazonClientException");
+                    vertxTestContext.failNow(handler.cause());
             } else {
-//                expected_error = "Unable to load AWS credentials from any provider in the chain";
-//                assertTrue(handler.cause().getMessage().contains(expected_error));
-//                expected_error = "Unable to load AWS credentials from environment variables (AWS_ACCESS_KEY_ID (or AWS_ACCESS_KEY) and AWS_SECRET_KEY (or AWS_SECRET_ACCESS_KEY))";
-//                assertTrue(handler.cause().getMessage().contains(expected_error));
-//                expected_error = "Unable to load AWS credentials from Java system properties";
-//                assertTrue(handler.cause().getMessage().contains(expected_error));
-//                expected_error = "profile file cannot be null";
-//                assertTrue(handler.cause().getMessage().contains(expected_error));
-//                expected_error = "Failed to connect to service endpoint:";
-//                assertTrue(handler.cause().getMessage().contains(expected_error));
-                System.out.println("Failure in test_s3Upload_AmazonClientException");
-                System.out.println(handler.cause().getMessage());
+                expected_error = "Unable to execute HTTP request";
+                assertTrue(handler.cause().getMessage().contains(expected_error));
+                vertxTestContext.completeNow();
             }
         });
-        vertxTestContext.completeNow();
     }
 
 }
