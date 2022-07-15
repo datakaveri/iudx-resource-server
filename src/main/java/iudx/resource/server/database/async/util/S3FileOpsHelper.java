@@ -33,26 +33,26 @@ public class S3FileOpsHelper {
 
   private final Regions clientRegion;
   private final String bucketName;
-  static FileInputStream fileInputStream;
+
   public S3FileOpsHelper(Regions clientRegion, String bucketName) {
     this.clientRegion = clientRegion;
     this.bucketName = bucketName;
   }
 
   private ProgressListener uploadProgressListener =
-      progressEvent -> LOGGER.debug("Transferred bytes: " + progressEvent.getBytesTransferred());
+          progressEvent -> LOGGER.debug("Transferred bytes: " + progressEvent.getBytesTransferred());
 
   public void s3Upload(File file, String objectKey, Handler<AsyncResult<JsonObject>> handler) {
 
     DefaultAWSCredentialsProviderChain credentialProviderChain =
-        new DefaultAWSCredentialsProviderChain();
+            new DefaultAWSCredentialsProviderChain();
 
     try {
       AmazonS3 s3Client =
-          AmazonS3ClientBuilder.standard()
-              .withRegion(clientRegion)
-              .withCredentials(credentialProviderChain)
-              .build();
+              AmazonS3ClientBuilder.standard()
+                      .withRegion(clientRegion)
+                      .withCredentials(credentialProviderChain)
+                      .build();
 
       TransferManager tm = TransferManagerBuilder.standard().withS3Client(s3Client).build();
 
@@ -62,24 +62,20 @@ public class S3FileOpsHelper {
 
       // TransferManager processes all transfers asynchronously,
       // so this call returns immediately.
-      if(fileInputStream == null)
-      {
-        fileInputStream = new FileInputStream(file);
-      }
-      Upload upload = tm.upload(bucketName, objectKey,fileInputStream, objectMetadata);
+      Upload upload = tm.upload(bucketName, objectKey, new FileInputStream(file), objectMetadata);
       LOGGER.info("Object upload started");
       // upload.addProgressListener(uploadProgressListener);
       upload.waitForCompletion();
-      
+
       LOGGER.info("Object upload complete");
       ZonedDateTime zdt = ZonedDateTime.now();
       zdt = zdt.plusDays(1);
       Long expiry = zdt.toEpochSecond() * 1000;
       JsonObject result =
-          new JsonObject()
-              .put("s3_url", generatePreSignedUrl(expiry, objectKey))
-              .put("expiry", zdt.toLocalDateTime().toString())
-              .put("object_id", objectKey);
+              new JsonObject()
+                      .put("s3_url", generatePreSignedUrl(expiry, objectKey))
+                      .put("expiry", zdt.toLocalDateTime().toString())
+                      .put("object_id", objectKey);
       handler.handle(Future.succeededFuture(result));
     } catch (AmazonServiceException e) {
       // The call was transmitted successfully, but Amazon S3 couldn't process
@@ -103,14 +99,14 @@ public class S3FileOpsHelper {
 
     URL url = null;
     DefaultAWSCredentialsProviderChain credentialProviderChain =
-        new DefaultAWSCredentialsProviderChain();
+            new DefaultAWSCredentialsProviderChain();
 
     try {
       AmazonS3 s3Client =
-          AmazonS3ClientBuilder.standard()
-              .withRegion(clientRegion)
-              .withCredentials(credentialProviderChain)
-              .build();
+              AmazonS3ClientBuilder.standard()
+                      .withRegion(clientRegion)
+                      .withCredentials(credentialProviderChain)
+                      .build();
 
       // Set the presigned URL to expire after one hour.
       LOGGER.debug("expiry : " + expiryTimeMillis);
@@ -121,9 +117,9 @@ public class S3FileOpsHelper {
       LOGGER.debug("Generating pre-signed URL.");
 
       GeneratePresignedUrlRequest generatePresignedUrlRequest =
-          new GeneratePresignedUrlRequest(bucketName, objectKey)
-              .withMethod(HttpMethod.GET)
-              .withExpiration(expiration);
+              new GeneratePresignedUrlRequest(bucketName, objectKey)
+                      .withMethod(HttpMethod.GET)
+                      .withExpiration(expiration);
 
       url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
 
