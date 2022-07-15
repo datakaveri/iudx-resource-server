@@ -13,8 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.File;
 import java.io.FileInputStream;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -49,9 +48,7 @@ public class S3FileOpsHelperTest {
     public void test_generatePreSignedUrl_with_SdkClientException(VertxTestContext vertxTestContext) {
         long expiryTimeMillis = 3032000;
         String objectKey = "Dummy objectKey";
-//        assertNull(opsHelper.generatePreSignedUrl(expiryTimeMillis, objectKey));
-        System.out.println("inside test_generatePreSignedUrl_with_SdkClientException");
-        System.out.println(opsHelper.generatePreSignedUrl(expiryTimeMillis, objectKey));
+        assertNotNull(opsHelper.generatePreSignedUrl(expiryTimeMillis, objectKey));
         vertxTestContext.completeNow();
     }
 
@@ -76,6 +73,7 @@ public class S3FileOpsHelperTest {
 //                expected_error = "Failed to connect to service endpoint:";
 //                assertTrue(handler.cause().getMessage().contains(expected_error));
                 System.out.println("Failure in test_s3Upload_AmazonClientException");
+                System.out.println(handler.cause().getMessage());
             }
         });
         vertxTestContext.completeNow();
