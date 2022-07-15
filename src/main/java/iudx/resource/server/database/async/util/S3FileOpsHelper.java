@@ -33,7 +33,7 @@ public class S3FileOpsHelper {
 
   private final Regions clientRegion;
   private final String bucketName;
-
+  static FileInputStream fileInputStream;
   public S3FileOpsHelper(Regions clientRegion, String bucketName) {
     this.clientRegion = clientRegion;
     this.bucketName = bucketName;
@@ -62,7 +62,11 @@ public class S3FileOpsHelper {
 
       // TransferManager processes all transfers asynchronously,
       // so this call returns immediately.
-      Upload upload = tm.upload(bucketName, objectKey, new FileInputStream(file), objectMetadata);
+      if(fileInputStream == null)
+      {
+        fileInputStream = new FileInputStream(file);
+      }
+      Upload upload = tm.upload(bucketName, objectKey,fileInputStream, objectMetadata);
       LOGGER.info("Object upload started");
       // upload.addProgressListener(uploadProgressListener);
       upload.waitForCompletion();
