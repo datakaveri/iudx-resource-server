@@ -35,7 +35,7 @@ public class S3FileOpsHelperTest {
 //        bucketName = "arn:/abcd:abcd:abcd:abcd:accesspoint:dummy/access/point.:abcd/abcd/:abcd/:abcd/:abcd/::abcd:abcdabcd:s3-object-lambda";
         bucket = "arn:aws:s3:::examplebucket/developers/design_info.doc";
         when(clientRegion.getName()).thenReturn("Dummy.client-region.3");
-        S3FileOpsHelper.fileInputStream = mock(FileInputStream.class);
+//        S3FileOpsHelper.fileInputStream = mock(FileInputStream.class);
         opsHelper = new S3FileOpsHelper(clientRegion, bucket);
         vertxTestContext.completeNow();
     }
