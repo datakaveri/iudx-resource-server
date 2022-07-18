@@ -43,7 +43,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   private static final Logger LOGGER = LogManager.getLogger(JwtAuthenticationServiceImpl.class);
 
   final JWTAuth jwtAuth;
-  final WebClient catWebClient;
+  static WebClient catWebClient;
   final String host;
   final int port;
   final String path;
@@ -195,7 +195,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return promise.future();
   }
 
-  private Future<String> isOpenResource(String id) {
+  public Future<String> isOpenResource(String id) {
     LOGGER.trace("isOpenResource() started");
     Promise<String> promise = Promise.promise();
 
@@ -338,7 +338,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return promise.future();
   }
 
-  private Future<Boolean> isItemExist(String itemId) {
+  public Future<Boolean> isItemExist(String itemId) {
     LOGGER.trace("isItemExist() started");
     Promise<Boolean> promise = Promise.promise();
     String id = itemId.replace("/*", "");
@@ -365,7 +365,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return promise.future();
   }
 
-  private Future<Boolean> isResourceExist(String id, String groupACL) {
+  public Future<Boolean> isResourceExist(String id, String groupACL) {
     LOGGER.trace("isResourceExist() started");
     Promise<Boolean> promise = Promise.promise();
     String resourceExist = resourceIdCache.getIfPresent(id);
@@ -405,7 +405,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return promise.future();
   }
 
-  private Future<String> getGroupAccessPolicy(String groupId) {
+  public Future<String> getGroupAccessPolicy(String groupId) {
     LOGGER.trace("getGroupAccessPolicy() started");
     Promise<String> promise = Promise.promise();
     String groupACL = resourceGroupCache.getIfPresent(groupId);
