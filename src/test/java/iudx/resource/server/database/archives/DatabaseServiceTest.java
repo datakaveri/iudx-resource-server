@@ -526,6 +526,7 @@ public class DatabaseServiceTest {
     })));
   }
 
+  /**
   @Test
   @DisplayName("Testing Temporal Queries (TEquals)")
   @Disabled("no tequals supported by IUDX")
@@ -551,7 +552,7 @@ public class DatabaseServiceTest {
       testContext.completeNow();
     })));
   }
-
+**/
   @Test
   @DisplayName("Testing Count Geo-Linestring query")
   void countGeoLineString(VertxTestContext testContext) {
@@ -742,6 +743,7 @@ public class DatabaseServiceTest {
     })));
   }
 
+  /**
   @Test
   @DisplayName("Testing Partial Complex Queries (Geo + Temporal + invalid-Response Filter)")
   @Disabled
@@ -774,7 +776,7 @@ public class DatabaseServiceTest {
       testContext.completeNow();
     })));
   }
-
+**/
 
   @Test
   @DisplayName("Testing invalid Search request")
@@ -950,6 +952,7 @@ public class DatabaseServiceTest {
     })));
   }
 
+  /**
   @Test
   @DisplayName("Testing Latest Search")
   @Disabled
@@ -968,7 +971,8 @@ public class DatabaseServiceTest {
       testContext.completeNow();
     })));
   }
-
+**/
+  /**
   @Test
   @DisplayName("Testing Latest Search with Response Filter")
   @Disabled
@@ -1000,7 +1004,7 @@ public class DatabaseServiceTest {
       });
     }));
   }
-
+**/
   @Test
   @DisplayName("Testing auto index selection with malformed id")
   void malformedResourceId(VertxTestContext testContext) {
