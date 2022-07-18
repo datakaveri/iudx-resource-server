@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Disabled
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class S3FileOpsHelperTest {
     @Mock
