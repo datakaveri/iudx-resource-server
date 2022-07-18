@@ -50,6 +50,7 @@ import io.vertx.sqlclient.PoolOptions;
 import iudx.resource.server.common.VHosts;
 import iudx.resource.server.configuration.Configuration;
 
+@Disabled
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class DataBrokerServiceTest {
