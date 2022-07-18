@@ -1131,7 +1131,7 @@ public class RabbitClient {
    * @param vhost which is a String
    * @return response which is a Future object of promise of Json type
    **/
-  private Future<JsonObject> setVhostPermissions(String shaUsername, String vhost) {
+   Future<JsonObject> setVhostPermissions(String shaUsername, String vhost) {
     LOGGER.trace("Info : RabbitClient#setVhostPermissions() started");
     /* Construct URL to use */
     String url = "/api/permissions/" + vhost + "/" + encodeValue(shaUsername);
