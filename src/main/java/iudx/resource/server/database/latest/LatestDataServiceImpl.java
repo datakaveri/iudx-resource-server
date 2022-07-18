@@ -128,7 +128,7 @@ public class LatestDataServiceImpl implements LatestDataService {
         JsonObject json = handler.result();
         promise.complete(json);
       } else {
-        LOGGER.error("unique attribute doesn't exist for id : " + id);
+        LOGGER.info("unique attribute doesn't exist for id : " + id);
         promise.fail("unique attribute doesn't exist for id : " + id);
       }
     });
