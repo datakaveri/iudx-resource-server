@@ -15,12 +15,14 @@ import io.vertx.sqlclient.SqlConnection;
 public class PostgresClient {
   private static final Logger LOGGER = LogManager.getLogger(PostgresClient.class);
 
-  private PgPool pgPool;
+  static PgPool pgPool;
 
   public PostgresClient(Vertx vertx, PgConnectOptions pgConnectOptions,
       PoolOptions connectionPoolOptions) {
-    this.pgPool = PgPool.pool(vertx, pgConnectOptions, connectionPoolOptions);  
-  }
+    if(pgPool == null)
+    {
+      pgPool = PgPool.pool(vertx, pgConnectOptions, connectionPoolOptions);
+    }  }
 
   public Future<RowSet<Row>> executeAsync(String preparedQuerySQL) {
     LOGGER.trace("Info : PostgresQLClient#executeAsync() started");
