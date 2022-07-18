@@ -7,12 +7,16 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQOptions;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.*;
 import iudx.resource.server.databroker.util.PermissionOpType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -28,7 +33,7 @@ import org.mockito.stubbing.Answer;
 
 import java.util.stream.Stream;
 
-import static iudx.resource.server.databroker.util.Constants.USER_ID;
+import static iudx.resource.server.databroker.util.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -58,6 +63,8 @@ public class RabbitClientTest {
     @Mock
     HttpResponse<Buffer> bufferHttpResponse;
     @Mock
+    HttpRequest<Buffer> bufferHttpRequest;
+    @Mock
     Buffer buffer;
     @Mock
     AsyncResult<RowSet<Row>> rowSetAsyncResult;
@@ -67,6 +74,15 @@ public class RabbitClientTest {
     JsonArray jsonArray;
     String vHost;
     PermissionOpType type;
+    JsonObject expected;
+    RabbitWebClient rabbitWebClient;
+    @Mock
+    WebClientOptions webClientOptions;
+    @Mock
+    PoolOptions poolOptions;
+    @Mock
+    PgConnectOptions pgConnectOptions;
+    PostgresClient postgresClient;
 
     @BeforeEach
     public void setUp(VertxTestContext vertxTestContext) {
@@ -74,20 +90,28 @@ public class RabbitClientTest {
         password = "Dummy password";
         vertxObj = Vertx.vertx();
         vHost = "Dummy vHost";
+        expected = new JsonObject();
         when(configs.getString(anyString())).thenReturn("Dummy string");
         when(configs.getInteger(anyString())).thenReturn(400);
         when(rabbitConfigs.setVirtualHost(anyString())).thenReturn(rabbitConfigs);
         request = new JsonObject();
         jsonArray = new JsonArray();
+        RabbitWebClient.webClient = mock(WebClient.class);
+        PostgresClient.pgPool = mock(PgPool.class);
         jsonArray.add("ABCD/ABCD/ABCD/ABCD/ABCD");
-        jsonArray.add("EFGH/EFGH/EFGH/EFGH/EFGH");        request.put("exchangeName", "Dummy exchangeName");
+        jsonArray.add("EFGH/EFGH/EFGH/EFGH/EFGH");
+        request.put("exchangeName", "Dummy exchangeName");
         request.put("queueName","Dummy Queue name");
         request.put("resourceGroup","Dummy Resource Group");
         request.put("id","Dummy ID");
         request.put(USER_ID,"Dummy userID");
         request.put("vHost","Dummy vHost");
+        request.put("userName","Dummy userName");
+        request.put("password","Dummy password");
         request.put("entities",jsonArray);
         rabbitClient = new RabbitClient(vertxObj, rabbitConfigs, webClient, pgSQLClient, configs);
+        rabbitWebClient = new RabbitWebClient(vertxObj,webClientOptions,request);
+        postgresClient = new PostgresClient(vertxObj,pgConnectOptions,poolOptions);
         vertxTestContext.completeNow();
     }
 
@@ -488,9 +512,12 @@ public class RabbitClientTest {
             }
         }).when(httpResponseFuture).onComplete(any());
         rabbitClient.deleteAdapter(request,vHost).onComplete(handler -> {
+            expected.put("type",200);
+            expected.put("title","success");
+            expected.put("detail","adaptor deleted");
             if(handler.succeeded())
             {
-                assertEquals("{\"type\":200,\"title\":\"success\",\"detail\":\"adaptor deleted\"}",handler.result().toString());
+                assertEquals(expected,handler.result());
                 vertxTestContext.completeNow();
             }
             else
@@ -584,5 +611,171 @@ public class RabbitClientTest {
         });
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {REQUEST_POST,REQUEST_PUT,REQUEST_DELETE})
+    @DisplayName("Test requestAsync method Success : with different requestTypes")
+    public void testRequestAsyncSuccess(String requestType,VertxTestContext vertxTestContext)
+    {
+        lenient().when(RabbitWebClient.webClient.post(anyString())).thenReturn(bufferHttpRequest);
+        lenient().when(RabbitWebClient.webClient.put(anyString())).thenReturn(bufferHttpRequest);
+        lenient().when(RabbitWebClient.webClient.delete(anyString())).thenReturn(bufferHttpRequest);
+        when(bufferHttpRequest.basicAuthentication(anyString(),anyString())).thenReturn(bufferHttpRequest);
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(httpResponseAsyncResult.result()).thenReturn(bufferHttpResponse);
+        doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+            @Override
+            public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(1)).handle(httpResponseAsyncResult);
+                return null;
+            }
+        }).when(bufferHttpRequest).sendJsonObject(any(),any(Handler.class));
 
+        rabbitWebClient.requestAsync(requestType,"Dummy/ABCD/ABCD/ABCD",request).onComplete(handler -> {
+            if(handler.succeeded())
+            {
+                assertEquals(bufferHttpResponse,handler.result());
+                vertxTestContext.completeNow();
+            }
+            else
+            {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+    @Test
+    @DisplayName("Test requestAsync method  : Failure")
+    public void testRequestAsyncFailure(VertxTestContext vertxTestContext)
+    {
+        when(RabbitWebClient.webClient.post(anyString())).thenReturn(bufferHttpRequest);
+        when(bufferHttpRequest.basicAuthentication(anyString(),anyString())).thenReturn(bufferHttpRequest);
+        when(httpResponseAsyncResult.succeeded()).thenReturn(false);
+        when(httpResponseAsyncResult.cause()).thenReturn(throwable);
+        doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+            @Override
+            public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(1)).handle(httpResponseAsyncResult);
+                return null;
+            }
+        }).when(bufferHttpRequest).sendJsonObject(any(),any(Handler.class));
+
+        rabbitWebClient.requestAsync(REQUEST_POST,"Dummy/ABCD/ABCD/ABCD",request).onComplete(handler -> {
+            if(handler.failed())
+            {
+                assertEquals(throwable,handler.cause());
+                vertxTestContext.completeNow();
+            }
+            else
+            {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("Test requestAsync method  : Success")
+    public void test_requestAsync_success(VertxTestContext vertxTestContext)
+    {
+        when(RabbitWebClient.webClient.post(anyString())).thenReturn(bufferHttpRequest);
+        when(bufferHttpRequest.basicAuthentication(anyString(),anyString())).thenReturn(bufferHttpRequest);
+        when(httpResponseAsyncResult.succeeded()).thenReturn(true);
+        when(httpResponseAsyncResult.result()).thenReturn(bufferHttpResponse);
+        doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
+            @Override
+            public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0)).handle(httpResponseAsyncResult);
+                return null;
+            }
+        }).when(bufferHttpRequest).send(any());
+
+        rabbitWebClient.requestAsync(REQUEST_POST,"Dummy/ABCD/ABCD/ABCD").onComplete(handler -> {
+            if(handler.succeeded())
+            {
+                assertEquals(bufferHttpResponse,handler.result());
+                vertxTestContext.completeNow();
+            }
+            else
+            {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("Test executeAsync method  : Success")
+    public void test_executeAsync_success(VertxTestContext vertxTestContext)
+    {
+        AsyncResult<SqlConnection> connectionAsyncResult = mock(AsyncResult.class);
+        SqlConnection sqlConnection = mock(SqlConnection.class);
+        Query<RowSet<Row>> query = mock(Query.class);
+        RowSet<Row> value = mock(RowSet.class);
+        when(connectionAsyncResult.succeeded()).thenReturn(true);
+        when(connectionAsyncResult.result()).thenReturn(sqlConnection);
+        when(sqlConnection.query(anyString())).thenReturn(query);
+        when(rowSetAsyncResult.succeeded()).thenReturn(true);
+        when(rowSetAsyncResult.result()).thenReturn(value);
+        doAnswer(new Answer<AsyncResult<SqlConnection>>() {
+            @Override
+            public AsyncResult<SqlConnection> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<SqlConnection>>) arg0.getArgument(0)).handle(connectionAsyncResult);
+                return null;
+            }
+        }).when(PostgresClient.pgPool).getConnection(any());
+        doAnswer(new Answer<AsyncResult<RowSet<Row>>>() {
+            @Override
+            public AsyncResult<RowSet<Row>> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<RowSet<Row>>>) arg0.getArgument(0)).handle(rowSetAsyncResult);
+                return null;
+            }
+        }).when(query).execute(any());
+        postgresClient.executeAsync("Dummy query").onComplete(handler -> {
+            if(handler.succeeded())
+            {
+                assertEquals(value,handler.result());
+                vertxTestContext.completeNow();
+            }
+            else
+            {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("Test executeAsync method  : Failure")
+    public void test_executeAsync_failure(VertxTestContext vertxTestContext)
+    {
+        AsyncResult<SqlConnection> connectionAsyncResult = mock(AsyncResult.class);
+        SqlConnection sqlConnection = mock(SqlConnection.class);
+        Query<RowSet<Row>> query = mock(Query.class);
+        when(connectionAsyncResult.succeeded()).thenReturn(true);
+        when(connectionAsyncResult.result()).thenReturn(sqlConnection);
+        when(sqlConnection.query(anyString())).thenReturn(query);
+        when(rowSetAsyncResult.succeeded()).thenReturn(false);
+        when(rowSetAsyncResult.cause()).thenReturn(throwable);
+        doAnswer(new Answer<AsyncResult<SqlConnection>>() {
+            @Override
+            public AsyncResult<SqlConnection> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<SqlConnection>>) arg0.getArgument(0)).handle(connectionAsyncResult);
+                return null;
+            }
+        }).when(PostgresClient.pgPool).getConnection(any());
+        doAnswer(new Answer<AsyncResult<RowSet<Row>>>() {
+            @Override
+            public AsyncResult<RowSet<Row>> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<RowSet<Row>>>) arg0.getArgument(0)).handle(rowSetAsyncResult);
+                return null;
+            }
+        }).when(query).execute(any());
+        postgresClient.executeAsync("Dummy query").onComplete(handler -> {
+            if(handler.failed())
+            {
+                assertEquals(throwable,handler.cause());
+                vertxTestContext.completeNow();
+            }
+            else
+            {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
 }

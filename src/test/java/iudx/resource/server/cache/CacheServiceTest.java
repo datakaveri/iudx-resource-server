@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -348,5 +349,24 @@ public class CacheServiceTest {
       }
     });
     testContext.completeNow();
+  }
+
+  @Test
+  @DisplayName("Test refresh method : with IllegalArgumentException ")
+  public void test_refresh_with_no_cache(VertxTestContext vertxTestContext)
+  {
+    JsonObject jsonObject = new JsonObject();
+    jsonObject.put("type","Dummy_type");
+    cacheService.refresh(jsonObject,handler -> {
+      if(handler.failed())
+      {
+        assertEquals("No cache defined for given type",handler.cause().getMessage());
+        vertxTestContext.completeNow();
+      }
+      else
+      {
+        vertxTestContext.failNow(handler.cause());
+      }
+    });
   }
 }

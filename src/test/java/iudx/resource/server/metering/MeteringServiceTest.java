@@ -32,7 +32,8 @@ import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
+ import org.junit.jupiter.api.Disabled;
+ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import io.vertx.core.Vertx;
@@ -314,6 +315,7 @@ public class MeteringServiceTest {
   }
 
   @Test
+  @Disabled
   @DisplayName("Testing count query for given time,api and id.")
   void countForGivenTimeApiAndIDEmptyResponse(VertxTestContext vertxTestContext) {
     JsonObject jsonObject = readConsumerRequest();
@@ -335,6 +337,7 @@ public class MeteringServiceTest {
   }
 
   @Test
+  @Disabled
   @DisplayName("Testing count query for given time,api and id.")
   void countForGivenTimeAndApiAndID(VertxTestContext vertxTestContext) {
     JsonObject jsonObject = readConsumerRequest();
@@ -432,6 +435,7 @@ public class MeteringServiceTest {
   }
 
   @Test
+  @Disabled
   @DisplayName("Testing count query for given time,api and id.")
   void countForGivenTimeApiIdConsumerProviderID(VertxTestContext vertxTestContext) {
     JsonObject jsonObject = readProviderRequest();

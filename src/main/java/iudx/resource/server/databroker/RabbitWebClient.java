@@ -19,14 +19,17 @@ import io.vertx.ext.web.client.WebClientOptions;
 public class RabbitWebClient {
   private static final Logger LOGGER = LogManager.getLogger(RabbitWebClient.class);
 
-  private WebClient webClient;
+  static WebClient webClient;
   private String username;
   private String password;
 
   RabbitWebClient(Vertx vertx,WebClientOptions webClientOptions,JsonObject propJson) {
     this.username = propJson.getString("userName");
     this.password = propJson.getString("password");
-    this.webClient = getRabbitMQWebClient(vertx, webClientOptions);
+    if(webClient == null)
+    {
+      webClient = getRabbitMQWebClient(vertx, webClientOptions);
+    }
   }
 
   private WebClient getRabbitMQWebClient(Vertx vertx, WebClientOptions webClientOptions) {
