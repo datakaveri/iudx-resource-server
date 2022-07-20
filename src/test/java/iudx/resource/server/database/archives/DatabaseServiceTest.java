@@ -1,7 +1,11 @@
 package iudx.resource.server.database.archives;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static iudx.resource.server.database.archives.Constants.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
 import java.text.ParseException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -9,13 +13,12 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -24,8 +27,12 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.database.elastic.ElasticClient;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
-@ExtendWith({VertxExtension.class})
+@ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class DatabaseServiceTest {
   private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceTest.class);
   private static DatabaseService dbService;
@@ -41,6 +48,14 @@ public class DatabaseServiceTest {
   private static String idClose;
   private static String temporalStartDate;
   private static String temporalEndDate;
+  private static DatabaseServiceImpl databaseServiceImpl;
+  @Mock
+  private static ElasticClient elasticClient;
+  @Mock
+  private static AsyncResult<JsonObject> asyncResult;
+  @Mock
+  private static Throwable throwable;
+
 
   /* TODO Need to update params to use contants */
   @BeforeAll
@@ -67,6 +82,13 @@ public class DatabaseServiceTest {
     dbService = new DatabaseServiceImpl(client, timeLimit);
     testContext.completeNow();
 
+  }
+
+  @BeforeEach
+  public void intialize(VertxTestContext vertxTestContext)
+  {
+    databaseServiceImpl = new DatabaseServiceImpl(elasticClient,timeLimit);
+    vertxTestContext.completeNow();
   }
 
   @AfterEach
@@ -103,7 +125,7 @@ public class DatabaseServiceTest {
       testContext.completeNow();
     })));
   }
-  
+
   @Test
   @DisplayName("Testing Basic Exceptions (No resource-id key) in count query")
   void countWithNoResourceId(VertxTestContext testContext) {
@@ -128,7 +150,7 @@ public class DatabaseServiceTest {
       testContext.completeNow();
     })));
   }
-  
+
   @Test
   @DisplayName("Testing Basic Exceptions (resource-id is empty) in count query")
   void countEmptyResourceId(VertxTestContext testContext) {
@@ -155,7 +177,7 @@ public class DatabaseServiceTest {
       testContext.completeNow();
     })));
   }
-  
+
   @Test
   @DisplayName("Testing Basic Exceptions (No searchType key) in count query")
   void countWithSearchType(VertxTestContext testContext) {
@@ -934,7 +956,7 @@ public class DatabaseServiceTest {
       testContext.completeNow();
     })));
   }
-  
+
   @Test
   @DisplayName("Testing Attribute Search (invalid property operator)")
   void searchInvalidAttributeOP(VertxTestContext testContext) {
@@ -1068,6 +1090,173 @@ public class DatabaseServiceTest {
       assertEquals("Empty response", new JsonObject(response.getMessage()).getString("detail"));
       testContext.completeNow();
     })));
+  }
+
+  @Test
+  @DisplayName("Test getOrDefault method")
+  public void test_getOrDefault(VertxTestContext vertxTestContext)
+  {
+    JsonObject jsonObject = new JsonObject();
+    jsonObject.put("30302000","333");
+    assertEquals(333,databaseServiceImpl.getOrDefault(jsonObject,"30302000",12));
+    assertEquals(12,databaseServiceImpl.getOrDefault(new JsonObject(),"abcd",12));
+    vertxTestContext.completeNow();
+  }
+
+  @Test
+  @DisplayName("Test countQuery method : with malformed ID")
+  public void test_countQuery_for_invalid_id(VertxTestContext vertxTestContext)
+  {
+    JsonObject request = new JsonObject();
+    JsonArray jsonArray = new JsonArray();
+    jsonArray.add(0,"{ \"key\" : \"value\" }");
+    request.put(SEARCH_TYPE,"somevalue");
+    request.put(ID,jsonArray);
+    JsonObject expected = new JsonObject();
+    expected.put("type",400);
+    expected.put("title","Failed");
+    expected.put("detail","Malformed Id [\"{ \\\"key\\\" : \\\"value\\\" }\"]");
+
+    databaseServiceImpl.countQuery(request,handler -> {
+      if(handler.succeeded())
+      {
+        vertxTestContext.failNow(handler.cause());
+      }
+      else
+      {
+        assertEquals(expected.toString(),handler.cause().getMessage());
+        vertxTestContext.completeNow();
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("Test countQuery method : with Exception")
+  public void test_countQuery_with_exception(VertxTestContext vertxTestContext)
+  {
+    JsonObject request = new JsonObject()
+            .put("id", new JsonArray()
+                    .add(
+                            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+            .put("geometry", "bbox")
+            .put("georel", "within")
+            .put("coordinates", "[[72.8296,21.2],[72.8297,21.15]]")
+            .put("geoproperty", "location")
+            .put(REQ_TIMEREL,null)
+            .put(TIME_KEY,null)
+            .put("searchType", TEMPORAL_SEARCH_REGEX)
+            .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
+    JsonObject expected = new JsonObject();
+    expected.put("type",400);
+    expected.put("title","Failed");
+    expected.put("detail","text");
+    databaseServiceImpl.countQuery(request,handler -> {
+      if(handler.succeeded())
+      {
+        vertxTestContext.failNow(handler.cause());
+      }
+      else
+      {
+        assertEquals(expected.toString(),handler.cause().getMessage());
+        vertxTestContext.completeNow();
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("Test searchQuery method : failure")
+  public void test_searchQuery(VertxTestContext vertxTestContext)
+  {
+    JsonObject jsonObject = mock(JsonObject.class);
+    JsonArray jsonArray = mock(JsonArray.class);
+    JsonObject request =
+            new JsonObject()
+                    .put("id",
+                            new JsonArray().add(
+                                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                    .put("geometry", "bbox").put("georel", "within")
+                    .put("coordinates", "[[82,25.33],[82.01,25.317]]")
+                    .put("geoproperty", "geoJsonLocation")
+                    .put("searchType", "geoSearch_")
+                    .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
+
+    when(asyncResult.result()).thenReturn(jsonObject);
+    when(jsonObject.getJsonArray(anyString())).thenReturn(jsonArray);
+    when(jsonArray.getJsonObject(anyInt())).thenReturn(jsonObject);
+    when(jsonObject.getInteger(anyString())).thenReturn(3);
+    when(asyncResult.succeeded()).thenReturn(true,false);
+    when(asyncResult.cause()).thenReturn(throwable);
+    when(throwable.getMessage()).thenReturn("Failure message");
+    doAnswer(new Answer<AsyncResult<JsonObject>>() {
+      @Override
+      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(2)).handle(asyncResult);
+        return null;
+      }
+    }).when(elasticClient).countAsync(anyString(),anyString(),any());
+    doAnswer(new Answer<AsyncResult<JsonObject>>() {
+      @Override
+      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(3)).handle(asyncResult);
+        return null;
+      }
+    }).when(elasticClient).searchAsync(anyString(),anyString(),anyString(),any());
+    databaseServiceImpl.searchQuery(request,handler -> {
+      if(handler.succeeded())
+      {
+        vertxTestContext.failNow(handler.cause());
+      }
+      else
+      {
+        assertEquals("Failure message",handler.cause().getMessage());
+        vertxTestContext.completeNow();
+      }
+    });
+  }
+
+  @Test
+  @DisplayName("Test setMessage method ")
+  public void test_setMessage(VertxTestContext vertxTestContext)
+  {
+    ResponseBuilder builder = new ResponseBuilder("status");
+    JsonObject jsonObject = mock(JsonObject.class);
+    JsonArray jsonArray = mock(JsonArray.class);
+    JsonObject expected = new JsonObject();
+    expected.put("detail","dummy failure reason - no idea ! ");
+
+    when(jsonObject.getInteger(anyString())).thenReturn(400);
+    when(jsonObject.getJsonObject(anyString())).thenReturn(jsonObject);
+    when(jsonObject.getString(anyString())).thenReturn("dummy failure reason - no idea ! ");
+    when(jsonObject.getJsonArray(anyString())).thenReturn(jsonArray);
+    when(jsonArray.getJsonObject(anyInt())).thenReturn(jsonObject);
+    assertNotNull(builder.setMessage(jsonObject));
+
+    assertEquals(expected,builder.getResponse());
+    vertxTestContext.completeNow();
+  }
+
+  @Test
+  @DisplayName("Test setFromParam method")
+  public void test_setFromParam(VertxTestContext vertxTestContext)
+  {
+    ResponseBuilder builder = new ResponseBuilder("status");
+    JsonObject expected = new JsonObject();
+    expected.put("from",3);
+    assertNotNull(builder.setFromParam(3));
+    assertEquals(expected,builder.getResponse());
+    vertxTestContext.completeNow();
+  }
+
+  @Test
+  @DisplayName("Test setSizeParam method")
+  public void test_setSizeParam(VertxTestContext vertxTestContext)
+  {
+    ResponseBuilder builder = new ResponseBuilder("status");
+    JsonObject expected = new JsonObject();
+    expected.put("size",3);
+    assertNotNull(builder.setSizeParam(3));
+    assertEquals(expected,builder.getResponse());
+    vertxTestContext.completeNow();
   }
 }
 
