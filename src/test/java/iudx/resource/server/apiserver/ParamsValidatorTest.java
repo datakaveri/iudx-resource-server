@@ -22,7 +22,7 @@ import org.mockito.stubbing.Answer;
 import java.util.List;
 
 import static iudx.resource.server.apiserver.util.Constants.MSG_BAD_QUERY;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
