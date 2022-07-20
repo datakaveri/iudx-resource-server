@@ -1471,4 +1471,425 @@ public class DataBrokerServiceImplTest {
             }
         });
     }
+
+    @Test
+    @Order(59)
+    @DisplayName("Test registerStreamingSubscription method : Failure")
+    public void test_registerStreamingSubscription_failure(VertxTestContext vertxTestContext) {
+        DataBrokerServiceImpl.subscriptionService = mock(SubscriptionService.class);
+        when(DataBrokerServiceImpl.subscriptionService.registerStreamingSubscription(any())).thenReturn(jsonObjectFuture);
+        when(asyncResult.succeeded()).thenReturn(false);
+        when(asyncResult.failed()).thenReturn(true);
+        when(asyncResult.cause()).thenReturn(throwable);
+        when(throwable.getMessage()).thenReturn(throwableMessage);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult);
+                return null;
+            }
+        }).when(jsonObjectFuture).onComplete(any());
+        databroker.registerStreamingSubscription(request, handler -> {
+            if (handler.failed()) {
+                assertEquals("Dummy failure message", handler.cause().getMessage());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @Order(60)
+    @DisplayName("Test registerStreamingSubscription method : with empty request")
+    public void test_registerStreamingSubscription_for_empty_request(VertxTestContext vertxTestContext) {
+        DataBrokerServiceImpl.subscriptionService = mock(SubscriptionService.class);
+        databroker.registerStreamingSubscription(new JsonObject(), handler -> {
+            if (handler.failed()) {
+                assertEquals(expected_failure().toString(), handler.cause().getMessage());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+    @Test
+    @Order(61)
+    @DisplayName("Test updateStreamingSubscription method : Failure")
+    public void test_updateStreamingSubscription_failure(VertxTestContext vertxTestContext) {
+        DataBrokerServiceImpl.subscriptionService = mock(SubscriptionService.class);
+        when(DataBrokerServiceImpl.subscriptionService.updateStreamingSubscription(any())).thenReturn(jsonObjectFuture);
+        when(asyncResult.succeeded()).thenReturn(false);
+        when(asyncResult.failed()).thenReturn(true);
+        when(asyncResult.cause()).thenReturn(throwable);
+        when(throwable.getMessage()).thenReturn(throwableMessage);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult);
+                return null;
+            }
+        }).when(jsonObjectFuture).onComplete(any());
+        databroker.updateStreamingSubscription(request, handler -> {
+            if (handler.failed()) {
+                assertEquals("Dummy failure message", handler.cause().getMessage());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+    @Test
+    @Order(62)
+    @DisplayName("Test updateStreamingSubscription method : with empty request")
+    public void test_updateStreamingSubscription_for_empty_request(VertxTestContext vertxTestContext) {
+        DataBrokerServiceImpl.subscriptionService = mock(SubscriptionService.class);
+        databroker.updateStreamingSubscription(new JsonObject(), handler -> {
+            if (handler.failed()) {
+                assertEquals(expected_failure().toString(), handler.cause().getMessage());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @Order(63)
+    @DisplayName("Test appendStreamingSubscription method : Failure")
+    public void test_appendStreamingSubscription_failure(VertxTestContext vertxTestContext) {
+        DataBrokerServiceImpl.subscriptionService = mock(SubscriptionService.class);
+        when(DataBrokerServiceImpl.subscriptionService.appendStreamingSubscription(any())).thenReturn(jsonObjectFuture);
+        when(asyncResult.succeeded()).thenReturn(false);
+        when(asyncResult.failed()).thenReturn(true);
+        when(asyncResult.cause()).thenReturn(throwable);
+        when(throwable.getMessage()).thenReturn(throwableMessage);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult);
+                return null;
+            }
+        }).when(jsonObjectFuture).onComplete(any());
+        databroker.appendStreamingSubscription(request, handler -> {
+            if (handler.failed()) {
+                assertEquals("Dummy failure message", handler.cause().getMessage());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+    @Test
+    @Order(64)
+    @DisplayName("Test appendStreamingSubscription method : with empty request")
+    public void test_appendStreamingSubscription_for_empty_request(VertxTestContext vertxTestContext) {
+        DataBrokerServiceImpl.subscriptionService = mock(SubscriptionService.class);
+        databroker.appendStreamingSubscription(new JsonObject(), handler -> {
+            if (handler.failed()) {
+                assertEquals(expected_failure().toString(), handler.cause().getMessage());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @Order(65)
+    @DisplayName("Test createExchange method : success")
+    public void test_createExchange_success(VertxTestContext vertxTestContext) {
+        when(webClient.createExchange(any(), anyString())).thenReturn(jsonObjectFuture);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(request);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult);
+                return null;
+            }
+        }).when(jsonObjectFuture).onComplete(any());
+        databroker.createExchange(request, vHost, handler -> {
+            if (handler.succeeded()) {
+                assertEquals(request, handler.result());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @Order(66)
+    @DisplayName("Test deleteExchange method : success")
+    public void test_deleteExchange_success(VertxTestContext vertxTestContext) {
+        when(webClient.deleteExchange(any(), anyString())).thenReturn(jsonObjectFuture);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(request);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult);
+                return null;
+            }
+        }).when(jsonObjectFuture).onComplete(any());
+        databroker.deleteExchange(request, vHost, handler -> {
+            if (handler.succeeded()) {
+                assertEquals(request, handler.result());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @Order(67)
+    @DisplayName("Test listExchangeSubscribers method : success")
+    public void test_listExchangeSubscribers_success(VertxTestContext vertxTestContext) {
+        when(webClient.listExchangeSubscribers(any(), anyString())).thenReturn(jsonObjectFuture);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(request);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult);
+                return null;
+            }
+        }).when(jsonObjectFuture).onComplete(any());
+        databroker.listExchangeSubscribers(request, vHost, handler -> {
+            if (handler.succeeded()) {
+                assertEquals(request, handler.result());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @Order(68)
+    @DisplayName("Test createQueue method : success")
+    public void test_createQueue_success(VertxTestContext vertxTestContext) {
+        when(webClient.createQueue(any(), anyString())).thenReturn(jsonObjectFuture);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(request);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult);
+                return null;
+            }
+        }).when(jsonObjectFuture).onComplete(any());
+        databroker.createQueue(request, vHost, handler -> {
+            if (handler.succeeded()) {
+                assertEquals(request, handler.result());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @Order(69)
+    @DisplayName("Test deleteQueue method : success")
+    public void test_deleteQueue_success(VertxTestContext vertxTestContext) {
+        when(webClient.deleteQueue(any(), anyString())).thenReturn(jsonObjectFuture);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(request);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult);
+                return null;
+            }
+        }).when(jsonObjectFuture).onComplete(any());
+        databroker.deleteQueue(request, vHost, handler -> {
+            if (handler.succeeded()) {
+                assertEquals(request, handler.result());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @Order(70)
+    @DisplayName("Test bindQueue method : success")
+    public void test_bindQueue_success(VertxTestContext vertxTestContext) {
+        when(webClient.bindQueue(any(), anyString())).thenReturn(jsonObjectFuture);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(request);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult);
+                return null;
+            }
+        }).when(jsonObjectFuture).onComplete(any());
+        databroker.bindQueue(request, vHost, handler -> {
+            if (handler.succeeded()) {
+                assertEquals(request, handler.result());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @Order(71)
+    @DisplayName("Test unbindQueue method : success")
+    public void test_unbindQueue_success(VertxTestContext vertxTestContext) {
+        when(webClient.unbindQueue(any(), anyString())).thenReturn(jsonObjectFuture);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(request);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult);
+                return null;
+            }
+        }).when(jsonObjectFuture).onComplete(any());
+        databroker.unbindQueue(request, vHost, handler -> {
+            if (handler.succeeded()) {
+                assertEquals(request, handler.result());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @Order(72)
+    @DisplayName("Test createvHost method : success")
+    public void test_createvHost_success(VertxTestContext vertxTestContext) {
+        when(webClient.createvHost(any())).thenReturn(jsonObjectFuture);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(request);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult);
+                return null;
+            }
+        }).when(jsonObjectFuture).onComplete(any());
+        databroker.createvHost(request,  handler -> {
+            if (handler.succeeded()) {
+                assertEquals(request, handler.result());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @Order(73)
+    @DisplayName("Test deletevHost method : success")
+    public void test_deletevHost_success(VertxTestContext vertxTestContext) {
+        when(webClient.deletevHost(any())).thenReturn(jsonObjectFuture);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(request);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult);
+                return null;
+            }
+        }).when(jsonObjectFuture).onComplete(any());
+        databroker.deletevHost(request,  handler -> {
+            if (handler.succeeded()) {
+                assertEquals(request, handler.result());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @Order(74)
+    @DisplayName("Test listvHost method : success")
+    public void test_listvHost_success(VertxTestContext vertxTestContext) {
+        when(webClient.listvHost(any())).thenReturn(jsonObjectFuture);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(request);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult);
+                return null;
+            }
+        }).when(jsonObjectFuture).onComplete(any());
+        databroker.listvHost(request,  handler -> {
+            if (handler.succeeded()) {
+                assertEquals(request, handler.result());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @Order(75)
+    @DisplayName("Test listQueueSubscribers method : success")
+    public void test_listQueueSubscribers_success(VertxTestContext vertxTestContext) {
+        when(webClient.listQueueSubscribers(any(),anyString())).thenReturn(jsonObjectFuture);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(request);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(0)).handle(asyncResult);
+                return null;
+            }
+        }).when(jsonObjectFuture).onComplete(any());
+        databroker.listQueueSubscribers(request, vHost, handler -> {
+            if (handler.succeeded()) {
+                assertEquals(request, handler.result());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    @Order(76)
+    @DisplayName("Test publishFromAdaptor method : Failure")
+    public void test_publishFromAdaptor_Failure(VertxTestContext vertxTestContext) {
+
+        request = new JsonObject();
+        request.put("Dummy key", "Dummy value");
+        request.put(ID, "Dummy/ID/abcd/abcd");
+        request.put("status", "Dummy status");
+        request.put("routingKey", "routingKeyValue");
+        request.put("type", HttpStatus.SC_OK);
+        when(webClient.getRabbitMQClient()).thenReturn(rabbitMQClient);
+        when(asyncResult1.succeeded()).thenReturn(false);
+        when(asyncResult1.cause()).thenReturn(throwable);
+        when(throwable.getMessage()).thenReturn(throwableMessage);
+
+        doAnswer(new Answer<AsyncResult<Void>>() {
+            @Override
+            public AsyncResult<Void> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<Void>>) arg0.getArgument(3)).handle(asyncResult1);
+                return null;
+            }
+        }).when(rabbitMQClient).basicPublish(anyString(), anyString(), any(Buffer.class), any(Handler.class));
+        expected.put("status", 200);
+        databroker.publishFromAdaptor(request, vHost, handler -> {
+            if (handler.failed()) {
+                assertEquals("Dummy failure message", handler.cause().getMessage());
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
 }
