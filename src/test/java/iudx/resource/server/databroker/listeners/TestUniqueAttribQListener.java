@@ -23,7 +23,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
 import static iudx.resource.server.common.BroadcastEventType.CREATE;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -74,6 +75,7 @@ public class TestUniqueAttribQListener {
         object.put("unique-attribute", "Dummy_unique-attribute");
         object.put("eventType", CREATE);
         Buffer buffer = Buffer.buffer(object.toString());
+        when(voidFuture.succeeded()).thenReturn(true);
         when(message.body()).thenReturn(buffer);
         when(jsonObjectAsyncResult.succeeded()).thenReturn(true);
         doAnswer(new Answer<RabbitMQMessage>() {
@@ -112,8 +114,8 @@ public class TestUniqueAttribQListener {
             }
         }).when(uniqueAttribQListener.client).basicConsumer(anyString(), any(), any());
 
-        assertThrows(NullPointerException.class, () -> uniqueAttribQListener.start());
-        verify(voidFuture, times(1)).onSuccess(any());
+        uniqueAttribQListener.start();
+        verify(voidFuture, times(1)).succeeded();
         verify(message).body();
         verify(jsonObjectAsyncResult).succeeded();
         assertEquals(buffer, message.body());
@@ -131,6 +133,7 @@ public class TestUniqueAttribQListener {
         object.put("unique-attribute", "Dummy_unique-attribute");
         object.put("eventType", CREATE);
         Buffer buffer = Buffer.buffer(object.toString());
+        when(voidFuture.succeeded()).thenReturn(true);
         when(message.body()).thenReturn(buffer);
         when(jsonObjectAsyncResult.succeeded()).thenReturn(false);
         doAnswer(new Answer<RabbitMQMessage>() {
@@ -169,8 +172,8 @@ public class TestUniqueAttribQListener {
             }
         }).when(uniqueAttribQListener.client).basicConsumer(anyString(), any(), any());
 
-        assertThrows(NullPointerException.class, () -> uniqueAttribQListener.start());
-        verify(voidFuture, times(1)).onSuccess(any());
+        uniqueAttribQListener.start();
+        verify(voidFuture, times(1)).succeeded();
         verify(message).body();
         verify(jsonObjectAsyncResult).succeeded();
         assertEquals(buffer, message.body());
@@ -180,12 +183,24 @@ public class TestUniqueAttribQListener {
     @Test
     @DisplayName("Test start method : with null message body")
     public void test_start_with_null_body(VertxTestContext vertxTestContext) {
+        when(consumerAsyncResult.succeeded()).thenReturn(true);
+        when(consumerAsyncResult.result()).thenReturn(rabbitMQConsumer);
         when(uniqueAttribQListener.client.start()).thenReturn(voidFuture);
         JsonObject object = new JsonObject();
         object.put("id", "dummy_key");
         object.put("unique-attribute", "Dummy_unique-attribute");
         object.put("eventType", CREATE);
+        Buffer buffer = Buffer.buffer(object.toString());
+        when(voidFuture.succeeded()).thenReturn(true);
         when(message.body()).thenReturn(null);
+        doAnswer(new Answer<RabbitMQMessage>() {
+            @Override
+            public RabbitMQMessage answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<RabbitMQMessage>) arg0.getArgument(0)).handle(message);
+                return null;
+            }
+        }).when(rabbitMQConsumer).handler(any());
+
         lenient().doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock arg0) throws Throwable {
@@ -193,7 +208,13 @@ public class TestUniqueAttribQListener {
                 return null;
             }
         }).when(voidFuture).onSuccess(any());
-
+        lenient().doAnswer(new Answer<Throwable>() {
+            @Override
+            public Throwable answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<Throwable>) arg0.getArgument(0)).handle(throwable);
+                return null;
+            }
+        }).when(voidFuture).onFailure(any());
         doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
             @Override
             public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
@@ -202,8 +223,9 @@ public class TestUniqueAttribQListener {
             }
         }).when(uniqueAttribQListener.client).basicConsumer(anyString(), any(), any());
 
-        assertThrows(NullPointerException.class, () -> uniqueAttribQListener.start());
-        verify(voidFuture).onSuccess(any());
+        uniqueAttribQListener.start();
+        verify(voidFuture).succeeded();
+        verify(message).body();
         assertEquals(null, message.body());
         vertxTestContext.completeNow();
     }
@@ -220,6 +242,7 @@ public class TestUniqueAttribQListener {
         object.put("unique-attribute", "Dummy_unique-attribute");
         object.put("eventType", "Dummy_eventType");
         Buffer buffer = Buffer.buffer(object.toString());
+        when(voidFuture.succeeded()).thenReturn(true);
         when(message.body()).thenReturn(buffer);
         doAnswer(new Answer<RabbitMQMessage>() {
             @Override
@@ -250,8 +273,8 @@ public class TestUniqueAttribQListener {
             }
         }).when(uniqueAttribQListener.client).basicConsumer(anyString(), any(), any());
 
-        assertThrows(NullPointerException.class, () -> uniqueAttribQListener.start());
-        verify(voidFuture).onSuccess(any());
+        uniqueAttribQListener.start();
+        verify(voidFuture).succeeded();
         verify(message).body();
         assertEquals(buffer, message.body());
         vertxTestContext.completeNow();
@@ -262,7 +285,8 @@ public class TestUniqueAttribQListener {
     public void test_start_failure(VertxTestContext vertxTestContext) {
         when(uniqueAttribQListener.client.start()).thenReturn(voidFuture);
         when(voidFuture.succeeded()).thenReturn(false);
-        assertThrows(NullPointerException.class, () -> uniqueAttribQListener.start());
+        uniqueAttribQListener.start();
+        verify(voidFuture).succeeded();
         assertFalse(voidFuture.succeeded());
         vertxTestContext.completeNow();
     }
