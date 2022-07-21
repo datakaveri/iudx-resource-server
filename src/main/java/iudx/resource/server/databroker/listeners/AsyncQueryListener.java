@@ -1,8 +1,6 @@
 package iudx.resource.server.databroker.listeners;
 
 import static iudx.resource.server.common.Constants.ASYNC_QUERY_Q;
-
-import io.vertx.core.Future;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.Vertx;
@@ -21,13 +19,13 @@ public class AsyncQueryListener implements RMQListeners {
   RabbitMQClient client;
 
   private final QueueOptions options = new QueueOptions()
-      .setMaxInternalQueueSize(2)
-      .setKeepMostRecent(true);
+          .setMaxInternalQueueSize(2)
+          .setKeepMostRecent(true);
 
   private final AsyncService asyncService;
 
   public AsyncQueryListener(Vertx vertx, RabbitMQOptions config, String vhost,
-      AsyncService asyncService) {
+                            AsyncService asyncService) {
     config.setVirtualHost(vhost);
     this.client = RabbitMQClient.create(vertx, config);
     this.asyncService = asyncService;
@@ -35,68 +33,37 @@ public class AsyncQueryListener implements RMQListeners {
 
   @Override
   public void start() {
-    Future<Void> future = client.start();
-    if (future.succeeded()) {
-      LOGGER.trace("starting Q listener for Async query");
-      client.basicConsumer(ASYNC_QUERY_Q, options, asyncQListenerHandler -> {
-        if (asyncQListenerHandler.succeeded()) {
-          RabbitMQConsumer mqConsumer = asyncQListenerHandler.result();
-          mqConsumer.handler(message -> {
-            Buffer body = message.body();
-            if (body != null) {
-              JsonObject asyncQueryJson = new JsonObject(body);
-              LOGGER.debug("received message from async-query Q :" + asyncQueryJson);
-              String requestId = asyncQueryJson.getString("requestId");
-              String searchId = asyncQueryJson.getString("searchId");
-              String user = asyncQueryJson.getString("sub");
-              JsonObject query = asyncQueryJson.getJsonObject("query");
-              LOGGER.debug("query received from RMQ : {}", query);
-
-              asyncService.asyncSearch(requestId, user, searchId, query);
-            } else {
-              LOGGER.error("Empty json received from async query queue");
-            }
-          });
-        }
-      });
-    }
-    else
-    {
-      LOGGER.error("Rabbit client startup failed." + future.cause().getMessage());
-    }
-    /**
     client
-        .start()
-        .onSuccess(handler -> {
-          LOGGER.trace("starting Q listener for Async query");
-          client.basicConsumer(ASYNC_QUERY_Q, options, asyncQListenerHandler -> {
-            if (asyncQListenerHandler.succeeded()) {
-              RabbitMQConsumer mqConsumer = asyncQListenerHandler.result();
-              mqConsumer.handler(message -> {
-                Buffer body = message.body();
-                if (body != null) {
-                  JsonObject asyncQueryJson = new JsonObject(body);
-                  LOGGER.debug("received message from async-query Q :" + asyncQueryJson);
-                  String requestId = asyncQueryJson.getString("requestId");
-                  String searchId = asyncQueryJson.getString("searchId");
-                  String user = asyncQueryJson.getString("sub");
-                  JsonObject query = asyncQueryJson.getJsonObject("query");
-                  LOGGER.debug("query received from RMQ : {}", query);
+            .start()
+            .onSuccess(handler -> {
+              LOGGER.trace("starting Q listener for Async query");
+              client.basicConsumer(ASYNC_QUERY_Q, options, asyncQListenerHandler -> {
+                if (asyncQListenerHandler.succeeded()) {
+                  RabbitMQConsumer mqConsumer = asyncQListenerHandler.result();
+                  mqConsumer.handler(message -> {
+                    Buffer body = message.body();
+                    if (body != null) {
+                      JsonObject asyncQueryJson = new JsonObject(body);
+                      LOGGER.debug("received message from async-query Q :" + asyncQueryJson);
+                      String requestId = asyncQueryJson.getString("requestId");
+                      String searchId = asyncQueryJson.getString("searchId");
+                      String user = asyncQueryJson.getString("sub");
+                      JsonObject query = asyncQueryJson.getJsonObject("query");
+                      LOGGER.debug("query received from RMQ : {}", query);
 
-                  asyncService.asyncSearch(requestId, user, searchId, query);
+                      asyncService.asyncSearch(requestId, user, searchId, query);
 
-                } else {
-                  LOGGER.error("Empty json received from async query queue");
+                    } else {
+                      LOGGER.error("Empty json received from async query queue");
+                    }
+                  });
                 }
               });
-            }
-          });
-        })
-        .onFailure(handler -> {
-          LOGGER.error("Rabbit client startup failed." + handler);
-        });
-     **/
-  }
+            })
+            .onFailure(handler -> {
+              LOGGER.error("Rabbit client startup failed." + handler);
+            });
 
+  }
 
 }
