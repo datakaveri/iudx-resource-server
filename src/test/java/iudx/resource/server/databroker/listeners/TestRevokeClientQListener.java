@@ -22,7 +22,8 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -72,6 +73,7 @@ public class TestRevokeClientQListener {
         object.put("id", "dummy_key");
         object.put("unique-attribute", "Dummy_unique-attribute");
         Buffer buffer = Buffer.buffer(object.toString());
+        when(voidFuture.succeeded()).thenReturn(true);
         when(message.body()).thenReturn(buffer);
         when(jsonObjectAsyncResult.succeeded()).thenReturn(true);
         doAnswer(new Answer<RabbitMQMessage>() {
@@ -110,8 +112,8 @@ public class TestRevokeClientQListener {
             }
         }).when(revokeClientQListener.client).basicConsumer(anyString(), any(), any());
 
-        assertThrows(NullPointerException.class,()-> revokeClientQListener.start());
-        verify(voidFuture, times(1)).onSuccess(any());
+        revokeClientQListener.start();
+        verify(voidFuture, times(1)).succeeded();
         verify(message).body();
         verify(jsonObjectAsyncResult).succeeded();
         assertEquals(buffer, message.body());
@@ -128,6 +130,7 @@ public class TestRevokeClientQListener {
         object.put("id", "dummy_key");
         object.put("unique-attribute", "Dummy_unique-attribute");
         Buffer buffer = Buffer.buffer(object.toString());
+        when(voidFuture.succeeded()).thenReturn(true);
         when(message.body()).thenReturn(buffer);
         when(jsonObjectAsyncResult.succeeded()).thenReturn(false);
         doAnswer(new Answer<RabbitMQMessage>() {
@@ -166,8 +169,8 @@ public class TestRevokeClientQListener {
             }
         }).when(revokeClientQListener.client).basicConsumer(anyString(), any(), any());
 
-        assertThrows(NullPointerException.class,()-> revokeClientQListener.start());
-        verify(voidFuture, times(1)).onSuccess(any());
+        revokeClientQListener.start();
+        verify(voidFuture, times(1)).succeeded();
         verify(message).body();
         verify(jsonObjectAsyncResult).succeeded();
         assertEquals(buffer, message.body());
@@ -183,6 +186,8 @@ public class TestRevokeClientQListener {
         JsonObject object = new JsonObject();
         object.put("id", "dummy_key");
         object.put("unique-attribute", "Dummy_unique-attribute");
+        Buffer buffer = Buffer.buffer(object.toString());
+        when(voidFuture.succeeded()).thenReturn(true);
         when(message.body()).thenReturn(null);
         doAnswer(new Answer<RabbitMQMessage>() {
             @Override
@@ -214,8 +219,8 @@ public class TestRevokeClientQListener {
             }
         }).when(revokeClientQListener.client).basicConsumer(anyString(), any(), any());
 
-        assertThrows(NullPointerException.class,()-> revokeClientQListener.start());
-        verify(voidFuture).onSuccess(any());
+        revokeClientQListener.start();
+        verify(voidFuture).succeeded();
         verify(message).body();
         assertEquals(null, message.body());
         vertxTestContext.completeNow();
@@ -227,7 +232,8 @@ public class TestRevokeClientQListener {
     public void test_start_failure(VertxTestContext vertxTestContext) {
         when(revokeClientQListener.client.start()).thenReturn(voidFuture);
         when(voidFuture.succeeded()).thenReturn(false);
-        assertThrows(NullPointerException.class,()-> revokeClientQListener.start());
+        revokeClientQListener.start();
+        verify(voidFuture).succeeded();
         assertFalse(voidFuture.succeeded());
         vertxTestContext.completeNow();
     }
