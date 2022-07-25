@@ -71,13 +71,6 @@ public class Util {
    * TODO This method checks the if for special characters other than hyphen, A-Z, a-z and 0-9.
    **/
 
-  public static boolean isValidID(String id) {
-    /* Check if id contains any special character */
-    Pattern allowedPattern = Pattern.compile("[^-_.a-z0-9 ]", Pattern.CASE_INSENSITIVE);
-    Matcher isInvalid = allowedPattern.matcher(id);
-    return !isInvalid.find();
-  }
-
   public static Predicate<String> isValidId=(id)->{
     if (id == null)
       return false;

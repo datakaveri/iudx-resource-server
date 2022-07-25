@@ -129,6 +129,7 @@ public class MeteringServiceTest {
                           new JsonObject(response.getMessage()).getString(DETAIL));
                       testContext.completeNow();
                     })));
+      testContext.completeNow();
   }
 
   @Test
@@ -145,6 +146,7 @@ public class MeteringServiceTest {
                       assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
   }
 
   @Test
@@ -164,6 +166,8 @@ public class MeteringServiceTest {
                           new JsonObject(response.getMessage()).getString(DETAIL));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 
   @Test
@@ -183,6 +187,8 @@ public class MeteringServiceTest {
                           new JsonObject(response.getMessage()).getString(DETAIL));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 
   @Test
@@ -201,6 +207,8 @@ public class MeteringServiceTest {
                           TIME_NOT_FOUND, new JsonObject(response.getMessage()).getString(DETAIL));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 
   @Test
@@ -222,6 +230,8 @@ public class MeteringServiceTest {
                           new JsonObject(response.getMessage()).getString(DETAIL));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 
   @Test
@@ -240,6 +250,8 @@ public class MeteringServiceTest {
                       assertTrue(response.getString(TITLE).equals(SUCCESS));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 
   @Test
@@ -257,6 +269,8 @@ public class MeteringServiceTest {
                       assertTrue(response.getString(TITLE).equals(SUCCESS));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 
   @Test
@@ -275,6 +289,8 @@ public class MeteringServiceTest {
                       assertTrue(response.getString(TITLE).equals(SUCCESS));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 
   @Test
@@ -292,6 +308,8 @@ public class MeteringServiceTest {
                       assertTrue(response.getString(TITLE).equals(SUCCESS));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 
   @Test
@@ -312,10 +330,11 @@ public class MeteringServiceTest {
                       assertEquals(SUCCESS, new JsonObject(response.getMessage()).getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 
   @Test
-  @Disabled
   @DisplayName("Testing count query for given time,api and id.")
   void countForGivenTimeApiAndIDEmptyResponse(VertxTestContext vertxTestContext) {
     JsonObject jsonObject = readConsumerRequest();
@@ -334,10 +353,11 @@ public class MeteringServiceTest {
                       assertEquals(SUCCESS, new JsonObject(response.getMessage()).getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 
   @Test
-  @Disabled
   @DisplayName("Testing count query for given time,api and id.")
   void countForGivenTimeAndApiAndID(VertxTestContext vertxTestContext) {
     JsonObject jsonObject = readConsumerRequest();
@@ -354,6 +374,8 @@ public class MeteringServiceTest {
                           response.getJsonArray(RESULTS).getJsonObject(0).containsKey(TOTAL));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 
   @Test
@@ -374,6 +396,8 @@ public class MeteringServiceTest {
                       assertTrue(response.getString("title").equals("Success"));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 
   @Test
@@ -394,6 +418,8 @@ public class MeteringServiceTest {
                           new JsonObject(response.getMessage()).getString(DETAIL));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 
   @Test
@@ -415,6 +441,8 @@ public class MeteringServiceTest {
                           new JsonObject(response.getMessage()).getString(DETAIL));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 
   @Test
@@ -432,10 +460,11 @@ public class MeteringServiceTest {
                       assertTrue(response.getString(TITLE).equals(SUCCESS));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 
   @Test
-  @Disabled
   @DisplayName("Testing count query for given time,api and id.")
   void countForGivenTimeApiIdConsumerProviderID(VertxTestContext vertxTestContext) {
     JsonObject jsonObject = readProviderRequest();
@@ -451,6 +480,8 @@ public class MeteringServiceTest {
                       assertTrue(response.getString(TITLE).equals(SUCCESS));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 
   @Test
@@ -470,5 +501,7 @@ public class MeteringServiceTest {
                       assertTrue(response.getString(TITLE).equals(SUCCESS));
                       vertxTestContext.completeNow();
                     })));
+      vertxTestContext.completeNow();
+
   }
 }

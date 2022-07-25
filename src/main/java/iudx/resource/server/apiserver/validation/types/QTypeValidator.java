@@ -32,7 +32,7 @@ public final class QTypeValidator implements Validator {
     return VALIDATION_ALLOWED_OPERATORS.contains(value);
   }
 
-  private boolean isValidValue(final String value) {
+  public boolean isValidValue(final String value) {
     try {
       Float.parseFloat(value);
       return true;
@@ -52,7 +52,7 @@ public final class QTypeValidator implements Validator {
     }
   }
 
-  private boolean isValidAttributeValue(final String value) {
+  public boolean isValidAttributeValue(final String value) {
     return VALIDATION_Q_ATTR_PATTERN.matches(value);
   }
 
