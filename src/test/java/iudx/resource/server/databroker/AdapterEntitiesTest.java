@@ -15,6 +15,7 @@ import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -39,6 +40,7 @@ import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.databroker.util.Constants;
 
 @ExtendWith(VertxExtension.class)
+@Disabled
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AdapterEntitiesTest {
 
