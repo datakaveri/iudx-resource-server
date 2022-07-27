@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "454bafc5-45ed-413e-8dc5-7453a35349ba",
+		"_postman_id": "9b26d4b4-4c96-42d1-98c0-b98a3f21f35a",
 		"name": "IUDX-Resource-Server-Consumer-APIs-V3.5",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "3868286"
+		"_exporter_id": "18885476"
 	},
 	"item": [
 		{
@@ -1592,7 +1592,7 @@
 									"    const body = pm.response.json();\r",
 									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
-									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 4208);\r",
+									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 4211);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -1963,7 +1963,7 @@
 									"    const body = pm.response.json();\r",
 									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
-									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 270524);\r",
+									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 270527);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -9408,7 +9408,7 @@
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
 									"    const resultsjsonData = body.results[0];",
-									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 3825);",
+									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 3828);",
 									"});"
 								],
 								"type": "text/javascript"
