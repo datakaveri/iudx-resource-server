@@ -23,8 +23,6 @@
             "authServerHost": "",
             "catServerHost": "",
             "catServerPort": 443,
-            "resourceServerId": "",
-            "serverMode": "",
 	    "jwtIgnoreExpiry": true
 
         },
@@ -87,7 +85,6 @@
             "ssl": true,
             "keystore": "configs/keystore.jks",
             "keystorePassword": "",
-            "rsAdmin": "",
 	    "httpPort": 8443,
             "verticleInstances": 8,
             "catServerHost": "",
