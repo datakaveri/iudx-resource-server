@@ -13,7 +13,6 @@
 			"databasePort": 12345,
 			"dbUser": "",
 			"dbPassword": "",
-			"resourceServerId": "",
 			"timeLimit": "",
 			"testIdOpen": "",
 			"testIdSecure": "",
@@ -33,8 +32,6 @@
 			"testResourceID": "",
 			"catServerHost": "",
 			"catServerPort": "",
-			"serverMode": "",
-			"resourceServerId": "",
 			"jwtIgnoreExpiry": true
 		},
 		{
@@ -100,7 +97,6 @@
 			"httpPort": 8443,
 			"keystore": "",
 			"keystorePassword": "",
-			"rsAdmin": "",
 			"verticleInstances": 2,
 			"authToken": "authtest.iudx.io/kailash.adhikari@india.nec.com/732b94a17b9e127d0541af9f3c9c9ef8",
 			"invalidauthToken": "",
