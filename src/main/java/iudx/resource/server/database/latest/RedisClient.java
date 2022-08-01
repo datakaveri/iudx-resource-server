@@ -24,8 +24,7 @@ public class RedisClient {
   private RedisAPI redis;
   private Vertx vertx;
   private JsonObject config;
-//  private static final Command JSONGET =
-//      Command.create("JSON.GET", -1, 1, 1, 1, false, true, false, false);
+  private static final Command JSONGET = Command.create("JSON.GET");
   private static final Logger LOGGER = LogManager.getLogger(RedisClient.class);
 
 
@@ -120,7 +119,7 @@ public class RedisClient {
 
   public Future<JsonObject> get(String key, String path) {
     Promise<JsonObject> promise = Promise.promise();
-    redis.send(Command.JSON_GET, key, path).onFailure(res -> {
+    redis.send(JSONGET, key, path).onFailure(res -> {
       promise.fail(String.format("JSONGET did not work: %s", res.getMessage()));
     }).onSuccess(redisResponse -> {
       if (redisResponse == null) {
