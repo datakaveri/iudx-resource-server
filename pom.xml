@@ -7,7 +7,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 
 	<properties>
-		<vertx.version>4.0.3</vertx.version>
+		<vertx.version>4.3.2</vertx.version>
 		<openjdk.version>11</openjdk.version>
 		<hazelcast.version>4.0.2</hazelcast.version>
 		<micrometer.version>1.6.2</micrometer.version>

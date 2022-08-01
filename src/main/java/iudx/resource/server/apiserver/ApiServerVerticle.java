@@ -436,6 +436,8 @@ public class ApiServerVerticle extends AbstractVerticle {
       LOGGER.info("Info: Starting HTTP server at port" + port);
     }
 
+
+
     serverOptions.setCompressionSupported(true).setCompressionLevel(5);
     server = vertx.createHttpServer(serverOptions);
     server.requestHandler(router).listen(port);
@@ -457,16 +459,19 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
 
-    router.mountSubRouter(
-        ADMIN.path, new AdminRestApi(vertx, databroker, postgresService, meteringService).init());
+    router
+        .route(NGSILD_BASE.path + ASYNC.path + "/*")
+        .subRouter(new AsyncRestApi(vertx, router, config()).init());
+
+    router
+        .route(ADMIN.path+"/*")
+        .subRouter(new AdminRestApi(vertx, router).init());
+
+    //@Deprecated : will be removed in future
     router.mountSubRouter(
         MANAGEMENT.path,
         new ManagementRestApi(vertx, databroker, postgresService, meteringService, managementApi)
             .init());
-    router.mountSubRouter(
-        NGSILD_BASE.path + ASYNC.path,
-        new AsyncRestApi(vertx, meteringService, catalogueService, postgresService, databroker,
-            validator).init());
 
     router
         .route()
@@ -701,7 +706,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   public void handlePostEntitiesQuery(RoutingContext routingContext) {
     LOGGER.trace("Info: handlePostEntitiesQuery method started.");
     HttpServerRequest request = routingContext.request();
-    JsonObject requestJson = routingContext.getBodyAsJson();
+    JsonObject requestJson = routingContext.body().asJsonObject();
     LOGGER.debug("Info: request Json :: ;" + requestJson);
     HttpServerResponse response = routingContext.response();
     MultiMap headerParams = request.headers();
@@ -876,7 +881,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.trace("Info: handleSubscription method started");
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    JsonObject requestBody = routingContext.getBodyAsJson();
+    JsonObject requestBody = routingContext.body().asJsonObject();
     String instanceID = request.getHeader(HEADER_HOST);
     String subHeader = request.getHeader(HEADER_OPTIONS);
     String subscrtiptionType = SubsType.STREAMING.type;
@@ -893,7 +898,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         subHandler -> {
           if (subHandler.succeeded()) {
             LOGGER.info("Success: Handle Subscription request;");
-            routingContext.data().put(RESPONSE_SIZE,0);
+            routingContext.data().put(RESPONSE_SIZE, 0);
             Future.future(fu -> updateAuditTable(routingContext));
             handleSuccessResponse(
                 response, ResponseType.Created.getCode(), subHandler.result().toString());
@@ -916,7 +921,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String userid = request.getParam(USER_ID);
     String alias = request.getParam(JSON_ALIAS);
     String subsId = userid + "/" + alias;
-    JsonObject requestJson = routingContext.getBodyAsJson();
+    JsonObject requestJson = routingContext.body().asJsonObject();
     String instanceID = request.getHeader(HEADER_HOST);
     requestJson.put(SUBSCRIPTION_ID, subsId);
     requestJson.put(JSON_INSTANCEID, instanceID);
@@ -933,7 +938,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           subsRequestHandler -> {
             if (subsRequestHandler.succeeded()) {
               LOGGER.debug("Success: Appending subscription");
-              routingContext.data().put(RESPONSE_SIZE,0);
+              routingContext.data().put(RESPONSE_SIZE, 0);
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
@@ -960,7 +965,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     String userid = request.getParam(USER_ID);
     String alias = request.getParam(JSON_ALIAS);
     String subsId = userid + "/" + alias;
-    JsonObject requestJson = routingContext.getBodyAsJson();
+    JsonObject requestJson = routingContext.body().asJsonObject();
     String instanceID = request.getHeader(HEADER_HOST);
     String subHeader = request.getHeader(HEADER_OPTIONS);
     String subscrtiptionType = SubsType.STREAMING.type;
@@ -977,7 +982,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           subsRequestHandler -> {
             if (subsRequestHandler.succeeded()) {
               LOGGER.info("result : " + subsRequestHandler.result());
-              routingContext.data().put(RESPONSE_SIZE,0);
+              routingContext.data().put(RESPONSE_SIZE, 0);
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
@@ -1022,7 +1027,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           subHandler -> {
             if (subHandler.succeeded()) {
               LOGGER.info("Success: Getting subscription");
-              routingContext.data().put(RESPONSE_SIZE,0);
+              routingContext.data().put(RESPONSE_SIZE, 0);
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), subHandler.result().toString());
@@ -1065,7 +1070,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       subsReq.onComplete(
           subHandler -> {
             if (subHandler.succeeded()) {
-              routingContext.data().put(RESPONSE_SIZE,0);
+              routingContext.data().put(RESPONSE_SIZE, 0);
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), subHandler.result().toString());
@@ -1085,7 +1090,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   private void registerAdapter(RoutingContext routingContext) {
     LOGGER.trace("Info: registerAdapter method started;");
-    JsonObject requestJson = routingContext.getBodyAsJson();
+    JsonObject requestJson = routingContext.body().asJsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
@@ -1099,7 +1104,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         handler -> {
           if (handler.succeeded()) {
             LOGGER.info("Success: Registering adapter");
-            routingContext.data().put(RESPONSE_SIZE,0);
+            routingContext.data().put(RESPONSE_SIZE, 0);
             Future.future(fu -> updateAuditTable(routingContext));
             handleSuccessResponse(
                 response, ResponseType.Created.getCode(), handler.result().toString());
@@ -1143,7 +1148,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         brokerResultHandler -> {
           if (brokerResultHandler.succeeded()) {
             LOGGER.info("Success: Deleting adapter");
-            routingContext.data().put(RESPONSE_SIZE,0);
+            routingContext.data().put(RESPONSE_SIZE, 0);
             Future.future(fu -> updateAuditTable(routingContext));
             handleSuccessResponse(
                 response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
@@ -1183,7 +1188,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     brokerResult.onComplete(
         brokerResultHandler -> {
           if (brokerResultHandler.succeeded()) {
-            routingContext.data().put(RESPONSE_SIZE,0);
+            routingContext.data().put(RESPONSE_SIZE, 0);
             Future.future(fu -> updateAuditTable(routingContext));
             handleSuccessResponse(
                 response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
@@ -1201,7 +1206,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   public void publishHeartbeat(RoutingContext routingContext) {
     LOGGER.trace("Info: publishHeartbeat method starts;");
-    JsonObject requestJson = routingContext.getBodyAsJson();
+    JsonObject requestJson = routingContext.body().asJsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
@@ -1216,7 +1221,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: Published heartbeat");
-              routingContext.data().put(RESPONSE_SIZE,0);
+              routingContext.data().put(RESPONSE_SIZE, 0);
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
@@ -1240,7 +1245,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   public void publishDownstreamIssue(RoutingContext routingContext) {
     LOGGER.trace("Info: publishDownStreamIssue method started;");
-    JsonObject requestJson = routingContext.getBodyAsJson();
+    JsonObject requestJson = routingContext.body().asJsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
@@ -1256,7 +1261,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: published downstream issue");
-              routingContext.data().put(RESPONSE_SIZE,0);
+              routingContext.data().put(RESPONSE_SIZE, 0);
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
@@ -1279,7 +1284,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   public void publishDataIssue(RoutingContext routingContext) {
     LOGGER.trace("Info: publishDataIssue method started;");
-    JsonObject requestJson = routingContext.getBodyAsJson();
+    JsonObject requestJson = routingContext.body().asJsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
@@ -1294,7 +1299,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.debug("Success: publishing a data issue");
-              routingContext.data().put(RESPONSE_SIZE,0);
+              routingContext.data().put(RESPONSE_SIZE, 0);
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
@@ -1316,7 +1321,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   public void publishDataFromAdapter(RoutingContext routingContext) {
     LOGGER.trace("Info: publishDataFromAdapter method started;");
-    JsonObject requestJson = routingContext.getBodyAsJson();
+    JsonObject requestJson = routingContext.body().asJsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
     String instanceID = request.getHeader(HEADER_HOST);
@@ -1332,7 +1337,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.debug("Success: publishing data from adapter");
-              routingContext.data().put(RESPONSE_SIZE,0);
+              routingContext.data().put(RESPONSE_SIZE, 0);
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());

@@ -7,6 +7,9 @@ import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
 import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.ID;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
+import static iudx.resource.server.common.Constants.BROKER_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.METERING_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.TOKEN_INVALID_EX;
 import static iudx.resource.server.common.Constants.TOKEN_INVALID_EX_ROUTING_KEY;
 import static iudx.resource.server.common.Constants.UNIQUE_ATTR_EX;
@@ -52,13 +55,12 @@ public final class AdminRestApi {
   private final MeteringService auditService;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  AdminRestApi(Vertx vertx, DataBrokerService brokerService, PostgresService pgService,
-      MeteringService auditService) {
+  AdminRestApi(Vertx vertx, Router router) {
     this.vertx = vertx;
-    this.RMQbrokerService = brokerService;
-    this.pgService = pgService;
-    this.auditService = auditService;
-    this.router = Router.router(vertx);
+    this.router = router;
+    this.RMQbrokerService = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
+    this.auditService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
+    this.pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
   }
 
   public Router init() {
@@ -90,7 +92,7 @@ public final class AdminRestApi {
 
     HttpServerResponse response = context.response();
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
-    JsonObject requestBody = context.getBodyAsJson();
+    JsonObject requestBody = context.body().asJsonObject();
 
     StringBuilder query = new StringBuilder(INSERT_REVOKE_TOKEN_SQL
         .replace("$1", requestBody.getString("sub"))
@@ -136,7 +138,7 @@ public final class AdminRestApi {
     LOGGER.trace("createUniqueAttribute() started");
     HttpServerResponse response = context.response();
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
-    JsonObject requestBody = context.getBodyAsJson();
+    JsonObject requestBody = context.body().asJsonObject();
 
     String id = requestBody.getString("id");
     String attribute = requestBody.getString("attribute");
@@ -150,11 +152,11 @@ public final class AdminRestApi {
     rmqMessage.put("id", id);
     rmqMessage.put("unique-attribute", attribute);
     rmqMessage.put("eventType", BroadcastEventType.CREATE);
-    
+
     StringBuilder query = new StringBuilder(INSERT_UNIQUE_ATTR_SQL
         .replace("$1", id)
         .replace("$2", attribute));
-    
+
     LOGGER.debug("query : " + query.toString());
     pgService.executeQuery(query.toString(), pghandler -> {
       if (pghandler.succeeded()) {
@@ -189,7 +191,7 @@ public final class AdminRestApi {
   private void updateUniqueAttribute(RoutingContext context) {
     HttpServerResponse response = context.response();
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
-    JsonObject requestBody = context.getBodyAsJson();
+    JsonObject requestBody = context.body().asJsonObject();
 
     String id = requestBody.getString("id");
     String attribute = requestBody.getString("attribute");
@@ -240,7 +242,7 @@ public final class AdminRestApi {
   private void deleteUniqueAttribute(RoutingContext context) {
     HttpServerResponse response = context.response();
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
-    JsonObject requestBody = context.getBodyAsJson();
+    JsonObject requestBody = context.body().asJsonObject();
 
     String id = requestBody.getString("id");
     String attribute = requestBody.getString("attribute");
