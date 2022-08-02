@@ -124,10 +124,7 @@
 			"redisMaxWaitingHandlers": 1024,
 			"redisPoolRecycleTimeout": 1500,
 			"redisHost": "",
-			"redisPort": 123,
-			"attributeList": {
-				"key": "value"
-			}
+			"redisPort": 123
 		},
 		{
 			"id": "iudx.resource.server.metering.MeteringVerticle",
