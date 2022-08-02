@@ -71,7 +71,6 @@
            "id": "iudx.resource.server.database.latest.LatestVerticle",
            "isWorkerVerticle":false,
             "verticleInstances": 2,
-            "attributeList": {"itms-info": "some-attr"},
             "redisMode": "",
             "redisUsername": "",
             "redisPassword": "",
