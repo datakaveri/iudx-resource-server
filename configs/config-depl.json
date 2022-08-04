@@ -11,7 +11,6 @@
             "databasePort": 123,
             "dbUser": "",
             "dbPassword": "",
-            "resourceServerId":"",
             "timeLimit": ""
         },
         {
@@ -27,8 +26,6 @@
             "testResourceID": "",
             "catServerHost": "",
             "catServerPort": "",
-            "serverMode": "production",
-            "resourceServerId":"",
 	    "jwtIgnoreExpiry": false
 
         },
@@ -87,7 +84,6 @@
 	    "httpPort": 8443,
             "keystore": "configs/keystore.jks",
             "keystorePassword": "",
-            "rsAdmin": "",
             "verticleInstances": 2,
             "catServerHost": "",
             "catServerPort": ""
@@ -97,7 +93,6 @@
             "id": "iudx.resource.server.database.latest.LatestVerticle",
             "isWorkerVerticle":false,
             "verticleInstances": 2,
-            "attributeList": {"itms-info": "some-attr"},
             "redisMode": "CLUSTER",
             "redisUsername": "",
             "redisPassword": "",

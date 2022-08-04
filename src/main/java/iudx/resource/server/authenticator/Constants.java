@@ -33,7 +33,6 @@ public class Constants {
   public static final ChronoUnit TIP_CACHE_TIMEOUT_UNIT = ChronoUnit.MINUTES;
   public static final String CAT_RSG_PATH = "/iudx/cat/v1/search";
   public static final String CAT_ITEM_PATH = "/iudx/cat/v1/item";
-  public static final String SERVER_MODE = "serverMode";
   public static final String JSON_USERID = "userid";
   public static final String JSON_IID = "iid";
   public static final String JSON_CONSUMER = "consumer";

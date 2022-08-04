@@ -23,8 +23,6 @@
             "authServerHost": "",
             "catServerHost": "",
             "catServerPort": 443,
-            "resourceServerId": "",
-            "serverMode": "production",
 	    "jwtIgnoreExpiry": false
         },
         {
@@ -87,7 +85,6 @@
             "keystore": "",
             "keystorePassword": "",
 	    "httpPort" : 8080,
-            "rsAdmin": "",
             "verticleInstances": 8,
             "catServerHost": "",
             "catServerPort": 123
@@ -104,10 +101,7 @@
             "redisMaxWaitingHandlers": 1024,
             "redisPoolRecycleTimeout": 1500,
             "redisHost": "",
-            "redisPort": 1234,
-            "attributeList": {
-                "key": "value"
-            }
+            "redisPort": 1234
         },
         {
             "id": "iudx.resource.server.metering.MeteringVerticle",
