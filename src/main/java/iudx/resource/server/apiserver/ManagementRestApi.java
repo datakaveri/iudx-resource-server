@@ -51,6 +51,11 @@ import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.metering.MeteringService;
 
+/**
+ * Since no one is using management API, these API endpoints will be deleted.
+ */
+
+@Deprecated
 public class ManagementRestApi {
 
 

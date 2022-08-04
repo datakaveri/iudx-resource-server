@@ -14,6 +14,10 @@ import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.apiserver.util.RequestType.ASYNC_SEARCH;
 import static iudx.resource.server.apiserver.util.RequestType.ASYNC_STATUS;
+import static iudx.resource.server.common.Constants.ASYNC_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.BROKER_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.METERING_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
@@ -55,11 +59,9 @@ import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.metering.MeteringService;
 
-public class AsyncRestApi {
+public class AsyncRestApi{
 
   private static final Logger LOGGER = LogManager.getLogger(AsyncRestApi.class);
-
-  private static final String ASYNC_SERVICE_ADDRESS = "iudx.rs.async.service";
 
   private final Vertx vertx;
   private final Router router;
@@ -70,19 +72,18 @@ public class AsyncRestApi {
   private final PostgresService postgresService;
   private final DataBrokerService databroker;
 
-  AsyncRestApi(Vertx vertx, MeteringService meteringService, CatalogueService catalogueService,
-      PostgresService postgresService, DataBrokerService databroker, ParamsValidator validator) {
+  AsyncRestApi(Vertx vertx,Router router, JsonObject config) {
     this.vertx = vertx;
-    this.meteringService = meteringService;
-    this.catalogueService = catalogueService;
-    this.validator = validator;
-    this.postgresService = postgresService;
-    this.databroker = databroker;
-    this.router = Router.router(vertx);
+    this.router=router;
+    this.databroker = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
+    this.meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
+    this.catalogueService = new CatalogueService(vertx, config);
+    this.validator = new ParamsValidator(catalogueService);
+    this.postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
   }
-
-  public Router init() {
-
+  
+  
+  Router init() {
     FailureHandler validationsFailureHandler = new FailureHandler();
 
     asyncService = AsyncService.createProxy(vertx, ASYNC_SERVICE_ADDRESS);
@@ -102,8 +103,8 @@ public class AsyncRestApi {
         .handler(AuthHandler.create(vertx))
         .handler(this::handleAsyncStatusRequest)
         .failureHandler(validationsFailureHandler);
-
-    return router;
+    
+    return this.router;
   }
 
   private void handleAsyncSearchRequest(RoutingContext routingContext) {
@@ -299,4 +300,5 @@ public class AsyncRestApi {
 
     return promise.future();
   }
+
 }
