@@ -153,7 +153,7 @@
 									"// Test the response\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\");\r",
 									"});"
@@ -512,7 +512,7 @@
 									"// Test the response\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\");\r",
 									"});"
@@ -863,7 +863,7 @@
 									"// Test the response\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\");\r",
 									"});"
@@ -1214,7 +1214,7 @@
 									"// Test the response\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\");\r",
 									"});"
@@ -1590,7 +1590,7 @@
 									"// Test the response\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 4208);\r",
 									"});"
@@ -1961,7 +1961,7 @@
 									"// Test the response\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 270524);\r",
 									"});"
@@ -2332,7 +2332,7 @@
 									"// Test the response\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 903);\r",
 									"});"
@@ -2703,7 +2703,7 @@
 									"// Test the response\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 41018);\r",
 									"});"
@@ -3099,7 +3099,7 @@
 									"// Test the response\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\");\r",
 									"});"
@@ -3514,7 +3514,7 @@
 									"// Test the response\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\");\r",
 									"});"
@@ -3955,7 +3955,7 @@
 									"// Test the response\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\");\r",
 									"});"
@@ -4353,7 +4353,7 @@
 									"// Test the response\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 95);\r",
 									"});"
@@ -4782,7 +4782,7 @@
 									"// Test the response\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 957);\r",
 									"});"
@@ -5217,7 +5217,7 @@
 									"// Test the response\r",
 									"pm.test(\"Check response body\", function () {    \r",
 									"    const body = pm.response.json();\r",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 951);\r",
 									"});"
@@ -5647,7 +5647,7 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");",
 									"    const resultsjsonData = body.results[0];",
 									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\");",
 									"    pm.expect(resultsjsonData).to.have.property(\"referenceLevel\", 15.9);",
@@ -6051,7 +6051,7 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");",
 									"    const resultsjsonData = body.results[0];",
 									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\");",
 									"    pm.expect(resultsjsonData).to.have.property(\"referenceLevel\", 15.9);",
@@ -6405,7 +6405,7 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");",
 									"    const resultsjsonData = body.results[0];",
 									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\");",
 									"    pm.expect(resultsjsonData).to.have.property(\"referenceLevel\", 15.9);",
@@ -6759,7 +6759,7 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");",
 									"    const resultsjsonData = body.results[0];",
 									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\");",
 									"    pm.expect(resultsjsonData).to.have.property(\"referenceLevel\", 15.9);",
@@ -7143,7 +7143,7 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");",
 									"    const resultsjsonData = body.results[0];",
 									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 957);",
 									"});"
@@ -7543,7 +7543,7 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");",
 									"    const resultsjsonData = body.results[0];",
 									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 957);",
 									"});"
@@ -7918,7 +7918,7 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");",
 									"    const resultsjsonData = body.results[0];",
 									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 957);",
 									"});"
@@ -8285,7 +8285,7 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");",
 									"    const resultsjsonData = body.results[0];",
 									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 957);",
 									"});"
@@ -8685,7 +8685,7 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");",
 									"    const resultsjsonData = body.results[0];",
 									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\");",
 									"    pm.expect(resultsjsonData).to.have.property(\"speed\", 0.0);",
@@ -9406,7 +9406,7 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    pm.expect(body).to.have.property(\"title\", \"urn:dx:rs:success\");",
 									"    const resultsjsonData = body.results[0];",
 									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 3825);",
 									"});"
