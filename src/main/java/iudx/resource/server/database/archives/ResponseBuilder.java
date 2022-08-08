@@ -35,7 +35,8 @@ public class ResponseBuilder {
   public ResponseBuilder setTypeAndTitle(int statusCode) {
     response.put(ERROR_TYPE, statusCode);
     if (SUCCESS.equalsIgnoreCase(status)) {
-      response.put(TITLE, ResponseUrn.SUCCESS_URN.getUrn());
+      response.put(TYPE_KEY, ResponseUrn.SUCCESS_URN.getUrn());
+      response.put(TITLE, ResponseUrn.SUCCESS_URN.getMessage());
     } else if (FAILED.equalsIgnoreCase(status)) {
       response.put(TITLE, FAILED);
     }
