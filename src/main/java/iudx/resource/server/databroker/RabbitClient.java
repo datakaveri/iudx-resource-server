@@ -121,7 +121,7 @@ public class RabbitClient {
     this.amqpPort = configs.getInteger("brokerAmqpPort");
     this.vhost = configs.getString("dataBrokerVhost");
 
-    String internalVhost = configs.getString(VHosts.IUDX_INTERNAL.name());
+    String internalVhost = configs.getString(VHosts.IUDX_INTERNAL.value);
     rabbitConfigs.setVirtualHost(internalVhost);
     this.client = getRabbitMQClient(vertx, rabbitConfigs);
     this.webClient = webClient;
@@ -130,7 +130,7 @@ public class RabbitClient {
       if (clientStartupHandler.succeeded()) {
         LOGGER.info("Info : rabbit MQ client started");
       } else if (clientStartupHandler.failed()) {
-        LOGGER.fatal("Fail : rabbit MQ client startup failed.");
+        LOGGER.fatal("Fail : rabbit MQ client startup failed. {} ",clientStartupHandler.cause());
       }
     });
   }

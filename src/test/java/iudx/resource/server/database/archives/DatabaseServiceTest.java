@@ -418,9 +418,9 @@ public class DatabaseServiceTest {
             .add(
                 "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
         .put("searchType", "geoSearch_")
-        .put("lon", 72.8296)
-        .put("lat", 21.2)
-        .put("radius", 500)
+        .put("lon", 72.834)
+        .put("lat", 21.178)
+        .put("radius", 10)
         .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
 
     dbService.countQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
