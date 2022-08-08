@@ -579,7 +579,7 @@ public class DatabaseServiceTest {
                 new JsonArray().add(
                     "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"))
             .put("searchType", "temporalSearch_").put("timerel", "before")
-            .put("time", "2020-09-29T10:00:00+05:30");
+            .put("time", "2020-10-29T10:00:00+05:30");
 
     ZonedDateTime start = ZonedDateTime.parse("2020-10-29T10:00:00+05:30");
     LOGGER.debug("### start date: " + start);
