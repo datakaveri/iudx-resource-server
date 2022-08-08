@@ -168,6 +168,7 @@ public class DatabaseServiceImpl implements DatabaseService {
             json.put("title", ResponseUrn.PAYLOAD_TOO_LARGE_URN.getUrn());
             json.put("details", ResponseUrn.PAYLOAD_TOO_LARGE_URN.getMessage());
             handler.handle(Future.failedFuture(json.toString()));
+            return;
           }
           client.searchAsync(searchIndex, FILTER_PATH_VAL, query.toString(),
               searchRes -> {
