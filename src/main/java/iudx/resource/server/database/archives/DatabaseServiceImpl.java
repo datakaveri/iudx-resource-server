@@ -33,6 +33,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.elastic.ElasticClient;
 import iudx.resource.server.database.elastic.QueryDecoder;
 
@@ -161,6 +162,13 @@ public class DatabaseServiceImpl implements DatabaseService {
           JsonObject countJson = countHandler.result();
           LOGGER.debug("count json : " + countJson);
           int count = countJson.getJsonArray("results").getJsonObject(0).getInteger("totalHits");
+          if(count>50000) {
+            JsonObject json=new JsonObject();
+            json.put("type", 413);
+            json.put("title", ResponseUrn.PAYLOAD_TOO_LARGE_URN.getUrn());
+            json.put("details", ResponseUrn.PAYLOAD_TOO_LARGE_URN.getMessage());
+            handler.handle(Future.failedFuture(json.toString()));
+          }
           client.searchAsync(searchIndex, FILTER_PATH_VAL, query.toString(),
               searchRes -> {
                 if (searchRes.succeeded()) {

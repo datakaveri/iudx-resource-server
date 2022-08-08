@@ -24,8 +24,9 @@ public enum ResponseUrn {
 
 
 
-  LIMIT_EXCEED_URN("urn:dx:rs:requestLimitExceeded", "Operation exceeds the degault value of limit"),
+  LIMIT_EXCEED_URN("urn:dx:rs:requestLimitExceeded", "Operation exceeds the default value of limit"),
 
+  PAYLOAD_TOO_LARGE_URN("urn:dx:rs:payloadTooLarge","Response size exceeds limit"),
 
   // extra urn
   INVALID_ID_VALUE_URN("urn:dx:rs:invalidIdValue", "Invalid id"),
