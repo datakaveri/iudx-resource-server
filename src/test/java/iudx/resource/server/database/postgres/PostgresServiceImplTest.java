@@ -1,5 +1,17 @@
 package iudx.resource.server.database.postgres;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.time.LocalDateTime;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
@@ -7,18 +19,6 @@ import io.vertx.junit5.VertxTestContext;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
 @ExtendWith(MockitoExtension.class)
@@ -63,14 +63,14 @@ public class PostgresServiceImplTest {
     public void testExecuteQuerySuccess(VertxTestContext vertxTestContext) {
         StringBuilder stringBuilder = new StringBuilder(Constants.INSERT_REVOKE_TOKEN_SQL.replace("$1", UUID.randomUUID().toString()).replace("$2", LocalDateTime.now().toString()));
 
-        String expected = "{\"type\":\"urn:dx:rs:success\",\"title\":\"successful operations\",\"result\":[]}";
+        String expected = "{\"type\":\"urn:dx:rs:success\",\"title\":\"Success\",\"result\":[]}";
         pgService.executeQuery(stringBuilder.toString(), handler -> {
             if (handler.succeeded()) {
                 assertEquals(expected, handler.result().toString());
                 assertTrue(handler.result().containsKey("type"));
                 assertTrue(handler.result().containsKey("title"));
                 assertTrue(handler.result().containsKey("result"));
-                assertEquals("successful operations", handler.result().getString("title"));
+                assertEquals("Success", handler.result().getString("title"));
                 assertEquals("urn:dx:rs:success", handler.result().getString("type"));
                 vertxTestContext.completeNow();
             } else {
