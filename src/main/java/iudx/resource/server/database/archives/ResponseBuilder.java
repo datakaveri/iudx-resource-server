@@ -1,6 +1,5 @@
 package iudx.resource.server.database.archives;
 
-import static iudx.resource.server.database.archives.Constants.TOTAL_HITS;
 import static iudx.resource.server.database.archives.Constants.DETAIL;
 import static iudx.resource.server.database.archives.Constants.ERROR;
 import static iudx.resource.server.database.archives.Constants.ERROR_TYPE;
@@ -15,9 +14,11 @@ import static iudx.resource.server.database.archives.Constants.SIZE_KEY;
 import static iudx.resource.server.database.archives.Constants.STATUS;
 import static iudx.resource.server.database.archives.Constants.SUCCESS;
 import static iudx.resource.server.database.archives.Constants.TITLE;
+import static iudx.resource.server.database.archives.Constants.TOTAL_HITS;
 import static iudx.resource.server.database.archives.Constants.TYPE_KEY;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.common.ResponseUrn;
 
 public class ResponseBuilder {
 
@@ -34,7 +35,8 @@ public class ResponseBuilder {
   public ResponseBuilder setTypeAndTitle(int statusCode) {
     response.put(ERROR_TYPE, statusCode);
     if (SUCCESS.equalsIgnoreCase(status)) {
-      response.put(TITLE, SUCCESS);
+      response.put(TYPE_KEY, ResponseUrn.SUCCESS_URN.getUrn());
+      response.put(TITLE, ResponseUrn.SUCCESS_URN.getMessage());
     } else if (FAILED.equalsIgnoreCase(status)) {
       response.put(TITLE, FAILED);
     }

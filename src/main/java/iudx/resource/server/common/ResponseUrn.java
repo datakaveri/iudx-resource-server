@@ -4,7 +4,7 @@ import java.util.stream.Stream;
 
 public enum ResponseUrn {
 
-  SUCCESS_URN("urn:dx:rs:success", "successful operations"),
+  SUCCESS_URN("urn:dx:rs:success", "Success"),
   INVALID_PARAM_URN("urn:dx:rs:invalidParamameter", "Invalid parameter passed"),
   INVALID_GEO_REL_URN("urn:dx:rs:invalidGeoRel", "Invalid geo relation value"),
   INVALID_TEMPORAL_PARAM_URN("urn:dx:rs:invalidTemporalParam", "Invalid temporal parameter"),
@@ -25,6 +25,7 @@ public enum ResponseUrn {
 
 
   LIMIT_EXCEED_URN("urn:dx:rs:requestLimitExceeded", "Operation exceeds the degault value of limit"),
+  PAYLOAD_TOO_LARGE_URN("urn:dx:rs:payloadTooLarge","Response size exceeds limit"),
 
 
   // extra urn

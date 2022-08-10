@@ -93,7 +93,6 @@ public class AdapterEntitiesTest {
     /* Read the configuration and set the rabbitMQ server properties. */
     appConfig = new Configuration();
     JsonObject brokerConfig = appConfig.configLoader(2, vertx);
-
     try {
 
 
@@ -169,7 +168,10 @@ public class AdapterEntitiesTest {
     propObj = new JsonObject();
     propObj.put("userName", dataBrokerUserName);
     propObj.put(Constants.PASSWORD, dataBrokerPassword);
-    propObj.put(Constants.VHOST, dataBrokerVhost);
+
+    propObj.put("prodVhost", "IUDX");
+    propObj.put("internalVhost", "IUDX-INTERNAL");
+    propObj.put("externalVhost", "IUDX-EXTERNAL");
     propObj.put("databaseIP", databaseIP);
     propObj.put("databasePort", databasePort);
     propObj.put("databaseName", databaseName);
@@ -197,7 +199,7 @@ public class AdapterEntitiesTest {
   @Order(1)
   void successRegisterAdaptor(VertxTestContext testContext) {
     JsonObject request = new JsonObject();
-    request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information_1"));
+    request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information"));
     request.put(Constants.USER_ID, consumer);
     request.put(JSON_PROVIDER, provider);
 
@@ -280,6 +282,7 @@ public class AdapterEntitiesTest {
     });
   }
 
+  
   @Test
   @DisplayName("Testing publishHeartbeat method for publication of heartbeat data")
   @Order(4)

@@ -83,8 +83,8 @@ public class DatabaseServiceTest {
             .put("id",
                 new JsonArray().add(
                     "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
-            .put("searchType", "geoSearch_").put("lon", 72.8296).put("lat", 21.2)
-            .put("radius", 500)
+            .put("searchType", "geoSearch_").put("lon", 72.834).put("lat", 21.178)
+            .put("radius", 10)
             .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
@@ -192,23 +192,18 @@ public class DatabaseServiceTest {
     /**
      * coordinates should look like this [[[lo1,la1],[lo2,la2],[lo3,la3],[lo4,la4],[lo5,la5],[lo1,la1]]]
      */
-
+    String id="iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta";
     JsonObject request =
         new JsonObject()
             .put("id",
-                new JsonArray().add(
-                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                new JsonArray().add(id))
             .put("geometry", "polygon").put("georel", "within")
-            .put("coordinates",
-                "[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]")
+            .put("coordinates","[[[72.76,21.15],[72.76,21.13],[72.78,21.13],[72.78,21.15],[72.76,21.15]]]")
             .put("geoproperty", "location").put("searchType", "geoSearch_")
             .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-      assertTrue(72.5 <= response.getJsonArray("results").getJsonObject(0)
-          .getJsonObject("location").getJsonArray("coordinates").getDouble(0)
-          && response.getJsonArray("results").getJsonObject(0).getJsonObject("location")
-              .getJsonArray("coordinates").getDouble(1) <= 73);
+      assertTrue(response.getJsonArray("results").getJsonObject(0).getString("id").equals(id));
       testContext.completeNow();
     })));
   }
@@ -264,8 +259,7 @@ public class DatabaseServiceTest {
                 new JsonArray().add(
                     "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("geometry", "linestring").put("georel", "intersects")
-            .put("coordinates",
-                "[[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20]]")
+            .put("coordinates","[[72.84,21.19],[72.84,21.17]]")
             .put("geoproperty", "location").put("searchType", "geoSearch_")
             .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
 
@@ -338,7 +332,11 @@ public class DatabaseServiceTest {
             .put("id",
                 new JsonArray().add(
                     "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
-            .put("searchType", "responseFilter_")
+            .put("searchType", "responseFilter_geoSearch_")
+            .put("geometry", "bbox")
+            .put("georel", "within")
+            .put("coordinates", "[[72.8296,21.2],[72.8297,21.15]]")
+            .put("geoproperty", "geoJsonLocation")
             .put("attrs", new JsonArray().add("id").add("license_plate").add("speed"))
             .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
     Set<String> attrs = new HashSet<>();
@@ -388,7 +386,7 @@ public class DatabaseServiceTest {
                     "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
             .put("searchType", "responseFilter_geoSearch_")
             .put("attrs", new JsonArray().add("id").add("location").add("speed"))
-            .put("lon", 72.8296).put("lat", 21.2).put("radius", 500)
+            .put("lon", 72.8296).put("lat", 21.2).put("radius", 1000)
             .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
     Set<String> attrs = new HashSet<>();
     attrs.add("id");
@@ -420,9 +418,9 @@ public class DatabaseServiceTest {
             .add(
                 "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
         .put("searchType", "geoSearch_")
-        .put("lon", 72.8296)
-        .put("lat", 21.2)
-        .put("radius", 500)
+        .put("lon", 72.834)
+        .put("lat", 21.178)
+        .put("radius", 10)
         .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
 
     dbService.countQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
@@ -579,11 +577,11 @@ public class DatabaseServiceTest {
         new JsonObject()
             .put("id",
                 new JsonArray().add(
-                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                    "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"))
             .put("searchType", "temporalSearch_").put("timerel", "before")
-            .put("time", "2020-09-29T10:00:00+05:30");
+            .put("time", "2020-10-29T10:00:00+05:30");
 
-    ZonedDateTime start = ZonedDateTime.parse("2020-10-19T10:00:00+05:30");
+    ZonedDateTime start = ZonedDateTime.parse("2020-10-29T10:00:00+05:30");
     LOGGER.debug("### start date: " + start);
 
     dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {

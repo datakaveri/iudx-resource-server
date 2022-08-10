@@ -52,6 +52,7 @@ import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.PoolOptions;
+import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.common.VHosts;
 import iudx.resource.server.configuration.Configuration;
 
@@ -837,9 +838,14 @@ public class DataBrokerServiceTest {
 //    expected.put(URL, "databroker.iudx.io");
 //    expected.put(PORT, "5671");
 //    expected.put(VHOST, "IUDX");
+    JsonObject entitiesObj=new JsonObject();
     JsonArray array = new JsonArray();
     array.add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood");
-    expected.put(ENTITIES, array);
+    entitiesObj.put(ENTITIES, array);
+    
+    expected.put("type", ResponseUrn.SUCCESS_URN.getUrn());
+    expected.put("title", "success");
+    expected.put("results", new JsonArray().add(entitiesObj));
 
     JsonObject request = new JsonObject();
     request.put(NAME, "alias");
@@ -854,9 +860,13 @@ public class DataBrokerServiceTest {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
         LOGGER.debug("Update subscription response is : " + response);
+        LOGGER.debug("expected subscription response is : " + expected);
         assertEquals(expected, response);
+        testContext.completeNow();
+      }else {
+        testContext.failNow(handler.cause());
       }
-      testContext.completeNow();
+      
     });
   }
 
