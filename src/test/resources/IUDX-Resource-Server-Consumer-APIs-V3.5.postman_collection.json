@@ -8687,7 +8687,7 @@
 									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
 									"    const resultsjsonData = body.results[0];",
 									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\");",
-									"    pm.expect(resultsjsonData).to.have.property(\"speed\", 1.3);",
+									"    pm.expect(resultsjsonData).to.have.property(\"speed\", 0.0);",
 									"});",
 									""
 								],
