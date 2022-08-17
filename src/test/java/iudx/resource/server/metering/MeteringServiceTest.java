@@ -1,6 +1,6 @@
 package iudx.resource.server.metering;
 
- import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
+import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
 import static iudx.resource.server.metering.util.Constants.API;
 import static iudx.resource.server.metering.util.Constants.CONSUMER_ID;
 import static iudx.resource.server.metering.util.Constants.DETAIL;
@@ -18,7 +18,6 @@ import static iudx.resource.server.metering.util.Constants.RESOURCE_ID;
 import static iudx.resource.server.metering.util.Constants.RESULTS;
 import static iudx.resource.server.metering.util.Constants.START_TIME;
 import static iudx.resource.server.metering.util.Constants.SUCCESS;
-import static iudx.resource.server.metering.util.Constants.TABLE_NAME;
 import static iudx.resource.server.metering.util.Constants.TIME_NOT_FOUND;
 import static iudx.resource.server.metering.util.Constants.TIME_RELATION;
 import static iudx.resource.server.metering.util.Constants.TIME_RELATION_NOT_FOUND;
@@ -28,19 +27,19 @@ import static iudx.resource.server.metering.util.Constants.USERID_NOT_FOUND;
 import static iudx.resource.server.metering.util.Constants.USER_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import java.util.UUID;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.BeforeAll;
- import org.junit.jupiter.api.Disabled;
- import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.configuration.Configuration;
+import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith({VertxExtension.class})
 public class MeteringServiceTest {
@@ -247,7 +246,7 @@ public class MeteringServiceTest {
                 vertxTestContext.verify(
                     () -> {
                       LOGGER.debug("RESPONSE" + response);
-                      assertTrue(response.getString(TITLE).equals(SUCCESS));
+                      assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
       vertxTestContext.completeNow();
@@ -266,7 +265,7 @@ public class MeteringServiceTest {
                 vertxTestContext.verify(
                     () -> {
                       LOGGER.debug("RESPONSE" + response);
-                      assertTrue(response.getString(TITLE).equals(SUCCESS));
+                      assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
       vertxTestContext.completeNow();
@@ -286,7 +285,7 @@ public class MeteringServiceTest {
                 vertxTestContext.verify(
                     () -> {
                       LOGGER.debug("RESPONSE" + response);
-                      assertTrue(response.getString(TITLE).equals(SUCCESS));
+                      assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
       vertxTestContext.completeNow();
@@ -305,7 +304,7 @@ public class MeteringServiceTest {
                 vertxTestContext.verify(
                     () -> {
                       LOGGER.debug("RESPONSE" + response);
-                      assertTrue(response.getString(TITLE).equals(SUCCESS));
+                      assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
       vertxTestContext.completeNow();
@@ -393,7 +392,7 @@ public class MeteringServiceTest {
                 vertxTestContext.verify(
                     () -> {
                       LOGGER.debug("RESPONSE" + response.getString("title"));
-                      assertTrue(response.getString("title").equals("Success"));
+                      assertEquals("Success", response.getString("title"));
                       vertxTestContext.completeNow();
                     })));
       vertxTestContext.completeNow();
@@ -457,7 +456,7 @@ public class MeteringServiceTest {
                 vertxTestContext.verify(
                     () -> {
                       LOGGER.debug("RESPONSE" + response);
-                      assertTrue(response.getString(TITLE).equals(SUCCESS));
+                      assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
       vertxTestContext.completeNow();
@@ -477,7 +476,7 @@ public class MeteringServiceTest {
                 vertxTestContext.verify(
                     () -> {
                       LOGGER.debug("RESPONSE" + response);
-                      assertTrue(response.getString(TITLE).equals(SUCCESS));
+                      assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
       vertxTestContext.completeNow();
@@ -498,7 +497,7 @@ public class MeteringServiceTest {
                 vertxTestContext.verify(
                     () -> {
                       LOGGER.debug("RESPONSE" + response);
-                      assertTrue(response.getString(TITLE).equals(SUCCESS));
+                      assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
       vertxTestContext.completeNow();
