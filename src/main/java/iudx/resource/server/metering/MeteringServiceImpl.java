@@ -82,7 +82,6 @@ public class MeteringServiceImpl implements MeteringService {
   private ResponseBuilder responseBuilder;
 
   public MeteringServiceImpl(JsonObject propObj, Vertx vertxInstance) {
-
     if (propObj != null && !propObj.isEmpty()) {
       databaseIP = propObj.getString("meteringDatabaseIP");
       databasePort = propObj.getInteger("meteringDatabasePort");
@@ -187,7 +186,7 @@ public class MeteringServiceImpl implements MeteringService {
             else {
               int totalCount= Integer.parseInt(
                   countResultHandler.result().getJsonArray(RESULTS).getJsonObject(0).getString(TOTAL));
-              if( totalCount>=10000 || totalCount==0 ){
+              if(totalCount>=10000){
                 responseBuilder =
                     new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(RESPONSE_LIMIT_EXCEED);
                 handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
