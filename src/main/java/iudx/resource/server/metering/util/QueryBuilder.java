@@ -92,6 +92,7 @@ public class QueryBuilder {
     long toTime = getEpochTime(endZDT);
 
       if (providerID != null)
+      {
         query =
             new StringBuilder(
                 PROVIDERID_TIME_INTERVAL_READ_QUERY
@@ -99,7 +100,7 @@ public class QueryBuilder {
                     .replace("$1", Long.toString(fromTime))
                     .replace("$2", Long.toString(toTime))
                     .replace("$3", providerID));
-      else
+      }else{
         query =
             new StringBuilder(
                 CONSUMERID_TIME_INTERVAL_READ_QUERY
@@ -107,7 +108,7 @@ public class QueryBuilder {
                     .replace("$1", Long.toString(fromTime))
                     .replace("$2", Long.toString(toTime))
                     .replace("$3", userId));
-
+}
     if (consumerID != null) {
       tempQuery = query;
       tempQuery.append(USER_ID_QUERY.replace("$6", consumerID));
