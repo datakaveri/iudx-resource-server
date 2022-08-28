@@ -80,7 +80,6 @@ public class MeteringServiceImpl implements MeteringService {
   private int databasePoolSize;
   private String databaseTableName;
   private ResponseBuilder responseBuilder;
-
   public MeteringServiceImpl(JsonObject propObj, Vertx vertxInstance) {
 
     if (propObj != null && !propObj.isEmpty()) {

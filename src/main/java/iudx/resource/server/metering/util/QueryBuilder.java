@@ -55,6 +55,7 @@ public class QueryBuilder {
     String consumerID = request.getString(CONSUMER_ID);
     String iid = request.getString(IID);
     String databaseTableName = request.getString(TABLE_NAME);
+
     StringBuilder query, tempQuery;
 
     if (providerID != null && checkProviderId(iid, providerID)) {
@@ -90,7 +91,8 @@ public class QueryBuilder {
 
     long toTime = getEpochTime(endZDT);
 
-    if (providerID != null){
+    if (providerID != null)
+    {
       query =
           new StringBuilder(
               PROVIDERID_TIME_INTERVAL_READ_QUERY
@@ -106,7 +108,7 @@ public class QueryBuilder {
                   .replace("$1", Long.toString(fromTime))
                   .replace("$2", Long.toString(toTime))
                   .replace("$3", userId));
-}
+    }
     if (consumerID != null) {
       tempQuery = query;
       tempQuery.append(USER_ID_QUERY.replace("$6", consumerID));
