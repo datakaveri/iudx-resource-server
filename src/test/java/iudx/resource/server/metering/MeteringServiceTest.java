@@ -1,5 +1,6 @@
 package iudx.resource.server.metering;
 
+import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
 import static iudx.resource.server.metering.util.Constants.API;
 import static iudx.resource.server.metering.util.Constants.CONSUMER_ID;
 import static iudx.resource.server.metering.util.Constants.DETAIL;
@@ -14,7 +15,7 @@ import static iudx.resource.server.metering.util.Constants.INVALID_PROVIDER_ID;
 import static iudx.resource.server.metering.util.Constants.INVALID_PROVIDER_REQUIRED;
 import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
 import static iudx.resource.server.metering.util.Constants.RESOURCE_ID;
-import static iudx.resource.server.metering.util.Constants.RESPONSE_SIZE;
+import static iudx.resource.server.metering.util.Constants.RESPONSE_LIMIT_EXCEED;
 import static iudx.resource.server.metering.util.Constants.RESULTS;
 import static iudx.resource.server.metering.util.Constants.START_TIME;
 import static iudx.resource.server.metering.util.Constants.SUCCESS;
@@ -27,6 +28,12 @@ import static iudx.resource.server.metering.util.Constants.USERID_NOT_FOUND;
 import static iudx.resource.server.metering.util.Constants.USER_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.configuration.Configuration;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,11 +41,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
-import iudx.resource.server.configuration.Configuration;
 
 @ExtendWith({VertxExtension.class})
 public class MeteringServiceTest {
@@ -62,7 +64,7 @@ public class MeteringServiceTest {
   static void startVertex(Vertx vertx, VertxTestContext vertxTestContext) {
     vertxObj = vertx;
     config = new Configuration();
-    JsonObject dbConfig = config.configLoader(6, vertx);
+    JsonObject dbConfig = config.configLoader(5, vertx);
     databaseIP = dbConfig.getString("meteringDatabaseIP");
     databasePort = dbConfig.getInteger("meteringDatabasePort");
     databaseName = dbConfig.getString("meteringDatabaseName");
@@ -80,8 +82,8 @@ public class MeteringServiceTest {
     JsonObject jsonObject = new JsonObject();
     jsonObject.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
     jsonObject.put(RESOURCE_ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
-    jsonObject.put(START_TIME, "2022-06-25T05:30:00+05:30[Asia/Kolkata]");
-    jsonObject.put(END_TIME, "2022-07-08T02:00:00+05:30[Asia/Kolkata]");
+    jsonObject.put(START_TIME, "2022-05-29T05:30:00+05:30[Asia/Kolkata]");
+    jsonObject.put(END_TIME, "2022-06-04T02:00:00+05:30[Asia/Kolkata]");
     jsonObject.put(TIME_RELATION, DURING);
     jsonObject.put(API, "/ngsi-ld/v1/subscription");
     jsonObject.put(ENDPOINT, "/ngsi-ld/v1/consumer/audit");
@@ -93,8 +95,8 @@ public class MeteringServiceTest {
     JsonObject jsonObject = new JsonObject();
     jsonObject.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
     jsonObject.put(RESOURCE_ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
-    jsonObject.put(START_TIME, "2022-06-25T05:30:00+05:30[Asia/Kolkata]");
-    jsonObject.put(END_TIME, "2022-07-08T02:00:00+05:30[Asia/Kolkata]");
+    jsonObject.put(START_TIME, "2022-05-29T05:30:00+05:30[Asia/Kolkata]");
+    jsonObject.put(END_TIME, "2022-06-04T02:00:00+05:30[Asia/Kolkata]");
     jsonObject.put(TIME_RELATION, DURING);
     jsonObject.put(API, "/ngsi-ld/v1/subscription");
     jsonObject.put(PROVIDER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias");
@@ -127,7 +129,6 @@ public class MeteringServiceTest {
                           new JsonObject(response.getMessage()).getString(DETAIL));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 
   @Test
@@ -144,7 +145,6 @@ public class MeteringServiceTest {
                       assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 
   @Test
@@ -164,7 +164,6 @@ public class MeteringServiceTest {
                           new JsonObject(response.getMessage()).getString(DETAIL));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 
   @Test
@@ -184,7 +183,6 @@ public class MeteringServiceTest {
                           new JsonObject(response.getMessage()).getString(DETAIL));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 
   @Test
@@ -223,7 +221,6 @@ public class MeteringServiceTest {
                           new JsonObject(response.getMessage()).getString(DETAIL));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 
   @Test
@@ -238,10 +235,10 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      assertTrue(response.getString(TITLE).equals(SUCCESS));
+                      LOGGER.debug("RESPONSE" + response);
+                      assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 
   @Test
@@ -255,10 +252,10 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      assertTrue(response.getString(TITLE).equals(SUCCESS));
+                      LOGGER.debug("RESPONSE" + response);
+                      assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 
   @Test
@@ -273,10 +270,10 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      assertTrue(response.getString(TITLE).equals(SUCCESS));
+                      LOGGER.debug("RESPONSE" + response);
+                      assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 
   @Test
@@ -290,10 +287,32 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      assertTrue(response.getString(TITLE).equals(SUCCESS));
+                      LOGGER.debug("RESPONSE" + response);
+                      assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
+  }
+  @Test
+  @DisplayName("Testing read query for given time,api and resourceId where count > 10000")
+  void invalidReadForGivenTimeApiAndID(VertxTestContext vertxTestContext) {
+    JsonObject jsonObject = readConsumerRequest();
+    jsonObject.put(START_TIME, "2022-05-01T14:20:00+05:30[Asia/Kolkata]");
+    jsonObject.put(END_TIME, "2022-05-15T14:19:00+05:30[Asia/Kolkata]");
+    jsonObject.put(API,"/ngsi-ld/v1/entities");
+    jsonObject.put(RESOURCE_ID,"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta");
+
+    meteringService.executeReadQuery(
+        jsonObject,
+        vertxTestContext.failing(
+            response ->
+                vertxTestContext.verify(
+                    () -> {
+                      LOGGER.debug("RESPONSE "+response);
+                      assertEquals(
+                          RESPONSE_LIMIT_EXCEED,
+                          new JsonObject(response.getMessage()).getString(DETAIL));
+                      vertxTestContext.completeNow();
+                    })));
   }
 
   @Test
@@ -312,7 +331,6 @@ public class MeteringServiceTest {
                       assertEquals(SUCCESS, new JsonObject(response.getMessage()).getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 
   @Test
@@ -332,7 +350,6 @@ public class MeteringServiceTest {
                       assertEquals(SUCCESS, new JsonObject(response.getMessage()).getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 
   @Test
@@ -351,7 +368,6 @@ public class MeteringServiceTest {
                           response.getJsonArray(RESULTS).getJsonObject(0).containsKey(TOTAL));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 
   @Test
@@ -368,10 +384,10 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      assertTrue(response.getString("title").equals("Success"));
+       LOGGER.debug("RESPONSE" + response.getString("title"));
+                      assertEquals("Success", response.getString("title"));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 
   @Test
@@ -390,7 +406,6 @@ public class MeteringServiceTest {
                           new JsonObject(response.getMessage()).getString(DETAIL));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 
   @Test
@@ -410,7 +425,6 @@ public class MeteringServiceTest {
                           new JsonObject(response.getMessage()).getString(DETAIL));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 
   @Test
@@ -424,10 +438,10 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      assertTrue(response.getString(TITLE).equals(SUCCESS));
+                      LOGGER.debug("RESPONSE" + response);
+                      assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 
   @Test
@@ -442,14 +456,14 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      assertTrue(response.getString(TITLE).equals(SUCCESS));
+                      LOGGER.debug("RESPONSE" + response);
+                      assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 
   @Test
-  @DisplayName("Testing count query for given time,api and providerId.")
+  @DisplayName("Testing read query for given time,api and providerId.")
   void readForGivenTimeApiAndProviderID(VertxTestContext vertxTestContext) {
     JsonObject jsonObject = readProviderRequest();
     jsonObject.remove(RESOURCE_ID);
@@ -461,9 +475,9 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      assertTrue(response.getString(TITLE).equals(SUCCESS));
+                      LOGGER.debug("RESPONSE " + response);
+                      assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
-    vertxTestContext.completeNow();
   }
 }
