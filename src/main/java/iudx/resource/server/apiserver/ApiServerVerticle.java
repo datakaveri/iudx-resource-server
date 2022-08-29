@@ -39,6 +39,7 @@ import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
 import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
+import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
 import static iudx.resource.server.apiserver.util.Constants.ROUTE_DOC;
 import static iudx.resource.server.apiserver.util.Constants.ROUTE_STATIC_SPEC;
 import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
@@ -745,8 +746,9 @@ public class ApiServerVerticle extends AbstractVerticle {
         handler -> {
           if (handler.succeeded()) {
             LOGGER.info("Success: Count Success");
-            Future.future(fu -> updateAuditTable(context));
             handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+            context.data().put(RESPONSE_SIZE, response.bytesWritten());
+            Future.future(fu -> updateAuditTable(context));
           } else if (handler.failed()) {
             LOGGER.error("Fail: Count Fail");
             processBackendResponse(response, handler.cause().getMessage());
@@ -767,8 +769,9 @@ public class ApiServerVerticle extends AbstractVerticle {
         handler -> {
           if (handler.succeeded()) {
             LOGGER.info("Success: Search Success");
-            Future.future(fu -> updateAuditTable(context));
             handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+            context.data().put(RESPONSE_SIZE, response.bytesWritten());
+            Future.future(fu -> updateAuditTable(context));
           } else if (handler.failed()) {
             LOGGER.error("Fail: Search Fail");
             processBackendResponse(response, handler.cause().getMessage());
@@ -783,8 +786,9 @@ public class ApiServerVerticle extends AbstractVerticle {
         handler -> {
           if (handler.succeeded()) {
             LOGGER.info("Latest data search succeeded");
-            Future.future(fu -> updateAuditTable(context));
             handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+            context.data().put(RESPONSE_SIZE, response.bytesWritten());
+            Future.future(fu -> updateAuditTable(context));
           } else {
             LOGGER.error("Fail: Search Fail");
             processBackendResponse(response, handler.cause().getMessage());
@@ -875,6 +879,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         subHandler -> {
           if (subHandler.succeeded()) {
             LOGGER.info("Success: Handle Subscription request;");
+            routingContext.data().put(RESPONSE_SIZE,0);
             Future.future(fu -> updateAuditTable(routingContext));
             handleSuccessResponse(
                 response, ResponseType.Created.getCode(), subHandler.result().toString());
@@ -914,6 +919,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           subsRequestHandler -> {
             if (subsRequestHandler.succeeded()) {
               LOGGER.debug("Success: Appending subscription");
+              routingContext.data().put(RESPONSE_SIZE,0);
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response,
@@ -960,6 +966,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           subsRequestHandler -> {
             if (subsRequestHandler.succeeded()) {
               LOGGER.info("result : " + subsRequestHandler.result());
+              routingContext.data().put(RESPONSE_SIZE,0);
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response,
@@ -1007,6 +1014,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           subHandler -> {
             if (subHandler.succeeded()) {
               LOGGER.info("Success: Getting subscription");
+              routingContext.data().put(RESPONSE_SIZE,0);
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), subHandler.result().toString());
@@ -1049,6 +1057,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       subsReq.onComplete(
           subHandler -> {
             if (subHandler.succeeded()) {
+              routingContext.data().put(RESPONSE_SIZE,0);
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), subHandler.result().toString());
@@ -1082,6 +1091,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         handler -> {
           if (handler.succeeded()) {
             LOGGER.info("Success: Registering adapter");
+            routingContext.data().put(RESPONSE_SIZE,0);
             Future.future(fu -> updateAuditTable(routingContext));
             handleSuccessResponse(
                 response, ResponseType.Created.getCode(), handler.result().toString());
@@ -1125,6 +1135,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         brokerResultHandler -> {
           if (brokerResultHandler.succeeded()) {
             LOGGER.info("Success: Deleting adapter");
+            routingContext.data().put(RESPONSE_SIZE,0);
             Future.future(fu -> updateAuditTable(routingContext));
             handleSuccessResponse(
                 response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
@@ -1164,6 +1175,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     brokerResult.onComplete(
         brokerResultHandler -> {
           if (brokerResultHandler.succeeded()) {
+            routingContext.data().put(RESPONSE_SIZE,0);
             Future.future(fu -> updateAuditTable(routingContext));
             handleSuccessResponse(
                 response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
@@ -1196,6 +1208,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: Published heartbeat");
+              routingContext.data().put(RESPONSE_SIZE,0);
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
@@ -1235,6 +1248,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.info("Success: published downstream issue");
+              routingContext.data().put(RESPONSE_SIZE,0);
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
@@ -1272,6 +1286,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.debug("Success: publishing a data issue");
+              routingContext.data().put(RESPONSE_SIZE,0);
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
@@ -1309,6 +1324,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
               LOGGER.debug("Success: publishing data from adapter");
+              routingContext.data().put(RESPONSE_SIZE,0);
               Future.future(fu -> updateAuditTable(routingContext));
               handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
@@ -1421,6 +1437,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     request.put(USER_ID, authInfo.getValue(USER_ID));
     request.put(ID, authInfo.getValue(ID));
     request.put(API, authInfo.getValue(API_ENDPOINT));
+    request.put(RESPONSE_SIZE, context.data().get(RESPONSE_SIZE));
     meteringService.executeWriteQuery(
         request,
         handler -> {

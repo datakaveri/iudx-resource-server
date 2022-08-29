@@ -14,16 +14,13 @@ public class MeteringVerticle extends AbstractVerticle {
 
   private static final String METERING_SERVICE_ADDRESS = "iudx.rs.metering.service";
   private static final Logger LOGGER = LogManager.getLogger(MeteringVerticle.class);
-  PgConnectOptions connectOptions;
-  PoolOptions poolOptions;
-  PgPool pool;
   private String databaseIP;
   private int databasePort;
   private String databaseName;
   private String databaseUserName;
   private String databasePassword;
+  private String databaseTableName;
   private int poolSize;
-  private PgConnectOptions config;
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
   private MeteringService metering;
@@ -36,6 +33,7 @@ public class MeteringVerticle extends AbstractVerticle {
     databaseName = config().getString("meteringDatabaseName");
     databaseUserName = config().getString("meteringDatabaseUserName");
     databasePassword = config().getString("meteringDatabasePassword");
+    databaseTableName = config().getString("meteringDatabaseTableName");
     poolSize = config().getInteger("meteringPoolSize");
 
     JsonObject propObj = new JsonObject();
@@ -44,6 +42,7 @@ public class MeteringVerticle extends AbstractVerticle {
     propObj.put("meteringDatabaseName", databaseName);
     propObj.put("meteringDatabaseUserName", databaseUserName);
     propObj.put("meteringDatabasePassword", databasePassword);
+    propObj.put("meteringDatabaseTableName", databaseTableName);
     propObj.put("meteringPoolSize", poolSize);
 
     binder = new ServiceBinder(vertx);
