@@ -33,7 +33,8 @@ import org.elasticsearch.client.ResponseListener;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.client.RestHighLevelClientBuilder;
+import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -70,7 +71,7 @@ public class ElasticClient {
             .setHttpClientConfigCallback(
                 httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentials));
     client = restClientBuilder.build();
-    highLevelClient = new RestHighLevelClient(restClientBuilder);
+    highLevelClient = new RestHighLevelClientBuilder(client).setApiCompatibilityMode(true).build();
   }
 
   public ElasticClient(String databaseIP, int databasePort, String user, String password,
