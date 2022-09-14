@@ -55,29 +55,6 @@
             "brokerAmqpPort":""
         },
         {
-            "id": "iudx.resource.server.callback.CallbackVerticle",
-            "isWorkerVerticle":false,
-            "verticleInstances": 2,
-            "dataBrokerIP": "",
-            "dataBrokerPort": "",
-            "dataBrokerVhost": "",
-            "dataBrokerUserName": "",
-            "dataBrokerPassword": "",
-            "dataBrokerManagementPort": "",
-            "connectionTimeout": "6000",
-            "requestedHeartbeat": "60",
-            "handshakeTimeout": "6000",
-            "requestedChannelMax": "5",
-            "networkRecoveryInterval": "500",
-            "automaticRecoveryEnabled": "true",
-            "callbackDatabaseIP": "",
-            "callbackDatabasePort": "",
-            "callbackDatabaseName": "",
-            "callbackDatabaseUserName": "",
-            "callbackDatabasePassword": "",
-            "callbackpoolSize": "25"
-        },
-        {
             "id": "iudx.resource.server.apiserver.ApiServerVerticle",
             "isWorkerVerticle":false,
             "ssl":true,
@@ -111,13 +88,13 @@
             "meteringDatabaseUserName": "",
             "meteringDatabasePassword": "",
             "meteringDatabaseTableName": "",
-            "meteringpoolSize": 25
+            "meteringPoolSize": 25
         },
         {
             "id":"iudx.resource.server.database.postgres.PostgresVerticle",
             "isWorkerVerticle":false,
             "verticleInstances": 1,
-            "databaseIP": "localhost",
+            "databaseIp": "localhost",
             "databasePort": 5432,
             "databaseName": "",
             "databaseUserName": "",
