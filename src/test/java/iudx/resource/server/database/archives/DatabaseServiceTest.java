@@ -596,7 +596,7 @@ public class DatabaseServiceTest {
                 "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
         .put("geometry", "linestring")
         .put("georel", "intersects")
-        .put("coordinates", "[[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20]]")
+        .put("coordinates", "[[72.833994,21.17798],[72.833978,21.178005]]")
         .put("geoproperty", "location")
         .put("searchType", "geoSearch_")
         .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
