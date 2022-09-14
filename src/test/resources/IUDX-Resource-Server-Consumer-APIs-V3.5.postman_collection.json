@@ -1592,7 +1592,7 @@
 									"    const body = pm.response.json();\r",
 									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
-									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 4208);\r",
+									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 2132);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -1963,7 +1963,7 @@
 									"    const body = pm.response.json();\r",
 									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
-									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 270524);\r",
+									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 158349);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -2334,7 +2334,7 @@
 									"    const body = pm.response.json();\r",
 									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
-									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 903);\r",
+									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 288);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -2705,7 +2705,7 @@
 									"    const body = pm.response.json();\r",
 									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
-									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 41018);\r",
+									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 12);\r",
 									"});"
 								],
 								"type": "text/javascript"
@@ -2750,7 +2750,7 @@
 								},
 								{
 									"key": "coordinates",
-									"value": "[[72.842,21.2],[72.923,20.8]]"
+									"value": "[[72.833994,21.17798],[72.833978,21.178005]]"
 								},
 								{
 									"key": "options",
@@ -9408,7 +9408,7 @@
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
 									"    const resultsjsonData = body.results[0];",
-									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 3825);",
+									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 1933);",
 									"});"
 								],
 								"type": "text/javascript"
