@@ -23,8 +23,6 @@
             "authServerHost": "",
             "catServerHost": "",
             "catServerPort": 443,
-            "resourceServerId": "",
-            "serverMode": "",
 	    "jwtIgnoreExpiry": true
 
         },
@@ -59,35 +57,11 @@
             "brokerAmqpPort":1234
         },
         {
-            "id": "iudx.resource.server.callback.CallbackVerticle",
-            "isWorkerVerticle":false,
-            "verticleInstances": 1,
-            "dataBrokerIP": "",
-            "dataBrokerPort": 29042,
-            "dataBrokerVhost": "",
-            "dataBrokerUserName": "",
-            "dataBrokerPassword": "",
-            "dataBrokerManagementPort": 30042,
-            "connectionTimeout": 6000,
-            "requestedHeartbeat": 60,
-            "handshakeTimeout": 6000,
-            "requestedChannelMax": 5,
-            "networkRecoveryInterval": 500,
-            "automaticRecoveryEnabled": "true",
-            "callbackDatabaseIP": "",
-            "callbackDatabasePort": 32508,
-            "callbackDatabaseName": "",
-            "callbackDatabaseUserName": "",
-            "callbackDatabasePassword": "",
-            "callbackpoolSize": 25
-        },
-        {
             "id": "iudx.resource.server.apiserver.ApiServerVerticle",
             "isWorkerVerticle":false,
             "ssl": true,
             "keystore": "configs/keystore.jks",
             "keystorePassword": "",
-            "rsAdmin": "",
 	    "httpPort": 8443,
             "verticleInstances": 8,
             "catServerHost": "",
@@ -97,7 +71,6 @@
            "id": "iudx.resource.server.database.latest.LatestVerticle",
            "isWorkerVerticle":false,
             "verticleInstances": 2,
-            "attributeList": {"itms-info": "some-attr"},
             "redisMode": "",
             "redisUsername": "",
             "redisPassword": "",
@@ -116,13 +89,13 @@
             "meteringDatabaseUserName": "",
             "meteringDatabasePassword": "",
             "meteringDatabaseTableName": "",
-            "meteringpoolSize": 25
+            "meteringPoolSize": 25
         },
         {
             "id":"iudx.resource.server.database.postgres.PostgresVerticle",
             "isWorkerVerticle":false,
             "verticleInstances": 1,
-            "databaseIP": "localhost",
+            "databaseIp": "localhost",
             "databasePort": 5432,
             "databaseName": "",
             "databaseUserName": "",

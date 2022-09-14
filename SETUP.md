@@ -342,8 +342,6 @@ In order to connect to the DX catalogue server, required information such as cat
     "authServerHost": <auth-server-host>,
     "catServerHost": <catalogue-server-host>,
     "catServerPort": <catalogue-server-port>,
-    "resourceServerId": [[<resource-server-id>]],
-    "serverMode": <server-mode>,
     "jwtIgnoreExpiry": <true | false>
 }
 ```
@@ -356,7 +354,6 @@ In order to connect to the DX catalogue server, required information such as cat
     "ssl": true,
     "keystore": <path/to/keystore.jks>,
     "keystorePassword": <password-for-keystore>,
-    "rsAdmin": <resource-server-admin>,
     "httpPort": <port-to-listen>,
     "verticleInstances": <number-of-verticle-instances>,
     "catServerHost": <catalogue-server-host>,
@@ -380,8 +377,6 @@ In order to connect to the DX authentication server, required information such a
     "authServerHost": <auth-server-host>,
     "catServerHost": <catalogue-server-host>,
     "catServerPort": <catalogue-server-port>,
-    "resourceServerId": [[<resource-server-id>]],
-    "serverMode": <server-mode>,
     "jwtIgnoreExpiry": <true | false>
 }
 ```

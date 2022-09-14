@@ -13,7 +13,6 @@
 			"databasePort": 12345,
 			"dbUser": "",
 			"dbPassword": "",
-			"resourceServerId": "",
 			"timeLimit": "",
 			"testIdOpen": "",
 			"testIdSecure": "",
@@ -33,8 +32,6 @@
 			"testResourceID": "",
 			"catServerHost": "",
 			"catServerPort": "",
-			"serverMode": "",
-			"resourceServerId": "",
 			"jwtIgnoreExpiry": true
 		},
 		{
@@ -71,36 +68,12 @@
 			"testAdapterProvider": ""
 		},
 		{
-			"id": "iudx.resource.server.callback.CallbackVerticle",
-			"isWorkerVerticle":false,
-			"verticleInstances": 2,
-			"dataBrokerIP": "",
-			"dataBrokerPort": "",
-			"dataBrokerVhost": "",
-			"dataBrokerUserName": "",
-			"dataBrokerPassword": "",
-			"dataBrokerManagementPort": "",
-			"connectionTimeout": "",
-			"requestedHeartbeat": "",
-			"handshakeTimeout": "",
-			"requestedChannelMax": "",
-			"networkRecoveryInterval": "",
-			"automaticRecoveryEnabled": "",
-			"callbackDatabaseIP": "",
-			"callbackDatabasePort": "",
-			"callbackDatabaseName": "",
-			"callbackDatabaseUserName": "",
-			"callbackDatabasePassword": "",
-			"callbackpoolSize": ""
-		},
-		{
 			"id": "iudx.resource.server.apiserver.ApiServerVerticle",
 			"isWorkerVerticle":false,
 			"ssl": true,
 			"httpPort": 8443,
 			"keystore": "",
 			"keystorePassword": "",
-			"rsAdmin": "",
 			"verticleInstances": 2,
 			"authToken": "authtest.iudx.io/kailash.adhikari@india.nec.com/732b94a17b9e127d0541af9f3c9c9ef8",
 			"invalidauthToken": "",
@@ -128,10 +101,7 @@
 			"redisMaxWaitingHandlers": 1024,
 			"redisPoolRecycleTimeout": 1500,
 			"redisHost": "",
-			"redisPort": 123,
-			"attributeList": {
-				"key": "value"
-			}
+			"redisPort": 123
 		},
 		{
 			"id": "iudx.resource.server.metering.MeteringVerticle",
@@ -149,7 +119,7 @@
 			"id": "iudx.resource.server.database.postgres.PostgresVerticle",
 			"isWorkerVerticle":false,
 			"verticleInstances": 1,
-			"databaseIP": "localhost",
+			"databaseIp": "localhost",
 			"databasePort": 5432,
 			"databaseName": "",
 			"databaseUserName": "",
