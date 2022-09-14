@@ -56,20 +56,19 @@
         </dependencies>
     </dependencyManagement>
 
-	<dependencies>
-		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-codegen</artifactId>
-			<classifier>processor</classifier>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>42.4.1</version>
-		</dependency>
-		<dependency>
-
+    <dependencies>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-codegen</artifactId>
+            <classifier>processor</classifier>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.4.1</version>
+        </dependency>
+        <dependency>
             <groupId>com.ongres.scram</groupId>
             <artifactId>client</artifactId>
             <version>2.1</version>
@@ -155,129 +154,260 @@
             <version>${testcontainer.params}</version>
             <scope>test</scope>
         </dependency>
+        <null
+            <null
+                <null
+                    <null
+                        <null
+                            <null
+                                <HEAD
+                                    <dependency>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-unit</artifactId>
+                                        <scope>test</scope>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-pg-client</artifactId>
+                                    </dependency>
+                                    <!-- log4j2 logging dependencies-->
+                                    <dependency>
+                                        <groupId>org.apache.logging.log4j</groupId>
+                                        <artifactId>log4j-core</artifactId>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>org.apache.logging.log4j</groupId>
+                                        <artifactId>log4j-api</artifactId>
+                                    </dependency>
+                                    <!-- slf4j to log4j2 bridge adapter, needed for 'io.netty' logs -->
+                                    <dependency>
+                                        <groupId>org.apache.logging.log4j</groupId>
+                                        <artifactId>log4j-slf4j-impl</artifactId>
+                                    </dependency>
+                                    <!--LMAX Disruptor for enabling Asynchronous log4j2 Logging  -->
+                                    <dependency>
+                                        <groupId>com.lmax</groupId>
+                                        <artifactId>disruptor</artifactId>
+                                        <version>${lmax-disruptor.version}</version>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-micrometer-metrics</artifactId>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>io.micrometer</groupId>
+                                        <artifactId>micrometer-core</artifactId>
+                                        <version>${micrometer.version}</version>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>io.micrometer</groupId>
+                                        <artifactId>micrometer-registry-prometheus</artifactId>
+                                        <version>${micrometer.version}</version>
+                                    </dependency>
+                                    <!-- Packages for Hazelcast clustering based on Zookeeper discovery -->
+                                    <dependency>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-hazelcast</artifactId>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>com.hazelcast</groupId>
+                                        <artifactId>hazelcast-zookeeper</artifactId>
+                                        <version>${hazelcast.version}</version>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>org.apache.curator</groupId>
+                                        <artifactId>curator-x-discovery</artifactId>
+                                        <version>${curator.version}</version>
+                                    </dependency>
+                                    <!-- -->
+                                    <dependency>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-web-validation</artifactId>
+                                    </dependency>
+                                    <!-- for validation of coordinates -->
+                                    <dependency>
+                                        <groupId>org.wololo</groupId>
+                                        <artifactId>jts2geojson</artifactId>
+                                        <version>${jts2geojson.version}</version>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-redis-client</artifactId>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-json-schema</artifactId>
+                                    </dependency>
+                                    =======
+                                    <dependency>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-unit</artifactId>
+                                        <scope>test</scope>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-pg-client</artifactId>
+                                    </dependency>
+                                    <!-- log4j2 logging dependencies-->
+                                    <dependency>
+                                        <groupId>org.apache.logging.log4j</groupId>
+                                        <artifactId>log4j-core</artifactId>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>org.apache.logging.log4j</groupId>
+                                        <artifactId>log4j-api</artifactId>
+                                    </dependency>
+                                    <!-- slf4j to log4j2 bridge adapter, needed for 'io.netty' logs -->
+                                    <dependency>
+                                        <groupId>org.apache.logging.log4j</groupId>
+                                        <artifactId>log4j-slf4j-impl</artifactId>
+                                    </dependency>
+                                    <!--LMAX Disruptor for enabling Asynchronous log4j2 Logging  -->
+                                    <dependency>
+                                        <groupId>com.lmax</groupId>
+                                        <artifactId>disruptor</artifactId>
+                                        <version>${lmax-disruptor.version}</version>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-micrometer-metrics</artifactId>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>io.micrometer</groupId>
+                                        <artifactId>micrometer-core</artifactId>
+                                        <version>${micrometer.version}</version>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>io.micrometer</groupId>
+                                        <artifactId>micrometer-registry-prometheus</artifactId>
+                                        <version>${micrometer.version}</version>
+                                    </dependency>
+                                    <!-- Packages for Hazelcast clustering based on Zookeeper discovery -->
+                                    <dependency>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-hazelcast</artifactId>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>com.hazelcast</groupId>
+                                        <artifactId>hazelcast-zookeeper</artifactId>
+                                        <version>${hazelcast.version}</version>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>org.apache.curator</groupId>
+                                        <artifactId>curator-x-discovery</artifactId>
+                                        <version>${curator.version}</version>
+                                    </dependency>
+                                    <!-- -->
+                                    <dependency>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-web-validation</artifactId>
+                                    </dependency>
+                                    <!-- for validation of coordinates -->
+                                    <dependency>
+                                        <groupId>org.wololo</groupId>
+                                        <artifactId>jts2geojson</artifactId>
+                                        <version>${jts2geojson.version}</version>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-redis-client</artifactId>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-json-schema</artifactId>
+                                    </dependency>
+                                    >>>>>>> 3a02a4eb8ab08e2521a97b89c4d08349fe7d44fe
+                                    <dependency>
+                                        <groupId>io.vertx</groupId>
+                                        <artifactId>vertx-auth-jwt</artifactId>
+                                    </dependency>
 
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-unit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-pg-client</artifactId>
-        </dependency>
-        <!-- log4j2 logging dependencies-->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-        </dependency>
-        <!-- slf4j to log4j2 bridge adapter, needed for 'io.netty' logs -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-        </dependency>
-        <!--LMAX Disruptor for enabling Asynchronous log4j2 Logging  -->
-        <dependency>
-            <groupId>com.lmax</groupId>
-            <artifactId>disruptor</artifactId>
-            <version>${lmax-disruptor.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-micrometer-metrics</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-core</artifactId>
-            <version>${micrometer.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>${micrometer.version}</version>
-        </dependency>
-        <!-- Packages for Hazelcast clustering based on Zookeeper discovery -->
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-hazelcast</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast-zookeeper</artifactId>
-            <version>${hazelcast.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.curator</groupId>
-            <artifactId>curator-x-discovery</artifactId>
-            <version>${curator.version}</version>
-        </dependency>
-        <!-- -->
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-web-validation</artifactId>
-        </dependency>
-        <!-- for validation of coordinates -->
-        <dependency>
-            <groupId>org.wololo</groupId>
-            <artifactId>jts2geojson</artifactId>
-            <version>${jts2geojson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-redis-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-json-schema</artifactId>
-        </dependency>
+                                    <dependency>
+                                        <null
+                                            <null
+                                                <null
+                                                    <null
+                                                        <null
+                                                            <null
+                                                                <HEAD
+                                                                    <groupId>io.vertx</groupId>
+                                                                    <artifactId>vertx-auth-jwt</artifactId>
+                                    </dependency>
 
+                                    <dependency>
+                                        <groupId>org.elasticsearch.client</groupId>
+                                        <artifactId>elasticsearch-rest-client</artifactId>
+                                        <version>${elasticsearch-rest-client.version}</version>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>org.elasticsearch.client</groupId>
+                                        <artifactId>elasticsearch-rest-high-level-client</artifactId>
+                                        <version>${elasticsearch-rest-high-level-client.version}</version>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>org.mockito</groupId>
+                                        <artifactId>mockito-inline</artifactId>
+                                        <version>3.11.1</version>
+                                        <scope>test</scope>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>org.mockito</groupId>
+                                        <artifactId>mockito-junit-jupiter</artifactId>
+                                        <version>3.11.1</version>
+                                        <scope>test</scope>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>com.amazonaws</groupId>
+                                        <artifactId>aws-java-sdk-s3</artifactId>
+                                        <version>1.12.261</version>
+                                    </dependency>
+                                    <!--HLC transition dependency -->
+                                    <dependency>
+                                        <groupId>co.elastic.clients</groupId>
+                                        <artifactId>elasticsearch-java</artifactId>
+                                        <version>8.4.1</version>
+                                    </dependency>
 
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-auth-jwt</artifactId>
-        </dependency>
+                                    <dependency>
+                                        =======
+                                        <groupId>org.elasticsearch.client</groupId>
+                                        <artifactId>elasticsearch-rest-client</artifactId>
+                                        <version>${elasticsearch-rest-client.version}</version>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>org.elasticsearch.client</groupId>
+                                        <artifactId>elasticsearch-rest-high-level-client</artifactId>
+                                        <version>${elasticsearch-rest-high-level-client.version}</version>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>org.mockito</groupId>
+                                        <artifactId>mockito-inline</artifactId>
+                                        <version>3.11.1</version>
+                                        <scope>test</scope>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>org.mockito</groupId>
+                                        <artifactId>mockito-junit-jupiter</artifactId>
+                                        <version>3.11.1</version>
+                                        <scope>test</scope>
+                                    </dependency>
+                                    <dependency>
+                                        <groupId>com.amazonaws</groupId>
+                                        <artifactId>aws-java-sdk-s3</artifactId>
+                                        <version>1.12.261</version>
+                                    </dependency>
+                                    <!--HLC transition dependency -->
+                                    <dependency>
+                                        <groupId>co.elastic.clients</groupId>
+                                        <artifactId>elasticsearch-java</artifactId>
+                                        <version>8.4.1</version>
+                                    </dependency>
 
-        <dependency>
-            <groupId>org.elasticsearch.client</groupId>
-            <artifactId>elasticsearch-rest-client</artifactId>
-            <version>${elasticsearch-rest-client.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.elasticsearch.client</groupId>
-            <artifactId>elasticsearch-rest-high-level-client</artifactId>
-            <version>${elasticsearch-rest-high-level-client.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-inline</artifactId>
-            <version>3.11.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>3.11.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-s3</artifactId>
-            <version>1.12.261</version>
-        </dependency>
-        <!--HLC transition dependency -->
-        <dependency>
-            <groupId>co.elastic.clients</groupId>
-            <artifactId>elasticsearch-java</artifactId>
-            <version>8.4.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
+                                    <dependency>
+                                        >>>>>>> 3a02a4eb8ab08e2521a97b89c4d08349fe7d44fe
+                                        <groupId>com.fasterxml.jackson.core</groupId>
+                                        <artifactId>jackson-databind</artifactId>
+                                    </dependency>
 
     </dependencies>
 
