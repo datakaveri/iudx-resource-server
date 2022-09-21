@@ -49,6 +49,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   final String path;
   final String audience;
   final CacheService cache;
+  final boolean isLimitsEnabled;
 
   // resourceGroupCache will contains ACL info about all resource group in a resource server
   Cache<String, String> resourceGroupCache =
@@ -73,6 +74,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     this.host = config.getString("catServerHost");
     this.port = config.getInteger("catServerPort");
     this.path = Constants.CAT_RSG_PATH;
+    this.isLimitsEnabled=config.getBoolean("enableLimits");
 
     WebClientOptions options = new WebClientOptions();
     options.setTrustAll(true).setVerifyHost(false).setSsl(true);
@@ -255,11 +257,13 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     AuthorizationRequest authRequest = new AuthorizationRequest(method, api);
 
     IudxRole role = IudxRole.fromRole(jwtData.getRole());
-    AuthorizationStrategy authStrategy = AuthorizationContextFactory.create(role);
+    AuthorizationContextFactory authFacotory=new AuthorizationContextFactory(isLimitsEnabled);
+    AuthorizationStrategy authStrategy = authFacotory.create(role);
     LOGGER.info("strategy : " + authStrategy.getClass().getSimpleName());
     JwtAuthorization jwtAuthStrategy = new JwtAuthorization(authStrategy);
     LOGGER.info("endPoint : " + authInfo.getString("apiEndpoint"));
-    if (jwtAuthStrategy.isAuthorized(authRequest, jwtData)) {
+    //TODO : get user API usage data from ImmuDB and set it here
+    if (jwtAuthStrategy.isAuthorized(authRequest, jwtData,new JsonObject())) {
       LOGGER.info("User access is allowed.");
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put(JSON_USERID, jwtData.getSub());
