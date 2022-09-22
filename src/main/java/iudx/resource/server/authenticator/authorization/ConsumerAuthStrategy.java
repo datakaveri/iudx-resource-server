@@ -112,10 +112,13 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
           int consumed=quotaConsumed.getInteger("api");
           if(consumed<json.getInteger("api")) {
             isUsageWithinLimits=true;
+            
           }
         }
       }
     }
+    String withinAllowedLimits=isUsageWithinLimits?"within":"exceeds";
+    LOGGER.info("usage limits {} defined limits",withinAllowedLimits);
     return isAuthorized(authRequest, jwtData) && isUsageWithinLimits;
   }
 

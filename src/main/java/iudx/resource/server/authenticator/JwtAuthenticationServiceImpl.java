@@ -269,40 +269,29 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     JwtAuthorization jwtAuthStrategy = new JwtAuthorization(authStrategy);
     LOGGER.info("endPoint : " + authInfo.getString("apiEndpoint"));
 
-    LocalDateTime now = LocalDateTime.now(ZoneId.of(ZoneId.SHORT_IDS.get("IST")));
-
-    OffsetDateTime nowISTDateTime = OffsetDateTime.now(ZoneId.of("IST", ZoneId.SHORT_IDS));
+    OffsetDateTime startDateTime = OffsetDateTime.now(ZoneId.of("Z", ZoneId.SHORT_IDS));
+    OffsetDateTime endDateTime=startDateTime.withHour(00).withMinute(00).withSecond(00);
 
     JsonObject meteringCountRequest = new JsonObject();
     meteringCountRequest.put("timeRelation", "during");
-    meteringCountRequest.put("startTime", nowISTDateTime.minusDays(12).toString());
-    meteringCountRequest.put("endTime", nowISTDateTime.toString());
+    meteringCountRequest.put("startTime", endDateTime.toString());
+    meteringCountRequest.put("endTime", startDateTime.toString());
     meteringCountRequest.put("userid", jwtData.getSub());
     meteringCountRequest.put("endPoint", "/consumer/audit");
     meteringCountRequest.put("options", "count");
+    
     LOGGER.debug("metering request : " + meteringCountRequest);
     if (isLimitsEnabled) {
       meteringService.executeReadQuery(meteringCountRequest, meteringCountHandler -> {
         if (meteringCountHandler.succeeded()) {
           JsonObject consumedApiCount = new JsonObject();
-
           LOGGER.info("metering response : " + meteringCountHandler.result());
           JsonObject meteringResponse = meteringCountHandler.result();
-
           consumedApiCount.put("api",
               meteringResponse.getJsonArray("results").getJsonObject(0).getInteger("total"));
           if (jwtAuthStrategy.isAuthorized(authRequest, jwtData, consumedApiCount)) {
             LOGGER.info("User access is allowed.");
-            JsonObject jsonResponse = new JsonObject();
-            jsonResponse.put(JSON_USERID, jwtData.getSub());
-            jsonResponse.put(JSON_IID, jwtId);
-            jsonResponse.put(
-                JSON_EXPIRY,
-                (LocalDateTime.ofInstant(
-                    Instant.ofEpochSecond(Long.parseLong(jwtData.getExp().toString())),
-                    ZoneId.systemDefault()))
-                        .toString());
-            promise.complete(jsonResponse);
+            promise.complete(createValidateAccessSuccessResponse(jwtData));
           } else {
             LOGGER.error("failed - no access provided to endpoint");
             JsonObject result = new JsonObject().put("401", "no access provided to endpoint");
@@ -310,25 +299,30 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
           }
         } else {
           LOGGER.error("failed to get metering response");
-          JsonObject result = new JsonObject().put("401", "Access limit exceeds");
-          promise.fail(result.toString());
+          String failureMessage=meteringCountHandler.cause().getMessage();
+          JsonObject failureJson=new JsonObject(failureMessage);
+          int failureCode=failureJson.getInteger("type");
+          if(failureCode==204) {
+            JsonObject consumedApiCount=new JsonObject();
+            consumedApiCount.put("api",0);
+            if (jwtAuthStrategy.isAuthorized(authRequest, jwtData, consumedApiCount)) {
+              LOGGER.info("User access is allowed.");
+              promise.complete(createValidateAccessSuccessResponse(jwtData));
+            } else {
+              LOGGER.error("failed - no access provided to endpoint");
+              JsonObject result = new JsonObject().put("401", "no access provided to endpoint");
+              promise.fail(result.toString());
+            }
+          }
+          
+//          JsonObject result = new JsonObject().put("401", "Access limit exceeds");
+//          promise.fail(result.toString());
         }
       });
     } else {
-
-      // TODO : get user API usage data from ImmuDB and set it here
       if (jwtAuthStrategy.isAuthorized(authRequest, jwtData)) {
         LOGGER.info("User access is allowed.");
-        JsonObject jsonResponse = new JsonObject();
-        jsonResponse.put(JSON_USERID, jwtData.getSub());
-        jsonResponse.put(JSON_IID, jwtId);
-        jsonResponse.put(
-            JSON_EXPIRY,
-            (LocalDateTime.ofInstant(
-                Instant.ofEpochSecond(Long.parseLong(jwtData.getExp().toString())),
-                ZoneId.systemDefault()))
-                    .toString());
-        promise.complete(jsonResponse);
+        promise.complete(createValidateAccessSuccessResponse(jwtData));
       } else {
         LOGGER.error("failed - no access provided to endpoint");
         JsonObject result = new JsonObject().put("401", "no access provided to endpoint");
@@ -336,6 +330,20 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       }
     }
     return promise.future();
+  }
+  
+  private JsonObject createValidateAccessSuccessResponse(JwtData jwtData) {
+    String jwtId = jwtData.getIid().split(":")[1];
+    JsonObject jsonResponse = new JsonObject();
+    jsonResponse.put(JSON_USERID, jwtData.getSub());
+    jsonResponse.put(JSON_IID, jwtId);
+    jsonResponse.put(
+        JSON_EXPIRY,
+        (LocalDateTime.ofInstant(
+            Instant.ofEpochSecond(Long.parseLong(jwtData.getExp().toString())),
+            ZoneId.systemDefault()))
+                .toString());
+    return jsonResponse;
   }
 
   Future<Boolean> isValidAudienceValue(JwtData jwtData) {
