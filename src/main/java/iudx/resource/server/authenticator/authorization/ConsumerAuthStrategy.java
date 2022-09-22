@@ -105,7 +105,7 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     boolean isUsageWithinLimits=true;
     if(isLimitsEnabled) {
       isUsageWithinLimits=false;
-      //TODO: evaluate allowed vs whats
+      //TODO: evaluate allowed vs what consumed
       for(Object jsonObject:limitsArray) {
         JsonObject json=(JsonObject)jsonObject;
         if(json.containsKey("api")) {
