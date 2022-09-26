@@ -1,5 +1,19 @@
 package iudx.resource.server.authenticator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -12,21 +26,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.authenticator.model.JwtData;
 import iudx.resource.server.cache.CacheService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.Answer;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.when;
+import iudx.resource.server.metering.MeteringService;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class JwtAuthServiceTest {
@@ -40,6 +40,8 @@ public class JwtAuthServiceTest {
     JsonObject config;
     @Mock
     CacheService cacheService;
+    @Mock
+    MeteringService meteringService;
     @Mock
     Throwable throwable;
     @Mock
@@ -65,7 +67,7 @@ public class JwtAuthServiceTest {
         JWTAuth jwtAuth = JWTAuth.create(Vertx.vertx(), jwtAuthOptions);
         when(config.getString(anyString())).thenReturn("Dummy String");
         when(config.getInteger(anyString())).thenReturn(8443);
-        jwtAuthenticationService = new JwtAuthenticationServiceImpl(Vertx.vertx(),jwtAuth,webClient,config,cacheService);
+        jwtAuthenticationService = new JwtAuthenticationServiceImpl(Vertx.vertx(),jwtAuth,webClient,config,cacheService,meteringService);
         vertxTestContext.completeNow();
     }
 

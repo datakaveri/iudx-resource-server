@@ -1,6 +1,8 @@
 package iudx.resource.server.authenticator;
 
+import static iudx.resource.server.common.Constants.AUTH_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.METERING_SERVICE_ADDRESS;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
@@ -16,6 +18,7 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.serviceproxy.ServiceBinder;
 import iudx.resource.server.cache.CacheService;
+import iudx.resource.server.metering.MeteringService;
 
 /**
  * The Authentication Verticle.
@@ -31,7 +34,6 @@ import iudx.resource.server.cache.CacheService;
  */
 public class AuthenticationVerticle extends AbstractVerticle {
 
-  private static final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
   private static final Logger LOGGER = LogManager.getLogger(AuthenticationVerticle.class);
   private AuthenticationService authentication;
   private AuthenticationService jwtAuthenticationService;
@@ -40,6 +42,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
   private WebClient webClient;
 
   private CacheService cacheService;
+  private MeteringService meteringService;
 
   static WebClient createWebClient(Vertx vertx, JsonObject config) {
     return createWebClient(vertx, config, false);
@@ -87,9 +90,11 @@ public class AuthenticationVerticle extends AbstractVerticle {
               JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
               cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
+              meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
               jwtAuthenticationService =
                   new JwtAuthenticationServiceImpl(
-                      vertx, jwtAuth, createWebClient(vertx, config()), config(), cacheService);
+                      vertx, jwtAuth, createWebClient(vertx, config()), config(), cacheService,
+                      meteringService);
 
               /* Publish the Authentication service with the Event Bus against an address. */
               consumer =

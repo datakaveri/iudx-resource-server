@@ -29,8 +29,6 @@ import static iudx.resource.server.metering.util.Constants.USER_ID;
 import static iudx.resource.server.metering.util.Constants.USER_ID_QUERY;
 import static iudx.resource.server.metering.util.Constants.WHERE;
 import static iudx.resource.server.metering.util.Constants.WRITE_QUERY;
-
-import io.vertx.core.json.JsonObject;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -40,6 +38,7 @@ import java.util.Arrays;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import io.vertx.core.json.JsonObject;
 
 public class QueryBuilder {
 
@@ -78,10 +77,10 @@ public class QueryBuilder {
 
     LOGGER.trace(
         "PERIOD between given time "
-            + (zonedDateTimeDifference(startZDT, endZDT)));
+            + (zonedDateTimeDayDifference(startZDT, endZDT)));
 
-    if (zonedDateTimeDifference(startZDT, endZDT) > 14
-        || zonedDateTimeDifference(startZDT, endZDT) <= 0) {
+    if (zonedDateTimeDayDifference(startZDT, endZDT) > 14
+        || zonedDateTimeDayDifference(startZDT, endZDT) <= 0) {
       LOGGER.error(INVALID_DATE_DIFFERENCE);
       return new JsonObject().put(ERROR, INVALID_DATE_DIFFERENCE);
     }
@@ -165,11 +164,12 @@ public class QueryBuilder {
     ZonedDateTime endZDT = ZonedDateTime.parse(endTime);
 
     LOGGER.trace(
-        "PERIOD between given time "
-            + (zonedDateTimeDifference(startZDT, endZDT)));
+        "PERIOD between given time day :{} , minutes :{}",
+            zonedDateTimeDayDifference(startZDT, endZDT),
+            zonedDateTimeMinuteDifference(startZDT, endZDT));
 
-    if (zonedDateTimeDifference(startZDT, endZDT) > 14
-        || zonedDateTimeDifference(startZDT, endZDT) <= 0) {
+    if (zonedDateTimeDayDifference(startZDT, endZDT) > 14
+        || zonedDateTimeMinuteDifference(startZDT, endZDT) <= 0) {
       LOGGER.error(INVALID_DATE_DIFFERENCE);
       return new JsonObject().put(ERROR, INVALID_DATE_DIFFERENCE);
     }
@@ -267,8 +267,13 @@ public class QueryBuilder {
     }
     return tempQuery.toString();
   }
-  private long zonedDateTimeDifference(ZonedDateTime d1, ZonedDateTime d2) {
+  private long zonedDateTimeDayDifference(ZonedDateTime d1, ZonedDateTime d2) {
     return ChronoUnit.DAYS.between(d1, d2);
+  }
+  
+  private long zonedDateTimeMinuteDifference(ZonedDateTime d1, ZonedDateTime d2) {
+    long differenceInMinutes=ChronoUnit.MINUTES.between(d2, d1);
+    return Math.abs(differenceInMinutes);
   }
 
   private boolean checkProviderId(String iid, String providerID) {

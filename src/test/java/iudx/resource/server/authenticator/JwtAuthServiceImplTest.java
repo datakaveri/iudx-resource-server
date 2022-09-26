@@ -1,14 +1,14 @@
 package iudx.resource.server.authenticator;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.doAnswer;
-
-import io.vertx.core.buffer.Buffer;
-import io.vertx.ext.web.client.HttpRequest;
-import io.vertx.ext.web.client.HttpResponse;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
@@ -24,11 +24,14 @@ import io.micrometer.core.ipc.http.HttpSender.Method;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
+import io.vertx.ext.web.client.HttpRequest;
+import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -37,6 +40,7 @@ import iudx.resource.server.authenticator.model.JwtData;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.database.postgres.PostgresService;
+import iudx.resource.server.metering.MeteringService;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class JwtAuthServiceImplTest {
@@ -63,6 +67,7 @@ public class JwtAuthServiceImplTest {
   private static String invalidId;
   private static PostgresService pgService;
   private static CacheService cacheService;
+  private static MeteringService meteringService;
 
 
   @BeforeAll
@@ -85,9 +90,10 @@ public class JwtAuthServiceImplTest {
     JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
     cacheService = Mockito.mock(CacheService.class);
+    meteringService=Mockito.mock(MeteringService.class);
     WebClient webClient = AuthenticationVerticle.createWebClient(vertx, authConfig, true);
     jwtAuthenticationService =
-            new JwtAuthenticationServiceImpl(vertx, jwtAuth, webClient, authConfig, cacheService);
+            new JwtAuthenticationServiceImpl(vertx, jwtAuth, webClient, authConfig, cacheService,meteringService);
 
     // since test token doesn't contains valid id's, so forcibly put some dummy id in cache
     // for

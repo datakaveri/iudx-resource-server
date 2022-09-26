@@ -23,7 +23,8 @@
             "authServerHost": "",
             "catServerHost": "",
             "catServerPort": 443,
-	    "jwtIgnoreExpiry": true
+	        "jwtIgnoreExpiry": true,
+	        "enableLimits": false
 
         },
         {

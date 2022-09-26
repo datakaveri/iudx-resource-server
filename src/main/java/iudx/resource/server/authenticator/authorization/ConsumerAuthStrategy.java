@@ -20,11 +20,18 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import iudx.resource.server.authenticator.model.JwtData;
 
 public class ConsumerAuthStrategy implements AuthorizationStrategy {
 
   private static final Logger LOGGER = LogManager.getLogger(ConsumerAuthStrategy.class);
+  
+  private final boolean isLimitsEnabled;
+  
+  public ConsumerAuthStrategy(boolean isLimitsAllowed) {
+    this.isLimitsEnabled=isLimitsAllowed;
+  }
 
   static Map<String, List<AuthorizationRequest>> consumerAuthorizationRules = new HashMap<>();
   static {
@@ -88,6 +95,31 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     }
 
     return result;
+  }
+
+
+  @Override
+  public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData,
+      JsonObject quotaConsumed) {
+    JsonArray limitsArray=jwtData.getCons() != null ? jwtData.getCons().getJsonArray("limits"):null;
+    boolean isUsageWithinLimits=true;
+    if(isLimitsEnabled) {
+      isUsageWithinLimits=false;
+      //TODO: evaluate allowed vs what consumed
+      for(Object jsonObject:limitsArray) {
+        JsonObject json=(JsonObject)jsonObject;
+        if(json.containsKey("api")) {
+          int consumed=quotaConsumed.getInteger("api");
+          if(consumed<json.getInteger("api")) {
+            isUsageWithinLimits=true;
+            
+          }
+        }
+      }
+    }
+    String withinAllowedLimits=isUsageWithinLimits?"within":"exceeds";
+    LOGGER.info("usage limits {} defined limits",withinAllowedLimits);
+    return isAuthorized(authRequest, jwtData) && isUsageWithinLimits;
   }
 
 }

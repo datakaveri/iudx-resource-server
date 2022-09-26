@@ -28,12 +28,6 @@ import static iudx.resource.server.metering.util.Constants.USERID_NOT_FOUND;
 import static iudx.resource.server.metering.util.Constants.USER_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
-import iudx.resource.server.configuration.Configuration;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,6 +35,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.configuration.Configuration;
 
 @ExtendWith({VertxExtension.class})
 public class MeteringServiceTest {
@@ -217,8 +216,6 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      LOGGER.debug(
-                          "RESPONSE " + new JsonObject(response.getMessage()).getString(DETAIL));
                       assertEquals(
                           INVALID_DATE_TIME,
                           new JsonObject(response.getMessage()).getString(DETAIL));
@@ -239,7 +236,6 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      LOGGER.debug("RESPONSE" + response);
                       assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
@@ -257,7 +253,6 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      LOGGER.debug("RESPONSE" + response);
                       assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
@@ -276,7 +271,6 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      LOGGER.debug("RESPONSE" + response);
                       assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
@@ -294,7 +288,6 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      LOGGER.debug("RESPONSE" + response);
                       assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
@@ -315,7 +308,6 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      LOGGER.debug("RESPONSE "+response);
                       assertEquals(
                           RESPONSE_LIMIT_EXCEED,
                           new JsonObject(response.getMessage()).getString(DETAIL));
@@ -337,8 +329,6 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      LOGGER.debug(
-                          "RESPONSE " + new JsonObject(response.getMessage()).getString(DETAIL));
                       assertEquals(SUCCESS, new JsonObject(response.getMessage()).getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
@@ -359,8 +349,6 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      LOGGER.debug(
-                          "RESPONSE " + new JsonObject(response.getMessage()).getString(DETAIL));
                       assertEquals(SUCCESS, new JsonObject(response.getMessage()).getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
@@ -379,7 +367,6 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      LOGGER.debug("RESPONSE" + response);
                       assertTrue(
                           response.getJsonArray(RESULTS).getJsonObject(0).containsKey(TOTAL));
                       vertxTestContext.completeNow();
@@ -401,7 +388,6 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      LOGGER.debug("RESPONSE" + response.getString("title"));
                       assertEquals("Success", response.getString("title"));
                       vertxTestContext.completeNow();
                     })));
@@ -419,8 +405,6 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      LOGGER.debug(
-                          "RESPONSE " + new JsonObject(response.getMessage()).getString(DETAIL));
                       assertEquals(
                           INVALID_PROVIDER_REQUIRED,
                           new JsonObject(response.getMessage()).getString(DETAIL));
@@ -441,8 +425,6 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      LOGGER.debug(
-                          "RESPONSE " + new JsonObject(response.getMessage()).getString(DETAIL));
                       assertEquals(
                           INVALID_PROVIDER_ID,
                           new JsonObject(response.getMessage()).getString(DETAIL));
@@ -462,7 +444,6 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      LOGGER.debug("RESPONSE" + response);
                       assertEquals(SUCCESS, response.getString(TITLE));
                       vertxTestContext.completeNow();
                     })));
