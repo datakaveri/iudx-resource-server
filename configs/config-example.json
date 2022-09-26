@@ -23,7 +23,8 @@
             "authServerHost": "",
             "catServerHost": "",
             "catServerPort": 443,
-	    "jwtIgnoreExpiry": false
+	        "jwtIgnoreExpiry": false,
+	        "enableLimits": false
         },
         {
             "id": "iudx.resource.server.databroker.DataBrokerVerticle",

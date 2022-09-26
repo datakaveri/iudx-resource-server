@@ -32,7 +32,8 @@
 			"testResourceID": "",
 			"catServerHost": "",
 			"catServerPort": "",
-			"jwtIgnoreExpiry": true
+			"jwtIgnoreExpiry": true,
+			"enableLimits": false
 		},
 		{
 			"id": "iudx.resource.server.databroker.DataBrokerVerticle",

@@ -26,7 +26,8 @@
             "testResourceID": "",
             "catServerHost": "",
             "catServerPort": "",
-	    "jwtIgnoreExpiry": false
+	        "jwtIgnoreExpiry": false,
+	        "enableLimits": false
 
         },
         {
