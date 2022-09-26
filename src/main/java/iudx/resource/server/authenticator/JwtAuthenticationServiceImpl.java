@@ -262,9 +262,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     AuthorizationRequest authRequest = new AuthorizationRequest(method, api);
 
     IudxRole role = IudxRole.fromRole(jwtData.getRole());
-    AuthorizationContextFactory authFacotory = new AuthorizationContextFactory(isLimitsEnabled);
+    AuthorizationContextFactory authFactory = new AuthorizationContextFactory(isLimitsEnabled);
 
-    AuthorizationStrategy authStrategy = authFacotory.create(role);
+    AuthorizationStrategy authStrategy = authFactory.create(role);
     LOGGER.info("strategy : " + authStrategy.getClass().getSimpleName());
     JwtAuthorization jwtAuthStrategy = new JwtAuthorization(authStrategy);
     LOGGER.info("endPoint : " + authInfo.getString("apiEndpoint"));
