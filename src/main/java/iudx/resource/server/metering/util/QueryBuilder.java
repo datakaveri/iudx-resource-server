@@ -4,7 +4,6 @@ import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
 import static iudx.resource.server.metering.util.Constants.API;
 import static iudx.resource.server.metering.util.Constants.API_QUERY;
 import static iudx.resource.server.metering.util.Constants.CONSUMERID_TIME_INTERVAL_COUNT_QUERY;
-import static iudx.resource.server.metering.util.Constants.CONSUMERID_TIME_INTERVAL_READ_QUERY;
 import static iudx.resource.server.metering.util.Constants.CONSUMER_ID;
 import static iudx.resource.server.metering.util.Constants.END_TIME;
 import static iudx.resource.server.metering.util.Constants.ERROR;
@@ -43,98 +42,9 @@ import io.vertx.core.json.JsonObject;
 public class QueryBuilder {
 
   private static final Logger LOGGER = LogManager.getLogger(QueryBuilder.class);
-
-  public JsonObject buildReadingQuery(JsonObject request) {
-    String startTime = request.getString(START_TIME);
-    String endTime = request.getString(END_TIME);
-    String resourceId = request.getString(RESOURCE_ID);
-    String userId = request.getString(USER_ID);
-    String api = request.getString(API);
-    String providerID = request.getString(PROVIDER_ID);
-    String consumerID = request.getString(CONSUMER_ID);
-    String iid = request.getString(IID);
-    String databaseTableName = request.getString(TABLE_NAME);
-
-    StringBuilder query, tempQuery;
-
-    if (providerID != null && checkProviderId(iid, providerID)) {
-      return new JsonObject().put(ERROR, INVALID_PROVIDER_ID);
-    }
-    /* check if the time is valid based on ISO 8601 format. */
-    ZonedDateTime zdt;
-    try {
-      zdt = ZonedDateTime.parse(startTime);
-      LOGGER.debug("Parsed time: " + zdt.toString());
-      zdt = ZonedDateTime.parse(endTime);
-      LOGGER.debug("Parsed time: " + zdt.toString());
-    } catch (DateTimeParseException e) {
-      LOGGER.error("Invalid Date exception: " + e.getMessage());
-      return new JsonObject().put(ERROR, INVALID_DATE_TIME);
-    }
-
-    ZonedDateTime startZDT = ZonedDateTime.parse(startTime);
-    ZonedDateTime endZDT = ZonedDateTime.parse(endTime);
-
-    LOGGER.trace(
-        "PERIOD between given time "
-            + (zonedDateTimeDayDifference(startZDT, endZDT)));
-
-    if (zonedDateTimeDayDifference(startZDT, endZDT) > 14
-        || zonedDateTimeDayDifference(startZDT, endZDT) <= 0) {
-      LOGGER.error(INVALID_DATE_DIFFERENCE);
-      return new JsonObject().put(ERROR, INVALID_DATE_DIFFERENCE);
-    }
-
-    long fromTime = getEpochTime(startZDT);
-    LOGGER.debug("Epoch fromTime: " + fromTime);
-
-    long toTime = getEpochTime(endZDT);
-
-      if (providerID != null)
-      {
-        query =
-            new StringBuilder(
-                PROVIDERID_TIME_INTERVAL_READ_QUERY
-                    .replace("$0", databaseTableName)
-                    .replace("$1", Long.toString(fromTime))
-                    .replace("$2", Long.toString(toTime))
-                    .replace("$3", providerID));
-      }else{
-        query =
-            new StringBuilder(
-                CONSUMERID_TIME_INTERVAL_READ_QUERY
-                    .replace("$0", databaseTableName)
-                    .replace("$1", Long.toString(fromTime))
-                    .replace("$2", Long.toString(toTime))
-                    .replace("$3", userId));
-}
-    if (consumerID != null) {
-      tempQuery = query;
-      tempQuery.append(USER_ID_QUERY.replace("$6", consumerID));
-    }
-    if (api != null && resourceId != null) {
-      tempQuery = query;
-      for (String s :
-          Arrays.asList(API_QUERY.replace("$5", api), RESOURCE_QUERY.replace("$4", resourceId))) {
-        tempQuery.append(s);
-      }
-    } else if (api != null) {
-      tempQuery = query;
-      tempQuery.append(API_QUERY.replace("$5", api));
-    } else if (resourceId != null) {
-      tempQuery = query;
-      tempQuery.append(RESOURCE_QUERY.replace("$4", resourceId));
-    } else {
-      tempQuery = query;
-    }
-    LOGGER.trace("Info: QUERY " + tempQuery);
-    tempQuery.append(ORDER_BY_AND_LIMIT);
-    return new JsonObject().put(QUERY_KEY, tempQuery);
-  }
-
   public JsonObject buildCountQuery(JsonObject request) {
-    String startTime = request.getString(START_TIME);
-    String endTime = request.getString(END_TIME);
+    String startTime = request.getString(START_TIME).trim().replaceAll("\\s", "+");
+    String endTime = request.getString(END_TIME).trim().replaceAll("\\s", "+");
     String resourceId = request.getString(RESOURCE_ID);
     String userId = request.getString(USER_ID);
     String api = request.getString(API);
@@ -168,7 +78,7 @@ public class QueryBuilder {
             zonedDateTimeDayDifference(startZDT, endZDT),
             zonedDateTimeMinuteDifference(startZDT, endZDT));
 
-    if (zonedDateTimeDayDifference(startZDT, endZDT) > 14
+    if (zonedDateTimeDayDifference(startZDT, endZDT) > 14 || zonedDateTimeDayDifference(startZDT, endZDT) < 0
         || zonedDateTimeMinuteDifference(startZDT, endZDT) <= 0) {
       LOGGER.error(INVALID_DATE_DIFFERENCE);
       return new JsonObject().put(ERROR, INVALID_DATE_DIFFERENCE);
@@ -253,6 +163,11 @@ public class QueryBuilder {
 
     LOGGER.trace("Info: Query " + query);
     return new JsonObject().put(QUERY_KEY, query);
+  }
+  public JsonObject buildReadingQuery(JsonObject request){
+    StringBuilder query= new StringBuilder(
+        request.getString(QUERY_KEY).replace("count(*)", "*").replace(";", " ")).append(ORDER_BY_AND_LIMIT);
+    return new JsonObject().put(QUERY_KEY,query);
   }
 
   public String buildTempReadQuery(JsonObject request){
