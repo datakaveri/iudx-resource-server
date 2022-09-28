@@ -14,7 +14,7 @@ consumes:
 
 info:
   title: "IUDX Resource Server APIs"
-  version: 3.5.0
+  version: 4.0.0
   description: |
     # Introduction
     The Resource Server is IUDX's data store which allows publication, subscription and discovery of data.
