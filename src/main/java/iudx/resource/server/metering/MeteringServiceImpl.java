@@ -192,7 +192,7 @@ public class MeteringServiceImpl implements MeteringService {
                 handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
               }
               else {
-                query = queryBuilder.buildReadingQuery(request);
+                query = queryBuilder.buildReadingQuery(query);
                 query.put(COUNT,totalCount);
                 Future<JsonObject> initialReadResult = executeReadQuery(query);
                 initialReadResult.onComplete(initialReadHandler->{
@@ -229,8 +229,7 @@ public class MeteringServiceImpl implements MeteringService {
         .onSuccess(
             rows -> {
               String lastId="";
-              RowSet<Row> result = rows;
-              for (Row rs : result) {
+              for (Row rs : rows) {
                 JsonObject temp = new JsonObject();
                 temp.put(ID, rs.getString(_RESOURCEID_COLUMN));
                 temp.put(TIME, rs.getString(_TIME_COLUMN));
