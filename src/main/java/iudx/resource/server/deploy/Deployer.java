@@ -126,10 +126,20 @@ public class Deployer {
       LOGGER.fatal("Failed to deploy " + moduleName + " cause: Not Found");
       return;
     }
-
     int numInstances = config.getInteger("verticleInstances");
-    vertx.deployVerticle(moduleName,
-        new DeploymentOptions().setInstances(numInstances).setConfig(config), ar -> {
+    DeploymentOptions deploymentOptions =
+        new DeploymentOptions().setInstances(numInstances).setConfig(config);
+    boolean isWorkerVerticle = config.getBoolean("isWorkerVerticle");
+    if (isWorkerVerticle) {
+      LOGGER.info("worker verticle : " + config.getString("id"));
+      deploymentOptions.setWorkerPoolName(config.getString("threadPoolName"));
+      deploymentOptions.setWorkerPoolSize(config.getInteger("threadPoolSize"));
+      deploymentOptions.setWorker(true);
+      deploymentOptions.setMaxWorkerExecuteTime(30L);
+      deploymentOptions.setMaxWorkerExecuteTimeUnit(TimeUnit.MINUTES);
+    }
+
+    vertx.deployVerticle(moduleName, deploymentOptions, ar -> {
           if (ar.succeeded()) {
             LOGGER.info("Deployed " + moduleName);
             modules.remove(0);
