@@ -1,22 +1,19 @@
 package iudx.resource.server.database.async.util;
 
-import com.amazonaws.regions.Regions;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import java.io.File;
+import java.io.FileInputStream;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.io.File;
-import java.io.FileInputStream;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import com.amazonaws.regions.Regions;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class S3FileOpsHelperTest {
@@ -51,23 +48,6 @@ public class S3FileOpsHelperTest {
         String objectKey = "Dummy objectKey";
         assertNotNull(opsHelper.generatePreSignedUrl(expiryTimeMillis, objectKey));
         vertxTestContext.completeNow();
-    }
-
-    @Test
-    @DisplayName("Test s3Upload method : with NULL result due to failure in connecting endpoint")
-    public void test_s3Upload_AmazonClientException(VertxTestContext vertxTestContext) {
-        String objectKey = "Dummy object key";
-        when(file.getName()).thenReturn("Dummy_file.pdf");
-        when(file.length()).thenReturn(30302000L);
-        opsHelper.s3Upload(file, objectKey, handler -> {
-            if (handler.succeeded()) {
-                    vertxTestContext.failNow(handler.cause());
-            } else {
-                expected_error = "Unable to execute HTTP request";
-                assertTrue(handler.cause().getMessage().contains(expected_error));
-                vertxTestContext.completeNow();
-            }
-        });
     }
 
 }
