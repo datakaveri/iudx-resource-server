@@ -85,9 +85,13 @@ public class S3FileOpsHelper {
       // The call was transmitted successfully, but Amazon S3 couldn't process
       // it, so it returned an error response.
       LOGGER.error(e);
+      LOGGER.error(e.getErrorCode());
+      LOGGER.error(e.getErrorMessage());
+      LOGGER.error(e.getErrorType());
       handler.handle(Future.failedFuture(e));
     } catch (AmazonClientException e) {
       LOGGER.error(e);
+      LOGGER.error(e.getCause());
       handler.handle(Future.failedFuture(e));
     } catch (InterruptedException e) {
       LOGGER.error(e);
