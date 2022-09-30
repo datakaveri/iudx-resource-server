@@ -90,6 +90,7 @@ public class AsyncFileScrollProgressListener implements ProgressListener {
 
   @Override
   public void finish() {
+    progressQueue.add(1.0);
     if (executor != null)
       executor.shutdownNow();
   }
