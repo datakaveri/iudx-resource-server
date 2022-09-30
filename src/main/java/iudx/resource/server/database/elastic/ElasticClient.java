@@ -276,6 +276,7 @@ public class ElasticClient {
       double iterationCount = 0.0;
       double progress;
       while (searchHits != null && searchHits.length > 0) {
+        Thread.sleep(1000);
         LOGGER.debug("results = {} ( {} new)", totalFiles += searchHits.length, searchHits.length);
         iterationCount += 1;
         progress = iterationCount / totalIterations;
