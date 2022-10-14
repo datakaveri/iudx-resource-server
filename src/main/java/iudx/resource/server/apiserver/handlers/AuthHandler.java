@@ -250,7 +250,7 @@ public class AuthHandler implements Handler<RoutingContext> {
   }
 
   private String getId4rmBody(RoutingContext context, String api) {
-    JsonObject body = context.getBodyAsJson();
+    JsonObject body = context.body().asJsonObject();
     String id = null;
     if (body != null) {
       JsonArray array = body.getJsonArray(JSON_ENTITIES);
