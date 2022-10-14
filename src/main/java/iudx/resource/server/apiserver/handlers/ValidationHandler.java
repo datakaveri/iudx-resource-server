@@ -36,13 +36,11 @@ public class ValidationHandler implements Handler<RoutingContext> {
     MultiMap headers = context.request().headers();
     RequestBody requestBody=context.body();
     JsonObject body=null;
-    LOGGER.debug("inside validation"+requestBody);
     if(requestBody!=null) {
       if(requestBody.asJsonObject()!=null) {
         body=requestBody.asJsonObject().copy();
       }
     }
-    LOGGER.debug("inside validation");
     Map<String, String> pathParams = context.pathParams();
     parameters.addAll(pathParams);
 
