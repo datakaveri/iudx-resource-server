@@ -47,6 +47,7 @@ import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.apiserver.util.Constants.VHOST_URL_REGEX;
 import static iudx.resource.server.apiserver.util.Constants.bypassEndpoint;
 import static iudx.resource.server.common.Api.ADMIN;
+import static iudx.resource.server.common.Api.ASYNC;
 import static iudx.resource.server.common.Api.BIND;
 import static iudx.resource.server.common.Api.EXCHANGE;
 import static iudx.resource.server.common.Api.INGESTION;
@@ -56,12 +57,11 @@ import static iudx.resource.server.common.Api.QUEUE;
 import static iudx.resource.server.common.Api.RESET_PWD;
 import static iudx.resource.server.common.Api.RESOURCE_ATTRIBS;
 import static iudx.resource.server.common.Api.REVOKE_TOKEN;
+import static iudx.resource.server.common.Api.SEARCH;
+import static iudx.resource.server.common.Api.STATUS;
 import static iudx.resource.server.common.Api.SUBSCRIPTION;
 import static iudx.resource.server.common.Api.UNBIND;
 import static iudx.resource.server.common.Api.VHOST;
-import static iudx.resource.server.common.Api.ASYNC;
-import static iudx.resource.server.common.Api.SEARCH;
-import static iudx.resource.server.common.Api.STATUS;
 import static iudx.resource.server.common.Constants.AUTH_SERVICE_ADDRESS;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN_URN;
 import static iudx.resource.server.common.ResponseUrn.RESOURCE_NOT_FOUND_URN;
@@ -100,7 +100,7 @@ public class AuthHandler implements Handler<RoutingContext> {
   @Override
   public void handle(RoutingContext context) {
     request = context.request();
-    JsonObject requestJson = context.getBodyAsJson();
+    JsonObject requestJson = context.body().asJsonObject().copy();
 
     if (requestJson == null) {
       requestJson = new JsonObject();

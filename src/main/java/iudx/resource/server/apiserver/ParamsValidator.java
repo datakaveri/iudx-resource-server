@@ -92,6 +92,7 @@ public class ParamsValidator {
 
     // for IUDX count query
     validParams.add(IUDXQUERY_OPTIONS);
+    
   }
 
   static {
@@ -111,6 +112,7 @@ public class ParamsValidator {
     final List<Entry<String, String>> entries = parameterMap.entries();
     for (final Entry<String, String> entry : entries) {
       if (!validParams.contains(entry.getKey())) {
+        LOGGER.error("Validation error : extra field {} not allowed",entry.getKey());
         return false;
       }
     }
