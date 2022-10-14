@@ -76,6 +76,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.RoutingContext;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.common.HttpStatusCode;
@@ -100,11 +101,14 @@ public class AuthHandler implements Handler<RoutingContext> {
   @Override
   public void handle(RoutingContext context) {
     request = context.request();
-    JsonObject requestJson = context.body().asJsonObject().copy();
-
-    if (requestJson == null) {
-      requestJson = new JsonObject();
+    RequestBody requestBody = context.body();
+    JsonObject requestJson;
+    if(requestBody!=null) {
+      requestJson=requestBody.asJsonObject().copy();
+    }else {
+      requestJson=new JsonObject();
     }
+    
 
     LOGGER.debug("Info : path " + request.path());
     // bypassing auth for RDocs
