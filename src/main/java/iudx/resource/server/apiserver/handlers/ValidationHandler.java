@@ -4,13 +4,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.RoutingContext;
 import iudx.resource.server.apiserver.util.RequestType;
 import iudx.resource.server.apiserver.validation.ValidatorsHandlersFactory;
@@ -30,16 +30,26 @@ public class ValidationHandler implements Handler<RoutingContext> {
 
   @Override
   public void handle(RoutingContext context) {
+    LOGGER.debug("inside validation");
     ValidatorsHandlersFactory validationFactory = new ValidatorsHandlersFactory();
     MultiMap parameters = context.request().params();
     MultiMap headers = context.request().headers();
-    JsonObject body = context.getBodyAsJson();
+    RequestBody requestBody=context.body();
+    JsonObject body=null;
+    LOGGER.debug("inside validation"+requestBody);
+    if(requestBody!=null) {
+      if(requestBody.asJsonObject()!=null) {
+        body=requestBody.asJsonObject().copy();
+      }
+    }
+    LOGGER.debug("inside validation");
     Map<String, String> pathParams = context.pathParams();
     parameters.addAll(pathParams);
 
     List<Validator> validations = validationFactory.build(vertx, requestType, parameters, headers, body);
     for (Validator validator : Optional.ofNullable(validations).orElse(Collections.emptyList())) {
       LOGGER.debug("validator :" + validator.getClass().getName());
+      validator.isValid();
     }
     context.next();
     return;

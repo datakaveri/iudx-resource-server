@@ -102,13 +102,15 @@ public class AuthHandler implements Handler<RoutingContext> {
   public void handle(RoutingContext context) {
     request = context.request();
     RequestBody requestBody = context.body();
-    JsonObject requestJson;
+    JsonObject requestJson=null;
     if(requestBody!=null) {
-      requestJson=requestBody.asJsonObject().copy();
-    }else {
+      if(requestBody.asJsonObject()!=null) {
+        requestJson=requestBody.asJsonObject().copy();
+      }
+    }
+    if(requestJson==null) {
       requestJson=new JsonObject();
     }
-    
 
     LOGGER.debug("Info : path " + request.path());
     // bypassing auth for RDocs
