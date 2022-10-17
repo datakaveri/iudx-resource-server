@@ -1,14 +1,19 @@
 package iudx.resource.server.apiserver.handlers;
 
 
-import io.vertx.core.MultiMap;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
-import iudx.resource.server.apiserver.util.RequestType;
+import static iudx.resource.server.apiserver.util.Constants.DOMAIN;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
+import static iudx.resource.server.apiserver.util.Constants.USERSHA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,12 +21,15 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Stream;
-
-import static org.mockito.Mockito.*;
+import io.vertx.core.MultiMap;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RequestBody;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.apiserver.util.RequestType;
 
 @ExtendWith(VertxExtension.class)
 @ExtendWith(MockitoExtension.class)
@@ -51,26 +59,107 @@ public class ValidationHandlerTest {
     @ParameterizedTest
     @MethodSource("data")
     public void testHandle(RequestType value, VertxTestContext vertxTestContext) {
-        MultiMap map = MultiMap.caseInsensitiveMultiMap();
-        Map<String, String> stringMap = new HashMap<>();
-        stringMap.put("Dummy key1", "Dummy value1");
-        stringMap.put("Dummy key 2", "Dummy value 2");
-        requestType = value;
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.put("Dummy key", "Dummy value");
+      requestType = value;
 
-        when(routingContext.getBodyAsJson()).thenReturn(jsonObject);
-        when(routingContext.request()).thenReturn(httpServerRequest);
-        when(httpServerRequest.params()).thenReturn(map);
-        when(httpServerRequest.headers()).thenReturn(map);
-        when(routingContext.pathParams()).thenReturn(stringMap);
+      //path params
+      Map<String, String> stringMap = new HashMap<>();
+      stringMap.put("id",
+          "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta");
 
-        validationHandler = new ValidationHandler(Vertx.vertx(), requestType);
-        validationHandler.handle(routingContext);
-        verify(routingContext, times(2)).request();
-        verify(httpServerRequest).params();
-        verify(routingContext).getBodyAsJson();
-        verify(routingContext).pathParams();
-        vertxTestContext.completeNow();
+      //parameters
+      MultiMap parameters = MultiMap.caseInsensitiveMultiMap();
+      parameters.add("timerel", "before");
+      parameters.add("time", "2020-10-18T14:20:00Z");
+      parameters.add("searchId", UUID.randomUUID().toString());
+
+      //for latest
+      parameters.add(DOMAIN, "iisc.ac.in");
+      parameters.add(USERSHA,"89a36273d77dac4cf38114fca1bbe64392547f86");
+      parameters.add(RESOURCE_SERVER, "rs.iudx.io");
+      parameters.add(RESOURCE_GROUP, "surat-itms-realtime-information");
+      parameters.add(RESOURCE_NAME, "surat-itms-live-eta");
+
+      //headers
+      MultiMap header = MultiMap.caseInsensitiveMultiMap();
+      header.add("options", "streaming");
+
+      //body
+      JsonObject body = null;
+      if(requestType.equals(RequestType.POST_ENTITIES)) {
+        body=getPostEntitiesJsonRequestBody();
+      }else if(requestType.equals(RequestType.POST_TEMPORAL)){
+        body = getPostTemporalJsonRequestBody();
+      }else if(requestType.equals(RequestType.SUBSCRIPTION)) {
+        body=getSubscriptionBody();
+      }
+
+      RequestBody requestBody = mock(RequestBody.class);
+      when(routingContext.body()).thenReturn(requestBody);
+      when(requestBody.asJsonObject()).thenReturn(body);
+      
+      when(routingContext.request()).thenReturn(httpServerRequest);
+      when(httpServerRequest.params()).thenReturn(parameters);
+      when(httpServerRequest.headers()).thenReturn(header);
+      when(routingContext.pathParams()).thenReturn(stringMap);
+
+      validationHandler = new ValidationHandler(Vertx.vertx(), requestType);
+      validationHandler.handle(routingContext);
+      verify(routingContext, times(2)).request();
+      verify(httpServerRequest).params();
+      verify(routingContext).body();
+      verify(routingContext).pathParams();
+      vertxTestContext.completeNow();
+       
+    }
+    
+    
+    private JsonObject getPostTemporalJsonRequestBody() {
+      return new JsonObject("{\n"
+          + "    \"type\": \"Query\",\n"
+          + "    \"entities\": [\n"
+          + "        {\n"
+          + "            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n"
+          + "        }\n"
+          + "    ],\n"
+          + "    \"geoQ\": {\n"
+          + "        \"geometry\": \"Point\",\n"
+          + "        \"coordinates\": [21.178,72.834],\n"
+          + "        \"georel\": \"near;maxDistance=1000\",\n"
+          + "        \"geoproperty\": \"location\"\n"
+          + "    },\n"
+          + "    \"temporalQ\": {\n"
+          + "        \"timerel\": \"between\",\n"
+          + "        \"time\": \"2020-10-18T14:20:00Z\",\n"
+          + "        \"endtime\": \"2020-10-19T14:20:00Z\",\n"
+          + "        \"timeProperty\": \"observationDateTime\"\n"
+          + "    },\n"
+          + "    \"q\":\"speed>30.0\",\n"
+          + "    \"attrs\":\"id,speed\"\n"
+          + "}");
+    }
+
+    private JsonObject getPostEntitiesJsonRequestBody() {
+      return new JsonObject("{\n"
+          + "    \"type\": \"Query\",\n"
+          + "    \"entities\": [\n"
+          + "        {\n"
+          + "            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n"
+          + "        }\n"
+          + "    ],\n"
+          + "    \"geoQ\": {\n"
+          + "        \"geometry\": \"Point\",\n"
+          + "        \"coordinates\": [21.178,72.834],\n"
+          + "        \"georel\": \"near;maxDistance=10\",\n"
+          + "        \"geoproperty\": \"location\"\n"
+          + "    }\n"
+          + "}");
+    }
+
+    private JsonObject getSubscriptionBody() {
+      return new JsonObject("{\n"
+          + "    \"name\": \"integration-test-alias-RL\",\n"
+          + "    \"type\": \"subscription\",\n"
+          + "    \"entities\": [\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"]\n"
+          + "}");
     }
 }

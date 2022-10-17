@@ -1,15 +1,38 @@
 package iudx.resource.server.apiserver.handlers;
 
-import io.vertx.core.*;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.junit5.VertxExtension;
-import io.vertx.junit5.VertxTestContext;
-import iudx.resource.server.apiserver.util.Constants;
-import iudx.resource.server.authenticator.AuthenticationService;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_CONSUMER_AUDIT_URL;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_PROVIDER_AUDIT_URL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_ENTITIES_URL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_ENTITIES_QUERY_PATH;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_TEMPORAL_QUERY_PATH;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_SUBSCRIPTION_URL;
+import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
+import static iudx.resource.server.common.Api.ADMIN;
+import static iudx.resource.server.common.Api.BIND;
+import static iudx.resource.server.common.Api.EXCHANGE;
+import static iudx.resource.server.common.Api.INGESTION;
+import static iudx.resource.server.common.Api.MANAGEMENT;
+import static iudx.resource.server.common.Api.NGSILD_BASE;
+import static iudx.resource.server.common.Api.QUEUE;
+import static iudx.resource.server.common.Api.RESET_PWD;
+import static iudx.resource.server.common.Api.RESOURCE_ATTRIBS;
+import static iudx.resource.server.common.Api.REVOKE_TOKEN;
+import static iudx.resource.server.common.Api.UNBIND;
+import static iudx.resource.server.common.Api.VHOST;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import java.util.Map;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,19 +44,21 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
-
-
-import java.util.Map;
-import java.util.stream.Stream;
-
-import static iudx.resource.server.apiserver.util.Constants.*;
-import static iudx.resource.server.common.Api.*;
-import static iudx.resource.server.common.Api.EXCHANGE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RequestBody;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.junit5.VertxExtension;
+import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.apiserver.util.Constants;
+import iudx.resource.server.authenticator.AuthenticationService;
 
 
 @ExtendWith(VertxExtension.class)
@@ -104,7 +129,15 @@ public class AuthHandlerTest {
     @MethodSource("urls")
     @DisplayName("Test handler for succeeded authHandler")
     public void testCanHandleSuccess(String url, String path, VertxTestContext vertxTestContext) {
-        when(routingContext.getBodyAsJson()).thenReturn(jsonObject);
+        
+        JsonObject jsonObject = mock(JsonObject.class);
+        RequestBody requestBody = mock(RequestBody.class);
+
+        when(routingContext.body()).thenReturn(requestBody);
+        when(requestBody.asJsonObject()).thenReturn(jsonObject);
+        when(jsonObject.copy()).thenReturn(jsonObject);
+        when(routingContext.body().asJsonObject()).thenReturn(jsonObject);
+        
         when(httpServerRequest.path()).thenReturn(url);
         AuthHandler.authenticator = mock(AuthenticationService.class);
         when(httpServerRequest.headers()).thenReturn(map);
@@ -125,7 +158,7 @@ public class AuthHandlerTest {
         assertEquals("Dummy Token", routingContext.request().headers().get(HEADER_TOKEN));
         assertEquals("GET", routingContext.request().method().toString());
         verify(AuthHandler.authenticator, times(1)).tokenInterospect(any(), any(), any());
-        verify(routingContext, times(2)).getBodyAsJson();
+        verify(routingContext, times(3)).body();
 
         vertxTestContext.completeNow();
     }
@@ -138,8 +171,11 @@ public class AuthHandlerTest {
         JsonObject jsonObject = new JsonObject();
         jsonObject.put("Dummy Key", "Dummy Value");
 
+        RequestBody requestBody = mock(RequestBody.class);
 
-        when(routingContext.getBodyAsJson()).thenReturn(jsonObject);
+        when(routingContext.body()).thenReturn(requestBody);
+        when(requestBody.asJsonObject()).thenReturn(jsonObject);
+        
         when(httpServerRequest.path()).thenReturn(str);
         AuthHandler.authenticator = mock(AuthenticationService.class);
         when(httpServerRequest.headers()).thenReturn(map);
@@ -166,7 +202,7 @@ public class AuthHandlerTest {
         verify(httpServerResponse, times(1)).setStatusCode(anyInt());
         verify(httpServerResponse, times(1)).putHeader(anyString(), anyString());
         verify(httpServerResponse, times(1)).end(anyString());
-        verify(routingContext, times(2)).getBodyAsJson();
+        verify(routingContext, times(2)).body();
 
         vertxTestContext.completeNow();
     }
@@ -179,7 +215,11 @@ public class AuthHandlerTest {
         JsonObject jsonObject = mock(JsonObject.class);
         Map<String, String> stringMap = mock(Map.class);
 
-        when(routingContext.getBodyAsJson()).thenReturn(jsonObject);
+        RequestBody requestBody = mock(RequestBody.class);
+
+        when(routingContext.body()).thenReturn(requestBody);
+        when(requestBody.asJsonObject()).thenReturn(jsonObject);
+        when(jsonObject.copy()).thenReturn(jsonObject);
         when(httpServerRequest.path()).thenReturn(str);
 
         when(routingContext.pathParams()).thenReturn(stringMap);
@@ -213,7 +253,7 @@ public class AuthHandlerTest {
         verify(httpServerResponse, times(1)).setStatusCode(anyInt());
         verify(httpServerResponse, times(1)).putHeader(anyString(), anyString());
         verify(httpServerResponse, times(1)).end(anyString());
-        verify(routingContext, times(2)).getBodyAsJson();
+        verify(routingContext, times(2)).body();
 
         vertxTestContext.completeNow();
     }
