@@ -47,6 +47,7 @@ import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.apiserver.util.Constants.VHOST_URL_REGEX;
 import static iudx.resource.server.apiserver.util.Constants.bypassEndpoint;
 import static iudx.resource.server.common.Api.ADMIN;
+import static iudx.resource.server.common.Api.ASYNC;
 import static iudx.resource.server.common.Api.BIND;
 import static iudx.resource.server.common.Api.EXCHANGE;
 import static iudx.resource.server.common.Api.INGESTION;
@@ -56,12 +57,11 @@ import static iudx.resource.server.common.Api.QUEUE;
 import static iudx.resource.server.common.Api.RESET_PWD;
 import static iudx.resource.server.common.Api.RESOURCE_ATTRIBS;
 import static iudx.resource.server.common.Api.REVOKE_TOKEN;
+import static iudx.resource.server.common.Api.SEARCH;
+import static iudx.resource.server.common.Api.STATUS;
 import static iudx.resource.server.common.Api.SUBSCRIPTION;
 import static iudx.resource.server.common.Api.UNBIND;
 import static iudx.resource.server.common.Api.VHOST;
-import static iudx.resource.server.common.Api.ASYNC;
-import static iudx.resource.server.common.Api.SEARCH;
-import static iudx.resource.server.common.Api.STATUS;
 import static iudx.resource.server.common.Constants.AUTH_SERVICE_ADDRESS;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN_URN;
 import static iudx.resource.server.common.ResponseUrn.RESOURCE_NOT_FOUND_URN;
@@ -76,6 +76,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.RoutingContext;
 import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.common.HttpStatusCode;
@@ -100,10 +101,15 @@ public class AuthHandler implements Handler<RoutingContext> {
   @Override
   public void handle(RoutingContext context) {
     request = context.request();
-    JsonObject requestJson = context.getBodyAsJson();
-
-    if (requestJson == null) {
-      requestJson = new JsonObject();
+    RequestBody requestBody = context.body();
+    JsonObject requestJson=null;
+    if(requestBody!=null) {
+      if(requestBody.asJsonObject()!=null) {
+        requestJson=requestBody.asJsonObject().copy();
+      }
+    }
+    if(requestJson==null) {
+      requestJson=new JsonObject();
     }
 
     LOGGER.debug("Info : path " + request.path());
@@ -246,7 +252,7 @@ public class AuthHandler implements Handler<RoutingContext> {
   }
 
   private String getId4rmBody(RoutingContext context, String api) {
-    JsonObject body = context.getBodyAsJson();
+    JsonObject body = context.body().asJsonObject();
     String id = null;
     if (body != null) {
       JsonArray array = body.getJsonArray(JSON_ENTITIES);
