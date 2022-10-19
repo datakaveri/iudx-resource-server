@@ -99,12 +99,12 @@ public class ParamsValidation {
     return request;
   }
 
-  private long zonedDateTimeDayDifference(ZonedDateTime d1, ZonedDateTime d2) {
-    return ChronoUnit.DAYS.between(d1, d2);
+  private long zonedDateTimeDayDifference(ZonedDateTime startTime, ZonedDateTime endTime) {
+    return ChronoUnit.DAYS.between(startTime, endTime);
   }
 
-  private long zonedDateTimeMinuteDifference(ZonedDateTime d1, ZonedDateTime d2) {
-    return ChronoUnit.MINUTES.between(d1, d2);
+  private long zonedDateTimeMinuteDifference(ZonedDateTime startTime, ZonedDateTime endTime) {
+    return ChronoUnit.MINUTES.between(startTime, endTime);
   }
 
   private boolean checkProviderId(String iid, String providerID) {
