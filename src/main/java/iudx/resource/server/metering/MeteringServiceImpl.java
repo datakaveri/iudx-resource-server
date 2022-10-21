@@ -1,43 +1,30 @@
 package iudx.resource.server.metering;
 
 import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_PROVIDER_AUDIT_URL;
 import static iudx.resource.server.metering.util.Constants.API;
 import static iudx.resource.server.metering.util.Constants.API_COLUMN;
-import static iudx.resource.server.metering.util.Constants.BETWEEN;
 import static iudx.resource.server.metering.util.Constants.CONSUMER;
 import static iudx.resource.server.metering.util.Constants.COUNT;
 import static iudx.resource.server.metering.util.Constants.COUNT_COLUMN;
-import static iudx.resource.server.metering.util.Constants.DURING;
-import static iudx.resource.server.metering.util.Constants.ENDPOINT;
-import static iudx.resource.server.metering.util.Constants.END_TIME;
 import static iudx.resource.server.metering.util.Constants.ERROR;
 import static iudx.resource.server.metering.util.Constants.FAILED;
 import static iudx.resource.server.metering.util.Constants.ID;
 import static iudx.resource.server.metering.util.Constants.ID_COLUMN;
-import static iudx.resource.server.metering.util.Constants.INVALID_PROVIDER_REQUIRED;
 import static iudx.resource.server.metering.util.Constants.LAST_ID;
 import static iudx.resource.server.metering.util.Constants.LATEST_ID;
 import static iudx.resource.server.metering.util.Constants.MESSAGE;
-import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
 import static iudx.resource.server.metering.util.Constants.QUERY_KEY;
 import static iudx.resource.server.metering.util.Constants.RESOURCEID_COLUMN;
 import static iudx.resource.server.metering.util.Constants.RESPONSE_ARRAY;
 import static iudx.resource.server.metering.util.Constants.RESPONSE_LIMIT_EXCEED;
 import static iudx.resource.server.metering.util.Constants.RESPONSE_SIZE_COLUMN;
 import static iudx.resource.server.metering.util.Constants.RESULTS;
-import static iudx.resource.server.metering.util.Constants.START_TIME;
 import static iudx.resource.server.metering.util.Constants.SUCCESS;
 import static iudx.resource.server.metering.util.Constants.TABLE_NAME;
 import static iudx.resource.server.metering.util.Constants.TIME;
 import static iudx.resource.server.metering.util.Constants.TIME_COLUMN;
-import static iudx.resource.server.metering.util.Constants.TIME_NOT_FOUND;
-import static iudx.resource.server.metering.util.Constants.TIME_RELATION;
-import static iudx.resource.server.metering.util.Constants.TIME_RELATION_NOT_FOUND;
 import static iudx.resource.server.metering.util.Constants.TOTAL;
 import static iudx.resource.server.metering.util.Constants.USERID_COLUMN;
-import static iudx.resource.server.metering.util.Constants.USERID_NOT_FOUND;
-import static iudx.resource.server.metering.util.Constants.USER_ID;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -53,6 +40,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import iudx.resource.server.metering.util.QueryBuilder;
 import iudx.resource.server.metering.util.ResponseBuilder;
+import iudx.resource.server.metering.util.ParamsValidation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -80,6 +68,8 @@ public class MeteringServiceImpl implements MeteringService {
   private int databasePoolSize;
   private String databaseTableName;
   private ResponseBuilder responseBuilder;
+  private final ParamsValidation validation=new ParamsValidation();
+  JsonObject validationCheck= new JsonObject();
 
   public MeteringServiceImpl(JsonObject propObj, Vertx vertxInstance) {
     if (propObj != null && !propObj.isEmpty()) {
@@ -132,35 +122,11 @@ public class MeteringServiceImpl implements MeteringService {
 
     LOGGER.trace("Info: Read Query" + request.toString());
 
-    if (request.getString(ENDPOINT).equals(IUDX_PROVIDER_AUDIT_URL)
-        && request.getString(PROVIDER_ID) == null) {
-      responseBuilder =
-          new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(INVALID_PROVIDER_REQUIRED);
-      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-      return this;
-    }
+    validationCheck=validation.paramsCheck(request);
 
-    if (request.getString(TIME_RELATION) == null
-        || !(request.getString(TIME_RELATION).equals(DURING)
-        || request.getString(TIME_RELATION).equals(BETWEEN))) {
-      LOGGER.debug("Info: " + TIME_RELATION_NOT_FOUND);
+    if (validationCheck!=null && validationCheck.containsKey(ERROR)){
       responseBuilder =
-          new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(TIME_RELATION_NOT_FOUND);
-      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-      return this;
-    }
-
-    if (request.getString(START_TIME) == null || request.getString(END_TIME) == null) {
-      LOGGER.debug("Info: " + TIME_NOT_FOUND);
-      responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(TIME_NOT_FOUND);
-      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-      return this;
-    }
-
-    if (request.getString(USER_ID) == null || request.getString(USER_ID).isEmpty()) {
-      LOGGER.debug("Info: " + USERID_NOT_FOUND);
-      responseBuilder =
-          new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(USERID_NOT_FOUND);
+          new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(validationCheck.getString(ERROR));
       handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return this;
     }
@@ -168,13 +134,6 @@ public class MeteringServiceImpl implements MeteringService {
     query = queryBuilder.buildCountQuery(request);
 
     LOGGER.trace(query);
-    if (query.containsKey(ERROR)) {
-      LOGGER.error("Fail: Query returned with an error: " + query.getString(ERROR));
-      responseBuilder =
-          new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(query.getString(ERROR));
-      handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-      return this;
-    }
     LOGGER.debug("Info: Query constructed: " + query.getString(QUERY_KEY));
 
     Future<JsonObject> countResult = executeCountQuery(query);
