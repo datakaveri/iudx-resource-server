@@ -1,0 +1,69 @@
+{
+	"id": "44eef2d4-f037-40a1-80ee-722f73b6809e",
+	"name": "RS Jenkins Pipeline",
+	"values": [
+		{
+			"key": "openResourceToken",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "secureResourceToken",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "delegateToken",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "delegateTokenRG",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "adaptorToken",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "adaptorTokenRG",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "clientID",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "clientSecret",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "base_url",
+			"value": "rs.iudx.io",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "auth-url",
+			"value": "authvertx.iudx.io",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2022-11-02T06:42:48.710Z",
+	"_postman_exported_using": "Postman/10.0.39"
+}
