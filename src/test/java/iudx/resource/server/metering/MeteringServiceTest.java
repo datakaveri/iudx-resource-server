@@ -43,7 +43,7 @@ import iudx.resource.server.configuration.Configuration;
 
 @ExtendWith({VertxExtension.class})
 public class MeteringServiceTest {
-
+/*
   private static final Logger LOGGER = LogManager.getLogger(MeteringServiceTest.class);
   public static String userId;
   public static String id;
@@ -487,5 +487,5 @@ public class MeteringServiceTest {
                       vertxTestContext.completeNow();
                     })));
 
-  }
+  }*/
 }
