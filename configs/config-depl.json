@@ -101,7 +101,7 @@
             "databaseUserName": "",
             "databasePassword": "",
             "poolSize": 25
-        
+
         },
         {
             "id": "iudx.resource.server.cache.CacheVerticle",
