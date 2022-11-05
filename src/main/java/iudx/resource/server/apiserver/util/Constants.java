@@ -116,6 +116,7 @@ public class Constants {
 
   public static final String COUNT_HEADER = "Count";
   public static final String PUBLIC_TOKEN = "public";
+  public static final String HEADER_PUBLIC_KEY = "publicKey";
 
   // request/response params
   public static final String CONTENT_TYPE = "content-type";
@@ -184,6 +185,9 @@ public class Constants {
   public static final String EXPIRY = "expiry";
   public static final String IID = "iid";
   public static final String API = "api";
+  public static final String ENCODED_KEY = "encodedKey";
+  public static final String ENCODED_CIPHER_TEXT = "encodedCipherText";
+  public static final String ENCRYPTED_DATA = "encryptedData";
 
   // searchtype
   public static final String JSON_SEARCH_TYPE = "searchType";
