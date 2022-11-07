@@ -111,12 +111,46 @@ public class MeteringServiceImpl implements MeteringService {
 
         String count = request.getString("options");
         if (count == null) {
-            queryPg = queryBuilder.buildReadQueryByPG(request);
+            readMethod(request, handler, promise);
+        } else {
+            countQuery(request, handler);
+        }
 
+        return this;
+    }
+
+    private void countQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+        queryCount = queryBuilder.buildCountReadQueryByPG(request);
+        LOGGER.debug("queryCount="+queryCount);
+        Future<JsonObject> resultCountPg = databaseOperation(queryCount);
+        resultCountPg.onComplete(countHandler -> {
+            if (countHandler.succeeded()) {
+                total = Integer.parseInt(countHandler.result().getJsonArray("result").getJsonObject(0).getString("count"));
+                if (total == 0) {
+                    responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(0);
+                    handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+
+                } else {
+                    responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200).setCount(total);
+                    handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+                }
+            }
+        });
+    }
+
+    private void readMethod(JsonObject request, Handler<AsyncResult<JsonObject>> handler, Promise<JsonObject> promise) {
+        countQuery(request, handler);
+        if (total==0){
+            responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(0);
+            handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+        }else {
+            queryPg = queryBuilder.buildReadQueryByPG(request);
+            LOGGER.debug("querypg=" + queryPg);
             Future<JsonObject> resultsPg = databaseOperation(queryPg);
             resultsPg.onComplete(readHandler -> {
                 if (readHandler.succeeded()) {
                     LOGGER.info("Read Completed successfully");
+                    LOGGER.debug("result=" + readHandler.result());
                     handler.handle(Future.succeededFuture(readHandler.result()));
 
                 } else {
@@ -125,26 +159,7 @@ public class MeteringServiceImpl implements MeteringService {
                     promise.fail("Failed");
                 }
             });
-        } else {
-            queryCount = queryBuilder.buildCountReadQueryByPG(request);
-
-            Future<JsonObject> resultCountPg = databaseOperation(queryCount);
-            resultCountPg.onComplete(countHandler -> {
-                if (countHandler.succeeded()) {
-                    total = Integer.parseInt(countHandler.result().getJsonArray("result").getJsonObject(0).getString("count"));
-                    if (total == 0) {
-                        responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(0);
-                        handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
-
-                    } else {
-                        responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200).setCount(total);
-                        handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
-                    }
-                }
-            });
         }
-
-        return this;
     }
 
     @Override
