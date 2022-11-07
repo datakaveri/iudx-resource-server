@@ -111,7 +111,7 @@ public class MeteringServiceImpl implements MeteringService {
 
         String count = request.getString("options");
         if (count == null) {
-            readMethod(request, handler, promise);
+            countQueryForRead(request,handler);
         } else {
             countQuery(request, handler);
         }
@@ -136,13 +136,24 @@ public class MeteringServiceImpl implements MeteringService {
             }
         });
     }
+    private void countQueryForRead(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+        queryCount = queryBuilder.buildCountReadQueryByPG(request);
+        Future<JsonObject> resultCountPg = databaseOperation(queryCount);
+        resultCountPg.onComplete(countHandler -> {
+            if (countHandler.succeeded()) {
+                total = Integer.parseInt(countHandler.result().getJsonArray("result").getJsonObject(0).getString("count"));
+                if (total == 0) {
+                    responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(0);
+                    handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
 
-    private void readMethod(JsonObject request, Handler<AsyncResult<JsonObject>> handler, Promise<JsonObject> promise) {
-        countQuery(request, handler);
-        if (total == 0) {
-            responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(0);
-            handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
-        } else {
+                } else {
+                    readMethod(request,handler);
+                }
+            }
+        });
+    }
+
+    private void readMethod(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
             queryPg = queryBuilder.buildReadQueryByPG(request);
             Future<JsonObject> resultsPg = databaseOperation(queryPg);
             resultsPg.onComplete(readHandler -> {
@@ -153,10 +164,8 @@ public class MeteringServiceImpl implements MeteringService {
                 } else {
                     LOGGER.debug("Could not read from DB : " + readHandler.cause());
                     handler.handle(Future.failedFuture(readHandler.cause().getMessage()));
-                    promise.fail("Failed");
                 }
             });
-        }
     }
 
     @Override
