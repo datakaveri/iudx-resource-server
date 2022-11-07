@@ -121,7 +121,6 @@ public class MeteringServiceImpl implements MeteringService {
 
     private void countQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
         queryCount = queryBuilder.buildCountReadQueryByPG(request);
-        LOGGER.debug("queryCount="+queryCount);
         Future<JsonObject> resultCountPg = databaseOperation(queryCount);
         resultCountPg.onComplete(countHandler -> {
             if (countHandler.succeeded()) {
@@ -140,17 +139,15 @@ public class MeteringServiceImpl implements MeteringService {
 
     private void readMethod(JsonObject request, Handler<AsyncResult<JsonObject>> handler, Promise<JsonObject> promise) {
         countQuery(request, handler);
-        if (total==0){
+        if (total == 0) {
             responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(0);
             handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
-        }else {
+        } else {
             queryPg = queryBuilder.buildReadQueryByPG(request);
-            LOGGER.debug("querypg=" + queryPg);
             Future<JsonObject> resultsPg = databaseOperation(queryPg);
             resultsPg.onComplete(readHandler -> {
                 if (readHandler.succeeded()) {
                     LOGGER.info("Read Completed successfully");
-                    LOGGER.debug("result=" + readHandler.result());
                     handler.handle(Future.succeededFuture(readHandler.result()));
 
                 } else {
