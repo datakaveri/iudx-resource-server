@@ -12,6 +12,7 @@ import iudx.resource.server.metering.util.ResponseBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
 import static iudx.resource.server.metering.util.Constants.*;
 
 public class MeteringServiceImpl implements MeteringService {
@@ -30,7 +31,8 @@ public class MeteringServiceImpl implements MeteringService {
     PgConnectOptions connectOptions;
     PoolOptions poolOptions;
     PgPool pool;
-    String queryPg;
+    String queryPg, queryCount;
+    int total;
     JsonObject validationCheck = new JsonObject();
     private JsonObject query = new JsonObject();
     private String databaseIP;
@@ -105,20 +107,40 @@ public class MeteringServiceImpl implements MeteringService {
         }
         request.put(TABLE_NAME, databaseTableName);
 
-        queryPg = queryBuilder.buildReadQueryByPG(request);
 
-        Future<JsonObject> resultsPg = databaseOperation(queryPg);
+        queryCount = queryBuilder.buildCountReadQueryByPG(request);
+        /*LOGGER.info("queryCount==" + queryCount);*/
+        Future<JsonObject> resultCountPg = databaseOperation(queryCount);
 
-        resultsPg.onComplete(
-                readHandler -> {
-                    if (readHandler.succeeded()) {
-                        LOGGER.info("Read Completed successfully");
-                        handler.handle(Future.succeededFuture(readHandler.result()));
-                    } else {
-                        LOGGER.debug("Could not read from DB : " + readHandler.cause());
-                        handler.handle(Future.failedFuture(readHandler.cause().getMessage()));
-                    }
-                });
+        resultCountPg.onComplete(countHandler -> {
+
+            if (countHandler.succeeded()) {
+                if (request.getString(HEADER_OPTIONS) != null) {
+                    handler.handle(Future.succeededFuture(countHandler.result()));
+                }
+
+                total = Integer.parseInt(countHandler.result().getJsonArray("result").getJsonObject(0).getString("count"));
+
+                queryPg = queryBuilder.buildReadQueryByPG(request);
+                /*LOGGER.info("query pg==" + queryPg);*/
+
+                Future<JsonObject> resultsPg = databaseOperation(queryPg);
+                resultsPg.onComplete(
+                        readHandler -> {
+                            if (readHandler.succeeded()) {
+                                LOGGER.info("Read Completed successfully");
+                                handler.handle(Future.succeededFuture(readHandler.result()));
+                            } else {
+                                LOGGER.debug("Could not read from DB : " + readHandler.cause());
+                                handler.handle(Future.failedFuture(readHandler.cause().getMessage()));
+                            }
+                        });
+            } else {
+                LOGGER.info("FAILED " + countHandler.cause());
+            }
+        });
+
+
         return this;
     }
 
@@ -173,13 +195,22 @@ public class MeteringServiceImpl implements MeteringService {
 
     private Future<JsonObject> databaseOperation(String query) {
         Promise<JsonObject> promise = Promise.promise();
+        JsonObject response = new JsonObject();
         postgresService.executeQuery(
                 query,
                 dbHandler -> {
                     if (dbHandler.succeeded()) {
                         promise.complete(dbHandler.result());
                     } else {
-                        promise.fail(dbHandler.cause().getMessage());
+                        LOGGER.error("Info: failed :" + dbHandler.cause());
+                        response.put(MESSAGE, dbHandler.cause().getMessage());
+                        responseBuilder =
+                                new ResponseBuilder(FAILED)
+                                        .setTypeAndTitle(400)
+                                        .setMessage(response.getString(MESSAGE));
+                        LOGGER.info("Info: " + responseBuilder.getResponse().toString());
+                        promise.fail(responseBuilder.getResponse().toString());
+                        /*promise.fail(dbHandler.cause().getMessage());*/
                     }
                 });
 

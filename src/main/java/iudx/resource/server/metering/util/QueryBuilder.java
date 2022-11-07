@@ -87,4 +87,41 @@ public class QueryBuilder {
         }
         return query.toString();
     }
+
+    public String buildCountReadQueryByPG(JsonObject request) {
+        String startTime = request.getString(START_TIME);
+        String endTime = request.getString(END_TIME);
+        String resourceId = request.getString(RESOURCE_ID);
+        String userId = request.getString(USER_ID);
+        String api = request.getString(API);
+        String providerID = request.getString(PROVIDER_ID);
+        String consumerID = request.getString(CONSUMER_ID);
+        String databaseTableName = request.getString(TABLE_NAME);
+        StringBuilder query;
+
+        ZonedDateTime startZDT = ZonedDateTime.parse(startTime);
+        ZonedDateTime endZDT = ZonedDateTime.parse(endTime);
+
+        long fromTime = getEpochTime(startZDT);
+        long toTime = getEpochTime(endZDT);
+
+        if (providerID != null) {
+            query =
+                    new StringBuilder(
+                            PROVIDERID_TIME_INTERVAL_COUNT_QUERY
+                                    .replace("$0", databaseTableName)
+                                    .replace("$1", Long.toString(fromTime))
+                                    .replace("$2", Long.toString(toTime))
+                                    .replace("$3", providerID));
+        } else {
+            query =
+                    new StringBuilder(
+                            CONSUMERID_TIME_INTERVAL_COUNT_QUERY
+                                    .replace("$0", databaseTableName)
+                                    .replace("$1", Long.toString(fromTime))
+                                    .replace("$2", Long.toString(toTime))
+                                    .replace("$3", userId));
+        }
+        return query.toString();
+    }
 }
