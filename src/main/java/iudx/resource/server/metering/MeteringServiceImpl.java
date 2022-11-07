@@ -12,7 +12,6 @@ import iudx.resource.server.metering.util.ResponseBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
 import static iudx.resource.server.metering.util.Constants.*;
 
 public class MeteringServiceImpl implements MeteringService {
@@ -95,6 +94,9 @@ public class MeteringServiceImpl implements MeteringService {
     public MeteringService executeReadQuery(
             JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
 
+        Promise<JsonObject> promise = Promise.promise();
+        JsonObject response = new JsonObject();
+
         LOGGER.trace("Info: Read Query" + request.toString());
 
         validationCheck = validation.paramsCheck(request);
@@ -107,39 +109,40 @@ public class MeteringServiceImpl implements MeteringService {
         }
         request.put(TABLE_NAME, databaseTableName);
 
+        String count = request.getString("options");
+        if (count == null) {
+            queryPg = queryBuilder.buildReadQueryByPG(request);
 
-        queryCount = queryBuilder.buildCountReadQueryByPG(request);
-        /*LOGGER.info("queryCount==" + queryCount);*/
-        Future<JsonObject> resultCountPg = databaseOperation(queryCount);
+            Future<JsonObject> resultsPg = databaseOperation(queryPg);
+            resultsPg.onComplete(readHandler -> {
+                if (readHandler.succeeded()) {
+                    LOGGER.info("Read Completed successfully");
+                    handler.handle(Future.succeededFuture(readHandler.result()));
 
-        resultCountPg.onComplete(countHandler -> {
-
-            if (countHandler.succeeded()) {
-                if (request.getString(HEADER_OPTIONS) != null) {
-                    handler.handle(Future.succeededFuture(countHandler.result()));
+                } else {
+                    LOGGER.debug("Could not read from DB : " + readHandler.cause());
+                    handler.handle(Future.failedFuture(readHandler.cause().getMessage()));
+                    promise.fail("Failed");
                 }
+            });
+        } else {
+            queryCount = queryBuilder.buildCountReadQueryByPG(request);
 
-                total = Integer.parseInt(countHandler.result().getJsonArray("result").getJsonObject(0).getString("count"));
+            Future<JsonObject> resultCountPg = databaseOperation(queryCount);
+            resultCountPg.onComplete(countHandler -> {
+                if (countHandler.succeeded()) {
+                    total = Integer.parseInt(countHandler.result().getJsonArray("result").getJsonObject(0).getString("count"));
+                    if (total == 0) {
+                        responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(0);
+                        handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
 
-                queryPg = queryBuilder.buildReadQueryByPG(request);
-                /*LOGGER.info("query pg==" + queryPg);*/
-
-                Future<JsonObject> resultsPg = databaseOperation(queryPg);
-                resultsPg.onComplete(
-                        readHandler -> {
-                            if (readHandler.succeeded()) {
-                                LOGGER.info("Read Completed successfully");
-                                handler.handle(Future.succeededFuture(readHandler.result()));
-                            } else {
-                                LOGGER.debug("Could not read from DB : " + readHandler.cause());
-                                handler.handle(Future.failedFuture(readHandler.cause().getMessage()));
-                            }
-                        });
-            } else {
-                LOGGER.info("FAILED " + countHandler.cause());
-            }
-        });
-
+                    } else {
+                        responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200).setCount(total);
+                        handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+                    }
+                }
+            });
+        }
 
         return this;
     }
@@ -202,18 +205,13 @@ public class MeteringServiceImpl implements MeteringService {
                     if (dbHandler.succeeded()) {
                         promise.complete(dbHandler.result());
                     } else {
-                        LOGGER.error("Info: failed :" + dbHandler.cause());
-                        response.put(MESSAGE, dbHandler.cause().getMessage());
-                        responseBuilder =
-                                new ResponseBuilder(FAILED)
-                                        .setTypeAndTitle(400)
-                                        .setMessage(response.getString(MESSAGE));
-                        LOGGER.info("Info: " + responseBuilder.getResponse().toString());
-                        promise.fail(responseBuilder.getResponse().toString());
-                        /*promise.fail(dbHandler.cause().getMessage());*/
+
+                        promise.fail(dbHandler.cause().getMessage());
                     }
                 });
 
         return promise.future();
     }
+
+
 }
