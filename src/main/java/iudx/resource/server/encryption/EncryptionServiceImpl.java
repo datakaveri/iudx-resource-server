@@ -39,7 +39,7 @@ public class EncryptionServiceImpl implements EncryptionService {
         if (message == null || message.isEmpty()) {
             promise.fail("message is null or empty");
         }
-        if (encodedPublicKey != null && encodedPublicKey.getString(ENCODED_KEY) != null) {
+        if (encodedPublicKey != null && encodedPublicKey.getString(ENCODED_KEY) != null && !encodedPublicKey.getString(ENCODED_KEY).isEmpty()) {
             JsonObject result = new JsonObject();
             //decode public key
             Future<JsonObject> future = decodePublicKey(encodedPublicKey);
@@ -63,8 +63,8 @@ public class EncryptionServiceImpl implements EncryptionService {
                 }
             });
         } else {
-            LOG.error("public key is null");
-            promise.fail("Public key is null");
+            LOG.error("public key is empty or null");
+            promise.fail("Public key is empty or null");
         }
         return promise.future();
     }
@@ -94,19 +94,19 @@ public class EncryptionServiceImpl implements EncryptionService {
 
     @Override
     public Future<JsonObject> encodePublicKey(JsonObject publicKey) {
-        if (publicKey != null && publicKey.getString(PUBLIC_KEY) != null) {
+        if (publicKey != null && publicKey.getString(PUBLIC_KEY) != null && !publicKey.getString(PUBLIC_KEY).isEmpty()) {
             byte[] bytes = publicKey.getBinary(PUBLIC_KEY);
             String encodedKey = Base64.getUrlEncoder().encodeToString(bytes);
             JsonObject result = new JsonObject();
             result.put(ENCODED_KEY, encodedKey);
             return Future.succeededFuture(result);
         } else
-            return Future.failedFuture("public key is null");
+            return Future.failedFuture("public key is empty or null");
     }
     @Override
     public Future<JsonObject> decodePublicKey(JsonObject encodedPublicKey) {
-        if (encodedPublicKey == null && encodedPublicKey.getString(ENCODED_KEY) == null) {
-            return Future.failedFuture("encoded public key is null");
+        if (encodedPublicKey == null && encodedPublicKey.getString(ENCODED_KEY) == null && encodedPublicKey.getString(ENCODED_KEY).isEmpty()) {
+            return Future.failedFuture("encoded public key is empty or null");
         }
         String publicKey = encodedPublicKey.getString(ENCODED_KEY);
         byte[] bytes = Base64.getUrlDecoder().decode(publicKey);
