@@ -20918,7 +20918,7 @@
 									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:rs:success\");\r",
 									"    const resultsjsonData = body.results[0];\r",
 									"    const status = resultsjsonData.status;\r",
-									"    pm.expect(status).to.be.oneOf(['IN_PROGRESS','COMPLETE','ERROR']);\r",
+									"    pm.expect(status).to.be.oneOf(['IN_PROGRESS','COMPLETE','ERROR','SUBMITTED']);\r",
 									"    if(status === 'ready') {\r",
 									"        pm.expect(resultsjsonData).to.have.property(\"file-download-url\");\r",
 									"    }\r",
