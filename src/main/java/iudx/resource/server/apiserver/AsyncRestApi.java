@@ -1,24 +1,11 @@
 package iudx.resource.server.apiserver;
 
 import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
-import static iudx.resource.server.apiserver.util.Constants.API;
-import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
-import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
-import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_HOST;
-import static iudx.resource.server.apiserver.util.Constants.ID;
-import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
-import static iudx.resource.server.apiserver.util.Constants.JSON_INSTANCEID;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
-import static iudx.resource.server.apiserver.util.Constants.USER_ID;
+import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.util.Constants.ENCRYPTED_DATA;
 import static iudx.resource.server.apiserver.util.RequestType.ASYNC_SEARCH;
 import static iudx.resource.server.apiserver.util.RequestType.ASYNC_STATUS;
-import static iudx.resource.server.common.Constants.ASYNC_SERVICE_ADDRESS;
-import static iudx.resource.server.common.Constants.BROKER_SERVICE_ADDRESS;
-import static iudx.resource.server.common.Constants.METERING_SERVICE_ADDRESS;
-import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.*;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
@@ -28,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
+import iudx.resource.server.encryption.EncryptionService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.google.common.hash.Hashing;
@@ -72,6 +61,7 @@ public class AsyncRestApi{
   private final CatalogueService catalogueService;
   private final PostgresService postgresService;
   private final DataBrokerService databroker;
+  private EncryptionService encryptionService;
 
   AsyncRestApi(Vertx vertx,Router router, JsonObject config) {
     this.vertx = vertx;
@@ -81,6 +71,7 @@ public class AsyncRestApi{
     this.catalogueService = new CatalogueService(vertx, config);
     this.validator = new ParamsValidator(catalogueService);
     this.postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
+    this.encryptionService = EncryptionService.createProxy(vertx, ENCRYPTION_SERVICE_ADDRESS);
   }
   
   
@@ -146,6 +137,31 @@ public class AsyncRestApi{
         });
   }
 
+  private Future<JsonObject> encryption(RoutingContext context, String result) {
+    String URLbase64PublicKey = context.request().getHeader(HEADER_PUBLIC_KEY);
+    Promise<JsonObject> promise = Promise.promise();
+    if (URLbase64PublicKey.length() != 44) {
+      LOGGER.error("Invalid Public key Length. Public key length should be 44");
+      promise.fail("Invalid Public key");
+      return promise.future();
+    }
+    /* get the urlbase64 public key from the header and send it for encryption */
+    Future<JsonObject> future = encryptionService.encrypt(result, new JsonObject().put(ENCODED_KEY, URLbase64PublicKey));
+    future.onComplete(handler -> {
+      if (handler.succeeded()) {
+        /*  get encoded cipher text */
+        String encodedCipherText = handler.result().getString(ENCODED_CIPHER_TEXT);
+        /* Send back the encoded cipherText to Client */
+        final JsonObject jsonObject = new JsonObject();
+        jsonObject.put(ENCRYPTED_DATA, encodedCipherText);
+        promise.complete(jsonObject);
+      } else {
+        LOGGER.error("Failure in handler : " + handler.cause().getMessage());
+        promise.fail("Failure in handler");
+      }
+    });
+    return promise.future();
+  }
   private void executeAsyncURLSearch(RoutingContext routingContext, JsonObject json) {
     String sub = ((JsonObject) routingContext.data().get("authInfo")).getString(USER_ID);
 
@@ -181,10 +197,26 @@ public class AsyncRestApi{
                 JsonArray resultArray = new JsonArray();
                 resultArray.add(new JsonObject().put("searchId", searchId));
                 response.put("result", resultArray);
-
-                Future.future(fu -> updateAuditTable(routingContext));
-                handleSuccessResponse(routingContext.response(), ResponseType.Created.getCode(),
-                    response.toString());
+                if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                  Future.future(fu -> updateAuditTable(routingContext));
+                  handleSuccessResponse(routingContext.response(), ResponseType.Created.getCode(),
+                          response.toString());
+                }
+//            Encryption
+                else {
+                  Future<JsonObject> future = encryption(routingContext, response.toString());
+                  future.onComplete(encryptionHandler -> {
+                    if (encryptionHandler.succeeded()) {
+                      JsonObject result = encryptionHandler.result();
+                      Future.future(fu -> updateAuditTable(routingContext));
+                      handleSuccessResponse(routingContext.response(), ResponseType.Created.getCode(),
+                              result.encode());
+                    } else {
+                      LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                      processBackendResponse(routingContext.response(), encryptionHandler.cause().getMessage());
+                    }
+                  });
+                }
               } else {
                 LOGGER.error("message published failed", rmqPublishHandler);
               }
@@ -208,7 +240,22 @@ public class AsyncRestApi{
     asyncService.asyncStatus(sub, searchID, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("Success: Async status success");
-        handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+        if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+          handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+        }
+//            Encryption
+        else {
+          Future<JsonObject> future = encryption(routingContext, handler.result().toString());
+          future.onComplete(encryptionHandler -> {
+            if (encryptionHandler.succeeded()) {
+              JsonObject result = encryptionHandler.result();
+              handleSuccessResponse(response, ResponseType.Ok.getCode(), result.encode());
+            } else {
+              LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+              processBackendResponse(response, encryptionHandler.cause().getMessage());
+            }
+          });
+        }
       } else if (handler.failed()) {
         LOGGER.error("Fail: Async status fail");
         processBackendResponse(response, handler.cause().getMessage());
