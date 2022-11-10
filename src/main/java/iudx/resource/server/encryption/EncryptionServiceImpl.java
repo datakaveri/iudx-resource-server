@@ -44,13 +44,13 @@ public class EncryptionServiceImpl implements EncryptionService {
             //decode public key
             try {
                 Key key = decodePublicKey(encodedPublicKey);
-                /*String cipherText = box.cryptoBoxSealEasy(message, key);*/
+                // String cipherText = box.cryptoBoxSealEasy(message, key);
                 final String reallyLongCipherText = org.apache.commons.lang.StringUtils.join( new String[] {
                         box.cryptoBoxSealEasy(message, key),
                 } );
-                // encode
+                /* encode */
                 base64MessageEncoder = new Base64MessageEncoder();
-                /*String encodedCipherText = base64MessageEncoder.encode(reallyLongCipherText.getBytes());*/
+                // String encodedCipherText = base64MessageEncoder.encode(reallyLongCipherText.getBytes());
                 final String reallyLongEncodedCipherText = org.apache.commons.lang.StringUtils.join( new String[] {
                         base64MessageEncoder.encode(reallyLongCipherText.getBytes())
                 } );
@@ -83,7 +83,7 @@ public class EncryptionServiceImpl implements EncryptionService {
             return Future.failedFuture("key pair is null");
         }
         JsonObject result = new JsonObject();
-        // decode encoded cipher Text
+        /* decode encoded cipher Text */
         byte[] bytes = base64MessageEncoder.decode(encodedCipherText);
         String decodedMessage = new String(bytes, StandardCharsets.UTF_8);
         KeyPair keys = (KeyPair) keyPair.getValue(KEYPAIR);
@@ -114,7 +114,6 @@ public class EncryptionServiceImpl implements EncryptionService {
         }
         String publicKey = encodedPublicKey.getString(ENCODED_KEY);
         byte[] bytes = Base64.getUrlDecoder().decode(publicKey);
-        Key key = Key.fromBytes(bytes);
-        return key;
+        return Key.fromBytes(bytes);
     }
 }
