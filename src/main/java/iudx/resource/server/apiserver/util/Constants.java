@@ -40,6 +40,7 @@ public class Constants {
   // Async endpoints
   public static final String IUDX_ASYNC_SEARCH = "(.*)/async/search";
   public static final String IUDX_ASYNC_STATUS = "(.*)/async/status";
+  public static final String IUDX_ASYNC_SEARCH_API = "/ngsi-ld/v1/async/search";
   // IUDX management endpoints
   public static final String IUDX_MANAGEMENT_URL = "/management";
   public static final String IUDX_ADAPTOR_URL = "/ngsi-ld/v1";

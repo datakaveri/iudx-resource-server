@@ -76,7 +76,7 @@ public class AsyncServiceTest {
   @DisplayName("Initialize vertx and deploy async verticle")
   static void init(Vertx vertx, VertxTestContext testContext) throws MalformedURLException {
     config = new Configuration();
-    asyncConfig = config.configLoader(9, vertx);
+    asyncConfig = config.configLoader(8, vertx);
     timeLimit = asyncConfig.getString("timeLimit");
     filePath = asyncConfig.getString("filePath");
 
@@ -164,13 +164,14 @@ public class AsyncServiceTest {
     record.add(
         new JsonObject()
             .put("_id", "4c030b19-4954-4e56-868a-c36d80a77902")
-            .put("search_id", "4b25aa92-47bb-4c91-98c0-47a1c7a51fbe")
-            .put("request_id", "efb0b92cd5b50d0a75a939ffa997c6e4fccdc62414ad0177a020eec98f69144e")
-            .put("status", "COMPLETE")
-            .put("s3_url", "https://example.com")
-            .put("expiry", "2022-03-02T16:08:38.495665")
-            .put("user_id", "15c7506f-c800-48d6-adeb-0542b03947c6")
-            .put("object_id", "b8a47206-364c-4580-8885-45205118db57"));
+                .put("search_id", "4b25aa92-47bb-4c91-98c0-47a1c7a51fbe")
+                .put("request_id", "efb0b92cd5b50d0a75a939ffa997c6e4fccdc62414ad0177a020eec98f69144e")
+                .put("status", "COMPLETE")
+                .put("s3_url", "https://example.com")
+                .put("expiry", "2022-03-02T16:08:38.495665")
+                .put("user_id", "15c7506f-c800-48d6-adeb-0542b03947c6")
+                .put("object_id", "b8a47206-364c-4580-8885-45205118db57")
+                .put("size", 0));
 
     return record;
   }
@@ -192,7 +193,7 @@ public class AsyncServiceTest {
 
     asyncServiceSpy.asyncSearch(requestId, sub, searchId, query);
 
-    verify(asyncServiceSpy, times(2)).process4ExistingRequestId(any(), any(), any(), any());
+    verify(asyncServiceSpy, times(2)).process4ExistingRequestId(any(),any(), any(), any(), any());
     verify(asyncServiceSpy, times(2)).executePGQuery(any());
     verify(fileOpsHelper, times(2)).generatePreSignedUrl(anyLong(), any());
     testContext.completeNow();
