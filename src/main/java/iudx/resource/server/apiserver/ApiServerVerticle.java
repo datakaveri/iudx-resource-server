@@ -16,6 +16,7 @@ import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN
 import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TEMPORAL_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN_URN;
+
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.*;
@@ -55,12 +56,14 @@ import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.encryption.EncryptionService;
 import iudx.resource.server.metering.MeteringService;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -73,6 +76,7 @@ import org.apache.logging.log4j.Logger;
  * The API Server verticle implements the IUDX Resource Server APIs. It handles the API requests
  * from the clients and interacts with the associated Service to respond.
  *
+ * @version 1.0
  * @see io.vertx.core.Vertx
  * @see io.vertx.core.AbstractVerticle
  * @see io.vertx.core.http.HttpServer
@@ -80,14 +84,15 @@ import org.apache.logging.log4j.Logger;
  * @see io.vertx.servicediscovery.ServiceDiscovery
  * @see io.vertx.servicediscovery.types.EventBusService
  * @see io.vertx.spi.cluster.hazelcast.HazelcastClusterManager
- * @version 1.0
  * @since 2020-05-31
  */
 public class ApiServerVerticle extends AbstractVerticle {
 
   private static final Logger LOGGER = LogManager.getLogger(ApiServerVerticle.class);
 
-  /** Service addresses */
+  /**
+   * Service addresses
+   */
   private static final String DATABASE_SERVICE_ADDRESS = "iudx.rs.database.service";
 
   private static final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
@@ -113,6 +118,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   private LatestDataService latestDataService;
   private EncryptionService encryptionService;
+
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
    * configuration, obtains a proxy for the Event bus services exposed through service discovery,
@@ -392,7 +398,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     }
 
 
-
     serverOptions.setCompressionSupported(true).setCompressionLevel(5);
     server = vertx.createHttpServer(serverOptions);
     server.requestHandler(router).listen(port);
@@ -413,14 +418,14 @@ public class ApiServerVerticle extends AbstractVerticle {
     validator = new ParamsValidator(catalogueService);
 
     postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
-    encryptionService = EncryptionService.createProxy(vertx,ENCRYPTION_SERVICE_ADDRESS);
+    encryptionService = EncryptionService.createProxy(vertx, ENCRYPTION_SERVICE_ADDRESS);
 
     router
             .route(NGSILD_BASE.path + ASYNC.path + "/*")
             .subRouter(new AsyncRestApi(vertx, router, config()).init());
 
     router
-            .route(ADMIN.path+"/*")
+            .route(ADMIN.path + "/*")
             .subRouter(new AdminRestApi(vertx, router).init());
 
     //@Deprecated : will be removed in future
@@ -486,9 +491,27 @@ public class ApiServerVerticle extends AbstractVerticle {
               handler -> {
                 if (handler.succeeded()) {
                   LOGGER.debug("Table Reading Done.");
-                  handleSuccessResponse(
-                          response, ResponseType.Ok.getCode(), handler.result().toString());
-                  promise.complete();
+                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                    handleSuccessResponse(
+                            response, ResponseType.Ok.getCode(), handler.result().toString());
+                    promise.complete();
+                  }
+//            Encryption
+                  else {
+                    Future<JsonObject> future = encryption(routingContext, handler.result().toString());
+                    future.onComplete(encryptionHandler -> {
+                      if (encryptionHandler.succeeded()) {
+                        JsonObject result = encryptionHandler.result();
+                        handleSuccessResponse(
+                                response, ResponseType.Ok.getCode(), result.encode());
+                        promise.complete();
+                      } else {
+                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                        processBackendResponse(response, encryptionHandler.cause().getMessage());
+                        promise.complete();
+                      }
+                    });
+                  }
                 } else {
                   LOGGER.error("Fail msg " + handler.cause().getMessage());
                   LOGGER.error("Table reading failed.");
@@ -527,9 +550,27 @@ public class ApiServerVerticle extends AbstractVerticle {
               handler -> {
                 if (handler.succeeded()) {
                   LOGGER.debug("Table Reading Done.");
-                  handleSuccessResponse(
-                          response, ResponseType.Ok.getCode(), handler.result().toString());
-                  promise.complete();
+                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                    handleSuccessResponse(
+                            response, ResponseType.Ok.getCode(), handler.result().toString());
+                    promise.complete();
+                  }
+                  //            Encryption
+                  else {
+                    Future<JsonObject> future = encryption(routingContext, handler.result().toString());
+                    future.onComplete(encryptionHandler -> {
+                      if (encryptionHandler.succeeded()) {
+                        JsonObject result = encryptionHandler.result();
+                        handleSuccessResponse(
+                                response, ResponseType.Ok.getCode(), result.encode());
+                        promise.complete();
+                      } else {
+                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                        processBackendResponse(response, encryptionHandler.cause().getMessage());
+                        promise.complete();
+                      }
+                    });
+                  }
                 } else {
                   LOGGER.error("Fail msg " + handler.cause().getMessage());
                   LOGGER.error("Table reading failed.");
@@ -713,7 +754,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * Execute a count query in DB
    *
-   * @param json valid json query
+   * @param json     valid json query
    * @param response
    */
   private void executeCountQuery(
@@ -723,27 +764,23 @@ public class ApiServerVerticle extends AbstractVerticle {
             handler -> {
               if (handler.succeeded()) {
                 LOGGER.info("Success: Count Success");
-                if(context.request().getHeader(HEADER_PUBLIC_KEY) == null)
-                {
-                  handleSuccessResponse(response, ResponseType.Ok.getCode(),handler.result().toString());
+                if (context.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                  handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
                   context.data().put(RESPONSE_SIZE, response.bytesWritten());
                   Future.future(fu -> updateAuditTable(context));
                 }
 //            Encryption
-                else
-                {
-                  Future<JsonObject> future =  encryption(context, handler.result().toString());
+                else {
+                  Future<JsonObject> future = encryption(context, handler.result().toString());
                   future.onComplete(encryptionHandler -> {
-                    if(encryptionHandler.succeeded())
-                    {
+                    if (encryptionHandler.succeeded()) {
                       JsonObject result = encryptionHandler.result();
-                      handleSuccessResponse(response, ResponseType.Ok.getCode(),result.encode());
+                      handleSuccessResponse(response, ResponseType.Ok.getCode(), result.encode());
                       context.data().put(RESPONSE_SIZE, response.bytesWritten());
                       Future.future(fu -> updateAuditTable(context));
-                    }
-                    else
-                    {
-                      LOGGER.error("Encryption not completed");
+                    } else {
+                      LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                      processBackendResponse(response, encryptionHandler.cause().getMessage());
                     }
                   });
                 }
@@ -754,12 +791,16 @@ public class ApiServerVerticle extends AbstractVerticle {
             });
   }
 
-  private Future<JsonObject> encryption(RoutingContext context,String result)
-  {
+  private Future<JsonObject> encryption(RoutingContext context, String result) {
     String URLbase64PublicKey = context.request().getHeader(HEADER_PUBLIC_KEY);
     Promise<JsonObject> promise = Promise.promise();
+    if (URLbase64PublicKey.length() != 44) {
+      LOGGER.error("Invalid Public key Length. Public key length should be 44");
+      promise.fail("Invalid Public key");
+      return promise.future();
+    }
     /* get the urlbase64 public key from the header and send it for encryption */
-    Future<JsonObject> future = encryptionService.encrypt(result,new JsonObject().put(ENCODED_KEY, URLbase64PublicKey));
+    Future<JsonObject> future = encryptionService.encrypt(result, new JsonObject().put(ENCODED_KEY, URLbase64PublicKey));
     future.onComplete(handler -> {
       if (handler.succeeded()) {
         /*  get encoded cipher text */
@@ -769,7 +810,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         jsonObject.put(ENCRYPTED_DATA, encodedCipherText);
         promise.complete(jsonObject);
       } else {
-        System.out.println("Failure in handler : " + handler.cause().getMessage());
+        LOGGER.error("Failure in handler : " + handler.cause().getMessage());
         promise.fail("Failure in handler");
       }
     });
@@ -779,7 +820,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * Execute a search query in DB
    *
-   * @param json valid json query
+   * @param json     valid json query
    * @param response
    */
   private void executeSearchQuery(
@@ -789,27 +830,23 @@ public class ApiServerVerticle extends AbstractVerticle {
             handler -> {
               if (handler.succeeded()) {
                 LOGGER.info("Success: Search Success");
-                if(context.request().getHeader(HEADER_PUBLIC_KEY) == null)
-                {
-                  handleSuccessResponse(response, ResponseType.Ok.getCode(),handler.result().toString());
+                if (context.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                  handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
                   context.data().put(RESPONSE_SIZE, response.bytesWritten());
                   Future.future(fu -> updateAuditTable(context));
                 }
                 // Encryption
-                else
-                {
-                  Future<JsonObject> future =  encryption(context, handler.result().toString());
+                else {
+                  Future<JsonObject> future = encryption(context, handler.result().toString());
                   future.onComplete(encryptionHandler -> {
-                    if(encryptionHandler.succeeded())
-                    {
+                    if (encryptionHandler.succeeded()) {
                       JsonObject result = encryptionHandler.result();
                       handleSuccessResponse(response, ResponseType.Ok.getCode(), result.encode());
                       context.data().put(RESPONSE_SIZE, response.bytesWritten());
                       Future.future(fu -> updateAuditTable(context));
-                    }
-                    else
-                    {
+                    } else {
                       LOGGER.error("Encryption not completed");
+                      processBackendResponse(response, encryptionHandler.cause().getMessage());
                     }
                   });
                 }
@@ -828,9 +865,26 @@ public class ApiServerVerticle extends AbstractVerticle {
             handler -> {
               if (handler.succeeded()) {
                 LOGGER.info("Latest data search succeeded");
-                handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
-                context.data().put(RESPONSE_SIZE, response.bytesWritten());
-                Future.future(fu -> updateAuditTable(context));
+                if (context.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                  handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+                  context.data().put(RESPONSE_SIZE, response.bytesWritten());
+                  Future.future(fu -> updateAuditTable(context));
+                }
+                //            Encryption
+                else {
+                  Future<JsonObject> future = encryption(context, handler.result().toString());
+                  future.onComplete(encryptionHandler -> {
+                    if (encryptionHandler.succeeded()) {
+                      JsonObject result = encryptionHandler.result();
+                      handleSuccessResponse(response, ResponseType.Ok.getCode(), result.encode());
+                      context.data().put(RESPONSE_SIZE, response.bytesWritten());
+                      Future.future(fu -> updateAuditTable(context));
+                    } else {
+                      LOGGER.error("Encryption not completed");
+                      processBackendResponse(response, encryptionHandler.cause().getMessage());
+                    }
+                  });
+                }
               } else {
                 LOGGER.error("Fail: Search Fail");
                 processBackendResponse(response, handler.cause().getMessage());
@@ -919,10 +973,29 @@ public class ApiServerVerticle extends AbstractVerticle {
             subHandler -> {
               if (subHandler.succeeded()) {
                 LOGGER.info("Success: Handle Subscription request;");
-                routingContext.data().put(RESPONSE_SIZE, 0);
-                Future.future(fu -> updateAuditTable(routingContext));
-                handleSuccessResponse(
-                        response, ResponseType.Created.getCode(), subHandler.result().toString());
+                if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                  routingContext.data().put(RESPONSE_SIZE, 0);
+                  Future.future(fu -> updateAuditTable(routingContext));
+                  handleSuccessResponse(
+                          response, ResponseType.Created.getCode(), subHandler.result().toString());
+                }
+                //            Encryption
+                else {
+                  Future<JsonObject> future = encryption(routingContext, subHandler.result().toString());
+                  future.onComplete(encryptionHandler -> {
+                    if (encryptionHandler.succeeded()) {
+                      JsonObject result = encryptionHandler.result();
+                      routingContext.data().put(RESPONSE_SIZE, 0);
+                      Future.future(fu -> updateAuditTable(routingContext));
+                      handleSuccessResponse(
+                              response, ResponseType.Created.getCode(), result.encode());
+                    } else {
+                      LOGGER.error("Encryption not completed");
+                      processBackendResponse(response, encryptionHandler.cause().getMessage());
+                    }
+                  });
+                }
+
               } else {
                 LOGGER.error("Fail: Handle Subscription request;");
                 processBackendResponse(response, subHandler.cause().getMessage());
@@ -959,10 +1032,28 @@ public class ApiServerVerticle extends AbstractVerticle {
               subsRequestHandler -> {
                 if (subsRequestHandler.succeeded()) {
                   LOGGER.debug("Success: Appending subscription");
-                  routingContext.data().put(RESPONSE_SIZE, 0);
-                  Future.future(fu -> updateAuditTable(routingContext));
-                  handleSuccessResponse(
-                          response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
+                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                    routingContext.data().put(RESPONSE_SIZE, 0);
+                    Future.future(fu -> updateAuditTable(routingContext));
+                    handleSuccessResponse(
+                            response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
+                  }
+                  // Encryption
+                  else {
+                    Future<JsonObject> future = encryption(routingContext, subsRequestHandler.result().toString());
+                    future.onComplete(encryptionHandler -> {
+                      if (encryptionHandler.succeeded()) {
+                        JsonObject result = encryptionHandler.result();
+                        routingContext.data().put(RESPONSE_SIZE, 0);
+                        Future.future(fu -> updateAuditTable(routingContext));
+                        handleSuccessResponse(
+                                response, ResponseType.Created.getCode(), result.encode());
+                      } else {
+                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                        processBackendResponse(response, encryptionHandler.cause().getMessage());
+                      }
+                    });
+                  }
                 } else {
                   LOGGER.error("Fail: Appending subscription");
                   processBackendResponse(response, subsRequestHandler.cause().getMessage());
@@ -1003,10 +1094,28 @@ public class ApiServerVerticle extends AbstractVerticle {
               subsRequestHandler -> {
                 if (subsRequestHandler.succeeded()) {
                   LOGGER.info("result : " + subsRequestHandler.result());
-                  routingContext.data().put(RESPONSE_SIZE, 0);
-                  Future.future(fu -> updateAuditTable(routingContext));
-                  handleSuccessResponse(
-                          response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
+                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                    routingContext.data().put(RESPONSE_SIZE, 0);
+                    Future.future(fu -> updateAuditTable(routingContext));
+                    handleSuccessResponse(
+                            response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
+                  }
+                  //            Encryption
+                  else {
+                    Future<JsonObject> future = encryption(routingContext, subsRequestHandler.result().toString());
+                    future.onComplete(encryptionHandler -> {
+                      if (encryptionHandler.succeeded()) {
+                        JsonObject result = encryptionHandler.result();
+                        routingContext.data().put(RESPONSE_SIZE, 0);
+                        Future.future(fu -> updateAuditTable(routingContext));
+                        handleSuccessResponse(
+                                response, ResponseType.Created.getCode(), result.encode());
+                      } else {
+                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                        processBackendResponse(response, encryptionHandler.cause().getMessage());
+                      }
+                    });
+                  }
                 } else {
                   LOGGER.error("Fail: Bad request");
                   processBackendResponse(response, subsRequestHandler.cause().getMessage());
@@ -1048,10 +1157,28 @@ public class ApiServerVerticle extends AbstractVerticle {
               subHandler -> {
                 if (subHandler.succeeded()) {
                   LOGGER.info("Success: Getting subscription");
-                  routingContext.data().put(RESPONSE_SIZE, 0);
-                  Future.future(fu -> updateAuditTable(routingContext));
-                  handleSuccessResponse(
-                          response, ResponseType.Ok.getCode(), subHandler.result().toString());
+                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                    routingContext.data().put(RESPONSE_SIZE, 0);
+                    Future.future(fu -> updateAuditTable(routingContext));
+                    handleSuccessResponse(
+                            response, ResponseType.Ok.getCode(), subHandler.result().toString());
+                  }
+//            Encryption
+                  else {
+                    Future<JsonObject> future = encryption(routingContext, subHandler.result().toString());
+                    future.onComplete(encryptionHandler -> {
+                      if (encryptionHandler.succeeded()) {
+                        JsonObject result = encryptionHandler.result();
+                        routingContext.data().put(RESPONSE_SIZE, 0);
+                        Future.future(fu -> updateAuditTable(routingContext));
+                        handleSuccessResponse(
+                                response, ResponseType.Ok.getCode(), result.encode());
+                      } else {
+                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                        processBackendResponse(response, encryptionHandler.cause().getMessage());
+                      }
+                    });
+                  }
                 } else {
                   LOGGER.error("Fail: Bad request");
                   processBackendResponse(response, subHandler.cause().getMessage());
@@ -1091,10 +1218,29 @@ public class ApiServerVerticle extends AbstractVerticle {
       subsReq.onComplete(
               subHandler -> {
                 if (subHandler.succeeded()) {
-                  routingContext.data().put(RESPONSE_SIZE, 0);
-                  Future.future(fu -> updateAuditTable(routingContext));
-                  handleSuccessResponse(
-                          response, ResponseType.Ok.getCode(), subHandler.result().toString());
+                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                    routingContext.data().put(RESPONSE_SIZE, 0);
+                    Future.future(fu -> updateAuditTable(routingContext));
+                    handleSuccessResponse(
+                            response, ResponseType.Ok.getCode(), subHandler.result().toString());
+                  }
+//            Encryption
+                  else {
+                    Future<JsonObject> future = encryption(routingContext, subHandler.result().toString());
+                    future.onComplete(encryptionHandler -> {
+                      if (encryptionHandler.succeeded()) {
+                        JsonObject result = encryptionHandler.result();
+                        routingContext.data().put(RESPONSE_SIZE, 0);
+                        Future.future(fu -> updateAuditTable(routingContext));
+                        handleSuccessResponse(
+                                response, ResponseType.Ok.getCode(), result.encode()
+                        );
+                      } else {
+                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                        processBackendResponse(response, encryptionHandler.cause().getMessage());
+                      }
+                    });
+                  }
                 } else {
                   processBackendResponse(response, subHandler.cause().getMessage());
                 }
@@ -1125,10 +1271,28 @@ public class ApiServerVerticle extends AbstractVerticle {
             handler -> {
               if (handler.succeeded()) {
                 LOGGER.info("Success: Registering adapter");
-                routingContext.data().put(RESPONSE_SIZE, 0);
-                Future.future(fu -> updateAuditTable(routingContext));
-                handleSuccessResponse(
-                        response, ResponseType.Created.getCode(), handler.result().toString());
+                if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                  routingContext.data().put(RESPONSE_SIZE, 0);
+                  Future.future(fu -> updateAuditTable(routingContext));
+                  handleSuccessResponse(
+                          response, ResponseType.Created.getCode(), handler.result().toString());
+                }
+//            Encryption
+                else {
+                  Future<JsonObject> future = encryption(routingContext, handler.result().toString());
+                  future.onComplete(encryptionHandler -> {
+                    if (encryptionHandler.succeeded()) {
+                      JsonObject result = encryptionHandler.result();
+                      routingContext.data().put(RESPONSE_SIZE, 0);
+                      Future.future(fu -> updateAuditTable(routingContext));
+                      handleSuccessResponse(
+                              response, ResponseType.Created.getCode(), result.encode());
+                    } else {
+                      LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                      processBackendResponse(response, encryptionHandler.cause().getMessage());
+                    }
+                  });
+                }
               } else if (brokerResult.failed()) {
                 LOGGER.error("Fail: Bad request" + handler.cause().getMessage());
                 processBackendResponse(response, handler.cause().getMessage());
@@ -1169,10 +1333,28 @@ public class ApiServerVerticle extends AbstractVerticle {
             brokerResultHandler -> {
               if (brokerResultHandler.succeeded()) {
                 LOGGER.info("Success: Deleting adapter");
-                routingContext.data().put(RESPONSE_SIZE, 0);
-                Future.future(fu -> updateAuditTable(routingContext));
-                handleSuccessResponse(
-                        response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
+                if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                  routingContext.data().put(RESPONSE_SIZE, 0);
+                  Future.future(fu -> updateAuditTable(routingContext));
+                  handleSuccessResponse(
+                          response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
+                }
+//            Encryption
+                else {
+                  Future<JsonObject> future = encryption(routingContext, brokerResultHandler.result().toString());
+                  future.onComplete(encryptionHandler -> {
+                    if (encryptionHandler.succeeded()) {
+                      JsonObject result = encryptionHandler.result();
+                      routingContext.data().put(RESPONSE_SIZE, 0);
+                      Future.future(fu -> updateAuditTable(routingContext));
+                      handleSuccessResponse(
+                              response, ResponseType.Ok.getCode(), result.encode());
+                    } else {
+                      LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                      processBackendResponse(response, encryptionHandler.cause().getMessage());
+                    }
+                  });
+                }
               } else {
                 LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
                 processBackendResponse(response, brokerResultHandler.cause().getMessage());
@@ -1209,10 +1391,28 @@ public class ApiServerVerticle extends AbstractVerticle {
     brokerResult.onComplete(
             brokerResultHandler -> {
               if (brokerResultHandler.succeeded()) {
-                routingContext.data().put(RESPONSE_SIZE, 0);
-                Future.future(fu -> updateAuditTable(routingContext));
-                handleSuccessResponse(
-                        response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
+                if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                  routingContext.data().put(RESPONSE_SIZE, 0);
+                  Future.future(fu -> updateAuditTable(routingContext));
+                  handleSuccessResponse(
+                          response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
+                }
+//            Encryption
+                else {
+                  Future<JsonObject> future = encryption(routingContext, brokerResultHandler.result().toString());
+                  future.onComplete(encryptionHandler -> {
+                    if (encryptionHandler.succeeded()) {
+                      JsonObject result = encryptionHandler.result();
+                      routingContext.data().put(RESPONSE_SIZE, 0);
+                      Future.future(fu -> updateAuditTable(routingContext));
+                      handleSuccessResponse(
+                              response, ResponseType.Ok.getCode(), result.encode());
+                    } else {
+                      LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                      processBackendResponse(response, encryptionHandler.cause().getMessage());
+                    }
+                  });
+                }
               } else {
                 processBackendResponse(response, brokerResultHandler.cause().getMessage());
               }
@@ -1223,7 +1423,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * publish heartbeat details to Rabbit MQ.
    *
    * @param routingContext routingContext Note: This is too frequent an operation to have info or
-   *        error level logs
+   *                       error level logs
    */
   public void publishHeartbeat(RoutingContext routingContext) {
     LOGGER.trace("Info: publishHeartbeat method starts;");
@@ -1242,10 +1442,28 @@ public class ApiServerVerticle extends AbstractVerticle {
               brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                   LOGGER.info("Success: Published heartbeat");
-                  routingContext.data().put(RESPONSE_SIZE, 0);
-                  Future.future(fu -> updateAuditTable(routingContext));
-                  handleSuccessResponse(
-                          response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
+                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                    routingContext.data().put(RESPONSE_SIZE, 0);
+                    Future.future(fu -> updateAuditTable(routingContext));
+                    handleSuccessResponse(
+                            response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
+                  }
+//            Encryption
+                  else {
+                    Future<JsonObject> future = encryption(routingContext, brokerResultHandler.result().toString());
+                    future.onComplete(encryptionHandler -> {
+                      if (encryptionHandler.succeeded()) {
+                        JsonObject result = encryptionHandler.result();
+                        routingContext.data().put(RESPONSE_SIZE, 0);
+                        Future.future(fu -> updateAuditTable(routingContext));
+                        handleSuccessResponse(
+                                response, ResponseType.Ok.getCode(), result.encode());
+                      } else {
+                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                        processBackendResponse(response, encryptionHandler.cause().getMessage());
+                      }
+                    });
+                  }
                 } else {
                   LOGGER.debug("Fail: Unauthorized;" + brokerResultHandler.cause().getMessage());
                   processBackendResponse(response, brokerResultHandler.cause().getMessage());
@@ -1262,7 +1480,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * publish downstream issues to Rabbit MQ.
    *
    * @param routingContext routingContext Note: This is too frequent an operation to have info or
-   *        error level logs
+   *                       error level logs
    */
   public void publishDownstreamIssue(RoutingContext routingContext) {
     LOGGER.trace("Info: publishDownStreamIssue method started;");
@@ -1282,10 +1500,28 @@ public class ApiServerVerticle extends AbstractVerticle {
               brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                   LOGGER.info("Success: published downstream issue");
-                  routingContext.data().put(RESPONSE_SIZE, 0);
-                  Future.future(fu -> updateAuditTable(routingContext));
-                  handleSuccessResponse(
-                          response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
+                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                    routingContext.data().put(RESPONSE_SIZE, 0);
+                    Future.future(fu -> updateAuditTable(routingContext));
+                    handleSuccessResponse(
+                            response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
+                  }
+//            Encryption
+                  else {
+                    Future<JsonObject> future = encryption(routingContext, brokerResultHandler.result().toString());
+                    future.onComplete(encryptionHandler -> {
+                      if (encryptionHandler.succeeded()) {
+                        JsonObject result = encryptionHandler.result();
+                        routingContext.data().put(RESPONSE_SIZE, 0);
+                        Future.future(fu -> updateAuditTable(routingContext));
+                        handleSuccessResponse(
+                                response, ResponseType.Ok.getCode(), result.encode());
+                      } else {
+                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                        processBackendResponse(response, encryptionHandler.cause().getMessage());
+                      }
+                    });
+                  }
                 } else {
                   LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
                   processBackendResponse(response, brokerResultHandler.cause().getMessage());
@@ -1320,10 +1556,28 @@ public class ApiServerVerticle extends AbstractVerticle {
               brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                   LOGGER.debug("Success: publishing a data issue");
-                  routingContext.data().put(RESPONSE_SIZE, 0);
-                  Future.future(fu -> updateAuditTable(routingContext));
-                  handleSuccessResponse(
-                          response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
+                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                    routingContext.data().put(RESPONSE_SIZE, 0);
+                    Future.future(fu -> updateAuditTable(routingContext));
+                    handleSuccessResponse(
+                            response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
+                  }
+//            Encryption
+                  else {
+                    Future<JsonObject> future = encryption(routingContext, brokerResultHandler.result().toString());
+                    future.onComplete(encryptionHandler -> {
+                      if (encryptionHandler.succeeded()) {
+                        JsonObject result = encryptionHandler.result();
+                        routingContext.data().put(RESPONSE_SIZE, 0);
+                        Future.future(fu -> updateAuditTable(routingContext));
+                        handleSuccessResponse(
+                                response, ResponseType.Ok.getCode(), result.encode());
+                      } else {
+                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                        processBackendResponse(response, encryptionHandler.cause().getMessage());
+                      }
+                    });
+                  }
                 } else {
                   LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
                   processBackendResponse(response, brokerResultHandler.cause().getMessage());
@@ -1358,10 +1612,28 @@ public class ApiServerVerticle extends AbstractVerticle {
               brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                   LOGGER.debug("Success: publishing data from adapter");
-                  routingContext.data().put(RESPONSE_SIZE, 0);
-                  Future.future(fu -> updateAuditTable(routingContext));
-                  handleSuccessResponse(
-                          response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
+                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                    routingContext.data().put(RESPONSE_SIZE, 0);
+                    Future.future(fu -> updateAuditTable(routingContext));
+                    handleSuccessResponse(
+                            response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
+                  }
+//            Encryption
+                  else {
+                    Future<JsonObject> future = encryption(routingContext, brokerResultHandler.result().toString());
+                    future.onComplete(encryptionHandler -> {
+                      if (encryptionHandler.succeeded()) {
+                        JsonObject result = encryptionHandler.result();
+                        routingContext.data().put(RESPONSE_SIZE, 0);
+                        Future.future(fu -> updateAuditTable(routingContext));
+                        handleSuccessResponse(
+                                response, ResponseType.Ok.getCode(), result.encode());
+                      } else {
+                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                        processBackendResponse(response, encryptionHandler.cause().getMessage());
+                      }
+                    });
+                  }
                 } else {
                   LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
                   processBackendResponse(response, brokerResultHandler.cause().getMessage());
@@ -1377,8 +1649,8 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * handle HTTP response.
    *
-   * @param response response object
-   * @param responseType Http status for response
+   * @param response       response object
+   * @param responseType   Http status for response
    * @param isBodyRequired body is required or not for response
    */
   private void handleSuccessResponse(HttpServerResponse response, int statusCode, String result) {
@@ -1426,7 +1698,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * part of the parameter</i>.
    *
    * @param routingContext RoutingContext Object
-   * @param response HttpServerResponse
+   * @param response       HttpServerResponse
    * @return Optional Optional of Map
    */
   private Optional<MultiMap> getQueryParams(
