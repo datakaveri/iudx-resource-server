@@ -42,32 +42,37 @@ public class EncryptionServiceImpl implements EncryptionService {
         if (encodedPublicKey != null && encodedPublicKey.getString(ENCODED_KEY) != null && !encodedPublicKey.getString(ENCODED_KEY).isEmpty()) {
             JsonObject result = new JsonObject();
             //decode public key
-            Future<JsonObject> future = decodePublicKey(encodedPublicKey);
-            future.onComplete(handler -> {
-                if (future.succeeded()) {
-                    byte[] bytes = future.result().getBinary(DECODED_KEY);
-                    Key key = Key.fromBytes(bytes);
-                    try {
-                        String cipherText = box.cryptoBoxSealEasy(message, key);
-                        // encode
-                        base64MessageEncoder = new Base64MessageEncoder();
-                        String encodedCipherText = base64MessageEncoder.encode(cipherText.getBytes());
-                        result.put(ENCODED_CIPHER_TEXT, encodedCipherText);
-                    } catch (SodiumException e) {
-                        LOG.error("Sodium Exception: " + e);
-                        promise.fail("Sodium exception: " + e);
-                    }
-                    promise.complete(result);
-                } else {
-                    promise.fail("Error while decoding the public key: " + handler.cause().getMessage());
-                }
-            });
+            try {
+                Key key = decodePublicKey(encodedPublicKey);
+                /*String cipherText = box.cryptoBoxSealEasy(message, key);*/
+                final String reallyLongCipherText = org.apache.commons.lang.StringUtils.join( new String[] {
+                        box.cryptoBoxSealEasy(message, key),
+                } );
+                // encode
+                base64MessageEncoder = new Base64MessageEncoder();
+                /*String encodedCipherText = base64MessageEncoder.encode(reallyLongCipherText.getBytes());*/
+                final String reallyLongEncodedCipherText = org.apache.commons.lang.StringUtils.join( new String[] {
+                        base64MessageEncoder.encode(reallyLongCipherText.getBytes())
+                } );
+                result.put(ENCODED_CIPHER_TEXT, reallyLongEncodedCipherText);
+            }catch (IllegalArgumentException illegalArgumentException)
+            {
+                LOG.error("Exception while decoding the public key: " + illegalArgumentException);
+                LOG.error("The public key should be in URL Safe base64 format");
+                promise.fail("Exception while decoding public key: " + illegalArgumentException);
+            }
+            catch (SodiumException e) {
+                LOG.error("Sodium Exception: " + e);
+                promise.fail("Sodium exception: " + e);
+            }
+            promise.tryComplete(result);
         } else {
             LOG.error("public key is empty or null");
             promise.fail("Public key is empty or null");
         }
         return promise.future();
     }
+
 
     @Override
     public Future<JsonObject> decrypt(String encodedCipherText, JsonObject keyPair) {
@@ -103,15 +108,13 @@ public class EncryptionServiceImpl implements EncryptionService {
         } else
             return Future.failedFuture("public key is empty or null");
     }
-    @Override
-    public Future<JsonObject> decodePublicKey(JsonObject encodedPublicKey) {
+    public Key decodePublicKey(JsonObject encodedPublicKey) {
         if (encodedPublicKey == null && encodedPublicKey.getString(ENCODED_KEY) == null && encodedPublicKey.getString(ENCODED_KEY).isEmpty()) {
-            return Future.failedFuture("encoded public key is empty or null");
+            return null;
         }
         String publicKey = encodedPublicKey.getString(ENCODED_KEY);
         byte[] bytes = Base64.getUrlDecoder().decode(publicKey);
-        JsonObject result = new JsonObject();
-        result.put(DECODED_KEY, bytes);
-        return Future.succeededFuture(result);
+        Key key = Key.fromBytes(bytes);
+        return key;
     }
 }

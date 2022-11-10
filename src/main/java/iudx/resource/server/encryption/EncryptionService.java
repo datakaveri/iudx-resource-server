@@ -52,6 +52,6 @@ public interface EncryptionService {
      * @param encodedPublicKey
      * @return JsonObject : decoded key in Json Object future
      */
-    Future<JsonObject> decodePublicKey(JsonObject encodedPublicKey);
+//    Future<JsonObject> decodePublicKey(JsonObject encodedPublicKey);
 
 }
