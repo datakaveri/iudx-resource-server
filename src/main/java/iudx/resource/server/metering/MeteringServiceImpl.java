@@ -6,12 +6,14 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
 import iudx.resource.server.database.postgres.PostgresService;
+import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.metering.util.ParamsValidation;
 import iudx.resource.server.metering.util.QueryBuilder;
 import iudx.resource.server.metering.util.ResponseBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static iudx.resource.server.common.Constants.BROKER_SERVICE_ADDRESS;
 import static iudx.resource.server.metering.util.Constants.*;
 
 public class MeteringServiceImpl implements MeteringService {
@@ -43,6 +45,7 @@ public class MeteringServiceImpl implements MeteringService {
     private String databaseTableName;
     private ResponseBuilder responseBuilder;
     private PostgresService postgresService;
+    private final DataBrokerService databroker;
 
     public MeteringServiceImpl(JsonObject propObj, Vertx vertxInstance, PostgresService postgresService) {
         if (propObj != null && !propObj.isEmpty()) {
@@ -69,6 +72,7 @@ public class MeteringServiceImpl implements MeteringService {
         this.pool = PgPool.pool(vertxInstance, connectOptions, poolOptions);
         this.vertx = vertxInstance;
         this.postgresService = postgresService;
+        this.databroker = DataBrokerService.createProxy(vertxInstance, BROKER_SERVICE_ADDRESS);
 
         _COUNT_COLUMN =
                 COUNT_COLUMN.insert(0, "(" + databaseName + "." + databaseTableName + ".").toString();

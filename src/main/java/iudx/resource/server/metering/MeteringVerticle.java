@@ -15,55 +15,55 @@ import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 
 public class MeteringVerticle extends AbstractVerticle {
 
-    private static final String METERING_SERVICE_ADDRESS = "iudx.rs.metering.service";
-    private static final Logger LOGGER = LogManager.getLogger(MeteringVerticle.class);
-    PgConnectOptions connectOptions;
-    PoolOptions poolOptions;
-    PgPool pool;
-    private String databaseIP;
-    private int databasePort;
-    private String databaseName;
-    private String databaseTableName;
-    private String databaseUserName;
-    private String databasePassword;
-    private int poolSize;
-    private PgConnectOptions config;
-    private ServiceBinder binder;
-    private MessageConsumer<JsonObject> consumer;
-    private MeteringService metering;
-    private PostgresService postgresService;
+  private static final String METERING_SERVICE_ADDRESS = "iudx.rs.metering.service";
+  private static final Logger LOGGER = LogManager.getLogger(MeteringVerticle.class);
+  PgConnectOptions connectOptions;
+  PoolOptions poolOptions;
+  PgPool pool;
+  private String databaseIP;
+  private int databasePort;
+  private String databaseName;
+  private String databaseTableName;
+  private String databaseUserName;
+  private String databasePassword;
+  private int poolSize;
+  private PgConnectOptions config;
+  private ServiceBinder binder;
+  private MessageConsumer<JsonObject> consumer;
+  private MeteringService metering;
+  private PostgresService postgresService;
 
-    @Override
-    public void start() throws Exception {
+  @Override
+  public void start() throws Exception {
 
-        databaseIP = config().getString("meteringDatabaseIP");
-        databasePort = config().getInteger("meteringDatabasePort");
-        databaseName = config().getString("meteringDatabaseName");
-        databaseUserName = config().getString("meteringDatabaseUserName");
-        databasePassword = config().getString("meteringDatabasePassword");
-        databaseTableName = config().getString("meteringDatabaseTableName");
-        poolSize = config().getInteger("meteringPoolSize");
+    databaseIP = config().getString("meteringDatabaseIP");
+    databasePort = config().getInteger("meteringDatabasePort");
+    databaseName = config().getString("meteringDatabaseName");
+    databaseUserName = config().getString("meteringDatabaseUserName");
+    databasePassword = config().getString("meteringDatabasePassword");
+    databaseTableName = config().getString("meteringDatabaseTableName");
+    poolSize = config().getInteger("meteringPoolSize");
 
-        JsonObject propObj = new JsonObject();
-        propObj.put("meteringDatabaseIP", databaseIP);
-        propObj.put("meteringDatabasePort", databasePort);
-        propObj.put("meteringDatabaseName", databaseName);
-        propObj.put("meteringDatabaseUserName", databaseUserName);
-        propObj.put("meteringDatabasePassword", databasePassword);
-        propObj.put("meteringPoolSize", poolSize);
-        propObj.put("meteringDatabaseTableName", databaseTableName);
+    JsonObject propObj = new JsonObject();
+    propObj.put("meteringDatabaseIP", databaseIP);
+    propObj.put("meteringDatabasePort", databasePort);
+    propObj.put("meteringDatabaseName", databaseName);
+    propObj.put("meteringDatabaseUserName", databaseUserName);
+    propObj.put("meteringDatabasePassword", databasePassword);
+    propObj.put("meteringPoolSize", poolSize);
+    propObj.put("meteringDatabaseTableName", databaseTableName);
 
-        binder = new ServiceBinder(vertx);
-        postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
+    binder = new ServiceBinder(vertx);
+    postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
 
-        metering = new MeteringServiceImpl(propObj, vertx, postgresService);
-        consumer =
-                binder.setAddress(METERING_SERVICE_ADDRESS).register(MeteringService.class, metering);
-        LOGGER.info("Metering Verticle Started");
-    }
+    metering = new MeteringServiceImpl(propObj, vertx, postgresService);
+    consumer =
+        binder.setAddress(METERING_SERVICE_ADDRESS).register(MeteringService.class, metering);
+    LOGGER.info("Metering Verticle Started");
+  }
 
-    @Override
-    public void stop() {
-        binder.unregister(consumer);
-    }
+  @Override
+  public void stop() {
+    binder.unregister(consumer);
+  }
 }
