@@ -12,7 +12,7 @@ COPY src src
 RUN mvn clean package -Dmaven.test.skip=true
 
 # Java Runtime as the base for final image
-FROM openjdk:11-jre-slim-buster
+FROM eclipse-temurin:11-jre-focal
 
 ARG VERSION
 ENV JAR="iudx.resource.server-dev-${VERSION}-fat.jar"
