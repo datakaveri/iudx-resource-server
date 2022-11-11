@@ -4,8 +4,16 @@ import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
 import static iudx.resource.server.metering.util.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
 import java.util.UUID;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
@@ -22,14 +30,18 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.configuration.Configuration;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 
-@ExtendWith({VertxExtension.class})
+@ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class MeteringServiceTest {
 
   private static final Logger LOGGER = LogManager.getLogger(MeteringServiceTest.class);
   public static String userId;
   public static String id;
-  private static MeteringService meteringService;
   private static Vertx vertxObj;
   private static String databaseIP;
   private static int databasePort;
@@ -38,9 +50,11 @@ public class MeteringServiceTest {
   private static String databasePassword;
   private static int databasePoolSize;
   private static String databaseTableName;
+  private static MeteringServiceImpl meteringService;
+
   private static Configuration config;
+  @Mock
   private static PgPool pool;
-  private static PostgresService postgres;
   private static PgConnectOptions connectOptions;
   private static String databaseIPPG;
   private static int databasePortPG;
@@ -49,13 +63,15 @@ public class MeteringServiceTest {
   private static String databasePasswordPG;
   private static int poolSize;
   private static PoolOptions poolOptions;
+  private static JsonObject dbConfig;
+  private static  PostgresService ps;
 
   @BeforeAll
   @DisplayName("Deploying Verticle")
   static void startVertex(Vertx vertx, VertxTestContext vertxTestContext) {
     vertxObj = vertx;
     config = new Configuration();
-    JsonObject dbConfig = config.configLoader(6, vertx);
+    dbConfig = config.configLoader(6, vertx);
     databaseIP = dbConfig.getString("meteringDatabaseIP");
     databasePort = dbConfig.getInteger("meteringDatabasePort");
     databaseName = dbConfig.getString("meteringDatabaseName");
@@ -64,7 +80,7 @@ public class MeteringServiceTest {
     databasePoolSize = dbConfig.getInteger("meteringPoolSize");
     databaseTableName = dbConfig.getString("meteringDatabaseTableName");
 
-    JsonObject dbConfigPost = config.configLoader(4, vertx);
+    /*JsonObject dbConfigPost = config.configLoader(4, vertx);
 
     databaseIPPG = dbConfigPost.getString("databaseIp");
     databasePortPG = dbConfigPost.getInteger("databasePort");
@@ -83,8 +99,8 @@ public class MeteringServiceTest {
 
     poolOptions = new PoolOptions().setMaxSize(poolSize);
     pool = PgPool.pool(vertx, connectOptions, poolOptions);
-    postgres = new PostgresServiceImpl(pool);
-    meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgres);
+    postgres = new PostgresServiceImpl(pool);*/
+
     userId = UUID.randomUUID().toString();
     id = "89a36273d77dac4cf38114fca1bbe64392547f86";
     vertxTestContext.completeNow();
@@ -140,6 +156,9 @@ public class MeteringServiceTest {
   @DisplayName("Testing read query with invalid time interval")
   void readFromInvalidTimeInterval(VertxTestContext testContext) {
     JsonObject request = readConsumerRequest();
+    ps = mock(PostgresService.class);
+
+    meteringService = new MeteringServiceImpl(dbConfig, vertxObj,ps);
     request.put(START_TIME, "2021-11-01T05:30:00+05:30[Asia/Kolkata]");
     request.put(END_TIME, "2021-11-24T02:00:00+05:30[Asia/Kolkata]");
     meteringService.executeReadQuery(
@@ -158,6 +177,29 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query with given Time Interval")
   void readFromValidTimeInterval(VertxTestContext vertxTestContext) {
+      JsonObject json1= new JsonObject().put(SUCCESS,"Success");
+      AsyncResult<JsonObject> asyncResult= mock(AsyncResult.class);
+      ps = mock(PostgresService.class);
+      JsonObject json= mock(JsonObject.class);
+      JsonArray jsonArray= mock(JsonArray.class);
+
+      meteringService = new MeteringServiceImpl(dbConfig, vertxObj,ps);
+
+      when(asyncResult.succeeded()).thenReturn(true);
+      when(asyncResult.result()).thenReturn(json,json1);
+
+      when(json.getJsonArray(anyString())).thenReturn(jsonArray);
+      when(jsonArray.getJsonObject(anyInt())).thenReturn(json);
+      when(json.getString(anyString())).thenReturn("300","Success");
+
+      Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+          @Override
+          public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+              ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+              return null;
+          }
+      }).when(ps).executeQuery(anyString(), any());
+
     JsonObject request = readConsumerRequest();
 
     meteringService.executeReadQuery(
@@ -166,7 +208,7 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      assertEquals(SUCCESS, response.getString(TITLE));
+                     assertEquals(SUCCESS, response.getString(SUCCESS));
                       vertxTestContext.completeNow();
                     })));
   }
@@ -176,6 +218,9 @@ public class MeteringServiceTest {
   void readForMissingUserId(VertxTestContext vertxTestContext) {
     JsonObject request = readConsumerRequest();
     request.remove(USER_ID);
+    ps = mock(PostgresService.class);
+
+    meteringService = new MeteringServiceImpl(dbConfig, vertxObj,ps);
 
     meteringService.executeReadQuery(
         request,
@@ -196,7 +241,9 @@ public class MeteringServiceTest {
   void readForMissingTimeRel(VertxTestContext vertxTestContext) {
     JsonObject request = readConsumerRequest();
     request.remove(TIME_RELATION);
+    ps = mock(PostgresService.class);
 
+    meteringService = new MeteringServiceImpl(dbConfig, vertxObj,ps);
     meteringService.executeReadQuery(
         request,
         vertxTestContext.failing(
@@ -216,7 +263,9 @@ public class MeteringServiceTest {
   void readForMissingTime(VertxTestContext vertxTestContext) {
     JsonObject request = readConsumerRequest();
     request.remove(START_TIME);
+    ps = mock(PostgresService.class);
 
+    meteringService = new MeteringServiceImpl(dbConfig, vertxObj,ps);
     meteringService.executeReadQuery(
         request,
         vertxTestContext.failing(
@@ -234,7 +283,9 @@ public class MeteringServiceTest {
   void readForInvalidStartTime(VertxTestContext vertxTestContext) {
     JsonObject request = readConsumerRequest();
     request.put(START_TIME, "2021-009-18T00:30:00+05:30[Asia/Kolkata]");
+    ps = mock(PostgresService.class);
 
+    meteringService = new MeteringServiceImpl(dbConfig, vertxObj,ps);
     meteringService.executeReadQuery(
         request,
         vertxTestContext.failing(
@@ -252,7 +303,30 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query for given time.")
   void readForGivenTime(VertxTestContext vertxTestContext) {
-    JsonObject jsonObject = read();
+      JsonObject json1= new JsonObject().put(SUCCESS,"Success");
+      AsyncResult<JsonObject> asyncResult= mock(AsyncResult.class);
+      ps = mock(PostgresService.class);
+      JsonObject json= mock(JsonObject.class);
+      JsonArray jsonArray= mock(JsonArray.class);
+
+      meteringService = new MeteringServiceImpl(dbConfig, vertxObj,ps);
+
+      when(asyncResult.succeeded()).thenReturn(true);
+      when(asyncResult.result()).thenReturn(json,json1);
+
+      when(json.getJsonArray(anyString())).thenReturn(jsonArray);
+      when(jsonArray.getJsonObject(anyInt())).thenReturn(json);
+      when(json.getString(anyString())).thenReturn("300");
+
+      Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+          @Override
+          public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+              ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+              return null;
+          }
+      }).when(ps).executeQuery(anyString(), any());
+
+      JsonObject jsonObject = read();
     jsonObject.remove(RESOURCE_ID);
     jsonObject.remove(API);
     meteringService.executeReadQuery(
@@ -261,7 +335,7 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      assertEquals(SUCCESS, response.getString(TITLE));
+                     assertEquals(SUCCESS, response.getString(SUCCESS));
                       vertxTestContext.completeNow();
                     })));
 
@@ -270,6 +344,29 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query for given time and id.")
   void readForGivenTimeAndId(VertxTestContext vertxTestContext) {
+      JsonObject json1= new JsonObject().put(SUCCESS,"Success");
+      AsyncResult<JsonObject> asyncResult= mock(AsyncResult.class);
+      ps = mock(PostgresService.class);
+      JsonObject json= mock(JsonObject.class);
+      JsonArray jsonArray= mock(JsonArray.class);
+
+      meteringService = new MeteringServiceImpl(dbConfig, vertxObj,ps);
+
+      when(asyncResult.succeeded()).thenReturn(true);
+      when(asyncResult.result()).thenReturn(json,json1);
+
+      when(json.getJsonArray(anyString())).thenReturn(jsonArray);
+      when(jsonArray.getJsonObject(anyInt())).thenReturn(json);
+      when(json.getString(anyString())).thenReturn("300");
+
+      Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+          @Override
+          public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+              ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+              return null;
+          }
+      }).when(ps).executeQuery(anyString(), any());
+
     JsonObject jsonObject = readConsumerRequest();
     jsonObject.remove(API);
     meteringService.executeReadQuery(
@@ -278,7 +375,7 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      assertEquals(SUCCESS, response.getString(TITLE));
+                      assertEquals(SUCCESS, response.getString(SUCCESS));
                       vertxTestContext.completeNow();
                     })));
 
@@ -287,6 +384,28 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query for given time and api.")
   void readForGivenTimeAndApi(VertxTestContext vertxTestContext) {
+      JsonObject json1= new JsonObject().put(SUCCESS,"Success");
+      AsyncResult<JsonObject> asyncResult= mock(AsyncResult.class);
+      ps = mock(PostgresService.class);
+      JsonObject json= mock(JsonObject.class);
+      JsonArray jsonArray= mock(JsonArray.class);
+
+      meteringService = new MeteringServiceImpl(dbConfig, vertxObj,ps);
+
+      when(asyncResult.succeeded()).thenReturn(true);
+      when(asyncResult.result()).thenReturn(json,json1);
+
+      when(json.getJsonArray(anyString())).thenReturn(jsonArray);
+      when(jsonArray.getJsonObject(anyInt())).thenReturn(json);
+      when(json.getString(anyString())).thenReturn("300");
+
+      Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+          @Override
+          public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+              ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+              return null;
+          }
+      }).when(ps).executeQuery(anyString(), any());
     JsonObject jsonObject = readConsumerRequest();
     jsonObject.remove(RESOURCE_ID);
 
@@ -296,15 +415,37 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      assertEquals(SUCCESS, response.getString(TITLE));
+                     assertEquals(SUCCESS, response.getString(SUCCESS));
                       vertxTestContext.completeNow();
                     })));
 
   }
 
-  @Test
+ @Test
   @DisplayName("Testing read query for given time,api and resourceId.")
   void readForGivenTimeApiAndID(VertxTestContext vertxTestContext) {
+     JsonObject json1= new JsonObject().put(SUCCESS,"Success");
+     AsyncResult<JsonObject> asyncResult= mock(AsyncResult.class);
+     ps = mock(PostgresService.class);
+     JsonObject json= mock(JsonObject.class);
+     JsonArray jsonArray= mock(JsonArray.class);
+
+     meteringService = new MeteringServiceImpl(dbConfig, vertxObj,ps);
+
+     when(asyncResult.succeeded()).thenReturn(true);
+     when(asyncResult.result()).thenReturn(json,json1);
+
+     when(json.getJsonArray(anyString())).thenReturn(jsonArray);
+     when(jsonArray.getJsonObject(anyInt())).thenReturn(json);
+     when(json.getString(anyString())).thenReturn("300");
+
+     Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+         @Override
+         public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+             ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+             return null;
+         }
+     }).when(ps).executeQuery(anyString(), any());
     JsonObject jsonObject = readConsumerRequest();
 
     meteringService.executeReadQuery(
@@ -313,7 +454,7 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      assertEquals(SUCCESS, response.getString(TITLE));
+                     assertEquals(SUCCESS, response.getString(SUCCESS));
                       vertxTestContext.completeNow();
                     })));
 
@@ -322,6 +463,28 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing count query for given time,api and id.")
   void countForGivenTimeAndApiAndID(VertxTestContext vertxTestContext) {
+      JsonObject json1= new JsonObject().put(SUCCESS,"Success");
+      AsyncResult<JsonObject> asyncResult= mock(AsyncResult.class);
+      ps = mock(PostgresService.class);
+      JsonObject json= mock(JsonObject.class);
+      JsonArray jsonArray= mock(JsonArray.class);
+
+      meteringService = new MeteringServiceImpl(dbConfig, vertxObj,ps);
+
+      when(asyncResult.succeeded()).thenReturn(true);
+      when(asyncResult.result()).thenReturn(json,json1);
+
+      when(json.getJsonArray(anyString())).thenReturn(jsonArray);
+      when(jsonArray.getJsonObject(anyInt())).thenReturn(json);
+      when(json.getString(anyString())).thenReturn("300");
+
+      Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+          @Override
+          public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+              ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+              return null;
+          }
+      }).when(ps).executeQuery(anyString(), any());
     JsonObject jsonObject = readConsumerRequest();
     jsonObject.put("options", "count");
 
@@ -332,13 +495,13 @@ public class MeteringServiceTest {
                 vertxTestContext.verify(
                     () -> {
                       assertTrue(
-                          response.getJsonArray(RESULTS).getJsonObject(0).containsKey(TOTAL));
+                        response.getJsonArray(RESULTS).getJsonObject(0).containsKey(TOTAL));
                       vertxTestContext.completeNow();
                     })));
 
   }
 
-  /*@Test
+ /* @Test
   @DisplayName("Testing Write Query")
   void writeData(VertxTestContext vertxTestContext) {
     JsonObject request = new JsonObject();
@@ -361,6 +524,8 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query with missing providerId.")
   void readForMissingProviderId(VertxTestContext vertxTestContext) {
+      ps = mock(PostgresService.class);
+      meteringService = new MeteringServiceImpl(dbConfig, vertxObj,ps);
     JsonObject request = readProviderRequest();
     request.remove(PROVIDER_ID);
     meteringService.executeReadQuery(
@@ -370,8 +535,8 @@ public class MeteringServiceTest {
                 vertxTestContext.verify(
                     () -> {
                       assertEquals(
-                          INVALID_PROVIDER_REQUIRED,
-                          new JsonObject(response.getMessage()).getString(DETAIL));
+                         INVALID_PROVIDER_REQUIRED,
+                         new JsonObject(response.getMessage()).getString(DETAIL));
                       vertxTestContext.completeNow();
                     })));
 
@@ -400,6 +565,28 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query for given time,api and id.")
   void readForGivenTimeApiIdConsumerProviderID(VertxTestContext vertxTestContext) {
+      JsonObject json1= new JsonObject().put(SUCCESS,"Success");
+      AsyncResult<JsonObject> asyncResult= mock(AsyncResult.class);
+      ps = mock(PostgresService.class);
+      JsonObject json= mock(JsonObject.class);
+      JsonArray jsonArray= mock(JsonArray.class);
+
+      meteringService = new MeteringServiceImpl(dbConfig, vertxObj,ps);
+
+      when(asyncResult.succeeded()).thenReturn(true);
+      when(asyncResult.result()).thenReturn(json,json1);
+
+      when(json.getJsonArray(anyString())).thenReturn(jsonArray);
+      when(jsonArray.getJsonObject(anyInt())).thenReturn(json);
+      when(json.getString(anyString())).thenReturn("300");
+
+      Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+          @Override
+          public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+              ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+              return null;
+          }
+      }).when(ps).executeQuery(anyString(), any());
     JsonObject jsonObject = readProviderRequest();
 
     meteringService.executeReadQuery(
@@ -408,7 +595,7 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      assertEquals(SUCCESS, response.getString(TITLE));
+                     assertEquals(SUCCESS, response.getString(SUCCESS));
                       vertxTestContext.completeNow();
                     })));
 
@@ -417,6 +604,28 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing count query for given time,api and id.")
   void countForGivenTimeApiIdConsumerProviderID(VertxTestContext vertxTestContext) {
+      JsonObject json1= new JsonObject().put(SUCCESS,"Success");
+      AsyncResult<JsonObject> asyncResult= mock(AsyncResult.class);
+      ps = mock(PostgresService.class);
+      JsonObject json= mock(JsonObject.class);
+      JsonArray jsonArray= mock(JsonArray.class);
+
+      meteringService = new MeteringServiceImpl(dbConfig, vertxObj,ps);
+
+      when(asyncResult.succeeded()).thenReturn(true);
+      when(asyncResult.result()).thenReturn(json,json1);
+
+      when(json.getJsonArray(anyString())).thenReturn(jsonArray);
+      when(jsonArray.getJsonObject(anyInt())).thenReturn(json);
+      when(json.getString(anyString())).thenReturn("300");
+
+      Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+          @Override
+          public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+              ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+              return null;
+          }
+      }).when(ps).executeQuery(anyString(), any());
     JsonObject jsonObject = readProviderRequest();
     jsonObject.put("options", "count");
 
@@ -426,8 +635,7 @@ public class MeteringServiceTest {
             response ->
                 vertxTestContext.verify(
                     () -> {
-                      LOGGER.debug("RESPONSE" + response);
-                      assertEquals(SUCCESS, response.getString(TITLE));
+                      assertEquals(SUCCESS, response.getString("title"));
                       vertxTestContext.completeNow();
                     })));
 
@@ -436,6 +644,29 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing read query for given time,api and providerId.")
   void readForGivenTimeApiAndProviderID(VertxTestContext vertxTestContext) {
+      JsonObject json1= new JsonObject().put(SUCCESS,"Success");
+      AsyncResult<JsonObject> asyncResult= mock(AsyncResult.class);
+      ps = mock(PostgresService.class);
+      JsonObject json= mock(JsonObject.class);
+      JsonArray jsonArray= mock(JsonArray.class);
+
+      meteringService = new MeteringServiceImpl(dbConfig, vertxObj,ps);
+
+      when(asyncResult.succeeded()).thenReturn(true);
+      when(asyncResult.result()).thenReturn(json,json1);
+
+      when(json.getJsonArray(anyString())).thenReturn(jsonArray);
+      when(jsonArray.getJsonObject(anyInt())).thenReturn(json);
+      when(json.getString(anyString())).thenReturn("300");
+
+      Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+          @Override
+          public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+              ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+              return null;
+          }
+      }).when(ps).executeQuery(anyString(), any());
+
     JsonObject jsonObject = readProviderRequest();
     jsonObject.remove(RESOURCE_ID);
     jsonObject.remove(CONSUMER_ID);
@@ -447,7 +678,7 @@ public class MeteringServiceTest {
                 vertxTestContext.verify(
                     () -> {
                       LOGGER.debug("RESPONSE" + response);
-                      assertEquals(SUCCESS, response.getString(TITLE));
+                     assertEquals(SUCCESS, response.getString(SUCCESS));
                       vertxTestContext.completeNow();
                     })));
 
@@ -455,6 +686,28 @@ public class MeteringServiceTest {
   @Test
   @DisplayName("Testing count query for given time.")
   void readCountForGivenTime(VertxTestContext vertxTestContext) {
+      JsonObject json1= new JsonObject().put(SUCCESS,"Success");
+      AsyncResult<JsonObject> asyncResult= mock(AsyncResult.class);
+      ps = mock(PostgresService.class);
+      JsonObject json= mock(JsonObject.class);
+      JsonArray jsonArray= mock(JsonArray.class);
+
+      meteringService = new MeteringServiceImpl(dbConfig, vertxObj,ps);
+
+      when(asyncResult.succeeded()).thenReturn(true);
+      when(asyncResult.result()).thenReturn(json);
+
+      when(json.getJsonArray(anyString())).thenReturn(jsonArray);
+      when(jsonArray.getJsonObject(anyInt())).thenReturn(json);
+      when(json.getString(anyString())).thenReturn("300");
+
+      Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+          @Override
+          public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+              ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+              return null;
+          }
+      }).when(ps).executeQuery(anyString(), any());
       JsonObject jsonObject = read();
       jsonObject.put("options","count");
       jsonObject.remove(API);
@@ -464,9 +717,8 @@ public class MeteringServiceTest {
                       response ->
                               vertxTestContext.verify(
                                       () -> {
-                                          assertEquals(SUCCESS, response.getString(TITLE));
-                                          vertxTestContext.completeNow();
+                                       assertEquals(SUCCESS, response.getString("title"));
+                                       vertxTestContext.completeNow();
                                       })));
-
     }
 }
