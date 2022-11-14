@@ -278,4 +278,6 @@ public class Constants {
 
   public static final String SELECT_SUB_SQL =
       "SELECT * from subscriptions where queue_name='$1' and entity='$2'";
+
+  public static final String NO_CONTENT="204";
 }

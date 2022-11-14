@@ -124,42 +124,52 @@ public class MeteringServiceImpl implements MeteringService {
     }
 
     private void countQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-        queryCount = queryBuilder.buildCountReadQueryByPG(request);
-        Future<JsonObject> resultCountPg = databaseOperation(queryCount);
+        queryCount = queryBuilder.buildCountReadQueryFromPG(request);
+        Future<JsonObject> resultCountPg = executeQueryDatabaseOperation(queryCount);
         resultCountPg.onComplete(countHandler -> {
             if (countHandler.succeeded()) {
-                total = Integer.parseInt(countHandler.result().getJsonArray("result").getJsonObject(0).getString("count"));
-                if (total == 0) {
-                    responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(0);
-                    handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+                try{
+                    var countHandle= countHandler.result().getJsonArray("result");
+                    total= countHandle.getJsonObject(0).getInteger("count");
+                    if (total == 0) {
+                        responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(0);
+                        handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
 
-                } else {
-                    responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200).setCount(total);
-                    handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+                    } else {
+                        responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200).setCount(total);
+                        handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+                    }
+                }catch (NullPointerException nullPointerException){
+                    LOGGER.debug(nullPointerException.toString());
                 }
             }
         });
     }
     private void countQueryForRead(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-        queryCount = queryBuilder.buildCountReadQueryByPG(request);
-        Future<JsonObject> resultCountPg = databaseOperation(queryCount);
+        queryCount = queryBuilder.buildCountReadQueryFromPG(request);
+        Future<JsonObject> resultCountPg = executeQueryDatabaseOperation(queryCount);
         resultCountPg.onComplete(countHandler -> {
             if (countHandler.succeeded()) {
-                total = Integer.parseInt(countHandler.result().getJsonArray("result").getJsonObject(0).getString("count"));
-                if (total == 0) {
-                    responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(0);
-                    handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+                try {
+                    var countHandle = countHandler.result().getJsonArray("result");
+                    total = countHandle.getJsonObject(0).getInteger("count");
+                    if (total == 0) {
+                        responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(0);
+                        handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
 
-                } else {
-                    readMethod(request,handler);
+                    } else {
+                        readMethod(request, handler);
+                    }
+                } catch (NullPointerException nullPointerException) {
+                    LOGGER.debug(nullPointerException.toString());
                 }
             }
         });
     }
 
     private void readMethod(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-            queryPg = queryBuilder.buildReadQueryByPG(request);
-            Future<JsonObject> resultsPg = databaseOperation(queryPg);
+            queryPg = queryBuilder.buildReadQueryFromPG(request);
+            Future<JsonObject> resultsPg = executeQueryDatabaseOperation(queryPg);
             resultsPg.onComplete(readHandler -> {
                 if (readHandler.succeeded()) {
                     LOGGER.info("Read Completed successfully");
@@ -221,7 +231,7 @@ public class MeteringServiceImpl implements MeteringService {
         return promise.future();
     }
 
-    private Future<JsonObject> databaseOperation(String query) {
+    private Future<JsonObject> executeQueryDatabaseOperation(String query) {
         Promise<JsonObject> promise = Promise.promise();
         JsonObject response = new JsonObject();
         postgresService.executeQuery(

@@ -1,5 +1,5 @@
 ---
--- rsaudit table
+-- rs audit table
 ---
 
 CREATE TABLE IF NOT EXISTS auditing_rs
@@ -16,6 +16,10 @@ CREATE TABLE IF NOT EXISTS auditing_rs
 
 ALTER TABLE auditing_rs OWNER TO ${flyway:user};
 
+---
+-- cat audit table
+---
+
 CREATE TABLE IF NOT EXISTS auditing_cat
 (
    id varchar NOT NULL,
@@ -29,6 +33,10 @@ CREATE TABLE IF NOT EXISTS auditing_cat
    CONSTRAINT auditing_cat_pk PRIMARY KEY (id)
 );
 ALTER TABLE auditing_cat OWNER TO ${flyway:user};
+
+---
+-- aaa audit table
+---
 
 CREATE TABLE IF NOT EXISTS auditing_aaa
 (

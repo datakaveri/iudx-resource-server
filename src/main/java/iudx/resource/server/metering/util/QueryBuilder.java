@@ -51,7 +51,7 @@ public class QueryBuilder {
         return time.toInstant().toEpochMilli();
     }
 
-    public String buildReadQueryByPG(JsonObject request) {
+    public String buildReadQueryFromPG(JsonObject request) {
         String startTime = request.getString(START_TIME);
         String endTime = request.getString(END_TIME);
         String resourceId = request.getString(RESOURCE_ID);
@@ -88,7 +88,7 @@ public class QueryBuilder {
         return query.toString();
     }
 
-    public String buildCountReadQueryByPG(JsonObject request) {
+    public String buildCountReadQueryFromPG(JsonObject request) {
         String startTime = request.getString(START_TIME);
         String endTime = request.getString(END_TIME);
         String resourceId = request.getString(RESOURCE_ID);
