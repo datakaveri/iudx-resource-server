@@ -127,19 +127,18 @@ public class AsyncServiceImpl implements AsyncService {
 
   @Override
   public AsyncService asyncSearch(String requestId, String sub, String searchId, JsonObject query) {
-    String id = query.getValue(ID).toString();
+    String  id = query.getJsonArray(ID).getString(0);
     getRecord4RequestId(requestId)
         .onSuccess(handler -> {
-          LOGGER.debug("process4ExistingRequestId called");
           process4ExistingRequestId(id,requestId, sub, searchId, handler);
         })
         .onFailure(handler -> {
           updateQueryExecutionStatus(searchId, QueryProgress.IN_PROGRESS)
               .onSuccess(statusHandler -> {
-                LOGGER.debug("process4NewRequestId called");
                 process4NewRequestId(searchId,sub, query);
               })
               .onFailure(statusHandler -> {
+                LOGGER.error("");
 
               });
         });
@@ -158,7 +157,7 @@ public class AsyncServiceImpl implements AsyncService {
         LOGGER.debug("status : {} update for search id : {}", status.toString(), searchId);
         promise.complete();
       } else {
-        promise.fail("fail to update query status in database");
+        promise.fail("failprocess4ExistingRequestId to update query status in database");
       }
     });
     return promise.future();
@@ -226,8 +225,8 @@ public class AsyncServiceImpl implements AsyncService {
             .replace("$3", QueryProgress.COMPLETE.toString())
             .replace("$4", object_id)
             .replace("$5", String.valueOf(100.0d))
-            .replace("$6", searchId)
-            .replace("$7", String.valueOf(fileSize)));
+            .replace("$6", String.valueOf(fileSize))
+            .replace("$7", searchId));
 
     executePGQuery(queryStringBuilder.toString())
         .onSuccess(handler -> {
@@ -242,7 +241,7 @@ public class AsyncServiceImpl implements AsyncService {
   private void process4NewRequestId(String searchId,String userId,JsonObject query) {
     File file = new File(filePath + "/" + searchId + ".json");
     String objectId = UUID.randomUUID().toString();
-    String id = query.getValue("id").toString();
+    String  id = query.getJsonArray(ID).getString(0);
 
 
 
@@ -265,8 +264,8 @@ public class AsyncServiceImpl implements AsyncService {
                             .replace("$3", QueryProgress.COMPLETE.toString())
                             .replace("$4", objectId)
                             .replace("$5", String.valueOf(100.0))
-                            .replace("$7", String.valueOf(fileSize))
-                            .replace("$6", searchId));
+                            .replace("$6", String.valueOf(fileSize))
+                            .replace("$7", searchId));
 
             executePGQuery(updateQuery.toString())
                 .onSuccess(recordUpdateHandler -> {
@@ -362,14 +361,12 @@ public class AsyncServiceImpl implements AsyncService {
   }
   private Future<Void> updateAuditTable(String id, String userId, long fileSize) {
     Promise<Void> promise = Promise.promise();
-
     JsonObject request = new JsonObject();
 
     request.put(Constants.USER_ID, userId);
-    request.put(ID, id.substring(2, id.length() - 2));
+    request.put(ID, id);
     request.put(API, IUDX_ASYNC_SEARCH_API);
     request.put(RESPONSE_SIZE, fileSize);
-    LOGGER.debug("requestrequest: "+request);
     meteringService.executeWriteQuery(
             request,
             handler -> {

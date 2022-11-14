@@ -48,7 +48,7 @@ public class AsyncQueryListener implements RMQListeners {
                 LOGGER.debug("received message from async-query Q :" + asyncQueryJson);
                 String requestId = asyncQueryJson.getString("requestId");
                 String searchId = asyncQueryJson.getString("searchId");
-                String user = asyncQueryJson.getString("q");
+                String user = asyncQueryJson.getString("user");
                 JsonObject query = asyncQueryJson.getJsonObject("query");
                 LOGGER.debug("query received from RMQ : {}", query);
 

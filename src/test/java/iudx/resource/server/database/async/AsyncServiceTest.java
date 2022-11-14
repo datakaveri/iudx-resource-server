@@ -90,6 +90,7 @@ public class AsyncServiceTest {
         new AsyncServiceImpl(vertx, client, pgService, fileOpsHelper, timeLimit, filePath);
     asyncServiceSpy = spy(asyncService);
 
+
     asyncResult1 = mock(AsyncResult.class);
     asyncResult2 = mock(AsyncResult.class);
 
@@ -430,8 +431,6 @@ public class AsyncServiceTest {
 
 
 
-
-
 //  @ParameterizedTest
 //  @ValueSource(booleans = {true,false})
 //  @DisplayName("Test updateProgress method : Different boolean values")
@@ -450,5 +449,38 @@ public class AsyncServiceTest {
 //    listener.updateProgress(0.55);
 //    vertxTestContext.completeNow();
 //  }
+@Test
+@DisplayName("s3Upload upload successfully")
+public void failDownloadForNewRequestI(Vertx vertx, VertxTestContext testContext) {
+  String requestId = "efb0b92cd5b50d0a75a939ffa997c6e4fccdc62414ad0177a020eec98f69144e";
+  String sub = "15c7506f-c800-48d6-adeb-0542b03947c6";
+  String searchId = "4b25aa92-47bb-4c91-98c0-47a1c7a51fbe";
+  JsonObject query = query();
+
+  doAnswer(Answer -> Future.failedFuture("fail"))
+          .when(asyncServiceSpy)
+          .getRecord4RequestId(any());
+
+  when(asyncResult1.succeeded()).thenReturn(true);
+  when(asyncResult1.result()).thenReturn(jsonObject);
+  when(jsonObject.getString(anyString())).thenReturn("url");
+
+
+  Mockito.doAnswer(
+                  new Answer<AsyncResult<JsonObject>>() {
+                    @SuppressWarnings("unchecked")
+                    @Override
+                    public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                      ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(2)).handle(asyncResult1);
+                      return null;
+                    }
+                  })
+          .when(fileOpsHelper)
+          .s3Upload(any(), any(), any());
+
+
+  asyncServiceSpy.asyncSearch(requestId, sub, searchId, query);
+  testContext.completeNow();
+}
 
 }
