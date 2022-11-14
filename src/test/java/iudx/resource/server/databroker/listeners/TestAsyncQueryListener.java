@@ -72,7 +72,7 @@ public class TestAsyncQueryListener {
     JsonObject object = new JsonObject();
     object.put("requestId", "dummy_key");
     object.put("searchId", "Dummy_unique-attribute");
-    object.put("sub", "Dummy_value");
+    object.put("user", "Dummy_value");
     object.put("query", new JsonObject());
     Buffer buffer = Buffer.buffer(object.toString());
 
