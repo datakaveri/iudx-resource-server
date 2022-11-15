@@ -973,29 +973,10 @@ public class ApiServerVerticle extends AbstractVerticle {
             subHandler -> {
               if (subHandler.succeeded()) {
                 LOGGER.info("Success: Handle Subscription request;");
-                if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-                  routingContext.data().put(RESPONSE_SIZE, 0);
-                  Future.future(fu -> updateAuditTable(routingContext));
-                  handleSuccessResponse(
-                          response, ResponseType.Created.getCode(), subHandler.result().toString());
-                }
-                //            Encryption
-                else {
-                  Future<JsonObject> future = encryption(routingContext, subHandler.result().toString());
-                  future.onComplete(encryptionHandler -> {
-                    if (encryptionHandler.succeeded()) {
-                      JsonObject result = encryptionHandler.result();
-                      routingContext.data().put(RESPONSE_SIZE, 0);
-                      Future.future(fu -> updateAuditTable(routingContext));
-                      handleSuccessResponse(
-                              response, ResponseType.Created.getCode(), result.encode());
-                    } else {
-                      LOGGER.error("Encryption not completed");
-                      processBackendResponse(response, encryptionHandler.cause().getMessage());
-                    }
-                  });
-                }
-
+                routingContext.data().put(RESPONSE_SIZE, 0);
+                Future.future(fu -> updateAuditTable(routingContext));
+                handleSuccessResponse(
+                        response, ResponseType.Created.getCode(), subHandler.result().toString());
               } else {
                 LOGGER.error("Fail: Handle Subscription request;");
                 processBackendResponse(response, subHandler.cause().getMessage());
@@ -1032,28 +1013,10 @@ public class ApiServerVerticle extends AbstractVerticle {
               subsRequestHandler -> {
                 if (subsRequestHandler.succeeded()) {
                   LOGGER.debug("Success: Appending subscription");
-                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-                    routingContext.data().put(RESPONSE_SIZE, 0);
-                    Future.future(fu -> updateAuditTable(routingContext));
-                    handleSuccessResponse(
-                            response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
-                  }
-                  // Encryption
-                  else {
-                    Future<JsonObject> future = encryption(routingContext, subsRequestHandler.result().toString());
-                    future.onComplete(encryptionHandler -> {
-                      if (encryptionHandler.succeeded()) {
-                        JsonObject result = encryptionHandler.result();
-                        routingContext.data().put(RESPONSE_SIZE, 0);
-                        Future.future(fu -> updateAuditTable(routingContext));
-                        handleSuccessResponse(
-                                response, ResponseType.Created.getCode(), result.encode());
-                      } else {
-                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
-                        processBackendResponse(response, encryptionHandler.cause().getMessage());
-                      }
-                    });
-                  }
+                  routingContext.data().put(RESPONSE_SIZE, 0);
+                  Future.future(fu -> updateAuditTable(routingContext));
+                  handleSuccessResponse(
+                          response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
                 } else {
                   LOGGER.error("Fail: Appending subscription");
                   processBackendResponse(response, subsRequestHandler.cause().getMessage());
@@ -1094,28 +1057,10 @@ public class ApiServerVerticle extends AbstractVerticle {
               subsRequestHandler -> {
                 if (subsRequestHandler.succeeded()) {
                   LOGGER.info("result : " + subsRequestHandler.result());
-                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-                    routingContext.data().put(RESPONSE_SIZE, 0);
-                    Future.future(fu -> updateAuditTable(routingContext));
-                    handleSuccessResponse(
-                            response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
-                  }
-                  //            Encryption
-                  else {
-                    Future<JsonObject> future = encryption(routingContext, subsRequestHandler.result().toString());
-                    future.onComplete(encryptionHandler -> {
-                      if (encryptionHandler.succeeded()) {
-                        JsonObject result = encryptionHandler.result();
-                        routingContext.data().put(RESPONSE_SIZE, 0);
-                        Future.future(fu -> updateAuditTable(routingContext));
-                        handleSuccessResponse(
-                                response, ResponseType.Created.getCode(), result.encode());
-                      } else {
-                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
-                        processBackendResponse(response, encryptionHandler.cause().getMessage());
-                      }
-                    });
-                  }
+                  routingContext.data().put(RESPONSE_SIZE, 0);
+                  Future.future(fu -> updateAuditTable(routingContext));
+                  handleSuccessResponse(
+                          response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
                 } else {
                   LOGGER.error("Fail: Bad request");
                   processBackendResponse(response, subsRequestHandler.cause().getMessage());
@@ -1157,28 +1102,10 @@ public class ApiServerVerticle extends AbstractVerticle {
               subHandler -> {
                 if (subHandler.succeeded()) {
                   LOGGER.info("Success: Getting subscription");
-                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-                    routingContext.data().put(RESPONSE_SIZE, 0);
-                    Future.future(fu -> updateAuditTable(routingContext));
-                    handleSuccessResponse(
-                            response, ResponseType.Ok.getCode(), subHandler.result().toString());
-                  }
-//            Encryption
-                  else {
-                    Future<JsonObject> future = encryption(routingContext, subHandler.result().toString());
-                    future.onComplete(encryptionHandler -> {
-                      if (encryptionHandler.succeeded()) {
-                        JsonObject result = encryptionHandler.result();
-                        routingContext.data().put(RESPONSE_SIZE, 0);
-                        Future.future(fu -> updateAuditTable(routingContext));
-                        handleSuccessResponse(
-                                response, ResponseType.Ok.getCode(), result.encode());
-                      } else {
-                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
-                        processBackendResponse(response, encryptionHandler.cause().getMessage());
-                      }
-                    });
-                  }
+                  routingContext.data().put(RESPONSE_SIZE, 0);
+                  Future.future(fu -> updateAuditTable(routingContext));
+                  handleSuccessResponse(
+                          response, ResponseType.Ok.getCode(), subHandler.result().toString());
                 } else {
                   LOGGER.error("Fail: Bad request");
                   processBackendResponse(response, subHandler.cause().getMessage());
@@ -1218,29 +1145,10 @@ public class ApiServerVerticle extends AbstractVerticle {
       subsReq.onComplete(
               subHandler -> {
                 if (subHandler.succeeded()) {
-                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-                    routingContext.data().put(RESPONSE_SIZE, 0);
-                    Future.future(fu -> updateAuditTable(routingContext));
-                    handleSuccessResponse(
-                            response, ResponseType.Ok.getCode(), subHandler.result().toString());
-                  }
-//            Encryption
-                  else {
-                    Future<JsonObject> future = encryption(routingContext, subHandler.result().toString());
-                    future.onComplete(encryptionHandler -> {
-                      if (encryptionHandler.succeeded()) {
-                        JsonObject result = encryptionHandler.result();
-                        routingContext.data().put(RESPONSE_SIZE, 0);
-                        Future.future(fu -> updateAuditTable(routingContext));
-                        handleSuccessResponse(
-                                response, ResponseType.Ok.getCode(), result.encode()
-                        );
-                      } else {
-                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
-                        processBackendResponse(response, encryptionHandler.cause().getMessage());
-                      }
-                    });
-                  }
+                  routingContext.data().put(RESPONSE_SIZE, 0);
+                  Future.future(fu -> updateAuditTable(routingContext));
+                  handleSuccessResponse(
+                          response, ResponseType.Ok.getCode(), subHandler.result().toString());
                 } else {
                   processBackendResponse(response, subHandler.cause().getMessage());
                 }
