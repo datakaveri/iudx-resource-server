@@ -357,8 +357,10 @@
                         <exclude>iudx/resource/server/apiserver/AsyncRestApi.class</exclude>
 
                         <!-- service proxy interfaces -->
-                        <exclide>iudx/resource/server/database/archives/DatabaseService.class</exclide>
-                        <exclide>iudx/resource/server/database/latest/LatestDataService.class</exclide>
+                        <!-- service proxy interfaces -->
+                        <exclude>iudx/resource/server/database/archives/DatabaseService.class</exclude>
+                        <exclude>iudx/resource/server/database/latest/LatestDataService.class</exclude>
+                        <exclude>iudx/resource/server/encryption/EncryptionService.class</exclude>
 
                         <!-- deployment helper classes -->
                         <exclude>iudx/resource/server/deploy/*.class</exclude>

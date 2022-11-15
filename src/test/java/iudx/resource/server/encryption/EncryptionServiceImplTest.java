@@ -10,15 +10,11 @@ import com.goterl.lazysodium.utils.KeyPair;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.stream.Stream;
 
+import static iudx.resource.server.encryption.util.Constants.ENCODED_KEY;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -45,7 +42,6 @@ public class EncryptionServiceImplTest {
     private static Key privateKey;
     private static JsonObject jsonObject;
     private static Box.Lazy box;
-    private static Base64MessageEncoder base64MessageEncoder;
 
     @BeforeEach
     public void init(VertxTestContext vertxTestContext) {
@@ -53,8 +49,7 @@ public class EncryptionServiceImplTest {
         lazySodiumJava = new LazySodiumJava(sodiumJava, StandardCharsets.UTF_8);
         jsonObject = new JsonObject();
         box = (Box.Lazy) lazySodiumJava;
-        base64MessageEncoder = new Base64MessageEncoder();
-        encryptionService = new EncryptionServiceImpl(box, base64MessageEncoder);
+        encryptionService = new EncryptionServiceImpl(box);
         try {
             keyPair = box.cryptoBoxKeypair();
             publicKey = keyPair.getPublicKey();
@@ -133,24 +128,6 @@ public class EncryptionServiceImplTest {
         );
     }
 
-    @Test
-    @DisplayName("Test encrypt method : Success")
-    public void testEncryptSuccess(VertxTestContext vertxTestContext) {
-        /** Not useful, since the same thing is used in Decrypt method **/
-        String message = "Dummy string to be encrypted";
-        String encodedKey = Base64.getUrlEncoder().encodeToString(publicKey.getAsBytes());
-        jsonObject.put(ENCODED_KEY, encodedKey);
-        new EncryptionServiceImpl().encrypt(message, jsonObject).onComplete(handler -> {
-            if (handler.succeeded()) {
-                assertNotNull(handler.result().getString("encodedCipherText"));
-                System.out.println(handler.result().encode());
-                vertxTestContext.completeNow();
-            } else {
-                vertxTestContext.failNow(handler.cause().getMessage());
-            }
-        });
-    }
-
     static Stream<Arguments> messages() {
         return Stream.of(
                 Arguments.of(null, "message is null or empty"),
@@ -192,7 +169,7 @@ public class EncryptionServiceImplTest {
     public void testEncryptFailure(VertxTestContext vertxTestContext) throws SodiumException {
         Box.Lazy box = mock(Box.Lazy.class);
         Base64MessageEncoder base64MessageEncoder = mock(Base64MessageEncoder.class);
-        encryptionService = new EncryptionServiceImpl(box, base64MessageEncoder);
+        encryptionService = new EncryptionServiceImpl(box);
         String encodedKey = Base64.getUrlEncoder().encodeToString(publicKey.getAsBytes());
         jsonObject.put(ENCODED_KEY, encodedKey);
         when(box.cryptoBoxSealEasy(anyString(), any(Key.class))).thenThrow(SodiumException.class);
@@ -205,23 +182,6 @@ public class EncryptionServiceImplTest {
             }
         });
     }
-/*
-    @Test
-    @DisplayName("Test decrypt method : Success")
-    public void testDecrypt(VertxTestContext vertxTestContext) {
-       // sodium exception
-        jsonObject.put("keyPair",keyPair);
-        String encodedCipherText = "RjU4MTYwRTkxNzc2NkFFMzlFNjg0MURCN0NENTM2Q0EyNzUxODAxOTA4NzQ5MzgyRTAzRTMxRjlENkYzNDYxM0FFMUU4RUExQUZENzM1OTU2ODcwMDQxNjdCNkYyQ0RCNDNDOTA5MkM1ODE3RDExMUU0RkNBQjhGM0NFMURCQjg4RjE3OUYxNjI3NTk3NTU5OTJFMzk4OTg=";
-        encryptionService.decrypt(encodedCipherText, jsonObject).onComplete(handler -> {
-            if (handler.succeeded()) {
-                System.out.println("Success");
-            } else {
-                System.out.println("Failure");
-            }
-        });
-        vertxTestContext.completeNow();
-    }*/
-
 
     @Test
     @DisplayName("Test decrypt method : Success")
@@ -234,7 +194,6 @@ public class EncryptionServiceImplTest {
             if (handler.succeeded()) {
                 assertNotNull(handler.result().getString("encodedCipherText"));
                 String encodedCipherText = handler.result().getString("encodedCipherText");
-                System.out.println(encodedCipherText);
                 encryptionService.decrypt(encodedCipherText, jsonObject).onComplete(decryptHandler -> {
                     if (decryptHandler.succeeded()) {
                         assertEquals(message, decryptHandler.result().getString("message"));
@@ -312,13 +271,12 @@ public class EncryptionServiceImplTest {
         jsonObject.put("keyPair", keyPair);
         encryptionService.decrypt(encodedCipherText, jsonObject).onComplete(handler -> {
             if (handler.succeeded()) {
-                System.out.println("Success");
+                vertxTestContext.failNow(handler.cause().getMessage());
             } else {
                 assertEquals(expected, handler.cause().getMessage());
-                System.out.println("Failure");
+                vertxTestContext.completeNow();
             }
         });
-        vertxTestContext.completeNow();
     }
 
 }

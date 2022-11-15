@@ -21,7 +21,6 @@ import static iudx.resource.server.encryption.util.Constants.*;
 
 public class EncryptionServiceImpl implements EncryptionService {
     private static final Logger LOG = LoggerFactory.getLogger(EncryptionServiceImpl.class);
-    private static Base64MessageEncoder base64MessageEncoder;
     private Box.Lazy box;
 
     public EncryptionServiceImpl() {
@@ -44,55 +43,51 @@ public class EncryptionServiceImpl implements EncryptionService {
             //decode public key
             try {
                 Key key = decodePublicKey(encodedPublicKey);
-                // String cipherText = box.cryptoBoxSealEasy(message, key);
-                final String reallyLongCipherText = org.apache.commons.lang.StringUtils.join( new String[] {
-                        box.cryptoBoxSealEasy(message, key),
-                } );
-                /* encode */
-                base64MessageEncoder = new Base64MessageEncoder();
-                // String encodedCipherText = base64MessageEncoder.encode(reallyLongCipherText.getBytes());
-                final String reallyLongEncodedCipherText = org.apache.commons.lang.StringUtils.join( new String[] {
-                        base64MessageEncoder.encode(reallyLongCipherText.getBytes())
-                } );
-                result.put(ENCODED_CIPHER_TEXT, reallyLongEncodedCipherText);
-            }catch (IllegalArgumentException illegalArgumentException)
-            {
+                String cipherText = box.cryptoBoxSealEasy(message, key);
+                // encode
+                String encodedCipherText = Base64.getUrlEncoder().encodeToString(cipherText.getBytes(StandardCharsets.UTF_8));
+                result.put(ENCODED_CIPHER_TEXT, encodedCipherText);
+            } catch (IllegalArgumentException illegalArgumentException) {
                 LOG.error("Exception while decoding the public key: " + illegalArgumentException);
                 LOG.error("The public key should be in URL Safe base64 format");
                 promise.fail("Exception while decoding public key: " + illegalArgumentException);
-            }
-            catch (SodiumException e) {
+            } catch (SodiumException e) {
                 LOG.error("Sodium Exception: " + e);
                 promise.fail("Sodium exception: " + e);
             }
             promise.tryComplete(result);
         } else {
             LOG.error("public key is empty or null");
-            promise.fail("Public key is empty or null");
+            promise.tryFail("Public key is empty or null");
         }
         return promise.future();
     }
 
-
     @Override
     public Future<JsonObject> decrypt(String encodedCipherText, JsonObject keyPair) {
-        if (encodedCipherText == null) {
-            return Future.failedFuture("encoded cipher text is null");
+        if (encodedCipherText == null || encodedCipherText.isEmpty()) {
+            return Future.failedFuture("encoded cipher text is null or empty");
         }
-        if (keyPair == null && keyPair.getValue(KEYPAIR) == null) {
+        if (keyPair == null || keyPair.getValue(KEYPAIR) == null) {
             return Future.failedFuture("key pair is null");
         }
         JsonObject result = new JsonObject();
-        /* decode encoded cipher Text */
-        byte[] bytes = base64MessageEncoder.decode(encodedCipherText);
-        String decodedMessage = new String(bytes, StandardCharsets.UTF_8);
-        KeyPair keys = (KeyPair) keyPair.getValue(KEYPAIR);
+        // decode encoded cipher Text
         try {
+            byte[] bytes = Base64.getUrlDecoder().decode(encodedCipherText);
+            String decodedMessage = new String(bytes, StandardCharsets.UTF_8);
+            KeyPair keys = (KeyPair) keyPair.getValue(KEYPAIR);
             String message = box.cryptoBoxSealOpenEasy(decodedMessage, keys);
             result.put("message", message);
+        } catch (IllegalArgumentException exception) {
+            LOG.error("IllegalArgumentException: " + exception);
+            return Future.failedFuture("IllegalArgumentException: " + exception);
         } catch (SodiumException e) {
             LOG.error("Sodium Exception: " + e);
             return Future.failedFuture("Sodium Exception");
+        } catch (Exception e) {
+            LOG.error("Exception: " + e);
+            return Future.failedFuture("Exception : " + e);
         }
         return Future.succeededFuture(result);
     }
@@ -106,10 +101,11 @@ public class EncryptionServiceImpl implements EncryptionService {
             result.put(ENCODED_KEY, encodedKey);
             return Future.succeededFuture(result);
         } else
-            return Future.failedFuture("public key is empty or null");
+            return Future.failedFuture("public key is null or empty");
     }
+
     public Key decodePublicKey(JsonObject encodedPublicKey) {
-        if (encodedPublicKey == null && encodedPublicKey.getString(ENCODED_KEY) == null && encodedPublicKey.getString(ENCODED_KEY).isEmpty()) {
+        if (encodedPublicKey == null || encodedPublicKey.getString(ENCODED_KEY) == null || encodedPublicKey.getString(ENCODED_KEY).isEmpty()) {
             return null;
         }
         String publicKey = encodedPublicKey.getString(ENCODED_KEY);
