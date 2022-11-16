@@ -491,27 +491,9 @@ public class ApiServerVerticle extends AbstractVerticle {
               handler -> {
                 if (handler.succeeded()) {
                   LOGGER.debug("Table Reading Done.");
-                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-                    handleSuccessResponse(
-                            response, ResponseType.Ok.getCode(), handler.result().toString());
-                    promise.complete();
-                  }
-//            Encryption
-                  else {
-                    Future<JsonObject> future = encryption(routingContext, handler.result().toString());
-                    future.onComplete(encryptionHandler -> {
-                      if (encryptionHandler.succeeded()) {
-                        JsonObject result = encryptionHandler.result();
-                        handleSuccessResponse(
-                                response, ResponseType.Ok.getCode(), result.encode());
-                        promise.complete();
-                      } else {
-                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
-                        processBackendResponse(response, encryptionHandler.cause().getMessage());
-                        promise.complete();
-                      }
-                    });
-                  }
+                  handleSuccessResponse(
+                          response, ResponseType.Ok.getCode(), handler.result().toString());
+                  promise.complete();
                 } else {
                   LOGGER.error("Fail msg " + handler.cause().getMessage());
                   LOGGER.error("Table reading failed.");
