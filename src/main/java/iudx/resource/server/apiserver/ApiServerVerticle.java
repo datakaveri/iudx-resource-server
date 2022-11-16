@@ -1161,28 +1161,10 @@ public class ApiServerVerticle extends AbstractVerticle {
             handler -> {
               if (handler.succeeded()) {
                 LOGGER.info("Success: Registering adapter");
-                if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-                  routingContext.data().put(RESPONSE_SIZE, 0);
-                  Future.future(fu -> updateAuditTable(routingContext));
-                  handleSuccessResponse(
-                          response, ResponseType.Created.getCode(), handler.result().toString());
-                }
-//            Encryption
-                else {
-                  Future<JsonObject> future = encryption(routingContext, handler.result().toString());
-                  future.onComplete(encryptionHandler -> {
-                    if (encryptionHandler.succeeded()) {
-                      JsonObject result = encryptionHandler.result();
-                      routingContext.data().put(RESPONSE_SIZE, 0);
-                      Future.future(fu -> updateAuditTable(routingContext));
-                      handleSuccessResponse(
-                              response, ResponseType.Created.getCode(), result.encode());
-                    } else {
-                      LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
-                      processBackendResponse(response, encryptionHandler.cause().getMessage());
-                    }
-                  });
-                }
+                routingContext.data().put(RESPONSE_SIZE, 0);
+                Future.future(fu -> updateAuditTable(routingContext));
+                handleSuccessResponse(
+                        response, ResponseType.Created.getCode(), handler.result().toString());
               } else if (brokerResult.failed()) {
                 LOGGER.error("Fail: Bad request" + handler.cause().getMessage());
                 processBackendResponse(response, handler.cause().getMessage());
@@ -1223,28 +1205,10 @@ public class ApiServerVerticle extends AbstractVerticle {
             brokerResultHandler -> {
               if (brokerResultHandler.succeeded()) {
                 LOGGER.info("Success: Deleting adapter");
-                if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-                  routingContext.data().put(RESPONSE_SIZE, 0);
-                  Future.future(fu -> updateAuditTable(routingContext));
-                  handleSuccessResponse(
-                          response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
-                }
-//            Encryption
-                else {
-                  Future<JsonObject> future = encryption(routingContext, brokerResultHandler.result().toString());
-                  future.onComplete(encryptionHandler -> {
-                    if (encryptionHandler.succeeded()) {
-                      JsonObject result = encryptionHandler.result();
-                      routingContext.data().put(RESPONSE_SIZE, 0);
-                      Future.future(fu -> updateAuditTable(routingContext));
-                      handleSuccessResponse(
-                              response, ResponseType.Ok.getCode(), result.encode());
-                    } else {
-                      LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
-                      processBackendResponse(response, encryptionHandler.cause().getMessage());
-                    }
-                  });
-                }
+                routingContext.data().put(RESPONSE_SIZE, 0);
+                Future.future(fu -> updateAuditTable(routingContext));
+                handleSuccessResponse(
+                        response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
               } else {
                 LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
                 processBackendResponse(response, brokerResultHandler.cause().getMessage());
@@ -1281,28 +1245,10 @@ public class ApiServerVerticle extends AbstractVerticle {
     brokerResult.onComplete(
             brokerResultHandler -> {
               if (brokerResultHandler.succeeded()) {
-                if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-                  routingContext.data().put(RESPONSE_SIZE, 0);
-                  Future.future(fu -> updateAuditTable(routingContext));
-                  handleSuccessResponse(
-                          response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
-                }
-//            Encryption
-                else {
-                  Future<JsonObject> future = encryption(routingContext, brokerResultHandler.result().toString());
-                  future.onComplete(encryptionHandler -> {
-                    if (encryptionHandler.succeeded()) {
-                      JsonObject result = encryptionHandler.result();
-                      routingContext.data().put(RESPONSE_SIZE, 0);
-                      Future.future(fu -> updateAuditTable(routingContext));
-                      handleSuccessResponse(
-                              response, ResponseType.Ok.getCode(), result.encode());
-                    } else {
-                      LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
-                      processBackendResponse(response, encryptionHandler.cause().getMessage());
-                    }
-                  });
-                }
+                routingContext.data().put(RESPONSE_SIZE, 0);
+                Future.future(fu -> updateAuditTable(routingContext));
+                handleSuccessResponse(
+                        response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
               } else {
                 processBackendResponse(response, brokerResultHandler.cause().getMessage());
               }
@@ -1332,28 +1278,10 @@ public class ApiServerVerticle extends AbstractVerticle {
               brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                   LOGGER.info("Success: Published heartbeat");
-                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-                    routingContext.data().put(RESPONSE_SIZE, 0);
-                    Future.future(fu -> updateAuditTable(routingContext));
-                    handleSuccessResponse(
-                            response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
-                  }
-//            Encryption
-                  else {
-                    Future<JsonObject> future = encryption(routingContext, brokerResultHandler.result().toString());
-                    future.onComplete(encryptionHandler -> {
-                      if (encryptionHandler.succeeded()) {
-                        JsonObject result = encryptionHandler.result();
-                        routingContext.data().put(RESPONSE_SIZE, 0);
-                        Future.future(fu -> updateAuditTable(routingContext));
-                        handleSuccessResponse(
-                                response, ResponseType.Ok.getCode(), result.encode());
-                      } else {
-                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
-                        processBackendResponse(response, encryptionHandler.cause().getMessage());
-                      }
-                    });
-                  }
+                  routingContext.data().put(RESPONSE_SIZE, 0);
+                  Future.future(fu -> updateAuditTable(routingContext));
+                  handleSuccessResponse(
+                          response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
                 } else {
                   LOGGER.debug("Fail: Unauthorized;" + brokerResultHandler.cause().getMessage());
                   processBackendResponse(response, brokerResultHandler.cause().getMessage());
@@ -1390,28 +1318,10 @@ public class ApiServerVerticle extends AbstractVerticle {
               brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                   LOGGER.info("Success: published downstream issue");
-                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-                    routingContext.data().put(RESPONSE_SIZE, 0);
-                    Future.future(fu -> updateAuditTable(routingContext));
-                    handleSuccessResponse(
-                            response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
-                  }
-//            Encryption
-                  else {
-                    Future<JsonObject> future = encryption(routingContext, brokerResultHandler.result().toString());
-                    future.onComplete(encryptionHandler -> {
-                      if (encryptionHandler.succeeded()) {
-                        JsonObject result = encryptionHandler.result();
-                        routingContext.data().put(RESPONSE_SIZE, 0);
-                        Future.future(fu -> updateAuditTable(routingContext));
-                        handleSuccessResponse(
-                                response, ResponseType.Ok.getCode(), result.encode());
-                      } else {
-                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
-                        processBackendResponse(response, encryptionHandler.cause().getMessage());
-                      }
-                    });
-                  }
+                  routingContext.data().put(RESPONSE_SIZE, 0);
+                  Future.future(fu -> updateAuditTable(routingContext));
+                  handleSuccessResponse(
+                          response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
                 } else {
                   LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
                   processBackendResponse(response, brokerResultHandler.cause().getMessage());
@@ -1446,28 +1356,10 @@ public class ApiServerVerticle extends AbstractVerticle {
               brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                   LOGGER.debug("Success: publishing a data issue");
-                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-                    routingContext.data().put(RESPONSE_SIZE, 0);
-                    Future.future(fu -> updateAuditTable(routingContext));
-                    handleSuccessResponse(
-                            response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
-                  }
-//            Encryption
-                  else {
-                    Future<JsonObject> future = encryption(routingContext, brokerResultHandler.result().toString());
-                    future.onComplete(encryptionHandler -> {
-                      if (encryptionHandler.succeeded()) {
-                        JsonObject result = encryptionHandler.result();
-                        routingContext.data().put(RESPONSE_SIZE, 0);
-                        Future.future(fu -> updateAuditTable(routingContext));
-                        handleSuccessResponse(
-                                response, ResponseType.Ok.getCode(), result.encode());
-                      } else {
-                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
-                        processBackendResponse(response, encryptionHandler.cause().getMessage());
-                      }
-                    });
-                  }
+                  routingContext.data().put(RESPONSE_SIZE, 0);
+                  Future.future(fu -> updateAuditTable(routingContext));
+                  handleSuccessResponse(
+                          response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
                 } else {
                   LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
                   processBackendResponse(response, brokerResultHandler.cause().getMessage());
@@ -1502,28 +1394,10 @@ public class ApiServerVerticle extends AbstractVerticle {
               brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                   LOGGER.debug("Success: publishing data from adapter");
-                  if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-                    routingContext.data().put(RESPONSE_SIZE, 0);
-                    Future.future(fu -> updateAuditTable(routingContext));
-                    handleSuccessResponse(
-                            response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
-                  }
-//            Encryption
-                  else {
-                    Future<JsonObject> future = encryption(routingContext, brokerResultHandler.result().toString());
-                    future.onComplete(encryptionHandler -> {
-                      if (encryptionHandler.succeeded()) {
-                        JsonObject result = encryptionHandler.result();
-                        routingContext.data().put(RESPONSE_SIZE, 0);
-                        Future.future(fu -> updateAuditTable(routingContext));
-                        handleSuccessResponse(
-                                response, ResponseType.Ok.getCode(), result.encode());
-                      } else {
-                        LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
-                        processBackendResponse(response, encryptionHandler.cause().getMessage());
-                      }
-                    });
-                  }
+                  routingContext.data().put(RESPONSE_SIZE, 0);
+                  Future.future(fu -> updateAuditTable(routingContext));
+                  handleSuccessResponse(
+                          response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
                 } else {
                   LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
                   processBackendResponse(response, brokerResultHandler.cause().getMessage());
