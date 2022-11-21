@@ -17,6 +17,7 @@ import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.JSON_VHOST;
 import static iudx.resource.server.apiserver.util.Constants.JSON_VHOST_ID;
 import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_EXCHANGE_NAME;
+import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.common.Api.BIND;
 import static iudx.resource.server.common.Api.EXCHANGE;
@@ -31,6 +32,12 @@ import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN_URN;
 import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN_URN;
 import static iudx.resource.server.common.Util.isValidName;
+import static iudx.resource.server.metering.util.Constants.EPOCH_TIME;
+import static iudx.resource.server.metering.util.Constants.ISO_TIME;
+
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.Future;
@@ -601,15 +608,23 @@ public class ManagementRestApi {
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
 
     JsonObject request = new JsonObject();
+    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+    long time = zst.toInstant().toEpochMilli();
+    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+
+    request.put(EPOCH_TIME,time);
+    request.put(ISO_TIME,isoTime);
     request.put(USER_ID, authInfo.getValue(USER_ID));
     request.put(ID, authInfo.getValue(ID));
     request.put(API, authInfo.getValue(API_ENDPOINT));
-    auditService.executeWriteQuery(request, handler -> {
+    request.put(RESPONSE_SIZE,0);
+
+    auditService.insertMeteringValuesInRMQ(request, handler -> {
       if (handler.succeeded()) {
-        LOGGER.info("audit table updated");
+        LOGGER.info("message published in RMQ.");
         promise.complete();
       } else {
-        LOGGER.error("failed to update audit table");
+        LOGGER.error("failed to publish message in RMQ.");
         promise.complete();
       }
     });

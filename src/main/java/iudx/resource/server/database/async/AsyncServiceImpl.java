@@ -13,10 +13,15 @@ import static iudx.resource.server.database.postgres.Constants.SELECT_S3_SEARCH_
 import static iudx.resource.server.database.postgres.Constants.SELECT_S3_STATUS_SQL;
 import static iudx.resource.server.database.postgres.Constants.UPDATE_S3_URL_SQL;
 import static iudx.resource.server.database.postgres.Constants.UPDATE_STATUS_SQL;
+import static iudx.resource.server.metering.util.Constants.EPOCH_TIME;
+import static iudx.resource.server.metering.util.Constants.ISO_TIME;
+
 import java.io.File;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -362,19 +367,25 @@ public class AsyncServiceImpl implements AsyncService {
   private Future<Void> updateAuditTable(String id, String userId, long fileSize) {
     Promise<Void> promise = Promise.promise();
     JsonObject request = new JsonObject();
+    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+    long time = zst.toInstant().toEpochMilli();
+    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
 
+    request.put(EPOCH_TIME,time);
+    request.put(ISO_TIME,isoTime);
     request.put(Constants.USER_ID, userId);
     request.put(ID, id);
     request.put(API, IUDX_ASYNC_SEARCH_API);
     request.put(RESPONSE_SIZE, fileSize);
-    meteringService.executeWriteQuery(
+
+    meteringService.insertMeteringValuesInRMQ(
             request,
             handler -> {
               if (handler.succeeded()) {
-                LOGGER.info("audit table updated");
+                LOGGER.info("message published in RMQ.");
                 promise.complete();
               } else {
-                LOGGER.error("failed to update audit table");
+                LOGGER.error("failed to publish message in RMQ.");
                 promise.complete();
               }
             });

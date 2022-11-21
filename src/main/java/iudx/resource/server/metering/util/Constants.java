@@ -4,6 +4,8 @@ public class Constants {
 
   public static final String ID = "id";
   public static final String TIME = "time";
+  public static final String EXCHANGE_NAME = "auditing";
+  public static final String ROUTING_KEY = "#";
   /* Temporal */
   public static final String START_TIME = "startTime";
   public static final String END_TIME = "endTime";
@@ -34,6 +36,11 @@ public class Constants {
   public static final String ENDPOINT = "endPoint";
   public static final String IID = "iid";
   public static final String RESOURCE_ID = "resourceId";
+  public static final String PRIMARY_KEY= "primaryKey";
+  public static final String EPOCH_TIME = "epochTime";
+  public static final String ISO_TIME = "isoTime";
+  public static final String ORIGIN = "origin";
+  public static final String ORIGIN_SERVER = "rs-server";
   public static final String LATEST_ID = "latestId";
   public static final String LAST_ID= "lastId";
 
@@ -70,8 +77,6 @@ public class Constants {
   public static final String ID_QUERY=" id>'$7' and";
   public static final String API = "api";
   public static final String USER_ID = "userid";
-  public static final String WRITE_QUERY =
-      "INSERT INTO $0 (id,api,userid,epochtime,resourceid,isotime,providerid,size) VALUES ('$1','$2','$3',$4,'$5','$6','$7',$8)";
   public static final StringBuilder COUNT_COLUMN = new StringBuilder("col0)");
   public static final StringBuilder RESOURCEID_COLUMN = new StringBuilder("resourceid)");
   public static final StringBuilder API_COLUMN = new StringBuilder("api)");

@@ -1,10 +1,13 @@
 package iudx.resource.server.metering;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
+import iudx.resource.server.common.Response;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.metering.util.ParamsValidation;
@@ -45,8 +48,8 @@ public class MeteringServiceImpl implements MeteringService {
     private String databaseTableName;
     private ResponseBuilder responseBuilder;
     private PostgresService postgresService;
-    private final DataBrokerService databroker;
-
+    private final DataBrokerService rmqService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     public MeteringServiceImpl(JsonObject propObj, Vertx vertxInstance, PostgresService postgresService) {
         if (propObj != null && !propObj.isEmpty()) {
             databaseIP = propObj.getString("meteringDatabaseIP");
@@ -72,7 +75,7 @@ public class MeteringServiceImpl implements MeteringService {
         this.pool = PgPool.pool(vertxInstance, connectOptions, poolOptions);
         this.vertx = vertxInstance;
         this.postgresService = postgresService;
-        this.databroker = DataBrokerService.createProxy(vertxInstance, BROKER_SERVICE_ADDRESS);
+        this.rmqService = DataBrokerService.createProxy(vertxInstance, BROKER_SERVICE_ADDRESS);
 
         _COUNT_COLUMN =
                 COUNT_COLUMN.insert(0, "(" + databaseName + "." + databaseTableName + ".").toString();
@@ -183,52 +186,30 @@ public class MeteringServiceImpl implements MeteringService {
     }
 
     @Override
-    public MeteringService executeWriteQuery(
+    public MeteringService insertMeteringValuesInRMQ(
             JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
 
-        request.put(TABLE_NAME, databaseTableName);
-        query = queryBuilder.buildWritingQuery(request);
+        JsonObject writeMessage = queryBuilder.buildMessageForWriteQuery(request);
 
-        Future<JsonObject> result = writeInDatabase(query);
-        result.onComplete(
-                resultHandler -> {
-                    if (resultHandler.succeeded()) {
-                        handler.handle(Future.succeededFuture(resultHandler.result()));
-                    } else if (resultHandler.failed()) {
-                        LOGGER.error("failed ::" + resultHandler.cause());
-                        handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
+        rmqService.publishMessage(writeMessage, EXCHANGE_NAME, ROUTING_KEY,
+            rmqHandler -> {
+                if (rmqHandler.succeeded()) {
+                    handler.handle(Future.succeededFuture());
+                    LOGGER.info("inserted into rmq");
+                } else {
+                    LOGGER.error(rmqHandler.cause());
+                    try {
+                        Response resp =
+                            objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
+                        LOGGER.debug("response from rmq "+resp);
+                        handler.handle(Future.failedFuture(resp.toString()));
+                    } catch (JsonProcessingException e) {
+                        LOGGER.error("Failure message not in format [type,title,detail]");
+                        handler.handle(Future.failedFuture(e.getMessage()));
                     }
-                });
+                }
+            });
         return this;
-    }
-
-    private Future<JsonObject> writeInDatabase(JsonObject query) {
-        Promise<JsonObject> promise = Promise.promise();
-        JsonObject response = new JsonObject();
-        pool.withConnection(connection -> connection.query(query.getString(QUERY_KEY)).execute())
-                .onComplete(
-                        rows -> {
-                            if (rows.succeeded()) {
-                                response.put(MESSAGE, "Table Updated Successfully");
-                                responseBuilder =
-                                        new ResponseBuilder(SUCCESS)
-                                                .setTypeAndTitle(200)
-                                                .setMessage(response.getString(MESSAGE));
-                                LOGGER.debug("Info: " + responseBuilder.getResponse().toString());
-                                promise.complete(responseBuilder.getResponse());
-                            }
-                            if (rows.failed()) {
-                                LOGGER.error("Info: failed :" + rows.cause());
-                                response.put(MESSAGE, rows.cause().getMessage());
-                                responseBuilder =
-                                        new ResponseBuilder(FAILED)
-                                                .setTypeAndTitle(400)
-                                                .setMessage(response.getString(MESSAGE));
-                                LOGGER.info("Info: " + responseBuilder.getResponse().toString());
-                                promise.fail(responseBuilder.getResponse().toString());
-                            }
-                        });
-        return promise.future();
     }
 
     private Future<JsonObject> executeQueryDatabaseOperation(String query) {
