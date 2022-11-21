@@ -14618,7 +14618,7 @@
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
 									"    const resultsjsonData = body.results[0];",
-									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 864455);",
+									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 864619);",
 									"});"
 								]
 							}
