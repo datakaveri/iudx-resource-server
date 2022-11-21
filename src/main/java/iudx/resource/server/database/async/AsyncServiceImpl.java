@@ -1,6 +1,9 @@
 package iudx.resource.server.database.async;
 
-import static iudx.resource.server.database.archives.Constants.RESPONSE_ATTRS;
+import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.util.Constants.ID;
+import static iudx.resource.server.common.Constants.METERING_SERVICE_ADDRESS;
+import static iudx.resource.server.database.archives.Constants.*;
 import static iudx.resource.server.database.async.util.Constants.FILE_DOWNLOAD_URL;
 import static iudx.resource.server.database.async.util.Constants.OBJECT_ID;
 import static iudx.resource.server.database.async.util.Constants.S3_URL;
@@ -21,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import iudx.resource.server.apiserver.util.Constants;
+import iudx.resource.server.metering.MeteringService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -52,6 +58,7 @@ public class AsyncServiceImpl implements AsyncService {
   private final S3FileOpsHelper s3FileOpsHelper;
   private final Util util;
   private final Vertx vertx;
+  private final MeteringService meteringService;
 
 
   public AsyncServiceImpl(Vertx vertx, ElasticClient client, PostgresService pgService,
@@ -63,6 +70,7 @@ public class AsyncServiceImpl implements AsyncService {
     this.timeLimit = timeLimit;
     this.filePath = filePath;
     this.util = new Util(pgService);
+    this.meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
   }
 
   @Override
@@ -119,17 +127,18 @@ public class AsyncServiceImpl implements AsyncService {
 
   @Override
   public AsyncService asyncSearch(String requestId, String sub, String searchId, JsonObject query) {
-
+    String  id = query.getJsonArray(ID).getString(0);
     getRecord4RequestId(requestId)
         .onSuccess(handler -> {
-          process4ExistingRequestId(requestId, sub, searchId, handler);
+          process4ExistingRequestId(id,requestId, sub, searchId, handler);
         })
         .onFailure(handler -> {
           updateQueryExecutionStatus(searchId, QueryProgress.IN_PROGRESS)
               .onSuccess(statusHandler -> {
-                process4NewRequestId(searchId, query);
+                process4NewRequestId(searchId,sub, query);
               })
               .onFailure(statusHandler -> {
+                LOGGER.error("");
 
               });
         });
@@ -148,7 +157,7 @@ public class AsyncServiceImpl implements AsyncService {
         LOGGER.debug("status : {} update for search id : {}", status.toString(), searchId);
         promise.complete();
       } else {
-        promise.fail("fail to update query status in database");
+        promise.fail("failprocess4ExistingRequestId to update query status in database");
       }
     });
     return promise.future();
@@ -202,33 +211,38 @@ public class AsyncServiceImpl implements AsyncService {
     return promise.future();
   }
 
-  void process4ExistingRequestId(String requestId, String sub, String searchId, JsonArray record) {
+  void process4ExistingRequestId(String id,String requestId, String sub, String searchId, JsonArray record) {
     String object_id = record.getJsonObject(0).getString(OBJECT_ID);
     String expiry = LocalDateTime.now().plusDays(1).toString();
+    long fileSize = record.getJsonObject(0).getLong(SIZE_KEY);
 
     long urlExpiry = ZonedDateTime.now().toEpochSecond() * 1000 + TimeUnit.DAYS.toMillis(1);
     URL s3Url = s3FileOpsHelper.generatePreSignedUrl(urlExpiry, object_id);
 
     StringBuilder queryStringBuilder = new StringBuilder(UPDATE_S3_URL_SQL
-        .replace("$1", s3Url.toString())
-        .replace("$2", expiry)
-        .replace("$3", QueryProgress.COMPLETE.toString())
-        .replace("$4", object_id)
-        .replace("$5", String.valueOf(100.0d))
-        .replace("$6", searchId));
+            .replace("$1", s3Url.toString())
+            .replace("$2", expiry)
+            .replace("$3", QueryProgress.COMPLETE.toString())
+            .replace("$4", object_id)
+            .replace("$5", String.valueOf(100.0d))
+            .replace("$6", String.valueOf(fileSize))
+            .replace("$7", searchId));
 
     executePGQuery(queryStringBuilder.toString())
         .onSuccess(handler -> {
           LOGGER.info("Query completed with existing requestId & objectId");
+          Future.future(fu -> updateAuditTable(id, sub, fileSize));
         })
         .onFailure(handler -> {
           LOGGER.error("Query execution failed for insert with existing requestId & objectId");
         });
   }
 
-  private void process4NewRequestId(String searchId, JsonObject query) {
+  private void process4NewRequestId(String searchId,String userId,JsonObject query) {
     File file = new File(filePath + "/" + searchId + ".json");
     String objectId = UUID.randomUUID().toString();
+    String  id = query.getJsonArray(ID).getString(0);
+
 
 
     ProgressListener progressListener = new AsyncFileScrollProgressListener(searchId, pgService);
@@ -240,20 +254,23 @@ public class AsyncServiceImpl implements AsyncService {
             JsonObject uploadResult = s3UploadHandler.result();
             String s3_url = uploadResult.getString("s3_url");
             String expiry = LocalDateTime.now().plusDays(1).toString();
+            Long fileSize = file.length();
             // update DB for search ID and requestId;
             progressListener.finish();
             StringBuilder updateQuery =
-                new StringBuilder(
-                    UPDATE_S3_URL_SQL
-                        .replace("$1", s3_url)
-                        .replace("$2", expiry)
-                        .replace("$3", QueryProgress.COMPLETE.toString())
-                        .replace("$4", objectId)
-                        .replace("$5", String.valueOf(100.0))
-                        .replace("$6", searchId));
+                    new StringBuilder(UPDATE_S3_URL_SQL
+                            .replace("$1", s3_url)
+                            .replace("$2", expiry)
+                            .replace("$3", QueryProgress.COMPLETE.toString())
+                            .replace("$4", objectId)
+                            .replace("$5", String.valueOf(100.0))
+                            .replace("$6", String.valueOf(fileSize))
+                            .replace("$7", searchId));
+
             executePGQuery(updateQuery.toString())
                 .onSuccess(recordUpdateHandler -> {
                   LOGGER.debug("updated status in postgres");
+                  Future.future(fu -> updateAuditTable(id, userId, fileSize));
                   try {
                     vertx.fileSystem().deleteBlocking(filePath + "/" + file.getName());
                   } catch (Exception ex) {
@@ -342,4 +359,27 @@ public class AsyncServiceImpl implements AsyncService {
         });
     return this;
   }
+  private Future<Void> updateAuditTable(String id, String userId, long fileSize) {
+    Promise<Void> promise = Promise.promise();
+    JsonObject request = new JsonObject();
+
+    request.put(Constants.USER_ID, userId);
+    request.put(ID, id);
+    request.put(API, IUDX_ASYNC_SEARCH_API);
+    request.put(RESPONSE_SIZE, fileSize);
+    meteringService.executeWriteQuery(
+            request,
+            handler -> {
+              if (handler.succeeded()) {
+                LOGGER.info("audit table updated");
+                promise.complete();
+              } else {
+                LOGGER.error("failed to update audit table");
+                promise.complete();
+              }
+            });
+
+    return promise.future();
+  }
+
 }

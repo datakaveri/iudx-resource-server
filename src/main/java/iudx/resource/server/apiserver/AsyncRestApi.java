@@ -182,7 +182,6 @@ public class AsyncRestApi{
                 resultArray.add(new JsonObject().put("searchId", searchId));
                 response.put("result", resultArray);
 
-                Future.future(fu -> updateAuditTable(routingContext));
                 handleSuccessResponse(routingContext.response(), ResponseType.Created.getCode(),
                     response.toString());
               } else {
@@ -278,29 +277,4 @@ public class AsyncRestApi{
         .setStatusCode(statusCode.getValue())
         .end(generateResponse(statusCode, urn, message).toString());
   }
-
-  private Future<Void> updateAuditTable(RoutingContext context) {
-    Promise<Void> promise = Promise.promise();
-    JsonObject authInfo = (JsonObject) context.data().get("authInfo");
-
-    JsonObject request = new JsonObject();
-    request.put(USER_ID, authInfo.getValue(USER_ID));
-    request.put(ID, authInfo.getValue(ID));
-    request.put(API, authInfo.getValue(API_ENDPOINT));
-    request.put(RESPONSE_SIZE,0);
-    meteringService.executeWriteQuery(
-        request,
-        handler -> {
-          if (handler.succeeded()) {
-            LOGGER.info("audit table updated");
-            promise.complete();
-          } else {
-            LOGGER.error("failed to update audit table");
-            promise.complete();
-          }
-        });
-
-    return promise.future();
-  }
-
 }
