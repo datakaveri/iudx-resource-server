@@ -76,7 +76,7 @@ public class AsyncServiceTest {
   @DisplayName("Initialize vertx and deploy async verticle")
   static void init(Vertx vertx, VertxTestContext testContext) throws MalformedURLException {
     config = new Configuration();
-    asyncConfig = config.configLoader(9, vertx);
+    asyncConfig = config.configLoader(8, vertx);
     timeLimit = asyncConfig.getString("timeLimit");
     filePath = asyncConfig.getString("filePath");
 
