@@ -38,7 +38,7 @@ public class AsyncQueryListener implements RMQListeners {
     future.onComplete(startHandler -> {
       if (startHandler.succeeded()) {
         LOGGER.trace("starting Q listener for Async query");
-        client.basicConsumer("test-async", options, asyncQListenerHandler -> {
+        client.basicConsumer(ASYNC_QUERY_Q, options, asyncQListenerHandler -> {
           if (asyncQListenerHandler.succeeded()) {
             RabbitMQConsumer mqConsumer = asyncQListenerHandler.result();
             mqConsumer.handler(message -> {
