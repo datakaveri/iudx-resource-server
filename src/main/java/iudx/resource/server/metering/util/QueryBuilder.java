@@ -4,19 +4,16 @@ import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
-import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
 import static iudx.resource.server.metering.util.Constants.*;
 
 public class QueryBuilder {
 
     private static final Logger LOGGER = LogManager.getLogger(QueryBuilder.class);
 
-    public JsonObject buildMessageForWriteQuery(JsonObject request) {
+    public JsonObject buildMessageForRMQ(JsonObject request) {
 
         String primaryKey = UUID.randomUUID().toString().replace("-", "");
         String userId = request.getString(USER_ID);

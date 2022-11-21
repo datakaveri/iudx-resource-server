@@ -189,7 +189,7 @@ public class MeteringServiceImpl implements MeteringService {
     public MeteringService insertMeteringValuesInRMQ(
             JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
 
-        JsonObject writeMessage = queryBuilder.buildMessageForWriteQuery(request);
+        JsonObject writeMessage = queryBuilder.buildMessageForRMQ(request);
 
         rmqService.publishMessage(writeMessage, EXCHANGE_NAME, ROUTING_KEY,
             rmqHandler -> {
