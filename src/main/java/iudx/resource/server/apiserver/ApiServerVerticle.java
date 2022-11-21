@@ -1,51 +1,7 @@
 package iudx.resource.server.apiserver;
 
 import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
-import static iudx.resource.server.apiserver.util.Constants.API;
-import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
-import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
-import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.DOMAIN;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_ACCEPT;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_ALLOW_ORIGIN;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_LENGTH;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_HOST;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_ORIGIN;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_REFERER;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
-import static iudx.resource.server.apiserver.util.Constants.ID;
-import static iudx.resource.server.apiserver.util.Constants.IUDXQUERY_OPTIONS;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_CONSUMER_AUDIT_URL;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_PROVIDER_AUDIT_URL;
-import static iudx.resource.server.apiserver.util.Constants.JSON_ALIAS;
-import static iudx.resource.server.apiserver.util.Constants.JSON_CONSUMER;
-import static iudx.resource.server.apiserver.util.Constants.JSON_COUNT;
-import static iudx.resource.server.apiserver.util.Constants.JSON_ID;
-import static iudx.resource.server.apiserver.util.Constants.JSON_INSTANCEID;
-import static iudx.resource.server.apiserver.util.Constants.JSON_NAME;
-import static iudx.resource.server.apiserver.util.Constants.JSON_SEARCH_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.MIME_APPLICATION_JSON;
-import static iudx.resource.server.apiserver.util.Constants.MIME_TEXT_HTML;
-import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_NAME;
-import static iudx.resource.server.apiserver.util.Constants.MSG_SUB_TYPE_NOT_FOUND;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_ENTITIES_URL;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_ENTITIES_QUERY_PATH;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_TEMPORAL_QUERY_PATH;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
-import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
-import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
-import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
-import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
-import static iudx.resource.server.apiserver.util.Constants.ROUTE_DOC;
-import static iudx.resource.server.apiserver.util.Constants.ROUTE_STATIC_SPEC;
-import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
-import static iudx.resource.server.apiserver.util.Constants.SUB_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.USERSHA;
-import static iudx.resource.server.apiserver.util.Constants.USER_ID;
+import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
 import static iudx.resource.server.common.Api.ADMIN;
 import static iudx.resource.server.common.Api.ASYNC;
@@ -530,8 +486,15 @@ public class ApiServerVerticle extends AbstractVerticle {
           handler -> {
             if (handler.succeeded()) {
               LOGGER.debug("Table Reading Done.");
-              handleSuccessResponse(
-                  response, ResponseType.Ok.getCode(), handler.result().toString());
+              JsonObject jsonObject = (JsonObject) handler.result();
+              String checkType = jsonObject.getString("type");
+              if (checkType.equalsIgnoreCase(NO_CONTENT)) {
+                handleSuccessResponse(
+                        response, ResponseType.NoContent.getCode(), handler.result().toString());
+              } else {
+                handleSuccessResponse(
+                        response, ResponseType.Ok.getCode(), handler.result().toString());
+              }
               promise.complete();
             } else {
               LOGGER.error("Fail msg " + handler.cause().getMessage());
@@ -571,8 +534,15 @@ public class ApiServerVerticle extends AbstractVerticle {
           handler -> {
             if (handler.succeeded()) {
               LOGGER.debug("Table Reading Done.");
-              handleSuccessResponse(
-                  response, ResponseType.Ok.getCode(), handler.result().toString());
+              JsonObject jsonObject = (JsonObject) handler.result();
+              String checkType = jsonObject.getString("type");
+              if (checkType.equalsIgnoreCase(NO_CONTENT)) {
+                handleSuccessResponse(
+                        response, ResponseType.NoContent.getCode(), handler.result().toString());
+              } else {
+                handleSuccessResponse(
+                        response, ResponseType.Ok.getCode(), handler.result().toString());
+              }
               promise.complete();
             } else {
               LOGGER.error("Fail msg " + handler.cause().getMessage());
