@@ -24,7 +24,7 @@ public class Constants {
           + "values('$1','$2','$3','$4','$5','$6','$7','$8',$9)";
 
   public static String UPDATE_S3_URL_SQL =
-      "UPDATE s3_upload_url SET s3_url='$1', expiry='$2', status='$3', object_id='$4', progress=$5 WHERE search_id='$6' and progress<$5";
+          "UPDATE s3_upload_url SET s3_url='$1', expiry='$2', status='$3', object_id='$4', progress=$5, size='$6' WHERE search_id='$7' and progress<$5";
 
   public static String UPDATE_STATUS_SQL =
       "UPDATE s3_upload_url SET status='$1' WHERE search_id='$2'";
@@ -33,7 +33,7 @@ public class Constants {
       "SELECT status,s3_url,search_id,user_id,progress FROM s3_upload_url WHERE search_id='$1';";
 
   public static String SELECT_S3_SEARCH_SQL =
-      "SELECT search_id, status, s3_url, expiry, user_id, object_id FROM s3_upload_url WHERE request_id='$1' and status='$2'";
+      "SELECT search_id, status, s3_url, expiry, user_id, object_id,size FROM s3_upload_url WHERE request_id='$1' and status='$2'";
 
   public static String UPDATE_S3_PROGRESS_SQL =
       "UPDATE s3_upload_url SET progress=$1 WHERE search_id='$2'";

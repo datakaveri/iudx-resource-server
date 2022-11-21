@@ -7,8 +7,11 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.sqlclient.PoolOptions;
+import iudx.resource.server.database.postgres.PostgresService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 
 public class MeteringVerticle extends AbstractVerticle {
 
@@ -28,6 +31,7 @@ public class MeteringVerticle extends AbstractVerticle {
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
   private MeteringService metering;
+  private PostgresService postgresService;
 
   @Override
   public void start() throws Exception {
@@ -50,7 +54,9 @@ public class MeteringVerticle extends AbstractVerticle {
     propObj.put("meteringDatabaseTableName", databaseTableName);
 
     binder = new ServiceBinder(vertx);
-    metering = new MeteringServiceImpl(propObj, vertx);
+    postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
+
+    metering = new MeteringServiceImpl(propObj, vertx, postgresService);
     consumer =
         binder.setAddress(METERING_SERVICE_ADDRESS).register(MeteringService.class, metering);
     LOGGER.info("Metering Verticle Started");

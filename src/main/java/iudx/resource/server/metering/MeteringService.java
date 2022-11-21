@@ -22,8 +22,6 @@ public interface MeteringService {
   MeteringService executeReadQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   @Fluent
-  MeteringService executeWriteQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  MeteringService insertMeteringValuesInRMQ(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
-
-//  MeteringService executeReadQuery(JsonObject request,Handler<AsyncResult<JsonObject>> handler);
 }
