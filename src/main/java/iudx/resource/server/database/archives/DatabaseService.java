@@ -5,6 +5,7 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -36,8 +37,8 @@ public interface DatabaseService {
    * @return DatabaseService which is a Service
    */
 
-  @Fluent
-  DatabaseService searchQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+//  @Fluent
+//  DatabaseService searchQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The countQuery implements the count operation with the database.
@@ -47,14 +48,17 @@ public interface DatabaseService {
    * @return DatabaseService which is a Service
    */
 
-  @Fluent
-  DatabaseService countQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+//  @Fluent
+//  DatabaseService countQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The create implements the count operation with the database.
    * @param client RestClient to perform ES queries.
    * @return DatabaseService object.
    */
+  
+  Future<JsonObject> search(JsonObject request);
+  Future<JsonObject> count(JsonObject request);
 
   @GenIgnore
   static DatabaseService create(ElasticClient client, String timeLimit) {
