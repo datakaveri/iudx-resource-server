@@ -8,6 +8,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+import io.vertx.core.Future;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQMessage;
 import io.vertx.rabbitmq.impl.RabbitMQMessageImpl;
 import iudx.resource.server.databroker.DataBrokerService;
@@ -23,6 +26,9 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
 import iudx.resource.server.database.postgres.PostgresService;
+import iudx.resource.server.databroker.DataBrokerServiceImpl;
+import iudx.resource.server.databroker.PostgresClient;
+import iudx.resource.server.databroker.RabbitClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
@@ -486,35 +492,77 @@ public class MeteringServiceTest {
 
   }
 
-//@Test
-//  @DisplayName("Testing Write Query")
-//  void writeData(VertxTestContext vertxTestContext) {
-//    JsonObject request = new JsonObject();
-//    DataBrokerService rabbitMQMessage = mock(DataBrokerService.class);
-//    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
-//    long time = zst.toInstant().toEpochMilli();
-//    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
-//
-//    request.put(EPOCH_TIME,time);
-//    request.put(ISO_TIME,isoTime);
-//    request.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
-//    request.put(ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
-//    request.put(API, "/ngsi-ld/v1/subscription");
-//    request.put(RESPONSE_SIZE,12);
-//
-//    meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
-//    meteringService.insertMeteringValuesInRMQ(
-//        request,
-//        vertxTestContext.succeeding(
-//            response ->
-//                vertxTestContext.verify(
-//                    () -> {
-//
-//                      assertEquals("Success", response.getString("title"));
-//                      vertxTestContext.completeNow();
-//                    })));
-//
-//  }
+@Test
+@DisplayName("Testing Write Query Failure")
+  void writeDataFailure(VertxTestContext vertxTestContext) {
+    JsonObject request = new JsonObject();
+    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+    long time = zst.toInstant().toEpochMilli();
+    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+    request.put(EPOCH_TIME,time);
+    request.put(ISO_TIME,isoTime);
+    request.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
+    request.put(ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
+    request.put(API, "/ngsi-ld/v1/subscription");
+    request.put(RESPONSE_SIZE,12);
+    postgresService = mock(PostgresService.class);
+    meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+
+    DataBrokerService dataBrokerService = mock(DataBrokerService.class);
+
+    RabbitClient webClient= mock(RabbitClient.class);
+    RabbitMQClient rabbitMQClient = mock(RabbitMQClient.class);
+    AsyncResult<JsonObject> asyncResult =mock(AsyncResult.class);
+
+    Future future= mock(Future.class);
+
+    meteringService.insertMeteringValuesInRMQ(
+        request,handler->{
+            if (handler.failed()){
+                vertxTestContext.completeNow();
+            }else {
+                vertxTestContext.failNow("Failed");
+            }
+        });
+  }
+
+@Test
+@DisplayName("Testing Write Query Successful")
+void writeDataSuccessful(VertxTestContext vertxTestContext) {
+    JsonObject request = new JsonObject();
+    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+    long time = zst.toInstant().toEpochMilli();
+    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+    request.put(EPOCH_TIME,time);
+    request.put(ISO_TIME,isoTime);
+    request.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
+    request.put(ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
+    request.put(API, "/ngsi-ld/v1/subscription");
+    request.put(RESPONSE_SIZE,12);
+    postgresService = mock(PostgresService.class);
+    meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+
+    AsyncResult<JsonObject> asyncResult =mock(AsyncResult.class);
+    MeteringServiceImpl.rmqService = mock(DataBrokerService.class);
+
+    when(asyncResult.succeeded()).thenReturn(true);
+    doAnswer(new Answer<AsyncResult<JsonObject>>() {
+        @Override
+        public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+            ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(3)).handle(asyncResult);
+            return null;
+        }
+    }).when(MeteringServiceImpl.rmqService).publishMessage(any(),anyString(),anyString(),any());
+
+    meteringService.insertMeteringValuesInRMQ(
+            request,handler->{
+                if (handler.succeeded()){
+                    vertxTestContext.completeNow();
+                }else {
+                    vertxTestContext.failNow("Failed");
+                }
+            });
+}
 
   @Test
   @DisplayName("Testing read query with missing providerId.")

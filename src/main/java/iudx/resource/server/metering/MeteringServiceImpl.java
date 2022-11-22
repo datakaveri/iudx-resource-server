@@ -48,7 +48,7 @@ public class MeteringServiceImpl implements MeteringService {
     private String databaseTableName;
     private ResponseBuilder responseBuilder;
     private PostgresService postgresService;
-    private final DataBrokerService rmqService;
+    public static DataBrokerService rmqService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     public MeteringServiceImpl(JsonObject propObj, Vertx vertxInstance, PostgresService postgresService) {
         if (propObj != null && !propObj.isEmpty()) {
