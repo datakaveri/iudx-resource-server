@@ -29,35 +29,19 @@ import iudx.resource.server.database.elastic.ElasticClient;
 @ProxyGen
 public interface DatabaseService {
 
+  
   /**
    * The searchQuery implements the search operation with the database.
-   * 
-   * @param request which is a JsonObject
-   * @param handler which is a Request Handler
-   * @return DatabaseService which is a Service
+   * @param request - search request query
+   * @return
    */
-
-//  @Fluent
-//  DatabaseService searchQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
-
+  Future<JsonObject> search(JsonObject request);
+  
   /**
    * The countQuery implements the count operation with the database.
-   * 
-   * @param request which is a JsonObject
-   * @param handler which is a Request Handler
-   * @return DatabaseService which is a Service
+   * @param request - count request query
+   * @return
    */
-
-//  @Fluent
-//  DatabaseService countQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
-
-  /**
-   * The create implements the count operation with the database.
-   * @param client RestClient to perform ES queries.
-   * @return DatabaseService object.
-   */
-  
-  Future<JsonObject> search(JsonObject request);
   Future<JsonObject> count(JsonObject request);
 
   @GenIgnore
