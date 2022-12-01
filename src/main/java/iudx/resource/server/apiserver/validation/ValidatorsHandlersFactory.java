@@ -1,30 +1,6 @@
 package iudx.resource.server.apiserver.validation;
 
-import static iudx.resource.server.apiserver.util.Constants.DOMAIN;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
-import static iudx.resource.server.apiserver.util.Constants.ID_DOMAIN_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.ID_RG_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.ID_RN_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.ID_RS_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.ID_USERSHA_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.IUDXQUERY_OPTIONS;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ATTRIBUTE;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_COORDINATES;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ENDTIME;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_FROM;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOMETRY;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOPROPERTY;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOREL;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ID;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_MAXDISTANCE;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_Q;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_SIZE;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEREL;
-import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
-import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
-import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
-import static iudx.resource.server.apiserver.util.Constants.USERSHA;
+import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.ResponseUrn.SCHEMA_READ_ERROR_URN;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import iudx.resource.server.apiserver.validation.types.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.google.common.base.Charsets;
@@ -47,23 +25,6 @@ import io.vertx.json.schema.SchemaRouter;
 import io.vertx.json.schema.SchemaRouterOptions;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.apiserver.util.RequestType;
-import iudx.resource.server.apiserver.validation.types.AttrsTypeValidator;
-import iudx.resource.server.apiserver.validation.types.CoordinatesTypeValidator;
-import iudx.resource.server.apiserver.validation.types.DateTypeValidator;
-import iudx.resource.server.apiserver.validation.types.DistanceTypeValidator;
-import iudx.resource.server.apiserver.validation.types.GeoPropertyTypeValidator;
-import iudx.resource.server.apiserver.validation.types.GeoRelTypeValidator;
-import iudx.resource.server.apiserver.validation.types.GeometryTypeValidator;
-import iudx.resource.server.apiserver.validation.types.IDTypeValidator;
-import iudx.resource.server.apiserver.validation.types.JsonSchemaTypeValidator;
-import iudx.resource.server.apiserver.validation.types.OptionsHeaderValidator;
-import iudx.resource.server.apiserver.validation.types.OptionsTypeValidator;
-import iudx.resource.server.apiserver.validation.types.PaginationLimitTypeValidator;
-import iudx.resource.server.apiserver.validation.types.PaginationOffsetTypeValidator;
-import iudx.resource.server.apiserver.validation.types.QTypeValidator;
-import iudx.resource.server.apiserver.validation.types.StringTypeValidator;
-import iudx.resource.server.apiserver.validation.types.TimeRelTypeValidator;
-import iudx.resource.server.apiserver.validation.types.Validator;
 import iudx.resource.server.common.HttpStatusCode;
 
 public class ValidatorsHandlersFactory {
@@ -133,6 +94,9 @@ public class ValidatorsHandlersFactory {
     validators.add(new PaginationLimitTypeValidator(parameters.get(NGSILDQUERY_SIZE), false));
     validators.add(new PaginationOffsetTypeValidator(parameters.get(NGSILDQUERY_FROM), false));
 
+    //optional header public key
+    validators.add(new HeaderKeyTypeValidation(parameters.get(HEADER_PUBLIC_KEY),false));
+
     return validators;
   }
 
@@ -159,6 +123,9 @@ public class ValidatorsHandlersFactory {
     validators.add(new PaginationLimitTypeValidator(parameters.get(NGSILDQUERY_SIZE), false));
     validators.add(new PaginationOffsetTypeValidator(parameters.get(NGSILDQUERY_FROM), false));
 
+    //optional header public key
+    validators.add(new HeaderKeyTypeValidation(parameters.get(HEADER_PUBLIC_KEY),false));
+
     return validators;
   }
 
@@ -173,6 +140,9 @@ public class ValidatorsHandlersFactory {
     validators.add(new StringTypeValidator(parameters.get(RESOURCE_GROUP), true, ID_RG_REGEX));
     validators.add(new StringTypeValidator(parameters.get(RESOURCE_NAME), true, ID_RN_REGEX));
 
+    //optional header public key
+    validators.add(new HeaderKeyTypeValidation(parameters.get(HEADER_PUBLIC_KEY),false));
+
     return validators;
   }
 
@@ -185,6 +155,9 @@ public class ValidatorsHandlersFactory {
     validators.add(new PaginationOffsetTypeValidator(parameters.get(NGSILDQUERY_FROM), false));
     // request body validators.
     validators.addAll(getRequestSchemaValidator(vertx, body, requestType));
+
+    //optional header public key
+    validators.add(new HeaderKeyTypeValidation(parameters.get(HEADER_PUBLIC_KEY),false));
 
     return validators;
   }
@@ -199,6 +172,9 @@ public class ValidatorsHandlersFactory {
     validators.add(new PaginationOffsetTypeValidator(parameters.get(NGSILDQUERY_FROM), false));
     // request body validators.
     validators.addAll(getRequestSchemaValidator(vertx, body, requestType));
+
+    //optional header public key
+    validators.add(new HeaderKeyTypeValidation(parameters.get(HEADER_PUBLIC_KEY),false));
 
     return validators;
   }
@@ -232,6 +208,9 @@ public class ValidatorsHandlersFactory {
     validators.add(new DateTypeValidator(parameters.get(NGSILDQUERY_TIME), false));
     validators.add(new DateTypeValidator(parameters.get(NGSILDQUERY_ENDTIME), false));
 
+    //optional header public key
+    validators.add(new HeaderKeyTypeValidation(parameters.get(HEADER_PUBLIC_KEY),false));
+
     return validators;
   }
 
@@ -239,6 +218,10 @@ public class ValidatorsHandlersFactory {
       final MultiMap headers) {
     List<Validator> validators = new ArrayList<>();
     validators.add(new StringTypeValidator(parameters.get("searchId"), true, UUID_PATTERN));
+
+    //optional header public key
+    validators.add(new HeaderKeyTypeValidation(parameters.get(HEADER_PUBLIC_KEY),false));
+
     return validators;
   }
 

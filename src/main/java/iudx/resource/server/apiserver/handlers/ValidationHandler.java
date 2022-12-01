@@ -16,6 +16,8 @@ import iudx.resource.server.apiserver.util.RequestType;
 import iudx.resource.server.apiserver.validation.ValidatorsHandlersFactory;
 import iudx.resource.server.apiserver.validation.types.Validator;
 
+import static iudx.resource.server.apiserver.util.Constants.HEADER_PUBLIC_KEY;
+
 public class ValidationHandler implements Handler<RoutingContext> {
 
   private static final Logger LOGGER = LogManager.getLogger(ValidationHandler.class);
@@ -42,6 +44,7 @@ public class ValidationHandler implements Handler<RoutingContext> {
       }
     }
     Map<String, String> pathParams = context.pathParams();
+    parameters.set(HEADER_PUBLIC_KEY,context.request().getHeader(HEADER_PUBLIC_KEY));
     parameters.addAll(pathParams);
 
     List<Validator> validations = validationFactory.build(vertx, requestType, parameters, headers, body);
