@@ -76,7 +76,7 @@ public class ResponseBuilder {
     return this;
   }
 
-  public ResponseBuilder setCount(int count) {
+  public ResponseBuilder setCount(long count) {
     response.put(RESULTS, new JsonArray().add(new JsonObject().put(TOTAL_HITS, count)));
     return this;
   }
