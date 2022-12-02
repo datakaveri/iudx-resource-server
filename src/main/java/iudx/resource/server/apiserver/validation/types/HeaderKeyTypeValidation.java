@@ -22,7 +22,7 @@ public class HeaderKeyTypeValidation implements Validator{
 
     @Override
     public boolean isValid() {
-        LOG.info("inside isValid : ");
+        LOG.info("inside isValid ");
         if (required && (value == null || value.isEmpty())) {
             LOG.error("Validation error : Public key is null or empty");
             throw new DxRuntimeException(failureCode(), INVALID_HEADER_VALUE_URN, failureMessage());
