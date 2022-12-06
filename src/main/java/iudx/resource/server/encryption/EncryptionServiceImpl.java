@@ -5,16 +5,15 @@ import com.goterl.lazysodium.LazySodiumJava;
 import com.goterl.lazysodium.SodiumJava;
 import com.goterl.lazysodium.exceptions.SodiumException;
 import com.goterl.lazysodium.interfaces.Box;
-import com.goterl.lazysodium.utils.Base64MessageEncoder;
 import com.goterl.lazysodium.utils.Key;
 import com.goterl.lazysodium.utils.KeyPair;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.encryption.util.URLBase64MessageEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import static iudx.resource.server.encryption.util.Constants.*;
@@ -24,7 +23,7 @@ public class EncryptionServiceImpl implements EncryptionService {
     private Box.Lazy box;
 
     public EncryptionServiceImpl() {
-        LazySodiumJava lazySodiumJava = new LazySodiumJava(new SodiumJava());
+        LazySodiumJava lazySodiumJava = new LazySodiumJava(new SodiumJava(), new URLBase64MessageEncoder());
         this.box = (Box.Lazy) lazySodiumJava;
     }
 
@@ -44,9 +43,7 @@ public class EncryptionServiceImpl implements EncryptionService {
             try {
                 Key key = decodePublicKey(encodedPublicKey);
                 String cipherText = box.cryptoBoxSealEasy(message, key);
-                // encode
-                String encodedCipherText = Base64.getUrlEncoder().encodeToString(cipherText.getBytes(StandardCharsets.UTF_8));
-                result.put(ENCODED_CIPHER_TEXT, encodedCipherText);
+                result.put(ENCODED_CIPHER_TEXT, cipherText);
             } catch (IllegalArgumentException illegalArgumentException) {
                 LOG.error("Exception while decoding the public key: " + illegalArgumentException);
                 LOG.error("The public key should be in URL Safe base64 format");
@@ -72,12 +69,9 @@ public class EncryptionServiceImpl implements EncryptionService {
             return Future.failedFuture("key pair is null");
         }
         JsonObject result = new JsonObject();
-        // decode encoded cipher Text
         try {
-            byte[] bytes = Base64.getUrlDecoder().decode(encodedCipherText);
-            String decodedMessage = new String(bytes, StandardCharsets.UTF_8);
             KeyPair keys = (KeyPair) keyPair.getValue(KEYPAIR);
-            String message = box.cryptoBoxSealOpenEasy(decodedMessage, keys);
+            String message = box.cryptoBoxSealOpenEasy(encodedCipherText, keys);
             result.put("message", message);
         } catch (IllegalArgumentException exception) {
             LOG.error("IllegalArgumentException: " + exception);
