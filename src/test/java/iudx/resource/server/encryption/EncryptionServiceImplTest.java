@@ -10,6 +10,7 @@ import com.goterl.lazysodium.utils.KeyPair;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.encryption.util.URLBase64MessageEncoder;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
@@ -42,11 +43,13 @@ public class EncryptionServiceImplTest {
     private static Key privateKey;
     private static JsonObject jsonObject;
     private static Box.Lazy box;
-
+    private static URLBase64MessageEncoder urlBase64MessageEncoder;
+    private static SodiumJava sodiumJava;
     @BeforeEach
     public void init(VertxTestContext vertxTestContext) {
-        SodiumJava sodiumJava = new SodiumJava();
-        lazySodiumJava = new LazySodiumJava(sodiumJava, StandardCharsets.UTF_8);
+        sodiumJava = new SodiumJava();
+        urlBase64MessageEncoder = new URLBase64MessageEncoder();
+        lazySodiumJava = new LazySodiumJava(sodiumJava, urlBase64MessageEncoder);
         jsonObject = new JsonObject();
         box = (Box.Lazy) lazySodiumJava;
         encryptionService = new EncryptionServiceImpl(box);
@@ -250,15 +253,15 @@ public class EncryptionServiceImplTest {
                 Arguments.of("RjU4MTYwRTkxNzc2NkFFMzl==",
                         "IllegalArgumentException: java.lang.IllegalArgumentException: Input byte array has incorrect ending byte at 24"),
                 Arguments.of("RjU4MTYwRTkxNzc2NkFFMzl",
-                        "Exception : java.lang.StringIndexOutOfBoundsException: String index out of range: 17"),
+                        "Exception : java.lang.NegativeArraySizeException: -31"),
                 Arguments.of("encodedCipherText",
                         "IllegalArgumentException: java.lang.IllegalArgumentException: Last unit does not have enough valid bits"),
                 Arguments.of("RjU4MTYwRTkxNzc2NkFFMzlFNjg0MURCN0NENTM2Q0EyNzUxODAxOTA4NzQ5MzgyRTAzRTMxRjlENkYzNDYxM0FFMUU4RUExQUZENzM1OTU2ODcwMDQxNjdCNkYyQ0RCNDNDOTA5MkM1ODE3RDExMUU0RkNBQjhGM0NFMURCQjg4RjE3OUYxNjI3NTk3NTU5OTJFMzk4OTg=",
                         "Sodium Exception"),
                 Arguments.of("abcdefgh",
-                        "Exception : java.lang.NegativeArraySizeException: -45"),
+                        "Exception : java.lang.NegativeArraySizeException: -42"),
                 Arguments.of("abcd",
-                        "Exception : java.lang.StringIndexOutOfBoundsException: index 3,length 3")
+                        "Exception : java.lang.NegativeArraySizeException: -45")
 
         );
     }
