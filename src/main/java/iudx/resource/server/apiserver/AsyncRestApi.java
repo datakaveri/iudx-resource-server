@@ -204,13 +204,14 @@ public class AsyncRestApi{
                 }
 //            Encryption
                 else {
-                  Future<JsonObject> future = encryption(routingContext, response.toString());
+                  Future<JsonObject> future = encryption(routingContext, response.getJsonArray("result").toString());
                   future.onComplete(encryptionHandler -> {
                     if (encryptionHandler.succeeded()) {
                       JsonObject result = encryptionHandler.result();
+                      response.put("results",result);
                       Future.future(fu -> updateAuditTable(routingContext));
                       handleSuccessResponse(routingContext.response(), ResponseType.Created.getCode(),
-                              result.encode());
+                              response.encode());
                     } else {
                       LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
                       processBackendResponse(routingContext.response(), encryptionHandler.cause().getMessage());
@@ -245,11 +246,12 @@ public class AsyncRestApi{
         }
 //            Encryption
         else {
-          Future<JsonObject> future = encryption(routingContext, handler.result().toString());
+          Future<JsonObject> future = encryption(routingContext, handler.result().getJsonArray("results").toString());
           future.onComplete(encryptionHandler -> {
             if (encryptionHandler.succeeded()) {
               JsonObject result = encryptionHandler.result();
-              handleSuccessResponse(response, ResponseType.Ok.getCode(), result.encode());
+              handler.result().put("results",result);
+              handleSuccessResponse(response, ResponseType.Ok.getCode(),  handler.result().encode());
             } else {
               LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
               processBackendResponse(response, encryptionHandler.cause().getMessage());

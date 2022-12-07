@@ -735,11 +735,12 @@ public class ApiServerVerticle extends AbstractVerticle {
                 }
 //            Encryption
                 else {
-                  Future<JsonObject> future = encryption(context, handler.result().toString());
+                  Future<JsonObject> future = encryption(context, handler.result().getJsonArray("results").toString());
                   future.onComplete(encryptionHandler -> {
                     if (encryptionHandler.succeeded()) {
                       JsonObject result = encryptionHandler.result();
-                      handleSuccessResponse(response, ResponseType.Ok.getCode(), result.encode());
+                      handler.result().put("results",result);
+                      handleSuccessResponse(response, ResponseType.Ok.getCode(),  handler.result().encode());
                       context.data().put(RESPONSE_SIZE, response.bytesWritten());
                       Future.future(fu -> updateAuditTable(context));
                     } else {
@@ -801,11 +802,12 @@ public class ApiServerVerticle extends AbstractVerticle {
                 }
                 // Encryption
                 else {
-                  Future<JsonObject> future = encryption(context, handler.result().toString());
+                  Future<JsonObject> future = encryption(context, handler.result().getJsonArray("results").toString());
                   future.onComplete(encryptionHandler -> {
                     if (encryptionHandler.succeeded()) {
                       JsonObject result = encryptionHandler.result();
-                      handleSuccessResponse(response, ResponseType.Ok.getCode(), result.encode());
+                      handler.result().put("results",result);
+                      handleSuccessResponse(response, ResponseType.Ok.getCode(),  handler.result().encode());
                       context.data().put(RESPONSE_SIZE, response.bytesWritten());
                       Future.future(fu -> updateAuditTable(context));
                     } else {
@@ -836,11 +838,12 @@ public class ApiServerVerticle extends AbstractVerticle {
                 }
                 //            Encryption
                 else {
-                  Future<JsonObject> future = encryption(context, handler.result().toString());
+                  Future<JsonObject> future = encryption(context, handler.result().getJsonArray("results").toString());
                   future.onComplete(encryptionHandler -> {
                     if (encryptionHandler.succeeded()) {
                       JsonObject result = encryptionHandler.result();
-                      handleSuccessResponse(response, ResponseType.Ok.getCode(), result.encode());
+                      handler.result().put("results",result);
+                      handleSuccessResponse(response, ResponseType.Ok.getCode(),  handler.result().encode());
                       context.data().put(RESPONSE_SIZE, response.bytesWritten());
                       Future.future(fu -> updateAuditTable(context));
                     } else {
