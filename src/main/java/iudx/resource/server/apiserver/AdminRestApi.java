@@ -6,6 +6,7 @@ import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
 import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
 import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.ID;
+import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.common.Constants.BROKER_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.METERING_SERVICE_ADDRESS;
@@ -22,7 +23,13 @@ import static iudx.resource.server.database.postgres.Constants.DELETE_UNIQUE_ATT
 import static iudx.resource.server.database.postgres.Constants.INSERT_REVOKE_TOKEN_SQL;
 import static iudx.resource.server.database.postgres.Constants.INSERT_UNIQUE_ATTR_SQL;
 import static iudx.resource.server.database.postgres.Constants.UPDATE_UNIQUE_ATTR_SQL;
+import static iudx.resource.server.metering.util.Constants.EPOCH_TIME;
+import static iudx.resource.server.metering.util.Constants.ISO_TIME;
+
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -313,15 +320,24 @@ public final class AdminRestApi {
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
 
     JsonObject request = new JsonObject();
+    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+    long time = zst.toInstant().toEpochMilli();
+    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+
+    request.put(EPOCH_TIME,time);
+    request.put(ISO_TIME,isoTime);
     request.put(USER_ID, authInfo.getValue(USER_ID));
     request.put(ID, authInfo.getValue(ID));
     request.put(API, authInfo.getValue(API_ENDPOINT));
-    auditService.executeWriteQuery(request, handler -> {
+    request.put(RESPONSE_SIZE,0);
+
+
+    auditService.insertMeteringValuesInRMQ(request, handler -> {
       if (handler.succeeded()) {
-        LOGGER.info("audit table updated");
+        LOGGER.info("message published in RMQ.");
         promise.complete();
       } else {
-        LOGGER.error("failed to update audit table");
+        LOGGER.error("failed to publish message in RMQ.");
         promise.complete();
       }
     });

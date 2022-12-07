@@ -1,164 +1,165 @@
 package iudx.resource.server.database.elastic;
 
 import static iudx.resource.server.database.archives.Constants.ATTRIBUTE_SEARCH_REGEX;
-import static iudx.resource.server.database.archives.Constants.COUNT_UNSUPPORTED;
-import static iudx.resource.server.database.archives.Constants.ERROR;
 import static iudx.resource.server.database.archives.Constants.GEOSEARCH_REGEX;
-import static iudx.resource.server.database.archives.Constants.ID;
-import static iudx.resource.server.database.archives.Constants.INVALID_SEARCH;
-import static iudx.resource.server.database.archives.Constants.MISSING_RESPONSE_FILTER_FIELDS;
-import static iudx.resource.server.database.archives.Constants.PROD_INSTANCE;
-import static iudx.resource.server.database.archives.Constants.QUERY_KEY;
 import static iudx.resource.server.database.archives.Constants.REQ_TIMEREL;
 import static iudx.resource.server.database.archives.Constants.RESPONSE_ATTRS;
 import static iudx.resource.server.database.archives.Constants.RESPONSE_FILTER_REGEX;
-import static iudx.resource.server.database.archives.Constants.SEARCH_KEY;
 import static iudx.resource.server.database.archives.Constants.SEARCH_TYPE;
-import static iudx.resource.server.database.archives.Constants.SOURCE_FILTER_KEY;
 import static iudx.resource.server.database.archives.Constants.TEMPORAL_SEARCH_REGEX;
-import static iudx.resource.server.database.archives.Constants.TEST_INSTANCE;
 import static iudx.resource.server.database.archives.Constants.TIME_KEY;
 import static iudx.resource.server.database.archives.Constants.TIME_LIMIT;
-import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import co.elastic.clients.elasticsearch._types.FieldValue;
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery.Builder;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.TermsQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.TermsQueryField;
+import co.elastic.clients.elasticsearch.core.search.SourceConfig;
+import co.elastic.clients.elasticsearch.core.search.SourceFilter;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.database.elastic.exception.ESQueryDecodeException;
+import iudx.resource.server.database.elastic.exception.ESQueryException;
 
 public class QueryDecoder {
 
   private static final Logger LOGGER = LogManager.getLogger(QueryDecoder.class);
 
-  public JsonObject getESquery(JsonObject json) {
-
-    String searchType = json.getString(SEARCH_TYPE);
-    Boolean isValidQuery = false;
-    JsonObject elasticQuery = new JsonObject();
-
-    boolean temporalQuery = false;
-
-    JsonArray id = json.getJsonArray(ID);
-
-    String timeLimit = json.getString(TIME_LIMIT).split(",")[1];
-    int numDays = Integer.valueOf(json.getString(TIME_LIMIT).split(",")[2]);
-
-    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-    boolQuery.filter(QueryBuilders.termsQuery(ID, id.getString(0)));
-
-    if (searchType.matches(GEOSEARCH_REGEX)) {
-      boolQuery = new GeoQueryParser(boolQuery, json).parse();
-      isValidQuery = true;
-    }
-
-    if (searchType.matches(TEMPORAL_SEARCH_REGEX)
-        && json.containsKey(REQ_TIMEREL)
-        && json.containsKey(TIME_KEY)) {
-      boolQuery = new TemporalQueryParser(boolQuery, json).parse();
-      temporalQuery = true;
-      isValidQuery = true;
-    }
-
-    if (searchType.matches(ATTRIBUTE_SEARCH_REGEX)) {
-      boolQuery = new AttributeQueryParser(boolQuery, json).parse();
-      isValidQuery = true;
-    }
-
-    JsonArray responseFilters = null;
-    if (searchType.matches(RESPONSE_FILTER_REGEX)) {
-      LOGGER.debug("Info: Adding responseFilter");
-      isValidQuery = true;
-      if (!json.getBoolean(SEARCH_KEY)) {
-        return new JsonObject().put(ERROR, COUNT_UNSUPPORTED);
-      }
-      if (json.containsKey(RESPONSE_ATTRS)) {
-        responseFilters = json.getJsonArray(RESPONSE_ATTRS);
-      } else {
-        return new JsonObject().put(ERROR, MISSING_RESPONSE_FILTER_FIELDS);
-      }
-    }
-
-    /* checks if any valid search jsons have matched */
-    if (!isValidQuery) {
-      return new JsonObject().put(ERROR, INVALID_SEARCH);
-    } else {
-      if (!temporalQuery && json.getJsonArray("applicableFilters").contains("TEMPORAL")) {
-        if (json.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(PROD_INSTANCE)) {
-          boolQuery.filter(
-              QueryBuilders.rangeQuery("observationDateTime").gte("now-" + timeLimit + "d/d"));
-
-        } else if (json.getString(TIME_LIMIT).split(",")[0].equalsIgnoreCase(TEST_INSTANCE)) {
-          String endTime = json.getString(TIME_LIMIT).split(",")[1];
-          ZonedDateTime endTimeZ = ZonedDateTime.parse(endTime);
-          ZonedDateTime startTime = endTimeZ.minusDays(numDays);
-
-          boolQuery.filter(
-              QueryBuilders.rangeQuery("observationDateTime").lte(endTime).gte(startTime));
-        }
-      }
-    }
-
-    elasticQuery.put(QUERY_KEY, new JsonObject(boolQuery.toString()));
-
-    if (responseFilters != null) {
-      elasticQuery.put(SOURCE_FILTER_KEY, responseFilters);
-    }
-
-    return elasticQuery;
+  public Query getQuery(JsonObject jsonQuery) {
+    return getQuery(jsonQuery, false);
   }
 
-  public QueryBuilder getESquery4Scroll(JsonObject json) {
-    LOGGER.debug(json);
-    String searchType = json.getString(SEARCH_TYPE);
-    Boolean isValidQuery = false;
+  public Query getQuery(JsonObject jsonQuery, boolean isAsyncQuery) {
 
+    String searchType = jsonQuery.getString(SEARCH_TYPE);
+    Boolean isValidQuery = false;
     boolean temporalQuery = false;
 
-    JsonArray id = json.getJsonArray(ID);
+    String[] timeLimitConfig = getTimeLimitArray(jsonQuery, isAsyncQuery);
+    int defaultDateForDevDeployment = 0;
 
-    BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-    boolQuery.filter(QueryBuilders.termsQuery(ID, id.getString(0)));
+    Map<FilterType, List<Query>> queryLists = new HashMap<>();
 
-    if (searchType.matches(GEOSEARCH_REGEX)) {
-      boolQuery = new GeoQueryParser(boolQuery, json).parse();
-      isValidQuery = true;
+    for (FilterType filterType : FilterType.values()) {
+      queryLists.put(filterType, new ArrayList<Query>());
     }
 
-    if (searchType.matches(TEMPORAL_SEARCH_REGEX)
-        && json.containsKey(REQ_TIMEREL)
-        && json.containsKey(TIME_KEY)) {
-      boolQuery = new TemporalQueryParser(boolQuery, json).parse();
+    // add id to every elastic query
+    JsonArray id = jsonQuery.getJsonArray("id");
+    FieldValue field = FieldValue.of(id.getString(0));
+    TermsQueryField termQueryField = TermsQueryField.of(e -> e.value(List.of(field)));
+    Query idTermsQuery = TermsQuery.of(query -> query.field("id").terms(termQueryField))._toQuery();
+
+    queryLists.get(FilterType.FILTER).add(idTermsQuery);
+    ElasticsearchQueryDecorator queryDecorator = null;
+    if (searchType.matches(TEMPORAL_SEARCH_REGEX) && jsonQuery.containsKey(REQ_TIMEREL)
+        && jsonQuery.containsKey(TIME_KEY)) {
+
+      if (!isAsyncQuery) {
+        defaultDateForDevDeployment = Integer.valueOf(timeLimitConfig[2]);
+      }
+      queryDecorator =
+          new TemporalQueryFiltersDecorator(queryLists, jsonQuery, defaultDateForDevDeployment);
+      queryDecorator.add();
       temporalQuery = true;
       isValidQuery = true;
     }
 
     if (searchType.matches(ATTRIBUTE_SEARCH_REGEX)) {
-      boolQuery = new AttributeQueryParser(boolQuery, json).parse();
+      queryDecorator = new AttributeQueryFiltersDecorator(queryLists, jsonQuery);
+      queryDecorator.add();
       isValidQuery = true;
     }
 
-    JsonArray responseFilters = null;
-    if (searchType.matches(RESPONSE_FILTER_REGEX)) {
-      LOGGER.debug("Info: Adding responseFilter");
+    if (searchType.matches(GEOSEARCH_REGEX)) {
+      queryDecorator = new GeoQueryFiltersDecorator(queryLists, jsonQuery);
+      queryDecorator.add();
       isValidQuery = true;
-      if (!json.getBoolean(SEARCH_KEY)) {
-        return null;
-      }
-      if (json.containsKey(RESPONSE_ATTRS)) {
-        responseFilters = json.getJsonArray(RESPONSE_ATTRS);
-      } else {
-        return null;
-      }
     }
 
-    /* checks if any valid search jsons have matched */
     if (!isValidQuery) {
-      throw new ESQueryDecodeException("invalid query");
+      throw new ESQueryException("Invalid search query");
     }
 
-    return boolQuery;
+    boolean isTemporalResource = jsonQuery.getJsonArray("applicableFilters").contains("TEMPORAL");
+    if (!isAsyncQuery && !temporalQuery && isTemporalResource) {
+      defaultDateForDevDeployment = Integer.valueOf(timeLimitConfig[2]);
+      new TemporalQueryFiltersDecorator(queryLists, jsonQuery, defaultDateForDevDeployment)
+          .addDefaultTemporalFilters(queryLists, jsonQuery);
+    }
+
+    Query q = getBoolQuery(queryLists);
+
+    LOGGER.info("query : {}", q.toString());
+    return q;
+
+  }
+
+  private String[] getTimeLimitArray(JsonObject jsonQuery, boolean isAsyncQuery) {
+    if (isAsyncQuery) {
+      return new String[] {};
+    }
+    String[] timeLimitConfig = jsonQuery.getString(TIME_LIMIT).split(",");
+    return timeLimitConfig;
+  }
+
+  public SourceConfig getSourceConfigFilters(JsonObject queryJson) {
+    String searchType = queryJson.getString(SEARCH_TYPE);
+
+    if (!searchType.matches(RESPONSE_FILTER_REGEX)) {
+      return getSourceFilter(Collections.emptyList());
+    }
+
+    JsonArray responseFilteringFileds = queryJson.getJsonArray(RESPONSE_ATTRS);
+    if (responseFilteringFileds == null) {
+      LOGGER.error("response filtering fields are not passed in attrs parameter");
+      throw new ESQueryException(
+          "response filtering fields are not passed in attrs parameter");
+    }
+
+    return getSourceFilter(responseFilteringFileds.getList());
+
+  }
+
+  private SourceConfig getSourceFilter(List<String> sourceFilterList) {
+    SourceFilter sourceFilter = SourceFilter.of(f -> f.includes(sourceFilterList));
+    SourceConfig sourceFilteringFields = SourceConfig.of(c -> c.filter(sourceFilter));
+    return sourceFilteringFields;
+  }
+
+  private Query getBoolQuery(Map<FilterType, List<Query>> filterQueries) {
+
+    Builder boolQuery = new BoolQuery.Builder();
+
+    for (Map.Entry<FilterType, List<Query>> entry : filterQueries.entrySet()) {
+      if (FilterType.FILTER.equals(entry.getKey())
+          && filterQueries.get(FilterType.FILTER).size() > 0) {
+        boolQuery.filter(filterQueries.get(FilterType.FILTER));
+      }
+
+      if (FilterType.MUST_NOT.equals(entry.getKey())
+          && filterQueries.get(FilterType.MUST_NOT).size() > 0) {
+        boolQuery.mustNot(filterQueries.get(FilterType.MUST_NOT));
+      }
+
+      if (FilterType.MUST.equals(entry.getKey()) && filterQueries.get(FilterType.MUST).size() > 0) {
+        boolQuery.must(filterQueries.get(FilterType.MUST));
+      }
+
+      if (FilterType.SHOULD.equals(entry.getKey())
+          && filterQueries.get(FilterType.SHOULD).size() > 0) {
+        boolQuery.should(filterQueries.get(FilterType.SHOULD));
+      }
+    }
+
+    return boolQuery.build()._toQuery();
+
   }
 }

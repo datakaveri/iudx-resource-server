@@ -1,6 +1,9 @@
 package iudx.resource.server.database.async;
 
-import static iudx.resource.server.database.archives.Constants.RESPONSE_ATTRS;
+import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.util.Constants.ID;
+import static iudx.resource.server.common.Constants.METERING_SERVICE_ADDRESS;
+import static iudx.resource.server.database.archives.Constants.*;
 import static iudx.resource.server.database.async.util.Constants.FILE_DOWNLOAD_URL;
 import static iudx.resource.server.database.async.util.Constants.OBJECT_ID;
 import static iudx.resource.server.database.async.util.Constants.S3_URL;
@@ -10,10 +13,15 @@ import static iudx.resource.server.database.postgres.Constants.SELECT_S3_SEARCH_
 import static iudx.resource.server.database.postgres.Constants.SELECT_S3_STATUS_SQL;
 import static iudx.resource.server.database.postgres.Constants.UPDATE_S3_URL_SQL;
 import static iudx.resource.server.database.postgres.Constants.UPDATE_STATUS_SQL;
+import static iudx.resource.server.metering.util.Constants.EPOCH_TIME;
+import static iudx.resource.server.metering.util.Constants.ISO_TIME;
+
 import java.io.File;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -21,9 +29,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import iudx.resource.server.apiserver.util.Constants;
+import iudx.resource.server.metering.MeteringService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.elasticsearch.index.query.QueryBuilder;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -52,6 +63,7 @@ public class AsyncServiceImpl implements AsyncService {
   private final S3FileOpsHelper s3FileOpsHelper;
   private final Util util;
   private final Vertx vertx;
+  private final MeteringService meteringService;
 
 
   public AsyncServiceImpl(Vertx vertx, ElasticClient client, PostgresService pgService,
@@ -63,92 +75,87 @@ public class AsyncServiceImpl implements AsyncService {
     this.timeLimit = timeLimit;
     this.filePath = filePath;
     this.util = new Util(pgService);
+    this.meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
   }
 
   @Override
-  public AsyncService asyncStatus(
-          String sub, String searchID, Handler<AsyncResult<JsonObject>> handler) {
+  public AsyncService asyncStatus(String sub, String searchID,
+      Handler<AsyncResult<JsonObject>> handler) {
     StringBuilder query = new StringBuilder(SELECT_S3_STATUS_SQL.replace("$1", searchID));
 
-    pgService.executeQuery(
-            query.toString(),
-            pgHandler -> {
-              if (pgHandler.succeeded()) {
-                JsonArray results = pgHandler.result().getJsonArray("result");
-                if (results.isEmpty()) {
-                  responseBuilder =
-                          new ResponseBuilder("failed")
-                                  .setTypeAndTitle(400)
-                                  .setMessage("Fail: Incorrect search ID");
-                  handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-                } else {
-                  JsonObject answer = results.getJsonObject(0);
+    pgService.executeQuery(query.toString(), pgHandler -> {
+      if (pgHandler.succeeded()) {
+        JsonArray results = pgHandler.result().getJsonArray("result");
+        if (results.isEmpty()) {
+          responseBuilder = new ResponseBuilder("failed")
+              .setTypeAndTitle(400)
+                .setMessage("Fail: Incorrect search ID");
+          handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+        } else {
+          JsonObject answer = results.getJsonObject(0);
 
-                  String user_id = answer.getString("user_id");
-                  if (sub.equals(user_id)) {
-                    String status = answer.getString(STATUS);
-                    if (status.equalsIgnoreCase(QueryProgress.COMPLETE.toString())) {
-                      answer.put(FILE_DOWNLOAD_URL, answer.getValue(S3_URL));
-                    }
-                    answer.put("searchId", answer.getString("search_id"));
-                    answer.put("userId", user_id);
+          String user_id = answer.getString("user_id");
+          if (sub.equals(user_id)) {
+            String status = answer.getString(STATUS);
+            if (status.equalsIgnoreCase(QueryProgress.COMPLETE.toString())) {
+              answer.put(FILE_DOWNLOAD_URL, answer.getValue(S3_URL));
+            }
+            answer.put("searchId", answer.getString("search_id"));
+            answer.put("userId", user_id);
 
-                    answer.remove(S3_URL);
-                    answer.remove("search_id");
-                    answer.remove(USER_ID);
-                    LOGGER.debug(answer.encodePrettily());
-                    JsonObject response =
-                            new JsonObject()
-                                    .put("type", ResponseUrn.SUCCESS_URN.getUrn())
-                                    .put("title", ResponseUrn.SUCCESS_URN.getMessage())
-                                    .put("results", new JsonArray().add(answer));
-                    handler.handle(Future.succeededFuture(response));
-                  } else {
-                    responseBuilder =
-                            new ResponseBuilder("failed")
-                                    .setTypeAndTitle(400, ResponseUrn.BAD_REQUEST_URN.getUrn())
-                                    .setMessage(
-                                            "Please use same user token to check status as used while calling search API");
-                    handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
-                  }
-                }
-              }
-            });
+            answer.remove(S3_URL);
+            answer.remove("search_id");
+            answer.remove(USER_ID);
+            LOGGER.debug(answer.encodePrettily());
+            JsonObject response = new JsonObject()
+                .put("type", ResponseUrn.SUCCESS_URN.getUrn())
+                  .put("title", ResponseUrn.SUCCESS_URN.getMessage())
+                  .put("results", new JsonArray().add(answer));
+            handler.handle(Future.succeededFuture(response));
+          } else {
+            responseBuilder = new ResponseBuilder("failed")
+                .setTypeAndTitle(400, ResponseUrn.BAD_REQUEST_URN.getUrn())
+                  .setMessage(
+                      "Please use same user token to check status as used while calling search API");
+            handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+          }
+        }
+      }
+    });
     return this;
   }
 
   @Override
   public AsyncService asyncSearch(String requestId, String sub, String searchId, JsonObject query) {
-
+    String  id = query.getJsonArray(ID).getString(0);
     getRecord4RequestId(requestId)
         .onSuccess(handler -> {
-          process4ExistingRequestId(requestId, sub, searchId, handler);
+          process4ExistingRequestId(id,requestId, sub, searchId, handler);
         })
         .onFailure(handler -> {
           updateQueryExecutionStatus(searchId, QueryProgress.IN_PROGRESS)
               .onSuccess(statusHandler -> {
-                process4NewRequestId(searchId, query);
+                process4NewRequestId(searchId,sub, query);
               })
               .onFailure(statusHandler -> {
-
-              });
-        });
+                LOGGER.error("");
+      });
+    });
 
     return this;
   }
 
   private Future<Void> updateQueryExecutionStatus(String searchId, QueryProgress status) {
     Promise<Void> promise = Promise.promise();
-    StringBuilder querySb = new StringBuilder(UPDATE_STATUS_SQL
-        .replace("$1", status.toString())
-        .replace("$2", searchId));
+    StringBuilder querySb = new StringBuilder(
+        UPDATE_STATUS_SQL.replace("$1", status.toString()).replace("$2", searchId));
 
     pgService.executeQuery(querySb.toString(), handler -> {
       if (handler.succeeded()) {
         LOGGER.debug("status : {} update for search id : {}", status.toString(), searchId);
         promise.complete();
       } else {
-        promise.fail("fail to update query status in database");
+        promise.fail("failprocess4ExistingRequestId to update query status in database");
       }
     });
     return promise.future();
@@ -166,11 +173,9 @@ public class AsyncServiceImpl implements AsyncService {
     Promise<JsonArray> promise = Promise.promise();
 
     Map<String, String> result = new HashMap<>();
-    StringBuilder query =
-            new StringBuilder(
-                    SELECT_S3_SEARCH_SQL
-                            .replace("$1", requestId)
-                            .replace("$2", QueryProgress.COMPLETE.toString()));
+    StringBuilder query = new StringBuilder(SELECT_S3_SEARCH_SQL
+        .replace("$1", requestId)
+          .replace("$2", QueryProgress.COMPLETE.toString()));
 
     pgService.executeQuery(query.toString(), pgHandler -> {
       if (pgHandler.succeeded()) {
@@ -178,7 +183,7 @@ public class AsyncServiceImpl implements AsyncService {
         if (results.isEmpty()) {
           promise.fail("Record doesn't exist in db for requestId.");
         } else {
-          LOGGER.debug("record : " + results);
+//          LOGGER.debug("record : " + results);
           promise.complete(results);
         }
       }
@@ -189,46 +194,49 @@ public class AsyncServiceImpl implements AsyncService {
   Future<Void> executePGQuery(String query) {
     Promise<Void> promise = Promise.promise();
 
-    pgService.executeQuery(
-            query,
-            handler -> {
-              if (handler.succeeded()) {
-                promise.complete();
-              } else {
-                promise.fail("failed query execution " + handler.cause());
-              }
-            });
+    pgService.executeQuery(query, handler -> {
+      if (handler.succeeded()) {
+        promise.complete();
+      } else {
+        promise.fail("failed query execution " + handler.cause());
+      }
+    });
 
     return promise.future();
   }
 
-  void process4ExistingRequestId(String requestId, String sub, String searchId, JsonArray record) {
+  void process4ExistingRequestId(String id,String requestId, String sub, String searchId, JsonArray record) {
     String object_id = record.getJsonObject(0).getString(OBJECT_ID);
     String expiry = LocalDateTime.now().plusDays(1).toString();
+    long fileSize = record.getJsonObject(0).getLong(SIZE_KEY);
 
     long urlExpiry = ZonedDateTime.now().toEpochSecond() * 1000 + TimeUnit.DAYS.toMillis(1);
     URL s3Url = s3FileOpsHelper.generatePreSignedUrl(urlExpiry, object_id);
 
     StringBuilder queryStringBuilder = new StringBuilder(UPDATE_S3_URL_SQL
-        .replace("$1", s3Url.toString())
-        .replace("$2", expiry)
-        .replace("$3", QueryProgress.COMPLETE.toString())
-        .replace("$4", object_id)
-        .replace("$5", String.valueOf(100.0d))
-        .replace("$6", searchId));
+            .replace("$1", s3Url.toString())
+            .replace("$2", expiry)
+            .replace("$3", QueryProgress.COMPLETE.toString())
+            .replace("$4", object_id)
+            .replace("$5", String.valueOf(100.0d))
+            .replace("$6", String.valueOf(fileSize))
+            .replace("$7", searchId));
 
     executePGQuery(queryStringBuilder.toString())
         .onSuccess(handler -> {
           LOGGER.info("Query completed with existing requestId & objectId");
+          Future.future(fu -> updateAuditTable(id, sub, fileSize));
         })
         .onFailure(handler -> {
           LOGGER.error("Query execution failed for insert with existing requestId & objectId");
         });
   }
 
-  private void process4NewRequestId(String searchId, JsonObject query) {
+  private void process4NewRequestId(String searchId,String userId,JsonObject query) {
     File file = new File(filePath + "/" + searchId + ".json");
     String objectId = UUID.randomUUID().toString();
+    String  id = query.getJsonArray(ID).getString(0);
+
 
 
     ProgressListener progressListener = new AsyncFileScrollProgressListener(searchId, pgService);
@@ -240,77 +248,73 @@ public class AsyncServiceImpl implements AsyncService {
             JsonObject uploadResult = s3UploadHandler.result();
             String s3_url = uploadResult.getString("s3_url");
             String expiry = LocalDateTime.now().plusDays(1).toString();
+            Long fileSize = file.length();
             // update DB for search ID and requestId;
             progressListener.finish();
             StringBuilder updateQuery =
-                new StringBuilder(
-                    UPDATE_S3_URL_SQL
-                        .replace("$1", s3_url)
-                        .replace("$2", expiry)
-                        .replace("$3", QueryProgress.COMPLETE.toString())
-                        .replace("$4", objectId)
-                        .replace("$5", String.valueOf(100.0))
-                        .replace("$6", searchId));
+                    new StringBuilder(UPDATE_S3_URL_SQL
+                            .replace("$1", s3_url)
+                            .replace("$2", expiry)
+                            .replace("$3", QueryProgress.COMPLETE.toString())
+                            .replace("$4", objectId)
+                            .replace("$5", String.valueOf(100.0))
+                            .replace("$6", String.valueOf(fileSize))
+                            .replace("$7", searchId));
+
             executePGQuery(updateQuery.toString())
                 .onSuccess(recordUpdateHandler -> {
                   LOGGER.debug("updated status in postgres");
+                  Future.future(fu -> updateAuditTable(id, userId, fileSize));
                   try {
                     vertx.fileSystem().deleteBlocking(filePath + "/" + file.getName());
                   } catch (Exception ex) {
                     LOGGER.error(
                         "File deletion operation failed for fileName : {} try to delete manually to reclaim disk-space",
                         file.getName());
-                  }
-                })
-                .onFailure(recordInsertFailure -> {
-                  LOGGER.error("Postgres insert failure[COMPLETE status] {}", recordInsertFailure);
-                });
+              }
+            }).onFailure(recordInsertFailure -> {
+              LOGGER.error("Postgres insert failure[COMPLETE status] {}", recordInsertFailure);
+            });
 
           } else {
             LOGGER.error("File upload to S3 failed for fileName : {}", file.getName());
-            StringBuilder updateFailQuery =
-                new StringBuilder(
-                    UPDATE_STATUS_SQL
-                        .replace("$1", QueryProgress.ERROR.toString())
-                        .replace("$2", searchId));
+            StringBuilder updateFailQuery = new StringBuilder(UPDATE_STATUS_SQL
+                .replace("$1", QueryProgress.ERROR.toString())
+                  .replace("$2", searchId));
             Future.future(fu -> util.writeToDB(updateFailQuery));
           }
         });
       } else {
         LOGGER.error("Scroll API operation failed for searchId : " + searchId);
-        StringBuilder updateFailQuery =
-            new StringBuilder(
-                UPDATE_STATUS_SQL
-                    .replace("$1", QueryProgress.ERROR.toString())
-                    .replace("$2", searchId));
+        StringBuilder updateFailQuery = new StringBuilder(UPDATE_STATUS_SQL
+            .replace("$1", QueryProgress.ERROR.toString())
+              .replace("$2", searchId));
         Future.future(fu -> util.writeToDB(updateFailQuery));
       }
     });
   }
-  
+
   public AsyncService scrollQuery(File file, JsonObject request, String searchId,
       ProgressListener progressListener, Handler<AsyncResult<JsonObject>> handler) {
 
-    QueryBuilder query;
+    Query query;
     request.put("search", true);
 
     if (!util.isValidQuery(request)) {
       responseBuilder =
-          new ResponseBuilder("fail")
-              .setTypeAndTitle(400)
-              .setMessage("bad parameters");
+          new ResponseBuilder("fail").setTypeAndTitle(400).setMessage("bad parameters");
       handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return this;
     }
 
     List<String> splitId =
-            new LinkedList<>(Arrays.asList(request.getJsonArray("id").getString(0).split("/")));
+        new LinkedList<>(Arrays.asList(request.getJsonArray("id").getString(0).split("/")));
     splitId.remove(splitId.size() - 1);
     final String searchIndex = String.join("__", splitId);
     LOGGER.debug("Index name: " + searchIndex);
 
     try {
-      query = new QueryDecoder().getESquery4Scroll(request);
+      query = new QueryDecoder().getQuery(request, true);
     } catch (Exception e) {
       LOGGER.error(e);
       e.printStackTrace();
@@ -332,14 +336,44 @@ public class AsyncServiceImpl implements AsyncService {
       }
     }
 
-    client.scrollAsync(file, searchIndex, query, sourceFilters, searchId, progressListener,
-        scrollHandler -> {
-          if (scrollHandler.succeeded()) {
-            handler.handle(Future.succeededFuture());
-          } else {
-            handler.handle(Future.failedFuture(scrollHandler.cause()));
-          }
-        });
+    Future<JsonObject> asyncFuture =
+        client.asyncScroll(file, searchIndex, query, sourceFilters, searchId, progressListener);
+    asyncFuture.onComplete(scrollHandler -> {
+      if (scrollHandler.succeeded()) {
+        handler.handle(Future.succeededFuture());
+      } else {
+        handler.handle(Future.failedFuture(scrollHandler.cause()));
+      }
+    });
     return this;
   }
+  private Future<Void> updateAuditTable(String id, String userId, long fileSize) {
+    Promise<Void> promise = Promise.promise();
+    JsonObject request = new JsonObject();
+    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+    long time = zst.toInstant().toEpochMilli();
+    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+
+    request.put(EPOCH_TIME,time);
+    request.put(ISO_TIME,isoTime);
+    request.put(Constants.USER_ID, userId);
+    request.put(ID, id);
+    request.put(API, IUDX_ASYNC_SEARCH_API);
+    request.put(RESPONSE_SIZE, fileSize);
+
+    meteringService.insertMeteringValuesInRMQ(
+            request,
+            handler -> {
+              if (handler.succeeded()) {
+                LOGGER.info("message published in RMQ.");
+                promise.complete();
+              } else {
+                LOGGER.error("failed to publish message in RMQ.");
+                promise.complete();
+              }
+            });
+
+    return promise.future();
+  }
+
 }

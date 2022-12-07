@@ -32,7 +32,7 @@ public class HeaderKeyTypeValidation implements Validator{
             LOG.error("Validation error : The value of the public key is empty in the publicKey header");
             throw new DxRuntimeException(failureCode(), INVALID_HEADER_VALUE_URN, failureMessage());
         } else if (value.length() != 44) {
-            LOG.error("Validation error : Invalid Public Key length");
+            LOG.error("Validation error : Invalid Public Key length. Encoded public key's length should be 44");
             throw new DxRuntimeException(failureCode(), INVALID_HEADER_VALUE_URN, failureMessage());
         } else if (!Pattern.matches(ENCODED_PUBLIC_KEY_REGEX, value)) {
             LOG.error("Validation error : Public key contains invalid urlbase64 character");

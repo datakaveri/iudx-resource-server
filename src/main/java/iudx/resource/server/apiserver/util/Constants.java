@@ -40,6 +40,7 @@ public class Constants {
   // Async endpoints
   public static final String IUDX_ASYNC_SEARCH = "(.*)/async/search";
   public static final String IUDX_ASYNC_STATUS = "(.*)/async/status";
+  public static final String IUDX_ASYNC_SEARCH_API = "/ngsi-ld/v1/async/search";
   // IUDX management endpoints
   public static final String IUDX_MANAGEMENT_URL = "/management";
   public static final String IUDX_ADAPTOR_URL = "/ngsi-ld/v1";
@@ -284,4 +285,6 @@ public class Constants {
 
   public static final String SELECT_SUB_SQL =
       "SELECT * from subscriptions where queue_name='$1' and entity='$2'";
+
+  public static final String NO_CONTENT="204";
 }

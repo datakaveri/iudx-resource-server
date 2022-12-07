@@ -28,7 +28,7 @@
         <testcontainer-postgres.version>1.17.3</testcontainer-postgres.version>
         <jts2geojson.version>0.17.0</jts2geojson.version>
         <elasticsearch-rest-client.version>8.3.3</elasticsearch-rest-client.version>
-        <elasticsearch-rest-high-level-client.version>7.17.4</elasticsearch-rest-high-level-client.version>
+        <!--<elasticsearch-rest-high-level-client.version>7.17.4</elasticsearch-rest-high-level-client.version>-->
         <!-- <flyway.plugin.version>7.11.1</flyway.plugin.version> -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <exec.mainClass>iudx.resource.server.deploy.Deployer</exec.mainClass>
@@ -66,7 +66,7 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>42.4.1</version>
+			<version>42.4.3</version>
 		</dependency>
 		<dependency>
             <groupId>com.ongres.scram</groupId>
@@ -258,11 +258,11 @@
             <artifactId>elasticsearch-rest-client</artifactId>
             <version>${elasticsearch-rest-client.version}</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.elasticsearch.client</groupId>
             <artifactId>elasticsearch-rest-high-level-client</artifactId>
             <version>${elasticsearch-rest-high-level-client.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-inline</artifactId>
@@ -284,7 +284,7 @@
         <dependency>
             <groupId>co.elastic.clients</groupId>
             <artifactId>elasticsearch-java</artifactId>
-            <version>8.4.1</version>
+            <version>8.3.3</version>
         </dependency>
 
         <dependency>
