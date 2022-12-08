@@ -74,17 +74,18 @@ public class ManagementRestApi {
   private final PostgresService pgService;
   private final MeteringService auditService;
   private final ManagementApi managementApi;
-
+  private JsonObject config;
   // TODO : remove managementApi class dependency [delete Management API class and call services
   // directly]
   ManagementRestApi(Vertx vertx, DataBrokerService brokerService, PostgresService pgService,
-      MeteringService auditService, ManagementApi mgmtApi) {
+      MeteringService auditService, ManagementApi mgmtApi, JsonObject config) {
     this.vertx = vertx;
     this.RMQbrokerService = brokerService;
     this.pgService = pgService;
     this.auditService = auditService;
     this.managementApi = mgmtApi;
     this.router = Router.router(vertx);
+    this.config = config;
   }
 
   public Router init() {
@@ -93,53 +94,53 @@ public class ManagementRestApi {
     // Exchange
     router
         .post(EXCHANGE.path)
-        .handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx, config))
         .handler(this::createExchange);
     router
         .delete(EXCHANGE.path + "/:exId")
-        .handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx, config))
         .handler(this::deleteExchange);
     router
         .get(EXCHANGE.path + "/:exId")
-        .handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx, config))
         .handler(this::getExchangeDetails);
     // Queue
     router
         .post(QUEUE.path)
-        .handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx, config))
         .handler(this::createQueue);
     router
         .delete(QUEUE.path + "/:queueId")
-        .handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx, config))
         .handler(this::deleteQueue);
     router
         .get(QUEUE.path + "/:queueId")
-        .handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx, config))
         .handler(this::getQueueDetails);
     // bind
     router
         .post(BIND.path)
-        .handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx, config))
         .handler(this::bindQueue2Exchange);
     // unbind
     router
         .post(UNBIND.path)
-        .handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx, config))
         .handler(this::unbindQueue2Exchange);
     // vHost
     router
         .post(VHOST.path)
-        .handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx, config))
         .handler(this::createVHost);
     router
         .delete(VHOST.path + "/:vhostId")
-        .handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx, config))
         .handler(this::deleteVHost);
     
 
     router
         .post(RESET_PWD.path)
-        .handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx, config))
         .handler(this::resetPassword);
 
     return router;

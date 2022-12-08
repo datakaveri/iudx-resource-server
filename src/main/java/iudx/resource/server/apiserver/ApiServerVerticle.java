@@ -210,7 +210,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         router
                 .get(basePath + NGSILD_ENTITIES_URL)
                 .handler(entityValidationHandler)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::handleEntitiesQuery)
                 .failureHandler(validationsFailureHandler);
 
@@ -218,7 +218,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         router
                 .get(basePath + NGSILD_ENTITIES_URL + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
                 .handler(latestValidationHandler)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::handleLatestEntitiesQuery)
                 .failureHandler(validationsFailureHandler);
 
@@ -228,7 +228,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 .post(basePath + NGSILD_POST_TEMPORAL_QUERY_PATH)
                 .consumes(APPLICATION_JSON)
                 .handler(postTemporalValidationHandler)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::handlePostEntitiesQuery)
                 .failureHandler(validationsFailureHandler);
 
@@ -238,7 +238,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 .post( basePath + NGSILD_POST_ENTITIES_QUERY_PATH)
                 .consumes(APPLICATION_JSON)
                 .handler(postEntitiesValidationHandler)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::handlePostEntitiesQuery)
                 .failureHandler(validationsFailureHandler);
 
@@ -247,7 +247,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         router
                 .get(basePath + NGSILD_TEMPORAL_URL)
                 .handler(temporalValidationHandler)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::handleTemporalQuery)
                 .failureHandler(validationsFailureHandler);
 
@@ -257,32 +257,32 @@ public class ApiServerVerticle extends AbstractVerticle {
         router
                 .post(basePath + SUBSCRIPTION.path)
                 .handler(subsValidationHandler)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::handleSubscriptions)
                 .failureHandler(validationsFailureHandler);
         // append sub
         router
                 .patch(basePath + SUBSCRIPTION.path + "/:userid/:alias")
                 .handler(subsValidationHandler)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::appendSubscription)
                 .failureHandler(validationsFailureHandler);
         // update sub
         router
                 .put(basePath + SUBSCRIPTION.path + "/:userid/:alias")
                 .handler(subsValidationHandler)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::updateSubscription)
                 .failureHandler(validationsFailureHandler);
         // get sub
         router
                 .get(basePath + SUBSCRIPTION.path + "/:userid/:alias")
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::getSubscription);
         // delete sub
         router
                 .delete(basePath + SUBSCRIPTION.path + "/:userid/:alias")
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::deleteSubscription);
 
         /* Management Api endpoints */
@@ -290,54 +290,54 @@ public class ApiServerVerticle extends AbstractVerticle {
 
         router
                 .get(basePath + IUDX_CONSUMER_AUDIT_URL)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::getConsumerAuditDetail);
         router
                 .get(basePath + IUDX_PROVIDER_AUDIT_URL)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::getProviderAuditDetail);
 
         // adapter
         router
                 .post(basePath + INGESTION.path)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::registerAdapter);
         router
                 .delete(basePath + INGESTION.path
                         + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::deleteAdapter);
         router
                 .delete(
                         basePath + INGESTION.path + "/:domain/:userSha/:resourceServer/:resourceGroup")
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::deleteAdapter);
         router
                 .get(basePath + INGESTION.path
                         + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::getAdapterDetails);
 
         router
                 .get(basePath + INGESTION.path + "/:domain/:userSha/:resourceServer/:resourceGroup")
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::getAdapterDetails);
 
         router
                 .post(basePath + INGESTION.path + "/heartbeat")
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::publishHeartbeat);
         router
                 .post(basePath + INGESTION.path + "/downstreamissue")
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::publishDownstreamIssue);
         router
                 .post(basePath + INGESTION.path + "/dataissue")
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::publishDataIssue);
         router
                 .post(basePath + INGESTION.path + "/entities")
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,config()))
                 .handler(this::publishDataFromAdapter);
 
         /** Documentation routes */
@@ -416,12 +416,12 @@ public class ApiServerVerticle extends AbstractVerticle {
                 .route(basePath + ASYNC.path + "/*")
                 .subRouter(new AsyncRestApi(vertx, router, config()).init());
 
-        router.route(ADMIN.path + "/*").subRouter(new AdminRestApi(vertx, router).init());
+        router.route(ADMIN.path + "/*").subRouter(new AdminRestApi(vertx, router, config()).init());
 
         // @Deprecated : will be removed in future
         router
                 .mountSubRouter(MANAGEMENT.path, new ManagementRestApi(vertx, databroker, postgresService,
-                        meteringService, managementApi).init());
+                        meteringService, managementApi,config()).init());
 
         router.route().last().handler(requestHandler -> {
             HttpServerResponse response = requestHandler.response();

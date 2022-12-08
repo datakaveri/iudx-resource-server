@@ -62,10 +62,12 @@ public class AsyncRestApi{
   private final PostgresService postgresService;
   private final DataBrokerService databroker;
   private EncryptionService encryptionService;
+  private JsonObject config;
 
   AsyncRestApi(Vertx vertx,Router router, JsonObject config) {
     this.vertx = vertx;
     this.router=router;
+    this.config = config;
     this.databroker = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
     this.meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
     this.catalogueService = new CatalogueService(vertx, config);
@@ -84,7 +86,7 @@ public class AsyncRestApi{
     router
             .get(Api.SEARCH.path)
             .handler(asyncSearchValidation)
-            .handler(AuthHandler.create(vertx))
+            .handler(AuthHandler.create(vertx,config))
             .handler(this::handleAsyncSearchRequest)
             .failureHandler(validationsFailureHandler);
 
@@ -92,7 +94,7 @@ public class AsyncRestApi{
     router
             .get(Api.STATUS.path)
             .handler(asyncStatusValidation)
-            .handler(AuthHandler.create(vertx))
+            .handler(AuthHandler.create(vertx,config))
             .handler(this::handleAsyncStatusRequest)
             .failureHandler(validationsFailureHandler);
 

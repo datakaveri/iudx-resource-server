@@ -92,9 +92,10 @@ public class AuthHandler implements Handler<RoutingContext> {
   private final String AUTH_INFO = "authInfo";
   private final List<String> noAuthRequired = bypassEndpoint;
   private HttpServerRequest request;
-
-  public static AuthHandler create(Vertx vertx) {
+  private static String basePath;
+  public static AuthHandler create(Vertx vertx, JsonObject config) {
     authenticator = AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
+    basePath = config.getString("basePath");
     return new AuthHandler();
   }
 
@@ -280,18 +281,18 @@ public class AuthHandler implements Handler<RoutingContext> {
   private String getNormalizedPath(String url) {
     LOGGER.debug("URL : " + url);
     String path = null;
-    if (url.matches(ENTITITES_URL_REGEX)) {
-      path = NGSILD_ENTITIES_URL;
-    } else if (url.matches(TEMPORAL_URL_REGEX)) {
-      path = NGSILD_TEMPORAL_URL;
-    } else if (url.matches(TEMPORAL_POST_QUERY_URL_REGEX)) {
-      path = NGSILD_POST_TEMPORAL_QUERY_PATH;
-    } else if (url.matches(ENTITIES_POST_QUERY_URL_REGEX)) {
-      path = NGSILD_POST_ENTITIES_QUERY_PATH;
-    } else if (url.matches(SUBSCRIPTION_URL_REGEX)) {
-      path = NGSILD_SUBSCRIPTION_URL;
-    } else if (url.matches(ADAPTER_URL_REGEX)) {
-      path = NGSILD_BASE.path + INGESTION.path;
+    if (url.matches(basePath + ENTITITES_URL_REGEX)) {
+      path = basePath+  NGSILD_ENTITIES_URL;
+    } else if (url.matches(basePath + TEMPORAL_URL_REGEX)) {
+      path = basePath + NGSILD_TEMPORAL_URL;
+    } else if (url.matches(basePath + TEMPORAL_POST_QUERY_URL_REGEX)) {
+      path = basePath + NGSILD_POST_TEMPORAL_QUERY_PATH;
+    } else if (url.matches(basePath + ENTITIES_POST_QUERY_URL_REGEX)) {
+      path = basePath + NGSILD_POST_ENTITIES_QUERY_PATH;
+    } else if (url.matches(basePath + SUBSCRIPTION_URL_REGEX)) {
+      path = basePath + NGSILD_SUBSCRIPTION_URL;
+    } else if (url.matches(basePath + ADAPTER_URL_REGEX)) {
+      path = basePath + INGESTION.path;
     } else if (url.matches(EXCHANGE_URL_REGEX)) {
       path = MANAGEMENT.path + EXCHANGE.path;
     } else if (url.matches(QUEUE_URL_REGEX)) {
@@ -308,14 +309,14 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = ADMIN.path + REVOKE_TOKEN.path;
     } else if (url.matches(UNIQUE_ATTR_REGEX)) {
       path = ADMIN.path + RESOURCE_ATTRIBS.path;
-    } else if (url.matches(IUDX_CONSUMER_AUDIT_URL)) {
-      path = IUDX_CONSUMER_AUDIT_URL;
-    } else if (url.matches(IUDX_PROVIDER_AUDIT_URL)) {
-      path = IUDX_PROVIDER_AUDIT_URL;
+    } else if (url.matches(basePath + IUDX_CONSUMER_AUDIT_URL)) {
+      path = basePath + IUDX_CONSUMER_AUDIT_URL;
+    } else if (url.matches(basePath + IUDX_PROVIDER_AUDIT_URL)) {
+      path = basePath + IUDX_PROVIDER_AUDIT_URL;
     } else if (url.matches(IUDX_ASYNC_SEARCH)) {
-      path = NGSILD_BASE_PATH + ASYNC.path + SEARCH.path;
+      path = basePath + ASYNC.path + SEARCH.path;
     } else if (url.matches(IUDX_ASYNC_STATUS)) {
-      path = NGSILD_BASE_PATH + ASYNC.path + STATUS.path;
+      path = basePath + ASYNC.path + STATUS.path;
     }
     return path;
   }

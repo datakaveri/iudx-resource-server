@@ -61,10 +61,11 @@ public final class AdminRestApi {
   private final PostgresService pgService;
   private final MeteringService auditService;
   private final ObjectMapper objectMapper = new ObjectMapper();
-
-  AdminRestApi(Vertx vertx, Router router) {
+  private JsonObject config;
+  AdminRestApi(Vertx vertx, Router router, JsonObject config) {
     this.vertx = vertx;
     this.router = router;
+    this.config = config;
     this.RMQbrokerService = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
     this.auditService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
     this.pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
@@ -73,22 +74,22 @@ public final class AdminRestApi {
   public Router init() {
     router
         .post(Api.REVOKE_TOKEN.path)
-        .handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx,config))
         .handler(this::handleRevokeTokenRequest);
 
     router
         .post(Api.RESOURCE_ATTRIBS.path)
-        .handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx,config))
         .handler(this::createUniqueAttribute);
 
     router
         .put(Api.RESOURCE_ATTRIBS.path)
-        .handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx,config))
         .handler(this::updateUniqueAttribute);
 
     router
         .delete(Api.RESOURCE_ATTRIBS.path)
-        .handler(AuthHandler.create(vertx))
+        .handler(AuthHandler.create(vertx,config))
         .handler(this::deleteUniqueAttribute);
 
     return router;
