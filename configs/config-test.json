@@ -88,7 +88,8 @@
 			"qparamGreaterThan": "",
 			"qparamLessThan": "",
 			"qparamGreaterEquals": "",
-			"qparamLessEquals": ""
+			"qparamLessEquals": "",
+			"basePath" : "/ngsi-ld/v1"
 		},
 		{
 			"id": "iudx.resource.server.database.latest.LatestVerticle",

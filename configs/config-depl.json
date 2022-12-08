@@ -64,7 +64,8 @@
             "keystorePassword": "",
             "verticleInstances": 2,
             "catServerHost": "",
-            "catServerPort": ""
+            "catServerPort": "",
+            "basePath" : "/ngsi-ld/v1"
 
         },
         {

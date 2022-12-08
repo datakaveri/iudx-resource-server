@@ -22,19 +22,19 @@ public class Constants {
 
   // NGSI-LD endpoints
   public static final String NGSILD_BASE_PATH = "/ngsi-ld/v1";
-  public static final String NGSILD_ENTITIES_URL = NGSILD_BASE_PATH + "/entities";
+  public static final String NGSILD_ENTITIES_URL =  "/entities";
   // path regex
   public static final String ENTITITES_URL_REGEX = NGSILD_ENTITIES_URL + "(.*)";
-  public static final String NGSILD_TEMPORAL_URL = NGSILD_BASE_PATH + "/temporal/entities";
+  public static final String NGSILD_TEMPORAL_URL =  "/temporal/entities";
   public static final String TEMPORAL_URL_REGEX = NGSILD_TEMPORAL_URL + "(.*)";
   public static final String NGSILD_SUBSCRIPTION_URL = NGSILD_BASE_PATH + "/subscription";
   public static final String SUBSCRIPTION_URL_REGEX = NGSILD_SUBSCRIPTION_URL + "(.*)";
   public static final String NGSILD_POST_TEMPORAL_QUERY_PATH =
-      NGSILD_BASE_PATH + "/temporal/entityOperations/query";
+       "/temporal/entityOperations/query";
   public static final String TEMPORAL_POST_QUERY_URL_REGEX =
       NGSILD_POST_TEMPORAL_QUERY_PATH + "(.*)";
   public static final String NGSILD_POST_ENTITIES_QUERY_PATH =
-      NGSILD_BASE_PATH + "/entityOperations/query";
+       "/entityOperations/query";
   public static final String ENTITIES_POST_QUERY_URL_REGEX =
       NGSILD_POST_ENTITIES_QUERY_PATH + "(.*)";
   // Async endpoints
@@ -44,8 +44,8 @@ public class Constants {
   // IUDX management endpoints
   public static final String IUDX_MANAGEMENT_URL = "/management";
   public static final String IUDX_ADAPTOR_URL = "/ngsi-ld/v1";
-  public static final String IUDX_CONSUMER_AUDIT_URL = IUDX_ADAPTOR_URL + "/consumer/audit";
-  public static final String IUDX_PROVIDER_AUDIT_URL = IUDX_ADAPTOR_URL + "/provider/audit";
+  public static final String IUDX_CONSUMER_AUDIT_URL =  "/consumer/audit";
+  public static final String IUDX_PROVIDER_AUDIT_URL = "/provider/audit";
   public static final String IUDX_MANAGEMENT_EXCHANGE_URL = IUDX_MANAGEMENT_URL + "/exchange";
   public static final String EXCHANGE_URL_REGEX = IUDX_MANAGEMENT_EXCHANGE_URL + "(.*)";
   public static final String IUDX_MANAGEMENT_QUEUE_URL = IUDX_MANAGEMENT_URL + "/queue";
