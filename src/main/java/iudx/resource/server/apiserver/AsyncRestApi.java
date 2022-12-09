@@ -1,24 +1,11 @@
 package iudx.resource.server.apiserver;
 
 import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
-import static iudx.resource.server.apiserver.util.Constants.API;
-import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
-import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
-import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_HOST;
-import static iudx.resource.server.apiserver.util.Constants.ID;
-import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
-import static iudx.resource.server.apiserver.util.Constants.JSON_INSTANCEID;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
-import static iudx.resource.server.apiserver.util.Constants.USER_ID;
+import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.util.Constants.ENCRYPTED_DATA;
 import static iudx.resource.server.apiserver.util.RequestType.ASYNC_SEARCH;
 import static iudx.resource.server.apiserver.util.RequestType.ASYNC_STATUS;
-import static iudx.resource.server.common.Constants.ASYNC_SERVICE_ADDRESS;
-import static iudx.resource.server.common.Constants.BROKER_SERVICE_ADDRESS;
-import static iudx.resource.server.common.Constants.METERING_SERVICE_ADDRESS;
-import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.*;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
@@ -28,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
+import iudx.resource.server.encryption.EncryptionService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.google.common.hash.Hashing;
@@ -72,6 +61,7 @@ public class AsyncRestApi{
   private final CatalogueService catalogueService;
   private final PostgresService postgresService;
   private final DataBrokerService databroker;
+  private EncryptionService encryptionService;
 
   AsyncRestApi(Vertx vertx,Router router, JsonObject config) {
     this.vertx = vertx;
@@ -81,9 +71,10 @@ public class AsyncRestApi{
     this.catalogueService = new CatalogueService(vertx, config);
     this.validator = new ParamsValidator(catalogueService);
     this.postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
+    this.encryptionService = EncryptionService.createProxy(vertx, ENCRYPTION_SERVICE_ADDRESS);
   }
-  
-  
+
+
   Router init() {
     FailureHandler validationsFailureHandler = new FailureHandler();
 
@@ -91,20 +82,20 @@ public class AsyncRestApi{
 
     ValidationHandler asyncSearchValidation = new ValidationHandler(vertx, ASYNC_SEARCH);
     router
-        .get(Api.SEARCH.path)
-        .handler(asyncSearchValidation)
-        .handler(AuthHandler.create(vertx))
-        .handler(this::handleAsyncSearchRequest)
-        .failureHandler(validationsFailureHandler);
+            .get(Api.SEARCH.path)
+            .handler(asyncSearchValidation)
+            .handler(AuthHandler.create(vertx))
+            .handler(this::handleAsyncSearchRequest)
+            .failureHandler(validationsFailureHandler);
 
     ValidationHandler asyncStatusValidation = new ValidationHandler(vertx, ASYNC_STATUS);
     router
-        .get(Api.STATUS.path)
-        .handler(asyncStatusValidation)
-        .handler(AuthHandler.create(vertx))
-        .handler(this::handleAsyncStatusRequest)
-        .failureHandler(validationsFailureHandler);
-    
+            .get(Api.STATUS.path)
+            .handler(asyncStatusValidation)
+            .handler(AuthHandler.create(vertx))
+            .handler(this::handleAsyncStatusRequest)
+            .failureHandler(validationsFailureHandler);
+
     return this.router;
   }
 
@@ -117,81 +108,98 @@ public class AsyncRestApi{
     MultiMap params = getQueryParams(routingContext, response).get();
     Future<Boolean> validationResult = validator.validate(params);
     validationResult.onComplete(
-        validationHandler -> {
-          if (validationHandler.succeeded()) {
-            NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
-            QueryMapper queryMapper = new QueryMapper();
-            JsonObject json = queryMapper.toJson(ngsildquery,
-                ngsildquery.getTemporalRelation().getTemprel() != null, true);
-            Future<List<String>> filtersFuture =
-                catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
-            json.put(JSON_INSTANCEID, instanceID);
-            LOGGER.debug("Info: IUDX json query;" + json);
-            JsonObject requestBody = new JsonObject();
-            requestBody.put("ids", json.getJsonArray("id"));
-            filtersFuture.onComplete(
-                filtersHandler -> {
-                  if (filtersHandler.succeeded()) {
-                    json.put("applicableFilters", filtersHandler.result());
-                    executeAsyncURLSearch(routingContext, json);
-                  } else {
-                    LOGGER.error("catalogue item/group doesn't have filters.");
-                  }
-                });
-          } else if (validationHandler.failed()) {
-            LOGGER.error("Fail: Bad request;");
-            handleResponse(
-                response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
-          }
-        });
+            validationHandler -> {
+              if (validationHandler.succeeded()) {
+                NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
+                QueryMapper queryMapper = new QueryMapper();
+                JsonObject json = queryMapper.toJson(ngsildquery,
+                        ngsildquery.getTemporalRelation().getTemprel() != null, true);
+                Future<List<String>> filtersFuture =
+                        catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
+                json.put(JSON_INSTANCEID, instanceID);
+                LOGGER.debug("Info: IUDX json query;" + json);
+                JsonObject requestBody = new JsonObject();
+                requestBody.put("ids", json.getJsonArray("id"));
+                filtersFuture.onComplete(
+                        filtersHandler -> {
+                          if (filtersHandler.succeeded()) {
+                            json.put("applicableFilters", filtersHandler.result());
+                            executeAsyncURLSearch(routingContext, json);
+                          } else {
+                            LOGGER.error("catalogue item/group doesn't have filters.");
+                          }
+                        });
+              } else if (validationHandler.failed()) {
+                LOGGER.error("Fail: Bad request;");
+                handleResponse(
+                        response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
+              }
+            });
   }
 
   private void executeAsyncURLSearch(RoutingContext routingContext, JsonObject json) {
     String sub = ((JsonObject) routingContext.data().get("authInfo")).getString(USER_ID);
 
     String requestId = Hashing.sha256()
-        .hashString(json.toString(), StandardCharsets.UTF_8)
-        .toString();
+            .hashString(json.toString(), StandardCharsets.UTF_8)
+            .toString();
 
     String searchId = UUID.randomUUID().toString();
 
     StringBuilder insert_query =
-        new StringBuilder(INSERT_S3_PENDING_SQL.replace("$1", UUID.randomUUID().toString())
-            .replace("$2", searchId)
-            .replace("$3", requestId)
-            .replace("$4", sub)
-            .replace("$5", QueryProgress.SUBMITTED.toString())
-            .replace("$6", String.valueOf(0.0))
-            .replace("$7", json.toString()));
+            new StringBuilder(INSERT_S3_PENDING_SQL.replace("$1", UUID.randomUUID().toString())
+                    .replace("$2", searchId)
+                    .replace("$3", requestId)
+                    .replace("$4", sub)
+                    .replace("$5", QueryProgress.SUBMITTED.toString())
+                    .replace("$6", String.valueOf(0.0))
+                    .replace("$7", json.toString()));
 
     JsonObject rmqQueryMessage = new JsonObject()
-        .put("searchId", searchId)
-        .put("requestId", requestId)
-        .put("user", sub)
-        .put("query", json);
+            .put("searchId", searchId)
+            .put("requestId", requestId)
+            .put("user", sub)
+            .put("query", json);
 
     postgresService
-        .executeQuery(insert_query.toString(), pgInsertHandler -> {
-          if (pgInsertHandler.succeeded()) {
-            databroker.publishMessage(rmqQueryMessage, "async-query", "#", rmqPublishHandler -> {
-              if (rmqPublishHandler.succeeded()) {
-                JsonObject response = new JsonObject();
-                response.put(JSON_TYPE, ResponseUrn.SUCCESS_URN.getUrn());
-                response.put(JSON_TITLE, "query submitted successfully");
-                JsonArray resultArray = new JsonArray();
-                resultArray.add(new JsonObject().put("searchId", searchId));
-                response.put("result", resultArray);
+            .executeQuery(insert_query.toString(), pgInsertHandler -> {
+              if (pgInsertHandler.succeeded()) {
+                databroker.publishMessage(rmqQueryMessage, "async-query", "#", rmqPublishHandler -> {
+                  if (rmqPublishHandler.succeeded()) {
+                    JsonObject response = new JsonObject();
+                    response.put(JSON_TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+                    response.put(JSON_TITLE, "query submitted successfully");
+                    JsonArray resultArray = new JsonArray();
+                    resultArray.add(new JsonObject().put("searchId", searchId));
+                    response.put("result", resultArray);
+                    if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                      handleSuccessResponse(routingContext.response(), ResponseType.Created.getCode(),
+                              response.toString());
+                    }
+//            Encryption
+                    else {
+                      Future<JsonObject> future = encryption(routingContext, response.getJsonArray("result").toString());
+                      future.onComplete(encryptionHandler -> {
+                        if (encryptionHandler.succeeded()) {
+                          JsonObject result = encryptionHandler.result();
+                          response.put("result",result);
+                          handleSuccessResponse(routingContext.response(), ResponseType.Created.getCode(),
+                                  response.encode());
+                        } else {
+                          LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                          processBackendResponse(routingContext.response(), encryptionHandler.cause().getMessage());
+                        }
+                      });
+                    }
 
-                handleSuccessResponse(routingContext.response(), ResponseType.Created.getCode(),
-                    response.toString());
+                  } else {
+                    LOGGER.error("message published failed", rmqPublishHandler);
+                  }
+                });
               } else {
-                LOGGER.error("message published failed", rmqPublishHandler);
+                LOGGER.error("message save to postgres failed", pgInsertHandler);
               }
             });
-          } else {
-            LOGGER.error("message save to postgres failed", pgInsertHandler);
-          }
-        });
 
   }
 
@@ -207,14 +215,56 @@ public class AsyncRestApi{
     asyncService.asyncStatus(sub, searchID, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("Success: Async status success");
-        handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+        if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+          handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+        }
+//        Encryption
+        else {
+          Future<JsonObject> future = encryption(routingContext, handler.result().getJsonArray("results").toString());
+          future.onComplete(encryptionHandler -> {
+            if (encryptionHandler.succeeded()) {
+              JsonObject result = encryptionHandler.result();
+              handler.result().put("results",result);
+              handleSuccessResponse(response, ResponseType.Ok.getCode(),  handler.result().encode());
+            } else {
+              LOGGER.error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+              processBackendResponse(response, encryptionHandler.cause().getMessage());
+            }
+          });
+        }
       } else if (handler.failed()) {
         LOGGER.error("Fail: Async status fail");
         processBackendResponse(response, handler.cause().getMessage());
       }
     });
   }
+  /**
+   * Encrypts the result of API response.
+   * @param context  Routing Context
+   * @param result  value of result param in the API response
+   * @return  encrypted data
+   */
+  private Future<JsonObject> encryption(RoutingContext context, String result) {
+    String URLbase64PublicKey = context.request().getHeader(HEADER_PUBLIC_KEY);
+    Promise<JsonObject> promise = Promise.promise();
 
+    /* get the urlbase64 public key from the header and send it for encryption */
+    Future<JsonObject> future = encryptionService.encrypt(result, new JsonObject().put(ENCODED_KEY, URLbase64PublicKey));
+    future.onComplete(handler -> {
+      if (handler.succeeded()) {
+        /*  get encoded cipher text */
+        String encodedCipherText = handler.result().getString(ENCODED_CIPHER_TEXT);
+        /* Send back the encoded cipherText to Client */
+        final JsonObject jsonObject = new JsonObject();
+        jsonObject.put(ENCRYPTED_DATA, encodedCipherText);
+        promise.complete(jsonObject);
+      } else {
+        LOGGER.error("Failure in handler : " + handler.cause().getMessage());
+        promise.fail("Failure in handler");
+      }
+    });
+    return promise.future();
+  }
   private void handleSuccessResponse(HttpServerResponse response, int statusCode, String result) {
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(statusCode).end(result);
   }
@@ -235,9 +285,9 @@ public class AsyncRestApi{
       }
       // return urn in body
       response
-          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-          .setStatusCode(type)
-          .end(generateResponse(status, urn, detail).toString());
+              .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+              .setStatusCode(type)
+              .end(generateResponse(status, urn, detail).toString());
     } catch (DecodeException ex) {
       LOGGER.error("ERROR : Expecting Json from backend service [ jsonFormattingException ]");
       handleResponse(response, BAD_REQUEST, BACKING_SERVICE_FORMAT_URN);
@@ -245,23 +295,23 @@ public class AsyncRestApi{
   }
 
   private Optional<MultiMap> getQueryParams(
-      RoutingContext routingContext, HttpServerResponse response) {
+          RoutingContext routingContext, HttpServerResponse response) {
     MultiMap queryParams = null;
     try {
       queryParams = MultiMap.caseInsensitiveMultiMap();
       // Internally + sign is dropped and treated as space, replacing + with %2B do the trick
       String uri = routingContext.request().uri().replaceAll("\\+", "%2B");
       Map<String, List<String>> decodedParams =
-          new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET, true, 1024, true).parameters();
+              new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET, true, 1024, true).parameters();
       for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
         LOGGER.debug("Info: param :" + entry.getKey() + " value : " + entry.getValue());
         queryParams.add(entry.getKey(), entry.getValue());
       }
     } catch (IllegalArgumentException ex) {
       response
-          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-          .setStatusCode(BAD_REQUEST.getValue())
-          .end(generateResponse(BAD_REQUEST, INVALID_PARAM_URN).toString());
+              .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+              .setStatusCode(BAD_REQUEST.getValue())
+              .end(generateResponse(BAD_REQUEST, INVALID_PARAM_URN).toString());
     }
     return Optional.of(queryParams);
   }
@@ -271,10 +321,10 @@ public class AsyncRestApi{
   }
 
   private void handleResponse(
-      HttpServerResponse response, HttpStatusCode statusCode, ResponseUrn urn, String message) {
+          HttpServerResponse response, HttpStatusCode statusCode, ResponseUrn urn, String message) {
     response
-        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-        .setStatusCode(statusCode.getValue())
-        .end(generateResponse(statusCode, urn, message).toString());
+            .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .setStatusCode(statusCode.getValue())
+            .end(generateResponse(statusCode, urn, message).toString());
   }
 }

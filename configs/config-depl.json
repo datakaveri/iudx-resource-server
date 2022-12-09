@@ -101,7 +101,7 @@
             "databaseUserName": "",
             "databasePassword": "",
             "poolSize": 25
-        
+
         },
         {
             "id": "iudx.resource.server.cache.CacheVerticle",
@@ -121,6 +121,11 @@
             "timeLimit": "",
             "filePath": "/home/kailash/Downloads/",
             "bucketName": ""
+        },
+        {
+            "id": "iudx.resource.server.encryption.EncryptionVerticle",
+            "isWorkerVerticle":false,
+            "verticleInstances": 1
         }
     ]
 }

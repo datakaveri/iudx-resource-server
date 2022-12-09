@@ -41,11 +41,11 @@
 			"verticleInstances": 2,
 			"dataBrokerIP": "",
 			"dataBrokerPort": "",
-			
-			"prodVhost":"", 
+
+			"prodVhost":"",
 			"internalVhost": "",
 			"externalVhost":"",
-			
+
 			"dataBrokerUserName": "",
 			"dataBrokerPassword": "",
 			"dataBrokerManagementPort": "",
@@ -145,6 +145,11 @@
 			"timeLimit": "",
 			"filePath": "/home/kailash/Downloads/",
 			"bucketName": ""
+		},
+		{
+			"id": "iudx.resource.server.encryption.EncryptionVerticle",
+			"isWorkerVerticle":false,
+			"verticleInstances": 1
 		}
 	]
 }

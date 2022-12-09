@@ -104,7 +104,7 @@ public class ValidationHandlerTest {
 
     validationHandler = new ValidationHandler(Vertx.vertx(), requestType);
     validationHandler.handle(routingContext);
-    verify(routingContext, times(2)).request();
+    verify(routingContext, times(3)).request();
     verify(httpServerRequest).params();
     verify(routingContext).body();
     verify(routingContext).pathParams();
