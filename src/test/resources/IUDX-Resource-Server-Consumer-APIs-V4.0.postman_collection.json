@@ -9054,9 +9054,10 @@
 									"// Test the response",
 									"pm.test(\"Check response body\", function () {    ",
 									"    const body = pm.response.json();",
+									"     pm.expect(body).to.have.property(\"type\", \"urn:dx:rs:success\");",
 									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
 									"    const resultsjsonData = body.results[0];",
-									"    pm.expect(resultsjsonData).to.have.property(\"count\", 957);",
+									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 19);",
 									"});"
 								],
 								"type": "text/javascript"
