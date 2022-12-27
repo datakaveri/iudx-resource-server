@@ -30,6 +30,7 @@ jobs:
         git add Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml K8s-deployment/Charts/resource-server/values.yaml K8s-deployment/Charts/resource-server/Chart.yaml
         git commit --allow-empty -m "Updated RS image tag"
         git push --set-upstream jenkins-fork docker-tag
+        echo ${{ secrets.JENKINS_UPDATE }} | gh auth login --with-token
         gh repo set-default datakaveri/iudx-deployment
         gh pr create --fill || echo "PR exists"
         cd ..
