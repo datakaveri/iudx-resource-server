@@ -32,4 +32,6 @@ jobs:
         git push --set-upstream jenkins-fork docker-tag
         gh repo set-default datakaveri/iudx-deployment
         gh pr create --fill || echo "PR exists"
+        cd ..
+        rm -rf iudx-deployment
 
