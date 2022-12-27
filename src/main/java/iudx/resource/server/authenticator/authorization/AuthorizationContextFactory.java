@@ -1,5 +1,7 @@
 package iudx.resource.server.authenticator.authorization;
 
+import iudx.resource.server.common.Api;
+
 public class AuthorizationContextFactory {
 
 
@@ -9,11 +11,11 @@ public class AuthorizationContextFactory {
   private final AuthorizationStrategy adminStrategy;
 
   
-  public AuthorizationContextFactory(boolean isLimitsEnabled ) {
-    consumerAuth=new ConsumerAuthStrategy(isLimitsEnabled);
-    providerAuth=new ProviderAuthStrategy();
-    delegateAuth=new DelegateAuthStrategy();
-    adminStrategy=new AdminAuthStrategy();
+  public AuthorizationContextFactory(boolean isLimitsEnabled, Api api) {
+    consumerAuth= ConsumerAuthStrategy.getInstance(isLimitsEnabled,api);
+    providerAuth= ProviderAuthStrategy.getInstance(api);
+    delegateAuth= DelegateAuthStrategy.getInstance(api);
+    adminStrategy= AdminAuthStrategy.getInstance(api);
   }
   
   public AuthorizationStrategy create(IudxRole role) {

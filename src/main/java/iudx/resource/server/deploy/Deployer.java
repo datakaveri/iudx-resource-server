@@ -75,19 +75,19 @@ public class Deployer {
       LOGGER.info("Deployed all");
       return;
     }
-    JsonObject config = configs.getJsonArray("modules").getJsonObject(i);
-    String moduleName = config.getString("id");
-    int numInstances = config.getInteger("verticleInstances");
+    JsonObject moduleConfigurations = getConfigForModule(i, configs);
+    String moduleName = moduleConfigurations.getString("id");
+    int numInstances = moduleConfigurations.getInteger("verticleInstances");
 
     DeploymentOptions deploymentOptions = new DeploymentOptions()
         .setInstances(numInstances)
-        .setConfig(config);
+        .setConfig(moduleConfigurations);
 
-    boolean isWorkerVerticle = config.getBoolean("isWorkerVerticle");
+    boolean isWorkerVerticle = moduleConfigurations.getBoolean("isWorkerVerticle");
     if (isWorkerVerticle) {
-      LOGGER.info("worker verticle : " + config.getString("id"));
-      deploymentOptions.setWorkerPoolName(config.getString("threadPoolName"));
-      deploymentOptions.setWorkerPoolSize(config.getInteger("threadPoolSize"));
+      LOGGER.info("worker verticle : " + moduleConfigurations.getString("id"));
+      deploymentOptions.setWorkerPoolName(moduleConfigurations.getString("threadPoolName"));
+      deploymentOptions.setWorkerPoolSize(moduleConfigurations.getInteger("threadPoolSize"));
       deploymentOptions.setWorker(true);
       deploymentOptions.setMaxWorkerExecuteTime(30L);
       deploymentOptions.setMaxWorkerExecuteTimeUnit(TimeUnit.MINUTES);
@@ -102,7 +102,11 @@ public class Deployer {
       }
     });
   }
-
+  private static JsonObject getConfigForModule(int moduleIndex,JsonObject configurations) {
+    JsonObject commonConfigs = configurations.getJsonObject("commonConfig");
+    JsonObject config = configurations.getJsonArray("modules").getJsonObject(moduleIndex);
+    return config.mergeIn(commonConfigs, true);
+  }
   /**
    * Recursively deploy modules/verticles (if they exist) present in the `modules` list.
    *

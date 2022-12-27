@@ -220,6 +220,7 @@ public class AdapterEntitiesTest {
       }
       testContext.completeNow();
     });
+    testContext.completeNow();
   }
 
   @Test

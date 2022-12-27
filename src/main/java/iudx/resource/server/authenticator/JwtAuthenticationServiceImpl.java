@@ -1,15 +1,13 @@
 package iudx.resource.server.authenticator;
 
-import static iudx.resource.server.authenticator.Constants.JSON_EXPIRY;
-import static iudx.resource.server.authenticator.Constants.JSON_IID;
-import static iudx.resource.server.authenticator.Constants.JSON_USERID;
-import static iudx.resource.server.authenticator.Constants.OPEN_ENDPOINTS;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+
+import iudx.resource.server.common.Api;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,7 +26,6 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
-import iudx.resource.server.authenticator.authorization.Api;
 import iudx.resource.server.authenticator.authorization.AuthorizationContextFactory;
 import iudx.resource.server.authenticator.authorization.AuthorizationRequest;
 import iudx.resource.server.authenticator.authorization.AuthorizationStrategy;
@@ -39,6 +36,8 @@ import iudx.resource.server.authenticator.model.JwtData;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.cache.cacheImpl.CacheType;
 import iudx.resource.server.metering.MeteringService;
+
+import static iudx.resource.server.authenticator.Constants.*;
 
 public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
@@ -53,6 +52,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   final CacheService cache;
   final MeteringService meteringService;
   final boolean isLimitsEnabled;
+  final Api apis;
 
   // resourceGroupCache will contains ACL info about all resource group in a resource server
   Cache<String, String> resourceGroupCache =
@@ -71,7 +71,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
   JwtAuthenticationServiceImpl(
       Vertx vertx, final JWTAuth jwtAuth, final WebClient webClient, final JsonObject config,
-      final CacheService cacheService, final MeteringService meteringService) {
+      final CacheService cacheService, final MeteringService meteringService, final Api apis) {
     this.jwtAuth = jwtAuth;
     this.audience = config.getString("audience");
     this.host = config.getString("catServerHost");
@@ -79,7 +79,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     this.path = Constants.CAT_RSG_PATH;
     this.isLimitsEnabled =
         config.getBoolean("enableLimits") != null ? config.getBoolean("enableLimits") : false;
-
+    this.apis = apis;
     WebClientOptions options = new WebClientOptions();
     options.setTrustAll(true).setVerifyHost(false).setSsl(true);
     catWebClient = WebClient.create(vertx, options);
@@ -100,14 +100,14 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
 
     boolean skipResourceIdCheck =
-        (endPoint.equalsIgnoreCase("/ngsi-ld/v1/subscription")
+        (endPoint.equalsIgnoreCase(apis.getSubscriptionUrl())
             && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")))
             || endPoint.equalsIgnoreCase("/management/user/resetPassword")
-            || endPoint.equalsIgnoreCase("/ngsi-ld/v1/consumer/audit")
+            || endPoint.equalsIgnoreCase(apis.getIudxConsumerAuditUrl())
             || endPoint.equalsIgnoreCase("/admin/revokeToken")
             || endPoint.equalsIgnoreCase("/admin/resourceattribute")
-            || endPoint.equalsIgnoreCase("/ngsi-ld/v1/provider/audit")
-            || endPoint.equalsIgnoreCase("/ngsi-ld/v1/async/status");
+            || endPoint.equalsIgnoreCase(apis.getIudxProviderAuditUrl())
+            || endPoint.equalsIgnoreCase(apis.getIudxAsyncStatusApi());
 
 
     LOGGER.debug("checkResourceFlag " + skipResourceIdCheck);
@@ -140,7 +140,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         .compose(
             openResourceHandler -> {
               result.isOpen = openResourceHandler.equalsIgnoreCase("OPEN");
-              if (result.isOpen && OPEN_ENDPOINTS.contains(endPoint)) {
+              if (result.isOpen && checkOpenEndPoints(endPoint)) {
                 JsonObject json = new JsonObject();
                 json.put(JSON_USERID, result.jwtData.getSub());
                 return Future.succeededFuture(true);
@@ -249,7 +249,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     Promise<JsonObject> promise = Promise.promise();
     String jwtId = jwtData.getIid().split(":")[1];
 
-    if (openResource && OPEN_ENDPOINTS.contains(authInfo.getString("apiEndpoint"))) {
+    if (openResource && checkOpenEndPoints(authInfo.getString("apiEndpoint"))) {
       LOGGER.info("User access is allowed.");
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put(JSON_IID, jwtId);
@@ -258,11 +258,11 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     }
 
     Method method = Method.valueOf(authInfo.getString("method"));
-    Api api = Api.fromEndpoint(authInfo.getString("apiEndpoint"));
+    String api = authInfo.getString("apiEndpoint");
     AuthorizationRequest authRequest = new AuthorizationRequest(method, api);
 
     IudxRole role = IudxRole.fromRole(jwtData.getRole());
-    AuthorizationContextFactory authFactory = new AuthorizationContextFactory(isLimitsEnabled);
+    AuthorizationContextFactory authFactory = new AuthorizationContextFactory(isLimitsEnabled,apis);
 
     AuthorizationStrategy authStrategy = authFactory.create(role);
     LOGGER.info("strategy : " + authStrategy.getClass().getSimpleName());
@@ -331,7 +331,28 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     }
     return promise.future();
   }
-  
+
+  private boolean checkOpenEndPoints(String endPoint) {
+    for(String item : OPEN_ENDPOINTS)
+    {
+      if(endPoint.contains(item))
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean checkClosedEndPoints(String endPoint) {
+    for(String item : CLOSED_ENDPOINTS)
+    {
+      if(endPoint.contains(item))
+      {
+        return true;
+      }
+    }
+    return false;
+  }
   private JsonObject createValidateAccessSuccessResponse(JwtData jwtData) {
     String jwtId = jwtData.getIid().split(":")[1];
     JsonObject jsonResponse = new JsonObject();

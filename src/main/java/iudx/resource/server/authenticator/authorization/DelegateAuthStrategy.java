@@ -3,6 +3,8 @@ package iudx.resource.server.authenticator.authorization;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import iudx.resource.server.common.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.JsonObject;
@@ -12,8 +14,18 @@ public class DelegateAuthStrategy implements AuthorizationStrategy {
 
   private static final Logger LOGGER = LogManager.getLogger(DelegateAuthStrategy.class);
 
+  private final Api api;
   static Map<String, List<AuthorizationRequest>> delegateAuthorizationRules = new HashMap<>();
-  static {
+  private DelegateAuthStrategy(Api api)
+  {
+    this.api = api;
+    buildPermissions(api);
+  }
+  public static DelegateAuthStrategy getInstance(Api api)
+  {
+    return new DelegateAuthStrategy(api);
+  }
+  private void buildPermissions(Api api) {
     // delegate allowed to access all endpoints
   }
 
