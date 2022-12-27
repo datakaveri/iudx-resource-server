@@ -14,7 +14,7 @@ jobs:
       run: |
         git config --global user.name 'jenkins-datakaveri'
         git config --global user.password ${{ secrets.JENKINS_UPDATE }}
-        git clone https://github.com:datakaveri/iudx-deployment.git
+        git clone https://github.com/datakaveri/iudx-deployment.git
         cd iudx-deployment
         git remote add jenkins-fork https://github.com/jenkins-datakaveri/iudx-deployment.git
         git checkout -b docker-tag
