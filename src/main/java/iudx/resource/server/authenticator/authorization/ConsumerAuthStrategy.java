@@ -25,22 +25,20 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
   
   private final boolean isLimitsEnabled;
   private final Api api;
+
   private static volatile ConsumerAuthStrategy instance;
+
   
   private ConsumerAuthStrategy(boolean isLimitsAllowed,Api api) {
     this.isLimitsEnabled=isLimitsAllowed;
     this.api = api;
     buildPermissions(api);
   }
-  public static ConsumerAuthStrategy getInstance(boolean isLimitsAllowed, Api api)
-  {
-    if(instance == null)
-    {
-      synchronized (ConsumerAuthStrategy.class)
-      {
-        if(instance == null)
-        {
-          instance = new ConsumerAuthStrategy(isLimitsAllowed,api);
+  public static ConsumerAuthStrategy getInstance(boolean isLimitsAllowed, Api api) {
+    if (instance == null) {
+      synchronized (ConsumerAuthStrategy.class) {
+        if (instance == null) {
+          instance = new ConsumerAuthStrategy(isLimitsAllowed, api);
         }
       }
     }

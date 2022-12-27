@@ -25,12 +25,16 @@ public class Api {
 
 
     private StringBuilder asyncPath;
+
     private static volatile Api apiInstance;
+
+
 
     private Api(String dxApiBasePath) {
         this.dxApiBasePath = dxApiBasePath;
         buildPaths(dxApiBasePath);
     }
+
 
 
     public static Api getInstance(String dxApiBasePath)
@@ -47,6 +51,7 @@ public class Api {
         }
         return apiInstance;
     }
+
     private void buildPaths(String dxApiBasePath) {
         entitiesUrl = new StringBuilder(dxApiBasePath).append(NGSILD_ENTITIES_URL);
         entitiesUrlRegex = new StringBuilder(dxApiBasePath).append(ENTITITES_URL_REGEX);
