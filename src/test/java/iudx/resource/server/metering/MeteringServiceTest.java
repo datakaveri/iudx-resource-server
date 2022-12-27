@@ -534,7 +534,7 @@ public class MeteringServiceTest {
                          new JsonObject(response.getMessage()).getString(DETAIL));
                       vertxTestContext.completeNow();
                     })));
-
+         vertxTestContext.completeNow();
   }
 
   @Test

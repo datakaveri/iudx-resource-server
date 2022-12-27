@@ -4,6 +4,9 @@
         "zookeeper"
     ],
     "clusterId": "iudx-rs-cluster",
+    "commonConfig" : {
+        "dxApiBasePath" : "/ngsi-ld/v1"
+    },
     "modules": [
         {
             "id": "iudx.resource.server.database.archives.DatabaseVerticle",

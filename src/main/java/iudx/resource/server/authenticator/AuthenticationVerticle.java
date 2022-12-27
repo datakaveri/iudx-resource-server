@@ -3,6 +3,8 @@ package iudx.resource.server.authenticator;
 import static iudx.resource.server.common.Constants.AUTH_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.METERING_SERVICE_ADDRESS;
+
+import iudx.resource.server.common.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
@@ -43,8 +45,10 @@ public class AuthenticationVerticle extends AbstractVerticle {
 
   private CacheService cacheService;
   private MeteringService meteringService;
+  private Api api;
+  private String dxApiBasePath;
 
-  static WebClient createWebClient(Vertx vertx, JsonObject config) {
+    static WebClient createWebClient(Vertx vertx, JsonObject config) {
     return createWebClient(vertx, config, false);
   }
 
@@ -91,10 +95,12 @@ public class AuthenticationVerticle extends AbstractVerticle {
 
               cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
               meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
+              dxApiBasePath = config().getString("dxApiBasePath");
+              api = Api.getInstance(dxApiBasePath);
               jwtAuthenticationService =
                   new JwtAuthenticationServiceImpl(
                       vertx, jwtAuth, createWebClient(vertx, config()), config(), cacheService,
-                      meteringService);
+                      meteringService,api);
 
               /* Publish the Authentication service with the Event Bus against an address. */
               consumer =
