@@ -1,0 +1,35 @@
+name: Updating Docker Tag
+
+on:
+  registry_package:
+    types: [published]
+
+jobs:
+
+  build:
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build the docker image
+      run: |
+        git config --global user.name 'jenkins-datakaveri'
+        git config --global user.password ${{ secrets.JENKINS_UPDATE }}
+        git clone git@github.com:datakaveri/iudx-deployment.git
+        cd iudx-deployment
+        git remote add jenkins-fork https://github.com/jenkins-datakaveri/iudx-deployment.git
+        git checkout -b docker-tag
+        git pull --set-upstream jenkins-fork docker-tag
+        export newtag=`(head -n1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.PAT }}" https://api.github.com/orgs/datakaveri/packages/container/rs-depl/versions | jq ' .[].metadata.container.tags[0]' ) | grep 4.5.0-alpha | sed -e 's/^"//' -e 's/"$//')`
+        export oldtag=`yq -r .services.rs.image Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml | cut -d : -f 2`
+        sed -i s/$oldtag/$newtag/g Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml
+        export oldappversion=`yq -r .version K8s-deployment/Charts/resource-server/Chart.yaml`
+        export newappversion=`yq -r .version K8s-deployment/Charts/resource-server/Chart.yaml | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}' `
+        sed -i s/$oldappversion/$newappversion/g K8s-deployment/Charts/resource-server/Chart.yaml
+        sed -i s/$oldtag/$newtag/g K8s-deployment/Charts/resource-server/values.yaml
+        git add Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml K8s-deployment/Charts/resource-server/values.yaml K8s-deployment/Charts/resource-server/Chart.yaml
+        git commit --allow-empty -m "Updated RS image tag"
+        git push --set-upstream jenkins-fork docker-tag
+        gh repo set-default datakaveri/iudx-deployment
+        gh pr create --fill || echo "PR exists"
+
