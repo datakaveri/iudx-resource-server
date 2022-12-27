@@ -6,6 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
+
+import iudx.resource.server.common.Api;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,13 +49,16 @@ public class JwtAuthServiceTest {
     @Mock
     AsyncResult<JsonObject> asyncResult;
     JwtAuthenticationServiceImpl jwtAuthenticationService;
+    private Api apis;
+    private String dxApiBasePath;
 
     @BeforeEach
     public void setUp(VertxTestContext vertxTestContext)
     {
         JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
 //        jwtAuthenticationService.jwtDecodeFuture = mock(Future.class);
-
+        dxApiBasePath = "/ngsi-ld/v1";
+        apis = Api.getInstance(dxApiBasePath);
         jwtAuthOptions.addPubSecKey(
                 new PubSecKeyOptions()
                         .setAlgorithm("ES256")
@@ -67,7 +72,7 @@ public class JwtAuthServiceTest {
         JWTAuth jwtAuth = JWTAuth.create(Vertx.vertx(), jwtAuthOptions);
         when(config.getString(anyString())).thenReturn("Dummy String");
         when(config.getInteger(anyString())).thenReturn(8443);
-        jwtAuthenticationService = new JwtAuthenticationServiceImpl(Vertx.vertx(),jwtAuth,webClient,config,cacheService,meteringService);
+        jwtAuthenticationService = new JwtAuthenticationServiceImpl(Vertx.vertx(),jwtAuth,webClient,config,cacheService,meteringService,apis);
         vertxTestContext.completeNow();
     }
 

@@ -1,13 +1,7 @@
 package iudx.resource.server.apiserver;
 
 import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
-import static iudx.resource.server.apiserver.util.Constants.API;
-import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
-import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
-import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.ID;
-import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
-import static iudx.resource.server.apiserver.util.Constants.USER_ID;
+import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.Constants.BROKER_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.METERING_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
@@ -30,6 +24,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+
+import iudx.resource.server.common.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -42,11 +38,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import iudx.resource.server.apiserver.handlers.AuthHandler;
-import iudx.resource.server.common.Api;
-import iudx.resource.server.common.BroadcastEventType;
-import iudx.resource.server.common.HttpStatusCode;
-import iudx.resource.server.common.Response;
-import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.metering.MeteringService;
@@ -61,34 +52,36 @@ public final class AdminRestApi {
   private final PostgresService pgService;
   private final MeteringService auditService;
   private final ObjectMapper objectMapper = new ObjectMapper();
+  private Api api;
 
-  AdminRestApi(Vertx vertx, Router router) {
+  AdminRestApi(Vertx vertx, Router router, Api api) {
     this.vertx = vertx;
     this.router = router;
     this.RMQbrokerService = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
     this.auditService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
     this.pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
+    this.api = api;
   }
 
   public Router init() {
     router
-        .post(Api.REVOKE_TOKEN.path)
-        .handler(AuthHandler.create(vertx))
+        .post(REVOKE_TOKEN)
+        .handler(AuthHandler.create(vertx,api))
         .handler(this::handleRevokeTokenRequest);
 
     router
-        .post(Api.RESOURCE_ATTRIBS.path)
-        .handler(AuthHandler.create(vertx))
+        .post(RESOURCE_ATTRIBS)
+        .handler(AuthHandler.create(vertx,api))
         .handler(this::createUniqueAttribute);
 
     router
-        .put(Api.RESOURCE_ATTRIBS.path)
-        .handler(AuthHandler.create(vertx))
+        .put(RESOURCE_ATTRIBS)
+        .handler(AuthHandler.create(vertx,api))
         .handler(this::updateUniqueAttribute);
 
     router
-        .delete(Api.RESOURCE_ATTRIBS.path)
-        .handler(AuthHandler.create(vertx))
+        .delete(RESOURCE_ATTRIBS)
+        .handler(AuthHandler.create(vertx,api))
         .handler(this::deleteUniqueAttribute);
 
     return router;

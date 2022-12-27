@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import iudx.resource.server.common.Api;
 import iudx.resource.server.encryption.EncryptionService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,7 +41,6 @@ import iudx.resource.server.apiserver.query.NGSILDQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.service.CatalogueService;
-import iudx.resource.server.common.Api;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.async.AsyncService;
@@ -62,8 +62,9 @@ public class AsyncRestApi{
   private final PostgresService postgresService;
   private final DataBrokerService databroker;
   private EncryptionService encryptionService;
+  private Api api;
 
-  AsyncRestApi(Vertx vertx,Router router, JsonObject config) {
+  AsyncRestApi(Vertx vertx,Router router, JsonObject config, Api api) {
     this.vertx = vertx;
     this.router=router;
     this.databroker = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
@@ -72,7 +73,9 @@ public class AsyncRestApi{
     this.validator = new ParamsValidator(catalogueService);
     this.postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
     this.encryptionService = EncryptionService.createProxy(vertx, ENCRYPTION_SERVICE_ADDRESS);
+    this.api = api;
   }
+
 
 
   Router init() {
@@ -82,17 +85,17 @@ public class AsyncRestApi{
 
     ValidationHandler asyncSearchValidation = new ValidationHandler(vertx, ASYNC_SEARCH);
     router
-            .get(Api.SEARCH.path)
+            .get(SEARCH)
             .handler(asyncSearchValidation)
-            .handler(AuthHandler.create(vertx))
+            .handler(AuthHandler.create(vertx,api))
             .handler(this::handleAsyncSearchRequest)
             .failureHandler(validationsFailureHandler);
 
     ValidationHandler asyncStatusValidation = new ValidationHandler(vertx, ASYNC_STATUS);
     router
-            .get(Api.STATUS.path)
+            .get(STATUS)
             .handler(asyncStatusValidation)
-            .handler(AuthHandler.create(vertx))
+            .handler(AuthHandler.create(vertx,api))
             .handler(this::handleAsyncStatusRequest)
             .failureHandler(validationsFailureHandler);
 
