@@ -10,17 +10,16 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
+    - uses: actions/checkout@v3
+      with:
+       repository: jenkins-datakaveri/iudx-deployment
+       ssh-key: "${{ secrets.KEY }}"
     - name: Build the docker image
       run: |
         git config --global user.name 'jenkins-datakaveri'
-        git config --global user.password ${{ secrets.JENKINS_UPDATE }}
-        git clone https://github.com/datakaveri/iudx-deployment.git
-        cd iudx-deployment
-        git remote add jenkins-fork https://github.com/jenkins-datakaveri/iudx-deployment.git
-        git fetch jenkins-fork docker-tag
-        git checkout docker-tag
-        git pull --no-edit origin master
+        git config --global user.email "tharak.ram@datakaveri.org"
         export newtag=`(head -n1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.PAT }}" https://api.github.com/orgs/datakaveri/packages/container/rs-depl/versions | jq ' .[].metadata.container.tags[0]' ) | grep 4.5.0-alpha | sed -e 's/^"//' -e 's/"$//')`
+        git checkout -b rs-automatic-updates-$newtag
         export oldtag=`yq -r .services.rs.image Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml | cut -d : -f 2`
         sed -i s/$oldtag/$newtag/g Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml
         export oldappversion=`yq -r .version K8s-deployment/Charts/resource-server/Chart.yaml`
@@ -29,10 +28,8 @@ jobs:
         sed -i s/$oldtag/$newtag/g K8s-deployment/Charts/resource-server/values.yaml
         git add Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml K8s-deployment/Charts/resource-server/values.yaml K8s-deployment/Charts/resource-server/Chart.yaml
         git commit --allow-empty -m "Updated RS image tag"
-        git push --set-upstream jenkins-fork docker-tag
+        git push --set-upstream origin rs-automatic-updates-$newtag
         echo ${{ secrets.JENKINS_UPDATE }} | gh auth login --with-token
-        gh repo set-default datakaveri/iudx-deployment
-        gh pr create --fill || echo "PR exists"
-        cd ..
-        rm -rf iudx-deployment
+        gh pr create -R datakaveri/iudx-deployment --base master --fill 
+
 
