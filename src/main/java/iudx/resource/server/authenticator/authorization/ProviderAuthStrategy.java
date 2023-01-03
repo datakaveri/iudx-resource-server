@@ -17,6 +17,7 @@ public class ProviderAuthStrategy implements AuthorizationStrategy {
   static Map<String, List<AuthorizationRequest>> providerAuthorizationRules = new HashMap<>();
   private final Api api;
   private static volatile ProviderAuthStrategy instance;
+
   private ProviderAuthStrategy(Api api)
   {
     this.api = api;
@@ -35,6 +36,7 @@ public class ProviderAuthStrategy implements AuthorizationStrategy {
       }
     }
     return instance;
+
   }
   private void buildPermissions(Api api) {
     // provider allowed to access all endpoints

@@ -7,7 +7,9 @@ import iudx.resource.server.common.Api;
 public class AdminAuthStrategy implements AuthorizationStrategy{
 
   private final Api api;
+
   private static volatile AdminAuthStrategy instance;
+
   private AdminAuthStrategy(Api api)
   {
     this.api = api;
@@ -26,6 +28,7 @@ public class AdminAuthStrategy implements AuthorizationStrategy{
       }
     }
     return instance;
+
   }
   private void buildPermissions(Api api)
   {

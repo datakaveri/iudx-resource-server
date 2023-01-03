@@ -16,6 +16,7 @@ public class DelegateAuthStrategy implements AuthorizationStrategy {
 
   private final Api api;
   private static volatile DelegateAuthStrategy instance;
+
   static Map<String, List<AuthorizationRequest>> delegateAuthorizationRules = new HashMap<>();
   private DelegateAuthStrategy(Api api)
   {
@@ -35,6 +36,7 @@ public class DelegateAuthStrategy implements AuthorizationStrategy {
       }
     }
     return instance;
+
   }
   private void buildPermissions(Api api) {
     // delegate allowed to access all endpoints
