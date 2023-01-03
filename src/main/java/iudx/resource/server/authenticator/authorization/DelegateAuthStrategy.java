@@ -15,7 +15,10 @@ public class DelegateAuthStrategy implements AuthorizationStrategy {
   private static final Logger LOGGER = LogManager.getLogger(DelegateAuthStrategy.class);
 
   private final Api api;
+
+
   private static volatile DelegateAuthStrategy instance;
+
 
   static Map<String, List<AuthorizationRequest>> delegateAuthorizationRules = new HashMap<>();
   private DelegateAuthStrategy(Api api)
@@ -25,6 +28,8 @@ public class DelegateAuthStrategy implements AuthorizationStrategy {
   }
   public static DelegateAuthStrategy getInstance(Api api)
   {
+
+
     if(instance == null)
     {
       synchronized (DelegateAuthStrategy.class)

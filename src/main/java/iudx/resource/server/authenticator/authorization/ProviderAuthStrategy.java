@@ -18,6 +18,7 @@ public class ProviderAuthStrategy implements AuthorizationStrategy {
   private final Api api;
   private static volatile ProviderAuthStrategy instance;
 
+
   private ProviderAuthStrategy(Api api)
   {
     this.api = api;
@@ -25,6 +26,7 @@ public class ProviderAuthStrategy implements AuthorizationStrategy {
   }
   public static ProviderAuthStrategy getInstance(Api api)
   {
+
     if(instance == null)
     {
       synchronized (ProviderAuthStrategy.class)

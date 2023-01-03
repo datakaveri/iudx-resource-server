@@ -25,13 +25,17 @@ public class Api {
 
 
     private StringBuilder asyncPath;
+
+
     private static volatile Api apiInstance;
+
 
 
     private Api(String dxApiBasePath) {
         this.dxApiBasePath = dxApiBasePath;
         buildPaths(dxApiBasePath);
     }
+
 
 
     public static Api getInstance(String dxApiBasePath)
