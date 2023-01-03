@@ -13,20 +13,17 @@ consumes:
   - "text/plain"
 
 info:
-  title: "IUDX Resource Server APIs"
+  title: "Data exchange Resource Server APIs"
   version: 4.0.0
   description: |
     # Introduction
-    The Resource Server is IUDX's data store which allows publication, subscription and discovery of data.
+    The Resource Server is DXs'(Data exchange) data store which allows publication, subscription and discovery of data.
     For search and discovery, it allows users to search through temporal, geo-based and attribute queries. 
     For publication and subscription, it allows users to use AMQP streaming protocol over TLS.
-    It enables *Providers* of datasources to publish data as per the IUDX data descriptor.
+    It enables *Providers* of datasources to publish data as per the DX(Data exchange) data descriptor.
     It enables *Consumers* of datasources to search and query for data using HTTPs APIs.
     It enables *Streaming Consumer* a.k.a [Subscribers] of datasources to stream data using AMQP streaming protocol over TLS.
     
-    # API HTTP Responses
-    Apart from the response codes specified in each API, the API server may respond with certain 4xx and 5xx error codes which are related to common API Gateway behaviours.
-    The application should address them accordingly.
     
     # Pagination
     Resource server also offers way to paginate the result for queries. If a query returns large number of records then user can use additional parameters in query parameters to limit numbers of records to be returned.
@@ -40,91 +37,112 @@ info:
     Additional query parameters to be used:
       - <b>offset</b> : The from parameter defines the offset from the first result you want to fetch,  ( <i>default : 0</i> ,<i>minValue: 0</i>, <i>maxValue: 49999</i> )
       - <b>limit</b> : The size parameter allows you to configure the maximum results to be returned  ( <i>default: 5000</i> ,<i>minValue: 0</i>, <i>maxValue: 5000</i> )
-      
+    
     # Tokens
-    All the <b>*Search API*</b>  calls to the resource server should now contain a valid IUDX auth token presented in the query header. To search (or) access an *Open* resource, the consumer should present a valid IUDX Auth token. To search (or) access a *Secure / Closed* resource, a consumer must get a token for the *Secure / Closed* resource along with the associated constraints from the IUDX Auth Server. For subscription to a *Secure / Closed / Open* resource, a consumer must get a token along with the associated constraints from the IUDX Auth Server.
+    All the <b>*Search API*</b>  calls to the resource server should now contain a valid data exchange auth token presented in the query header. To search (or) access an *Open* resource, the consumer should present a valid data exchange Auth token. To search (or) access a *Secure / Closed* resource, a consumer must get a token for the *Secure / Closed* resource along with the associated constraints from the DX(Data exchange) Auth Server. For subscription to a *Secure / Closed / Open* resource, a consumer must get a token along with the associated constraints from the DX(Data exchange) Auth Server.
+    
+    # Encryption
+    All the count and search APIs have a feature for encryption.
+    To get the data in encrypted format, the user could provide a `publicKey` in the header, with the value that is generated from [lazySodium sealed box](https://github.com/terl/lazysodium-java/wiki/Getting-started). 
+    The header value should be in _url-safe base64 format_. 
+    The encrypted data could be decrypted using the lazysodium sealed box by supplying the private and public key.
+    
+    **Encryption is applicable only for**
+    -  **/entities**
+    -  **/temporal/entities**
+    -  **/temporal/entityOperations/query**
+    -  **/entityOperations/query**
+
+
+    # API HTTP Responses
+    Apart from the response codes specified in each API, the API server may respond with certain 4xx and 5xx error codes which are related to common API Gateway behaviours.
+    The application should address them accordingly.
+
   contact:
     name: For support contact IUDX Team at
     email: support@iudx.org.in
 
 tags:
-- name: Latest Entity
-  x-displayName: "Latest Data"
-  description: |
-        A Spatial Search is used by IUDX Data *Consumers* for querying a resource using a <b>valid IUDX</b> `id`. <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .
+  - name: Latest Entity
+    x-displayName: "Latest Data"
+    description: |
+      A Spatial Search is used by DX(Data exchange) Data *Consumers* for querying a resource using a <b>valid data exchange</b> `id`. <br/> Information about the data exchange ID of the resource and security scope of the resource can be obtained from the <b> DX(Data exchange) catalogue server </b> .
 
-- name: Spatial Entities
-  x-displayName: "Spatial Search"
-  description: |
-        A Spatial Search is used by IUDX Data *Consumers* for querying a resource using a <b>valid IUDX</b> `id`, `spatial` and `attribute` parameters. <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b>. <br/> You can use this API to make a `spatial` or `attribute` or `complex : spatial+attribute` query.
-- name: Temporal Entities
-  x-displayName: "Temporal and Complex Search"
-  description: |
-        A Temporal Search is used by IUDX Data *Consumers* for querying a resource using a <b>valid IUDX</b> `id`, `temporal`, `spatial` and `attribute` parameters. <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b>. <br/>In order to use this API, a `temporal` parameter is <b>mandatory</b>. <br/> You can use this API to make a `temporal` or `complex : temporal+spatial` or `complex : temporal+attribute` or `complex : temporal+spatial+attribute` query. <br/> If you are looking for an `attribute` only query refer the <b>Spatial Search</b> `/entities` endpoint.
+  - name: Spatial Entities
+    x-displayName: "Spatial Search"
+    description: |
+      A Spatial Search is used by DX(Data exchange) Data *Consumers* for querying a resource using a <b>valid data exchange</b> `id`, `spatial` and `attribute` parameters. <br/> Information about the data exchange ID of the resource and security scope of the resource can be obtained from the <b> DX(Data exchange) catalogue server </b>. <br/> You can use this API to make a `spatial` or `attribute` or `complex : spatial+attribute` query.
+  - name: Temporal Entities
+    x-displayName: "Temporal and Complex Search"
+    description: |
+      A Temporal Search is used by DX(Data exchange) Data *Consumers* for querying a resource using a <b>valid data exchange</b> `id`, `temporal`, `spatial` and `attribute` parameters. <br/> Information about the data exchange ID of the resource and security scope of the resource can be obtained from the <b> DX(Data exchange) catalogue server </b>. <br/>In order to use this API, a `temporal` parameter is <b>mandatory</b>. <br/> You can use this API to make a `temporal` or `complex : temporal+spatial` or `complex : temporal+attribute` or `complex : temporal+spatial+attribute` query. <br/> If you are looking for an `attribute` only query refer the <b>Spatial Search</b> `/entities` endpoint.
 
-- name: Entities Post Query
-  x-displayName: "Complex Search (Post Query)"
-  description: |
-        A Complex Search (Post Query) is an HTTP POST API and is used by IUDX Data *Consumers*. <br/>This API is used for querying a resource using a <b>valid IUDX</b> `id`, `temporal`, `spatial` and `attribute` parameters. <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b>. <br/> You can use this API to make a `temporal` or `spatial` or `attribute` or `complex : temporal+spatial` or `complex : temporal+attribute` or `complex : spatial+attribute` or `complex : temporal+spatial+attribute` query.
+  - name: Entities Post Query
+    x-displayName: "Complex Search (Post Query)"
+    description: |
+      A Complex Search (Post Query) is an HTTP POST API and is used by DX(Data exchange) Data *Consumers*. <br/>This API is used for querying a resource using a <b>valid data exchange</b> `id`, `temporal`, `spatial` and `attribute` parameters. <br/> Information about the data exchange ID of the resource and security scope of the resource can be obtained from the <b> DX(Data exchange) catalogue server </b>. <br/> You can use this API to make a `temporal` or `spatial` or `attribute` or `complex : temporal+spatial` or `complex : temporal+attribute` or `complex : spatial+attribute` or `complex : temporal+spatial+attribute` query.
 
-- name: Data Ingestion Adaptor
-  x-displayName: "Data Ingestion Adaptor"
-  description: |
-    Register Data Adaptor using HTTPs APIs. Once registered, the adaptors can publish data as per the IUDX data descriptor using AMQP streaming protocol over TLS.
-    Stream data of an adaptor using AMQP streaming protocol.
-    These apis are intended to be used by IUDX Data *Providers*.
+  - name: Data Ingestion Adaptor
+    x-displayName: "Data Ingestion Adaptor"
+    description: |
+      Register Data Adaptor using HTTPs APIs. Once registered, the adaptors can publish data as per the DX(Data exchange) data descriptor using AMQP streaming protocol over TLS.
+      Stream data of an adaptor using AMQP streaming protocol.
+      These apis are intended to be used by DX(Data exchange) Data *Providers*.
 
-- name: Data Subscriber
-  x-displayName: "Data Subscriber"
-  description: |
-    Register *Streaming Consumer* a.k.a [Subscribers] using HTTPs APIs to subscribe for data as per the IUDX data descriptor  using AMQP streaming protocol over TLS.
-    These apis are intended to be used by IUDX Data *Subscribers* a.k.a [Streaming Consumer].
-    
-- name: Management
-  x-displayName: "Management"
-  description: |
-    Management APIs provide the ability to the users to reset streaming credentials.
-    
-- name: Async
-  x-display: "Async"
-  description: |
-    Async APIs provide the ability to the user to query resources using larger temporal period and greater spatial area.
-    
-- name: Metering
-  x-display: "Metering/Audit"
-  description: |
-    Metering APIs provide the ability to the user (Consumer/Provider) to query the audit data using temporal & resource-id query
-    
-- name: Admin
-  x-display: "Admin"
-  description: |
-    Admin API provides the ability to the admin user to perform administrative tasks such as invalidating a user token, create unique attribute setting for resource group or resource item.    
+  - name: Data Subscriber
+    x-displayName: "Data Subscriber"
+    description: |
+      Register *Streaming Consumer* a.k.a [Subscribers] using HTTPs APIs to subscribe for data as per the DX(Data exchange) data descriptor  using AMQP streaming protocol over TLS.
+      These apis are intended to be used by DX(Data exchange) Data *Subscribers* a.k.a [Streaming Consumer].
+
+  - name: Management
+    x-displayName: "Management"
+    description: |
+      Management APIs provide the ability to the users to reset streaming credentials.
+
+  - name: Async
+    x-display: "Async"
+    description: |
+      Async APIs provide the ability to the user to query resources using larger temporal period and greater spatial area.
+
+  - name: Metering
+    x-display: "Metering/Audit"
+    description: |
+      Metering APIs provide the ability to the user (Consumer/Provider) to query the audit data using temporal & resource-id query
+
+  - name: Admin
+    x-display: "Admin"
+    description: |
+      Admin API provides the ability to the admin user to perform administrative tasks such as invalidating a user token, create unique attribute setting for resource group or resource item.    
 
 paths:
-      
-  /ngsi-ld/v1/entities/{id}:
+
+  /{basePath}/entities/{id}:
     get:
       tags:
-      - Latest Entity
-      summary: Latest Data 
+        - Latest Entity
+      summary: Latest Data
       operationId: latest-entities
       parameters:
-      - name: token
-        in: header
-        description: A <b> valid IUDX Auth token </b> to process the request. <br/> This field is <b> mandatory </b> for accessing a <b> resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
-        required: true
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-      
-      - name: id
-        in: path
-        description: 'A <b> valid IUDX ID </b> of the resource. <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .'
-        required: true
-        schema:
-          type: string
-          maxLength: 512
+        - name: basePath
+          $ref: "#/components/parameters/basePathParam"
+
+        - name: token
+          in: header
+          description: A <b> valid data exchange Auth token </b> to process the request. <br/> This field is <b> mandatory </b> for accessing a <b> resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
+          required: true
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
+        - name: id
+          in: path
+          description: 'A <b> valid data exchange ID </b> of the resource. <br/> Information about the data exchange ID of the resource and security scope of the resource can be obtained from the <b> DX(Data exchange) catalogue server </b> .'
+          required: true
+          schema:
+            type: string
+            maxLength: 512
 
       responses:
         200:
@@ -163,92 +181,95 @@ paths:
             https://rs.iudx.org.in/ngsi-ld/v1/entities/suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta
 
       description: |
-        The <b> Latest Data API </b> is used to get the latest (last published) data of a resource. <br /> It uses the <b> IUDX ID </b> a.k.a `id` to query the resource server. <br />  To get data a <b> valid IUDX Auth token</b> is mandatory.  <br/> The `/entities` end point followed by `id` as a <b>path parameter</b> is used to get the latest data.
+        The <b> Latest Data API </b> is used to get the latest (last published) data of a resource. <br /> It uses the <b> data exchange ID </b> a.k.a `id` to query the resource server. <br />  To get data a <b> valid data exchange Auth token</b> is mandatory.  <br/> The `/entities` end point followed by `id` as a <b>path parameter</b> is used to get the latest data.
 
       deprecated: false
 
-  /ngsi-ld/v1/entities:
+  /{basePath}/entities:
     get:
       tags:
-      - Spatial Entities
+        - Spatial Entities
       operationId: Spatial Search
       parameters:
-      - name: token
-        in: header
-        description: A <b> valid IUDX Auth token </b> to process the request. <br/> This field is <b> mandatory </b> for accessing a <b> resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
-        required: true
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-      
-      - name: id
-        in: query
-        description: 'A <b> valid IUDX ID </b> of the resource. <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .'
-        required: true
-        schema:
-          type: string
-          maxLength: 512
+        - name: basePath
+          $ref: "#/components/parameters/basePathParam"
 
-      - name: geoproperty
-        in: query
-        description: 'Name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
-        schema:
-          type: string
-          enum: [location]
-      - name: georel
-        in: query
-        description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'
-        schema:
-          type: string
-          enum: [near;maxdistance=<distance_in_meters>, within, intersects]
+        - name: token
+          in: header
+          description: A <b> valid data exchange Auth token </b> to process the request. <br/> This field is <b> mandatory </b> for accessing a <b> resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
+          required: true
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
 
-      - name: geometry
-        in: query
-        description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b> '
-        schema:
-          type: string
-          enum: [Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox]
+        - name: id
+          in: query
+          description: 'A <b> valid data exchange ID </b> of the resource. <br/> Information about the data exchange ID of the resource and security scope of the resource can be obtained from the <b> DX(Data exchange) catalogue server </b> .'
+          required: true
+          schema:
+            type: string
+            maxLength: 512
 
-      - name: coordinates
-        in: query
-        description: 'The coordinates for a specific geometry query type. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array. <br/> Maximum precision allowed is upto 6 decimal places.'
-        schema:
-          type: array
-          minItems: 1
-          maxItems: 10
-          items:
+        - name: geoproperty
+          in: query
+          description: 'Name of the <b> geospatial </b> property in the <b> DX(Data exchange) data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
+          schema:
+            type: string
+            enum: [location]
+        - name: georel
+          in: query
+          description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'
+          schema:
+            type: string
+            enum: [near;maxdistance=<distance_in_meters>, within, intersects]
+
+        - name: geometry
+          in: query
+          description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b> '
+          schema:
+            type: string
+            enum: [Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox]
+
+        - name: coordinates
+          in: query
+          description: 'The coordinates for a specific geometry query type. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array. <br/> Maximum precision allowed is upto 6 decimal places.'
+          schema:
+            type: array
+            minItems: 1
+            maxItems: 10
+            items:
+              type: number
+            format: double
+        - name: maxDistance
+          description: 'The maximum distance to be queried from center point in meters. <br/> This is applicable and is <b>mandatory</b> for <b>point</b> geometry.<br/> It should be used along with relation <b>near</b>.'
+          schema:
             type: number
-          format: double
-      - name: maxDistance
-        description: 'The maximum distance to be queried from center point in meters. <br/> This is applicable and is <b>mandatory</b> for <b>point</b> geometry.<br/> It should be used along with relation <b>near</b>.'
-        schema:
-          type: number
-          minimum: 0
-          maximum: 1000
-        in: query
-        required: false
+            minimum: 0
+            maximum: 1000
+          in: query
+          required: false
 
-      - name: q
-        in: query
-        description: 'The attribute query is used for querying <b> allowed quantitative</b> properties. <br/> Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`!=`, `==` operators. <br/> For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value, attribute != value and attribute == value. <br/> Allowed values for all operators is double. <br/> For the operator `==` if the query is on `id` then the only value allowed is an `IUDX ID` of a resource.'
-        schema:
-          type: string
-          maxLength: 512
+        - name: q
+          in: query
+          description: 'The attribute query is used for querying <b> allowed quantitative</b> properties. <br/> Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`!=`, `==` operators. <br/> For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value, attribute != value and attribute == value. <br/> Allowed values for all operators is double. <br/> For the operator `==` if the query is on `id` then the only value allowed is an `data exchange ID` of a resource.'
+          schema:
+            type: string
+            maxLength: 512
 
-      - name: attrs
-        in: query
-        description: 'The attrs parameter is used as an <b>application filter</b>. <br/> This is an optional parameter. It can be used to provide the list of attributes which the consumer expects to be responded by the server. <br/> The consumer is expected to provide <b>only</b> the attributes available in the <b>data descriptor</b> of the item in the IUDX Catalogue. <br/> Minimum of 1 and a Maximum of 5 attributes can be provided in a comma separated fashion.'
-        schema:
-          type: string
-          maxLength: 512
+        - name: attrs
+          in: query
+          description: 'The attrs parameter is used as an <b>application filter</b>. <br/> This is an optional parameter. It can be used to provide the list of attributes which the consumer expects to be responded by the server. <br/> The consumer is expected to provide <b>only</b> the attributes available in the <b>data descriptor</b> of the item in the DX(Data exchange) Catalogue. <br/> Minimum of 1 and a Maximum of 5 attributes can be provided in a comma separated fashion.'
+          schema:
+            type: string
+            maxLength: 512
 
-      - name: options
-        in: query
-        description: 'The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a query. <br/> It should be used along with the <b> valid </b> `spatial`, `attribute` or `complex` queries. <br/> It <b>cannot</b> be used along with a <b>attrs</b> filter. The value should be equal to `count` and it is <b>case sensitive</b>'
-        schema:
-          type: string
-          enum: [count]
+        - name: options
+          in: query
+          description: 'The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a query. <br/> It should be used along with the <b> valid </b> `spatial`, `attribute` or `complex` queries. <br/> It <b>cannot</b> be used along with a <b>attrs</b> filter. The value should be equal to `count` and it is <b>case sensitive</b>'
+          schema:
+            type: string
+            enum: [count]
 
 
       responses:
@@ -301,21 +322,21 @@ paths:
         - lang: 'count by circle'
           source: |
             https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]&options=count
-          
+
       deprecated: false
       description: |
-        The `/entities` end point allows a consumer to query on data published based on a <b>spatial</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid IUDX </b> `id` of the resource. These apis are intended to be used by IUDX Data *Consumers*.
+        The `/entities` end point allows a consumer to query on data published based on a <b>spatial</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid data exchange </b> `id` of the resource. These apis are intended to be used by DX(Data exchange) Data *Consumers*.
 
           - <b>Allowed Search Operations</b>: 
               - <b> Spatial (Geo) Search : </b> which queries the geo property of the resource.
               - <b> Attribute Search : </b> which queries the valid attributes as per the data descriptor.
               - <b> Complex Search : </b> which queries using the combination of the above two.
-
-      
+        
+        
         #### Spatial (Geo) Search
         Geo search accepts geojson based queries. The params and their accepted values are briefed below -
           - <b>geoproperty</b>: 
-              - Specifies the name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>.
+              - Specifies the name of the <b> geospatial </b> property in the <b> DX(Data exchange) data descriptor </b>.
               - The current version of the API <b> mandates </b> it to be equal to `location`
           - <b>georel</b>:   
               - Specifies the spatial relationship to be queried.
@@ -331,7 +352,7 @@ paths:
               - <b>Point</b>: Point and radius query
                   - coordinates: Specifies the  center point of the circle, for e.g, `[73,13]`. <br/>Note, format is [longitude, latitude]
                   - maxDistance: Specifies the Radius from the center point in meters, for e.g `100`. `maxValue` : 1000
-                  - georel: In this version of IUDX API, the allowed relationship search for a circle is `near` with a `maxdistance` in meters specified. This will be equivalent to a `within` query. Format is `near;maxdistance=<distance_in_meters>` 
+                  - georel: In this version of DX(Data exchange) API, the allowed relationship search for a circle is `near` with a `maxdistance` in meters specified. This will be equivalent to a `within` query. Format is `near;maxdistance=<distance_in_meters>` 
               - <b>Polygon</b>: Polygon/Multi-Polygon query
                   - coordinates: Specifies the  coordinates of the polygon, for e.g, `[[[73,13],[73,12],[73,13]]]`.  <br/>Note, format is [longitude, latitude] and the first coordinate must be same as last. 
                   - `minNumberOfCoOrdinates` : 4 and `maxnNumberOfCoOrdinates` : 10
@@ -349,7 +370,7 @@ paths:
           - Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`!=`,`==` operators. 
           - For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value and attribute == value. 
           - Allowed values for all operators is double. 
-          - For the operator `==` if the query is on `id` then the only value allowed is an `IUDX ID` of a resource. 
+          - For the operator `==` if the query is on `id` then the only value allowed is an `data exchange ID` of a resource. 
           - e.g, `q=attribute-name>attribute-value`
 
         #### Complex search
@@ -366,108 +387,111 @@ paths:
           - The value should be equal to `count` and it is <b>case sensitive</b>
 
 
-  /ngsi-ld/v1/temporal/entities:
+  /{basePath}/temporal/entities:
     get:
       tags:
-      - Temporal Entities
-      summary: Temporal Search 
+        - Temporal Entities
+      summary: Temporal Search
       operationId: temporal-entities
       parameters:
-      - name: token
-        in: header
-        description: A <b> valid IUDX Auth token </b> to process the request. <br/> This field is <b> mandatory </b> for accessing a <b> resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
-        required: true
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-      
-      - name: id
-        in: query
-        description: 'A <b> valid IUDX ID </b> of the resource. <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .'
-        required: true
-        schema:
-          type: string
-          maxLength: 512
+        - name: basePath
+          $ref: "#/components/parameters/basePathParam"
 
-      - name: timerel
-        in: query
-        description: 'The temporal relation type of <b>timerel</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> If the relation is <b> between </b> it should be always accomodated with a <b> time </b> and <b> endtime </b> property.  <br/> If the relation is <b> before </b> or <b> after </b>it should be always accomodated <b> only</b> with a <b> time </b> property.'
-        required: true
-        schema:
-          type: string
-          enum: [between, before, after]          
-      - name: time
-        in: query
-        description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
-        required: true
-        schema:
-          type: string
-      - name: endtime
-        in: query
-        description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query. <br/>If <b>timerel</b> is `between` time and endtime are mandatory'
-        schema:
-          type: string
+        - name: token
+          in: header
+          description: A <b> valid data exchange Auth token </b> to process the request. <br/> This field is <b> mandatory </b> for accessing a <b> resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
+          required: true
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
 
-      - name: geoproperty
-        in: query
-        description: 'Name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
-        schema:
-          type: string
-          enum: [location]
-      - name: georel
-        in: query
-        description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'
-        schema:
-          type: string
-          enum: [near;maxdistance=<distance_in_meters>, within, intersects]
+        - name: id
+          in: query
+          description: 'A <b> valid data exchange ID </b> of the resource. <br/> Information about the data exchange ID of the resource and security scope of the resource can be obtained from the <b> DX(Data exchange) catalogue server </b> .'
+          required: true
+          schema:
+            type: string
+            maxLength: 512
 
-      - name: geometry
-        in: query
-        description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b> '
-        schema:
-          type: string
-          enum: [Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox]
+        - name: timerel
+          in: query
+          description: 'The temporal relation type of <b>timerel</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> If the relation is <b> between </b> it should be always accomodated with a <b> time </b> and <b> endtime </b> property.  <br/> If the relation is <b> before </b> or <b> after </b>it should be always accomodated <b> only</b> with a <b> time </b> property.'
+          required: true
+          schema:
+            type: string
+            enum: [between, before, after]
+        - name: time
+          in: query
+          description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> data exchange currently accepts `IST` and `UTC` time zones for the temporal query.'
+          required: true
+          schema:
+            type: string
+        - name: endtime
+          in: query
+          description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> data exchange currently accepts `IST` and `UTC` time zones for the temporal query. <br/>If <b>timerel</b> is `between` time and endtime are mandatory'
+          schema:
+            type: string
 
-      - name: coordinates
-        in: query
-        description: 'The coordinates for a specific geometry query type. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array.<br/> Maximum precision allowed is upto 6 decimal places.'
-        schema:
-          type: array
-          minItems: 1
-          maxItems: 10
-          items:
+        - name: geoproperty
+          in: query
+          description: 'Name of the <b> geospatial </b> property in the <b> DX(Data exchange) data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
+          schema:
+            type: string
+            enum: [location]
+        - name: georel
+          in: query
+          description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'
+          schema:
+            type: string
+            enum: [near;maxdistance=<distance_in_meters>, within, intersects]
+
+        - name: geometry
+          in: query
+          description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b> '
+          schema:
+            type: string
+            enum: [Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox]
+
+        - name: coordinates
+          in: query
+          description: 'The coordinates for a specific geometry query type. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array.<br/> Maximum precision allowed is upto 6 decimal places.'
+          schema:
+            type: array
+            minItems: 1
+            maxItems: 10
+            items:
+              type: number
+            format: double
+        - name: maxDistance
+          description: 'The maximum distance to be queried from center point in meters. <br/> This is applicable and is <b>mandatory</b> for <b>point</b> geometry.<br/> It should be used along with relation <b>near</b>.'
+          schema:
             type: number
-          format: double
-      - name: maxDistance
-        description: 'The maximum distance to be queried from center point in meters. <br/> This is applicable and is <b>mandatory</b> for <b>point</b> geometry.<br/> It should be used along with relation <b>near</b>.'
-        schema:
-          type: number
-          minimum: 0
-          maximum: 1000
-        in: query
-        required: false
+            minimum: 0
+            maximum: 1000
+          in: query
+          required: false
 
-      - name: q
-        in: query
-        description: 'The attribute query is used for querying <b> allowed quantitative</b> properties. <br/> Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`!=`, `==` operators. <br/> For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value, attribute != value and attribute == value. <br/> Allowed values for all operators is double. <br/> For the operator `==` if the query is on `id` then the only value allowed is an `IUDX ID` of a resource.'
-        schema:
-          type: string
-          maxLength: 512
+        - name: q
+          in: query
+          description: 'The attribute query is used for querying <b> allowed quantitative</b> properties. <br/> Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`!=`, `==` operators. <br/> For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value, attribute != value and attribute == value. <br/> Allowed values for all operators is double. <br/> For the operator `==` if the query is on `id` then the only value allowed is an `data exchange ID` of a resource.'
+          schema:
+            type: string
+            maxLength: 512
 
-      - name: attrs
-        in: query
-        description: 'The attrs parameter is used as an <b>application filter</b>. <br/> This is an optional parameter. It can be used to provide the list of attributes which the consumer expects to be responded by the server. <br/> The consumer is expected to provide <b>only</b> the attributes available in the <b>data descriptor</b> of the item in the IUDX Catalogue. <br/> Minimum of 1 and a Maximum of 5 attributes can be provided in a comma separated fashion.'
-        schema:
-          type: string
-          maxLength: 512
+        - name: attrs
+          in: query
+          description: 'The attrs parameter is used as an <b>application filter</b>. <br/> This is an optional parameter. It can be used to provide the list of attributes which the consumer expects to be responded by the server. <br/> The consumer is expected to provide <b>only</b> the attributes available in the <b>data descriptor</b> of the item in the DX(Data exchange) Catalogue. <br/> Minimum of 1 and a Maximum of 5 attributes can be provided in a comma separated fashion.'
+          schema:
+            type: string
+            maxLength: 512
 
-      - name: options
-        in: query
-        description: 'The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a spatial query. <br/> It should be used along with the <b> valid temporal query</b> or a <b> valid complex query</b>. <br/> It <b>cannot</b> be used along with a <b>attrs</b> filter. The value should be equal to `count` and it is <b>case sensitive</b>'
-        schema:
-          type: string
-          enum: [count]
+        - name: options
+          in: query
+          description: 'The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a spatial query. <br/> It should be used along with the <b> valid temporal query</b> or a <b> valid complex query</b>. <br/> It <b>cannot</b> be used along with a <b>attrs</b> filter. The value should be equal to `count` and it is <b>case sensitive</b>'
+          schema:
+            type: string
+            enum: [count]
 
       responses:
         200:
@@ -526,7 +550,7 @@ paths:
 
       deprecated: false
       description: |
-        The `/temporal/entities` end point allows a consumer to query on data published based on a <b>spatial</b>, <b>temporal</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid IUDX</b> `id`  of the resource and a `temporal` parameter. These apis are intended to be used by IUDX Data *Consumers*.
+        The `/temporal/entities` end point allows a consumer to query on data published based on a <b>spatial</b>, <b>temporal</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid data exchange</b> `id`  of the resource and a `temporal` parameter. These apis are intended to be used by DX(Data exchange) Data *Consumers*.
 
           - <b>Allowed Search Operations</b>: 
               - <b> Temporal Search : </b> which queries the temporal property of the resource.
@@ -540,12 +564,12 @@ paths:
           - <b>time</b>: Start time for the temporal query in `ISO 8601` format. 
           - <b>endtime</b>: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = between`. 
           - Note, The time difference between `time` and `endtime` should be less than `10 days`. For `before` and `after` queries, `10 days` of data `before` or `after` the specified time will be provided.
-
-      
+        
+        
         #### Spatial (Geo) Search
         Geo search accepts geojson based queries. The params and their accepted values are briefed below -
           - <b>geoproperty</b>: 
-              - Specifies the name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>.
+              - Specifies the name of the <b> geospatial </b> property in the <b> DX(Data exchange) data descriptor </b>.
               - The current version of the API <b> mandates </b> it to be equal to `location`
           - <b>georel</b>:   
               - Specifies the spatial relationship to be queried.
@@ -561,7 +585,7 @@ paths:
               - <b>Point</b>: Point and radius query
                   - coordinates: Specifies the  center point of the circle, for e.g, `[73,13]`. <br/>Note, format is [longitude, latitude]
                   - maxDistance: Specifies the Radius from the center point in meters, for e.g `100`. `maxValue` : 1000
-                  - georel: In this version of IUDX API, the allowed relationship search for a circle is `near` with a `maxdistance` in meters specified. This will be equivalent to a `within` query. Format is `near;maxdistance=<distance_in_meters>` 
+                  - georel: In this version of DX(Data exchange) API, the allowed relationship search for a circle is `near` with a `maxdistance` in meters specified. This will be equivalent to a `within` query. Format is `near;maxdistance=<distance_in_meters>` 
               - <b>Polygon</b>: Polygon/Multi-Polygon query
                   - coordinates: Specifies the  coordinates of the polygon, for e.g, `[[[73,13],[73,12],[73,13]]]`.  <br/>Note, format is [longitude, latitude] and the first coordinate must be same as last. 
                   - `minNumberOfCoOrdinates` : 4 and `maxnNumberOfCoOrdinates` : 10
@@ -579,7 +603,7 @@ paths:
           - Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`!=`, `==` operators. 
           - For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value and attribute == value. 
           - Allowed values for all operators is double. 
-          - For the operator `==` if the query is on `id` then the only value allowed is an `IUDX ID` of a resource. 
+          - For the operator `==` if the query is on `id` then the only value allowed is an `data exchange ID` of a resource. 
           - e.g, `q=attribute-name>attribute-value`
 
         #### Complex search
@@ -594,23 +618,26 @@ paths:
           - It should be used along with the <b> valid </b> `temporal`, or `complex` queries. 
           - It <b>cannot</b> be used along with a <b>attrs</b> filter. 
           - The value should be equal to `count` and it is <b>case sensitive</b>
-     
-  /ngsi-ld/v1/entityOperations/query:
+
+  /{basePath)/entityOperations/query:
     post:
       tags:
-      - Entities Post Query
-      summary: Spatial search 
+        - Entities Post Query
+      summary: Spatial search
       operationId: complex-query
-      parameters: 
-      - name: token
-        in: header
-        description: A <b> valid IUDX Auth token </b> to process the request. <br/> This field is <b> mandatory </b> for accessing a <b> resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
-        required: true
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'       
-      
+      parameters:
+        - name: basePath
+          $ref: "#/components/parameters/basePathParam"
+
+        - name: token
+          in: header
+          description: A <b> valid data exchange Auth token </b> to process the request. <br/> This field is <b> mandatory </b> for accessing a <b> resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
+          required: true
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
       requestBody:
         description: ''
         content:
@@ -620,12 +647,12 @@ paths:
             example:
               type: Query
               entities:
-              - id: suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta
+                - id: suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta
               geoQ:
                 geometry: Point
                 coordinates:
-                - 25.319768
-                - 82.987988000000001
+                  - 25.319768
+                  - 82.987988000000001
                 georel: near;maxDistance=1000
                 geoproperty: geoJsonLocation
               q: "speed>=50"
@@ -664,17 +691,17 @@ paths:
           description: 'Resource not found'
 
       description: |
-        The `/entityOperations/query` end point allows a consumer to query on data published based on a <b>spatial</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid IUDX</b> `id` of the resource within the `entities` json object as per the schema. These apis are intended to be used by IUDX Data *Consumers*.
+        The `/entityOperations/query` end point allows a consumer to query on data published based on a <b>spatial</b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid data exchange</b> `id` of the resource within the `entities` json object as per the schema. These apis are intended to be used by DX(Data exchange) Data *Consumers*.
 
           - <b>Allowed Search Operations</b>: 
               - <b> Spatial (Geo) Search : </b> which queries the geo property of the resource.
               - <b> Attribute Search : </b> which queries the valid attributes as per the data descriptor.
               - <b> Complex Search : </b> which queries using the combination of the above three.
-      
+        
         #### Spatial (Geo) Search
         Geo search accepts geojson based queries. The params and their accepted values are briefed below -
           - <b>geoproperty</b>: 
-              - Specifies the name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>.
+              - Specifies the name of the <b> geospatial </b> property in the <b> DX(Data exchange) data descriptor </b>.
               - The current version of the API <b> mandates </b> it to be equal to `location`
           - <b>georel</b>:   
               - Specifies the spatial relationship to be queried.
@@ -690,7 +717,7 @@ paths:
               - <b>Point</b>: Point and radius query
                   - coordinates: Specifies the  center point of the circle, for e.g, `[73,13]`. <br/>Note, format is [longitude, latitude]
                   - maxDistance: Specifies the Radius from the center point in meters, for e.g `100`. `maxValue` : 1000
-                  - georel: In this version of IUDX API, the allowed relationship search for a circle is `near` with a `maxdistance` in meters specified. This will be equivalent to a `within` query. Format is `near;maxdistance=<distance_in_meters>` 
+                  - georel: In this version of DX(Data exchange) API, the allowed relationship search for a circle is `near` with a `maxdistance` in meters specified. This will be equivalent to a `within` query. Format is `near;maxdistance=<distance_in_meters>` 
               - <b>Polygon</b>: Polygon/Multi-Polygon query
                   - coordinates: Specifies the  coordinates of the polygon, for e.g, `[[[73,13],[73,12],[73,13]]]`.  <br/>Note, format is [longitude, latitude] and the first coordinate must be same as last. 
                   - `minNumberOfCoOrdinates` : 4 and `maxnNumberOfCoOrdinates` : 10
@@ -708,7 +735,7 @@ paths:
           - Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`!=`,`==` operators. 
           - For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value and attribute == value. 
           - Allowed values for all operators is double. 
-          - For the operator `==` if the query is on `id` then the only value allowed is an `IUDX ID` of a resource. 
+          - For the operator `==` if the query is on `id` then the only value allowed is an `data exchange ID` of a resource. 
           - e.g, `q=attribute-name>attribute-value`
 
         #### Complex search
@@ -725,23 +752,26 @@ paths:
           - The value should be equal to `count` and it is <b>case sensitive</b>
 
       deprecated: false
-      
-  /ngsi-ld/v1/temporal/entityOperations/query:
+
+  /{basePath}/temporal/entityOperations/query:
     post:
       tags:
-      - Entities Post Query
-      summary: Spatial + temporal search 
+        - Entities Post Query
+      summary: Spatial + temporal search
       operationId: spatial-complex-query
-      parameters: 
-      - name: token
-        in: header
-        description: A <b> valid IUDX Auth token </b> to process the request. <br/> This field is <b> mandatory </b> for accessing a <b> resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
-        required: true
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'       
-      
+      parameters:
+        - name: basePath
+          $ref: "#/components/parameters/basePathParam"
+
+        - name: token
+          in: header
+          description: A <b> valid data exchange Auth token </b> to process the request. <br/> This field is <b> mandatory </b> for accessing a <b> resource </b> .  <br/> If not provided with a valid token, user will be responded with <b> 401 Unauthorized </b> .
+          required: true
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
       requestBody:
         description: ''
         content:
@@ -751,12 +781,12 @@ paths:
             example:
               type: Query
               entities:
-              - id: suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta
+                - id: suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta
               geoQ:
                 geometry: Point
                 coordinates:
-                - 25.319768
-                - 82.987988000000001
+                  - 25.319768
+                  - 82.987988000000001
                 georel: near;maxDistance=1000
                 geoproperty: geoJsonLocation
               temporalQ:
@@ -801,7 +831,7 @@ paths:
           description: 'Resource not found'
 
       description: |
-        The `/temporal/entityOperations/query` end point allows a consumer to query on data published based on a <b>spatial</b>,<b> temporal </b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid IUDX</b> `id` of the resource within the `entities` json object as per the schema. These apis are intended to be used by IUDX Data *Consumers*.
+        The `/temporal/entityOperations/query` end point allows a consumer to query on data published based on a <b>spatial</b>,<b> temporal </b> and <b>attribute</b> properties. The <b>spatial</b> queries should be submitted as a geo json as described in the API. All the queries requires a <b> valid data exchange</b> `id` of the resource within the `entities` json object as per the schema. These apis are intended to be used by DX(Data exchange) Data *Consumers*.
 
           - <b>Allowed Search Operations</b>:
               - <b> Temporal Search : </b> which queries the temporal property of the resource.
@@ -815,11 +845,11 @@ paths:
           - <b>time</b>: Start time for the temporal query in `ISO 8601` format. 
           - <b>endtime</b>: End time for the temporal query in `ISO 8601` format. Applicable only for `timerel = between`. 
           - Note, The time difference between `time` and `endtime` should be less than `10 days`. For `before` and `after` queries, `10 days` of data `before` or `after` the specified time will be provided.
-      
+        
         #### Spatial (Geo) Search
         Geo search accepts geojson based queries. The params and their accepted values are briefed below -
           - <b>geoproperty</b>: 
-              - Specifies the name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>.
+              - Specifies the name of the <b> geospatial </b> property in the <b> DX(Data exchange) data descriptor </b>.
               - The current version of the API <b> mandates </b> it to be equal to `location`
           - <b>georel</b>:   
               - Specifies the spatial relationship to be queried.
@@ -835,7 +865,7 @@ paths:
               - <b>Point</b>: Point and radius query
                   - coordinates: Specifies the  center point of the circle, for e.g, `[73,13]`. <br/>Note, format is [longitude, latitude]
                   - maxDistance: Specifies the Radius from the center point in meters, for e.g `100`. `maxValue` : 1000
-                  - georel: In this version of IUDX API, the allowed relationship search for a circle is `near` with a `maxdistance` in meters specified. This will be equivalent to a `within` query. Format is `near;maxdistance=<distance_in_meters>` 
+                  - georel: In this version of DX(Data exchange) API, the allowed relationship search for a circle is `near` with a `maxdistance` in meters specified. This will be equivalent to a `within` query. Format is `near;maxdistance=<distance_in_meters>` 
               - <b>Polygon</b>: Polygon/Multi-Polygon query
                   - coordinates: Specifies the  coordinates of the polygon, for e.g, `[[[73,13],[73,12],[73,13]]]`.  <br/>Note, format is [longitude, latitude] and the first coordinate must be same as last. 
                   - `minNumberOfCoOrdinates` : 4 and `maxnNumberOfCoOrdinates` : 10
@@ -853,7 +883,7 @@ paths:
           - Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`!=`,`==` operators. 
           - For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value and attribute == value. 
           - Allowed values for all operators is double. 
-          - For the operator `==` if the query is on `id` then the only value allowed is an `IUDX ID` of a resource. 
+          - For the operator `==` if the query is on `id` then the only value allowed is an `data exchange ID` of a resource. 
           - e.g, `q=attribute-name>attribute-value`
 
         #### Complex search
@@ -873,20 +903,20 @@ paths:
   /iudx/v1/ingestion:
     post:
       tags:
-      - Data Ingestion Adaptor
+        - Data Ingestion Adaptor
       summary: Register ingestion adapter
       operationId: registeradapter
       parameters:
-      - name: token
-        in: header
-        description: 'IUDX auth token for accessing API and the resource.'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-          
+        - name: token
+          in: header
+          description: 'data exchange auth token for accessing API and the resource.'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
       requestBody:
         description: ''
         content:
@@ -917,38 +947,38 @@ paths:
           description: 'Unauthorized'
 
       description: |
-        Ingestion API allows a provider to register an ingestion adapter with IUDX Resource Server. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
+        Ingestion API allows a provider to register an ingestion adapter with DX(Data exchange) Resource Server. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
         
         #### Register Adapter
-        To register an adapter, a user must request for a consent from the provider, obtain a token from IUDX Auth server and then access the API with the following values:
-          - `entities`: List of IUDX resource id's .
+        To register an adapter, a user must request for a consent from the provider, obtain a token from DX(Data exchange) Auth server and then access the API with the following values:
+          - `entities`: List of DX(Data exchange) resource id's .
       deprecated: false
 
   /iudx/v1/ingestion/{id}:
     get:
       tags:
-      - Data Ingestion Adaptor
+        - Data Ingestion Adaptor
       summary: Retrieve ingestion adapter details
       operationId: getadaptordetails
       parameters:
-      - name: token
-        in: header
-        description: 'IUDX auth token for accessing API and the resource.'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-          
-      - name: id
-        in: path
-        description: 'id of the adapter obtained from Register adapter.'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512          
+        - name: token
+          in: header
+          description: 'data exchange auth token for accessing API and the resource.'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
+        - name: id
+          in: path
+          description: 'id of the adapter obtained from Register adapter.'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
       responses:
         200:
           content:
@@ -984,36 +1014,36 @@ paths:
             https://rs.iudx.io/iudx/v1/ingestion/iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms --header 'token: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/896f2d9f8b866671a4341b882e3ba2b3'
 
       description: |
-        Retrieve Ingestion API allows a provider to fetch the list of `Subscribers` a.k.a [Streaming Consumers] for the data. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
+        Retrieve Ingestion API allows a provider to fetch the list of `Subscribers` a.k.a [Streaming Consumers] for the data. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
         
         #### Retrieve Adapter Details
         To retrieve subscriber list, the provider must present the `id` and `token`. Retrieve API validates the request with the Auth server to allow or deny access to the provider.
       deprecated: false
-      
+
     delete:
       tags:
-      - Data Ingestion Adaptor
+        - Data Ingestion Adaptor
       summary: Delete ingestion adaptor
       operationId: deleteadaptor
       parameters:
-      - name: token
-        in: header
-        description: 'IUDX auth token for accessing API and the resource.'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-          
-      - name: id
-        in: path
-        description: 'id of the adapter obtained from Register ingestion adapter.'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512          
+        - name: token
+          in: header
+          description: 'data exchange auth token for accessing API and the resource.'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
+        - name: id
+          in: path
+          description: 'id of the adapter obtained from Register ingestion adapter.'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
       responses:
         200:
           description: 'Successful query'
@@ -1047,40 +1077,43 @@ paths:
         - lang: 'by id'
           source: |
             https://rs.iudx.io/iudx/v1/ingestion/iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms --header 'token: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/896f2d9f8b866671a4341b882e3ba2b3'
- 
+
       description: |
-        Delete ingestion Adapter API allows a provider to delete a publisher. Once this is done all the `Subscribers` a.k.a [Streaming Consumers] and `Consumers` of the data will stop receiving further updates. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
+        Delete ingestion Adapter API allows a provider to delete a publisher. Once this is done all the `Subscribers` a.k.a [Streaming Consumers] and `Consumers` of the data will stop receiving further updates. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
         
         #### Delete Adapter
         To delete an adapter, the provider must present the `id` and `token`. Delete API validates the request with the Auth server to allow or deny access to the provider.
-                
+
       deprecated: false
 
-  /ngsi-ld/v1/subscription:
+  /{basePath}/subscription:
     post:
       tags:
-      - Data Subscriber
+        - Data Subscriber
       summary: Create subscription
       operationId: createastreamingsubscription
       parameters:
-      - name: token
-        in: header
-        description: 'IUDX auth token for accessing API and the resource.'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-          
-      - name: options
-        in: header
-        description: 'Type of subscription, for e.g. streaming'
-        required: true
-        style: simple
-        schema:
-          type: string
-          enum: [streaming]
+        - name: basePath
+          $ref: "#/components/parameters/basePathParam"
+
+        - name: token
+          in: header
+          description: 'data exchange auth token for accessing API and the resource.'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
+        - name: options
+          in: header
+          description: 'Type of subscription, for e.g. streaming'
+          required: true
+          style: simple
+          schema:
+            type: string
+            enum: [streaming]
       requestBody:
         description: 'Successful query'
         content:
@@ -1113,50 +1146,53 @@ paths:
           description: 'Already exist'
 
       description: |
-        Register Subscription API allows a subscriber to register an streaming subscription with IUDX Resource Server. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
+        Register Subscription API allows a subscriber to register an streaming subscription with DX(Data exchange) Resource Server. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
         
         #### Register Subscription
-        To register subscription, a user must request for consent from the provider, obtain a token from IUDX Auth server and then access the API with the following values:
+        To register subscription, a user must request for consent from the provider, obtain a token from DX(Data exchange) Auth server and then access the API with the following values:
           - `options`: A header parameter which specifies the type of subscription. Should be `streaming` to request for a streaming registration.
           - `name`: A user friendly `alias-name` of the subscription
           - `type`: Type of request. Should be `subscription`.
           - `entities`: An array of entities to subscribe.
-          
+
       deprecated: false
 
-  /ngsi-ld/v1/subscription/{id}:
+  /{basePath}/subscription/{id}:
     get:
       tags:
-      - Data Subscriber
+        - Data Subscriber
       summary: Retrieve subscription details
       operationId: getstreamingsubscription
       parameters:
-      - name: token
-        in: header
-        description: 'IUDX auth token for accessing API and the resource.'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-          
-      - name: options
-        in: header
-        description: 'Type of subscription, for e.g. streaming'
-        required: true
-        style: simple
-        schema:
-          type: string
-          enum: [streaming]
-      - name: id
-        in: path
-        description: 'Subscription ID obtained during registration.'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
+        - name: basePath
+          $ref: "#/components/parameters/basePathParam"
+
+        - name: token
+          in: header
+          description: 'data exchange auth token for accessing API and the resource.'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
+        - name: options
+          in: header
+          description: 'Type of subscription, for e.g. streaming'
+          required: true
+          style: simple
+          schema:
+            type: string
+            enum: [streaming]
+        - name: id
+          in: path
+          description: 'Subscription ID obtained during registration.'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
 
       responses:
         200:
@@ -1194,45 +1230,45 @@ paths:
             https://rs.iudx.io/ngsi-ld/v1/subscription/iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application --header 'token: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/896f2d9f8b866671a4341b882e3ba2b3'
 
       description: |
-        Retrieve Subscription API allows a subscriber to fetch the list of `entities` subscribed. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
+        Retrieve Subscription API allows a subscriber to fetch the list of `entities` subscribed. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
         
         #### Retrieve Subscription Details
         To retrieve subscriber list, the provider must present the `id` and `token`. Retrieve API validates the request with the Auth server to allow or deny access to the subscriber.
           - `options`: A header parameter which specifies the type of subscription. Should be `streaming` to request for a streaming registration.
+    
 
-      
     patch:
       tags:
-      - Data Subscriber
+        - Data Subscriber
       summary: Append subscription
       operationId: appendstreamingsubscription
       parameters:
-      - name: token
-        in: header
-        description: 'IUDX auth token for accessing API and the resource.'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-          
-      - name: options
-        in: header
-        description: 'Type of subscription, for e.g. streaming'
-        required: true
-        style: simple
-        schema:
-          type: string
-          enum: [streaming]
-      - name: id
-        in: path
-        description: 'Subscription ID obtained during registration.'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512          
+        - name: token
+          in: header
+          description: 'data exchange auth token for accessing API and the resource.'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
+        - name: options
+          in: header
+          description: 'Type of subscription, for e.g. streaming'
+          required: true
+          style: simple
+          schema:
+            type: string
+            enum: [streaming]
+        - name: id
+          in: path
+          description: 'Subscription ID obtained during registration.'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
       requestBody:
         description: ''
         content:
@@ -1269,46 +1305,46 @@ paths:
           description: 'Resource not found'
 
       description: |
-        Append Subscription API allows a subscriber to add a new stream to the list of `entities` subscribed. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
+        Append Subscription API allows a subscriber to add a new stream to the list of `entities` subscribed. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
         
         #### Append Subscription 
         To append an entity to the subscriber list, the provider must present the `id` and `token` along with the list of `entities`. Append API validates the request with the Auth server to allow or deny access to the subscriber.
           - `options`: A header parameter which specifies the type of subscription. Should be `streaming` to request for a streaming registration.
 
       deprecated: false
-      
+
     put:
       tags:
-      - Data Subscriber
+        - Data Subscriber
       summary: Update subscription
       operationId: updatestreamingsubscription
       parameters:
-      - name: token
-        in: header
-        description: 'IUDX auth token for accessing the API'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-          
-      - name: options
-        in: header
-        description: 'Type of subscription, for e.g. streaming'
-        required: true
-        style: simple
-        schema:
-          type: string
-          enum: [streaming]
-      - name: id
-        in: path
-        description: 'Subscription ID obtained during registration.'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512          
+        - name: token
+          in: header
+          description: 'data exchange auth token for accessing the API'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
+        - name: options
+          in: header
+          description: 'Type of subscription, for e.g. streaming'
+          required: true
+          style: simple
+          schema:
+            type: string
+            enum: [streaming]
+        - name: id
+          in: path
+          description: 'Subscription ID obtained during registration.'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
       requestBody:
         description: ''
         content:
@@ -1345,48 +1381,48 @@ paths:
           description: 'Resource not found'
 
       description: |
-        Update Subscription API allows a subscriber to replace the list of `entities` subscribed. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
+        Update Subscription API allows a subscriber to replace the list of `entities` subscribed. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
         
         #### Update (Replace) Subscription 
         To replace the subscriber list, the provider must present the `id` and `token` along with the list of `entities`. Update API validates the request with the Auth server to allow or deny access to the subscriber.
           - `options`: A header parameter which specifies the type of subscription. Should be `streaming` to request for a streaming registration.
 
       deprecated: false
-      
+
     delete:
       tags:
-      - Data Subscriber
+        - Data Subscriber
       summary: Delete subscription
       operationId: deleteasubscription
       parameters:
-      - name: options
-        in: header
-        description: 'Type of subscription, for e.g. streaming'
-        required: true
-        style: simple
-        schema:
-          type: string
-          enum: [streaming]
-          
-      - name: token
-        in: header
-        description: 'IUDX auth token for accessing the API'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-          
-      - name: id
-        in: path
-        description: 'Subscription ID obtained during registration.'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          
+        - name: options
+          in: header
+          description: 'Type of subscription, for e.g. streaming'
+          required: true
+          style: simple
+          schema:
+            type: string
+            enum: [streaming]
+
+        - name: token
+          in: header
+          description: 'data exchange auth token for accessing the API'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
+        - name: id
+          in: path
+          description: 'Subscription ID obtained during registration.'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+
       responses:
         200:
           description: 'Successful query'
@@ -1421,7 +1457,7 @@ paths:
             https://rs.iudx.io/ngsi-ld/v1/subscription/iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application --header 'token: auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/896f2d9f8b866671a4341b882e3ba2b3'
 
       description: |
-        Delete Subscription API allows a subscriber to delete the subscription. Based on the input provided, the API validates the access control of the user with IUDX Auth server to allow or deny access to the API. 
+        Delete Subscription API allows a subscriber to delete the subscription. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
         
         #### Delete Subscription 
         To delete the subscription list, the provider must present the `id` and `token`. Delete API validates the request with the Auth server to allow or deny access to the subscriber.
@@ -1432,20 +1468,20 @@ paths:
   /management/user/resetPassword:
     post:
       tags:
-      - Management
-      summary: Reset user password. 
+        - Management
+      summary: Reset user password.
       operationId: resetPassword
       parameters:
-      - name: token
-        in: header
-        description: 'IUDX auth token for accessing the API'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-          
+        - name: token
+          in: header
+          description: 'data exchange auth token for accessing the API'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
       responses:
         200:
           description: 'Successful query'
@@ -1473,86 +1509,89 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
           description: 'Resource not found'
-          
-  /ngsi-ld/v1/async/search:
+
+  /{basePath}/async/search:
     get:
       tags:
-      - Async
-      summary: Search 
+        - Async
+      summary: Search
       operationId: async search
       parameters:
-      - name: token
-        in: header
-        description: 'IUDX auth token for accessing the API'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-      - name: id
-        in: query
-        description: 'A <b> valid IUDX ID </b> of the resource. <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .'
-        required: true
-        schema:
-          type: string
-          maxLength: 512
-      - name: timerel
-        in: query
-        description: 'The temporal relation type of <b>timerel</b> to be performed.'
-        #required: true
-        schema:
-          type: string
-          enum: [between, before, after]          
-      - name: time
-        in: query
-        description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
-        #required: true
-        schema:
-          type: string
-      - name: endtime
-        in: query
-        description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
-        #required: true
-        schema:
-          type: string
-      - name: geoproperty
-        in: query
-        description: 'Name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
-        schema:
-          type: string
-          enum: [location]
-      - name: georel
-        in: query
-        description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'
-        schema:
-          type: string
-          enum: [near;maxdistance=<distance_in_meters>, within, intersects]
+        - name: basePath
+          $ref: "#/components/parameters/basePathParam"
 
-      - name: geometry
-        in: query
-        description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b> '
-        schema:
-          type: string
-          enum: [Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox]
+        - name: token
+          in: header
+          description: 'data exchange auth token for accessing the API'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+        - name: id
+          in: query
+          description: 'A <b> valid data exchange ID </b> of the resource. <br/> Information about the data exchange ID of the resource and security scope of the resource can be obtained from the <b> DX(Data exchange) catalogue server </b> .'
+          required: true
+          schema:
+            type: string
+            maxLength: 512
+        - name: timerel
+          in: query
+          description: 'The temporal relation type of <b>timerel</b> to be performed.'
+          #required: true
+          schema:
+            type: string
+            enum: [between, before, after]
+        - name: time
+          in: query
+          description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> data exchange currently accepts `IST` and `UTC` time zones for the temporal query.'
+          #required: true
+          schema:
+            type: string
+        - name: endtime
+          in: query
+          description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> data exchange currently accepts `IST` and `UTC` time zones for the temporal query.'
+          #required: true
+          schema:
+            type: string
+        - name: geoproperty
+          in: query
+          description: 'Name of the <b> geospatial </b> property in the <b> DX(Data exchange) data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
+          schema:
+            type: string
+            enum: [location]
+        - name: georel
+          in: query
+          description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'
+          schema:
+            type: string
+            enum: [near;maxdistance=<distance_in_meters>, within, intersects]
 
-      - name: coordinates
-        in: query
-        description: 'The coordinates for a specific geometry query type. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array.<br/> Maximum precision allowed is upto 6 decimal places.'
-        schema:
-          type: array
-          minItems: 1
-          maxItems: 10
-          items:
-            type: number
-          format: double
-      - name: q
-        in: query
-        description: 'The attribute query is used for querying <b> allowed quantitative</b> properties. <br/> Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`!=`, `==` operators. <br/> For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value, attribute != value and attribute == value. <br/> Allowed values for all operators is double. <br/> For the operator `==` if the query is on `id` then the only value allowed is an `IUDX ID` of a resource.'
-        schema:
-          type: string
-          maxLength: 512
-          
+        - name: geometry
+          in: query
+          description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b> '
+          schema:
+            type: string
+            enum: [Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox]
+
+        - name: coordinates
+          in: query
+          description: 'The coordinates for a specific geometry query type. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array.<br/> Maximum precision allowed is upto 6 decimal places.'
+          schema:
+            type: array
+            minItems: 1
+            maxItems: 10
+            items:
+              type: number
+            format: double
+        - name: q
+          in: query
+          description: 'The attribute query is used for querying <b> allowed quantitative</b> properties. <br/> Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`!=`, `==` operators. <br/> For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value, attribute != value and attribute == value. <br/> Allowed values for all operators is double. <br/> For the operator `==` if the query is on `id` then the only value allowed is an `data exchange ID` of a resource.'
+          schema:
+            type: string
+            maxLength: 512
+
       responses:
         201:
           description: 'query submitted successfully'
@@ -1580,31 +1619,34 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
           description: 'Resource not found'
-          
-  /ngsi-ld/v1/async/status:
+
+  /{basePath}/async/status:
     get:
       tags:
-      - Async
+        - Async
       summary: Search status
       operationId: async search status
       parameters:
-      - name: token
-        in: header
-        description: 'IUDX auth token for accessing the API'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-      - name: searchId
-        in: query
-        description: 'searchId returned while submitting request through `/async/search`'
-        required: true
-        schema:
-          type: string
-          maxLength: 512
-          
+        - name: basePath
+          $ref: "#/components/parameters/basePathParam"
+
+        - name: token
+          in: header
+          description: 'data exchange auth token for accessing the API'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+        - name: searchId
+          in: query
+          description: 'searchId returned while submitting request through `/async/search`'
+          required: true
+          schema:
+            type: string
+            maxLength: 512
+
       responses:
         200:
           description: 'search status'
@@ -1612,8 +1654,8 @@ paths:
             application/json:
               schema:
                 oneOf:
-                - $ref: '#/components/schemas/asyncsearchStatusComplete'
-                - $ref: '#/components/schemas/asyncsearchStatusInprogress'
+                  - $ref: '#/components/schemas/asyncsearchStatusComplete'
+                  - $ref: '#/components/schemas/asyncsearchStatusInprogress'
         400:
           content:
             application/json:
@@ -1634,61 +1676,64 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
           description: 'Resource not found'
-          
-  /ngsi-ld/v1/consumer/audit:
+
+  /{basePath}/consumer/audit:
     get:
-      tags: 
-      - Metering
+      tags:
+        - Metering
       summary: consumer search
       operationId: consumer search
       parameters:
-      - name: token
-        in: header
-        description: 'IUDX auth token for accessing the API'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-      - name: options
-        in: header
-        description: 'options parameter is used for obtaining the number of hits for a query'
-        style: simple
-        schema:
-          type: string
-          enum: [count]
-      - name: id
-        in: query
-        description: 'id of the resource in catalogue'
-        schema:
-          type: string
-          maxLength: 512
-      - name: api
-        in: query
-        description: 'Valid IUDX api [`/ngsi-ld/v1/entities`, `/ngsi-ld/v1/temporal/entities`, `/ngsi-ld/v1/entityOperation/Query`, `/ngsi-ld/v1/temporal/entityOperation/Query`] '
-        schema:
-          type: string
-          maxLength: 512
-      - name: timerel
-        in: query
-        description: 'The temporal relation type of <b>timerel</b> to be performed.'
-        required: true
-        schema:
-          type: string
-          enum: [between]          
-      - name: time
-        in: query
-        description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
-        required: true
-        schema:
-          type: string
-      - name: endtime
-        in: query
-        description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
-        required: true
-        schema:
-          type: string
+        - name: basePath
+          $ref: "#/components/parameters/basePathParam"
+
+        - name: token
+          in: header
+          description: 'data exchange auth token for accessing the API'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+        - name: options
+          in: header
+          description: 'options parameter is used for obtaining the number of hits for a query'
+          style: simple
+          schema:
+            type: string
+            enum: [count]
+        - name: id
+          in: query
+          description: 'id of the resource in catalogue'
+          schema:
+            type: string
+            maxLength: 512
+        - name: api
+          in: query
+          description: 'Valid DX(Data exchange) api [`/{basePath}/entities`, `/{basePath}/temporal/entities`, `/{basePath}/entityOperation/Query`, `/{basePath}/temporal/entityOperation/Query`] '
+          schema:
+            type: string
+            maxLength: 512
+        - name: timerel
+          in: query
+          description: 'The temporal relation type of <b>timerel</b> to be performed.'
+          required: true
+          schema:
+            type: string
+            enum: [between]
+        - name: time
+          in: query
+          description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> data exchange currently accepts `IST` and `UTC` time zones for the temporal query.'
+          required: true
+          schema:
+            type: string
+        - name: endtime
+          in: query
+          description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> data exchange currently accepts `IST` and `UTC` time zones for the temporal query.'
+          required: true
+          schema:
+            type: string
       responses:
         200:
           description: 'search status'
@@ -1716,73 +1761,76 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
           description: 'Resource not found'
-      description: Consumer API can be used by a user having consumer token to get audit details of API's.  
-          
-  /ngsi-ld/v1/provider/audit:
+      description: Consumer API can be used by a user having consumer token to get audit details of API's.
+
+  /{basePath}/provider/audit:
     get:
-      tags: 
-      - Metering
+      tags:
+        - Metering
       summary: provider search
       operationId: provider search
       parameters:
-      - name: token
-        in: header
-        description: 'IUDX auth token for accessing the API'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-      - name: options
-        in: header
-        description: 'options parameter is used for obtaining the number of hits for a query'
-        style: simple
-        schema:
-          type: string
-          enum: [count]
-      - name: id
-        in: query
-        description: 'id of the resource in catalogue'
-        schema:
-          type: string
-          maxLength: 512
-      - name: api
-        in: query
-        description: 'Valid IUDX api [`/entities`, `/temporal/entities`, `/entityOperation/Query`, `/temporal/entityOperation/Query`] '
-        schema:
-          type: string
-          maxLength: 512
-      - name: timerel
-        in: query
-        description: 'The temporal relation type of <b>timerel</b> to be performed.'
-        required: true
-        schema:
-          type: string
-          enum: [between]          
-      - name: time
-        in: query
-        description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
-        required: true
-        schema:
-          type: string
-      - name: endtime
-        in: query
-        description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
-        required: true
-        schema:
-          type: string
-      - name: consumer
-        in: query
-        description: 'Id of consumer'
-        schema:
-          type: string
-      - name: providerId
-        in: query
-        required: true
-        description: 'Id of the provider'
-        schema:
-          type: string
+        - name: basePath
+          $ref: "#/components/parameters/basePathParam"
+
+        - name: token
+          in: header
+          description: 'data exchange auth token for accessing the API'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+        - name: options
+          in: header
+          description: 'options parameter is used for obtaining the number of hits for a query'
+          style: simple
+          schema:
+            type: string
+            enum: [count]
+        - name: id
+          in: query
+          description: 'id of the resource in catalogue'
+          schema:
+            type: string
+            maxLength: 512
+        - name: api
+          in: query
+          description: 'Valid DX(Data exchange) api [`/entities`, `/temporal/entities`, `/entityOperation/Query`, `/temporal/entityOperation/Query`] '
+          schema:
+            type: string
+            maxLength: 512
+        - name: timerel
+          in: query
+          description: 'The temporal relation type of <b>timerel</b> to be performed.'
+          required: true
+          schema:
+            type: string
+            enum: [between]
+        - name: time
+          in: query
+          description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> data exchange currently accepts `IST` and `UTC` time zones for the temporal query.'
+          required: true
+          schema:
+            type: string
+        - name: endtime
+          in: query
+          description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> data exchange currently accepts `IST` and `UTC` time zones for the temporal query.'
+          required: true
+          schema:
+            type: string
+        - name: consumer
+          in: query
+          description: 'Id of consumer'
+          schema:
+            type: string
+        - name: providerId
+          in: query
+          required: true
+          description: 'Id of the provider'
+          schema:
+            type: string
       responses:
         200:
           description: 'search status'
@@ -1814,20 +1862,20 @@ paths:
 
   /admin/revokeToken:
     post:
-      tags: 
-      - Admin
+      tags:
+        - Admin
       summary: revoke token
       operationId: revoke user token
       parameters:
-      - name: token
-        in: header
-        description: 'IUDX admin token for accessing the API'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+        - name: token
+          in: header
+          description: 'DX(Data exchange) admin token for accessing the API'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
       requestBody:
         description: ''
         content:
@@ -1858,23 +1906,23 @@ paths:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
       description: revoke token API used by admin user to revoke token of user in certain cases.
-  
+
   /admin/resourceattribute:
     post:
-      tags: 
-      - Admin
-      summary: Create unique attribute. 
+      tags:
+        - Admin
+      summary: Create unique attribute.
       operationId: create an unique attribute setting for resource.
       parameters:
-      - name: token
-        in: header
-        description: 'IUDX admin token for accessing the API'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+        - name: token
+          in: header
+          description: 'DX(Data exchange) admin token for accessing the API'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
       requestBody:
         description: ''
         content:
@@ -1905,23 +1953,23 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
-      description: The `resourceattribute` API used by admin user to create unique attribute for a resource in IUDX.
-      
+      description: The `resourceattribute` API used by admin user to create unique attribute for a resource in DX(Data exchange).
+
     put:
-      tags: 
-      - Admin
-      summary: Update unique attribute 
+      tags:
+        - Admin
+      summary: Update unique attribute
       operationId: update a unique attribute setting for resource
       parameters:
-      - name: token
-        in: header
-        description: 'IUDX admin token for accessing the API'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
+        - name: token
+          in: header
+          description: 'DX(Data exchange) admin token for accessing the API'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
       requestBody:
         description: ''
         content:
@@ -1952,30 +2000,30 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
-      description: The `resourceattribute` API used by admin user to update unique attribute for a resource in IUDX.
-    
+      description: The `resourceattribute` API used by admin user to update unique attribute for a resource in DX(Data exchange).
+
     delete:
-      tags: 
-      - Admin
+      tags:
+        - Admin
       summary: Delete unique attribute
       operationId: delete a unique attribute setting for resource
       parameters:
-      - name: token
-        in: header
-        description: 'IUDX admin token for accessing the API'
-        required: true
-        style: simple
-        schema:
-          type: string
-          maxLength: 512
-          pattern: '^[a-zA-Z0-9\/\@\.]*$'
-      - name: id
-        in : query
-        description: 'Valid IUDX resource id'
-        required : true
-        schema:
-          type: string
-          maxLength: 512
+        - name: token
+          in: header
+          description: 'DX(Data exchange) admin token for accessing the API'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+        - name: id
+          in : query
+          description: 'Valid DX(Data exchange) resource id'
+          required : true
+          schema:
+            type: string
+            maxLength: 512
       responses:
         200:
           description: 'api success response'
@@ -1996,23 +2044,38 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
-      description: The `resourceattribute` API used by admin user to update unique attribute for a resource in IUDX.
-    
-    
-  
+      description: The `resourceattribute` API used by admin user to update unique attribute for a resource in DX(Data exchange).
+
+
+
 components:
+  parameters:
+    basePathParam:
+      name: basePath
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+          - "ngsi-ld/v1"
+          - "adex/v1"
+          - "ipeg/v1"
+          - "gisdx/v1"
+        default: "ngsi-ld/v1"
+      description: "Base paths are a part of the endpoint that can be configured according to the deployment. Currently, `ngsi-ld/v1` is being set as the default base path."
+
   schemas:
     createastreamingsubscriptionrequest:
       title: createastreamingsubscriptionrequest
       required:
-      - name
-      - type
-      - entities
+        - name
+        - type
+        - entities
       type: object
       properties:
         name:
           type: string
-          maxLength: 512          
+          maxLength: 512
         type:
           type: string
           enum: [subscription]
@@ -2028,19 +2091,19 @@ components:
         name: alias-name-of-application
         type: subscription
         entities:
-        - iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/*
+          - iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/*
     appendstreamingsubscriptionrequest:
       title: appendstreamingsubscriptionrequest
       required:
-      - name
-      - type
-      - entities
+        - name
+        - type
+        - entities
       type: object
       properties:
         name:
           type: string
-          maxLength: 512          
-          
+          maxLength: 512
+
         type:
           type: string
           enum: [subscription]
@@ -2057,19 +2120,19 @@ components:
         name: alias-name-of-application
         type: subscription
         entities:
-        - iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*
+          - iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*
     updatestreamingsubscriptionrequest:
       title: updatestreamingsubscriptionrequest
       required:
-      - name
-      - type
-      - entities
+        - name
+        - type
+        - entities
       type: object
       properties:
         name:
           type: string
-          maxLength: 512          
-          
+          maxLength: 512
+
         type:
           type: string
           enum: [subscription]
@@ -2086,13 +2149,13 @@ components:
         name: alias-name-of-application
         type: subscription
         entities:
-        - iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*
+          - iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*
     geospatial-circlerequest:
       title: geospatial-circlerequest
       required:
-      - type
-      - entities
-      - geoQ
+        - type
+        - entities
+        - geoQ
       type: object
       properties:
         type:
@@ -2107,39 +2170,39 @@ components:
       example:
         type: Query
         entities:
-        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         geoQ:
           geometry: Point
           coordinates:
-          - 25.319768
-          - 82.987988000000001
+            - 25.319768
+            - 82.987988000000001
           georel: near;maxDistance=1000
           geoproperty: geoJsonLocation
     Entity:
       title: Entity
       required:
-      - id
+        - id
       type: object
       properties:
         id:
           type: string
           maxLength: 512
-          description: 'A <b> valid IUDX ID </b> of the resource.  <br/> If the resource is a <b> protected resource </b> a <b> valid IUDX Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the IUDX ID of the resource and security scope of the resource can be obtained from the <b> IUDX catalogue server </b> .'     
+          description: 'A <b> valid data exchange ID </b> of the resource.  <br/> If the resource is a <b> protected resource </b> a <b> valid data exchange Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the data exchange ID of the resource and security scope of the resource can be obtained from the <b> DX(Data exchange) catalogue server </b> .'
       example:
         id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
     GeoQ:
       title: GeoQ
       required:
-      - geometry
-      - coordinates
-      - georel
-      - geoproperty
+        - geometry
+        - coordinates
+        - georel
+        - geoproperty
       type: object
       properties:
         geometry:
           type: string
           enum: [Point (or) point, Polygon (or) polygon, bbox, LineString (or) linestring]
-          description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b>'          
+          description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b>'
         coordinates:
           type: array
           minItems: 1
@@ -2150,25 +2213,25 @@ components:
         georel:
           type: string
           enum: [within, contains, intersects]
-          description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'          
+          description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'
         geoproperty:
           type: string
-          enum: [location]          
-          description: 'Name of the <b> geospatial </b> property in the <b> IUDX data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
+          enum: [location]
+          description: 'Name of the <b> geospatial </b> property in the <b> DX(Data exchange) data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
       example:
         geometry: Point
         coordinates:
-        - 25.319768
-        - 82.987988000000001
+          - 25.319768
+          - 82.987988000000001
         georel: near;maxDistance=1000
         geoproperty: geoJsonLocation
     geospatial-circlecount-request:
       title: geospatial-circle(count)request
       required:
-      - type
-      - entities
-      - geoQ
-      - options
+        - type
+        - entities
+        - geoQ
+        - options
       type: object
       properties:
         type:
@@ -2185,21 +2248,21 @@ components:
       example:
         type: Query
         entities:
-        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         geoQ:
           geometry: Point
           coordinates:
-          - 25.319768
-          - 82.987988000000001
+            - 25.319768
+            - 82.987988000000001
           georel: near;maxDistance=100
           geoproperty: geoJsonLocation
         options: count
     geospatial-polygonrequest:
       title: geospatial-polygonrequest
       required:
-      - type
-      - entities
-      - geoQ
+        - type
+        - entities
+        - geoQ
       type: object
       properties:
         type:
@@ -2214,10 +2277,10 @@ components:
     GeoQ2:
       title: GeoQ2
       required:
-      - geometry
-      - coordinates
-      - georel
-      - geoproperty
+        - geometry
+        - coordinates
+        - georel
+        - geoproperty
       type: object
       properties:
         geometry:
@@ -2235,9 +2298,9 @@ components:
     geospatial-linestringrequest:
       title: geospatial-linestringrequest
       required:
-      - type
-      - entities
-      - geoQ
+        - type
+        - entities
+        - geoQ
       type: object
       properties:
         type:
@@ -2252,24 +2315,24 @@ components:
       example:
         type: Query
         entities:
-        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         geoQ:
           geometry: linestring
           coordinates:
-          - - 82.973500000000001
-            - 25.3352
-          - - 82.989400000000003
-            - 25.345199999999998
-          - - 82.989999999999995
-            - 25.34
+            - - 82.973500000000001
+              - 25.3352
+            - - 82.989400000000003
+              - 25.345199999999998
+            - - 82.989999999999995
+              - 25.34
           georel: intersects
           geoproperty: geoJsonLocation
     geospatial-bboxrequest:
       title: geospatial-bboxrequest
       required:
-      - type
-      - entities
-      - geoQ
+        - type
+        - entities
+        - geoQ
       type: object
       properties:
         type:
@@ -2284,22 +2347,22 @@ components:
       example:
         type: Query
         entities:
-        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         geoQ:
           geometry: bbox
           coordinates:
-          - - 82.950000000000003
-            - 25.3567
-          - - 83.005300000000005
-            - 25
+            - - 82.950000000000003
+              - 25.3567
+            - - 83.005300000000005
+              - 25
           georel: within
           geoproperty: geoJsonLocation
     responsefilterrequest:
       title: responsefilterrequest
       required:
-      - type
-      - entities
-      - attrs
+        - type
+        - entities
+        - attrs
       type: object
       properties:
         type:
@@ -2314,15 +2377,15 @@ components:
       example:
         type: Query
         entities:
-        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         attrs: resource-id,latitude,longitude
     geospatial-circle-responsefilterrequest:
       title: geospatial-circle+responsefilterrequest
       required:
-      - type
-      - entities
-      - geoQ
-      - attrs
+        - type
+        - entities
+        - geoQ
+        - attrs
       type: object
       properties:
         type:
@@ -2339,21 +2402,21 @@ components:
       example:
         type: Query
         entities:
-        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         geoQ:
           geometry: Point
           coordinates:
-          - 25.319768
-          - 82.987988000000001
+            - 25.319768
+            - 82.987988000000001
           georel: near;maxDistance=1000
           geoproperty: geoJsonLocation
         attrs: resource-id,longitude,latitude
     temporal-betweenrequest:
       title: temporal-betweenrequest
       required:
-      - type
-      - entities
-      - temporalQ
+        - type
+        - entities
+        - temporalQ
       type: object
       properties:
         type:
@@ -2368,7 +2431,7 @@ components:
       example:
         type: Query
         entities:
-        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         temporalQ:
           timerel: between
           time: 2020-06-01T14:20:00Z
@@ -2377,22 +2440,22 @@ components:
     TemporalQ:
       title: TemporalQ
       required:
-      - timerel
-      - time
-      - endtime
-      - timeProperty
+        - timerel
+        - time
+        - endtime
+        - timeProperty
       type: object
       properties:
         timerel:
           type: string
-          enum: [between, before, after]    
-          description: 'The temporal relation type of <b>timerel</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> If the relation is <b> between </b> it should be always accomodated with a <b> time </b> and <b> endtime </b> property.  <br/> If the relation is <b> before </b> or <b> after </b>it should be always accomodated <b> only</b> with a <b> time </b> property.'      
+          enum: [between, before, after]
+          description: 'The temporal relation type of <b>timerel</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> If the relation is <b> between </b> it should be always accomodated with a <b> time </b> and <b> endtime </b> property.  <br/> If the relation is <b> before </b> or <b> after </b>it should be always accomodated <b> only</b> with a <b> time </b> property.'
         time:
           type: string
-          description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query.'
+          description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> data exchange currently accepts `IST` and `UTC` time zones for the temporal query.'
         endtime:
           type: string
-          description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> IUDX currently accepts `IST` and `UTC` time zones for the temporal query. <br/>If <b>timerel</b> is `between` time and endtime are mandatory'
+          description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> data exchange currently accepts `IST` and `UTC` time zones for the temporal query. <br/>If <b>timerel</b> is `between` time and endtime are mandatory'
         timeProperty:
           type: string
           enum: [observationDateTime]
@@ -2404,9 +2467,9 @@ components:
     time-beforerequest:
       title: time-beforerequest
       required:
-      - type
-      - entities
-      - temporalQ
+        - type
+        - entities
+        - temporalQ
       type: object
       properties:
         type:
@@ -2421,7 +2484,7 @@ components:
       example:
         type: Query
         entities:
-        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         temporalQ:
           timerel: before
           time: 2020-06-01T14:20:00Z
@@ -2429,9 +2492,9 @@ components:
     TemporalQ1:
       title: TemporalQ1
       required:
-      - timerel
-      - time
-      - timeProperty
+        - timerel
+        - time
+        - timeProperty
       type: object
       properties:
         timerel:
@@ -2447,11 +2510,11 @@ components:
     complex-geo-circle-time-filterrequest:
       title: complex-geo-(circle)+time+filterrequest
       required:
-      - type
-      - entities
-      - geoQ
-      - temporalQ
-      - attrs
+        - type
+        - entities
+        - geoQ
+        - temporalQ
+        - attrs
       type: object
       properties:
         type:
@@ -2469,11 +2532,11 @@ components:
         q:
           type: string
           maxLength: 512
-          description: 'The attribute query is used for querying <b> allowed quantitative</b> properties. <br/> Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`!=`, `==` operators. <br/> For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value, attribute != value and attribute == value. <br/> Allowed values for all operators is double. <br/> For the operator `==` if the query is on `id` then the only value allowed is an `IUDX ID` of a resource.'
+          description: 'The attribute query is used for querying <b> allowed quantitative</b> properties. <br/> Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`!=`, `==` operators. <br/> For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value, attribute != value and attribute == value. <br/> Allowed values for all operators is double. <br/> For the operator `==` if the query is on `id` then the only value allowed is an `data exchange ID` of a resource.'
         attrs:
           type: string
           maxLength: 512
-          description: 'The attrs parameter is used as an <b>application filter</b>. <br/> This is an optional parameter. It can be used to provide the list of attributes which the consumer expects to be responded by the server. <br/> The consumer is expected to provide <b>only</b> the attributes available in the <b>data descriptor</b> of the item in the IUDX Catalogue. <br/> Minimum of 1 and a Maximum of 5 attributes can be provided in a comma separated fashion.'
+          description: 'The attrs parameter is used as an <b>application filter</b>. <br/> This is an optional parameter. It can be used to provide the list of attributes which the consumer expects to be responded by the server. <br/> The consumer is expected to provide <b>only</b> the attributes available in the <b>data descriptor</b> of the item in the DX(Data exchange) Catalogue. <br/> Minimum of 1 and a Maximum of 5 attributes can be provided in a comma separated fashion.'
         options:
           type: string
           enum: [count]
@@ -2481,12 +2544,12 @@ components:
       example:
         type: Query
         entities:
-        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         geoQ:
           geometry: Point
           coordinates:
-          - 25.319768
-          - 82.987988000000001
+            - 25.319768
+            - 82.987988000000001
           georel: near;maxDistance=1000
           geoproperty: geoJsonLocation
         temporalQ:
@@ -2495,15 +2558,15 @@ components:
           endtime: 2020-06-03T15:00:00Z
           timeProperty: timeProperty
         attrs: resource-id,latitude,longitude
-    
+
     complex-geo-circle-filterrequest:
       title: complex-geo-(circle)+filterrequest
       required:
-      - type
-      - entities
-      - geoQ
-      - temporalQ
-      - attrs
+        - type
+        - entities
+        - geoQ
+        - temporalQ
+        - attrs
       type: object
       properties:
         type:
@@ -2519,11 +2582,11 @@ components:
         q:
           type: string
           maxLength: 512
-          description: 'The attribute query is used for querying <b> allowed quantitative</b> properties. <br/> Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`!=`, `==` operators. <br/> For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value, attribute != value and attribute == value. <br/> Allowed values for all operators is double. <br/> For the operator `==` if the query is on `id` then the only value allowed is an `IUDX ID` of a resource.'
+          description: 'The attribute query is used for querying <b> allowed quantitative</b> properties. <br/> Used to query on a value of a resource attribute using `<`,`>`,`<=`,`>=`,`!=`, `==` operators. <br/> For e.g, attribute > value, attribute < value, attribute >= value, attribute <= value, attribute != value and attribute == value. <br/> Allowed values for all operators is double. <br/> For the operator `==` if the query is on `id` then the only value allowed is an `data exchange ID` of a resource.'
         attrs:
           type: string
           maxLength: 512
-          description: 'The attrs parameter is used as an <b>application filter</b>. <br/> This is an optional parameter. It can be used to provide the list of attributes which the consumer expects to be responded by the server. <br/> The consumer is expected to provide <b>only</b> the attributes available in the <b>data descriptor</b> of the item in the IUDX Catalogue. <br/> Minimum of 1 and a Maximum of 5 attributes can be provided in a comma separated fashion.'
+          description: 'The attrs parameter is used as an <b>application filter</b>. <br/> This is an optional parameter. It can be used to provide the list of attributes which the consumer expects to be responded by the server. <br/> The consumer is expected to provide <b>only</b> the attributes available in the <b>data descriptor</b> of the item in the data exchange Catalogue. <br/> Minimum of 1 and a Maximum of 5 attributes can be provided in a comma separated fashion.'
         options:
           type: string
           enum: [count]
@@ -2531,12 +2594,12 @@ components:
       example:
         type: Query
         entities:
-        - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         geoQ:
           geometry: Point
           coordinates:
-          - 25.319768
-          - 82.987988000000001
+            - 25.319768
+            - 82.987988000000001
           georel: near;maxDistance=1000
           geoproperty: geoJsonLocation
         attrs: resource-id,latitude,longitude
@@ -2544,7 +2607,7 @@ components:
     registeradapterrequest:
       title: registeradapterrequest
       required:
-      - entities
+        - entities
       type: object
       properties:
         entities:
@@ -2553,7 +2616,7 @@ components:
             type: string
       example:
         entities:
-        - iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information
+          - iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information
 
     entityresponse:
       title: entityresponse
@@ -2579,18 +2642,18 @@ components:
         offset:
           type: string
         totalHits:
-          type: string  
+          type: string
 
       example:
         type: urn:dx:rs:success
         title: success
         results: [
-         { "id": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta",
-         "observationDateTime": "2020-06-01T14:20:00Z",
-         "trip_id": 23958368,
-         "route_id": 14U
-         }
-         ]
+          { "id": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta",
+            "observationDateTime": "2020-06-01T14:20:00Z",
+            "trip_id": 23958368,
+            "route_id": 14U
+          }
+        ]
         limit: 5000
         offset: 0
         totalHits: 9091
@@ -2598,12 +2661,12 @@ components:
     registeradapter:
       title: registeradapter
       required:
-      - username
-      - apiKey
-      - id
-      - URL
-      - port
-      - vHost
+        - username
+        - apiKey
+        - id
+        - URL
+        - port
+        - vHost
       type: object
       properties:
         type:
@@ -2629,21 +2692,21 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-         { "username": "iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d",
-        "apiKey": "123456",
-        "id": "iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application",
-        "URL": "databroker.iudx.io",
-        "port": "24567",
-        "vHost": "IUDX"
-         }
-         ]
+          { "username": "iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d",
+            "apiKey": "123456",
+            "id": "iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application",
+            "URL": "databroker.iudx.io",
+            "port": "24567",
+            "vHost": "IUDX"
+          }
+        ]
 
     retrieveadapter:
       title: retrieveadapter
       required:
-      - database
-      - adaptorLogs
-      - redis-latest
+        - database
+        - adaptorLogs
+        - redis-latest
       type: object
       properties:
         type:
@@ -2669,17 +2732,17 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-        {"database": ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"],
-        "adaptorLogs": ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.dataIssue", "iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.downstreamIssue", "iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.heartbeat"],
-        "redis-latest": ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]
-        }]
+          {"database": ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"],
+           "adaptorLogs": ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.dataIssue", "iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.downstreamIssue", "iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.heartbeat"],
+           "redis-latest": ["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]
+          }]
 
     deleteadapter:
       title: deleteadapter
       required:
-      - type
-      - title
-      - detail
+        - type
+        - title
+        - detail
       type: object
       properties:
         type:
@@ -2696,12 +2759,12 @@ components:
     createstreaming:
       title: createstreaming
       required:
-      - username
-      - apiKey
-      - id
-      - URL
-      - port
-      - vHost
+        - username
+        - apiKey
+        - id
+        - URL
+        - port
+        - vHost
       type: object
       properties:
         type:
@@ -2727,21 +2790,21 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-         { "username": "iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d",
-        "apiKey": "123456",
-        "id": "iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application",
-        "URL": "databroker.iudx.io",
-        "port": "24567",
-        "vHost": "IUDX"
-         }
-         ]
-        
+          { "username": "iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d",
+            "apiKey": "123456",
+            "id": "iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application",
+            "URL": "databroker.iudx.io",
+            "port": "24567",
+            "vHost": "IUDX"
+          }
+        ]
+
 
 
     retrievestreaming:
       title: retrievestreaming
       required:
-      - entities
+        - entities
       type: object
       properties:
         type:
@@ -2759,14 +2822,14 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-         { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"] 
-         }
-         ]
-        
+          { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]
+          }
+        ]
+
     appendstreaming:
       title: appendstreaming
       required:
-      - entities
+        - entities
       type: object
       properties:
         type:
@@ -2784,14 +2847,14 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-         { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"] 
-         }
-         ]  
-        
+          { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]
+          }
+        ]
+
     updatestreaming:
       title: updatestreaming
       required:
-      - entities
+        - entities
       type: object
       properties:
         type:
@@ -2809,16 +2872,16 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-         { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"] 
-         }
-         ]  
-                 
+          { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]
+          }
+        ]
+
     deletestreaming:
       title: deletestreaming
       required:
-      - type
-      - title
-      - detail
+        - type
+        - title
+        - detail
       type: object
       properties:
         type:
@@ -2831,11 +2894,11 @@ components:
         type: urn:dx:rs:success
         title: success
         detail: Subscription deleted
-        
+
     resetpassword:
       title: resetpassword
       required:
-      - apiKey
+        - apiKey
       type: object
       properties:
         type:
@@ -2853,17 +2916,17 @@ components:
         type: urn:dx:rs:success
         title: Successfully changed the password
         results: [
-         {"username":"asasdasd-asdasd-aada-d23342",
-         "apiKey":"asass8a7s"
-         }
-         ]
-        
+          {"username":"asasdasd-asdasd-aada-d23342",
+           "apiKey":"asass8a7s"
+          }
+        ]
+
     asyncsearchResponse:
       title: asyncsearch
       required:
-      - type
-      - title
-      - results
+        - type
+        - title
+        - results
       type: object
       properties:
         type:
@@ -2879,16 +2942,16 @@ components:
         type: urn:dx:rs:success
         title: query submitted successfully
         results: [
-         {"searchId":"asasdasd-asdasd-a353f-dasdas5"
-         }
-         ]
-         
+          {"searchId":"asasdasd-asdasd-a353f-dasdas5"
+          }
+        ]
+
     asyncsearchStatusComplete:
       title: complete
       required:
-      - type
-      - title
-      - details
+        - type
+        - title
+        - details
       type: object
       properties:
         type:
@@ -2910,19 +2973,19 @@ components:
         type: urn:dx:rs:success
         title: success
         results: [
-         {"status":"COMPLETE",
-         "searchId":"asasdasd-asdasd-aasasd-dasdasd",
-         "userId":"aefvsdfsdf-exvsf-cezxcwscs-adasd",
-         "file-download-url":"https://example.io/filename"
-         }
-         ]
-         
+          {"status":"COMPLETE",
+           "searchId":"asasdasd-asdasd-aasasd-dasdasd",
+           "userId":"aefvsdfsdf-exvsf-cezxcwscs-adasd",
+           "file-download-url":"https://example.io/filename"
+          }
+        ]
+
     asyncsearchStatusInprogress:
       title: inprogress
       required:
-      - type
-      - title
-      - details
+        - type
+        - title
+        - details
       type: object
       properties:
         type:
@@ -2942,17 +3005,17 @@ components:
         type: urn:dx:rs:success
         title: success
         results: [
-         {"status":"IN_PROGRESS",
-         "searchId":"asasdasd-asdasd-aasasd-dasdasd",
-         "userId":"aefvsdfsdf-exvsf-cezxcwscs-adasd"
-         }
-         ]
+          {"status":"IN_PROGRESS",
+           "searchId":"asasdasd-asdasd-aasasd-dasdasd",
+           "userId":"aefvsdfsdf-exvsf-cezxcwscs-adasd"
+          }
+        ]
     meteringApiResponse:
       title: meteringresponse
       required:
-      - type
-      - title
-      - details
+        - type
+        - title
+        - details
       type: object
       properties:
         type:
@@ -2962,41 +3025,41 @@ components:
         results:
           type: object
           properties:
-             id:
-               type: string
-             time:
-               type: string
-             api:
-               type: string
-             consumer:
-               type: string
+            id:
+              type: string
+            time:
+              type: string
+            api:
+              type: string
+            consumer:
+              type: string
       example:
         type: urn:dx:rs:success
         title: success
         results: [
-         {"id":"15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/",
-         "time":"2020-06-01T14:20:00Z",
-         "api":"/entities",
-         "consumer":"aefvsdfsdf-exvsf-cezxcwscs-adasd"
-         }
-         ]
+          {"id":"15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/",
+           "time":"2020-06-01T14:20:00Z",
+           "api":"/entities",
+           "consumer":"aefvsdfsdf-exvsf-cezxcwscs-adasd"
+          }
+        ]
     
     revokeToken:
       title: revoke-token
       required:
-      - sub
+        - sub
       type: object
       properties:
         sub:
           type: string
       example:
         sub: ase2132-2342323-2423
-        
+
     unique-attribute:
       title: unique-attribute
       required:
-      - id
-      - attribute
+        - id
+        - attribute
       type: object
       properties:
         id:
@@ -3020,7 +3083,7 @@ components:
         type: urn:dx:rs:success
         title: Success
         detail: Success
-          
+
     standardBadRequestErrorResponse:
       title: standardBadRequestErrorResponse
       properties:
@@ -3034,7 +3097,7 @@ components:
         type: urn:dx:rs:badRequest
         title: Bad Request Data
         detail: Empty response | Missing/Invalid temporal parameters | Missing/Invalid geo parameters | Count is not supported with filtering
-        
+
     standardInvalidTokenErrorResponse:
       title: standardInvalidTokenErrorResponse
       properties:
