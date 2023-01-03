@@ -3,6 +3,11 @@
 	"name": "RS Jenkins Pipeline",
 	"values": [
 		{
+			"key": "basePath",
+			"value": "ngsi-ld/v1",
+			"enabled": true
+		},
+		{
 			"key": "openResourceToken",
 			"value": "",
 			"type": "default",
