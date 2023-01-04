@@ -91,14 +91,14 @@ public class AuthHandlerTest {
     dxApiBasePath = "/ngsi-ld/v1";
     apis = Api.getInstance("/ngsi-ld/v1");
     return Stream.of(
-        Arguments.of(apis.getEntitiesUrlRegex(), apis.getEntitiesUrl() + "(.*)"),
-        Arguments.of(apis.getTemporalUrlRegex(), apis.getTemporalUrl() + "(.*)"),
-        Arguments.of(apis.getTemporalPostQueryUrlRegex(),
-            apis.getPostTemporalQueryPath() + "(.*)"),
-        Arguments.of(apis.getEntitiesPostQueryUrlRegex(),
-            apis.getPostEntitiesQueryPath() + "(.*)"),
-        Arguments.of(apis.getSubscriptionUrlRegex(),apis.getSubscriptionUrl()+ "(.*)"),
-        Arguments.of(apis.getAdapterUrlRegex(), dxApiBasePath + INGESTION_PATH + "(.*)"),
+//        Arguments.of(apis.getEntitiesUrlRegex(), apis.getEntitiesUrl() + "(.*)"),
+//        Arguments.of(apis.getTemporalUrlRegex(), apis.getTemporalUrl() + "(.*)"),
+//        Arguments.of(apis.getTemporalPostQueryUrlRegex(),
+//            apis.getPostTemporalQueryPath() + "(.*)"),
+//        Arguments.of(apis.getEntitiesPostQueryUrlRegex(),
+//            apis.getPostEntitiesQueryPath() + "(.*)"),
+//        Arguments.of(apis.getSubscriptionUrlRegex(),apis.getSubscriptionUrl()+ "(.*)"),
+//        Arguments.of(apis.getAdapterUrlRegex(), dxApiBasePath + INGESTION_PATH + "(.*)"),
         Arguments.of(Constants.EXCHANGE_URL_REGEX, IUDX_MANAGEMENT_URL + EXCHANGE_PATH + "(.*)"),
         Arguments.of(Constants.QUEUE_URL_REGEX, IUDX_MANAGEMENT_URL + QUEUE_PATH + "(.*)"),
         Arguments.of(Constants.VHOST_URL_REGEX, IUDX_MANAGEMENT_URL + VHOST + "(.*)"),

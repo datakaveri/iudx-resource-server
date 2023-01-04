@@ -194,13 +194,13 @@ public class AuthHandler implements Handler<RoutingContext> {
     return request.getParam(ID);
   }
 
-  private String getId4rmBody(RoutingContext context, String api) {
+  private String getId4rmBody(RoutingContext context, String endpoint) {
     JsonObject body = context.body().asJsonObject();
     String id = null;
     if (body != null) {
       JsonArray array = body.getJsonArray(JSON_ENTITIES);
       if (array != null) {
-        if (api.matches(ADAPTER_URL_REGEX) || api.matches(SUBSCRIPTION_URL_REGEX)) {
+        if (endpoint.matches(getpathRegex(api.getIngestionPath())) || endpoint.matches(getpathRegex(api.getSubscriptionUrl()))) {
           id = array.getString(0);
         } else {
           JsonObject json = array.getJsonObject(0);
@@ -223,17 +223,17 @@ public class AuthHandler implements Handler<RoutingContext> {
   private String getNormalizedPath(String url) {
     LOGGER.debug("URL : " + url);
     String path = null;
-    if (url.matches(api.getEntitiesUrlRegex())) {
+    if (url.matches(getpathRegex(api.getEntitiesUrl()))) {
       path = api.getEntitiesUrl();
-    } else if (url.matches(api.getTemporalUrlRegex())) {
+    } else if (url.matches(getpathRegex(api.getTemporalUrl()))) {
       path = api.getTemporalUrl();
-    } else if (url.matches(api.getTemporalPostQueryUrlRegex())) {
+    } else if (url.matches(getpathRegex(api.getPostTemporalQueryPath()))) {
       path = api.getPostTemporalQueryPath();
-    } else if (url.matches(api.getEntitiesPostQueryUrlRegex())) {
+    } else if (url.matches(getpathRegex(api.getPostEntitiesQueryPath()))) {
       path = api.getPostEntitiesQueryPath();
-    } else if (url.matches(api.getSubscriptionUrlRegex())) {
+    } else if (url.matches(getpathRegex(api.getSubscriptionUrl()))) {
       path = api.getSubscriptionUrl();
-    } else if (url.matches(api.getAdapterUrlRegex())) {
+    } else if (url.matches(getpathRegex(api.getIngestionPath()))) {
       path = api.getIngestionPath();
     } else if (url.matches(EXCHANGE_URL_REGEX)) {
       path = IUDX_MANAGEMENT_URL + EXCHANGE_PATH;
@@ -261,5 +261,9 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = api.getIudxAsyncStatusApi();
     }
     return path;
+  }
+  
+  private String getpathRegex(String path) {
+    return path+"(.*)";
   }
 }
