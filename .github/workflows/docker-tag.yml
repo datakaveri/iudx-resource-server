@@ -19,7 +19,7 @@ jobs:
         git config --global user.name 'jenkins-datakaveri'
         git config --global user.email "admin.jenkins@datakaveri.org"
         export newtag=`(head -n1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/rs-depl/versions | jq ' .[].metadata.container.tags[0]' ) | grep 4.5.0-alpha | sed -e 's/^"//' -e 's/"$//')`
-        git checkout -b rs-automatic-updates-$newtag
+        git checkout -b rs-automatic-updates/$newtag
         export oldtag=`yq -r .services.rs.image Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml | cut -d : -f 2`
         sed -i s/$oldtag/$newtag/g Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml
         export oldappversion=`yq -r .version K8s-deployment/Charts/resource-server/Chart.yaml`
@@ -28,7 +28,7 @@ jobs:
         sed -i s/$oldtag/$newtag/g K8s-deployment/Charts/resource-server/values.yaml
         git add Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml K8s-deployment/Charts/resource-server/values.yaml K8s-deployment/Charts/resource-server/Chart.yaml
         git commit --allow-empty -m "Updated RS image tag"
-        git push --set-upstream origin rs-automatic-updates-$newtag
+        git push --set-upstream origin rs-automatic-updates/$newtag
         echo ${{ secrets.JENKINS_UPDATE }} | gh auth login --with-token
         gh pr create -R datakaveri/iudx-deployment --base master --fill 
 
