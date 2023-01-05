@@ -34,13 +34,14 @@ jobs:
         git remote add upstream https://github.com/datakaveri/iudx-deployment.git
         git fetch upstream 4.0.0
         git checkout 4.0.0
-        git checkout -b rs-4.0.0-automatic-updates/$testtag
+        export newtag=`(head -n1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/rs-depl/versions | jq ' .[].metadata.container.tags[0]' ) | grep 4.0.0 | sed -e 's/^"//' -e 's/"$//')`
+        git checkout -b rs-4.0.0-automatic-updates/$newtag
         sed -i s/$oldtag/$newtag/g Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml
         sed -i s/$oldappversion/$newappversion/g K8s-deployment/Charts/resource-server/Chart.yaml
         sed -i s/$oldtag/$newtag/g K8s-deployment/Charts/resource-server/values.yaml
         git add Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml K8s-deployment/Charts/resource-server/values.yaml K8s-deployment/Charts/resource-server/Chart.yaml
         git commit --allow-empty -m "updated rs docker image tag to $newtag"
-        git push --set-upstream origin rs-4.0.0-automatic-updates/$testtag
+        git push --set-upstream origin rs-4.0.0-automatic-updates/$newtag
         gh pr create -R datakaveri/iudx-deployment --base 4.0.0 --fill 
 
 
