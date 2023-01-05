@@ -3,12 +3,6 @@ package iudx.resource.server.apiserver;
 import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
-import static iudx.resource.server.common.Api.ADMIN;
-import static iudx.resource.server.common.Api.ASYNC;
-import static iudx.resource.server.common.Api.INGESTION;
-import static iudx.resource.server.common.Api.MANAGEMENT;
-import static iudx.resource.server.common.Api.NGSILD_BASE;
-import static iudx.resource.server.common.Api.SUBSCRIPTION;
 import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
@@ -34,6 +28,7 @@ import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
+import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -53,6 +48,7 @@ import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.util.RequestType;
 import iudx.resource.server.apiserver.validation.ValidatorsHandlersFactory;
 import iudx.resource.server.authenticator.AuthenticationService;
+import iudx.resource.server.common.Api;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.archives.DatabaseService;
@@ -121,7 +117,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     private AuthenticationService authenticator;
     private ParamsValidator validator;
     private EncryptionService encryptionService;
-
+    private String dxApiBasePath;
+    private Api api;
     private LatestDataService latestDataService;
 
     /**
@@ -157,6 +154,10 @@ public class ApiServerVerticle extends AbstractVerticle {
         /* Create a reference to HazelcastClusterManager. */
 
         router = Router.router(vertx);
+
+        /* Get base path from config */
+        dxApiBasePath = config().getString("dxApiBasePath");
+        api = Api.getInstance(dxApiBasePath);
 
         /* Define the APIs, methods, endpoints and associated methods. */
 
@@ -206,46 +207,46 @@ public class ApiServerVerticle extends AbstractVerticle {
         /* NGSI-LD api endpoints */
         ValidationHandler entityValidationHandler = new ValidationHandler(vertx, RequestType.ENTITY);
         router
-                .get(NGSILD_ENTITIES_URL)
+                .get(api.getEntitiesUrl())
                 .handler(entityValidationHandler)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::handleEntitiesQuery)
                 .failureHandler(validationsFailureHandler);
 
         ValidationHandler latestValidationHandler = new ValidationHandler(vertx, RequestType.LATEST);
         router
-                .get(NGSILD_ENTITIES_URL + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
+                .get(api.getEntitiesUrl() + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
                 .handler(latestValidationHandler)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::handleLatestEntitiesQuery)
                 .failureHandler(validationsFailureHandler);
 
         ValidationHandler postTemporalValidationHandler =
                 new ValidationHandler(vertx, RequestType.POST_TEMPORAL);
         router
-                .post(NGSILD_POST_TEMPORAL_QUERY_PATH)
+                .post(api.getPostTemporalQueryPath())
                 .consumes(APPLICATION_JSON)
                 .handler(postTemporalValidationHandler)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::handlePostEntitiesQuery)
                 .failureHandler(validationsFailureHandler);
 
         ValidationHandler postEntitiesValidationHandler =
                 new ValidationHandler(vertx, RequestType.POST_ENTITIES);
         router
-                .post(NGSILD_POST_ENTITIES_QUERY_PATH)
+                .post(api.getPostEntitiesQueryPath())
                 .consumes(APPLICATION_JSON)
                 .handler(postEntitiesValidationHandler)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::handlePostEntitiesQuery)
                 .failureHandler(validationsFailureHandler);
 
         ValidationHandler temporalValidationHandler =
                 new ValidationHandler(vertx, RequestType.TEMPORAL);
         router
-                .get(NGSILD_TEMPORAL_URL)
+                .get(api.getTemporalUrl())
                 .handler(temporalValidationHandler)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::handleTemporalQuery)
                 .failureHandler(validationsFailureHandler);
 
@@ -253,89 +254,89 @@ public class ApiServerVerticle extends AbstractVerticle {
         ValidationHandler subsValidationHandler =
                 new ValidationHandler(vertx, RequestType.SUBSCRIPTION);
         router
-                .post(NGSILD_BASE.path + SUBSCRIPTION.path)
+                .post(api.getSubscriptionUrl())
                 .handler(subsValidationHandler)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::handleSubscriptions)
                 .failureHandler(validationsFailureHandler);
         // append sub
         router
-                .patch(NGSILD_BASE.path + SUBSCRIPTION.path + "/:userid/:alias")
+                .patch(api.getSubscriptionUrl() + "/:userid/:alias")
                 .handler(subsValidationHandler)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::appendSubscription)
                 .failureHandler(validationsFailureHandler);
         // update sub
         router
-                .put(NGSILD_BASE.path + SUBSCRIPTION.path + "/:userid/:alias")
+                .put(api.getSubscriptionUrl() + "/:userid/:alias")
                 .handler(subsValidationHandler)
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::updateSubscription)
                 .failureHandler(validationsFailureHandler);
         // get sub
         router
-                .get(NGSILD_BASE.path + SUBSCRIPTION.path + "/:userid/:alias")
-                .handler(AuthHandler.create(vertx))
+                .get(api.getSubscriptionUrl() + "/:userid/:alias")
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::getSubscription);
         // delete sub
         router
-                .delete(NGSILD_BASE.path + SUBSCRIPTION.path + "/:userid/:alias")
-                .handler(AuthHandler.create(vertx))
+                .delete(api.getSubscriptionUrl() + "/:userid/:alias")
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::deleteSubscription);
 
         /* Management Api endpoints */
         // Exchange
 
         router
-                .get(IUDX_CONSUMER_AUDIT_URL)
-                .handler(AuthHandler.create(vertx))
+                .get(api.getIudxConsumerAuditUrl())
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::getConsumerAuditDetail);
         router
-                .get(IUDX_PROVIDER_AUDIT_URL)
-                .handler(AuthHandler.create(vertx))
+                .get(api.getIudxProviderAuditUrl())
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::getProviderAuditDetail);
 
         // adapter
         router
-                .post(NGSILD_BASE.path + INGESTION.path)
-                .handler(AuthHandler.create(vertx))
+                .post(api.getIngestionPath())
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::registerAdapter);
         router
-                .delete(NGSILD_BASE.path + INGESTION.path
+                .delete(api.getIngestionPath()
                         + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::deleteAdapter);
         router
                 .delete(
-                        NGSILD_BASE.path + INGESTION.path + "/:domain/:userSha/:resourceServer/:resourceGroup")
-                .handler(AuthHandler.create(vertx))
+                        api.getIngestionPath() + "/:domain/:userSha/:resourceServer/:resourceGroup")
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::deleteAdapter);
         router
-                .get(NGSILD_BASE.path + INGESTION.path
+                .get(api.getIngestionPath()
                         + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
-                .handler(AuthHandler.create(vertx))
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::getAdapterDetails);
 
         router
-                .get(NGSILD_BASE.path + INGESTION.path + "/:domain/:userSha/:resourceServer/:resourceGroup")
-                .handler(AuthHandler.create(vertx))
+                .get(api.getIngestionPath() + "/:domain/:userSha/:resourceServer/:resourceGroup")
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::getAdapterDetails);
 
         router
-                .post(NGSILD_BASE.path + INGESTION.path + "/heartbeat")
-                .handler(AuthHandler.create(vertx))
+                .post(api.getIngestionPath() + "/heartbeat")
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::publishHeartbeat);
         router
-                .post(NGSILD_BASE.path + INGESTION.path + "/downstreamissue")
-                .handler(AuthHandler.create(vertx))
+                .post(api.getIngestionPath() + "/downstreamissue")
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::publishDownstreamIssue);
         router
-                .post(NGSILD_BASE.path + INGESTION.path + "/dataissue")
-                .handler(AuthHandler.create(vertx))
+                .post(api.getIngestionPath() + "/dataissue")
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::publishDataIssue);
         router
-                .post(NGSILD_BASE.path + INGESTION.path + "/entities")
-                .handler(AuthHandler.create(vertx))
+                .post(api.getIngestionPath() + "/entities")
+                .handler(AuthHandler.create(vertx,api))
                 .handler(this::publishDataFromAdapter);
 
         /** Documentation routes */
@@ -411,15 +412,15 @@ public class ApiServerVerticle extends AbstractVerticle {
         encryptionService = EncryptionService.createProxy(vertx, ENCRYPTION_SERVICE_ADDRESS);
 
         router
-                .route(NGSILD_BASE.path + ASYNC.path + "/*")
-                .subRouter(new AsyncRestApi(vertx, router, config()).init());
+                .route(api.getAsyncPath() + "/*")
+                .subRouter(new AsyncRestApi(vertx, router, config(), api).init());
 
-        router.route(ADMIN.path + "/*").subRouter(new AdminRestApi(vertx, router).init());
+        router.route(ADMIN + "/*").subRouter(new AdminRestApi(vertx, router, api).init());
 
         // @Deprecated : will be removed in future
         router
-                .mountSubRouter(MANAGEMENT.path, new ManagementRestApi(vertx, databroker, postgresService,
-                        meteringService, managementApi).init());
+                .mountSubRouter(IUDX_MANAGEMENT_URL, new ManagementRestApi(vertx, databroker, postgresService,
+                        meteringService, managementApi,api).init());
 
         router.route().last().handler(requestHandler -> {
             HttpServerResponse response = requestHandler.response();
@@ -438,10 +439,17 @@ public class ApiServerVerticle extends AbstractVerticle {
                     .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
                             .toString());
         });
-
+        /* Print the deployed endpoints */
+        printDeployedEndpoints(router);
         LOGGER.info("API server deployed on :" + serverOptions.getPort());
     }
-
+    private void printDeployedEndpoints(Router router) {
+        for (Route route : router.getRoutes()) {
+            if (route.getPath() != null) {
+                LOGGER.info("API Endpoints deployed : " + route.methods() + " : " + route.getPath());
+            }
+        }
+    }
     private Future<Void> getConsumerAuditDetail(RoutingContext routingContext) {
         LOGGER.trace("Info: getConsumerAuditDetail Started.");
         Promise<Void> promise = Promise.promise();

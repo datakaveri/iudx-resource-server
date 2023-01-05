@@ -1,30 +1,7 @@
 package iudx.resource.server.apiserver;
 
 import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
-import static iudx.resource.server.apiserver.util.Constants.API;
-import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
-import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
-import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.EXCHANGE_ID;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_HOST;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
-import static iudx.resource.server.apiserver.util.Constants.ID;
-import static iudx.resource.server.apiserver.util.Constants.JSON_EXCHANGE_NAME;
-import static iudx.resource.server.apiserver.util.Constants.JSON_INSTANCEID;
-import static iudx.resource.server.apiserver.util.Constants.JSON_QUEUE_NAME;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.JSON_VHOST;
-import static iudx.resource.server.apiserver.util.Constants.JSON_VHOST_ID;
-import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_EXCHANGE_NAME;
-import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
-import static iudx.resource.server.apiserver.util.Constants.USER_ID;
-import static iudx.resource.server.common.Api.BIND;
-import static iudx.resource.server.common.Api.EXCHANGE;
-import static iudx.resource.server.common.Api.QUEUE;
-import static iudx.resource.server.common.Api.RESET_PWD;
-import static iudx.resource.server.common.Api.UNBIND;
-import static iudx.resource.server.common.Api.VHOST;
+import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
 import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
@@ -32,12 +9,15 @@ import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN_URN;
 import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN_URN;
 import static iudx.resource.server.common.Util.isValidName;
+import static iudx.resource.server.databroker.util.Constants.QUEUE;
 import static iudx.resource.server.metering.util.Constants.EPOCH_TIME;
 import static iudx.resource.server.metering.util.Constants.ISO_TIME;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+
+import iudx.resource.server.common.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.Future;
@@ -74,17 +54,19 @@ public class ManagementRestApi {
   private final PostgresService pgService;
   private final MeteringService auditService;
   private final ManagementApi managementApi;
+  private final Api api;
 
   // TODO : remove managementApi class dependency [delete Management API class and call services
   // directly]
   ManagementRestApi(Vertx vertx, DataBrokerService brokerService, PostgresService pgService,
-      MeteringService auditService, ManagementApi mgmtApi) {
+      MeteringService auditService, ManagementApi mgmtApi, Api api) {
     this.vertx = vertx;
     this.RMQbrokerService = brokerService;
     this.pgService = pgService;
     this.auditService = auditService;
     this.managementApi = mgmtApi;
     this.router = Router.router(vertx);
+    this.api = api;
   }
 
   public Router init() {
@@ -92,54 +74,54 @@ public class ManagementRestApi {
     /* Management Api endpoints */
     // Exchange
     router
-        .post(EXCHANGE.path)
-        .handler(AuthHandler.create(vertx))
+        .post(EXCHANGE_PATH)
+        .handler(AuthHandler.create(vertx,api))
         .handler(this::createExchange);
     router
-        .delete(EXCHANGE.path + "/:exId")
-        .handler(AuthHandler.create(vertx))
+        .delete(EXCHANGE_PATH + "/:exId")
+        .handler(AuthHandler.create(vertx,api))
         .handler(this::deleteExchange);
     router
-        .get(EXCHANGE.path + "/:exId")
-        .handler(AuthHandler.create(vertx))
+        .get(EXCHANGE_PATH + "/:exId")
+        .handler(AuthHandler.create(vertx,api))
         .handler(this::getExchangeDetails);
     // Queue
     router
-        .post(QUEUE.path)
-        .handler(AuthHandler.create(vertx))
+        .post(QUEUE_PATH)
+        .handler(AuthHandler.create(vertx,api))
         .handler(this::createQueue);
     router
-        .delete(QUEUE.path + "/:queueId")
-        .handler(AuthHandler.create(vertx))
+        .delete(QUEUE_PATH + "/:queueId")
+        .handler(AuthHandler.create(vertx,api))
         .handler(this::deleteQueue);
     router
-        .get(QUEUE.path + "/:queueId")
-        .handler(AuthHandler.create(vertx))
+        .get(QUEUE_PATH + "/:queueId")
+        .handler(AuthHandler.create(vertx,api))
         .handler(this::getQueueDetails);
     // bind
     router
-        .post(BIND.path)
-        .handler(AuthHandler.create(vertx))
+        .post(BIND)
+        .handler(AuthHandler.create(vertx,api))
         .handler(this::bindQueue2Exchange);
     // unbind
     router
-        .post(UNBIND.path)
-        .handler(AuthHandler.create(vertx))
+        .post(UNBIND)
+        .handler(AuthHandler.create(vertx,api))
         .handler(this::unbindQueue2Exchange);
     // vHost
     router
-        .post(VHOST.path)
-        .handler(AuthHandler.create(vertx))
+        .post(VHOST)
+        .handler(AuthHandler.create(vertx,api))
         .handler(this::createVHost);
     router
-        .delete(VHOST.path + "/:vhostId")
-        .handler(AuthHandler.create(vertx))
+        .delete(VHOST + "/:vhostId")
+        .handler(AuthHandler.create(vertx,api))
         .handler(this::deleteVHost);
     
 
     router
-        .post(RESET_PWD.path)
-        .handler(AuthHandler.create(vertx))
+        .post(RESET_PWD)
+        .handler(AuthHandler.create(vertx,api))
         .handler(this::resetPassword);
 
     return router;

@@ -1,73 +1,14 @@
 package iudx.resource.server.apiserver.handlers;
 
-import static iudx.resource.server.apiserver.util.Constants.ADAPTER_URL_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
-import static iudx.resource.server.apiserver.util.Constants.API_METHOD;
-import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
-import static iudx.resource.server.apiserver.util.Constants.BIND_URL_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.DOMAIN;
-import static iudx.resource.server.apiserver.util.Constants.ENTITIES_POST_QUERY_URL_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.ENTITITES_URL_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.EXCHANGE_URL_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.EXPIRY;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
-import static iudx.resource.server.apiserver.util.Constants.ID;
-import static iudx.resource.server.apiserver.util.Constants.IDS;
-import static iudx.resource.server.apiserver.util.Constants.ID_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.IID;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_ASYNC_SEARCH;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_ASYNC_STATUS;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_CONSUMER_AUDIT_URL;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_PROVIDER_AUDIT_URL;
-import static iudx.resource.server.apiserver.util.Constants.JSON_ALIAS;
-import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
-import static iudx.resource.server.apiserver.util.Constants.JSON_ENTITIES;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_BASE_PATH;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_ENTITIES_URL;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_ENTITIES_QUERY_PATH;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_TEMPORAL_QUERY_PATH;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_SUBSCRIPTION_URL;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
-import static iudx.resource.server.apiserver.util.Constants.QUEUE_URL_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.RESET_URL_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
-import static iudx.resource.server.apiserver.util.Constants.RESOURCE_NAME;
-import static iudx.resource.server.apiserver.util.Constants.RESOURCE_SERVER;
-import static iudx.resource.server.apiserver.util.Constants.REVOKE_TOKEN_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_URL_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.TEMPORAL_POST_QUERY_URL_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.TEMPORAL_URL_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.UNBIND_URL_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.UNIQUE_ATTR_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.USERSHA;
-import static iudx.resource.server.apiserver.util.Constants.USER_ID;
-import static iudx.resource.server.apiserver.util.Constants.VHOST_URL_REGEX;
-import static iudx.resource.server.apiserver.util.Constants.bypassEndpoint;
-import static iudx.resource.server.common.Api.ADMIN;
-import static iudx.resource.server.common.Api.ASYNC;
-import static iudx.resource.server.common.Api.BIND;
-import static iudx.resource.server.common.Api.EXCHANGE;
-import static iudx.resource.server.common.Api.INGESTION;
-import static iudx.resource.server.common.Api.MANAGEMENT;
-import static iudx.resource.server.common.Api.NGSILD_BASE;
-import static iudx.resource.server.common.Api.QUEUE;
-import static iudx.resource.server.common.Api.RESET_PWD;
-import static iudx.resource.server.common.Api.RESOURCE_ATTRIBS;
-import static iudx.resource.server.common.Api.REVOKE_TOKEN;
-import static iudx.resource.server.common.Api.SEARCH;
-import static iudx.resource.server.common.Api.STATUS;
-import static iudx.resource.server.common.Api.SUBSCRIPTION;
-import static iudx.resource.server.common.Api.UNBIND;
-import static iudx.resource.server.common.Api.VHOST;
+import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.Constants.AUTH_SERVICE_ADDRESS;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN_URN;
 import static iudx.resource.server.common.ResponseUrn.RESOURCE_NOT_FOUND_URN;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import iudx.resource.server.common.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.Handler;
@@ -92,9 +33,11 @@ public class AuthHandler implements Handler<RoutingContext> {
   private final String AUTH_INFO = "authInfo";
   private final List<String> noAuthRequired = bypassEndpoint;
   private HttpServerRequest request;
+  private static Api api;
 
-  public static AuthHandler create(Vertx vertx) {
+  public static AuthHandler create(Vertx vertx, Api apis) {
     authenticator = AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
+    api = apis;
     return new AuthHandler();
   }
 
@@ -140,7 +83,7 @@ public class AuthHandler implements Handler<RoutingContext> {
       ids.add(i);
     }
 
-    if (path.equals(MANAGEMENT.path + INGESTION.path)
+    if (path.equals(IUDX_MANAGEMENT_URL + INGESTION_PATH)
         && HttpMethod.POST.name().equalsIgnoreCase(method)) {
       ids = requestJson.getJsonArray(JSON_ENTITIES);
     }
@@ -213,7 +156,7 @@ public class AuthHandler implements Handler<RoutingContext> {
         id = bodyId;
       }
     }
-    if (path.matches(NGSILD_BASE.path + SUBSCRIPTION.path)
+    if (path.matches(api.getSubscriptionUrl())
         && (!method.equalsIgnoreCase("GET") || !method.equalsIgnoreCase("DELETE"))) {
       id = bodyId;
     }
@@ -251,13 +194,13 @@ public class AuthHandler implements Handler<RoutingContext> {
     return request.getParam(ID);
   }
 
-  private String getId4rmBody(RoutingContext context, String api) {
+  private String getId4rmBody(RoutingContext context, String endpoint) {
     JsonObject body = context.body().asJsonObject();
     String id = null;
     if (body != null) {
       JsonArray array = body.getJsonArray(JSON_ENTITIES);
       if (array != null) {
-        if (api.matches(ADAPTER_URL_REGEX) || api.matches(SUBSCRIPTION_URL_REGEX)) {
+        if (endpoint.matches(getpathRegex(api.getIngestionPath())) || endpoint.matches(getpathRegex(api.getSubscriptionUrl()))) {
           id = array.getString(0);
         } else {
           JsonObject json = array.getJsonObject(0);
@@ -280,43 +223,47 @@ public class AuthHandler implements Handler<RoutingContext> {
   private String getNormalizedPath(String url) {
     LOGGER.debug("URL : " + url);
     String path = null;
-    if (url.matches(ENTITITES_URL_REGEX)) {
-      path = NGSILD_ENTITIES_URL;
-    } else if (url.matches(TEMPORAL_URL_REGEX)) {
-      path = NGSILD_TEMPORAL_URL;
-    } else if (url.matches(TEMPORAL_POST_QUERY_URL_REGEX)) {
-      path = NGSILD_POST_TEMPORAL_QUERY_PATH;
-    } else if (url.matches(ENTITIES_POST_QUERY_URL_REGEX)) {
-      path = NGSILD_POST_ENTITIES_QUERY_PATH;
-    } else if (url.matches(SUBSCRIPTION_URL_REGEX)) {
-      path = NGSILD_SUBSCRIPTION_URL;
-    } else if (url.matches(ADAPTER_URL_REGEX)) {
-      path = NGSILD_BASE.path + INGESTION.path;
+    if (url.matches(getpathRegex(api.getEntitiesUrl()))) {
+      path = api.getEntitiesUrl();
+    } else if (url.matches(getpathRegex(api.getTemporalUrl()))) {
+      path = api.getTemporalUrl();
+    } else if (url.matches(getpathRegex(api.getPostTemporalQueryPath()))) {
+      path = api.getPostTemporalQueryPath();
+    } else if (url.matches(getpathRegex(api.getPostEntitiesQueryPath()))) {
+      path = api.getPostEntitiesQueryPath();
+    } else if (url.matches(getpathRegex(api.getSubscriptionUrl()))) {
+      path = api.getSubscriptionUrl();
+    } else if (url.matches(getpathRegex(api.getIngestionPath()))) {
+      path = api.getIngestionPath();
     } else if (url.matches(EXCHANGE_URL_REGEX)) {
-      path = MANAGEMENT.path + EXCHANGE.path;
+      path = IUDX_MANAGEMENT_URL + EXCHANGE_PATH;
     } else if (url.matches(QUEUE_URL_REGEX)) {
-      path = MANAGEMENT.path + QUEUE.path;
+      path = IUDX_MANAGEMENT_URL + QUEUE_PATH;
     } else if (url.matches(VHOST_URL_REGEX)) {
-      path = MANAGEMENT.path + VHOST.path;
+      path = IUDX_MANAGEMENT_URL + VHOST;
     } else if (url.matches(BIND_URL_REGEX)) {
-      path = MANAGEMENT.path + BIND.path;
+      path = IUDX_MANAGEMENT_URL + BIND;
     } else if (url.matches(UNBIND_URL_REGEX)) {
-      path = MANAGEMENT.path + UNBIND.path;
+      path = IUDX_MANAGEMENT_URL + UNBIND;
     } else if (url.matches(RESET_URL_REGEX)) {
-      path = MANAGEMENT.path + RESET_PWD.path;
+      path = IUDX_MANAGEMENT_URL + RESET_PWD;
     } else if (url.matches(REVOKE_TOKEN_REGEX)) {
-      path = ADMIN.path + REVOKE_TOKEN.path;
+      path = ADMIN + REVOKE_TOKEN;
     } else if (url.matches(UNIQUE_ATTR_REGEX)) {
-      path = ADMIN.path + RESOURCE_ATTRIBS.path;
-    } else if (url.matches(IUDX_CONSUMER_AUDIT_URL)) {
-      path = IUDX_CONSUMER_AUDIT_URL;
-    } else if (url.matches(IUDX_PROVIDER_AUDIT_URL)) {
-      path = IUDX_PROVIDER_AUDIT_URL;
-    } else if (url.matches(IUDX_ASYNC_SEARCH)) {
-      path = NGSILD_BASE_PATH + ASYNC.path + SEARCH.path;
+      path = ADMIN + RESOURCE_ATTRIBS;
+    } else if (url.matches(api.getIudxConsumerAuditUrl())) {
+      path = api.getIudxConsumerAuditUrl();
+    } else if (url.matches(api.getIudxProviderAuditUrl())) {
+      path = api.getIudxProviderAuditUrl();
+    } else if (url.matches(api.getIudxAsyncSearchApi())) {
+      path = api.getIudxAsyncSearchApi();
     } else if (url.matches(IUDX_ASYNC_STATUS)) {
-      path = NGSILD_BASE_PATH + ASYNC.path + STATUS.path;
+      path = api.getIudxAsyncStatusApi();
     }
     return path;
+  }
+  
+  private String getpathRegex(String path) {
+    return path+"(.*)";
   }
 }

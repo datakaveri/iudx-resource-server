@@ -14,20 +14,20 @@ public class Constants {
   public static final String PUBLIC_TOKEN = "public";
   public static final List<String> OPEN_ENDPOINTS =
       List.of(
-          "/ngsi-ld/v1/temporal/entities",
-          "/ngsi-ld/v1/entities",
-          "/ngsi-ld/v1/entityOperations/query",
-          "/ngsi-ld/v1/temporal/entityOperations/query",
-          "/ngsi-ld/v1/async/status",
-          "/ngsi-ld/v1/consumer/audit",
-          "/ngsi-ld/v1/async/search");
+          "/temporal/entities",
+          "/entities",
+          "/entityOperations/query",
+          "/temporal/entityOperations/query",
+          "/async/status",
+          "/consumer/audit",
+          "/async/search");
   public static final String AUTH_TIP_PATH = "/auth/v1/token/introspect";
   public static final List<String> CLOSED_ENDPOINTS =
-      List.of("/ngsi-ld/v1/ingestion", "/ngsi-ld/v1/subscription");
+      List.of("/ingestion", "/subscription");
   public static final List<String> MANAGEMENT_ENDPOINTS =
       List.of("/management/queue", "/management/exchange", "/management/vhost");
-  public static final String ADAPTER_ENDPOINT = "/ngsi-ld/v1/ingestion";
-  public static final String SUBSCRIPTION_ENDPOINT = "/ngsi-ld/v1/subscription";
+  public static final String ADAPTER_ENDPOINT = "/ingestion";
+  public static final String SUBSCRIPTION_ENDPOINT = "/subscription";
   public static final String MANAGEMENT_ENDPOINT = "/management/*";
   public static final long CACHE_TIMEOUT_AMOUNT = 30;
   public static final ChronoUnit TIP_CACHE_TIMEOUT_UNIT = ChronoUnit.MINUTES;

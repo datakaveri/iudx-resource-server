@@ -3,6 +3,8 @@ package iudx.resource.server.authenticator.authorization;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import iudx.resource.server.common.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.JsonObject;
@@ -13,8 +15,32 @@ public class ProviderAuthStrategy implements AuthorizationStrategy {
   private static final Logger LOGGER = LogManager.getLogger(ProviderAuthStrategy.class);
 
   static Map<String, List<AuthorizationRequest>> providerAuthorizationRules = new HashMap<>();
+  private final Api api;
+  private static volatile ProviderAuthStrategy instance;
 
-  static {
+
+  private ProviderAuthStrategy(Api api)
+  {
+    this.api = api;
+    buildPermissions(api);
+  }
+  public static ProviderAuthStrategy getInstance(Api api)
+  {
+
+    if(instance == null)
+    {
+      synchronized (ProviderAuthStrategy.class)
+      {
+        if(instance == null)
+        {
+          instance = new ProviderAuthStrategy(api);
+        }
+      }
+    }
+    return instance;
+
+  }
+  private void buildPermissions(Api api) {
     // provider allowed to access all endpoints
   }
 

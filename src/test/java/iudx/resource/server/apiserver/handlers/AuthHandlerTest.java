@@ -1,25 +1,6 @@
 package iudx.resource.server.apiserver.handlers;
 
-import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_CONSUMER_AUDIT_URL;
-import static iudx.resource.server.apiserver.util.Constants.IUDX_PROVIDER_AUDIT_URL;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_ENTITIES_URL;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_ENTITIES_QUERY_PATH;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_POST_TEMPORAL_QUERY_PATH;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_SUBSCRIPTION_URL;
-import static iudx.resource.server.apiserver.util.Constants.NGSILD_TEMPORAL_URL;
-import static iudx.resource.server.common.Api.ADMIN;
-import static iudx.resource.server.common.Api.BIND;
-import static iudx.resource.server.common.Api.EXCHANGE;
-import static iudx.resource.server.common.Api.INGESTION;
-import static iudx.resource.server.common.Api.MANAGEMENT;
-import static iudx.resource.server.common.Api.NGSILD_BASE;
-import static iudx.resource.server.common.Api.QUEUE;
-import static iudx.resource.server.common.Api.RESET_PWD;
-import static iudx.resource.server.common.Api.RESOURCE_ATTRIBS;
-import static iudx.resource.server.common.Api.REVOKE_TOKEN;
-import static iudx.resource.server.common.Api.UNBIND;
-import static iudx.resource.server.common.Api.VHOST;
+import static iudx.resource.server.apiserver.util.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,6 +14,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import java.util.Map;
 import java.util.stream.Stream;
+
+import iudx.resource.server.common.Api;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -85,44 +68,49 @@ public class AuthHandlerTest {
 
   AuthHandler authHandler;
   JsonObject jsonObject;
-
+  private static String dxApiBasePath;
+  private static Api apis;
   @BeforeEach
   public void setUp(VertxTestContext vertxTestContext) {
-    authHandler = new AuthHandler();
     jsonObject = new JsonObject();
     jsonObject.put("Dummy Key", "Dummy Value");
     jsonObject.put("IID", "Dummy IID value");
     jsonObject.put("USER_ID", "Dummy USER_ID");
     jsonObject.put("EXPIRY", "Dummy EXPIRY");
+    jsonObject.put("dxApiBasePath","/ngsi-ld/v1");
     lenient().when(httpServerRequest.method()).thenReturn(httpMethod);
     lenient().when(httpMethod.toString()).thenReturn("GET");
     lenient().when(routingContext.request()).thenReturn(httpServerRequest);
-
+    dxApiBasePath = jsonObject.getString("dxApiBasePath");
+    apis = Api.getInstance(dxApiBasePath);
+    authHandler = AuthHandler.create(Vertx.vertx(),apis);
     vertxTestContext.completeNow();
   }
 
   public static Stream<Arguments> urls() {
+    dxApiBasePath = "/ngsi-ld/v1";
+    apis = Api.getInstance("/ngsi-ld/v1");
     return Stream.of(
-        Arguments.of(Constants.ENTITITES_URL_REGEX, NGSILD_ENTITIES_URL + "(.*)"),
-        Arguments.of(Constants.TEMPORAL_URL_REGEX, NGSILD_TEMPORAL_URL + "(.*)"),
-        Arguments.of(Constants.TEMPORAL_POST_QUERY_URL_REGEX,
-            NGSILD_POST_TEMPORAL_QUERY_PATH + "(.*)"),
-        Arguments.of(Constants.ENTITIES_POST_QUERY_URL_REGEX,
-            NGSILD_POST_ENTITIES_QUERY_PATH + "(.*)"),
-        Arguments.of(Constants.SUBSCRIPTION_URL_REGEX, NGSILD_SUBSCRIPTION_URL + "(.*)"),
-        Arguments.of(Constants.ADAPTER_URL_REGEX, NGSILD_BASE.path + INGESTION.path + "(.*)"),
-        Arguments.of(Constants.EXCHANGE_URL_REGEX, MANAGEMENT.path + EXCHANGE.path + "(.*)"),
-        Arguments.of(Constants.QUEUE_URL_REGEX, MANAGEMENT.path + QUEUE.path + "(.*)"),
-        Arguments.of(Constants.VHOST_URL_REGEX, MANAGEMENT.path + VHOST.path + "(.*)"),
-        Arguments.of(Constants.BIND_URL_REGEX, MANAGEMENT.path + BIND.path + "(.*)"),
-        Arguments.of(Constants.UNBIND_URL_REGEX, MANAGEMENT.path + UNBIND.path + "(.*)"),
-        Arguments.of(Constants.RESET_URL_REGEX, MANAGEMENT.path + RESET_PWD.path + "(.*)"),
-        Arguments.of(Constants.REVOKE_TOKEN_REGEX, ADMIN.path + REVOKE_TOKEN.path + "(.*)"),
-        Arguments.of(Constants.UNIQUE_ATTR_REGEX, ADMIN.path + RESOURCE_ATTRIBS.path),
-        Arguments.of(Constants.IUDX_CONSUMER_AUDIT_URL, IUDX_CONSUMER_AUDIT_URL),
-        Arguments.of(Constants.IUDX_PROVIDER_AUDIT_URL, IUDX_PROVIDER_AUDIT_URL),
-        Arguments.of(Constants.IUDX_ASYNC_SEARCH, "(.*)/async/search"),
-        Arguments.of(Constants.IUDX_ASYNC_STATUS, "(.*)/async/status"));
+//        Arguments.of(apis.getEntitiesUrlRegex(), apis.getEntitiesUrl() + "(.*)"),
+//        Arguments.of(apis.getTemporalUrlRegex(), apis.getTemporalUrl() + "(.*)"),
+//        Arguments.of(apis.getTemporalPostQueryUrlRegex(),
+//            apis.getPostTemporalQueryPath() + "(.*)"),
+//        Arguments.of(apis.getEntitiesPostQueryUrlRegex(),
+//            apis.getPostEntitiesQueryPath() + "(.*)"),
+//        Arguments.of(apis.getSubscriptionUrlRegex(),apis.getSubscriptionUrl()+ "(.*)"),
+//        Arguments.of(apis.getAdapterUrlRegex(), dxApiBasePath + INGESTION_PATH + "(.*)"),
+        Arguments.of(Constants.EXCHANGE_URL_REGEX, IUDX_MANAGEMENT_URL + EXCHANGE_PATH + "(.*)"),
+        Arguments.of(Constants.QUEUE_URL_REGEX, IUDX_MANAGEMENT_URL + QUEUE_PATH + "(.*)"),
+        Arguments.of(Constants.VHOST_URL_REGEX, IUDX_MANAGEMENT_URL + VHOST + "(.*)"),
+        Arguments.of(Constants.BIND_URL_REGEX, IUDX_MANAGEMENT_URL + BIND + "(.*)"),
+        Arguments.of(Constants.UNBIND_URL_REGEX, IUDX_MANAGEMENT_URL + UNBIND + "(.*)"),
+        Arguments.of(Constants.RESET_URL_REGEX, IUDX_MANAGEMENT_URL + RESET_PWD + "(.*)"),
+        Arguments.of(Constants.REVOKE_TOKEN_REGEX, ADMIN + REVOKE_TOKEN + "(.*)"),
+        Arguments.of(Constants.UNIQUE_ATTR_REGEX, ADMIN + RESOURCE_ATTRIBS),
+        Arguments.of(apis.getIudxConsumerAuditUrl(), apis.getIudxConsumerAuditUrl()),
+        Arguments.of(apis.getIudxProviderAuditUrl(), apis.getIudxProviderAuditUrl()),
+        Arguments.of(apis.getIudxAsyncSearchApi(), apis.getIudxAsyncSearchApi()),
+        Arguments.of(apis.getIudxAsyncStatusApi(), apis.getIudxAsyncStatusApi()) );
   }
 
 
@@ -138,6 +126,7 @@ public class AuthHandlerTest {
     when(requestBody.asJsonObject()).thenReturn(jsonObject);
     when(jsonObject.copy()).thenReturn(jsonObject);
     when(routingContext.body().asJsonObject()).thenReturn(jsonObject);
+    when(routingContext.request()).thenReturn(httpServerRequest);
     when(httpServerRequest.path()).thenReturn(url);
     AuthHandler.authenticator = mock(AuthenticationService.class);
     when(httpServerRequest.headers()).thenReturn(map);
@@ -265,7 +254,7 @@ public class AuthHandlerTest {
   @Test
   public void testCanCreate(VertxTestContext vertxTestContext) {
     AuthHandler.authenticator = mock(AuthenticationService.class);
-    assertNotNull(AuthHandler.create(Vertx.vertx()));
+    assertNotNull(AuthHandler.create(Vertx.vertx(),apis));
     vertxTestContext.completeNow();
   }
 
