@@ -200,7 +200,7 @@ paths:
       x-codeSamples:
         - lang: 'get latest data'
           source: |
-            https://rs.iudx.org.in/ngsi-ld/v1/entities/suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta
+            https://rs.iudx.io/ngsi-ld/v1/entities/suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta
 
       description: |
         The <b> Latest Data API </b> is used to get the latest (last published) data of a resource. <br /> It uses the <b> data exchange ID </b> a.k.a `id` to query the resource server. <br />  To get data a <b> valid data exchange Auth token</b> is mandatory.  <br/> The `/entities` end point followed by `id` as a <b>path parameter</b> is used to get the latest data.
@@ -326,22 +326,22 @@ paths:
       x-codeSamples:
         - lang: 'search by attribute'
           source: |
-            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&q=speed%3E30.0
+            https://rs.iudx.io/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta&q=speed%3E30.0
         - lang: 'search by circle'
           source: |
-            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=1000&geometry=Point&coordinates=[21.178,72.834]
+            https://rs.iudx.io/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=1000&geometry=Point&coordinates=[21.178,72.834]
         - lang: 'search by polygon'
           source: |
-            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[82.9738998413086,25.330372970610558],[82.97201156616211,25.28428253090838],[83.02436828613281,25.285524253944203],[83.02007675170898,25.32866622999033],[82.9738998413086,25.330372970610558]]]
+            https://rs.iudx.io/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[82.9738998413086,25.330372970610558],[82.97201156616211,25.28428253090838],[83.02436828613281,25.285524253944203],[83.02007675170898,25.32866622999033],[82.9738998413086,25.330372970610558]]]
         - lang: 'search by bbox'
           source: |
-            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[82.97698974609375,25.321994194865383],[83.00411224365234,25.291267057619464]]
+            https://rs.iudx.io/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[82.97698974609375,25.321994194865383],[83.00411224365234,25.291267057619464]]
         - lang: 'search by attribute and filter'
           source: |
-            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&q=speed%3E=50&attrs=speed,id
+            https://rs.iudx.io/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta&q=speed%3E=50&attrs=speed,id
         - lang: 'count by circle'
           source: |
-            https://rs.iudx.org.in/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]&options=count
+            https://rs.iudx.io/ngsi-ld/v1/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]&options=count
 
       deprecated: false
       description: |
@@ -545,25 +545,25 @@ paths:
       x-codeSamples:
         - lang: 'search by between'
           source: |
-            https://rs.iudx.org.in/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&timerel=between&time=2020-06-01T14:20:00Z&endtime=2020-06-06T14:20:00Z
+            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta&timerel=between&time=2020-06-01T14:20:00Z&endtime=2020-06-06T14:20:00Z
         - lang: 'search by before'
           source: |
-            https://rs.iudx.org.in/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&timerel=before&time=2020-06-01T14:20:01Z
+            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta&timerel=before&time=2020-06-01T14:20:01Z
         - lang: 'search by after'
           source: |
-            https://rs.iudx.org.in/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&timerel=after&time=2020-06-01T14:20:01Z
+            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta&timerel=after&time=2020-06-01T14:20:01Z
         - lang: 'search by after and filter'
           source: |
-            https://rs.iudx.org.in/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&timerel=after&time=2020-06-01T14:20:01Z&attrs=speed,id
+            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta&timerel=after&time=2020-06-01T14:20:01Z&attrs=speed,id
         - lang: 'count by after'
           source: |
-            https://rs.iudx.org.in/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&timerel=after&time=2020-06-01T14:20:01Z&options=count
+            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta&timerel=after&time=2020-06-01T14:20:01Z&options=count
         - lang: 'complex search'
           source: |
-            https://rs.iudx.org.in/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]&timerel=before&time=2020-06-01T14:20:01Z&attrs=speed,id
+            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]&timerel=before&time=2020-06-01T14:20:01Z&attrs=speed,id
         - lang: 'complex count'
           source: |
-            https://rs.iudx.org.in/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]&timerel=before&time=2020-06-01T14:20:01Z&options=count'
+            https://rs.iudx.io/ngsi-ld/v1/temporal/entities?id=suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[25.319768,82.987988]&timerel=before&time=2020-06-01T14:20:01Z&options=count'
 
 
       deprecated: false
@@ -663,7 +663,7 @@ paths:
             example:
               type: Query
               entities:
-                - id: suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta
+                - id: suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta
               geoQ:
                 geometry: Point
                 coordinates:
@@ -795,7 +795,7 @@ paths:
             example:
               type: Query
               entities:
-                - id: suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta
+                - id: suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta
               geoQ:
                 geometry: Point
                 coordinates:
@@ -2651,7 +2651,7 @@ components:
         type: urn:dx:rs:success
         title: success
         results: [
-          { "id": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta",
+          { "id": "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.io/surat-itms-realtime-info/surat-itms-live-eta",
             "observationDateTime": "2020-06-01T14:20:00Z",
             "trip_id": 23958368,
             "route_id": 14U
