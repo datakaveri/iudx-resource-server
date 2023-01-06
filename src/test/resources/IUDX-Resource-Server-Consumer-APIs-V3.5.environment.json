@@ -1,10 +1,15 @@
 {
 	"id": "3072d0a3-03c4-413d-ba0d-6be56be07316",
-	"name": "RS Jenkins Pipeline",
+	"name": "RS Environment",
 	"values": [
 		{
 			"key": "basePath",
 			"value": "ngsi-ld/v1",
+			"enabled": true
+		},
+		{
+			"key": "basePathDx",
+			"value": "iudx/v1",
 			"enabled": true
 		},
 		{

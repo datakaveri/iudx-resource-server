@@ -17555,13 +17555,12 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/iudx/v1/adapter/register",
+									"raw": "{{base_url}}/{{basePathDx}}/adapter/register",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
-										"iudx",
-										"v1",
+										"{{basePathDx}}",
 										"adapter",
 										"register"
 									]
@@ -17651,13 +17650,12 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/iudx/v1/adapter/register",
+									"raw": "{{base_url}}/{{basePathDx}}/adapter/register",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
-										"iudx",
-										"v1",
+										"{{basePathDx}}",
 										"adapter",
 										"register"
 									]
@@ -17759,13 +17757,12 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/iudx/v1/adapter/register",
+									"raw": "{{base_url}}/{{basePathDx}}/adapter/register",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
-										"iudx",
-										"v1",
+										"{{basePathDx}}",
 										"adapter",
 										"register"
 									]
@@ -18169,13 +18166,12 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/iudx/v1/adapter/register",
+									"raw": "{{base_url}}/{{basePathDx}}/adapter/register",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
-										"iudx",
-										"v1",
+										"{{basePathDx}}",
 										"adapter",
 										"register"
 									]
@@ -18265,13 +18261,12 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/iudx/v1/adapter/register",
+									"raw": "{{base_url}}/{{basePathDx}}/adapter/register",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
-										"iudx",
-										"v1",
+										"{{basePathDx}}",
 										"adapter",
 										"register"
 									]
@@ -18373,13 +18368,12 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/iudx/v1/adapter/register",
+									"raw": "{{base_url}}/{{basePathDx}}/adapter/register",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
-										"iudx",
-										"v1",
+										"{{basePathDx}}",
 										"adapter",
 										"register"
 									]
@@ -18783,13 +18777,12 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/iudx/v1/adapter/register",
+									"raw": "{{base_url}}/{{basePathDx}}/adapter/register",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
-										"iudx",
-										"v1",
+										"{{basePathDx}}",
 										"adapter",
 										"register"
 									]

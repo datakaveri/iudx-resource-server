@@ -24,6 +24,28 @@ info:
     It enables *Consumers* of datasources to search and query for data using HTTPs APIs.
     It enables *Streaming Consumer* a.k.a [Subscribers] of datasources to stream data using AMQP streaming protocol over TLS.
     
+    # Base paths
+    Base path is the path on which API is served, relative to the host. It is the initial part of the API. 
+    ** Currently, the following APIs have `ngsi-ld/v1` base path **
+    -  **/entities**
+    -  **/temporal/entities**
+    -  **/temporal/entityOperations/query**
+    -  **/entityOperations/query**
+    -  **/subscription**
+    -  **/async/search**
+    -  **/async/status**
+    -  **/consumer/audit**
+    -  **/provider/audit**
+    <br>
+    ** The following APIs have `iudx/v1` base path. **
+    -  **/ingestion**
+    -  **/ingestion/{id}**
+    <br>
+    These base path values could be configured according to the deployment.
+    
+
+    # Tokens
+    All the <b>*Search API*</b>  calls to the resource server should now contain a valid data exchange auth token presented in the query header. To search (or) access an *Open* resource, the consumer should present a valid data exchange Auth token. To search (or) access a *Secure / Closed* resource, a consumer must get a token for the *Secure / Closed* resource along with the associated constraints from the DX(Data exchange) Auth Server. For subscription to a *Secure / Closed / Open* resource, a consumer must get a token along with the associated constraints from the DX(Data exchange) Auth Server.
     
     # Pagination
     Resource server also offers way to paginate the result for queries. If a query returns large number of records then user can use additional parameters in query parameters to limit numbers of records to be returned.
@@ -37,9 +59,6 @@ info:
     Additional query parameters to be used:
       - <b>offset</b> : The from parameter defines the offset from the first result you want to fetch,  ( <i>default : 0</i> ,<i>minValue: 0</i>, <i>maxValue: 49999</i> )
       - <b>limit</b> : The size parameter allows you to configure the maximum results to be returned  ( <i>default: 5000</i> ,<i>minValue: 0</i>, <i>maxValue: 5000</i> )
-    
-    # Tokens
-    All the <b>*Search API*</b>  calls to the resource server should now contain a valid data exchange auth token presented in the query header. To search (or) access an *Open* resource, the consumer should present a valid data exchange Auth token. To search (or) access a *Secure / Closed* resource, a consumer must get a token for the *Secure / Closed* resource along with the associated constraints from the DX(Data exchange) Auth Server. For subscription to a *Secure / Closed / Open* resource, a consumer must get a token along with the associated constraints from the DX(Data exchange) Auth Server.
     
     # Encryption
     All the count and search APIs have a feature for encryption.
@@ -117,15 +136,14 @@ tags:
 
 paths:
 
-  /{basePath}/entities/{id}:
+  /entities/{id}:
+
     get:
       tags:
         - Latest Entity
       summary: Latest Data
       operationId: latest-entities
       parameters:
-        - name: basePath
-          $ref: "#/components/parameters/basePathParam"
 
         - name: token
           in: header
@@ -185,14 +203,12 @@ paths:
 
       deprecated: false
 
-  /{basePath}/entities:
+  /entities:
     get:
       tags:
         - Spatial Entities
       operationId: Spatial Search
       parameters:
-        - name: basePath
-          $ref: "#/components/parameters/basePathParam"
 
         - name: token
           in: header
@@ -387,15 +403,13 @@ paths:
           - The value should be equal to `count` and it is <b>case sensitive</b>
 
 
-  /{basePath}/temporal/entities:
+  /temporal/entities:
     get:
       tags:
         - Temporal Entities
       summary: Temporal Search
       operationId: temporal-entities
       parameters:
-        - name: basePath
-          $ref: "#/components/parameters/basePathParam"
 
         - name: token
           in: header
@@ -619,15 +633,13 @@ paths:
           - It <b>cannot</b> be used along with a <b>attrs</b> filter. 
           - The value should be equal to `count` and it is <b>case sensitive</b>
 
-  /{basePath)/entityOperations/query:
+  /entityOperations/query:
     post:
       tags:
         - Entities Post Query
       summary: Spatial search
       operationId: complex-query
       parameters:
-        - name: basePath
-          $ref: "#/components/parameters/basePathParam"
 
         - name: token
           in: header
@@ -753,15 +765,13 @@ paths:
 
       deprecated: false
 
-  /{basePath}/temporal/entityOperations/query:
+  /temporal/entityOperations/query:
     post:
       tags:
         - Entities Post Query
       summary: Spatial + temporal search
       operationId: spatial-complex-query
       parameters:
-        - name: basePath
-          $ref: "#/components/parameters/basePathParam"
 
         - name: token
           in: header
@@ -900,12 +910,15 @@ paths:
           - The value should be equal to `count` and it is <b>case sensitive</b>
       deprecated: false
 
-  /iudx/v1/ingestion:
+  /ingestion:
     post:
       tags:
         - Data Ingestion Adaptor
       summary: Register ingestion adapter
       operationId: registeradapter
+      servers:
+        - url: https://rs.iudx.io/iudx/v1
+          description: Some description
       parameters:
         - name: token
           in: header
@@ -954,7 +967,10 @@ paths:
           - `entities`: List of DX(Data exchange) resource id's .
       deprecated: false
 
-  /iudx/v1/ingestion/{id}:
+  /ingestion/{id}:
+    servers:
+      - url: 'https://rs.iudx.io/iudx/v1'
+        description: 'Some description '
     get:
       tags:
         - Data Ingestion Adaptor
@@ -1086,15 +1102,13 @@ paths:
 
       deprecated: false
 
-  /{basePath}/subscription:
+  /subscription:
     post:
       tags:
         - Data Subscriber
       summary: Create subscription
       operationId: createastreamingsubscription
       parameters:
-        - name: basePath
-          $ref: "#/components/parameters/basePathParam"
 
         - name: token
           in: header
@@ -1157,15 +1171,13 @@ paths:
 
       deprecated: false
 
-  /{basePath}/subscription/{id}:
+  /subscription/{id}:
     get:
       tags:
         - Data Subscriber
       summary: Retrieve subscription details
       operationId: getstreamingsubscription
       parameters:
-        - name: basePath
-          $ref: "#/components/parameters/basePathParam"
 
         - name: token
           in: header
@@ -1466,6 +1478,9 @@ paths:
       deprecated: false
 
   /management/user/resetPassword:
+    servers:
+      - url: 'https://rs.iudx.io/'
+        description: 'Some description '
     post:
       tags:
         - Management
@@ -1510,15 +1525,13 @@ paths:
                 "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
           description: 'Resource not found'
 
-  /{basePath}/async/search:
+  /async/search:
     get:
       tags:
         - Async
       summary: Search
       operationId: async search
       parameters:
-        - name: basePath
-          $ref: "#/components/parameters/basePathParam"
 
         - name: token
           in: header
@@ -1620,15 +1633,13 @@ paths:
                 "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
           description: 'Resource not found'
 
-  /{basePath}/async/status:
+  /async/status:
     get:
       tags:
         - Async
       summary: Search status
       operationId: async search status
       parameters:
-        - name: basePath
-          $ref: "#/components/parameters/basePathParam"
 
         - name: token
           in: header
@@ -1677,15 +1688,13 @@ paths:
                 "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
           description: 'Resource not found'
 
-  /{basePath}/consumer/audit:
+  /consumer/audit:
     get:
       tags:
         - Metering
       summary: consumer search
       operationId: consumer search
       parameters:
-        - name: basePath
-          $ref: "#/components/parameters/basePathParam"
 
         - name: token
           in: header
@@ -1763,15 +1772,13 @@ paths:
           description: 'Resource not found'
       description: Consumer API can be used by a user having consumer token to get audit details of API's.
 
-  /{basePath}/provider/audit:
+  /provider/audit:
     get:
       tags:
         - Metering
       summary: provider search
       operationId: provider search
       parameters:
-        - name: basePath
-          $ref: "#/components/parameters/basePathParam"
 
         - name: token
           in: header
@@ -1861,6 +1868,9 @@ paths:
       description: Provider API can be used by a user having provider token to get audit details of API's.
 
   /admin/revokeToken:
+    servers:
+      - url: 'https://rs.iudx.io/'
+        description: 'Some description '
     post:
       tags:
         - Admin
@@ -1908,6 +1918,9 @@ paths:
       description: revoke token API used by admin user to revoke token of user in certain cases.
 
   /admin/resourceattribute:
+    servers:
+      - url: 'https://rs.iudx.io/'
+        description: 'Some description '
     post:
       tags:
         - Admin
@@ -2049,20 +2062,6 @@ paths:
 
 
 components:
-  parameters:
-    basePathParam:
-      name: basePath
-      in: path
-      required: true
-      schema:
-        type: string
-        enum:
-          - "ngsi-ld/v1"
-          - "adex/v1"
-          - "ipeg/v1"
-          - "gisdx/v1"
-        default: "ngsi-ld/v1"
-      description: "Base paths are a part of the endpoint that can be configured according to the deployment. Currently, `ngsi-ld/v1` is being set as the default base path."
 
   schemas:
     createastreamingsubscriptionrequest:
