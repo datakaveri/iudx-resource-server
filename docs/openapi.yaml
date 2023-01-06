@@ -26,7 +26,9 @@ info:
     
     # Base paths
     Base path is the path on which API is served, relative to the host. It is the initial part of the API. 
-    ** Currently, the following APIs have `ngsi-ld/v1` base path **
+    These base path values could be configured according to the deployment.
+
+    **Currently, the following APIs have `ngsi-ld/v1` base path**
     -  **/entities**
     -  **/temporal/entities**
     -  **/temporal/entityOperations/query**
@@ -36,12 +38,11 @@ info:
     -  **/async/status**
     -  **/consumer/audit**
     -  **/provider/audit**
-    <br>
-    ** The following APIs have `iudx/v1` base path. **
+
+    **The following APIs have `iudx/v1` base path.**
     -  **/ingestion**
     -  **/ingestion/{id}**
     <br>
-    These base path values could be configured according to the deployment.
     
 
     # Tokens
@@ -134,6 +135,9 @@ tags:
     description: |
       Admin API provides the ability to the admin user to perform administrative tasks such as invalidating a user token, create unique attribute setting for resource group or resource item.    
 
+servers:
+  - url: 'https://rs.iudx.io/ngsi-ld/v1'
+    description: 'Some description about this'
 paths:
 
   /entities/{id}:
