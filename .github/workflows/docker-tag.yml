@@ -1,4 +1,4 @@
-name: Updating Docker Tag
+name: Update RS docker image tags
 
 on:
   registry_package:
