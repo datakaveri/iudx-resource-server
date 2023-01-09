@@ -178,6 +178,7 @@ public class ElasticClient {
         promise.fail(exception);
         return;
       }
+      JsonObject queryResult;
       try {
         JsonArray dbResponse = new JsonArray();
         if (response.hits().total().value() == 0) {
@@ -189,11 +190,10 @@ public class ElasticClient {
 
         // TODO : explore client API docs to directly get response, avoid loop over response to
         // create a seprate Json
-        response
-            .hits()
-              .hits()
-              .stream()
-              .forEach(hit -> dbResponse.add(new JsonObject(hit.source().toString())));
+        for(Hit<ObjectNode> esHitResponse:response.hits().hits()) {
+          queryResult=new JsonObject(esHitResponse.source().toString());
+          dbResponse.add(queryResult);
+        }
 
         responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200);
         responseBuilder.setMessage(dbResponse);
