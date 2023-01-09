@@ -20,7 +20,9 @@ public class Constants {
           "/temporal/entityOperations/query",
           "/async/status",
           "/consumer/audit",
-          "/async/search");
+          "/async/search",
+          "/subscription",
+          "/management/user/resetPassword");
   public static final String AUTH_TIP_PATH = "/auth/v1/token/introspect";
   public static final List<String> CLOSED_ENDPOINTS =
       List.of("/ingestion", "/subscription");
