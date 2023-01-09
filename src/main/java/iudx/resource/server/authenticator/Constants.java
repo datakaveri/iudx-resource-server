@@ -25,7 +25,7 @@ public class Constants {
           "/management/user/resetPassword");
   public static final String AUTH_TIP_PATH = "/auth/v1/token/introspect";
   public static final List<String> CLOSED_ENDPOINTS =
-      List.of("/ingestion", "/subscription");
+      List.of("/ingestion");
   public static final List<String> MANAGEMENT_ENDPOINTS =
       List.of("/management/queue", "/management/exchange", "/management/vhost");
   public static final String ADAPTER_ENDPOINT = "/ingestion";
