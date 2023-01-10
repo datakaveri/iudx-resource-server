@@ -14,13 +14,12 @@ jobs:
       with:
        repository: datakaveri/iudx-deployment
        token: "${{ secrets.JENKINS_UPDATE }}"
+       fetch-depth: 0
     - name: Build the docker image
       run: | 
         export newtag4_5_0=`(head -n1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/rs-depl/versions | jq ' .[].metadata.container.tags[0]' ) | grep 4.5.0-alpha | sed -e 's/^"//' -e 's/"$//')`
         export oldtag4_5_0=`yq -r .services.rs.image Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml | cut -d : -f 2`
-        git remote add upstream https://github.com/datakaveri/iudx-deployment.git
         export newtag4_0=$(head -n1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/rs-depl/versions | jq ' .[].metadata.container.tags[0]' | grep 4.0.0 | sed -e 's/^"//' -e 's/"$//'))
-        git fetch upstream 4.0.0
         git checkout 4.0.0
         export oldtag4_0=$(yq -r .services.rs.image Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml | cut -d : -f 2)      
         git config --global user.name 'jenkins-datakaveri'
