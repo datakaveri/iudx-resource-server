@@ -15,7 +15,7 @@ jobs:
        repository: datakaveri/iudx-deployment
        token: "${{ secrets.JENKINS_UPDATE }}"
        fetch-depth: 0
-    - name: Build the docker image
+    - name: Update RS docker image tags
       run: | 
         export newtag4_5_0=`(head -n1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/rs-depl/versions | jq ' .[].metadata.container.tags[0]' ) | grep 4.5.0-alpha | sed -e 's/^"//' -e 's/"$//')`
         export oldtag4_5_0=`yq -r .services.rs.image Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml | cut -d : -f 2`
