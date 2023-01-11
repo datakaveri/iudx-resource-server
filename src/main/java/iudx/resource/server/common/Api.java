@@ -5,6 +5,7 @@ import static iudx.resource.server.apiserver.util.Constants.*;
 public class Api {
 
     private final String dxApiBasePath;
+    private final String managementBasePath;
     private StringBuilder entitiesUrl;
     private StringBuilder temporalUrl;
     private StringBuilder subscriptionUrl;
@@ -16,7 +17,7 @@ public class Api {
     private StringBuilder iudxProviderAuditUrl;
     private StringBuilder iudxManagementAdapterUrl;
     private StringBuilder ingestionPath;
-
+    private StringBuilder resetPassword;
 
     private StringBuilder asyncPath;
 
@@ -25,14 +26,15 @@ public class Api {
 
 
 
-    private Api(String dxApiBasePath) {
+    private Api(String dxApiBasePath, String managementBasePath) {
         this.dxApiBasePath = dxApiBasePath;
+        this.managementBasePath = managementBasePath;
         buildPaths();
     }
 
 
 
-    public static Api getInstance(String dxApiBasePath)
+    public static Api getInstance(String dxApiBasePath, String managementBasePath)
     {
         if(apiInstance == null)
         {
@@ -40,7 +42,7 @@ public class Api {
             {
                 if(apiInstance == null)
                 {
-                    apiInstance = new Api(dxApiBasePath);
+                    apiInstance = new Api(dxApiBasePath,managementBasePath);
                 }
             }
         }
@@ -60,6 +62,8 @@ public class Api {
         ingestionPath = new StringBuilder(dxApiBasePath).append(INGESTION_PATH);
         asyncPath = new StringBuilder(dxApiBasePath).append(ASYNC);
         iudxAsyncStatusApi = new StringBuilder(dxApiBasePath).append(ASYNC + STATUS);
+        resetPassword = new StringBuilder(managementBasePath).append(RESET_PWD);
+
     }
 
     public String getEntitiesUrl() {
@@ -116,4 +120,8 @@ public class Api {
         return asyncPath.toString();
     }
 
+    public String getManagementBasePath()
+    {
+        return resetPassword.toString();
+    }
 }
