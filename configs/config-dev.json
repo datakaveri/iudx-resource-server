@@ -5,8 +5,7 @@
     ],
     "clusterId": "iudx-rs-cluster",
     "commonConfig" : {
-        "dxApiBasePath" : "/ngsi-ld/v1",
-        "managementBasePath": "/management"
+        "dxApiBasePath" : "/ngsi-ld/v1"
     },
     "modules": [
         {

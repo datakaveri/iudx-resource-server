@@ -51,7 +51,6 @@ public class JwtAuthServiceTest {
     JwtAuthenticationServiceImpl jwtAuthenticationService;
     private Api apis;
     private String dxApiBasePath;
-    private String managementBasePath;
 
     @BeforeEach
     public void setUp(VertxTestContext vertxTestContext)
@@ -59,8 +58,7 @@ public class JwtAuthServiceTest {
         JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
 //        jwtAuthenticationService.jwtDecodeFuture = mock(Future.class);
         dxApiBasePath = "/ngsi-ld/v1";
-        managementBasePath = "/management";
-        apis = Api.getInstance(dxApiBasePath,managementBasePath);
+        apis = Api.getInstance(dxApiBasePath);
         jwtAuthOptions.addPubSecKey(
                 new PubSecKeyOptions()
                         .setAlgorithm("ES256")

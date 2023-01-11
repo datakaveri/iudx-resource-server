@@ -69,7 +69,6 @@ public class AuthHandlerTest {
   AuthHandler authHandler;
   JsonObject jsonObject;
   private static String dxApiBasePath;
-  private static String managementBasePath;
   private static Api apis;
   @BeforeEach
   public void setUp(VertxTestContext vertxTestContext) {
@@ -79,21 +78,18 @@ public class AuthHandlerTest {
     jsonObject.put("USER_ID", "Dummy USER_ID");
     jsonObject.put("EXPIRY", "Dummy EXPIRY");
     jsonObject.put("dxApiBasePath","/ngsi-ld/v1");
-    jsonObject.put("managementBasePath","/management");
     lenient().when(httpServerRequest.method()).thenReturn(httpMethod);
     lenient().when(httpMethod.toString()).thenReturn("GET");
     lenient().when(routingContext.request()).thenReturn(httpServerRequest);
     dxApiBasePath = jsonObject.getString("dxApiBasePath");
-    managementBasePath = jsonObject.getString("managementBasePath");
-    apis = Api.getInstance(dxApiBasePath,managementBasePath);
+    apis = Api.getInstance(dxApiBasePath);
     authHandler = AuthHandler.create(Vertx.vertx(),apis);
     vertxTestContext.completeNow();
   }
 
   public static Stream<Arguments> urls() {
     dxApiBasePath = "/ngsi-ld/v1";
-    managementBasePath = "/management";
-    apis = Api.getInstance(dxApiBasePath,managementBasePath);
+    apis = Api.getInstance(dxApiBasePath);
     return Stream.of(
 
         Arguments.of(Constants.EXCHANGE_URL_REGEX, IUDX_MANAGEMENT_URL + EXCHANGE_PATH + "(.*)"),
@@ -101,7 +97,7 @@ public class AuthHandlerTest {
         Arguments.of(Constants.VHOST_URL_REGEX, IUDX_MANAGEMENT_URL + VHOST + "(.*)"),
         Arguments.of(Constants.BIND_URL_REGEX, IUDX_MANAGEMENT_URL + BIND + "(.*)"),
         Arguments.of(Constants.UNBIND_URL_REGEX, IUDX_MANAGEMENT_URL + UNBIND + "(.*)"),
-        Arguments.of(apis.getManagementBasePath()+"(.*)",  managementBasePath + RESET_PWD + "(.*)"),
+        Arguments.of(apis.getManagementBasePath()+"(.*)",  dxApiBasePath + RESET_PWD + "(.*)"),
         Arguments.of(Constants.REVOKE_TOKEN_REGEX, ADMIN + REVOKE_TOKEN + "(.*)"),
         Arguments.of(Constants.UNIQUE_ATTR_REGEX, ADMIN + RESOURCE_ATTRIBS),
         Arguments.of(apis.getIudxConsumerAuditUrl(), apis.getIudxConsumerAuditUrl()),

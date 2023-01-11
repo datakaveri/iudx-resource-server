@@ -47,7 +47,6 @@ public class AuthenticationVerticle extends AbstractVerticle {
   private MeteringService meteringService;
   private Api api;
   private String dxApiBasePath;
-  private String managementBasePath;
 
     static WebClient createWebClient(Vertx vertx, JsonObject config) {
     return createWebClient(vertx, config, false);
@@ -97,8 +96,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
               cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
               meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
               dxApiBasePath = config().getString("dxApiBasePath");
-              managementBasePath = config().getString("managementBasePath");
-              api = Api.getInstance(dxApiBasePath,managementBasePath);
+              api = Api.getInstance(dxApiBasePath);
               jwtAuthenticationService =
                   new JwtAuthenticationServiceImpl(
                       vertx, jwtAuth, createWebClient(vertx, config()), config(), cacheService,

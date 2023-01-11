@@ -5,7 +5,6 @@ import static iudx.resource.server.apiserver.util.Constants.*;
 public class Api {
 
     private final String dxApiBasePath;
-    private final String managementBasePath;
     private StringBuilder entitiesUrl;
     private StringBuilder temporalUrl;
     private StringBuilder subscriptionUrl;
@@ -26,15 +25,14 @@ public class Api {
 
 
 
-    private Api(String dxApiBasePath, String managementBasePath) {
+    private Api(String dxApiBasePath) {
         this.dxApiBasePath = dxApiBasePath;
-        this.managementBasePath = managementBasePath;
         buildPaths();
     }
 
 
 
-    public static Api getInstance(String dxApiBasePath, String managementBasePath)
+    public static Api getInstance(String dxApiBasePath)
     {
         if(apiInstance == null)
         {
@@ -42,7 +40,7 @@ public class Api {
             {
                 if(apiInstance == null)
                 {
-                    apiInstance = new Api(dxApiBasePath,managementBasePath);
+                    apiInstance = new Api(dxApiBasePath);
                 }
             }
         }
@@ -62,7 +60,7 @@ public class Api {
         ingestionPath = new StringBuilder(dxApiBasePath).append(INGESTION_PATH);
         asyncPath = new StringBuilder(dxApiBasePath).append(ASYNC);
         iudxAsyncStatusApi = new StringBuilder(dxApiBasePath).append(ASYNC + STATUS);
-        resetPassword = new StringBuilder(managementBasePath).append(RESET_PWD);
+        resetPassword = new StringBuilder(dxApiBasePath).append(RESET_PWD);
 
     }
 

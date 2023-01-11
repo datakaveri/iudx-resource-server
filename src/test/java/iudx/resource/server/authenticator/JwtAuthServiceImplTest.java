@@ -71,7 +71,6 @@ public class JwtAuthServiceImplTest {
   private static MeteringService meteringService;
   private static Api apis;
   private static String dxApiBasePath;
-  private static String managementBasePath;
 
 
   @BeforeAll
@@ -80,11 +79,9 @@ public class JwtAuthServiceImplTest {
     config = new Configuration();
     authConfig = config.configLoader(1, vertx);
     authConfig.put("dxApiBasePath","/ngsi-ld/v1");
-    authConfig.put("managementBasePath","/management");
 
     dxApiBasePath = "/ngsi-ld/v1";
-    managementBasePath = "/management";
-    apis = Api.getInstance(dxApiBasePath,managementBasePath);
+    apis = Api.getInstance(dxApiBasePath);
     JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
     jwtAuthOptions.addPubSecKey(
             new PubSecKeyOptions()
