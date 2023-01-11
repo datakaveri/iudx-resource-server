@@ -78,7 +78,6 @@ public class AuthHandlerTest {
     jsonObject.put("USER_ID", "Dummy USER_ID");
     jsonObject.put("EXPIRY", "Dummy EXPIRY");
     jsonObject.put("dxApiBasePath","/ngsi-ld/v1");
-    jsonObject.put("managementBasePath","/management");
     lenient().when(httpServerRequest.method()).thenReturn(httpMethod);
     lenient().when(httpMethod.toString()).thenReturn("GET");
     lenient().when(routingContext.request()).thenReturn(httpServerRequest);
