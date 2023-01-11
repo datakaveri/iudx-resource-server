@@ -28,7 +28,7 @@ info:
     Base path is the path on which API is served, relative to the host. It is the initial part of the API. 
     These base path values could be configured according to the deployment.
 
-    **Currently, the following APIs have `ngsi-ld/v1` base path**
+    **Currently, the following APIs have `/ngsi-ld/v1` base path**
     -  **/entities**
     -  **/temporal/entities**
     -  **/temporal/entityOperations/query**
@@ -38,10 +38,11 @@ info:
     -  **/async/status**
     -  **/consumer/audit**
     -  **/provider/audit**
-
-    **The following APIs have `iudx/v1` base path.**
     -  **/ingestion**
     -  **/ingestion/{id}**
+
+    **The following API has `/management` base path**
+    - **/user/resetPassword**
     <br>
     
 
@@ -920,9 +921,6 @@ paths:
         - Data Ingestion Adaptor
       summary: Register ingestion adapter
       operationId: registeradapter
-      servers:
-        - url: https://rs.iudx.io/iudx/v1
-          description: Some description
       parameters:
         - name: token
           in: header
@@ -972,9 +970,6 @@ paths:
       deprecated: false
 
   /ingestion/{id}:
-    servers:
-      - url: 'https://rs.iudx.io/iudx/v1'
-        description: 'Some description '
     get:
       tags:
         - Data Ingestion Adaptor
@@ -1481,9 +1476,9 @@ paths:
 
       deprecated: false
 
-  /management/user/resetPassword:
+  /user/resetPassword:
     servers:
-      - url: 'https://rs.iudx.io/'
+      - url: 'https://rs.iudx.io/management'
         description: 'Some description '
     post:
       tags:
@@ -1724,7 +1719,7 @@ paths:
             maxLength: 512
         - name: api
           in: query
-          description: 'Valid DX(Data exchange) api [`/{basePath}/entities`, `/{basePath}/temporal/entities`, `/{basePath}/entityOperation/Query`, `/{basePath}/temporal/entityOperation/Query`] '
+          description: 'Valid DX(Data exchange) api [`/entities`, `/temporal/entities`, `/entityOperation/Query`, `/temporal/entityOperation/Query`] '
           schema:
             type: string
             maxLength: 512
