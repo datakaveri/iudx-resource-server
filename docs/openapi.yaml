@@ -24,9 +24,9 @@ info:
     It enables *Consumers* of datasources to search and query for data using HTTPs APIs.
     It enables *Streaming Consumer* a.k.a [Subscribers] of datasources to stream data using AMQP streaming protocol over TLS.
     
-    # Base paths
+    # Base path
     Base path is the path on which API is served, relative to the host. It is the initial part of the API. 
-    These base path values could be configured according to the deployment.
+    The base path value could be configured according to the deployment.
 
     **Currently, the following APIs have `/ngsi-ld/v1` base path**
     -  **/entities**
@@ -40,8 +40,6 @@ info:
     -  **/provider/audit**
     -  **/ingestion**
     -  **/ingestion/{id}**
-
-    **The following API has `/management` base path**
     - **/user/resetPassword**
     <br>
     

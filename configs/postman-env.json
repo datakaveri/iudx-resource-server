@@ -12,11 +12,6 @@
 			"enabled": true
 		},
 		{
-			"key": "basePathDx",
-			"value": "iudx/v1",
-			"enabled": true
-		},
-		{
 			"key": "consumerToken",
 			"value": "auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/token",
 			"enabled": true

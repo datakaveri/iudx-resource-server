@@ -17555,12 +17555,12 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/{{basePathDx}}/adapter/register",
+									"raw": "{{base_url}}/{{basePath}}/adapter/register",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
-										"{{basePathDx}}",
+										"{{basePath}}",
 										"adapter",
 										"register"
 									]
@@ -17650,12 +17650,12 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/{{basePathDx}}/adapter/register",
+									"raw": "{{base_url}}/{{basePath}}/adapter/register",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
-										"{{basePathDx}}",
+										"{{basePath}}",
 										"adapter",
 										"register"
 									]
@@ -17757,12 +17757,12 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/{{basePathDx}}/adapter/register",
+									"raw": "{{base_url}}/{{basePath}}/adapter/register",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
-										"{{basePathDx}}",
+										"{{basePath}}",
 										"adapter",
 										"register"
 									]
@@ -18166,12 +18166,12 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/{{basePathDx}}/adapter/register",
+									"raw": "{{base_url}}/{{basePath}}/adapter/register",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
-										"{{basePathDx}}",
+										"{{basePath}}",
 										"adapter",
 										"register"
 									]
@@ -18261,12 +18261,12 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/{{basePathDx}}/adapter/register",
+									"raw": "{{base_url}}/{{basePath}}/adapter/register",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
-										"{{basePathDx}}",
+										"{{basePath}}",
 										"adapter",
 										"register"
 									]
@@ -18368,12 +18368,12 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/{{basePathDx}}/adapter/register",
+									"raw": "{{base_url}}/{{basePath}}/adapter/register",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
-										"{{basePathDx}}",
+										"{{basePath}}",
 										"adapter",
 										"register"
 									]
@@ -18777,12 +18777,12 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/{{basePathDx}}/adapter/register",
+									"raw": "{{base_url}}/{{basePath}}/adapter/register",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
-										"{{basePathDx}}",
+										"{{basePath}}",
 										"adapter",
 										"register"
 									]
@@ -19842,12 +19842,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/management/user/resetPassword",
+							"raw": "{{base_url}}/{{basePath}}/user/resetPassword",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"management",
+								"{{basePath}}",
 								"user",
 								"resetPassword"
 							]

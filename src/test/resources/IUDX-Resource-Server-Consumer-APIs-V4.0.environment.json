@@ -8,11 +8,6 @@
 			"enabled": true
 		},
 		{
-			"key": "basePathDx",
-			"value": "iudx/v1",
-			"enabled": true
-		},
-		{
 			"key": "openResourceToken",
 			"value": "",
 			"type": "default",
