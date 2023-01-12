@@ -7,6 +7,11 @@
 			"enabled": true
 		},
 		{
+			"key": "basePath",
+			"value": "ngsi-ld/v1",
+			"enabled": true
+		},
+		{
 			"key": "consumerToken",
 			"value": "auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/token",
 			"enabled": true
