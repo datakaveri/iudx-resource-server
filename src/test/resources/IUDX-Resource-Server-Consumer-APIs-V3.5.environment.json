@@ -8,11 +8,6 @@
 			"enabled": true
 		},
 		{
-			"key": "base_url",
-			"value": "https://rs.iudx.io",
-			"enabled": true
-		},
-		{
 			"key": "openResourceToken",
 			"value": "",
 			"type": "default",
@@ -38,7 +33,7 @@
 		},
 		{
 			"key": "base_url",
-			"value": "rs.iudx.io",
+			"value": "https://rs.iudx.io",
 			"type": "default",
 			"enabled": true
 		},
