@@ -249,11 +249,21 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     Promise<JsonObject> promise = Promise.promise();
     String jwtId = jwtData.getIid().split(":")[1];
 
+   
+    
     if (openResource && checkOpenEndPoints(authInfo.getString("apiEndpoint"))) {
       LOGGER.info("User access is allowed.");
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put(JSON_IID, jwtId);
       jsonResponse.put(JSON_USERID, jwtData.getSub());
+      
+      jsonResponse.put(
+          JSON_EXPIRY,
+          (LocalDateTime.ofInstant(
+              Instant.ofEpochSecond(Long.parseLong(jwtData.getExp().toString())),
+              ZoneId.systemDefault()))
+                  .toString());
+      
       return Future.succeededFuture(jsonResponse);
     }
 
