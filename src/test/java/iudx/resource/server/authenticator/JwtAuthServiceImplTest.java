@@ -79,6 +79,7 @@ public class JwtAuthServiceImplTest {
     config = new Configuration();
     authConfig = config.configLoader(1, vertx);
     authConfig.put("dxApiBasePath","/ngsi-ld/v1");
+    authConfig.put("managementBasePath","/management");
 
     dxApiBasePath = "/ngsi-ld/v1";
     apis = Api.getInstance(dxApiBasePath);
