@@ -1,83 +1,13 @@
 package iudx.resource.server.databroker;
 
-import static iudx.resource.server.databroker.util.Constants.ALLOW;
-import static iudx.resource.server.databroker.util.Constants.ALL_NOT_FOUND;
-import static iudx.resource.server.databroker.util.Constants.APIKEY;
-import static iudx.resource.server.databroker.util.Constants.API_KEY_MESSAGE;
-import static iudx.resource.server.databroker.util.Constants.AUTO_DELETE;
-import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_CODE;
-import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_DATA;
-import static iudx.resource.server.databroker.util.Constants.CHECK_CREDENTIALS;
-import static iudx.resource.server.databroker.util.Constants.CONFIGURE;
-import static iudx.resource.server.databroker.util.Constants.DATABASE_READ_SUCCESS;
-import static iudx.resource.server.databroker.util.Constants.DATA_ISSUE;
-import static iudx.resource.server.databroker.util.Constants.DATA_WILDCARD_ROUTINGKEY;
-import static iudx.resource.server.databroker.util.Constants.DENY;
-import static iudx.resource.server.databroker.util.Constants.DETAIL;
-import static iudx.resource.server.databroker.util.Constants.DETAILS;
-import static iudx.resource.server.databroker.util.Constants.DOWNSTREAM_ISSUE;
-import static iudx.resource.server.databroker.util.Constants.DURABLE;
-import static iudx.resource.server.databroker.util.Constants.ERROR;
-import static iudx.resource.server.databroker.util.Constants.EXCHANGE;
-import static iudx.resource.server.databroker.util.Constants.EXCHANGE_CREATE_ERROR;
-import static iudx.resource.server.databroker.util.Constants.EXCHANGE_DELETE_ERROR;
-import static iudx.resource.server.databroker.util.Constants.EXCHANGE_EXISTS;
-import static iudx.resource.server.databroker.util.Constants.EXCHANGE_EXISTS_WITH_DIFFERENT_PROPERTIES;
-import static iudx.resource.server.databroker.util.Constants.EXCHANGE_FOUND;
-import static iudx.resource.server.databroker.util.Constants.EXCHANGE_NAME;
-import static iudx.resource.server.databroker.util.Constants.EXCHANGE_NOT_FOUND;
-import static iudx.resource.server.databroker.util.Constants.EXCHANGE_TYPE;
-import static iudx.resource.server.databroker.util.Constants.FAILURE;
-import static iudx.resource.server.databroker.util.Constants.HEARTBEAT;
-import static iudx.resource.server.databroker.util.Constants.ID;
-import static iudx.resource.server.databroker.util.Constants.INSERT_DATABROKER_USER;
-import static iudx.resource.server.databroker.util.Constants.INTERNAL_ERROR_CODE;
-import static iudx.resource.server.databroker.util.Constants.NETWORK_ISSUE;
-import static iudx.resource.server.databroker.util.Constants.NONE;
-import static iudx.resource.server.databroker.util.Constants.PASSWORD;
-import static iudx.resource.server.databroker.util.Constants.QUEUE_ADAPTOR_LOGS;
-import static iudx.resource.server.databroker.util.Constants.QUEUE_ALREADY_EXISTS;
-import static iudx.resource.server.databroker.util.Constants.QUEUE_ALREADY_EXISTS_WITH_DIFFERENT_PROPERTIES;
-import static iudx.resource.server.databroker.util.Constants.QUEUE_BIND_ERROR;
-import static iudx.resource.server.databroker.util.Constants.QUEUE_CREATE_ERROR;
-import static iudx.resource.server.databroker.util.Constants.QUEUE_DATA;
-import static iudx.resource.server.databroker.util.Constants.QUEUE_DELETE_ERROR;
-import static iudx.resource.server.databroker.util.Constants.QUEUE_DOES_NOT_EXISTS;
-import static iudx.resource.server.databroker.util.Constants.QUEUE_EXCHANGE_NOT_FOUND;
-import static iudx.resource.server.databroker.util.Constants.QUEUE_LIST_ERROR;
-import static iudx.resource.server.databroker.util.Constants.READ;
-import static iudx.resource.server.databroker.util.Constants.REDIS_LATEST;
-import static iudx.resource.server.databroker.util.Constants.REQUEST_DELETE;
-import static iudx.resource.server.databroker.util.Constants.REQUEST_GET;
-import static iudx.resource.server.databroker.util.Constants.REQUEST_POST;
-import static iudx.resource.server.databroker.util.Constants.REQUEST_PUT;
-import static iudx.resource.server.databroker.util.Constants.RESET_PWD;
-import static iudx.resource.server.databroker.util.Constants.SELECT_DATABROKER_USER;
-import static iudx.resource.server.databroker.util.Constants.SUCCESS;
-import static iudx.resource.server.databroker.util.Constants.SUCCESS_CODE;
-import static iudx.resource.server.databroker.util.Constants.TAGS;
-import static iudx.resource.server.databroker.util.Constants.TITLE;
-import static iudx.resource.server.databroker.util.Constants.TOPIC_PERMISSION;
-import static iudx.resource.server.databroker.util.Constants.TOPIC_PERMISSION_ALREADY_SET;
-import static iudx.resource.server.databroker.util.Constants.TOPIC_PERMISSION_SET_ERROR;
-import static iudx.resource.server.databroker.util.Constants.TOPIC_PERMISSION_SET_SUCCESS;
-import static iudx.resource.server.databroker.util.Constants.TYPE;
-import static iudx.resource.server.databroker.util.Constants.USER_CREATION_ERROR;
-import static iudx.resource.server.databroker.util.Constants.USER_ID;
-import static iudx.resource.server.databroker.util.Constants.USER_NAME;
-import static iudx.resource.server.databroker.util.Constants.VHOST_ALREADY_EXISTS;
-import static iudx.resource.server.databroker.util.Constants.VHOST_CREATE_ERROR;
-import static iudx.resource.server.databroker.util.Constants.VHOST_DELETE_ERROR;
-import static iudx.resource.server.databroker.util.Constants.VHOST_LIST_ERROR;
-import static iudx.resource.server.databroker.util.Constants.VHOST_NOT_FOUND;
-import static iudx.resource.server.databroker.util.Constants.VHOST_PERMISSIONS;
-import static iudx.resource.server.databroker.util.Constants.VHOST_PERMISSIONS_WRITE;
-import static iudx.resource.server.databroker.util.Constants.VHOST_PERMISSION_SET_ERROR;
-import static iudx.resource.server.databroker.util.Constants.WRITE;
+import static iudx.resource.server.apiserver.util.Constants.IID;
+import static iudx.resource.server.databroker.util.Constants.*;
 import static iudx.resource.server.databroker.util.Util.encodeValue;
 import static iudx.resource.server.databroker.util.Util.getResponseJson;
 import static iudx.resource.server.databroker.util.Util.isGroupId;
 import static iudx.resource.server.databroker.util.Util.isValidId;
+import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
+
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -244,6 +174,24 @@ public class RabbitClient {
     } else {
       promise.fail("exchangeName not provided");
     }
+    return promise.future();
+
+  }
+  Future<JsonObject> getAllExchanges(JsonObject request) {
+    Promise<JsonObject> promise = Promise.promise();
+      if (request != null && !request.isEmpty()) {
+        String providerId = request.getString(PROVIDER_ID);
+        String url = "/api/exchanges?page="+encodeValue("1")+"&page_size="+encodeValue("100")+"&"+"name="+encodeValue(providerId)+"&use_regex=true&pagination=true";
+        JsonObject jsonObject = new JsonObject();
+        webClient.requestAsyncs(REQUEST_GET, url).onComplete(asyncResult -> {
+          if (asyncResult.succeeded()) {
+            jsonObject.put("Adapters",asyncResult.result());
+            promise.complete(jsonObject);
+          } else {
+            promise.fail("getExchange_Error" + asyncResult.cause());
+          }
+        });
+      }
     return promise.future();
 
   }
@@ -697,6 +645,26 @@ public class RabbitClient {
           LOGGER.error("Error : Listing of Queue failed - " + ar.cause());
           finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, QUEUE_LIST_ERROR));
           promise.fail(finalResponse.toString());
+        }
+      });
+    }
+    return promise.future();
+  }
+
+  Future<JsonObject> listAllQueue(JsonObject request){
+    LOGGER.trace("Info : RabbitClient#listAllQueue() started");
+    Promise<JsonObject> promise = Promise.promise();
+    if (request != null && !request.isEmpty()) {
+      String userid = request.getString(USER_ID);
+      LOGGER.debug("username = "+ encodeValue(userid));
+      String url = "/api/queues?page="+encodeValue("1")+"&page_size="+encodeValue("100")+"&"+"name="+encodeValue(userid)+"&use_regex=true&pagination=true";
+      JsonObject jsonObject = new JsonObject();
+      webClient.requestAsyncs(REQUEST_GET, url).onComplete(asyncResult -> {
+        if (asyncResult.succeeded()) {
+          jsonObject.put("Subscription",asyncResult.result());
+          promise.complete(jsonObject);
+        } else {
+          promise.fail("getQueue_error" + asyncResult.cause());
         }
       });
     }

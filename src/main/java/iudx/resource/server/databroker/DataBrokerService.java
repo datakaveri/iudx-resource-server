@@ -361,6 +361,17 @@ public interface DataBrokerService {
   @Fluent
   DataBrokerService listQueueSubscribers(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler);
+  /**
+   * The listAllQueue implements the listing of all bindings of a queue operation with
+   * the data broker.
+   *
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return DataBrokerService which is a Service
+   */
+  @Fluent
+  DataBrokerService listAllQueue(JsonObject request,
+                                         Handler<AsyncResult<JsonObject>> handler);
 
   /**
    * The publishFromAdaptor implements the publish from adaptor operation with the data broker.
@@ -385,6 +396,9 @@ public interface DataBrokerService {
   @Fluent
   DataBrokerService getExchange(JsonObject request, String vhost,
       Handler<AsyncResult<JsonObject>> handler);
+  @Fluent
+  DataBrokerService getExchanges(JsonObject request,
+                                Handler<AsyncResult<JsonObject>> handler);
 
   @Fluent
   DataBrokerService publishHeartbeat(JsonObject request, String vhost,

@@ -2,6 +2,10 @@ package iudx.resource.server.apiserver;
 
 import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
 import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.util.Constants.API;
+import static iudx.resource.server.apiserver.util.Constants.ID;
+import static iudx.resource.server.apiserver.util.Constants.IID;
+import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
 import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
@@ -10,8 +14,7 @@ import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN
 import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TEMPORAL_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN_URN;
-import static iudx.resource.server.metering.util.Constants.EPOCH_TIME;
-import static iudx.resource.server.metering.util.Constants.ISO_TIME;
+import static iudx.resource.server.metering.util.Constants.*;
 
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.QueryStringDecoder;
@@ -278,6 +281,12 @@ public class ApiServerVerticle extends AbstractVerticle {
                 .get(api.getSubscriptionUrl() + "/:userid/:alias")
                 .handler(AuthHandler.create(vertx,api))
                 .handler(this::getSubscription);
+
+        //get sub for all queue
+        router
+                .get(api.getSubscriptionUrl())
+                .handler(AuthHandler.create(vertx,api))
+                .handler(this::getAllSubscriptionForUser);
         // delete sub
         router
                 .delete(api.getSubscriptionUrl() + "/:userid/:alias")
@@ -338,6 +347,10 @@ public class ApiServerVerticle extends AbstractVerticle {
                 .post(api.getIngestionPath() + "/entities")
                 .handler(AuthHandler.create(vertx,api))
                 .handler(this::publishDataFromAdapter);
+        router
+                .get(api.getIngestionPath())
+                .handler(AuthHandler.create(vertx,api))
+                .handler(this::getAllAdaptersForUsers);
 
         /** Documentation routes */
         /* Static Resource Handler */
@@ -453,6 +466,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         printDeployedEndpoints(router);
         LOGGER.info("API server deployed on :" + serverOptions.getPort());
     }
+
     private void printDeployedEndpoints(Router router) {
         for (Route route : router.getRoutes()) {
             if (route.getPath() != null) {
@@ -1073,6 +1087,35 @@ public class ApiServerVerticle extends AbstractVerticle {
     }
 
     /**
+     * get a subscription for all queue without subscription id.
+     *
+     * @param routingContext routingContext
+     */
+    private void getAllSubscriptionForUser(RoutingContext routingContext) {
+        LOGGER.trace("Info: getSubscriptionQueue method started");
+        HttpServerRequest request = routingContext.request();
+        HttpServerResponse response = routingContext.response();
+        JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+        JsonObject jsonObj = new JsonObject();
+        jsonObj.put(USER_ID, authInfo.getString(USER_ID));
+       
+        Future<JsonObject> subsReq =
+                subsService.getAllSubscriptionQueueForUser(jsonObj, databroker);
+        subsReq.onComplete(subHandler -> {
+            if (subHandler.succeeded()) {
+                LOGGER.info("Success: Getting subscription queue");
+               /* routingContext.data().put(RESPONSE_SIZE, 0);
+                Future.future(fu -> updateAuditTable(routingContext));*/
+                handleSuccessResponse(response, ResponseType.Ok.getCode(),
+                        subHandler.result().toString());
+            } else {
+                LOGGER.error("Fail: Bad request");
+                processBackendResponse(response, subHandler.cause().getMessage());
+            }
+        });
+    }
+
+    /**
      * delete a subscription by id.
      *
      * @param routingContext routingContext
@@ -1374,6 +1417,33 @@ public class ApiServerVerticle extends AbstractVerticle {
             handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
         }
     }
+
+    private void getAllAdaptersForUsers(RoutingContext routingContext) {
+        HttpServerResponse response = routingContext.response();
+        JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+        JsonObject jsonObj = new JsonObject();
+
+        String iid = authInfo.getString(IID);
+        String providerID =
+                iid.substring(0, iid.indexOf('/', iid.indexOf('/') + 1));
+
+        jsonObj.put(PROVIDER_ID, providerID);
+        Future<JsonObject> allAdapterForUser =
+                managementApi.publishAllAdapterForUser(jsonObj, databroker);
+        allAdapterForUser.onComplete(handler->{
+           if(handler.succeeded()){
+               LOGGER.debug("Successful");
+               /*routingContext.data().put(RESPONSE_SIZE, 0);
+               Future.future(fu -> updateAuditTable(routingContext));*/
+               handleSuccessResponse(response,ResponseType.Ok.getCode(),handler.result().toString());
+           }else{
+               LOGGER.debug(handler.cause());
+               processBackendResponse(response,handler.cause().getMessage());
+           }
+        });
+
+    }
+
 
     /**
      * handle HTTP response.

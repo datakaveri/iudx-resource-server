@@ -159,4 +159,13 @@ public interface ManagementApi {
    */
   Future<JsonObject> publishDataFromAdapter(JsonObject json, DataBrokerService databroker);
 
+  /**
+   * publish all adapter from exchange.
+   *
+   * @param json request json
+   * @param databroker DataBrokerService object
+   * @return Future
+   */
+  Future<JsonObject> publishAllAdapterForUser(JsonObject json, DataBrokerService databroker);
+
 }

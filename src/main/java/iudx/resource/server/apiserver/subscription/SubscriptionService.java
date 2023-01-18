@@ -10,10 +10,9 @@ import static iudx.resource.server.apiserver.util.Constants.SELECT_SUB_SQL;
 import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
 import static iudx.resource.server.apiserver.util.Constants.SUB_TYPE;
 import static iudx.resource.server.apiserver.util.Constants.UPDATE_SUB_SQL;
-import static iudx.resource.server.databroker.util.Constants.RESULTS;
-import static iudx.resource.server.databroker.util.Constants.TITLE;
-import static iudx.resource.server.databroker.util.Constants.TYPE;
+import static iudx.resource.server.databroker.util.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.Future;
@@ -235,6 +234,23 @@ public class SubscriptionService {
     subscription.get(json).onComplete(handler -> {
       if (handler.succeeded()) {
         promise.complete(handler.result());
+      } else {
+        JsonObject res = new JsonObject(handler.cause().getMessage());
+        promise.fail(generateResponse(res).toString());
+      }
+    });
+    return promise.future();
+  }
+  public Future<JsonObject> getAllSubscriptionQueueForUser(JsonObject json, DataBrokerService databroker) {
+    LOGGER.info("getAllSubscriptionQueueForUser() method started");
+    Promise<JsonObject> promise = Promise.promise();
+    databroker.listAllQueue(json,handler->{
+      if (handler.succeeded()) {
+        JsonObject response = new JsonObject();
+        response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+        response.put(TITLE, "success");
+        response.put(RESULTS, new JsonArray().add(handler.result()));
+        promise.complete(response);
       } else {
         JsonObject res = new JsonObject(handler.cause().getMessage());
         promise.fail(generateResponse(res).toString());
