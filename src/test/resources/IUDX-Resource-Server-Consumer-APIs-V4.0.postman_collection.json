@@ -21022,7 +21022,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{openResourceToken}}",
+								"value": "abcd",
 								"type": "text"
 							},
 							{

@@ -2305,7 +2305,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
-      description: The `resourceattribute` API used by admin user to update unique attribute for a resource in DX(Data exchange).
+      description: The `resourceattribute` API used by admin user to delete unique attribute for a resource in DX(Data exchange).
 
 
 
