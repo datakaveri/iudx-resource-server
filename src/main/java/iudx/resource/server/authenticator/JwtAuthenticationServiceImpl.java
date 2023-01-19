@@ -102,7 +102,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     boolean skipResourceIdCheck =
         (endPoint.equalsIgnoreCase(apis.getSubscriptionUrl())
             && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")))
-            || endPoint.equalsIgnoreCase("/management/user/resetPassword")
+            || endPoint.equalsIgnoreCase(apis.getManagementBasePath())
             || endPoint.equalsIgnoreCase(apis.getIudxConsumerAuditUrl())
             || endPoint.equalsIgnoreCase("/admin/revokeToken")
             || endPoint.equalsIgnoreCase("/admin/resourceattribute")
@@ -145,8 +145,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
                 json.put(JSON_USERID, result.jwtData.getSub());
                 return Future.succeededFuture(true);
               } else if (!skipResourceIdCheck
-                  && (!result.isOpen || endPoint.equalsIgnoreCase("/ngsi-ld/v1/subscription")
-                      || endPoint.equalsIgnoreCase("/ngsi-ld/v1/ingestion"))) {
+                  && (!result.isOpen || endPoint.equalsIgnoreCase(apis.getSubscriptionUrl())
+                      || endPoint.equalsIgnoreCase(apis.getIngestionPath()))) {
                 return isValidId(result.jwtData, id);
               } else {
                 return Future.succeededFuture(true);

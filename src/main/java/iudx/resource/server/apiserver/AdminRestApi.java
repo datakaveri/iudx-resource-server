@@ -109,7 +109,7 @@ public final class AdminRestApi {
         RMQbrokerService.publishMessage(rmqMessage, TOKEN_INVALID_EX, TOKEN_INVALID_EX_ROUTING_KEY,
             rmqHandler -> {
               if (rmqHandler.succeeded()) {
-                Future.future(fu -> updateAuditTable(context));
+//                Future.future(fu -> updateAuditTable(context));
                 handleResponse(response, SUCCESS, SUCCESS_URN);
               } else {
                 LOGGER.error(rmqHandler.cause());

@@ -422,6 +422,16 @@ public class ApiServerVerticle extends AbstractVerticle {
                 .mountSubRouter(IUDX_MANAGEMENT_URL, new ManagementRestApi(vertx, databroker, postgresService,
                         meteringService, managementApi,api).init());
 
+        router.
+                post(dxApiBasePath + RESET_PWD).
+                handler(AuthHandler.create(vertx,api)).
+                handler(handler -> {
+                    new ManagementRestApi(vertx, databroker, postgresService,
+                    meteringService, managementApi,api).resetPassword(handler);
+        });
+
+
+
         router.route().last().handler(requestHandler -> {
             HttpServerResponse response = requestHandler.response();
             response

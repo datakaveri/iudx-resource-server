@@ -130,6 +130,9 @@ public class Deployer {
       LOGGER.fatal("Failed to deploy " + moduleName + " cause: Not Found");
       return;
     }
+    //get common configs and add this to config object
+    JsonObject commonConfigs=configs.getJsonObject("commonConfig");
+    config.mergeIn(commonConfigs, true);
     int numInstances = config.getInteger("verticleInstances");
     DeploymentOptions deploymentOptions =
         new DeploymentOptions().setInstances(numInstances).setConfig(config);

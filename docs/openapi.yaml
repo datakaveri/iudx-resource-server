@@ -15,6 +15,10 @@ consumes:
 info:
   title: "Data exchange Resource Server APIs"
   version: 4.0.0
+  x-logo:
+    url: "https://iudx.org.in/wp-content/uploads/2020/12/iudx-ideal.png"
+    backgroundColor: "#FFFFFF"
+    altText: "IUDX logo"
   description: |
     # Introduction
     The Resource Server is DXs'(Data exchange) data store which allows publication, subscription and discovery of data.
@@ -24,24 +28,33 @@ info:
     It enables *Consumers* of datasources to search and query for data using HTTPs APIs.
     It enables *Streaming Consumer* a.k.a [Subscribers] of datasources to stream data using AMQP streaming protocol over TLS.
     
-    # Base path
-    Base path is the path on which API is served, relative to the host. It is the initial part of the API. 
-    The base path value could be configured according to the deployment.
 
-    **Currently, the following APIs have `/ngsi-ld/v1` base path**
-    -  **/entities**
-    -  **/temporal/entities**
-    -  **/temporal/entityOperations/query**
-    -  **/entityOperations/query**
-    -  **/subscription**
-    -  **/async/search**
-    -  **/async/status**
-    -  **/consumer/audit**
-    -  **/provider/audit**
-    -  **/ingestion**
-    -  **/ingestion/{id}**
-    - **/user/resetPassword**
-    <br>
+    # Configurations
+    - **Server**: 
+      - In the doc, we display the server url to be https://example.com with the hostname as example.com
+      - This could be configured according to the deployment
+    - **Base path**:
+      - Base path is the path on which API is served, relative to the host
+      - It is the initial part of the API
+      - The base path value could be configured according to the deployment
+      - Currently, the following APIs have `/ngsi-ld/v1` base path
+          -  /entities
+          -  /temporal/entities
+          -  /temporal/entityOperations/query
+          -  /entityOperations/query
+          -  /subscription
+          -  /async/search
+          -  /async/status
+          -  /consumer/audit
+          -  /provider/audit
+          -  /ingestion
+          -  /ingestion/{id}
+          - /user/resetPassword
+      <br>
+    - **Request Samples**:
+      - The `<tokeValue>` in the header of request sample could be replaced with respective token value [Also refer Tokens section [here](#section/Tokens)]
+      - The `<publicKeyValue>` in the header of request sample could be replaced with the respective public key [Also refer Encryption section [here](#section/Encryption)]
+      - The `<payload>` in the request sample could be replaced with the payload given adjacent to the request sample
     
     
     # Tokens
@@ -61,10 +74,9 @@ info:
       - <b>limit</b> : The size parameter allows you to configure the maximum results to be returned  ( <i>default: 5000</i> ,<i>minValue: 0</i>, <i>maxValue: 5000</i> )
     
     # Encryption
-    All the count and search APIs have a feature for encryption.
-    To get the data in encrypted format, the user could provide a `publicKey` in the header, with the value that is generated from [lazySodium sealed box](https://github.com/terl/lazysodium-java/wiki/Getting-started). 
+    All the count and search APIs have a feature to get encrypted data.
+    The user could provide a `publicKey` in the header. 
     The header value should be in _url-safe base64 format_. 
-    The encrypted data could be decrypted using the lazysodium sealed box by supplying the private and public key.
     
     **Encryption is applicable only for**
     -  **/entities**
@@ -135,7 +147,7 @@ tags:
       Admin API provides the ability to the admin user to perform administrative tasks such as invalidating a user token, create unique attribute setting for resource group or resource item.    
 
 servers:
-  - url: 'https://rs.iudx.io/ngsi-ld/v1'
+  - url: 'https://example.com/ngsi-ld/v1'
     description: 'Development Server URL'
 
 paths:
@@ -200,9 +212,18 @@ paths:
         - lang: 'cURL'
           label: 'get latest data'
           source: |
-            {server_url}/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta
-      description: |
-        The <b> Latest Data API </b> is used to get the latest (last published) data of a resource. <br /> It uses the <b> data exchange ID </b> a.k.a `id` to query the resource server. <br />  To get data a <b> valid data exchange Auth token</b> is mandatory.  <br/> The `/entities` end point followed by `id` as a <b>path parameter</b> is used to get the latest data.
+              curl --location --request GET 'https://example.com/ngsi-ld/v1/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta' \
+              --header 'token: <tokenValue>'
+
+        - lang: 'cURL'
+          label: 'get encrypted data'
+          source: |
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta' \
+            --header 'token: <tokenValue>' \
+            --header 'publicKey: <publicKeyValue>'
+
+          description: |
+              The <b> Latest Data API </b> is used to get the latest (last published) data of a resource. <br /> It uses the <b> data exchange ID </b> a.k.a `id` to query the resource server. <br />  To get data a <b> valid data exchange Auth token</b> is mandatory.  <br/> The `/entities` end point followed by `id` as a <b>path parameter</b> is used to get the latest data.
 
       deprecated: false
 
@@ -326,31 +347,53 @@ paths:
         - lang: 'cURL'
           label: 'search by attribute'
           source: |
-            {server_url}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>15.0
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&q=referenceLevel>15.0' \
+            --header 'token: <tokenValue>'
+        - lang: 'cURL'
+          label: 'get encrypted data'
+          source: |
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&q=referenceLevel>15.0' \
+            --header 'token: <tokenValue>'\
+            --header 'publicKey: <publicKeyValues>'
+
         - lang: 'cURL'
           label: 'search by circle'
           source: |
-            {server_url}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxdistance=10&geometry=Point&coordinates=[21.178,72.834]&offset=0&limit=10
+              curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxdistance=10&geometry=Point&coordinates=[21.178,72.834]&offset=0&limit=10' \
+              --header 'token: <tokenValue>'
+
         - lang: 'cURL'
           label: 'search by polygon'
           source: |
-            {server_url}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.76,21.15],[72.76,21.13],[72.78,21.13],[72.78,21.15],[72.76,21.15]]]
+              curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.76,21.15],[72.76,21.13],[72.78,21.13],[72.78,21.15],[72.76,21.15]]]' \
+              --header 'token: <tokenValue>'
+
         - lang: 'cURL'
           label: 'search by bbox'
           source: |
-            {server_url}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,21.2],[72.8297,21.15]]
+              curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,21.2],[72.8297,21.15]]' \
+              --header 'token: <tokenValue>'
+
         - lang: 'cURL'
           label: 'search by linestring'
           source: |
-            {server_url}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.84,21.19],[72.84,21.17]]
+              curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.84,21.19],[72.84,21.17]]' \
+              --header 'token: <tokenValue>'
+
+
         - lang: 'cURL'
           label: 'search by attribute and filter'
           source: |
-            {server_url}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>15.0&attrs=id,currentLevel,referenceLevel
+              curl --location --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&q=referenceLevel>15.0&attrs=id,currentLevel,referenceLevel' \
+              --header 'token: <tokenValue>'
+
+
         - lang: 'cURL'
           label: 'count by circle'
           source: |
-            {server_url}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&options=count
+              curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&options=count' \
+              --header 'token: <tokenValue>'
+
 
       deprecated: false
       description: |
@@ -555,31 +598,51 @@ paths:
         - lang: 'cURL'
           label: 'search by between'
           source: |
-            {server_url}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=during&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z' \
+            --header 'token: <tokenValue>'
+
+        - lang: 'cURL'
+          label: 'get encrypted data'
+          source: |
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=during&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z' \
+            --header 'token: <tokenValue>' \
+            --header 'publicKey: <publicKeyValue>'
+
         - lang: 'cURL'
           label: 'search by before'
           source: |
-            {server_url}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-10-19T12:00:00Z
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=before&time=2020-10-19T12:00:00Z' \
+            --header 'token: <tokenValue>'
+
         - lang: 'cURL'
           label: 'search by after'
           source: |
-            {server_url}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-10-18T14:20:01Z
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=after&time=2020-10-18T14:20:01Z' \
+            --header 'token: <tokenValue>'
+
         - lang: 'cURL'
           label: 'search by between and filter'
           source: |
-            {server_url}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=between&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z&attrs=id,currentLevel,referenceLevel
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=between&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z&attrs=id,currentLevel,referenceLevel' \
+            --header 'token: <tokenValue>'        
+
         - lang: 'cURL'
           label: 'count by after'
           source: |
-            {server_url}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-10-18T14:20:01Z&options=count
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=after&time=2020-10-18T14:20:01Z&options=count' \
+            --header 'token: <tokenValue>'
+
         - lang: 'cURL'
           label: 'complex search'
           source: |
-            {server_url}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-10-19T14:00:00Z&attrs=id,location,speed
+            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-10-19T14:00:00Z&attrs=id,location,speed' \
+            --header 'token: <tokenValue>'
+
         - lang: 'cURL'
           label: 'complex count'
           source: |
-            {server_url}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-10-19T14:00:00Z&options=count
+            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-10-19T14:00:00Z&options=count' \
+            --header 'token: <tokenValue>'
 
 
       deprecated: false
@@ -670,6 +733,24 @@ paths:
             maxLength: 512
             pattern: '^[a-zA-Z0-9\/\@\.]*$'
 
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'Spatial complex query'
+          source: |
+            curl --location --request POST 'https://example.com/ngsi-ld/v1/entityOperations/query' \
+            --header 'token: <tokenValue>' \
+            --header 'Content-Type: application/json' \
+            --data-raw '<payload>'
+
+        - lang: 'cURL'
+          label: 'get encrypted data'
+          source: |
+            curl --location --request POST 'https://example.com/ngsi-ld/v1/entityOperations/query' \
+            --header 'token: <tokenValue>' \
+            --header 'publicKey: <publicKeyValue>' \
+            --header 'Content-Type: application/json' \
+            --data-raw '<payload>'
+
       requestBody:
         description: ''
         content:
@@ -679,7 +760,7 @@ paths:
             example:
               type: Query
               entities:
-                - id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta
+                - id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta
               geoQ:
                 geometry: Point
                 coordinates: [21.178,72.834]
@@ -798,6 +879,23 @@ paths:
             maxLength: 512
             pattern: '^[a-zA-Z0-9\/\@\.]*$'
 
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'Spatial + temporal complex query'
+          source: |
+            curl --location --request POST 'https://example.com/ngsi-ld/v1/temporal/entityOperations/query' \
+            --header 'token: <tokenValue>' \
+            --header 'Content-Type: application/json' \
+            --data-raw '<payload>'
+
+        - lang: 'cURL'
+          label: 'get encrypted data'
+          source: |
+            curl --location --request POST 'https://example.com/ngsi-ld/v1/temporal/entityOperations/query' \
+            --header 'token: <tokenValue>' \
+            --header 'publicKey: <publicKeyValue>' \
+            --header 'Content-Type: application/json' \
+            --data-raw '<payload>'
 
       requestBody:
         description: ''
@@ -808,7 +906,7 @@ paths:
             example:
               type: Query
               entities:
-                - id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta
+                - id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta
               geoQ:
                 geometry: Point
                 coordinates: [21.178,72.834]
@@ -942,6 +1040,15 @@ paths:
             maxLength: 512
             pattern: '^[a-zA-Z0-9\/\@\.]*$'
 
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'ingestion'
+          source: |
+            curl --location --request POST 'https://example.com/ngsi-ld/v1/ingestion' \
+            --header 'token: <tokenValue>' \
+            --header 'Content-Type: application/json' \
+            --data-raw '<payload>'
+
       requestBody:
         description: ''
         content:
@@ -1035,9 +1142,10 @@ paths:
 
       x-codeSamples:
         - lang: 'cURL'
-          label: 'by id'
+          label: 'ingestion by id'
           source: |
-            {server_url}/ingestion/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/rs-adaptor-test/adaptor-test-resource
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/ingestion/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/rs-adaptor-test/adaptor-test-resource' \
+            --header 'token: <tokenValue>'
 
       description: |
         Retrieve Ingestion API allows a provider to fetch the list of `Subscribers` a.k.a [Streaming Consumers] for the data. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
@@ -1101,9 +1209,10 @@ paths:
 
       x-codeSamples:
         - lang: 'cURL'
-          label: 'by id'
+          label: 'ingestion by id'
           source: |
-            {server_url}/ingestion/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/rs-adaptor-test/adaptor-test-resource
+            curl --location --request DELETE 'https://example.com/ngsi-ld/v1/ingestion/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/rs-adaptor-test/adaptor-test-resource' \
+            --header 'token: <tokenValue>'
 
       description: |
         Delete ingestion Adapter API allows a provider to delete a publisher. Once this is done all the `Subscribers` a.k.a [Streaming Consumers] and `Consumers` of the data will stop receiving further updates. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
@@ -1139,6 +1248,17 @@ paths:
           schema:
             type: string
             enum: [streaming]
+
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'subscription'
+          source: |
+            curl --location --request POST 'https://example.com/ngsi-ld/v1/subscription' \
+            --header 'token: <tokenValue>' \
+            --header 'options: streaming' \
+            --header 'Content-Type: application/json' \
+            --data-raw '<payload>'
+
       requestBody:
         description: 'Successful query'
         content:
@@ -1249,9 +1369,11 @@ paths:
 
       x-codeSamples:
         - lang: 'cURL'
-          label: 'by id'
+          label: 'subscription by id'
           source: |
-            {server_url}/subscription/iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/subscription/iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d' \
+            --header 'token: <tokenValue>' \
+            --header 'options: streaming'
 
       description: |
         Retrieve Subscription API allows a subscriber to fetch the list of `entities` subscribed. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
@@ -1297,9 +1419,13 @@ paths:
 
       x-codeSamples:
         - lang: 'cURL'
-          label: 'Request URL'
+          label: 'subscription by id'
           source: |
-            {server_url}/subscription/iudx.io/iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application
+            curl --location --request PATCH 'https://example.com/ngsi-ld/v1/subscription/iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d' \
+            --header 'token: <tokenValue>' \
+            --header 'options: streaming' \
+            --header 'Content-Type: application/json' \
+            --data-raw '<payload>'
 
       requestBody:
         description: ''
@@ -1380,9 +1506,13 @@ paths:
 
       x-codeSamples:
         - lang: 'cURL'
-          label: 'Request URL'
+          label: 'subscription by id'
           source: |
-            {server_url}/subscription/iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application
+            curl --location --request PUT 'https://example.com/ngsi-ld/v1/subscription/iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d' \
+            --header 'token: <tokenValue>' \
+            --header 'options: streaming' \
+            --header 'Content-Type: application/json' \
+            --data-raw '<payload>'
 
       requestBody:
         description: ''
@@ -1492,9 +1622,11 @@ paths:
 
       x-codeSamples:
         - lang: 'cURL'
-          label: 'by id'
+          label: 'subscription by id'
           source: |
-            {server_url}/subscription/iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application
+            curl --location --request DELETE 'https://example.com/ngsi-ld/v1/subscription/iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d' \
+            --header 'options: streaming' \
+            --header 'token: <tokenValue>'
 
       description: |
         Delete Subscription API allows a subscriber to delete the subscription. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
@@ -1521,6 +1653,13 @@ paths:
             type: string
             maxLength: 512
             pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'reset password'
+          source: |
+            curl --location --request POST 'https://example.com/ngsi-ld/v1/user/resetPassword' \
+            --header 'token: <tokenValue>'
 
       responses:
         200:
@@ -1632,9 +1771,17 @@ paths:
 
       x-codeSamples:
         - lang: 'cURL'
-          label: 'Request URL'
+          label: 'async search'
           source: |
-            {server_url}/async/search?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=between&time=2020-10-10T14:20:00Z&endtime=2020-10-13T14:20:00Z
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/async/search?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=between&time=2020-10-10T14:20:00Z&endtime=2020-10-13T14:20:00Z' \
+            --header 'token: <tokenValue>'
+
+        - lang: 'cURL'
+          label: 'get encrypted data'
+          source: |
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/async/search?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=between&time=2020-10-10T14:20:00Z&endtime=2020-10-13T14:20:00Z' \
+            --header 'token: <tokenValue>' \
+            --header 'publicKey: <publicKeyValue>'
 
       responses:
         201:
@@ -1691,9 +1838,17 @@ paths:
 
       x-codeSamples:
         - lang: 'cURL'
-          label: 'Request URL'
+          label: 'async status'
           source: |
-            {server_url}/async/status?searchID=asasdasd-asdasd-aasasd-dasdasd
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/async/status?searchID=sasdasd-asdasd-aasasd-dasdasd' \
+            --header 'token: <tokenValue>'
+
+        - lang: 'cURL'
+          label: 'get encrypted data'
+          source: |
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/async/status?searchID=sasdasd-asdasd-aasasd-dasdasd' \
+            --header 'token: <tokenValue>' \
+            --header 'publicKey: <publicKeyValue>'
 
       responses:
         200:
@@ -1783,9 +1938,10 @@ paths:
 
       x-codeSamples:
         - lang: 'cURL'
-          label: 'Request URL'
+          label: 'get data read query'
           source: |
-            {server_url}/consumer/audit?timerel=between&time=2022-06-20T00:00:00Z&endTime=2022-06-21T16:00:00Z
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/consumer/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=during&time=2022-03-20T14:20:00Z&endTime=2022-03-24T14:20:00Z&api=/ngsi-ld/v1/temporal/entities' \
+            --header 'token: <tokenValue>'
 
       responses:
         200:
@@ -1885,9 +2041,10 @@ paths:
 
       x-codeSamples:
         - lang: 'cURL'
-          label: 'Request URL'
+          label: 'get data read query'
           source: |
-            {server_url}/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2021-11-20T14:20:00Z&endTime=2021-12-02T14:20:00Z&api=/{basePath}/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2021-11-20T14:20:00Z&endTime=2021-12-02T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86' \
+            --header 'token: <tokenValue>'
 
       responses:
         200:
@@ -1920,7 +2077,7 @@ paths:
 
   /admin/revokeToken:
     servers:
-      - url: 'https://rs.iudx.io/'
+      - url: 'https://example.com/'
         description: 'Development Server URL '
     post:
       tags:
@@ -1937,6 +2094,16 @@ paths:
             type: string
             maxLength: 512
             pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'revoke token'
+          source: |
+            curl --location --request POST 'https://example.com/admin/revokeToken' \
+            --header 'token: <tokenValue>' \
+            --header 'Content-Type: application/json' \
+            --data-raw '<payload>'
+
       requestBody:
         description: ''
         content:
@@ -1970,8 +2137,8 @@ paths:
 
   /admin/resourceattribute:
     servers:
-      - url: 'https://rs.iudx.io/'
-        description: 'Some description '
+      - url: 'https://example.com/'
+        description: 'Development Server URL '
     post:
       tags:
         - Admin
@@ -1987,6 +2154,17 @@ paths:
             type: string
             maxLength: 512
             pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'create unique attribute'
+          source: |
+            curl --location --request POST 'https://example.com/admin/resourceattribute' \
+            --header 'token: <tokenValue>' \
+            --header 'Content-Type: application/json' \
+            --data-raw '<payload>'
+      
+
       requestBody:
         description: ''
         content:
@@ -1994,7 +2172,7 @@ paths:
             schema:
               $ref: '#/components/schemas/unique-attribute'
             example:
-              id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta
+              id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta
               attribute: license_plate
         required: true
       responses:
@@ -2034,6 +2212,17 @@ paths:
             type: string
             maxLength: 512
             pattern: '^[a-zA-Z0-9\/\@\.]*$'
+
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'update unique attribute'
+          source: |
+            curl --location --request UPDATE 'https://example.com/admin/resourceattribute' \
+            --header 'token: <tokenValue>' \
+            --header 'Content-Type: application/json' \
+            --data-raw '<payload>'
+      
+
       requestBody:
         description: ''
         content:
@@ -2041,7 +2230,7 @@ paths:
             schema:
               $ref: '#/components/schemas/unique-attribute'
             example:
-              id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta
+              id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta
               attribute: license_plate
         required: true
       responses:
@@ -2068,7 +2257,7 @@ paths:
 
     delete:
       tags:
-        - Admin
+         - Admin
       summary: Delete unique attribute
       operationId: delete a unique attribute setting for resource
       parameters:
@@ -2088,6 +2277,14 @@ paths:
           schema:
             type: string
             maxLength: 512
+
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'delete unique attribute'
+          source: |
+              curl --location --request DELETE 'https://example.com/admin/resourceattribute?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta' \
+              --header 'token: <tokenValue>'
+
       responses:
         200:
           description: 'api success response'
@@ -2141,7 +2338,7 @@ components:
         name: alias-name-of-application
         type: subscription
         entities:
-          - iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta
+          - iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta
     appendstreamingsubscriptionrequest:
       title: appendstreamingsubscriptionrequest
       required:
@@ -2170,7 +2367,7 @@ components:
         name: alias-name-of-application
         type: subscription
         entities:
-          - iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information
+          - iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information
     updatestreamingsubscriptionrequest:
       title: updatestreamingsubscriptionrequest
       required:
@@ -2199,7 +2396,7 @@ components:
         name: alias-name-of-application
         type: subscription
         entities:
-          - iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information
+          - iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information
     geospatial-circlerequest:
       title: geospatial-circlerequest
       required:
@@ -2220,7 +2417,7 @@ components:
       example:
         type: Query
         entities:
-          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         geoQ:
           geometry: Point
           coordinates:
@@ -2239,7 +2436,7 @@ components:
           maxLength: 512
           description: 'A <b> valid data exchange ID </b> of the resource.  <br/> If the resource is a <b> protected resource </b> a <b> valid data exchange Auth token </b> is <b> mandatory </b>  in the header parameter of the request.  <br/> Information about the data exchange ID of the resource and security scope of the resource can be obtained from the <b> DX(Data exchange) catalogue server </b> .'
       example:
-        id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+        id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/varanasi-swm-vehicles/varanasi-swm-vehicles-live
     GeoQ:
       title: GeoQ
       required:
@@ -2298,7 +2495,7 @@ components:
       example:
         type: Query
         entities:
-          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         geoQ:
           geometry: Point
           coordinates:
@@ -2365,7 +2562,7 @@ components:
       example:
         type: Query
         entities:
-          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         geoQ:
           geometry: linestring
           coordinates:
@@ -2397,7 +2594,7 @@ components:
       example:
         type: Query
         entities:
-          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         geoQ:
           geometry: bbox
           coordinates:
@@ -2427,7 +2624,7 @@ components:
       example:
         type: Query
         entities:
-          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         attrs: resource-id,latitude,longitude
     geospatial-circle-responsefilterrequest:
       title: geospatial-circle+responsefilterrequest
@@ -2452,7 +2649,7 @@ components:
       example:
         type: Query
         entities:
-          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         geoQ:
           geometry: Point
           coordinates:
@@ -2481,7 +2678,7 @@ components:
       example:
         type: Query
         entities:
-          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         temporalQ:
           timerel: between
           time: 2020-06-01T14:20:00Z
@@ -2534,7 +2731,7 @@ components:
       example:
         type: Query
         entities:
-          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         temporalQ:
           timerel: before
           time: 2020-06-01T14:20:00Z
@@ -2594,7 +2791,7 @@ components:
       example:
         type: Query
         entities:
-          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         geoQ:
           geometry: Point
           coordinates:
@@ -2644,7 +2841,7 @@ components:
       example:
         type: Query
         entities:
-          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/varanasi-swm-vehicles/varanasi-swm-vehicles-live
+          - id: iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/varanasi-swm-vehicles/varanasi-swm-vehicles-live
         geoQ:
           geometry: Point
           coordinates:
@@ -2666,7 +2863,7 @@ components:
             type: string
       example:
         entities:
-          - iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/alias-name-of-application
+          - iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/alias-name-of-application
 
     entityresponse:
       title: entityresponse
@@ -2739,7 +2936,7 @@ components:
               ],
               "type": "Point"
             },
-            "id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+            "id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta"
           }
         ]
         limit: 5000
@@ -2822,15 +3019,15 @@ components:
         results: [
           {
             "database": [
-              "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/rs-adaptor-test/adaptor-test-resource"
+              "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/rs-adaptor-test/adaptor-test-resource"
             ],
             "adaptorLogs": [
-              "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/rs-adaptor-test/adaptor-test-resource.dataIssue",
-              "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/rs-adaptor-test/adaptor-test-resource.downstreamIssue",
-              "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/rs-adaptor-test/adaptor-test-resource.heartbeat"
+              "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/rs-adaptor-test/adaptor-test-resource.dataIssue",
+              "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/rs-adaptor-test/adaptor-test-resource.downstreamIssue",
+              "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/rs-adaptor-test/adaptor-test-resource.heartbeat"
             ],
             "redis-latest": [
-              "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/rs-adaptor-test/adaptor-test-resource"
+              "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/rs-adaptor-test/adaptor-test-resource"
             ]
           }
         ]
@@ -2920,7 +3117,7 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-          { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]
+          { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/surat-itms/.*"]
           }
         ]
 
@@ -2945,7 +3142,7 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-          { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]
+          { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/surat-itms/.*"]
           }
         ]
 
@@ -2970,7 +3167,7 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-          { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms/.*"]
+          { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/surat-itms/.*"]
           }
         ]
 
@@ -3076,7 +3273,7 @@ components:
         results: [
           {"status":"COMPLETE",
            "progress": 100.00,
-           "file-download-url": "https://example.io/filename",
+           "file-download-url": "https://example.com/filename",
            "searchId":"asasdasd-asdasd-aasasd-dasdasd",
            "userId":"aefvsdfsdf-exvsf-cezxcwscs-adasd"
           }
@@ -3152,7 +3349,7 @@ components:
         title: success
         results: [
           {
-            "id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055",
+            "id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055",
             "api": "/{basePath}/entities",
             "userid": "15c7506f-c800-48d6-adeb-0542b03947c6",
             "epochtime": 1655683200000,
@@ -3186,7 +3383,7 @@ components:
         attribute:
           type: string
       example:
-        id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta
+        id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta
         attribute: license_plate
 
     standardSuccessResponse:

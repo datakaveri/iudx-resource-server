@@ -534,6 +534,93 @@
 					"response": []
 				},
 				{
+					"name": "200 (success) - Geo-Query (circle) with optional encryption",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code\r",
+									"pm.test(\"response is 200 (OK)\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Test the response header\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"// Test the response\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    const resultsjsonData = body.results[0];\r",
+									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							},
+							{
+								"key": "publicKey",
+								"value": "{{publicKeyValue}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxdistance=10&geometry=Point&coordinates=[21.178,72.834]&offset=0&limit=10",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "geoproperty",
+									"value": "location"
+								},
+								{
+									"key": "georel",
+									"value": "near;maxdistance=10"
+								},
+								{
+									"key": "geometry",
+									"value": "Point"
+								},
+								{
+									"key": "coordinates",
+									"value": "[21.178,72.834]"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "204 (Empty Response) - Geo-Query (circle)",
 					"event": [
 						{
@@ -1905,6 +1992,89 @@
 								"key": "token",
 								"value": "{{secureResourceToken}}",
 								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "geoproperty",
+									"value": "location"
+								},
+								{
+									"key": "georel",
+									"value": "near;maxDistance=10"
+								},
+								{
+									"key": "geometry",
+									"value": "Point"
+								},
+								{
+									"key": "coordinates",
+									"value": "[21.178,72.834]"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) - Geo-Query (circle) with optional encryption",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code\r",
+									"pm.test(\"response is 200 (OK)\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Test the response header\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"// Test the response\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    const resultsjsonData = body.results[0];\r",
+									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 2132);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							},
+							{
+								"key": "publicKey",
+								"value": "{{publicKeyValue}}",
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"url": {
@@ -3439,6 +3609,92 @@
 					"response": []
 				},
 				{
+					"name": "200 (success) temporal (between) with optional encryption",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code\r",
+									"pm.test(\"response is 200 (OK)\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Test the response header\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"// Test the response\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    const resultsjsonData = body.results[0];\r",
+									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							},
+							{
+								"key": "publicKey",
+								"value": "{{publicKeyValue}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"
+								},
+								{
+									"key": "timerel",
+									"value": "during"
+								},
+								{
+									"key": "time",
+									"value": "2020-10-18T14:20:00Z"
+								},
+								{
+									"key": "endtime",
+									"value": "2020-10-19T14:20:00Z"
+								},
+								{
+									"key": "limit",
+									"value": "50",
+									"disabled": true
+								},
+								{
+									"key": "offset",
+									"value": "0",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "204 (Empty Response) temporal (between)",
 					"event": [
 						{
@@ -4630,6 +4886,86 @@
 								"key": "token",
 								"type": "text",
 								"value": "{{openResourceToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"
+								},
+								{
+									"key": "timerel",
+									"value": "during"
+								},
+								{
+									"key": "time",
+									"value": "2020-10-18T14:20:00Z"
+								},
+								{
+									"key": "endtime",
+									"value": "2020-10-19T14:20:00Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) temporal (between) with optional encryption",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code\r",
+									"pm.test(\"response is 200 (OK)\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Test the response header\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"// Test the response\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    const resultsjsonData = body.results[0];\r",
+									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 95);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"type": "text",
+								"value": "{{openResourceToken}}"
+							},
+							{
+								"key": "publicKey",
+								"value": "{{publicKeyValue}}",
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"url": {
@@ -5909,6 +6245,86 @@
 								"key": "token",
 								"value": "{{openResourceToken}}",
 								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>15.0",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"
+								},
+								{
+									"key": "q",
+									"value": "referenceLevel>15.0"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) attribute > with optional encryption",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    const resultsjsonData = body.results[0];",
+									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"referenceLevel\", 15.9);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							},
+							{
+								"key": "publicKey",
+								"value": "{{publicKeyValue}}",
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"url": {
@@ -7452,6 +7868,82 @@
 								"key": "token",
 								"value": "{{openResourceToken}}",
 								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>15.0&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"
+								},
+								{
+									"key": "q",
+									"value": "referenceLevel>15.0"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) attribute > with optional encryption",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    const resultsjsonData = body.results[0];",
+									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 957);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							},
+							{
+								"key": "publicKey",
+								"value": "{{publicKeyValue}}",
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"url": {
@@ -9109,6 +9601,115 @@
 					"response": []
 				},
 				{
+					"name": "200 (success) - Search - circle geom + temporal before + response filter with optional encryption",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    const resultsjsonData = body.results[0];",
+									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"speed\", 0.0);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"type": "text",
+								"value": "{{secureResourceToken}}"
+							},
+							{
+								"key": "publicKey",
+								"value": "{{publicKeyValue}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-10-19T14:00:00Z&attrs=id,location,speed",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "geoproperty",
+									"value": "location"
+								},
+								{
+									"key": "georel",
+									"value": "near;maxDistance=10"
+								},
+								{
+									"key": "geometry",
+									"value": "Point"
+								},
+								{
+									"key": "coordinates",
+									"value": "[21.178,72.834]"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "time",
+									"value": "2020-10-19T14:00:00Z"
+								},
+								{
+									"key": "attrs",
+									"value": "id,location,speed"
+								},
+								{
+									"key": "options",
+									"value": "count",
+									"disabled": true
+								},
+								{
+									"key": "offset",
+									"value": "0",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "400",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "204 (Empty Response) - Search - circle geom + temporal before + response filter",
 					"event": [
 						{
@@ -9754,6 +10355,98 @@
 								"key": "token",
 								"type": "text",
 								"value": "{{secureResourceToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-10-19T14:00:00Z&options=count",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "geoproperty",
+									"value": "location"
+								},
+								{
+									"key": "georel",
+									"value": "near;maxDistance=10"
+								},
+								{
+									"key": "geometry",
+									"value": "Point"
+								},
+								{
+									"key": "coordinates",
+									"value": "[21.178,72.834]"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "time",
+									"value": "2020-10-19T14:00:00Z"
+								},
+								{
+									"key": "options",
+									"value": "count"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) - Search - circle geom + temporal before + response filter with optional encryption",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    const resultsjsonData = body.results[0];",
+									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 1933);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"type": "text",
+								"value": "{{secureResourceToken}}"
+							},
+							{
+								"key": "publicKey",
+								"value": "{{publicKeyValue}}",
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"url": {
@@ -10476,6 +11169,68 @@
 					"response": []
 				},
 				{
+					"name": "200 (success) Get Latest data (Secure Resource) with optional encryption",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    const resultsjsonData = body.results[0];",
+									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							},
+							{
+								"key": "publicKey",
+								"value": "{{publicKeyValue}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"entities",
+								"iisc.ac.in",
+								"89a36273d77dac4cf38114fca1bbe64392547f86",
+								"rs.iudx.io",
+								"surat-itms-realtime-information",
+								"surat-itms-live-eta"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "200 (success) Get Latest data (Open Resource)",
 					"event": [
 						{
@@ -10703,6 +11458,85 @@
 								"key": "token",
 								"value": "{{openResourceToken}}",
 								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>15.0&attrs=id,currentLevel,referenceLevel",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"
+								},
+								{
+									"key": "q",
+									"value": "referenceLevel>15.0"
+								},
+								{
+									"key": "attrs",
+									"value": "id,currentLevel,referenceLevel"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) attribute > with filter with optional encryption",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    const resultsjsonData = body.results[0];",
+									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"referenceLevel\", 15.9);",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							},
+							{
+								"key": "publicKey",
+								"value": "{{publicKeyValue}}",
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"url": {
@@ -11463,6 +12297,81 @@
 								"key": "token",
 								"value": "{{secureResourceToken}}",
 								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n        }\n    ],\n    \"geoQ\": {\n        \"geometry\": \"Point\",\n        \"coordinates\": [21.178,72.834],\n        \"georel\": \"near;maxDistance=10\",\n        \"geoproperty\": \"location\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) - Geo-Query (circle) with optional encryption",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    const resultsjsonData = body.results[0];",
+									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"speed\", 12.2);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							},
+							{
+								"key": "publicKey",
+								"value": "{{publicKeyValue}}",
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"body": {
@@ -13930,6 +14839,73 @@
 								"key": "token",
 								"value": "{{secureResourceToken}}",
 								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"Query\",\n    \"entities\": [\n        {\n            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n        }\n    ],\n    \"geoQ\": {\n        \"geometry\": \"Point\",\n        \"coordinates\": [21.178,72.834],\n        \"georel\": \"near;maxDistance=1000\",\n        \"geoproperty\": \"location\"\n    },\n    \"options\":\"count\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/entityOperations/query",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"entityOperations",
+								"query"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) - Geo-Query (circle) with optional encryption",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    const resultsjsonData = body.results[0];",
+									"    pm.expect(resultsjsonData).to.have.property(\"totalHits\", 82710);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							},
+							{
+								"key": "publicKey",
+								"value": "{{publicKeyValue}}",
+								"type": "text",
+								"disabled": true
 							}
 						],
 						"body": {
@@ -20015,6 +20991,75 @@
 					"response": []
 				},
 				{
+					"name": "401 (not authorized) Get total API calls made",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 401 (Not Authorized)\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Not Authorized\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							},
+							{
+								"key": "options",
+								"value": "count",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/consumer/audit?timerel=between&time=2022-06-20T00:00:00Z&endTime=2022-06-21T16:00:00Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"consumer",
+								"audit"
+							],
+							"query": [
+								{
+									"key": "timerel",
+									"value": "between"
+								},
+								{
+									"key": "time",
+									"value": "2022-06-20T00:00:00Z"
+								},
+								{
+									"key": "endTime",
+									"value": "2022-06-21T16:00:00Z"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "200 (success) Get Data Read Query",
 					"event": [
 						{
@@ -20407,6 +21452,93 @@
 					"response": []
 				},
 				{
+					"name": "401 (not authrorized) Get Data Read Query",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 401 (Not Authorized)\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Not Authorized\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							},
+							{
+								"key": "options",
+								"value": "count",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2021-11-20T14:20:00Z&endTime=2021-12-02T14:20:00Z&api=/{{basePath}}/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"provider",
+								"audit"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+								},
+								{
+									"key": "timerel",
+									"value": "during"
+								},
+								{
+									"key": "time",
+									"value": "2021-11-20T14:20:00Z"
+								},
+								{
+									"key": "endTime",
+									"value": "2021-12-02T14:20:00Z"
+								},
+								{
+									"key": "api",
+									"value": "/{{basePath}}/entityOperations/query"
+								},
+								{
+									"key": "providerID",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86"
+								},
+								{
+									"key": "consumer",
+									"value": "15c7506f-c800-48d6-adeb-0542b03947c6",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "200 (success) Get Data Count Query",
 					"event": [
 						{
@@ -20731,6 +21863,84 @@
 					"response": []
 				},
 				{
+					"name": "200 (Success) Async Search with optional encryption",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code\r",
+									"pm.test(\"response is 201 (Created)\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"// Test the response header\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"// Test the response\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:rs:success\");\r",
+									"    const resultsjsonData = body.result[0];\r",
+									"    pm.expect(resultsjsonData).to.have.property(\"searchId\");\r",
+									"    const searchID = resultsjsonData.searchId;\r",
+									"    pm.globals.set(\"searchID\",searchID);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							},
+							{
+								"key": "publicKey",
+								"value": "{{publicKeyValue}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/async/search?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=between&time=2020-10-10T14:20:00Z&endtime=2020-10-13T14:20:00Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"async",
+								"search"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"
+								},
+								{
+									"key": "timerel",
+									"value": "between"
+								},
+								{
+									"key": "time",
+									"value": "2020-10-10T14:20:00Z"
+								},
+								{
+									"key": "endtime",
+									"value": "2020-10-13T14:20:00Z"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "400 (Bad request) Async Search",
 					"event": [
 						{
@@ -21003,13 +22213,88 @@
 			"name": "Reset Password API",
 			"item": [
 				{
-					"name": "{{base_url}}/management/reset",
+					"name": "200 (Success) Reset user password",
 					"request": {
 						"method": "POST",
 						"header": [
 							{
 								"key": "token",
 								"value": "{{secureResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/user/resetPassword",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"user",
+								"resetPassword"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404 (Not Found) Reset user password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/user/resetPasswords",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"user",
+								"resetPasswords"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (not authorized) Reset user password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 401 (Not Authorized)\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Not Authorized\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "abcd",
 								"type": "text"
 							}
 						],

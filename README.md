@@ -131,6 +131,13 @@ Integration tests are through Postman/Newman whose script can be found from [her
    `newman run <postman-collection-path> -e <postman-environment> --insecure -r htmlextra --reporter-htmlextra-export .`
 5. Reports are stored in `./target/`
 
+### Encryption
+All the count and search APIs have a feature to get encrypted data.
+To get the data in encrypted format, the user could provide a `publicKey` in the header, with the value that is generated from [lazySodium sealed box](https://github.com/terl/lazysodium-java/wiki/Getting-started). 
+The header value should be in _url-safe base64 format_. 
+The encrypted data could be decrypted using the lazysodium sealed box by supplying the private and public key.
+
+
 ## Contributing
 We follow Git Merge based workflow 
 1. Fork this repo

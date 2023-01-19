@@ -37,15 +37,14 @@
 			"enabled": true
 		},
 		{
-			"key": "base_url",
-			"value": "https://rs.iudx.io",
+			"key": "auth-url",
+			"value": "authvertx.iudx.io",
 			"type": "default",
 			"enabled": true
 		},
 		{
-			"key": "auth-url",
-			"value": "authvertx.iudx.io",
-			"type": "default",
+			"key": "publicKeyValue",
+			"value": "",
 			"enabled": true
 		}
 	],
