@@ -17950,82 +17950,6 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "ForAllSubscriptionQueue",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"response is 200 (OK)\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{secureResourceToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"subscription"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "ForAllAdapaterExchange",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"response is 200 (OK)\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{delegateToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/ingestion",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"ngsi-ld",
-								"v1",
-								"ingestion"
-							]
-						}
-					},
-					"response": []
 				}
 			]
 		},
@@ -22384,6 +22308,239 @@
 								"{{basePath}}",
 								"user",
 								"resetPassword"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Summary Adapaters and Subscription",
+			"item": [
+				{
+					"name": "200 - (Success)ForAllSubscriptionQueue",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/subscription",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"subscription"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - (Success)ForAllAdapaterExchange",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{delegateToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/ingestion",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"ingestion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 - (Not Authorized)ForAllSubscriptionQueue",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 401 (Not Authorized)\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "123",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/subscription",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"subscription"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 - (Not Authorized)ForAllAdapaterExchange",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 401 (Not Authorized)\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/ingestion",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"ingestion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404 - (Not Found)ForAllSubscriptionQueue",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 404 (Not Found)\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "123",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/subscriptions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"subscriptions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404 - (Not Found)ForAllAdapaterExchange",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 404 (Not Found)\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/ngsi-ld/v1/ingestions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"ngsi-ld",
+								"v1",
+								"ingestions"
 							]
 						}
 					},
