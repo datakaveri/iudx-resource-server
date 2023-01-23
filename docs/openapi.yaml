@@ -2874,45 +2874,7 @@ components:
         title:
           type: string
         results:
-          type: object
-          properties:
-            id:
-              type: string
-            trip_direction:
-              type: string
-            trip_id:
-              type: string
-            route_id:
-              type: string
-            trip_delay:
-              type: string
-            last_stop_arrival_time:
-              type: string
-            actual_trip_start_time:
-              type: string
-            vehicle_label:
-              type: string
-            observationDateTime:
-              type: string
-            speed:
-              type: string
-            license_plate:
-              type: string
-            last_stop_id:
-              type: string
-            location:
-              type: object
-              coordinates:
-                type: array
-            type:
-              type: string
-        limit:
-          type: string
-        offset:
-          type: string
-        totalHits:
-          type: string
-
+          type: array of fields
       example:
         type: urn:dx:rs:success
         title: success
@@ -2959,20 +2921,7 @@ components:
         title:
           type: string
         results:
-          type: object
-          properties:
-            username:
-              type: string
-            apiKey:
-              type: string
-            id:
-              type: string
-            URL:
-              type: string
-            port:
-              type: string
-            vHost:
-              type: string
+          type: array of fields
       example:
         type: urn:dx:rs:success,
         title: success,
@@ -2999,20 +2948,7 @@ components:
         title:
           type: string
         results:
-          type: object
-          properties:
-            database:
-              type: array
-              items:
-                type: string
-            adaptorLogs:
-              type: array
-              items:
-                type: string
-            redis-latest:
-              type: array
-              items:
-                type: string
+          type: array of fields
       example:
         type: urn:dx:rs:success,
         title: success,
@@ -3067,20 +3003,7 @@ components:
         title:
           type: string
         results:
-          type: object
-          properties:
-            username:
-              type: string
-            apiKey:
-              type: string
-            id:
-              type: string
-            URL:
-              type: string
-            port:
-              type: string
-            vHost:
-              type: string
+          type: array of fields
       example:
         type: urn:dx:rs:success,
         title: success,
@@ -3107,12 +3030,7 @@ components:
         title:
           type: string
         results:
-          type: object
-          properties:
-            entities:
-              type: array
-              items:
-                type: string
+          type: array of fields
       example:
         type: urn:dx:rs:success,
         title: success,
@@ -3132,12 +3050,7 @@ components:
         title:
           type: string
         results:
-          type: object
-          properties:
-            entities:
-              type: array
-              items:
-                type: string
+          type: array of fields
       example:
         type: urn:dx:rs:success,
         title: success,
@@ -3157,12 +3070,7 @@ components:
         title:
           type: string
         results:
-          type: object
-          properties:
-            entities:
-              type: array
-              items:
-                type: string
+          type: array of fields
       example:
         type: urn:dx:rs:success,
         title: success,
@@ -3201,12 +3109,7 @@ components:
         title:
           type: string
         results:
-          type: object
-          properties:
-            username:
-              type: string
-            apiKey:
-              type: string
+          type: array of fields
       example:
         type: urn:dx:rs:success
         title: Successfully changed the password
@@ -3229,10 +3132,7 @@ components:
         title:
           type: string
         results:
-          type: object
-          properties:
-            searchId:
-              type: string
+          type: array of fields
       example:
         type: urn:dx:rs:success
         title: query submitted successfully
@@ -3254,19 +3154,7 @@ components:
         title:
           type: string
         results:
-          type: object
-          properties:
-            status:
-              type: string
-            progress:
-              type: integer
-              format: float
-            file-download-url:
-              type: string
-            searchId:
-              type: string
-            userId:
-              type: string
+          type: array of fields
       example:
         type: urn:dx:rs:success
         title: success
@@ -3292,17 +3180,7 @@ components:
         title:
           type: string
         results:
-          type: object
-          properties:
-            status:
-              type: string
-            progress:
-              type: integer
-              format: float
-            searchId:
-              type: string
-            userId:
-              type: string
+          type: array of fields
       example:
         type: urn:dx:rs:success
         title: success
@@ -3326,24 +3204,7 @@ components:
         title:
           type: string
         results:
-          type: object
-          properties:
-            id:
-              type: string
-            api:
-              type: string
-            userid:
-              type: string
-            epochtime:
-              type: integer
-            resourceid:
-              type: string
-            isotime:
-              type: string
-            providerid:
-              type: string
-            size:
-              type: integer
+          type: array of fields
       example:
         type: urn:dx:rs:success
         title: success
