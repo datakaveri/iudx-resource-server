@@ -14,6 +14,7 @@ public class Constants {
   public static final String API_ENDPOINT = "apiEndpoint";
   public static final String API_METHOD = "method";
   public static final String ID = "id";
+  public static final String RESOURCE_ID_DEFAULT = "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta";
   public static final String RESPONSE_SIZE = "response_size";
   public static final String IDS = "ids";
 

@@ -1,7 +1,17 @@
 {
 	"id": "44eef2d4-f037-40a1-80ee-722f73b6809e",
-	"name": "RS Jenkins Pipeline",
+	"name": "RS Environment",
 	"values": [
+		{
+			"key": "basePath",
+			"value": "ngsi-ld/v1",
+			"enabled": true
+		},
+		{
+			"key": "base_url",
+			"value": "https://rs.iudx.io",
+			"enabled": true
+		},
 		{
 			"key": "openResourceToken",
 			"value": "",
@@ -51,15 +61,14 @@
 			"enabled": true
 		},
 		{
-			"key": "base_url",
-			"value": "rs.iudx.io",
+			"key": "auth-url",
+			"value": "authvertx.iudx.io",
 			"type": "default",
 			"enabled": true
 		},
 		{
-			"key": "auth-url",
-			"value": "authvertx.iudx.io",
-			"type": "default",
+			"key": "publicKeyValue",
+			"value": "",
 			"enabled": true
 		}
 	],

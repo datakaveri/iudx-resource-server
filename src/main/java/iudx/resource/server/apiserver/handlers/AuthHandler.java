@@ -245,8 +245,8 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = IUDX_MANAGEMENT_URL + BIND;
     } else if (url.matches(UNBIND_URL_REGEX)) {
       path = IUDX_MANAGEMENT_URL + UNBIND;
-    } else if (url.matches(RESET_URL_REGEX)) {
-      path = IUDX_MANAGEMENT_URL + RESET_PWD;
+    } else if (url.matches(getpathRegex(api.getManagementBasePath()))) {
+      path = api.getManagementBasePath();
     } else if (url.matches(REVOKE_TOKEN_REGEX)) {
       path = ADMIN + REVOKE_TOKEN;
     } else if (url.matches(UNIQUE_ATTR_REGEX)) {

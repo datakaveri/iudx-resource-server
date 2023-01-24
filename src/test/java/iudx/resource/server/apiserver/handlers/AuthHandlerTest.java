@@ -89,22 +89,15 @@ public class AuthHandlerTest {
 
   public static Stream<Arguments> urls() {
     dxApiBasePath = "/ngsi-ld/v1";
-    apis = Api.getInstance("/ngsi-ld/v1");
+    apis = Api.getInstance(dxApiBasePath);
     return Stream.of(
-//        Arguments.of(apis.getEntitiesUrlRegex(), apis.getEntitiesUrl() + "(.*)"),
-//        Arguments.of(apis.getTemporalUrlRegex(), apis.getTemporalUrl() + "(.*)"),
-//        Arguments.of(apis.getTemporalPostQueryUrlRegex(),
-//            apis.getPostTemporalQueryPath() + "(.*)"),
-//        Arguments.of(apis.getEntitiesPostQueryUrlRegex(),
-//            apis.getPostEntitiesQueryPath() + "(.*)"),
-//        Arguments.of(apis.getSubscriptionUrlRegex(),apis.getSubscriptionUrl()+ "(.*)"),
-//        Arguments.of(apis.getAdapterUrlRegex(), dxApiBasePath + INGESTION_PATH + "(.*)"),
+
         Arguments.of(Constants.EXCHANGE_URL_REGEX, IUDX_MANAGEMENT_URL + EXCHANGE_PATH + "(.*)"),
         Arguments.of(Constants.QUEUE_URL_REGEX, IUDX_MANAGEMENT_URL + QUEUE_PATH + "(.*)"),
         Arguments.of(Constants.VHOST_URL_REGEX, IUDX_MANAGEMENT_URL + VHOST + "(.*)"),
         Arguments.of(Constants.BIND_URL_REGEX, IUDX_MANAGEMENT_URL + BIND + "(.*)"),
         Arguments.of(Constants.UNBIND_URL_REGEX, IUDX_MANAGEMENT_URL + UNBIND + "(.*)"),
-        Arguments.of(Constants.RESET_URL_REGEX, IUDX_MANAGEMENT_URL + RESET_PWD + "(.*)"),
+        Arguments.of(apis.getManagementBasePath()+"(.*)",  dxApiBasePath + RESET_PWD + "(.*)"),
         Arguments.of(Constants.REVOKE_TOKEN_REGEX, ADMIN + REVOKE_TOKEN + "(.*)"),
         Arguments.of(Constants.UNIQUE_ATTR_REGEX, ADMIN + RESOURCE_ATTRIBS),
         Arguments.of(apis.getIudxConsumerAuditUrl(), apis.getIudxConsumerAuditUrl()),

@@ -172,13 +172,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxdistance=10&geometry=Point&coordinates=[21.178,72.834]&offset=0&limit=10",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxdistance=10&geometry=Point&coordinates=[21.178,72.834]&offset=0&limit=10",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -241,13 +240,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=1&geometry=Point&coordinates=[31.178,72.834]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=1&geometry=Point&coordinates=[31.178,72.834]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -313,13 +311,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georelation=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georelation=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -385,13 +382,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -457,13 +453,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=near;maxDistance=1000&geometry=Point&coordinates=[21.178,72.834]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=near;maxDistance=1000&geometry=Point&coordinates=[21.178,72.834]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -531,13 +526,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -592,13 +586,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,31],[72.842,31.2],[72.67,30],[72.719,31]]]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,31],[72.842,31.2],[72.67,30],[72.719,31]]]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -664,13 +657,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georelation=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georelation=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -736,13 +728,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -808,13 +799,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -882,13 +872,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,21.2],[72.8297,21.15]]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,21.2],[72.8297,21.15]]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -943,13 +932,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,31.2],[72.8297,31.15]]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,31.2],[72.8297,31.15]]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -1015,13 +1003,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georelation=within&geometry=bbox&coordinates=[[72.8296,31.2],[72.8297,31.15]]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georelation=within&geometry=bbox&coordinates=[[72.8296,31.2],[72.8297,31.15]]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -1087,13 +1074,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,31.2],[72.8297,31.15]]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,31.2],[72.8297,31.15]]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -1159,13 +1145,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,31.2],[72.8297,31.15]]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,31.2],[72.8297,31.15]]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -1233,13 +1218,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20]]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20]]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -1294,13 +1278,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.842,31.2],[72.923,30.8],[72.74,30.34],[72.9,30.1],[72.67,30]]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.842,31.2],[72.923,30.8],[72.74,30.34],[72.9,30.1],[72.67,30]]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -1366,13 +1349,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georelation=intersects&geometry=linestring&coordinates=[[72.842,31.2],[72.923,30.8],[72.74,30.34],[72.9,30.1],[72.67,30]]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georelation=intersects&geometry=linestring&coordinates=[[72.842,31.2],[72.923,30.8],[72.74,30.34],[72.9,30.1],[72.67,30]]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -1438,13 +1420,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.842,31.2],[72.923,30.8],[72.74,30.34],[72.9,30.1],[72.67,30]]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.842,31.2],[72.923,30.8],[72.74,30.34],[72.9,30.1],[72.67,30]]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -1510,13 +1491,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.842,31.2],[72.923,30.8],[72.74,30.34],[72.9,30.1],[72.67,30]]",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.842,31.2],[72.923,30.8],[72.74,30.34],[72.9,30.1],[72.67,30]]",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -1609,13 +1589,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -1674,13 +1653,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=1&geometry=Point&coordinates=[31.178,72.834]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=1&geometry=Point&coordinates=[31.178,72.834]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -1750,13 +1728,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georelation=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georelation=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -1826,13 +1803,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -1902,13 +1878,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=near;maxDistance=1000&geometry=Point&coordinates=[21.178,72.834]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=near;maxDistance=1000&geometry=Point&coordinates=[21.178,72.834]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -1980,13 +1955,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -2045,13 +2019,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,31],[72.842,31.2],[72.67,30],[72.719,31]]]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,31],[72.842,31.2],[72.67,30],[72.719,31]]]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -2121,13 +2094,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georelation=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georelation=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -2197,13 +2169,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -2273,13 +2244,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -2351,13 +2321,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,21.2],[72.8297,21.15]]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,21.2],[72.8297,21.15]]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -2416,13 +2385,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,31.2],[72.8297,31.15]]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,31.2],[72.8297,31.15]]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -2492,13 +2460,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georelation=within&geometry=bbox&coordinates=[[72.8296,31.2],[72.8297,31.15]]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georelation=within&geometry=bbox&coordinates=[[72.8296,31.2],[72.8297,31.15]]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -2568,13 +2535,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,31.2],[72.8297,31.15]]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,31.2],[72.8297,31.15]]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -2644,13 +2610,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,31.2],[72.8297,31.15]]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,31.2],[72.8297,31.15]]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -2722,13 +2687,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.842,21.2],[72.923,20.8]]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.842,21.2],[72.923,20.8]]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -2787,13 +2751,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.842,31.2],[72.923,30.8],[72.74,30.34],[72.9,30.1],[72.67,30]]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.842,31.2],[72.923,30.8],[72.74,30.34],[72.9,30.1],[72.67,30]]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -2863,13 +2826,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georelation=intersects&geometry=linestring&coordinates=[[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20]]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georelation=intersects&geometry=linestring&coordinates=[[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20]]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -2939,13 +2901,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.842,31.2],[72.923,30.8],[72.74,30.34],[72.9,30.1],[72.67,30]]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.842,31.2],[72.923,30.8],[72.74,30.34],[72.9,30.1],[72.67,30]]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -3015,13 +2976,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.842,31.2],[72.923,30.8],[72.74,30.34],[72.9,30.1],[72.67,30]]&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/non-existing-id&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.842,31.2],[72.923,30.8],[72.74,30.34],[72.9,30.1],[72.67,30]]&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -3118,13 +3078,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -3186,13 +3145,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-01-18T14:20:00Z&endtime=2020-01-19T14:20:00Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-01-18T14:20:00Z&endtime=2020-01-19T14:20:00Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -3255,13 +3213,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerelation=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerelation=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -3324,13 +3281,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-09-18X14:20:00Z&endtime=2020-09-19X14:20:00Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-09-18X14:20:00Z&endtime=2020-09-19X14:20:00Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -3393,13 +3349,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -3462,13 +3417,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -3533,13 +3487,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-10-19T12:00:00Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-10-19T12:00:00Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -3597,13 +3550,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-01-19T12:00:00Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-01-19T12:00:00Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -3672,13 +3624,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&timea=2020-09-19T12:00:00Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&timea=2020-09-19T12:00:00Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -3747,13 +3698,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-09-19X12:00:00Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-09-19X12:00:00Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -3822,13 +3772,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=before&time=2020-09-19T12:00:00Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=before&time=2020-09-19T12:00:00Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -3897,13 +3846,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=before&time=2020-09-19T12:00:00Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=before&time=2020-09-19T12:00:00Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -3974,13 +3922,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-10-18T14:20:01Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-10-18T14:20:01Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -4028,13 +3975,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-01-19T12:00:00Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-01-19T12:00:00Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -4093,13 +4039,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerelation=after&time=2020-06-01T14:20:01Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerelation=after&time=2020-06-01T14:20:01Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -4158,13 +4103,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-06-01X14:20:01Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-06-01X14:20:01Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -4223,13 +4167,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=after&time=2020-06-01T14:20:01Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=after&time=2020-06-01T14:20:01Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -4280,13 +4223,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=after&time=2020-06-01T14:20:01Z",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=after&time=2020-06-01T14:20:01Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -4372,13 +4314,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -4434,13 +4375,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-01-18T14:20:00Z&endtime=2020-01-19T14:20:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-01-18T14:20:00Z&endtime=2020-01-19T14:20:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -4507,13 +4447,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerelation=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerelation=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -4580,13 +4519,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-09-18XX14:20:00Z&endtime=2020-09-19XX14:20:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2020-09-18XX14:20:00Z&endtime=2020-09-19XX14:20:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -4653,13 +4591,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -4726,13 +4663,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2020-09-18T14:20:00Z&endtime=2020-09-19T14:20:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -4801,13 +4737,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-10-19T12:00:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-10-19T12:00:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -4864,13 +4799,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-01-19T12:00:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-01-19T12:00:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -4938,13 +4872,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&timeattribute=2020-09-19T12:00:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&timeattribute=2020-09-19T12:00:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -5012,13 +4945,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-09-19XX12:00:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=before&time=2020-09-19XX12:00:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -5086,13 +5018,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=before&time=2020-09-19T12:00:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=before&time=2020-09-19T12:00:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -5160,13 +5091,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=before&time=2020-09-19T12:00:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=before&time=2020-09-19T12:00:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -5236,13 +5166,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-10-18T14:20:01Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-10-18T14:20:01Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -5294,13 +5223,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-01-18T14:20:01Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-01-18T14:20:01Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -5363,13 +5291,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerelation=after&time=2020-06-01T14:20:01Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerelation=after&time=2020-06-01T14:20:01Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -5432,13 +5359,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-06-01XX14:20:01Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=after&time=2020-06-01XX14:20:01Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -5501,13 +5427,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=after&time=2020-06-01T14:20:01Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&timerel=after&time=2020-06-01T14:20:01Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -5570,13 +5495,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=after&time=2020-06-01T14:20:01Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&timerel=after&time=2020-06-01T14:20:01Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -5669,13 +5593,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>15.0",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>15.0",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -5728,13 +5651,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>150.0",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>150.0",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -5798,13 +5720,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel>150.0",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel>150.0",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -5868,13 +5789,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel>150.0",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel>150.0",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -5938,13 +5858,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>30.0",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>30.0",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6008,13 +5927,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>>150.0",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>>150.0",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6073,13 +5991,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<16.0",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<16.0",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6122,13 +6039,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<1.0",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<1.0",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6182,13 +6098,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel<1.0",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel<1.0",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6242,13 +6157,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel<1.0",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel<1.0",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6302,13 +6216,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<500",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<500",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6362,13 +6275,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<<1.0",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<<1.0",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6427,13 +6339,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>=15.9",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>=15.9",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6476,13 +6387,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>=150",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>=150",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6536,13 +6446,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel>=15.9",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel>=15.9",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6596,13 +6505,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel>=15.9",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel>=15.9",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6656,13 +6564,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>=50",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>=50",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6716,13 +6623,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<>=50",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<>=50",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6781,13 +6687,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<=15.9",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<=15.9",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6830,13 +6735,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<=1",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<=1",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6890,13 +6794,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel<=1",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel<=1",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -6950,13 +6853,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel<=1",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel<=1",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -7010,13 +6912,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<=50",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<=50",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -7070,13 +6971,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<>=1",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<>=1",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -7162,13 +7062,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>15.0&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>15.0&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -7220,13 +7119,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>150.0&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>150.0&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -7289,13 +7187,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel>150.0&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel>150.0&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -7358,13 +7255,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel>150.0&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel>150.0&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -7427,13 +7323,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>30.0&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>30.0&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -7496,13 +7391,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>>150.0&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>>150.0&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -7562,13 +7456,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<16.0&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<16.0&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -7615,13 +7508,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<1.0&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<1.0&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -7679,13 +7571,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel<1.0&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel<1.0&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -7743,13 +7634,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel<1.0&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel<1.0&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -7807,13 +7697,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<500&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<500&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -7871,13 +7760,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<<1.0&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<<1.0&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -7937,13 +7825,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>=15.9&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>=15.9&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -7990,13 +7877,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>=150&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel>=150&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -8046,13 +7932,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel>=15.9&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel>=15.9&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -8110,13 +7995,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel>=15.9&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel>=15.9&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -8174,13 +8058,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>=50&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed>=50&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -8238,13 +8121,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<>=50&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<>=50&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -8304,13 +8186,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<=15.9&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<=15.9&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -8357,13 +8238,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<=1&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<=1&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -8421,13 +8301,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel<=1&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q1=referenceLevel<=1&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -8485,13 +8364,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel<=1&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/non-existing-id&q=referenceLevel<=1&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -8549,13 +8427,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<=50&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&q=speed<=50&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -8613,13 +8490,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<>=1&options=count",
+							"raw": "{{base_url}}/{{basePath}}/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&q=referenceLevel<>=1&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"entities"
 							],
 							"query": [
@@ -8706,13 +8582,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-10-19T14:00:00Z&attrs=id,location,speed",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-10-19T14:00:00Z&attrs=id,location,speed",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -8795,13 +8670,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[31.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&attrs=id,location,speed",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[31.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&attrs=id,location,speed",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -8880,13 +8754,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geo=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&attrs=id,location,speed",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geo=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&attrs=id,location,speed",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -8965,13 +8838,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=PointB&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&attrs=id,location,speed",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=PointB&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&attrs=id,location,speed",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -9050,13 +8922,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&attrs=id,location,speed",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&attrs=id,location,speed",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -9135,13 +9006,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&attrs=id,location,speed",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&attrs=id,location,speed",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -9220,13 +9090,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&attrs=id,location,speed&q=speed<<500",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&attrs=id,location,speed&q=speed<<500",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -9309,13 +9178,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19X14:00:00X&attrs=id,location,speed&q=speed<<500",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19X14:00:00X&attrs=id,location,speed&q=speed<<500",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -9425,13 +9293,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-10-19T14:00:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-10-19T14:00:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -9499,13 +9366,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[31.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[31.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -9584,13 +9450,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geo=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geo=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -9674,13 +9539,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=PointB&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=PointB&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -9759,13 +9623,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -9844,13 +9707,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -9929,13 +9791,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count&q=speed<<500",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19T14:00:00Z&options=count&q=speed<<500",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -10018,13 +9879,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19X14:00:00X&options=count&q=speed<<500",
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=100&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-09-19X14:00:00X&options=count&q=speed<<500",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"temporal",
 								"entities"
 							],
@@ -10112,13 +9972,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/consumer/audit?timerel=between&time=2022-06-20T00:00:00Z&endTime=2022-06-21T16:00:00Z",
+							"raw": "{{base_url}}/{{basePath}}/consumer/audit?timerel=between&time=2022-06-20T00:00:00Z&endTime=2022-06-21T16:00:00Z",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"consumer",
 								"audit"
 							],

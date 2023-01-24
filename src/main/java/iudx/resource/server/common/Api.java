@@ -16,7 +16,7 @@ public class Api {
     private StringBuilder iudxProviderAuditUrl;
     private StringBuilder iudxManagementAdapterUrl;
     private StringBuilder ingestionPath;
-
+    private StringBuilder resetPassword;
 
     private StringBuilder asyncPath;
 
@@ -60,6 +60,8 @@ public class Api {
         ingestionPath = new StringBuilder(dxApiBasePath).append(INGESTION_PATH);
         asyncPath = new StringBuilder(dxApiBasePath).append(ASYNC);
         iudxAsyncStatusApi = new StringBuilder(dxApiBasePath).append(ASYNC + STATUS);
+        resetPassword = new StringBuilder(dxApiBasePath).append(RESET_PWD);
+
     }
 
     public String getEntitiesUrl() {
@@ -116,4 +118,8 @@ public class Api {
         return asyncPath.toString();
     }
 
+    public String getManagementBasePath()
+    {
+        return resetPassword.toString();
+    }
 }

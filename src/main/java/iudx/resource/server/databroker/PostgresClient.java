@@ -41,6 +41,11 @@ public class PostgresClient {
           }          
         });
       }
+      else if(connectionHandler.failed())
+      {
+        LOGGER.fatal("Fail : " + connectionHandler.cause());
+        promise.fail(connectionHandler.cause());
+      }
     });
     
     return promise.future();

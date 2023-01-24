@@ -19,6 +19,7 @@ import static iudx.resource.server.database.postgres.Constants.INSERT_UNIQUE_ATT
 import static iudx.resource.server.database.postgres.Constants.UPDATE_UNIQUE_ATTR_SQL;
 import static iudx.resource.server.metering.util.Constants.EPOCH_TIME;
 import static iudx.resource.server.metering.util.Constants.ISO_TIME;
+import static iudx.resource.server.metering.util.Constants.USER_ID;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -93,6 +94,9 @@ public final class AdminRestApi {
     HttpServerResponse response = context.response();
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
     JsonObject requestBody = context.body().asJsonObject();
+
+
+//    context.queryParam(ID).add("admin_op");
 
     StringBuilder query = new StringBuilder(INSERT_REVOKE_TOKEN_SQL
         .replace("$1", requestBody.getString("sub"))
@@ -317,10 +321,16 @@ public final class AdminRestApi {
     long time = zst.toInstant().toEpochMilli();
     String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
 
+    if(authInfo.containsKey(ID) && authInfo.getString(ID) != null)
+    {
+      request.put(ID, authInfo.getValue(ID));
+    }
+    else
+    {
+      request.put(ID, RESOURCE_ID_DEFAULT);
+    }
     request.put(EPOCH_TIME,time);
     request.put(ISO_TIME,isoTime);
-    request.put(USER_ID, authInfo.getValue(USER_ID));
-    request.put(ID, authInfo.getValue(ID));
     request.put(API, authInfo.getValue(API_ENDPOINT));
     request.put(RESPONSE_SIZE,0);
 
