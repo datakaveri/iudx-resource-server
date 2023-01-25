@@ -1084,6 +1084,8 @@ paths:
           source: |
             curl --location --request POST 'https://example.com/ngsi-ld/v1/ingestion' \
             --header 'token: <tokenValue>'
+            --header 'Content-Type: application/json' \
+            --data-raw '<payload>'
 
       requestBody:
         description: ''
