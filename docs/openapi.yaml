@@ -1055,6 +1055,13 @@ paths:
           description: 'Unauthorized'
       description: |
         It will return all the exchange by using iid of token
+
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'ingestion'
+          source: |
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/ingestion' \
+            --header 'token: <tokenValue>'
     post:
       tags:
         - Data Ingestion Adaptor
@@ -1076,9 +1083,7 @@ paths:
           label: 'ingestion'
           source: |
             curl --location --request POST 'https://example.com/ngsi-ld/v1/ingestion' \
-            --header 'token: <tokenValue>' \
-            --header 'Content-Type: application/json' \
-            --data-raw '<payload>'
+            --header 'token: <tokenValue>'
 
       requestBody:
         description: ''
@@ -1285,6 +1290,12 @@ paths:
           description: 'Unauthorized'
       description: |
         It will return all the queues by using sub of token
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'subscription'
+          source: |
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/subscription' \
+            --header 'token: <tokenValue>'
     post:
       tags:
         - Data Subscriber

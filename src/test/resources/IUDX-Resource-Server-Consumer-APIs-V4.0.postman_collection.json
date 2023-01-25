@@ -22343,13 +22343,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription",
+							"raw": "{{base_url}}/{{basePath}}/subscription",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"subscription"
 							]
 						}
@@ -22381,13 +22380,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/ingestion",
+							"raw": "{{base_url}}/{{basePath}}/ingestion",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"ingestion"
 							]
 						}
@@ -22419,13 +22417,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/subscription",
+							"raw": "{{base_url}}/{{basePath}}/subscription",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"subscription"
 							]
 						}
@@ -22457,13 +22454,12 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/ngsi-ld/v1/ingestion",
+							"raw": "{{base_url}}/{{basePath}}/ingestion",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
-								"ngsi-ld",
-								"v1",
+								"{{basePath}}",
 								"ingestion"
 							]
 						}
