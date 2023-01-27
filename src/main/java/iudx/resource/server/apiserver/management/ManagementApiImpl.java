@@ -447,6 +447,25 @@ public class ManagementApiImpl implements ManagementApi {
     return promise.future();
   }
 
+  @Override
+  public Future<JsonObject> publishAllAdapterForUser(JsonObject request, DataBrokerService databroker) {
+    LOGGER.debug("publishAllAdapterForUser() started");
+    Promise<JsonObject> promise = Promise.promise();
+    databroker.getExchanges(request,handler->{
+      if (handler.succeeded()) {
+        JsonObject response = new JsonObject();
+        response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+        response.put(TITLE, "success");
+        response.put(RESULTS, new JsonArray().add(handler.result()));
+        promise.complete(response);
+      } else {
+        JsonObject res = new JsonObject(handler.cause().getMessage());
+        promise.fail(generateResponse(res).toString());
+      }
+    });
+    return promise.future();
+  }
+
   private JsonObject generateResponse(JsonObject response) {
     JsonObject finalResponse = new JsonObject();
     int type = response.getInteger(JSON_TYPE);

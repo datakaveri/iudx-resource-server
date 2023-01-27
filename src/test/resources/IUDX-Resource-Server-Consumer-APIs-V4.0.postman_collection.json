@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "37839a14-f164-4a8a-b41e-8ef07166f552",
-		"name": "IUDX-Resource-Server-Consumer-APIs-V4",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"_postman_id": "e4c0abc6-3960-45cd-9426-b4349ae9cf3e",
+		"name": "IUDX-Resource-Server-Consumer-APIs-V4.0",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "20457128"
 	},
 	"item": [
 		{
@@ -22307,6 +22308,159 @@
 								"{{basePath}}",
 								"user",
 								"resetPassword"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Summary Adapaters and Subscription",
+			"item": [
+				{
+					"name": "200 - (Success)ForAllSubscriptionQueue",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/subscription",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"subscription"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - (Success)ForAllAdapaterExchange",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{delegateToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/ingestion",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"ingestion"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 - (Not Authorized)ForAllSubscriptionQueue",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 401 (Not Authorized)\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "123",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/subscription",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"subscription"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 - (Not Authorized)ForAllAdapaterExchange",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 401 (Not Authorized)\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/ingestion",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"ingestion"
 							]
 						}
 					},

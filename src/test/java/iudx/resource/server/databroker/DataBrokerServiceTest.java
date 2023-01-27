@@ -26,11 +26,16 @@ import static iudx.resource.server.databroker.util.Constants.USER_ID;
 import static iudx.resource.server.databroker.util.Constants.USER_NAME;
 import static iudx.resource.server.databroker.util.Constants.VHOST;
 import static iudx.resource.server.databroker.util.Constants.VHOST_IUDX;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
+
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.*;
@@ -1210,6 +1215,32 @@ public class DataBrokerServiceTest {
     });
   }
 
+  @Test
+  public void testListAllQueue(VertxTestContext vertxTestContext){
+    JsonObject expected = new JsonObject().put(USER_ID,"123456833624");
+    databroker.listAllQueue(expected,handler->{
+      if (handler.succeeded()) {
+        assertTrue(handler.result().containsKey("Subscription"));
+        vertxTestContext.completeNow();
+      }
+      else {
+        vertxTestContext.failNow(handler.cause());
+      }
+    });
+  }
+  @Test
+  public void testGetExchanges(VertxTestContext vertxTestContext){
+    JsonObject expected = new JsonObject().put(PROVIDER_ID,"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86");
+    databroker.getExchanges(expected,handler->{
+      if (handler.succeeded()) {
+        assertTrue(handler.result().containsKey("Adapters"));
+        vertxTestContext.completeNow();
+      }
+      else {
+        vertxTestContext.failNow(handler.cause());
+      }
+    });
+  }
 }
 
 

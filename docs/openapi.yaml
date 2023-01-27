@@ -28,7 +28,7 @@ info:
     It enables *Consumers* of datasources to search and query for data using HTTPs APIs.
     It enables *Streaming Consumer* a.k.a [Subscribers] of datasources to stream data using AMQP streaming protocol over TLS.
     
-
+    
     # Configurations
     - **Server**: 
       - In the doc, we display the server url to be https://example.com with the hostname as example.com
@@ -212,8 +212,8 @@ paths:
         - lang: 'cURL'
           label: 'get latest data'
           source: |
-              curl --location --request GET 'https://example.com/ngsi-ld/v1/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta' \
-              --header 'token: <tokenValue>'
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta' \
+            --header 'token: <tokenValue>'
 
         - lang: 'cURL'
           label: 'get encrypted data'
@@ -223,7 +223,7 @@ paths:
             --header 'publicKey: <publicKeyValue>'
 
           description: |
-              The <b> Latest Data API </b> is used to get the latest (last published) data of a resource. <br /> It uses the <b> data exchange ID </b> a.k.a `id` to query the resource server. <br />  To get data a <b> valid data exchange Auth token</b> is mandatory.  <br/> The `/entities` end point followed by `id` as a <b>path parameter</b> is used to get the latest data.
+            The <b> Latest Data API </b> is used to get the latest (last published) data of a resource. <br /> It uses the <b> data exchange ID </b> a.k.a `id` to query the resource server. <br />  To get data a <b> valid data exchange Auth token</b> is mandatory.  <br/> The `/entities` end point followed by `id` as a <b>path parameter</b> is used to get the latest data.
 
       deprecated: false
 
@@ -359,40 +359,40 @@ paths:
         - lang: 'cURL'
           label: 'search by circle'
           source: |
-              curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxdistance=10&geometry=Point&coordinates=[21.178,72.834]&offset=0&limit=10' \
-              --header 'token: <tokenValue>'
+            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxdistance=10&geometry=Point&coordinates=[21.178,72.834]&offset=0&limit=10' \
+            --header 'token: <tokenValue>'
 
         - lang: 'cURL'
           label: 'search by polygon'
           source: |
-              curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.76,21.15],[72.76,21.13],[72.78,21.13],[72.78,21.15],[72.76,21.15]]]' \
-              --header 'token: <tokenValue>'
+            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.76,21.15],[72.76,21.13],[72.78,21.13],[72.78,21.15],[72.76,21.15]]]' \
+            --header 'token: <tokenValue>'
 
         - lang: 'cURL'
           label: 'search by bbox'
           source: |
-              curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,21.2],[72.8297,21.15]]' \
-              --header 'token: <tokenValue>'
+            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,21.2],[72.8297,21.15]]' \
+            --header 'token: <tokenValue>'
 
         - lang: 'cURL'
           label: 'search by linestring'
           source: |
-              curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.84,21.19],[72.84,21.17]]' \
-              --header 'token: <tokenValue>'
+            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.84,21.19],[72.84,21.17]]' \
+            --header 'token: <tokenValue>'
 
 
         - lang: 'cURL'
           label: 'search by attribute and filter'
           source: |
-              curl --location --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&q=referenceLevel>15.0&attrs=id,currentLevel,referenceLevel' \
-              --header 'token: <tokenValue>'
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&q=referenceLevel>15.0&attrs=id,currentLevel,referenceLevel' \
+            --header 'token: <tokenValue>'
 
 
         - lang: 'cURL'
           label: 'count by circle'
           source: |
-              curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&options=count' \
-              --header 'token: <tokenValue>'
+            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&options=count' \
+            --header 'token: <tokenValue>'
 
 
       deprecated: false
@@ -1024,6 +1024,44 @@ paths:
       deprecated: false
 
   /ingestion:
+    get:
+      tags:
+        - Data Ingestion Adaptor
+      summary: list of adapter exchange
+      operationId: adapterexchange
+      parameters:
+        - name: token
+          in: header
+          description: 'IUDX auth token for accessing the API'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+      responses:
+        200:
+          description: 'success'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/allexchange'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponseAllQueueAndExcahnge"
+          description: 'Unauthorized'
+      description: |
+        It will return all the exchange by using iid of token
+
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'ingestion'
+          source: |
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/ingestion' \
+            --header 'token: <tokenValue>'
     post:
       tags:
         - Data Ingestion Adaptor
@@ -1045,7 +1083,7 @@ paths:
           label: 'ingestion'
           source: |
             curl --location --request POST 'https://example.com/ngsi-ld/v1/ingestion' \
-            --header 'token: <tokenValue>' \
+            --header 'token: <tokenValue>'
             --header 'Content-Type: application/json' \
             --data-raw '<payload>'
 
@@ -1223,6 +1261,43 @@ paths:
       deprecated: false
 
   /subscription:
+    get:
+      tags:
+        - Data Subscriber
+      summary: list of subscription queues
+      operationId: subscriptionqueues
+      parameters:
+        - name: token
+          in: header
+          description: 'IUDX auth token for accessing the API'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+      responses:
+        200:
+          description: 'success'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/allqueue'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponseAllQueueAndExcahnge"
+          description: 'Unauthorized'
+      description: |
+        It will return all the queues by using sub of token
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'subscription'
+          source: |
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/subscription' \
+            --header 'token: <tokenValue>'
     post:
       tags:
         - Data Subscriber
@@ -2257,7 +2332,7 @@ paths:
 
     delete:
       tags:
-         - Admin
+        - Admin
       summary: Delete unique attribute
       operationId: delete a unique attribute setting for resource
       parameters:
@@ -2282,8 +2357,8 @@ paths:
         - lang: 'cURL'
           label: 'delete unique attribute'
           source: |
-              curl --location --request DELETE 'https://example.com/admin/resourceattribute?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta' \
-              --header 'token: <tokenValue>'
+            curl --location --request DELETE 'https://example.com/admin/resourceattribute?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta' \
+            --header 'token: <tokenValue>'
 
       responses:
         200:
@@ -3302,6 +3377,70 @@ components:
         type: urn:dx:rs:resourceNotFound
         title: Not Found
         detail: Resource Not Found
+
+    allqueue:
+      title: Response
+      required:
+        - type
+        - title
+        - details
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          type: object
+          properties:
+            Subscription:
+              type: object
+      example:
+        type: urn:dx:rs:success
+        title: success
+        results: [
+          {"Subscription": []
+          }
+        ]
+
+    allexchange:
+      title: Response
+      required:
+        - type
+        - title
+        - details
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          type: object
+          properties:
+            Subscription:
+              type: object
+      example:
+        type: urn:dx:rs:success
+        title: success
+        results: [
+          {"Adapters": []
+          }
+        ]
+
+    standardInvalidTokenErrorResponseAllQueueAndExcahnge:
+      title: standardInvalidTokenErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:invalidAuthorizationToken
+        title: Not Authorized
+        detail: Not Authorized
 
     adapterBadRequestErrorResponse:
       title: adapterBadRequestErrorResponse

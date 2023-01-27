@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 
 import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
 import static iudx.resource.server.databroker.util.Constants.*;
+import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -1066,5 +1067,32 @@ public class ManagementApiImplTest {
             }
         });
         verify(dataBrokerService).publishFromAdaptor(any(),anyString(),any());
+    }
+
+    @Test
+    public void testPublishAllAdapterForUser(VertxTestContext vertxTestContext){
+        JsonObject jsonObject = new JsonObject().put(PROVIDER_ID,"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86");
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(json);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg2) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>)arg2.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(dataBrokerService).getExchanges(any(),any());
+        managementApi.publishAllAdapterForUser(jsonObject,dataBrokerService).onComplete(handler->{
+            if(handler.succeeded())
+            {
+                assertEquals("success",handler.result().getString("title"));
+                assertEquals("urn:dx:rs:success",handler.result().getString("type"));
+                vertxTestContext.completeNow();
+            }
+            else
+            {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+
     }
 }

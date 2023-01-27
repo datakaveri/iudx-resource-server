@@ -7,8 +7,10 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.database.archives.DatabaseService;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
+import iudx.resource.server.databroker.DataBrokerServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +24,8 @@ import org.mockito.stubbing.Answer;
 
 import java.util.stream.Stream;
 
+import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
+import static iudx.resource.server.metering.util.Constants.USER_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -387,6 +391,34 @@ public class SubscriptionServiceTest {
                 assertEquals(expected, handler.cause().toString());
                 vertxTestContext.completeNow();
             } else {
+                vertxTestContext.failNow(handler.cause());
+            }
+        });
+    }
+
+    @Test
+    public void testAllSubscriptionQueue(VertxTestContext vertxTestContext){
+        SubscriptionService subscriptionService = new SubscriptionService();
+        JsonObject jsonObject = new JsonObject().put(USER_ID,"89a36273d77dac4cf38114fca1bbe64392547f86");
+        DataBrokerService dataBrokerService = mock(DataBrokerService.class);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(json);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg2) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>)arg2.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(dataBrokerService).listAllQueue(any(),any());
+        subscriptionService.getAllSubscriptionQueueForUser(jsonObject,dataBrokerService).onComplete(handler->{
+            if(handler.succeeded())
+            {
+                assertEquals("success",handler.result().getString("title"));
+                assertEquals("urn:dx:rs:success",handler.result().getString("type"));
+                vertxTestContext.completeNow();
+            }
+            else
+            {
                 vertxTestContext.failNow(handler.cause());
             }
         });

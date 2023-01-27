@@ -107,7 +107,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             || endPoint.equalsIgnoreCase("/admin/revokeToken")
             || endPoint.equalsIgnoreCase("/admin/resourceattribute")
             || endPoint.equalsIgnoreCase(apis.getIudxProviderAuditUrl())
-            || endPoint.equalsIgnoreCase(apis.getIudxAsyncStatusApi());
+            || endPoint.equalsIgnoreCase(apis.getIudxAsyncStatusApi())
+            ||endPoint.equalsIgnoreCase(apis.getIngestionPath());
 
 
     LOGGER.debug("checkResourceFlag " + skipResourceIdCheck);
@@ -204,9 +205,11 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
   public Future<String> isOpenResource(String id) {
     LOGGER.trace("isOpenResource() started");
+
     Promise<String> promise = Promise.promise();
 
     String ACL = resourceIdCache.getIfPresent(id);
+
     if (ACL != null) {
       LOGGER.debug("Cache Hit");
       promise.complete(ACL);
@@ -270,7 +273,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     Method method = Method.valueOf(authInfo.getString("method"));
     String api = authInfo.getString("apiEndpoint");
     AuthorizationRequest authRequest = new AuthorizationRequest(method, api);
-
     IudxRole role = IudxRole.fromRole(jwtData.getRole());
     AuthorizationContextFactory authFactory = new AuthorizationContextFactory(isLimitsEnabled,apis);
 
