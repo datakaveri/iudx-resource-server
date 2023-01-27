@@ -15,10 +15,6 @@ consumes:
 info:
   title: "Data exchange Resource Server APIs"
   version: 4.0.0
-  x-logo:
-    url: "https://iudx.org.in/wp-content/uploads/2020/12/iudx-ideal.png"
-    backgroundColor: "#FFFFFF"
-    altText: "IUDX logo"
   description: |
     # Introduction
     The Resource Server is DXs'(Data exchange) data store which allows publication, subscription and discovery of data.
@@ -2949,7 +2945,10 @@ components:
         title:
           type: string
         results:
-          type: array of fields
+          description: An array of objects
+          type: array
+          items:
+            type: object
       example:
         type: urn:dx:rs:success
         title: success
@@ -2996,7 +2995,10 @@ components:
         title:
           type: string
         results:
-          type: array of fields
+          description: An array of objects
+          type: array
+          items:
+            type: object
       example:
         type: urn:dx:rs:success,
         title: success,
@@ -3023,7 +3025,10 @@ components:
         title:
           type: string
         results:
-          type: array of fields
+          description: An array of objects
+          type: array
+          items:
+            type: object
       example:
         type: urn:dx:rs:success,
         title: success,
@@ -3045,17 +3050,13 @@ components:
 
     deleteadapter:
       title: deleteadapter
-      required:
-        - type
-        - title
-        - detail
       type: object
       properties:
         type:
           type: string
         title:
           type: string
-        detail:
+        results:
           type: string
       example:
         type: urn:dx:rs:success
@@ -3078,7 +3079,11 @@ components:
         title:
           type: string
         results:
-          type: array of fields
+          description: An array of objects
+          type: array
+          items:
+            type: object
+
       example:
         type: urn:dx:rs:success,
         title: success,
@@ -3105,7 +3110,10 @@ components:
         title:
           type: string
         results:
-          type: array of fields
+          description: An array of objects
+          type: array
+          items:
+            type: object
       example:
         type: urn:dx:rs:success,
         title: success,
@@ -3125,7 +3133,10 @@ components:
         title:
           type: string
         results:
-          type: array of fields
+          description: An array of objects
+          type: array
+          items:
+            type: object
       example:
         type: urn:dx:rs:success,
         title: success,
@@ -3145,7 +3156,10 @@ components:
         title:
           type: string
         results:
-          type: array of fields
+          description: An array of objects
+          type: array
+          items:
+            type: object
       example:
         type: urn:dx:rs:success,
         title: success,
@@ -3156,10 +3170,6 @@ components:
 
     deletestreaming:
       title: deletestreaming
-      required:
-        - type
-        - title
-        - detail
       type: object
       properties:
         type:
@@ -3184,7 +3194,10 @@ components:
         title:
           type: string
         results:
-          type: array of fields
+          description: An array of objects
+          type: array
+          items:
+            type: object
       example:
         type: urn:dx:rs:success
         title: Successfully changed the password
@@ -3196,10 +3209,6 @@ components:
 
     asyncsearchResponse:
       title: asyncsearch
-      required:
-        - type
-        - title
-        - results
       type: object
       properties:
         type:
@@ -3207,7 +3216,10 @@ components:
         title:
           type: string
         results:
-          type: array of fields
+          description: An array of objects
+          type: array
+          items:
+            type: object
       example:
         type: urn:dx:rs:success
         title: query submitted successfully
@@ -3218,10 +3230,6 @@ components:
 
     asyncsearchStatusComplete:
       title: complete
-      required:
-        - type
-        - title
-        - details
       type: object
       properties:
         type:
@@ -3229,7 +3237,10 @@ components:
         title:
           type: string
         results:
-          type: array of fields
+          description: An array of objects
+          type: array
+          items:
+            type: object
       example:
         type: urn:dx:rs:success
         title: success
@@ -3244,10 +3255,6 @@ components:
 
     asyncsearchStatusInprogress:
       title: inprogress
-      required:
-        - type
-        - title
-        - details
       type: object
       properties:
         type:
@@ -3255,7 +3262,10 @@ components:
         title:
           type: string
         results:
-          type: array of fields
+          description: An array of objects
+          type: array
+          items:
+            type: object
       example:
         type: urn:dx:rs:success
         title: success
@@ -3268,10 +3278,6 @@ components:
         ]
     meteringApiResponse:
       title: meteringresponse
-      required:
-        - type
-        - title
-        - details
       type: object
       properties:
         type:
@@ -3279,7 +3285,10 @@ components:
         title:
           type: string
         results:
-          type: array of fields
+          description: An array of objects
+          type: array
+          items:
+            type: object
       example:
         type: urn:dx:rs:success
         title: success
