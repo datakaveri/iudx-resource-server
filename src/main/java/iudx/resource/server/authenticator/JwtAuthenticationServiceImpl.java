@@ -108,7 +108,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             || endPoint.equalsIgnoreCase("/admin/resourceattribute")
             || endPoint.equalsIgnoreCase(apis.getIudxProviderAuditUrl())
             || endPoint.equalsIgnoreCase(apis.getIudxAsyncStatusApi())
-            ||endPoint.equalsIgnoreCase(apis.getIngestionPath());
+            || endPoint.equalsIgnoreCase(apis.getIngestionPath())
+            || endPoint.equalsIgnoreCase(apis.getMonthlyOverview());
 
 
     LOGGER.debug("checkResourceFlag " + skipResourceIdCheck);

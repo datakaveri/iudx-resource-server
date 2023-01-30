@@ -86,4 +86,14 @@ public class Constants {
 
   public static final StringBuilder ID_COLUMN = new StringBuilder("id)");
   public static final String MESSAGE = "message";
-}
+
+  public static final String MONTHLY_OVERVIEW = "select " +
+          "to_char(date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST'),'MONTH') as MONTH" +
+          ",count(api) as api_count" +
+          " from auditing_rs where to_timestamp(isotime,'YYYY-MM-DD') " +
+          "BETWEEN now() + interval '5 hours' + interval '30 minutes' - interval '7 month' - interval " + "'$0 days' " +
+          "AND now() + interval '5 hours' + interval '30 minutes '" +
+          "group by date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST') " +
+          "order by date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST')";
+
+  }

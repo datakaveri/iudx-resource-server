@@ -352,6 +352,12 @@ public class ApiServerVerticle extends AbstractVerticle {
                 .handler(AuthHandler.create(vertx,api))
                 .handler(this::getAllAdaptersForUsers);
 
+        //Metering extension
+        router
+                .get(api.getMonthlyOverview())
+                .handler(AuthHandler.create(vertx,api))
+                .handler(this::getMonthlyOverview);
+
         /** Documentation routes */
         /* Static Resource Handler */
         /* Get openapiv3 spec */
@@ -465,6 +471,24 @@ public class ApiServerVerticle extends AbstractVerticle {
         /* Print the deployed endpoints */
         printDeployedEndpoints(router);
         LOGGER.info("API server deployed on :" + serverOptions.getPort());
+    }
+    private void getMonthlyOverview(RoutingContext routingContext) {
+
+        LOGGER.trace("Info: getMonthlyOverview Started.");
+        JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+        HttpServerResponse response = routingContext.response();
+        meteringService.monthlyOverview(authInfo,handler->{
+            if (handler.succeeded())
+            {
+                LOGGER.info("Successful");
+                handleSuccessResponse(response, ResponseType.Ok.getCode(),
+                        handler.result().toString());
+            }
+            else {
+                LOGGER.error("Fail: Bad request");
+                processBackendResponse(response, handler.cause().getMessage());
+            }
+        });
     }
 
     private void printDeployedEndpoints(Router router) {

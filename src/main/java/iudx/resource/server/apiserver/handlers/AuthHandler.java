@@ -235,7 +235,9 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = api.getSubscriptionUrl();
     } else if (url.matches(getpathRegex(api.getIngestionPath()))) {
       path = api.getIngestionPath();
-    } else if (url.matches(EXCHANGE_URL_REGEX)) {
+    } else if (url.matches(getpathRegex(api.getMonthlyOverview()))){
+      path = api.getMonthlyOverview();
+    }else if (url.matches(EXCHANGE_URL_REGEX)) {
       path = IUDX_MANAGEMENT_URL + EXCHANGE_PATH;
     } else if (url.matches(QUEUE_URL_REGEX)) {
       path = IUDX_MANAGEMENT_URL + QUEUE_PATH;

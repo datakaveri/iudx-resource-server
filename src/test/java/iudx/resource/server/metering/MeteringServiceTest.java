@@ -790,4 +790,36 @@ public class MeteringServiceTest {
                                             vertxTestContext.completeNow();
                                         })));
     }
+
+    @Test
+    public void testOverallMethod(VertxTestContext vertxTestContext) {
+        AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+        postgresService = mock(PostgresService.class);
+        JsonObject json = mock(JsonObject.class);
+        JsonObject expected = new JsonObject().put(SUCCESS, "count return");
+
+        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(expected);
+
+        Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(postgresService).executeQuery(anyString(), any());
+
+        meteringService.monthlyOverview(
+                json,
+                vertxTestContext.succeeding(
+                        response ->
+                                vertxTestContext.verify(
+                                        () -> {
+
+                                            System.out.println(response.toString());
+                                            assertEquals("count return", response.getString(SUCCESS));
+                                            vertxTestContext.completeNow();
+                                        })));
+    }
 }

@@ -3,6 +3,8 @@ package iudx.resource.server.metering;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.*;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
@@ -35,7 +37,7 @@ public class MeteringServiceImpl implements MeteringService {
     PgConnectOptions connectOptions;
     PoolOptions poolOptions;
     PgPool pool;
-    String queryPg, queryCount;
+    String queryPg, queryCount,queryOverview;
     int total;
     JsonObject validationCheck = new JsonObject();
     private JsonObject query = new JsonObject();
@@ -183,6 +185,25 @@ public class MeteringServiceImpl implements MeteringService {
                     handler.handle(Future.failedFuture(readHandler.cause().getMessage()));
                 }
             });
+    }
+
+    @Override
+    public MeteringService monthlyOverview(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+        queryOverview = queryBuilder.buildMonthlyOverview(request);
+        LOGGER.debug("query Overview =" + queryOverview);
+
+        Future<JsonObject> result = executeQueryDatabaseOperation(queryOverview);
+        result.onComplete(handlers -> {
+           if (handlers.succeeded()){
+               LOGGER.info("Count return Successfully");
+               handler.handle(Future.succeededFuture(handlers.result()));
+           }
+           else {
+               LOGGER.debug("Could not read from DB : " + handlers.cause());
+               handler.handle(Future.failedFuture(handlers.cause().getMessage()));
+           }
+        });
+        return this;
     }
 
     @Override

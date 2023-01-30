@@ -4,6 +4,7 @@ import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -105,6 +106,21 @@ public class QueryBuilder {
                                     .replace("$2", Long.toString(toTime))
                                     .replace("$3", userId));
         }
+        return query.toString();
+    }
+
+    public String buildMonthlyOverview(JsonObject request) {
+        StringBuilder query;
+        LocalDate currentDate
+                = LocalDate.parse(LocalDate.now().toString());
+        int day = currentDate.getDayOfMonth();
+        String today= String.valueOf(day);
+        LOGGER.info(day);
+
+        query =
+                new StringBuilder(MONTHLY_OVERVIEW
+                        .replace("$0", today));
+
         return query.toString();
     }
 }
