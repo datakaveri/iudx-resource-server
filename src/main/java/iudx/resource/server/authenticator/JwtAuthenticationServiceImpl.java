@@ -165,6 +165,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
                         Instant.ofEpochSecond(Long.parseLong(result.jwtData.getExp().toString())),
                         ZoneId.systemDefault()))
                             .toString());
+                jsonResponse.put(ROLE, result.jwtData.getRole());
                 return Future.succeededFuture(jsonResponse);
               } else {
                 return validateAccess(result.jwtData, result.isOpen, authenticationInfo);
@@ -252,15 +253,13 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     LOGGER.trace("validateAccess() started");
     Promise<JsonObject> promise = Promise.promise();
     String jwtId = jwtData.getIid().split(":")[1];
-
-   
     
     if (openResource && checkOpenEndPoints(authInfo.getString("apiEndpoint"))) {
       LOGGER.info("User access is allowed.");
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put(JSON_IID, jwtId);
       jsonResponse.put(JSON_USERID, jwtData.getSub());
-      
+      jsonResponse.put(ROLE,jwtData.getRole());
       jsonResponse.put(
           JSON_EXPIRY,
           (LocalDateTime.ofInstant(
@@ -371,6 +370,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     JsonObject jsonResponse = new JsonObject();
     jsonResponse.put(JSON_USERID, jwtData.getSub());
     jsonResponse.put(JSON_IID, jwtId);
+    jsonResponse.put(ROLE,jwtData.getRole());
     jsonResponse.put(
         JSON_EXPIRY,
         (LocalDateTime.ofInstant(

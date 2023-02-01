@@ -9,7 +9,8 @@ public enum RequestType {
   ASYNC_STATUS("async_status"),
   POST_TEMPORAL("post_temporal_schema.json"),
   POST_ENTITIES("post_entities_schema.json"),
-  SUBSCRIPTION("subscription_schema.json");
+  SUBSCRIPTION("subscription_schema.json"),
+  OVERVIEW("overview");
 
   private String filename;
 

@@ -49,6 +49,12 @@
 			"enabled": true
 		},
 		{
+			"key": "adminToken",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
 			"key": "clientID",
 			"value": "",
 			"type": "default",

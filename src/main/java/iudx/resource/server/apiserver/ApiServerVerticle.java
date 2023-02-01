@@ -353,8 +353,10 @@ public class ApiServerVerticle extends AbstractVerticle {
                 .handler(this::getAllAdaptersForUsers);
 
         //Metering extension
+        ValidationHandler overViewValidation = new ValidationHandler(vertx, RequestType.OVERVIEW);
         router
                 .get(api.getMonthlyOverview())
+                .handler(overViewValidation)
                 .handler(AuthHandler.create(vertx,api))
                 .handler(this::getMonthlyOverview);
 
@@ -473,9 +475,11 @@ public class ApiServerVerticle extends AbstractVerticle {
         LOGGER.info("API server deployed on :" + serverOptions.getPort());
     }
     private void getMonthlyOverview(RoutingContext routingContext) {
-
+        HttpServerRequest request = routingContext.request();
         LOGGER.trace("Info: getMonthlyOverview Started.");
         JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+        authInfo.put(STARTT,request.getParam(STARTT));
+        authInfo.put(ENDT,request.getParam(ENDT));
         HttpServerResponse response = routingContext.response();
         meteringService.monthlyOverview(authInfo,handler->{
             if (handler.succeeded())

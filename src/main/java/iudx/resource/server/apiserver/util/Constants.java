@@ -304,4 +304,7 @@ public class Constants {
       "SELECT * from subscriptions where queue_name='$1' and entity='$2'";
 
   public static final String NO_CONTENT="204";
+
+  public static final String STARTT="starttime";
+  public static final String ENDT="endtime";
 }

@@ -447,6 +447,60 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get Admin Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"adminToken\", jsonData.results.accessToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "clientId",
+								"value": "{{clientID}}",
+								"type": "text"
+							},
+							{
+								"key": "clientSecret",
+								"value": "{{clientSecret}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemId\": \"rs.iudx.io\", \n  \"itemType\": \"resource_server\",\n  \"role\": \"admin\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://authvertx.iudx.io/auth/v1/token",
+							"protocol": "https",
+							"host": [
+								"authvertx",
+								"iudx",
+								"io"
+							],
+							"path": [
+								"auth",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -22467,7 +22521,7 @@
 					"response": []
 				},
 				{
-					"name": "200 - (Success)Overview",
+					"name": "200 - (Success)Overview Delegate/Provider without Params",
 					"event": [
 						{
 							"listen": "test",
@@ -22486,7 +22540,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{adminToken}}",
+								"value": "{{delegateToken}}",
 								"type": "text"
 							}
 						],
@@ -22523,6 +22577,232 @@
 						"header": [
 							{
 								"key": "token",
+								"value": "{{adapterToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/overview",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"overview"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - (Success)Overview Consumer with Params",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/overview?starttime=2022-11-01T00:00:00Z&endtime=2022-12-31T00:00:00Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"overview"
+							],
+							"query": [
+								{
+									"key": "starttime",
+									"value": "2022-11-01T00:00:00Z"
+								},
+								{
+									"key": "endtime",
+									"value": "2022-12-31T00:00:00Z"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - (Success)Overview Admin with Params",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/overview?starttime=2022-11-01T00:00:00Z&endtime=2022-11-30T23:59:00Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"overview"
+							],
+							"query": [
+								{
+									"key": "starttime",
+									"value": "2022-11-01T00:00:00Z"
+								},
+								{
+									"key": "endtime",
+									"value": "2022-11-30T23:59:00Z"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 - (Bad Request)Overview",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 400 (Bad request)\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{delegateToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/overview?starttime=2022-11-20T00:00:00Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"overview"
+							],
+							"query": [
+								{
+									"key": "starttime",
+									"value": "2022-11-20T00:00:00Z"
+								},
+								{
+									"key": "endTime",
+									"value": "2022-12-29T00:00:00Z",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - (Success)Overview Delegate/Provider with Params",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{delegateToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/overview?starttime=2022-11-20T00:00:00Z&endtime=2023-01-29T00:00:00Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"overview"
+							],
+							"query": [
+								{
+									"key": "starttime",
+									"value": "2022-11-20T00:00:00Z"
+								},
+								{
+									"key": "endtime",
+									"value": "2023-01-29T00:00:00Z"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - (Success)Overview Consumer without Params",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
 								"value": "{{openResourceToken}}",
 								"type": "text"
 							}
@@ -22535,6 +22815,90 @@
 							"path": [
 								"{{basePath}}",
 								"overview"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 - (Success)Overview Admin wihout Params",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/overview",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"overview"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "500- (Internal Server Error)Overview",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 500 (Internal Server Error)\", function () {",
+									"    pm.response.to.have.status(500);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{delegateToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/overview?starttime=2022-11-20T00:00:00Z&endtime=2022-12-T00:00:00Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"overview"
+							],
+							"query": [
+								{
+									"key": "starttime",
+									"value": "2022-11-20T00:00:00Z"
+								},
+								{
+									"key": "endtime",
+									"value": "2022-12-T00:00:00Z"
+								}
 							]
 						}
 					},
