@@ -28,8 +28,6 @@
         <testcontainer-postgres.version>1.17.3</testcontainer-postgres.version>
         <jts2geojson.version>0.17.0</jts2geojson.version>
         <elasticsearch-rest-client.version>8.3.3</elasticsearch-rest-client.version>
-        <!--<elasticsearch-rest-high-level-client.version>7.17.4</elasticsearch-rest-high-level-client.version>-->
-        <!-- <flyway.plugin.version>7.11.1</flyway.plugin.version> -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <exec.mainClass>iudx.resource.server.deploy.Deployer</exec.mainClass>
         <exec.mainClassDev>iudx.resource.server.deploy.DeployerDev
