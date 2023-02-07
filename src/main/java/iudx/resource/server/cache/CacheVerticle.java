@@ -14,7 +14,6 @@ public class CacheVerticle extends AbstractVerticle {
 
   private static final Logger LOGGER = LogManager.getLogger(CacheVerticle.class);
 
-  private static final String SERVICE_ADDRESS = CACHE_SERVICE_ADDRESS;
 
   private MessageConsumer<JsonObject> consumer;
   private ServiceBinder binder;
@@ -27,16 +26,16 @@ public class CacheVerticle extends AbstractVerticle {
 
     pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
 
-    cacheService = new CacheServiceImpl(vertx, pgService);
+    cacheService = new CacheServiceImpl(vertx, pgService, config());
 
     binder = new ServiceBinder(vertx);
-    consumer = binder.setAddress(SERVICE_ADDRESS).register(CacheService.class, cacheService);
+    consumer = binder.setAddress(CACHE_SERVICE_ADDRESS).register(CacheService.class, cacheService);
 
     LOGGER.info("Cache Verticle deployed.");
   }
 
   @Override
   public void stop() {
-        binder.unregister(consumer);
+    binder.unregister(consumer);
   }
 }

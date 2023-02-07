@@ -8,6 +8,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.cache.cacheImpl.CacheType;
+import iudx.resource.server.cache.cacheImpl.CacheValue;
+import iudx.resource.server.cache.cacheImpl.CatalogueCacheImpl;
 import iudx.resource.server.cache.cacheImpl.IudxCache;
 import iudx.resource.server.cache.cacheImpl.RevokedClientCache;
 import iudx.resource.server.cache.cacheImpl.UniqueAttributeCache;
@@ -19,12 +21,14 @@ public class CacheServiceImpl implements CacheService {
 
   private IudxCache revokedClientCache;
   private IudxCache uniqueAttributeCache;
+  private IudxCache catalogueCache;
   private PostgresService postgresService;
 
-  public CacheServiceImpl(Vertx vertx, PostgresService pgService) {
+  public CacheServiceImpl(Vertx vertx, PostgresService pgService,JsonObject config) {
     this.postgresService = pgService;
     revokedClientCache = new RevokedClientCache(vertx, postgresService);
     uniqueAttributeCache = new UniqueAttributeCache(vertx, postgresService);
+    catalogueCache=new CatalogueCacheImpl(vertx, config);
   }
 
   /**
@@ -45,19 +49,15 @@ public class CacheServiceImpl implements CacheService {
     String key = request.getString("key");
 
     if (key != null) {
-      String value = cache.get(key);
-      if (value != null) {
-        JsonObject json = new JsonObject();
-        json.put("value", value);
-        handler.handle(Future.succeededFuture(json));
-      } else {
+      Future<CacheValue<JsonObject>> getValueFuture = cache.get(key);
+      getValueFuture.onSuccess(successHandler -> {
+        handler.handle(Future.succeededFuture(successHandler.getValue()));
+      }).onFailure(failureHandler -> {
         handler.handle(Future.failedFuture("No entry for given key"));
-      }
+      });
     } else {
       handler.handle(Future.failedFuture("null key passed."));
     }
-
-
     return this;
   }
 
@@ -81,7 +81,7 @@ public class CacheServiceImpl implements CacheService {
     String key = request.getString("key");
     String value = request.getString("value");
     if (key != null && value != null) {
-      cache.put(key, value);
+      cache.put(key, cache.createCacheValue(key, value));
       handler.handle(Future.succeededFuture(new JsonObject().put(key, value)));
     } else {
       handler.handle(Future.failedFuture("'null' key or value not allowed in cache."));
@@ -108,7 +108,7 @@ public class CacheServiceImpl implements CacheService {
     String value = request.getString("value");
 
     if (key != null && value != null) {
-      cache.put(key, value);
+      cache.put(key, cache.createCacheValue(key, value));
     } else {
       cache.refreshCache();
     }
@@ -130,6 +130,10 @@ public class CacheServiceImpl implements CacheService {
       }
       case UNIQUE_ATTRIBUTE: {
         cache = uniqueAttributeCache;
+        break;
+      }
+      case CATALOGUE_CACHE: {
+        cache = catalogueCache;
         break;
       }
       default: {

@@ -41,6 +41,7 @@ import iudx.resource.server.apiserver.query.NGSILDQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.service.CatalogueService;
+import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.async.AsyncService;
@@ -61,6 +62,7 @@ public class AsyncRestApi{
   private final CatalogueService catalogueService;
   private final PostgresService postgresService;
   private final DataBrokerService databroker;
+  private final CacheService cacheService;
   private EncryptionService encryptionService;
   private Api api;
 
@@ -69,7 +71,8 @@ public class AsyncRestApi{
     this.router=router;
     this.databroker = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
     this.meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
-    this.catalogueService = new CatalogueService(vertx, config);
+    this.cacheService=CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
+    this.catalogueService = new CatalogueService(vertx, config,cacheService);
     this.validator = new ParamsValidator(catalogueService);
     this.postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
     this.encryptionService = EncryptionService.createProxy(vertx, ENCRYPTION_SERVICE_ADDRESS);

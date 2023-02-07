@@ -7,6 +7,7 @@ import static iudx.resource.server.apiserver.util.Constants.ID;
 import static iudx.resource.server.apiserver.util.Constants.IID;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
+import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
@@ -52,6 +53,7 @@ import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.util.RequestType;
 import iudx.resource.server.apiserver.validation.ValidatorsHandlersFactory;
 import iudx.resource.server.authenticator.AuthenticationService;
+import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.common.Api;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
@@ -127,6 +129,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     private Api api;
     private LatestDataService latestDataService;
+    private CacheService cacheService; 
 
     /**
      * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
@@ -188,6 +191,8 @@ public class ApiServerVerticle extends AbstractVerticle {
             requestHandler.next();
         });
 
+        
+        
         // attach custom http error responses to router
         HttpStatusCode[] statusCodes = HttpStatusCode.values();
         Stream.of(statusCodes).forEach(code -> {
@@ -429,10 +434,10 @@ public class ApiServerVerticle extends AbstractVerticle {
         databroker = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
         meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
         latestDataService = LatestDataService.createProxy(vertx, LATEST_SEARCH_ADDRESS);
-
+        cacheService=CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
         managementApi = new ManagementApiImpl();
         subsService = new SubscriptionService();
-        catalogueService = new CatalogueService(vertx, config());
+        catalogueService = new CatalogueService(vertx, config(),cacheService);
         validator = new ParamsValidator(catalogueService);
 
         postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
@@ -468,14 +473,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                             .toString());
         });
 
-        router.route().last().handler(requestHandler -> {
-            HttpServerResponse response = requestHandler.response();
-            response
-                    .putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
-                    .setStatusCode(404)
-                    .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
-                            .toString());
-        });
+        
         /* Print the deployed endpoints */
         printDeployedEndpoints(router);
         LOGGER.info("API server deployed on :" + serverOptions.getPort());
@@ -671,8 +669,9 @@ public class ApiServerVerticle extends AbstractVerticle {
                     routingContext.fail(ex);
                 }
                 // create json
+                JsonObject json;
                 QueryMapper queryMapper = new QueryMapper();
-                JsonObject json = queryMapper.toJson(ngsildquery, false);
+                json = queryMapper.toJson(ngsildquery, false);
                 Future<List<String>> filtersFuture =
                         catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
                 /* HTTP request instance/host details */
