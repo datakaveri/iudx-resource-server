@@ -170,7 +170,7 @@ public class ElasticClient {
       SourceConfig sourceFilterConfig) {
     Promise<JsonObject> promise = Promise.promise();
     SearchRequest searchRequest = SearchRequest
-        .of(e -> e.index(index).query(query).size(size).from(from).source(sourceFilterConfig));
+        .of(e -> e.index(index).query(query).size(size).from(from).source(sourceFilterConfig).timeout("180s"));
 
     asyncClient.search(searchRequest, ObjectNode.class).whenCompleteAsync((response, exception) -> {
       if (exception != null) {
@@ -213,7 +213,7 @@ public class ElasticClient {
     Promise<JsonObject> promise = Promise.promise();
     CountRequest countRequest = CountRequest.of(e -> e.index(index).query(query));
 
-    asyncClient.count(e -> e.index(index).query(query)).whenCompleteAsync((response, exception) -> {
+    asyncClient.count(countRequest).whenCompleteAsync((response, exception) -> {
       if (exception != null) {
         LOGGER.error("async count query failed : {}", exception);
         promise.fail(exception);
