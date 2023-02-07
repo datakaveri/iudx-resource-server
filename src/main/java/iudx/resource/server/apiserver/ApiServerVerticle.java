@@ -36,6 +36,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
+import io.vertx.ext.web.handler.TimeoutHandler;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.apiserver.handlers.AuthHandler;
 import iudx.resource.server.apiserver.handlers.FailureHandler;
@@ -203,7 +204,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         });
 
         router.route().handler(BodyHandler.create());
-
+        router.route().handler(TimeoutHandler.create(10000, 508));
         ValidatorsHandlersFactory validators = new ValidatorsHandlersFactory();
         FailureHandler validationsFailureHandler = new FailureHandler();
 
