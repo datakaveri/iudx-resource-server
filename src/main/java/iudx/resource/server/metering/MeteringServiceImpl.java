@@ -200,7 +200,7 @@ public class MeteringServiceImpl implements MeteringService {
         Future<JsonObject> result = executeQueryDatabaseOperation(queryOverview);
         result.onComplete(handlers -> {
            if (handlers.succeeded()){
-               LOGGER.info("Count return Successfully");
+               LOGGER.debug("Count return Successfully");
                handler.handle(Future.succeededFuture(handlers.result()));
            }
            else {

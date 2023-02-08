@@ -484,7 +484,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         meteringService.monthlyOverview(authInfo,handler->{
             if (handler.succeeded())
             {
-                LOGGER.info("Successful");
+                LOGGER.debug("Successful");
                 handleSuccessResponse(response, ResponseType.Ok.getCode(),
                         handler.result().toString());
             }
