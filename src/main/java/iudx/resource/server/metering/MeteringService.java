@@ -24,4 +24,7 @@ public interface MeteringService {
   @Fluent
   MeteringService insertMeteringValuesInRMQ(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
+  @Fluent
+  MeteringService monthlyOverview(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+
 }

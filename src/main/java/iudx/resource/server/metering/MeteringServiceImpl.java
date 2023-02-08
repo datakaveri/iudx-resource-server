@@ -16,6 +16,8 @@ import iudx.resource.server.metering.util.ResponseBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static iudx.resource.server.apiserver.util.Constants.ENDT;
+import static iudx.resource.server.apiserver.util.Constants.STARTT;
 import static iudx.resource.server.common.Constants.BROKER_SERVICE_ADDRESS;
 import static iudx.resource.server.metering.util.Constants.*;
 
@@ -35,7 +37,7 @@ public class MeteringServiceImpl implements MeteringService {
     PgConnectOptions connectOptions;
     PoolOptions poolOptions;
     PgPool pool;
-    String queryPg, queryCount;
+    String queryPg, queryCount,queryOverview;
     int total;
     JsonObject validationCheck = new JsonObject();
     private JsonObject query = new JsonObject();
@@ -183,6 +185,30 @@ public class MeteringServiceImpl implements MeteringService {
                     handler.handle(Future.failedFuture(readHandler.cause().getMessage()));
                 }
             });
+    }
+
+    @Override
+    public MeteringService monthlyOverview(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+        String startTime = request.getString(STARTT);
+        String endTime = request.getString(ENDT);
+        if ((startTime!=null && endTime==null) || (startTime==null && endTime!=null) ){
+            handler.handle(Future.failedFuture("Bad Request"));
+        }
+        queryOverview = queryBuilder.buildMonthlyOverview(request);
+        LOGGER.debug("query Overview =" + queryOverview);
+
+        Future<JsonObject> result = executeQueryDatabaseOperation(queryOverview);
+        result.onComplete(handlers -> {
+           if (handlers.succeeded()){
+               LOGGER.debug("Count return Successfully");
+               handler.handle(Future.succeededFuture(handlers.result()));
+           }
+           else {
+               LOGGER.debug("Could not read from DB : " + handlers.cause());
+               handler.handle(Future.failedFuture(handlers.cause().getMessage()));
+           }
+        });
+        return this;
     }
 
     @Override

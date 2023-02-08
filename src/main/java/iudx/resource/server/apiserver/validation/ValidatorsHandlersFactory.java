@@ -67,11 +67,20 @@ public class ValidatorsHandlersFactory {
       case ASYNC_STATUS:
         validator = getAsyncStatusRequestValidator(parameters, headers);
         break;
+      case OVERVIEW:
+        validator = getOverviewValidator(parameters,headers);
       default:
         break;
     }
 
     return validator;
+  }
+
+  private List<Validator> getOverviewValidator(MultiMap parameters, MultiMap headers) {
+    List<Validator> validators = new ArrayList<>();
+    validators.add(new DateTypeValidator(parameters.get(STARTT),false));
+    validators.add(new DateTypeValidator(parameters.get(ENDT),false));
+    return validators;
   }
 
 

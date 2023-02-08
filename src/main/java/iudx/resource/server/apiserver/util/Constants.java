@@ -90,6 +90,8 @@ public class Constants {
   public static final String UNIQUE_ATTR_REGEX = "/admin/resourceattribute";
   public static final String ADMIN = "/admin";
 
+  public static final String MONTHLY_OVERVIEW = "/overview";
+
   /** Accept Headers and CORS */
   public static final String MIME_APPLICATION_JSON = "application/json";
 
@@ -302,4 +304,7 @@ public class Constants {
       "SELECT * from subscriptions where queue_name='$1' and entity='$2'";
 
   public static final String NO_CONTENT="204";
+
+  public static final String STARTT="starttime";
+  public static final String ENDT="endtime";
 }
