@@ -1,13 +1,10 @@
 package iudx.resource.server.common;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
-import static iudx.resource.server.authenticator.Constants.*;
 
 public class Api {
 
     private final String dxApiBasePath;
-    private final String dxCatalogueBasePath;
-    private final String dxAuthBasePath;
     private StringBuilder entitiesUrl;
     private StringBuilder temporalUrl;
     private StringBuilder subscriptionUrl;
@@ -20,9 +17,7 @@ public class Api {
     private StringBuilder iudxManagementAdapterUrl;
     private StringBuilder ingestionPath;
     private StringBuilder resetPassword;
-    private StringBuilder catSearchPath;
-    private StringBuilder catItemPath;
-    private StringBuilder authCertificatePath;
+
 
     private StringBuilder asyncPath;
 
@@ -31,16 +26,14 @@ public class Api {
 
 
 
-    private Api(String dxApiBasePath, String dxCatalogueBasePath, String dxAuthBasePath) {
+    private Api(String dxApiBasePath) {
         this.dxApiBasePath = dxApiBasePath;
-        this.dxCatalogueBasePath = dxCatalogueBasePath;
-        this.dxAuthBasePath = dxAuthBasePath;
         buildPaths();
     }
 
 
 
-    public static Api getInstance(String dxApiBasePath, String dxCatalogueBasePath, String dxAuthBasePath)
+    public static Api getInstance(String dxApiBasePath)
     {
         if(apiInstance == null)
         {
@@ -48,7 +41,7 @@ public class Api {
             {
                 if(apiInstance == null)
                 {
-                    apiInstance = new Api(dxApiBasePath, dxCatalogueBasePath, dxAuthBasePath);
+                    apiInstance = new Api(dxApiBasePath);
                 }
             }
         }
@@ -69,9 +62,6 @@ public class Api {
         asyncPath = new StringBuilder(dxApiBasePath).append(ASYNC);
         iudxAsyncStatusApi = new StringBuilder(dxApiBasePath).append(ASYNC + STATUS);
         resetPassword = new StringBuilder(dxApiBasePath).append(RESET_PWD);
-        catItemPath = new StringBuilder(dxCatalogueBasePath).append(CAT_ITEM_PATH);
-        catSearchPath = new StringBuilder(dxCatalogueBasePath).append(CAT_SEARCH_PATH);
-        authCertificatePath = new StringBuilder(dxAuthBasePath).append(AUTH_CERTIFICATE_PATH);
     }
 
     public String getEntitiesUrl() {
@@ -133,16 +123,4 @@ public class Api {
         return resetPassword.toString();
     }
 
-    public String getCatItemPath(){
-        return catItemPath.toString();
-    }
-    public String getCatSearchPath()
-    {
-        return catSearchPath.toString();
-    }
-
-    public String getAuthCertificatePath()
-    {
-        return authCertificatePath.toString();
-    }
 }

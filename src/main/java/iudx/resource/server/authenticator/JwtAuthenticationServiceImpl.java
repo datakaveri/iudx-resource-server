@@ -53,6 +53,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   final MeteringService meteringService;
   final boolean isLimitsEnabled;
   final Api apis;
+  final String catBasePath;
 
   // resourceGroupCache will contains ACL info about all resource group in a resource server
   Cache<String, String> resourceGroupCache =
@@ -76,7 +77,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     this.audience = config.getString("audience");
     this.host = config.getString("catServerHost");
     this.port = config.getInteger("catServerPort");
-    this.path = Constants.CAT_RSG_PATH;
+    this.catBasePath = config.getString("dxCatalogueBasePath");
+    this.path = catBasePath + CAT_SEARCH_PATH;
     this.isLimitsEnabled =
         config.getBoolean("enableLimits") != null ? config.getBoolean("enableLimits") : false;
     this.apis = apis;
@@ -443,8 +445,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     Promise<Boolean> promise = Promise.promise();
     String id = itemId.replace("/*", "");
     LOGGER.debug("id : " + id);
+    String catItemPath = catBasePath + CAT_ITEM_PATH;
     catWebClient
-        .get(port, host, apis.getCatItemPath())
+        .get(port, host, catItemPath)
         .addQueryParam("id", id)
         .expect(ResponsePredicate.JSON)
         .send(

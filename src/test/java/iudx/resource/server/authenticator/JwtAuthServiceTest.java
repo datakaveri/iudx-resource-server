@@ -62,7 +62,7 @@ public class JwtAuthServiceTest {
         dxApiBasePath = "/ngsi-ld/v1";
         dxCatalogueBasePath = "/iudx/cat/v1";
         dxAuthBasePath = "/auth/v1";
-        apis = Api.getInstance(dxApiBasePath, dxCatalogueBasePath, dxAuthBasePath);
+        apis = Api.getInstance(dxApiBasePath);
         jwtAuthOptions.addPubSecKey(
                 new PubSecKeyOptions()
                         .setAlgorithm("ES256")

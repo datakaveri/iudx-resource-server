@@ -56,6 +56,9 @@ CatalogueService catalogueService;
         config = new JsonObject();
         config.put("catServerHost","guest");
         config.put("catServerPort",8443);
+        config.put("dxApiBasePath","/ngsi-ld/v1");
+        config.put("dxCatalogueBasePath","/iudx/cat/v1");
+        config.put("dxAuthBasePath","/auth/v1");
         JsonObject jsonObject = new JsonObject();
         JsonArray jsonArray = new JsonArray();
         JsonArray jsonArray1 = new JsonArray();
@@ -80,10 +83,8 @@ CatalogueService catalogueService;
                 return null;
             }
         }).when(httpRequest).send(any());
-        dxApiBasePath = "/ngsi-ld/v1";
-        dxCatalogueBasePath = "/iudx/cat/v1";
-        dxAuthBasePath = "/auth/v1";
-        Api api = Api.getInstance(dxApiBasePath, dxCatalogueBasePath, dxAuthBasePath);
+
+        Api api = Api.getInstance(dxApiBasePath);
         catalogueService = new CatalogueService(vertxObj,config, api);
         vertxTestContext.completeNow();
     }

@@ -122,8 +122,8 @@ public class ApiServerVerticle extends AbstractVerticle {
     private ParamsValidator validator;
     private EncryptionService encryptionService;
     private String dxApiBasePath;
-    String dxCatalogueBasePath;
-    String dxAuthBasePath;
+    private String dxCatalogueBasePath;
+    private String dxAuthBasePath;
     private Api api;
     private LatestDataService latestDataService;
 
@@ -165,7 +165,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         dxApiBasePath = config().getString("dxApiBasePath");
         dxCatalogueBasePath = config().getString("dxCatalogueBasePath");
         dxAuthBasePath = config().getString("dxAuthBasePath");
-        api = Api.getInstance(dxApiBasePath,dxCatalogueBasePath,dxAuthBasePath);
+        api = Api.getInstance(dxApiBasePath);
 
         /* Define the APIs, methods, endpoints and associated methods. */
 

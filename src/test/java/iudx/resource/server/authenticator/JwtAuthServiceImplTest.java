@@ -80,11 +80,10 @@ public class JwtAuthServiceImplTest {
     config = new Configuration();
     authConfig = config.configLoader(1, vertx);
     authConfig.put("dxApiBasePath","/ngsi-ld/v1");
+    authConfig.put("dxCatalogueBasePath", "/iudx/cat/v1");
+    authConfig.put("dxAuthBasePath", "/auth/v1");
 
-    dxApiBasePath = "/ngsi-ld/v1";
-    dxCatalogueBasePath = "/iudx/cat/v1";
-    dxAuthBasePath = "/auth/v1";
-    apis = Api.getInstance(dxApiBasePath, dxCatalogueBasePath, dxAuthBasePath);
+    apis = Api.getInstance(dxApiBasePath);
     JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
     jwtAuthOptions.addPubSecKey(
             new PubSecKeyOptions()

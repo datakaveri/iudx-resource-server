@@ -1,6 +1,9 @@
 package iudx.resource.server.apiserver.service;
 
 import static iudx.resource.server.apiserver.util.Util.toList;
+import static iudx.resource.server.authenticator.Constants.CAT_ITEM_PATH;
+import static iudx.resource.server.authenticator.Constants.CAT_SEARCH_PATH;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +42,8 @@ public class CatalogueService {
   private static int catPort;;
   private Vertx vertx;
   private Api api;
+  private String catBasePath;
+  private String catItemPath;
   private final Cache<String, List<String>> applicableFilterCache =
       CacheBuilder.newBuilder().maximumSize(1000)
           .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
@@ -47,6 +52,8 @@ public class CatalogueService {
     this.vertx = vertx;
     catHost = config.getString("catServerHost");
     catPort = config.getInteger("catServerPort");
+    catBasePath = config.getString("dxCatalogueBasePath");
+    catItemPath = catBasePath + CAT_ITEM_PATH;
     this.api = api;
 
     WebClientOptions options =
@@ -68,7 +75,7 @@ public class CatalogueService {
    */
   private Future<Boolean> populateCache() {
     Promise<Boolean> promise = Promise.promise();
-    catWebClient.get(catPort, catHost, api.getCatSearchPath())
+    catWebClient.get(catPort, catHost, catItemPath)
         .addQueryParam("property", "[iudxResourceAPIs]")
         .addQueryParam("value", "[[TEMPORAL,ATTR,SPATIAL]]")
         .addQueryParam("filter", "[iudxResourceAPIs,id]").expect(ResponsePredicate.JSON)
@@ -177,7 +184,7 @@ public class CatalogueService {
 
   private void callCatalogueAPI(String id, Handler<AsyncResult<List<String>>> handler) {
     List<String> filters = new ArrayList<String>();
-    catWebClient.get(catPort, catHost, api.getCatItemPath()).addQueryParam("id", id).send(catHandler -> {
+    catWebClient.get(catPort, catHost, catItemPath).addQueryParam("id", id).send(catHandler -> {
       if (catHandler.succeeded()) {
         JsonArray response = catHandler.result().bodyAsJsonObject().getJsonArray("results");
         response.forEach(json -> {
@@ -188,8 +195,8 @@ public class CatalogueService {
         });
         handler.handle(Future.succeededFuture(filters));
       } else if (catHandler.failed()) {
-        LOGGER.error("catalogue call ("+ api.getCatItemPath() + ") failed for id" + id);
-        handler.handle(Future.failedFuture("catalogue call(" + api.getCatItemPath() + ") failed for id" + id));
+        LOGGER.error("catalogue call ("+ catItemPath + ") failed for id" + id);
+        handler.handle(Future.failedFuture("catalogue call(" + catItemPath + ") failed for id" + id));
       }
     });
   }
@@ -198,7 +205,7 @@ public class CatalogueService {
     LOGGER.trace("isItemExist() started");
     Promise<Boolean> promise = Promise.promise();
     LOGGER.info("id : " + id);
-    catWebClient.get(catPort, catHost, api.getCatItemPath()).addQueryParam("id", id)
+    catWebClient.get(catPort, catHost, catItemPath).addQueryParam("id", id)
         .expect(ResponsePredicate.JSON).send(responseHandler -> {
           if (responseHandler.succeeded()) {
             HttpResponse<Buffer> response = responseHandler.result();

@@ -1,5 +1,6 @@
 package iudx.resource.server.authenticator;
 
+import static iudx.resource.server.authenticator.Constants.AUTH_CERTIFICATE_PATH;
 import static iudx.resource.server.common.Constants.AUTH_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.METERING_SERVICE_ADDRESS;
@@ -47,8 +48,6 @@ public class AuthenticationVerticle extends AbstractVerticle {
   private MeteringService meteringService;
   private Api api;
   private String dxApiBasePath;
-  private String dxCatalogueBasePath;
-  private String dxAuthBasePath;
     static WebClient createWebClient(Vertx vertx, JsonObject config) {
     return createWebClient(vertx, config, false);
   }
@@ -97,9 +96,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
               cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
               meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
               dxApiBasePath = config().getString("dxApiBasePath");
-              dxCatalogueBasePath = config().getString("dxCatalogueBasePath");
-              dxAuthBasePath = config().getString("dxAuthBasePath");
-              api = Api.getInstance(dxApiBasePath,dxCatalogueBasePath,dxAuthBasePath);
+              api = Api.getInstance(dxApiBasePath);
               jwtAuthenticationService =
                   new JwtAuthenticationServiceImpl(
                       vertx, jwtAuth, createWebClient(vertx, config()), config(), cacheService,
@@ -128,8 +125,9 @@ public class AuthenticationVerticle extends AbstractVerticle {
   private Future<String> getJwtPublicKey(Vertx vertx, JsonObject config) {
     Promise<String> promise = Promise.promise();
     webClient = createWebClient(vertx, config);
+    String authCert = config.getString("dxAuthBasePath") + AUTH_CERTIFICATE_PATH;
     webClient
-        .get(443, config.getString("authServerHost"), api.getAuthCertificatePath())
+        .get(443, config.getString("authServerHost"), authCert)
         .send(
             handler -> {
               if (handler.succeeded()) {
