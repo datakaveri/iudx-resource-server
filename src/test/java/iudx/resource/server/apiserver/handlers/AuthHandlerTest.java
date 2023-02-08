@@ -85,6 +85,7 @@ public class AuthHandlerTest {
     dxApiBasePath = jsonObject.getString("dxApiBasePath");
     dxApiBasePath = "/ngsi-ld/v1";
     apis = Api.getInstance(dxApiBasePath);
+
     authHandler = AuthHandler.create(Vertx.vertx(),apis);
     vertxTestContext.completeNow();
   }

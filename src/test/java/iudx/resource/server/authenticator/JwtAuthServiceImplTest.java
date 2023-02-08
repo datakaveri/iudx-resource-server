@@ -73,6 +73,7 @@ public class JwtAuthServiceImplTest {
 
 
 
+
   @BeforeAll
   @DisplayName("Initialize Vertx and deploy Auth Verticle")
   static void init(Vertx vertx, VertxTestContext testContext) {

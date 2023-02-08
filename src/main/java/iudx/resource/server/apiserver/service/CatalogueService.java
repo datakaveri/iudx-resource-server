@@ -44,6 +44,7 @@ public class CatalogueService {
   private String catBasePath;
   private String catItemPath;
   private String catSearchPath;
+
   private final Cache<String, List<String>> applicableFilterCache =
       CacheBuilder.newBuilder().maximumSize(1000)
           .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
@@ -55,6 +56,7 @@ public class CatalogueService {
     catBasePath = config.getString("dxCatalogueBasePath");
     catItemPath = catBasePath + CAT_ITEM_PATH;
     catSearchPath = catBasePath + CAT_SEARCH_PATH;
+
 
 
     WebClientOptions options =

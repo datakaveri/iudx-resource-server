@@ -124,6 +124,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     private String dxApiBasePath;
     private String dxCatalogueBasePath;
     private String dxAuthBasePath;
+
     private Api api;
     private LatestDataService latestDataService;
 
