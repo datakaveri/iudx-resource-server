@@ -11,6 +11,7 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.common.Api;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,7 +46,9 @@ CatalogueService catalogueService;
     AsyncResult<HttpResponse<Buffer>> asyncResult;
     @Mock
     HttpResponse<Buffer> httpResponse;
-
+    String dxAuthBasePath;
+    String dxCatalogueBasePath;
+    String dxApiBasePath;
 
     @BeforeEach
     public void setUp(VertxTestContext vertxTestContext)
@@ -77,7 +80,11 @@ CatalogueService catalogueService;
                 return null;
             }
         }).when(httpRequest).send(any());
-        catalogueService = new CatalogueService(vertxObj,config);
+        dxApiBasePath = "/ngsi-ld/v1";
+        dxCatalogueBasePath = "/iudx/cat/v1";
+        dxAuthBasePath = "/auth/v1";
+        Api api = Api.getInstance(dxApiBasePath, dxCatalogueBasePath, dxAuthBasePath);
+        catalogueService = new CatalogueService(vertxObj,config, api);
         vertxTestContext.completeNow();
     }
 

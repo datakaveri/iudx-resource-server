@@ -444,7 +444,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     String id = itemId.replace("/*", "");
     LOGGER.debug("id : " + id);
     catWebClient
-        .get(port, host, "/iudx/cat/v1/item")
+        .get(port, host, apis.getCatItemPath())
         .addQueryParam("id", id)
         .expect(ResponsePredicate.JSON)
         .send(

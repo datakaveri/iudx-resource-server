@@ -4,6 +4,8 @@ import static iudx.resource.server.apiserver.util.Util.toList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import iudx.resource.server.common.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.google.common.cache.Cache;
@@ -35,20 +37,17 @@ public class CatalogueService {
   private long cacheTimerid;
   private static String catHost;
   private static int catPort;;
-  private static String catSearchPath;
-  private static String catItemPath;
   private Vertx vertx;
-
+  private Api api;
   private final Cache<String, List<String>> applicableFilterCache =
       CacheBuilder.newBuilder().maximumSize(1000)
           .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
 
-  public CatalogueService(Vertx vertx, JsonObject config) {
+  public CatalogueService(Vertx vertx, JsonObject config, Api api) {
     this.vertx = vertx;
     catHost = config.getString("catServerHost");
     catPort = config.getInteger("catServerPort");
-    catSearchPath = Constants.CAT_RSG_PATH;
-    catItemPath = Constants.CAT_ITEM_PATH;
+    this.api = api;
 
     WebClientOptions options =
         new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
@@ -69,7 +68,7 @@ public class CatalogueService {
    */
   private Future<Boolean> populateCache() {
     Promise<Boolean> promise = Promise.promise();
-    catWebClient.get(catPort, catHost, catSearchPath)
+    catWebClient.get(catPort, catHost, api.getCatSearchPath())
         .addQueryParam("property", "[iudxResourceAPIs]")
         .addQueryParam("value", "[[TEMPORAL,ATTR,SPATIAL]]")
         .addQueryParam("filter", "[iudxResourceAPIs,id]").expect(ResponsePredicate.JSON)
@@ -178,7 +177,7 @@ public class CatalogueService {
 
   private void callCatalogueAPI(String id, Handler<AsyncResult<List<String>>> handler) {
     List<String> filters = new ArrayList<String>();
-    catWebClient.get(catPort, catHost, catItemPath).addQueryParam("id", id).send(catHandler -> {
+    catWebClient.get(catPort, catHost, api.getCatItemPath()).addQueryParam("id", id).send(catHandler -> {
       if (catHandler.succeeded()) {
         JsonArray response = catHandler.result().bodyAsJsonObject().getJsonArray("results");
         response.forEach(json -> {
@@ -189,8 +188,8 @@ public class CatalogueService {
         });
         handler.handle(Future.succeededFuture(filters));
       } else if (catHandler.failed()) {
-        LOGGER.error("catalogue call(/iudx/cat/v1/item) failed for id" + id);
-        handler.handle(Future.failedFuture("catalogue call(/iudx/cat/v1/item) failed for id" + id));
+        LOGGER.error("catalogue call ("+ api.getCatItemPath() + ") failed for id" + id);
+        handler.handle(Future.failedFuture("catalogue call(" + api.getCatItemPath() + ") failed for id" + id));
       }
     });
   }
@@ -199,7 +198,7 @@ public class CatalogueService {
     LOGGER.trace("isItemExist() started");
     Promise<Boolean> promise = Promise.promise();
     LOGGER.info("id : " + id);
-    catWebClient.get(catPort, catHost, catItemPath).addQueryParam("id", id)
+    catWebClient.get(catPort, catHost, api.getCatItemPath()).addQueryParam("id", id)
         .expect(ResponsePredicate.JSON).send(responseHandler -> {
           if (responseHandler.succeeded()) {
             HttpResponse<Buffer> response = responseHandler.result();

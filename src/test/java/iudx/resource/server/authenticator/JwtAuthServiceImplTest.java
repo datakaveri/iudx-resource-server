@@ -71,7 +71,8 @@ public class JwtAuthServiceImplTest {
   private static MeteringService meteringService;
   private static Api apis;
   private static String dxApiBasePath;
-
+  private static String dxCatalogueBasePath;
+  private static String dxAuthBasePath;
 
   @BeforeAll
   @DisplayName("Initialize Vertx and deploy Auth Verticle")
@@ -81,7 +82,9 @@ public class JwtAuthServiceImplTest {
     authConfig.put("dxApiBasePath","/ngsi-ld/v1");
 
     dxApiBasePath = "/ngsi-ld/v1";
-    apis = Api.getInstance(dxApiBasePath);
+    dxCatalogueBasePath = "/iudx/cat/v1";
+    dxAuthBasePath = "/auth/v1";
+    apis = Api.getInstance(dxApiBasePath, dxCatalogueBasePath, dxAuthBasePath);
     JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
     jwtAuthOptions.addPubSecKey(
             new PubSecKeyOptions()

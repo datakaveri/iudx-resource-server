@@ -47,7 +47,8 @@ public class AuthenticationVerticle extends AbstractVerticle {
   private MeteringService meteringService;
   private Api api;
   private String dxApiBasePath;
-
+  private String dxCatalogueBasePath;
+  private String dxAuthBasePath;
     static WebClient createWebClient(Vertx vertx, JsonObject config) {
     return createWebClient(vertx, config, false);
   }
@@ -96,7 +97,9 @@ public class AuthenticationVerticle extends AbstractVerticle {
               cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
               meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
               dxApiBasePath = config().getString("dxApiBasePath");
-              api = Api.getInstance(dxApiBasePath);
+              dxCatalogueBasePath = config().getString("dxCatalogueBasePath");
+              dxAuthBasePath = config().getString("dxAuthBasePath");
+              api = Api.getInstance(dxApiBasePath,dxCatalogueBasePath,dxAuthBasePath);
               jwtAuthenticationService =
                   new JwtAuthenticationServiceImpl(
                       vertx, jwtAuth, createWebClient(vertx, config()), config(), cacheService,
@@ -126,7 +129,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
     Promise<String> promise = Promise.promise();
     webClient = createWebClient(vertx, config);
     webClient
-        .get(443, config.getString("authServerHost"), "/auth/v1/cert")
+        .get(443, config.getString("authServerHost"), api.getAuthCertificatePath())
         .send(
             handler -> {
               if (handler.succeeded()) {

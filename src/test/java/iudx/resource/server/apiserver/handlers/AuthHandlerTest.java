@@ -69,6 +69,8 @@ public class AuthHandlerTest {
   AuthHandler authHandler;
   JsonObject jsonObject;
   private static String dxApiBasePath;
+  private static String dxCatalogueBasePath;
+  private static String dxAuthBasePath;
   private static Api apis;
   @BeforeEach
   public void setUp(VertxTestContext vertxTestContext) {
@@ -82,14 +84,19 @@ public class AuthHandlerTest {
     lenient().when(httpMethod.toString()).thenReturn("GET");
     lenient().when(routingContext.request()).thenReturn(httpServerRequest);
     dxApiBasePath = jsonObject.getString("dxApiBasePath");
-    apis = Api.getInstance(dxApiBasePath);
+    dxApiBasePath = "/ngsi-ld/v1";
+    dxCatalogueBasePath = "/iudx/cat/v1";
+    dxAuthBasePath = "/auth/v1";
+    apis = Api.getInstance(dxApiBasePath, dxCatalogueBasePath, dxAuthBasePath);
     authHandler = AuthHandler.create(Vertx.vertx(),apis);
     vertxTestContext.completeNow();
   }
 
   public static Stream<Arguments> urls() {
     dxApiBasePath = "/ngsi-ld/v1";
-    apis = Api.getInstance(dxApiBasePath);
+    dxCatalogueBasePath = "/iudx/cat/v1";
+    dxAuthBasePath = "/auth/v1";
+    apis = Api.getInstance(dxApiBasePath, dxCatalogueBasePath, dxAuthBasePath);
     return Stream.of(
 
         Arguments.of(Constants.EXCHANGE_URL_REGEX, IUDX_MANAGEMENT_URL + EXCHANGE_PATH + "(.*)"),
