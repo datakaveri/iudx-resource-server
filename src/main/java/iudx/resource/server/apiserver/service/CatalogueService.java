@@ -43,6 +43,7 @@ public class CatalogueService {
   private Vertx vertx;
   private String catBasePath;
   private String catItemPath;
+  private String catSearchPath;
   private final Cache<String, List<String>> applicableFilterCache =
       CacheBuilder.newBuilder().maximumSize(1000)
           .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
@@ -53,6 +54,7 @@ public class CatalogueService {
     catPort = config.getInteger("catServerPort");
     catBasePath = config.getString("dxCatalogueBasePath");
     catItemPath = catBasePath + CAT_ITEM_PATH;
+    catSearchPath = catBasePath + CAT_SEARCH_PATH;
 
 
     WebClientOptions options =
@@ -74,7 +76,7 @@ public class CatalogueService {
    */
   private Future<Boolean> populateCache() {
     Promise<Boolean> promise = Promise.promise();
-    catWebClient.get(catPort, catHost, catItemPath)
+    catWebClient.get(catPort, catHost, catSearchPath)
         .addQueryParam("property", "[iudxResourceAPIs]")
         .addQueryParam("value", "[[TEMPORAL,ATTR,SPATIAL]]")
         .addQueryParam("filter", "[iudxResourceAPIs,id]").expect(ResponsePredicate.JSON)
