@@ -69,7 +69,7 @@ public class AsyncRestApi{
     this.router=router;
     this.databroker = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
     this.meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
-    this.catalogueService = new CatalogueService(vertx, config, api);
+    this.catalogueService = new CatalogueService(vertx, config);
     this.validator = new ParamsValidator(catalogueService);
     this.postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
     this.encryptionService = EncryptionService.createProxy(vertx, ENCRYPTION_SERVICE_ADDRESS);

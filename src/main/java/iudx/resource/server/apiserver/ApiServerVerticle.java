@@ -423,7 +423,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
         managementApi = new ManagementApiImpl();
         subsService = new SubscriptionService();
-        catalogueService = new CatalogueService(vertx, config(), api);
+        catalogueService = new CatalogueService(vertx, config());
         validator = new ParamsValidator(catalogueService);
 
         postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);

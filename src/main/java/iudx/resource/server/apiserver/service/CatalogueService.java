@@ -41,20 +41,19 @@ public class CatalogueService {
   private static String catHost;
   private static int catPort;;
   private Vertx vertx;
-  private Api api;
   private String catBasePath;
   private String catItemPath;
   private final Cache<String, List<String>> applicableFilterCache =
       CacheBuilder.newBuilder().maximumSize(1000)
           .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
 
-  public CatalogueService(Vertx vertx, JsonObject config, Api api) {
+  public CatalogueService(Vertx vertx, JsonObject config) {
     this.vertx = vertx;
     catHost = config.getString("catServerHost");
     catPort = config.getInteger("catServerPort");
     catBasePath = config.getString("dxCatalogueBasePath");
     catItemPath = catBasePath + CAT_ITEM_PATH;
-    this.api = api;
+
 
     WebClientOptions options =
         new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);

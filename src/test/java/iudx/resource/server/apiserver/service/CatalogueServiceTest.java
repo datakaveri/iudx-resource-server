@@ -11,7 +11,6 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import iudx.resource.server.common.Api;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -84,8 +83,8 @@ CatalogueService catalogueService;
             }
         }).when(httpRequest).send(any());
 
-        Api api = Api.getInstance(dxApiBasePath);
-        catalogueService = new CatalogueService(vertxObj,config, api);
+
+        catalogueService = new CatalogueService(vertxObj,config);
         vertxTestContext.completeNow();
     }
 
