@@ -22,7 +22,8 @@ public class Constants {
           "/consumer/audit",
           "/async/search",
           "/subscription",
-          "/user/resetPassword");
+          "/user/resetPassword"
+          ,"/overview");
   public static final String AUTH_TIP_PATH = "/auth/v1/token/introspect";
   public static final List<String> CLOSED_ENDPOINTS =
       List.of("/ingestion");
@@ -53,6 +54,8 @@ public class Constants {
           .put("apis", new JsonArray().add("/iudx/public"));
   public static final String JSON_PUBLIC_CONSUMER = "public.data1@iudx.org";
   public static final String JSON_EXPIRY = "expiry";
+
+  public static final String ROLE = "role";
 
   public static final String REVOKED_CLIENT_SQL = "SELECT * FROM revoked_tokens WHERE _id='$1'";
 }

@@ -1,7 +1,10 @@
 package iudx.resource.server.metering;
 
-import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
+import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.metering.util.Constants.*;
+import static iudx.resource.server.metering.util.Constants.API;
+import static iudx.resource.server.metering.util.Constants.IID;
+import static iudx.resource.server.metering.util.Constants.USER_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -787,6 +790,209 @@ public class MeteringServiceTest {
                                 vertxTestContext.verify(
                                         () -> {
                                             assertEquals(SUCCESS, response.getString("title"));
+                                            vertxTestContext.completeNow();
+                                        })));
+    }
+
+    @Test
+    public void testOverallMethodAdmin(VertxTestContext vertxTestContext) {
+        AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+        postgresService = mock(PostgresService.class);
+        JsonObject json = new JsonObject().put("role","admin");
+        JsonObject expected = new JsonObject().put(SUCCESS, "count return");
+
+        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(expected);
+
+        Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(postgresService).executeQuery(anyString(), any());
+
+        meteringService.monthlyOverview(
+                json,
+                vertxTestContext.succeeding(
+                        response ->
+                                vertxTestContext.verify(
+                                        () -> {
+
+                                            System.out.println(response.toString());
+                                            assertEquals("count return", response.getString(SUCCESS));
+                                            vertxTestContext.completeNow();
+                                        })));
+    }
+    @Test
+    public void testOverallMethodConsumer(VertxTestContext vertxTestContext) {
+        AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+        postgresService = mock(PostgresService.class);
+        JsonObject json = new JsonObject().put("role","Consumer");
+        json.put(IID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
+        json.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
+        JsonObject expected = new JsonObject().put(SUCCESS, "count return");
+
+        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(expected);
+
+        Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(postgresService).executeQuery(anyString(), any());
+
+        meteringService.monthlyOverview(
+                json,
+                vertxTestContext.succeeding(
+                        response ->
+                                vertxTestContext.verify(
+                                        () -> {
+
+                                            System.out.println(response.toString());
+                                            assertEquals("count return", response.getString(SUCCESS));
+                                            vertxTestContext.completeNow();
+                                        })));
+    }
+    @Test
+    public void testOverallMethodProvider(VertxTestContext vertxTestContext) {
+        AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+        postgresService = mock(PostgresService.class);
+        JsonObject json = new JsonObject().put("role","Provider");
+        json.put(IID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
+        json.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
+
+        JsonObject expected = new JsonObject().put(SUCCESS, "count return");
+
+        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(expected);
+
+        Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(postgresService).executeQuery(anyString(), any());
+
+        meteringService.monthlyOverview(
+                json,
+                vertxTestContext.succeeding(
+                        response ->
+                                vertxTestContext.verify(
+                                        () -> {
+
+                                            System.out.println(response.toString());
+                                            assertEquals("count return", response.getString(SUCCESS));
+                                            vertxTestContext.completeNow();
+                                        })));
+    }
+    @Test
+    public void testOverallMethodAdminWithETST(VertxTestContext vertxTestContext) {
+        AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+        postgresService = mock(PostgresService.class);
+        JsonObject json = new JsonObject().put("role","admin");
+        json.put(STARTT, "2022-11-20T00:00:00Z");
+        json.put(ENDT, "2022-12-20T00:00:00Z");
+        JsonObject expected = new JsonObject().put(SUCCESS, "count return");
+
+        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(expected);
+
+        Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(postgresService).executeQuery(anyString(), any());
+
+        meteringService.monthlyOverview(
+                json,
+                vertxTestContext.succeeding(
+                        response ->
+                                vertxTestContext.verify(
+                                        () -> {
+
+                                            System.out.println(response.toString());
+                                            assertEquals("count return", response.getString(SUCCESS));
+                                            vertxTestContext.completeNow();
+                                        })));
+    }
+    @Test
+    public void testOverallMethodConsumerWithSTET(VertxTestContext vertxTestContext) {
+        AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+        postgresService = mock(PostgresService.class);
+        JsonObject json = new JsonObject().put("role","Consumer");
+        json.put(IID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
+        json.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
+        json.put(STARTT, "2022-11-20T00:00:00Z");
+        json.put(ENDT, "2022-12-20T00:00:00Z");
+        JsonObject expected = new JsonObject().put(SUCCESS, "count return");
+
+        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(expected);
+
+        Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(postgresService).executeQuery(anyString(), any());
+
+        meteringService.monthlyOverview(
+                json,
+                vertxTestContext.succeeding(
+                        response ->
+                                vertxTestContext.verify(
+                                        () -> {
+
+                                            System.out.println(response.toString());
+                                            assertEquals("count return", response.getString(SUCCESS));
+                                            vertxTestContext.completeNow();
+                                        })));
+    }
+    @Test
+    public void testOverallMethodProviderWithSTET(VertxTestContext vertxTestContext) {
+        AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+        postgresService = mock(PostgresService.class);
+        JsonObject json = new JsonObject().put("role","Provider");
+        json.put(IID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
+        json.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
+        json.put(STARTT, "2022-11-20T00:00:00Z");
+        json.put(ENDT, "2022-12-20T00:00:00Z");
+
+        JsonObject expected = new JsonObject().put(SUCCESS, "count return");
+
+        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(expected);
+
+        Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(postgresService).executeQuery(anyString(), any());
+
+        meteringService.monthlyOverview(
+                json,
+                vertxTestContext.succeeding(
+                        response ->
+                                vertxTestContext.verify(
+                                        () -> {
+
+                                            System.out.println(response.toString());
+                                            assertEquals("count return", response.getString(SUCCESS));
                                             vertxTestContext.completeNow();
                                         })));
     }
