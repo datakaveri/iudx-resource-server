@@ -11,7 +11,6 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import iudx.resource.server.common.Api;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,9 +45,7 @@ CatalogueService catalogueService;
     AsyncResult<HttpResponse<Buffer>> asyncResult;
     @Mock
     HttpResponse<Buffer> httpResponse;
-    String dxAuthBasePath;
-    String dxCatalogueBasePath;
-    String dxApiBasePath;
+
 
     @BeforeEach
     public void setUp(VertxTestContext vertxTestContext)
@@ -56,9 +53,6 @@ CatalogueService catalogueService;
         config = new JsonObject();
         config.put("catServerHost","guest");
         config.put("catServerPort",8443);
-        config.put("dxApiBasePath","/ngsi-ld/v1");
-        config.put("dxCatalogueBasePath","/iudx/cat/v1");
-        config.put("dxAuthBasePath","/auth/v1");
         JsonObject jsonObject = new JsonObject();
         JsonArray jsonArray = new JsonArray();
         JsonArray jsonArray1 = new JsonArray();
@@ -83,17 +77,7 @@ CatalogueService catalogueService;
                 return null;
             }
         }).when(httpRequest).send(any());
-<<<<<<< HEAD
-
-
         catalogueService = new CatalogueService(vertxObj,config);
-=======
-        dxApiBasePath = "/ngsi-ld/v1";
-        dxCatalogueBasePath = "/iudx/cat/v1";
-        dxAuthBasePath = "/auth/v1";
-        Api api = Api.getInstance(dxApiBasePath, dxCatalogueBasePath, dxAuthBasePath);
-        catalogueService = new CatalogueService(vertxObj,config, api);
->>>>>>> 03cd305 ([issue-368]: make basepath configurable)
         vertxTestContext.completeNow();
     }
 

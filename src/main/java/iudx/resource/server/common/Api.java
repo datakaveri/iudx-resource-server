@@ -1,7 +1,6 @@
 package iudx.resource.server.common;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
-import static iudx.resource.server.authenticator.Constants.*;
 
 public class Api {
 
