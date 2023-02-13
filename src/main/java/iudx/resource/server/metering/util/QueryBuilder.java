@@ -1,13 +1,12 @@
 package iudx.resource.server.metering.util;
 
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 import java.util.UUID;
 
 import static iudx.resource.server.apiserver.util.Constants.ENDT;
@@ -19,6 +18,7 @@ public class QueryBuilder {
 
     private static final Logger LOGGER = LogManager.getLogger(QueryBuilder.class);
     StringBuilder monthQuery;
+    long today;
 
     public JsonObject buildMessageForRMQ(JsonObject request) {
 
@@ -117,30 +117,34 @@ public class QueryBuilder {
 
     public String buildMonthlyOverview(JsonObject request) {
         String role = request.getString(ROLE);
-
-        LocalDate currentDate
-                = LocalDate.parse(LocalDate.now().toString());
-        int day = currentDate.getDayOfMonth();
-        String today = String.valueOf(day);
-        LOGGER.info(day);
-
         String startTime = request.getString(STARTT);
         String endTime = request.getString(ENDT);
+
+        String current = ZonedDateTime.now().toString();
+        LOGGER.debug("zone IST =" + ZonedDateTime.now());
+        ZonedDateTime zonedDateTimeUTC = ZonedDateTime.parse(current);
+        zonedDateTimeUTC = zonedDateTimeUTC.withZoneSameInstant(ZoneId.of("UTC"));
+        LOGGER.debug("zonedDateTimeUTC UTC = " + zonedDateTimeUTC);
+        LocalDateTime utcTime = zonedDateTimeUTC.toLocalDateTime();
+        LOGGER.debug("UTCtime =" + utcTime);
+        today = zonedDateTimeUTC.now().getDayOfMonth();
+
+        String timeYearBack = utcTime.minusYears(1)
+                .minusDays(today).plusDays(1).withHour(0).withMinute(0).withSecond(0).toString();
+        LOGGER.debug("Year back =" + timeYearBack);
+
         if (startTime != null || endTime != null) {
-            String splitStartTime = startTime.split("T")[0];
-            String splitEndTime = endTime.split("T")[0];
-            String replace = MONTHLY_OVERVIEW_ADMIN_WITH_ST_ET
-                    .replace("$0", splitStartTime)
-                    .replace("$1", splitEndTime);
             if (role.equalsIgnoreCase("admin")) {
                 monthQuery =
-                        new StringBuilder(replace);
+                        new StringBuilder(MONTHLY_OVERVIEW_QUERY.concat(MONTHLY_OVERVIEW_GROUPBY)
+                                .replace("$0", startTime)
+                                .replace("$1", endTime));
             } else if (role.equalsIgnoreCase("consumer")) {
                 String userId = request.getString(USER_ID);
                 monthQuery =
-                        new StringBuilder(MONTHLY_OVERVIEW_CONSUMER_WITH_ST_ET
-                                .replace("$0", splitStartTime)
-                                .replace("$1", splitEndTime)
+                        new StringBuilder(MONTHLY_OVERVIEW_QUERY.concat(" and userid = '$2' ").concat(MONTHLY_OVERVIEW_GROUPBY)
+                                .replace("$0", startTime)
+                                .replace("$1", endTime)
                                 .replace("$2", userId));
             } else if (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate")) {
                 String resourceId = request.getString(IID);
@@ -148,33 +152,37 @@ public class QueryBuilder {
                         resourceId.substring(0, resourceId.indexOf('/', resourceId.indexOf('/') + 1));
                 LOGGER.debug("Provider =" + providerID);
                 monthQuery =
-                        new StringBuilder(MONTHLY_OVERVIEW_PROVIDERID_WITH_ST_ET
-                                .replace("$0", splitStartTime)
-                                .replace("$1", splitEndTime)
+                        new StringBuilder(MONTHLY_OVERVIEW_QUERY.concat(" and providerid = '$2' ").concat(MONTHLY_OVERVIEW_GROUPBY)
+                                .replace("$0", startTime)
+                                .replace("$1", endTime)
                                 .replace("$2", providerID));
             }
         } else {
-            if (role.equalsIgnoreCase("admin")) {//TODO: Decorator or template
+            if (role.equalsIgnoreCase("admin")) {
                 monthQuery =
-                        new StringBuilder(MONTHLY_OVERVIEW_ADMIN_WITHOUT_ST_ET
-                                .replace("$0", today));
+                        new StringBuilder(MONTHLY_OVERVIEW_QUERY.concat(MONTHLY_OVERVIEW_GROUPBY)
+                                .replace("$0", timeYearBack)
+                                .replace("$1", utcTime.toString()));
             } else if (role.equalsIgnoreCase("consumer")) {
                 String userId = request.getString(USER_ID);
                 monthQuery =
-                        new StringBuilder(MONTHLY_OVERVIEW_CONSUMER_WITHOUT_ST_ET
-                                .replace("$0", today)
-                                .replace("$1", userId));
+                        new StringBuilder(MONTHLY_OVERVIEW_QUERY.concat(" and userid = '$2' ").concat(MONTHLY_OVERVIEW_GROUPBY)
+                                .replace("$0", timeYearBack)
+                                .replace("$1", utcTime.toString())
+                                .replace("$2", userId));
             } else if (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate")) {
                 String resourceId = request.getString(IID);
                 String providerID =
                         resourceId.substring(0, resourceId.indexOf('/', resourceId.indexOf('/') + 1));
                 LOGGER.debug("Provider =" + providerID);
                 monthQuery =
-                        new StringBuilder(MONTHLY_OVERVIEW_PROVIDERID_WITHOUT_ST_ET
-                                .replace("$0", today)
-                                .replace("$1", providerID));
+                        new StringBuilder(MONTHLY_OVERVIEW_QUERY.concat(" and providerid = '$2' ").concat(MONTHLY_OVERVIEW_GROUPBY)
+                                .replace("$0", timeYearBack)
+                                .replace("$1", utcTime.toString())
+                                .replace("$2", providerID));
             }
         }
+
         return monthQuery.toString();
     }
 }

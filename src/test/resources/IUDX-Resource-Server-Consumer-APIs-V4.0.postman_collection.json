@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "73cd61fc-3d05-41e4-b162-537cfe95eb75",
+		"_postman_id": "1425d92e-0d92-4379-9ce4-d897d79788fb",
 		"name": "IUDX-Resource-Server-Consumer-APIs-V4.0",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "20457128"
@@ -22846,53 +22846,6 @@
 							"path": [
 								"{{basePath}}",
 								"overview"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "500- (Internal Server Error)Overview",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"response is 500 (Internal Server Error)\", function () {",
-									"    pm.response.to.have.status(500);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{delegateToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/{{basePath}}/overview?starttime=2022-11-20T00:00:00Z&endtime=2022-12-T00:00:00Z",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"{{basePath}}",
-								"overview"
-							],
-							"query": [
-								{
-									"key": "starttime",
-									"value": "2022-11-20T00:00:00Z"
-								},
-								{
-									"key": "endtime",
-									"value": "2022-12-T00:00:00Z"
-								}
 							]
 						}
 					},

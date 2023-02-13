@@ -87,61 +87,11 @@ public class Constants {
   public static final StringBuilder ID_COLUMN = new StringBuilder("id)");
   public static final String MESSAGE = "message";
 
-  public static final String MONTHLY_OVERVIEW_ADMIN_WITHOUT_ST_ET = "select " +
-          "to_char(date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST'),'month') as month" +
-          ",extract('year' from split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST') as year"+
-          ",count(api) as count" +
-          " from auditing_rs where to_timestamp(isotime,'YYYY-MM-DD') " +
-          "BETWEEN now() + interval '5 hours' + interval '30 minutes' - interval '12 month' - interval " + "'$0 days' " +
-          "AND now() + interval '5 hours' + interval '30 minutes '" +
-          "group by date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST'),year " +
-          "order by date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST')";
-
-  public static final String MONTHLY_OVERVIEW_ADMIN_WITH_ST_ET = "select " +
-          "to_char(date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST'),'month') as month\n" +
-          ",extract('year' from split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST') as year,"+
-          "count(api) as count from auditing_rs " +
-          "where split_part(isotime,'T',1) \n" +
-          "BETWEEN '$0' and '$1' "+
-          "group by date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST'),year \n" +
-          "order by date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST')";
-
-  public static final String MONTHLY_OVERVIEW_PROVIDERID_WITHOUT_ST_ET="select " +
-          "to_char(date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST'),'month') as month" +
-          ",extract('year' from split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST') as year"+
-          ",count(api) as count" +
-          " from auditing_rs where to_timestamp(isotime,'YYYY-MM-DD') " +
-          "BETWEEN now() + interval '5 hours' + interval '30 minutes' - interval '12 month' - interval " + "'$0 days' " +
-          "AND now() + interval '5 hours' + interval '30 minutes '" +" and providerid='$1'\n"+
-          "group by date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST'),year " +
-          "order by date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST')";
-
-  public static final String MONTHLY_OVERVIEW_PROVIDERID_WITH_ST_ET="select " +
-          "to_char(date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST'),'month') as month\n" +
-          ",extract('year' from split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST') as year,"+
-          "count(api) as count from auditing_rs " +
-          "where split_part(isotime,'T',1) \n" +
-          "BETWEEN '$0' and '$1' "+"and providerid='$2'\n"+
-          "group by date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST'),year \n" +
-          "order by date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST')";
-
-  public static final String MONTHLY_OVERVIEW_CONSUMER_WITHOUT_ST_ET="select " +
-          "to_char(date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST'),'month') as month" +
-          ",extract('year' from split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST') as year,"+
-          "count(api) as count" +
-          " from auditing_rs where to_timestamp(isotime,'YYYY-MM-DD') " +
-          "BETWEEN now() + interval '5 hours' + interval '30 minutes' - interval '12 month' - interval " + "'$0 days' " +
-          "AND now() + interval '5 hours' + interval '30 minutes '" +" and userid='$1'\n"+
-          "group by date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST'),year " +
-          "order by date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST')";
-
-  public static final String MONTHLY_OVERVIEW_CONSUMER_WITH_ST_ET="select " +
-          "to_char(date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST'),'month') as month\n" +
-          ",extract('year' from split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST') as year,"+
-          "count(api) as count from auditing_rs " +
-          "where split_part(isotime,'T',1) \n" +
-          "BETWEEN '$0' and '$1' "+ "and userid='$2'\n"+
-          "group by date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST'),year \n" +
-          "order by date_trunc('month', split_part(isotime,'[',1)::timestamp without time zone at time zone 'IST')";
+  public static final String MONTHLY_OVERVIEW_QUERY = "select to_char(date_trunc('month', time),'month') as month\n" +
+          ",extract('year' from time) as year,\n" +
+          "count(api) as count from auditing_rs\n" +
+          "where time between "+ "'$0'" + " and " + "'$1'";
+  public static final String MONTHLY_OVERVIEW_GROUPBY = "\ngroup by month,year\n" +
+          "order by month";
 
   }
