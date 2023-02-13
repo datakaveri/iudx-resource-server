@@ -212,12 +212,11 @@ public class ApiServerVerticle extends AbstractVerticle {
                         .end(errorResponse(code));
             });
         });
-
+        
         router.route().handler(BodyHandler.create());
-        router.route().handler(TimeoutHandler.create(10000, 508));
+        router.route().handler(TimeoutHandler.create(10000, 408));
         ValidatorsHandlersFactory validators = new ValidatorsHandlersFactory();
         FailureHandler validationsFailureHandler = new FailureHandler();
-
         /* NGSI-LD api endpoints */
         ValidationHandler entityValidationHandler = new ValidationHandler(vertx, RequestType.ENTITY);
         router
@@ -670,7 +669,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 }
                 // create json
                 JsonObject json;
-                QueryMapper queryMapper = new QueryMapper();
+                QueryMapper queryMapper = new QueryMapper(routingContext);
                 json = queryMapper.toJson(ngsildquery, false);
                 Future<List<String>> filtersFuture =
                         catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
@@ -724,7 +723,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             if (validationHandler.succeeded()) {
                 // parse query params
                 NGSILDQueryParams ngsildquery = new NGSILDQueryParams(requestJson);
-                QueryMapper queryMapper = new QueryMapper();
+                QueryMapper queryMapper = new QueryMapper(routingContext);
                 JsonObject json = queryMapper.toJson(ngsildquery, requestJson.containsKey("temporalQ"));
                 Future<List<String>> filtersFuture =
                         catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
@@ -923,8 +922,10 @@ public class ApiServerVerticle extends AbstractVerticle {
                 // parse query params
                 NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
                 // create json
-                QueryMapper queryMapper = new QueryMapper();
+                QueryMapper queryMapper = new QueryMapper(routingContext);
+                
                 JsonObject json = queryMapper.toJson(ngsildquery, true);
+                
                 Future<List<String>> filtersFuture =
                         catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
                 json.put(JSON_INSTANCEID, instanceID);
@@ -943,6 +944,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                         }
                     } else {
                         LOGGER.error("catalogue item/group doesn't have filters.");
+                        handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN,"faiuled");
                     }
                 });
             } else if (validationHandler.failed()) {

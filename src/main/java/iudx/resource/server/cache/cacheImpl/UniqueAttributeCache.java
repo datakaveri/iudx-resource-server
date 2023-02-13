@@ -78,7 +78,9 @@ public class UniqueAttributeCache implements IudxCache {
       public JsonObject getValue() {
         JsonObject value=new JsonObject();
         value.put("resource_id", id);
+        value.put("key", id);
         value.put("unique_attribute", unique_attrib);
+        value.put("value", unique_attrib);
         return value;
       }
       

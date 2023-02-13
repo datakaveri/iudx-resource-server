@@ -17,6 +17,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -87,18 +88,9 @@ public class JwtAuthServiceTest {
         JsonObject jsonObject = new JsonObject();
         jsonObject.put("value", "2022-06-13T17:20:00.330");
         when(jwtData.getSub()).thenReturn("Dummy ID");
-        when(asyncResult.succeeded()).thenReturn(true);
-        when(asyncResult.result()).thenReturn(jsonObject);
         when(jwtData.getIat()).thenReturn(3000);
 
-        doAnswer(new Answer<AsyncResult<JsonObject>>() {
-            @Override
-            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
-                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
-                return null;
-            }
-        }).when(cacheService).get(any(),any());
-
+        when(cacheService.get(any())).thenReturn(Future.succeededFuture(jsonObject));
         jwtAuthenticationService.isRevokedClientToken(jwtData).onComplete(handler -> {
             if(handler.succeeded())
             {
@@ -119,18 +111,18 @@ public class JwtAuthServiceTest {
         JsonObject jsonObject = new JsonObject();
         jsonObject.put("value", "1022-06-13T17:20:00.330");
         when(jwtData.getSub()).thenReturn("Dummy ID");
-        when(asyncResult.succeeded()).thenReturn(true);
-        when(asyncResult.result()).thenReturn(jsonObject);
+//        when(asyncResult.succeeded()).thenReturn(true);
+//        when(asyncResult.result()).thenReturn(jsonObject);
         when(jwtData.getIat()).thenReturn(952097820);
 
-        doAnswer(new Answer<AsyncResult<JsonObject>>() {
-            @Override
-            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
-                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
-                return null;
-            }
-        }).when(jwtAuthenticationService.cache).get(any(),any());
-
+//        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+//            @Override
+//            public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+//                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
+//                return null;
+//            }
+//        }).when(jwtAuthenticationService.cache).get(any());
+        when(cacheService.get(any())).thenReturn(Future.succeededFuture(jsonObject));
         jwtAuthenticationService.isRevokedClientToken(jwtData).onComplete(handler -> {
             if(handler.succeeded())
             {

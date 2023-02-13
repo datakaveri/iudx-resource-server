@@ -81,9 +81,7 @@ public class TestRevokeClientQListener {
     object.put("unique-attribute", "Dummy_unique-attribute");
     Buffer buffer = Buffer.buffer(object.toString());
     when(clientStartAsyncResult.succeeded()).thenReturn(true);
-    // when(voidFuture.succeeded()).thenReturn(true);
     when(message.body()).thenReturn(buffer);
-    when(jsonObjectAsyncResult.succeeded()).thenReturn(true);
 
 
     doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
@@ -101,13 +99,7 @@ public class TestRevokeClientQListener {
         return null;
       }
     }).when(rabbitMQConsumer).handler(any());
-    doAnswer(new Answer<AsyncResult<JsonObject>>() {
-      @Override
-      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(jsonObjectAsyncResult);
-        return null;
-      }
-    }).when(cache).refresh(any(), any());
+    when(cache.refresh(any())).thenReturn(Future.succeededFuture(new JsonObject()));
     doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
       @Override
       public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
@@ -119,7 +111,7 @@ public class TestRevokeClientQListener {
     revokeClientQListener.start();
     verify(voidFuture, times(1)).onComplete(any());
     verify(message).body();
-    verify(jsonObjectAsyncResult).succeeded();
+    verify(cache,times(1)).refresh(any());
     assertEquals(buffer, message.body());
     vertxTestContext.completeNow();
   }
@@ -138,9 +130,7 @@ public class TestRevokeClientQListener {
     object.put("unique-attribute", "Dummy_unique-attribute");
     Buffer buffer = Buffer.buffer(object.toString());
     when(clientStartAsyncResult.succeeded()).thenReturn(true);
-    // when(voidFuture.succeeded()).thenReturn(true);
     when(message.body()).thenReturn(buffer);
-    when(jsonObjectAsyncResult.succeeded()).thenReturn(false);
 
     doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
       @Override
@@ -157,13 +147,7 @@ public class TestRevokeClientQListener {
         return null;
       }
     }).when(rabbitMQConsumer).handler(any());
-    doAnswer(new Answer<AsyncResult<JsonObject>>() {
-      @Override
-      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(jsonObjectAsyncResult);
-        return null;
-      }
-    }).when(cache).refresh(any(), any());
+    when(cache.refresh(any())).thenReturn(Future.failedFuture(""));
     doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
       @Override
       public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
@@ -175,7 +159,7 @@ public class TestRevokeClientQListener {
     revokeClientQListener.start();
     verify(voidFuture, times(1)).onComplete(any());
     verify(message).body();
-    verify(jsonObjectAsyncResult).succeeded();
+    verify(cache,times(1)).refresh(any());
     assertEquals(buffer, message.body());
     vertxTestContext.completeNow();
   }

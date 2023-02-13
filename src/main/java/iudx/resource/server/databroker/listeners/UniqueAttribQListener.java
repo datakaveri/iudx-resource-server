@@ -68,13 +68,13 @@ public class UniqueAttribQListener implements RMQListeners {
                   cacheJson.put("value", value);
                 }
 
-                cache.refresh(cacheJson, cacheHandler -> {
-                  if (cacheHandler.succeeded()) {
-                    LOGGER.debug("unique attrib message published to Cache Verticle");
-                  } else {
-                    LOGGER.debug("unique attrib message published to Cache Verticle fail");
-                  }
+                Future<JsonObject> cacheFuture=cache.refresh(cacheJson);
+                cacheFuture.onSuccess(successHandler->{
+                  LOGGER.debug("unique attrib message published to Cache Verticle");
+                }).onFailure(failureHandler->{
+                  LOGGER.debug("unique attrib message published to Cache Verticle fail");
                 });
+                
               } else {
                 LOGGER.info("Empty json received from revoke_token queue");
               }

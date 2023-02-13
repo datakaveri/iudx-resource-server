@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.cache.cacheImpl.CacheType;
@@ -24,96 +25,95 @@ public class CacheServiceImpl implements CacheService {
   private IudxCache catalogueCache;
   private PostgresService postgresService;
 
-  public CacheServiceImpl(Vertx vertx, PostgresService pgService,JsonObject config) {
+  public CacheServiceImpl(Vertx vertx, PostgresService pgService,CatalogueCacheImpl catalogueCache) {
     this.postgresService = pgService;
-    revokedClientCache = new RevokedClientCache(vertx, postgresService);
-    uniqueAttributeCache = new UniqueAttributeCache(vertx, postgresService);
-    catalogueCache=new CatalogueCacheImpl(vertx, config);
+    this.revokedClientCache = new RevokedClientCache(vertx, postgresService);
+    this.uniqueAttributeCache = new UniqueAttributeCache(vertx, postgresService);
+    this.catalogueCache=catalogueCache;
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public CacheService get(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+  public Future<JsonObject> get(JsonObject request) {
+    Promise<JsonObject> promise=Promise.promise();
     IudxCache cache = null;
 
     try {
       cache = getCache(request);
     } catch (IllegalArgumentException ex) {
       LOGGER.error("No cache defined for given argument.");
-      handler.handle(Future.failedFuture("No cache defined for given type"));
-      return this;
+      return Future.failedFuture("No cache defined for given type");
     }
 
     String key = request.getString("key");
 
-    if (key != null) {
+    if (cache!=null && key != null) {
       Future<CacheValue<JsonObject>> getValueFuture = cache.get(key);
       getValueFuture.onSuccess(successHandler -> {
-        handler.handle(Future.succeededFuture(successHandler.getValue()));
+        promise.complete(successHandler.getValue());
       }).onFailure(failureHandler -> {
-        handler.handle(Future.failedFuture("No entry for given key"));
+        promise.fail("No entry for given key");
       });
     } else {
-      handler.handle(Future.failedFuture("null key passed."));
+      promise.fail("null key passed.");
     }
-    return this;
+    return promise.future();
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public CacheService put(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+  public Future<JsonObject> put(JsonObject request) {
     LOGGER.trace("message received from for cache put operation");
     LOGGER.debug("message : " + request);
-
+    Promise<JsonObject> promise=Promise.promise();
     IudxCache cache = null;
     try {
       cache = getCache(request);
     } catch (IllegalArgumentException ex) {
       LOGGER.error("No cache defined for given argument.");
-      handler.handle(Future.failedFuture("No cache defined for given type"));
-      return this;
+      return Future.failedFuture("No cache defined for given type");
     }
 
     String key = request.getString("key");
     String value = request.getString("value");
-    if (key != null && value != null) {
+    if (cache!=null && key != null && value != null) {
       cache.put(key, cache.createCacheValue(key, value));
-      handler.handle(Future.succeededFuture(new JsonObject().put(key, value)));
+      promise.complete(new JsonObject().put(key, value));
     } else {
-      handler.handle(Future.failedFuture("'null' key or value not allowed in cache."));
+      promise.fail("'null' key or value not allowed in cache.");
     }
-    return this;
+    return promise.future();
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public CacheService refresh(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+  public Future<JsonObject> refresh(JsonObject request) {
     LOGGER.trace("message received for cache refresh()");
     LOGGER.debug("message : " + request);
+    Promise<JsonObject> promise=Promise.promise();
     IudxCache cache = null;
     try {
       cache = getCache(request);
     } catch (IllegalArgumentException ex) {
       LOGGER.error("No cache defined for given argument.");
-      handler.handle(Future.failedFuture("No cache defined for given type"));
-      return this;
+      return Future.failedFuture("No cache defined for given type");
     }
     String key = request.getString("key");
     String value = request.getString("value");
 
-    if (key != null && value != null) {
+    if (cache!=null && key != null && value != null) {
       cache.put(key, cache.createCacheValue(key, value));
     } else {
       cache.refreshCache();
     }
-    handler.handle(Future.succeededFuture());
-    return this;
+    promise.complete(new JsonObject());
+    return promise.future();
   }
 
   private IudxCache getCache(JsonObject json) {

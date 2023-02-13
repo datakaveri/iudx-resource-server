@@ -80,6 +80,7 @@ public class RevokedClientCache implements IudxCache {
         JsonObject value=new JsonObject();
         value.put("id", key);
         value.put("expiry", expiry);
+        value.put("value", expiry);
         return value;
       }
       

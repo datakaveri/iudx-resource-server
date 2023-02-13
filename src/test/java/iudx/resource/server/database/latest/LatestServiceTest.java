@@ -15,6 +15,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -69,18 +70,18 @@ public class LatestServiceTest {
             .put("id", new JsonArray().add(id))
             .put("searchType", "latestSearch");
 
-    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
-    when(asyncResult.succeeded()).thenReturn(false);
+//    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+//    when(asyncResult.succeeded()).thenReturn(false);
 
-    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
-      @SuppressWarnings("unchecked")
-      @Override
-      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
-        return null;
-      }
-    }).when(cacheService).get(any(), any());
-
+//    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+//      @SuppressWarnings("unchecked")
+//      @Override
+//      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+//        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
+//        return null;
+//      }
+//    }).when(cacheService).get(any());
+    when(cacheService.get(any())).thenReturn(Future.failedFuture("failed"));
     latest.getLatestData(request, handler -> {
       if (handler.succeeded()) {
         LOGGER.debug("Got the data!");
@@ -101,18 +102,18 @@ public class LatestServiceTest {
             .put("id", new JsonArray().add(id))
             .put("searchType", "latestSearch");
 
-    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
-    when(asyncResult.succeeded()).thenReturn(false);
+//    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+//    when(asyncResult.succeeded()).thenReturn(false);
 
-    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
-      @SuppressWarnings("unchecked")
-      @Override
-      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
-        return null;
-      }
-    }).when(cacheService).get(any(), any());
-
+//    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+//      @SuppressWarnings("unchecked")
+//      @Override
+//      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+//        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
+//        return null;
+//      }
+//    }).when(cacheService).get(any());
+    when(cacheService.get(any())).thenReturn(Future.failedFuture("failed"));
     latest.getLatestData(request, handler -> {
       if (handler.succeeded()) {
         testContext.failNow(handler.cause());
@@ -136,19 +137,19 @@ public class LatestServiceTest {
     JsonObject cacheResponse = new JsonObject();
     cacheResponse.put("value", "license_plate");
 
-    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
-    when(asyncResult.succeeded()).thenReturn(true);
-    when(asyncResult.result()).thenReturn(cacheResponse);
+//    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+//    when(asyncResult.succeeded()).thenReturn(true);
+//    when(asyncResult.result()).thenReturn(cacheResponse);
 
-    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
-      @SuppressWarnings("unchecked")
-      @Override
-      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
-        return null;
-      }
-    }).when(cacheService).get(any(), any());
-
+//    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+//      @SuppressWarnings("unchecked")
+//      @Override
+//      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+//        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
+//        return null;
+//      }
+//    }).when(cacheService).get(any());
+    when(cacheService.get(any())).thenReturn(Future.succeededFuture(cacheResponse));
     latest.getLatestData(request, handler -> {
       if (handler.succeeded()) {
         LOGGER.debug("Got the data!");

@@ -117,7 +117,7 @@ public class AsyncRestApi{
             validationHandler -> {
               if (validationHandler.succeeded()) {
                 NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
-                QueryMapper queryMapper = new QueryMapper();
+                QueryMapper queryMapper = new QueryMapper(routingContext);
                 JsonObject json = queryMapper.toJson(ngsildquery,
                         ngsildquery.getTemporalRelation().getTemprel() != null, true);
                 Future<List<String>> filtersFuture =

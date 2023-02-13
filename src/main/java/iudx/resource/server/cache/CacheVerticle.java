@@ -8,6 +8,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceBinder;
+import iudx.resource.server.cache.cacheImpl.CatalogueCacheImpl;
 import iudx.resource.server.database.postgres.PostgresService;
 
 public class CacheVerticle extends AbstractVerticle {
@@ -20,13 +21,14 @@ public class CacheVerticle extends AbstractVerticle {
 
   private CacheService cacheService;
   private PostgresService pgService;
+  private CatalogueCacheImpl catalogueCache;
 
   @Override
   public void start() throws Exception {
 
     pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
-
-    cacheService = new CacheServiceImpl(vertx, pgService, config());
+    catalogueCache=new CatalogueCacheImpl(vertx, config());
+    cacheService = new CacheServiceImpl(vertx, pgService, catalogueCache);
 
     binder = new ServiceBinder(vertx);
     consumer = binder.setAddress(CACHE_SERVICE_ADDRESS).register(CacheService.class, cacheService);

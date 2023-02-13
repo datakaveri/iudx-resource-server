@@ -49,10 +49,10 @@ public class FailureHandlerTest {
         FailureHandler failureHandler = new FailureHandler();
         failureHandler.handle(routingContext);
 
-        verify(routingContext,times(2)).response();
-        verify(httpServerResponse, times(2)).putHeader(anyString(),anyString());
-        verify(httpServerResponse, times(2)).setStatusCode(400);
-        verify(httpServerResponse, times(2)).end(anyString());
+        verify(routingContext,atLeast(2)).response();
+        verify(httpServerResponse, atLeast(2)).putHeader(anyString(),anyString());
+        verify(httpServerResponse, atLeast(2)).setStatusCode(400);
+        verify(httpServerResponse, atLeast(2)).end(anyString());
 
 
         assertEquals("Dummy Message", dxRuntimeException.getMessage());

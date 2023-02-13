@@ -61,7 +61,11 @@ public class CatalogueCacheImpl implements IudxCache {
     } else {
       populateCache()
       .onSuccess(successHandler -> {
-        promise.complete(cache.getIfPresent(key));
+        if(cache.getIfPresent(key)!=null) {
+          promise.complete(cache.getIfPresent(key));
+        }else {
+          promise.fail("key not found");
+        }
       }).onFailure(failureHandler -> {
         promise.fail("Value not found");
       });
