@@ -60,7 +60,7 @@ pipeline {
           sh 'scp Jmeter/ResourceServer.jmx jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Jmeter/'
           sh 'scp src/test/resources/IUDX-Resource-Server-Consumer-APIs-V4.0.postman_collection.json jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Newman/'
           sh 'docker-compose -f docker-compose.test.yml up -d perfTest'
-          sh 'sleep 45'
+          sh 'sleep 180'
         }
       }
       post{
