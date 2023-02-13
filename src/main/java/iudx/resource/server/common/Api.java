@@ -18,6 +18,8 @@ public class Api {
     private StringBuilder ingestionPath;
     private StringBuilder resetPassword;
 
+
+
     private StringBuilder asyncPath;
     private StringBuilder monthlyOverview;
 
@@ -127,5 +129,6 @@ public class Api {
 
     public String getMonthlyOverview(){
         return monthlyOverview.toString();
+
     }
 }

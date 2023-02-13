@@ -51,6 +51,8 @@ public class JwtAuthServiceTest {
     JwtAuthenticationServiceImpl jwtAuthenticationService;
     private Api apis;
     private String dxApiBasePath;
+    private String dxCatalogueBasePath;
+    private String dxAuthBasePath;
 
     @BeforeEach
     public void setUp(VertxTestContext vertxTestContext)
@@ -58,6 +60,8 @@ public class JwtAuthServiceTest {
         JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
 //        jwtAuthenticationService.jwtDecodeFuture = mock(Future.class);
         dxApiBasePath = "/ngsi-ld/v1";
+        dxCatalogueBasePath = "/iudx/cat/v1";
+        dxAuthBasePath = "/auth/v1";
         apis = Api.getInstance(dxApiBasePath);
         jwtAuthOptions.addPubSecKey(
                 new PubSecKeyOptions()

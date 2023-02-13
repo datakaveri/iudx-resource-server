@@ -122,6 +122,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     private ParamsValidator validator;
     private EncryptionService encryptionService;
     private String dxApiBasePath;
+    private String dxCatalogueBasePath;
+    private String dxAuthBasePath;
+
     private Api api;
     private LatestDataService latestDataService;
 
@@ -159,8 +162,10 @@ public class ApiServerVerticle extends AbstractVerticle {
 
         router = Router.router(vertx);
 
-        /* Get base path from config */
+        /* Get base paths from config */
         dxApiBasePath = config().getString("dxApiBasePath");
+        dxCatalogueBasePath = config().getString("dxCatalogueBasePath");
+        dxAuthBasePath = config().getString("dxAuthBasePath");
         api = Api.getInstance(dxApiBasePath);
 
         /* Define the APIs, methods, endpoints and associated methods. */

@@ -69,6 +69,7 @@ public class AuthHandlerTest {
   AuthHandler authHandler;
   JsonObject jsonObject;
   private static String dxApiBasePath;
+
   private static Api apis;
   @BeforeEach
   public void setUp(VertxTestContext vertxTestContext) {
@@ -82,7 +83,9 @@ public class AuthHandlerTest {
     lenient().when(httpMethod.toString()).thenReturn("GET");
     lenient().when(routingContext.request()).thenReturn(httpServerRequest);
     dxApiBasePath = jsonObject.getString("dxApiBasePath");
+    dxApiBasePath = "/ngsi-ld/v1";
     apis = Api.getInstance(dxApiBasePath);
+
     authHandler = AuthHandler.create(Vertx.vertx(),apis);
     vertxTestContext.completeNow();
   }

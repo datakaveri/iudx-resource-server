@@ -77,6 +77,8 @@ CatalogueService catalogueService;
                 return null;
             }
         }).when(httpRequest).send(any());
+
+
         catalogueService = new CatalogueService(vertxObj,config);
         vertxTestContext.completeNow();
     }

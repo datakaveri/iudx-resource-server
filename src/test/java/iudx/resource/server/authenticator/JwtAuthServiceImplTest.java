@@ -70,7 +70,8 @@ public class JwtAuthServiceImplTest {
   private static CacheService cacheService;
   private static MeteringService meteringService;
   private static Api apis;
-  private static String dxApiBasePath;
+
+
 
 
   @BeforeAll
@@ -79,9 +80,10 @@ public class JwtAuthServiceImplTest {
     config = new Configuration();
     authConfig = config.configLoader(1, vertx);
     authConfig.put("dxApiBasePath","/ngsi-ld/v1");
+    authConfig.put("dxCatalogueBasePath", "/iudx/cat/v1");
+    authConfig.put("dxAuthBasePath", "/auth/v1");
 
-    dxApiBasePath = "/ngsi-ld/v1";
-    apis = Api.getInstance(dxApiBasePath);
+    apis = Api.getInstance("/ngsi-ld/v1");
     JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
     jwtAuthOptions.addPubSecKey(
             new PubSecKeyOptions()

@@ -13,6 +13,11 @@
 			"enabled": true
 		},
 		{
+			"key": "dxAuthBasePath",
+			"value": "auth/v1",
+			"enabled": true
+		},
+		{
 			"key": "openResourceToken",
 			"value": "",
 			"type": "default",

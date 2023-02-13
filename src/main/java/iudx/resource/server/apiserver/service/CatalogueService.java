@@ -1,9 +1,14 @@
 package iudx.resource.server.apiserver.service;
 
 import static iudx.resource.server.apiserver.util.Util.toList;
+import static iudx.resource.server.authenticator.Constants.CAT_ITEM_PATH;
+import static iudx.resource.server.authenticator.Constants.CAT_SEARCH_PATH;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import iudx.resource.server.common.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.google.common.cache.Cache;
@@ -35,9 +40,10 @@ public class CatalogueService {
   private long cacheTimerid;
   private static String catHost;
   private static int catPort;;
-  private static String catSearchPath;
-  private static String catItemPath;
   private Vertx vertx;
+  private String catBasePath;
+  private String catItemPath;
+  private String catSearchPath;
 
   private final Cache<String, List<String>> applicableFilterCache =
       CacheBuilder.newBuilder().maximumSize(1000)
@@ -47,8 +53,11 @@ public class CatalogueService {
     this.vertx = vertx;
     catHost = config.getString("catServerHost");
     catPort = config.getInteger("catServerPort");
-    catSearchPath = Constants.CAT_RSG_PATH;
-    catItemPath = Constants.CAT_ITEM_PATH;
+    catBasePath = config.getString("dxCatalogueBasePath");
+    catItemPath = catBasePath + CAT_ITEM_PATH;
+    catSearchPath = catBasePath + CAT_SEARCH_PATH;
+
+
 
     WebClientOptions options =
         new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
@@ -189,8 +198,8 @@ public class CatalogueService {
         });
         handler.handle(Future.succeededFuture(filters));
       } else if (catHandler.failed()) {
-        LOGGER.error("catalogue call(/iudx/cat/v1/item) failed for id" + id);
-        handler.handle(Future.failedFuture("catalogue call(/iudx/cat/v1/item) failed for id" + id));
+        LOGGER.error("catalogue call ("+ catItemPath + ") failed for id" + id);
+        handler.handle(Future.failedFuture("catalogue call(" + catItemPath + ") failed for id" + id));
       }
     });
   }
