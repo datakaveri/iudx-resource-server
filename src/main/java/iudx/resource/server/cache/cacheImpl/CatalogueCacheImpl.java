@@ -21,7 +21,8 @@ public class CatalogueCacheImpl implements IudxCache {
 
   private WebClient catWebClient;
   private String catHost;
-  private int catPort;;
+  private int catPort;
+  private String catBasePath;
 
   private final Cache<String, CacheValue<JsonObject>> cache =
       CacheBuilder.newBuilder().maximumSize(5000).expireAfterWrite(1L, TimeUnit.DAYS).build();
@@ -32,7 +33,7 @@ public class CatalogueCacheImpl implements IudxCache {
     LOGGER.debug("config : {}",config);
     this.catHost=config.getString("catServerHost");
     this.catPort=config.getInteger("catServerPort");
-    
+    this.catBasePath=config.getString("dxCatalogueBasePath");
     
     WebClientOptions options =
         new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
@@ -64,6 +65,7 @@ public class CatalogueCacheImpl implements IudxCache {
         if(cache.getIfPresent(key)!=null) {
           promise.complete(cache.getIfPresent(key));
         }else {
+          LOGGER.info("key :{} not found in cache/catatlgue server",key);
           promise.fail("key not found");
         }
       }).onFailure(failureHandler -> {
@@ -81,9 +83,11 @@ public class CatalogueCacheImpl implements IudxCache {
   }
 
   private Future<Void> populateCache() {
+    LOGGER.debug("refresh() cache started");
     Promise<Void> promise = Promise.promise();
+    String url=catBasePath+"/search";
     catWebClient
-        .get(catPort, catHost, "/iudx/cat/v1/search")
+        .get(catPort, catHost, url)
           .addQueryParam("property", "[itemStatus]")
           .addQueryParam("value", "[[ACTIVE]]")
           .addQueryParam("filter", "[id,provider,name,description,authControlGroup,accessPolicy,iudxResourceAPIs]")
@@ -91,7 +95,6 @@ public class CatalogueCacheImpl implements IudxCache {
           .send(catHandler -> {
             if (catHandler.succeeded()) {
               JsonArray response = catHandler.result().bodyAsJsonObject().getJsonArray("results");
-              //LOGGER.debug("results : {}",catHandler.result().bodyAsJsonObject());
               cache.invalidateAll();
               response.forEach(json -> {
                 JsonObject res = (JsonObject) json;
@@ -99,7 +102,7 @@ public class CatalogueCacheImpl implements IudxCache {
                 CacheValue<JsonObject> cacheValue=createCacheValue(id, res.toString());
                 cache.put(id, cacheValue);
               });
-             // LOGGER.debug("cache value :{}",cache.getIfPresent("datakaveri.org/b8bd3e3f39615c8ec96722131ae95056b5938f2f/rs.iudx.io/varanasi-swm-vehicle-live").getValue());
+              LOGGER.debug("refresh() cache completed");
               promise.complete();
             } else if (catHandler.failed()) {
               LOGGER.error("Failed to populate catalogue cache");

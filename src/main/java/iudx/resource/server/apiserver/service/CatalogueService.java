@@ -1,31 +1,16 @@
 package iudx.resource.server.apiserver.service;
 
 import static iudx.resource.server.apiserver.util.Util.toList;
-import static iudx.resource.server.authenticator.Constants.CAT_ITEM_PATH;
-import static iudx.resource.server.authenticator.Constants.CAT_SEARCH_PATH;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import iudx.resource.server.common.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.WebClientOptions;
-import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import iudx.resource.server.authenticator.Constants;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.cache.cacheImpl.CacheType;

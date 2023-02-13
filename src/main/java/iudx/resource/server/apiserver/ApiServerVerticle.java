@@ -214,7 +214,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         });
         
         router.route().handler(BodyHandler.create());
-        router.route().handler(TimeoutHandler.create(10000, 408));
+        router.route().handler(TimeoutHandler.create(20000, 408));
         ValidatorsHandlersFactory validators = new ValidatorsHandlersFactory();
         FailureHandler validationsFailureHandler = new FailureHandler();
         /* NGSI-LD api endpoints */

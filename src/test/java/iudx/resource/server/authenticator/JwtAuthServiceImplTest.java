@@ -958,11 +958,11 @@ public class JwtAuthServiceImplTest {
   
   
   @Test
-  @DisplayName("Test isOpenResource method for Group level ACL")
-  public void testIsOpenResourceGroupNoResourceId(VertxTestContext vertxTestContext)
+  @DisplayName("Test isOpenResource method for Group level ACL, but no resource id")
+  public void testIsOpenResourceGroupNoResourceIdExist(VertxTestContext vertxTestContext)
   {
 
-    String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
+    String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/non-existing";
     String[] idComponents = id.split("/");
     String groupId =(idComponents.length == 4)? id:String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
     
@@ -977,9 +977,64 @@ public class JwtAuthServiceImplTest {
 
     jwtAuthenticationService.isOpenResource(id).onComplete(handler -> {
       if (handler.succeeded()) {
+        vertxTestContext.failNow(handler.cause());
+      } else {
+        vertxTestContext.completeNow();
+      }
+    });
+  }
+  
+  @Test
+  @DisplayName("Test isOpenResource method for Group level ACL")
+  public void testIsOpenResourceGroupNoACL4ResourceId(VertxTestContext vertxTestContext)
+  {
+
+    String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
+    String[] idComponents = id.split("/");
+    String groupId =(idComponents.length == 4)? id:String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
+    
+    JsonObject openResourceIdJson=new JsonObject();
+    openResourceIdJson.put("type", CacheType.CATALOGUE_CACHE);
+    openResourceIdJson.put("key", id);
+    when(cacheService.get(openResourceIdJson)).thenReturn(Future.succeededFuture(new JsonObject()));
+    
+    JsonObject openGroupIdJson=openResourceIdJson.copy();
+    openGroupIdJson.put("key", groupId);
+    when(cacheService.get(openGroupIdJson)).thenReturn(Future.succeededFuture(new JsonObject().put("accessPolicy", "OPEN")));
+
+    jwtAuthenticationService.isOpenResource(id).onComplete(handler -> {
+      if (handler.succeeded()) {
         vertxTestContext.completeNow();
       } else {
         vertxTestContext.failNow(handler.cause());
+      }
+    });
+  }
+  
+  @Test
+  @DisplayName("Test No ACL at group and resource level")
+  public void testNoACL(VertxTestContext vertxTestContext)
+  {
+
+    String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
+    String[] idComponents = id.split("/");
+    String groupId =(idComponents.length == 4)? id:String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
+    
+    JsonObject openResourceIdJson=new JsonObject();
+    openResourceIdJson.put("type", CacheType.CATALOGUE_CACHE);
+    openResourceIdJson.put("key", id);
+    when(cacheService.get(openResourceIdJson)).thenReturn(Future.succeededFuture(new JsonObject()));
+    
+    JsonObject openGroupIdJson=openResourceIdJson.copy();
+    openGroupIdJson.put("key", groupId);
+    when(cacheService.get(openGroupIdJson)).thenReturn(Future.succeededFuture(new JsonObject()));
+
+    jwtAuthenticationService.isOpenResource(id).onComplete(handler -> {
+      if (handler.succeeded()) {
+        vertxTestContext.failNow(handler.cause());
+      } else {
+        vertxTestContext.completeNow();
+        
       }
     });
   }

@@ -87,7 +87,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);
 
-
     boolean skipResourceIdCheck =
         (endPoint.equalsIgnoreCase(apis.getSubscriptionUrl())
             && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")))
@@ -130,6 +129,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             })
         .compose(
             openResourceHandler -> {
+              LOGGER.debug("isOpenResource messahe {}"+openResourceHandler);
               result.isOpen = openResourceHandler.equalsIgnoreCase("OPEN");
               if (result.isOpen && checkOpenEndPoints(endPoint)) {
                 JsonObject json = new JsonObject();
@@ -195,35 +195,66 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   }
   
   
-  public Future<String> isOpenResource(String id){
+  public Future<String> isOpenResource(String id) {
     LOGGER.trace("isOpenResource() started");
     Promise<String> promise = Promise.promise();
-    
-    JsonObject cacheRequest=new JsonObject();
+
+    JsonObject cacheRequest = new JsonObject();
     cacheRequest.put("type", CacheType.CATALOGUE_CACHE);
     cacheRequest.put("key", id);
-    Future<JsonObject> resourceIdFuture=cache.get(cacheRequest);
-    
+    Future<JsonObject> resourceIdFuture = cache.get(cacheRequest);
+
     String[] idComponents = id.split("/");
-    String groupId =(idComponents.length == 4)? id:String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
-    JsonObject resourceGroupCacheRequest=cacheRequest.copy();
+    String groupId =
+        (idComponents.length == 4) ? id : String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
+    JsonObject resourceGroupCacheRequest = cacheRequest.copy();
     resourceGroupCacheRequest.put("key", groupId);
-    Future<JsonObject> groupIdFuture=cache.get(resourceGroupCacheRequest);
-    
-    CompositeFuture.any(List.of(resourceIdFuture,groupIdFuture)).onSuccess(ar->{
-      String acl="SECURE";
-      if(groupIdFuture.result()!=null && groupIdFuture.result().containsKey("accessPolicy")) {
-        acl=groupIdFuture.result().getString("accessPolicy");
-      }
-      
-      if(resourceIdFuture.result()!=null && resourceIdFuture.result().containsKey("accessPolicy")) {
-        acl=resourceIdFuture.result().getString("accessPolicy");
-      }
-      promise.complete(acl);
-    }).onFailure(failureHandler->{
-        promise.fail("Not Found  : "+id);
+    Future<JsonObject> groupIdFuture = cache.get(resourceGroupCacheRequest);
+
+    resourceIdFuture.onComplete(isResourceExistHandler -> {
+      if (isResourceExistHandler.failed()) {
+        promise.fail("Not Found  : " + id);
         return;
+      } else {
+        groupIdFuture.onComplete(groupCacheResultHandler -> {
+          
+          if(groupCacheResultHandler.failed()) {
+            if (resourceIdFuture.result() != null
+                && resourceIdFuture.result().containsKey("accessPolicy")) {
+              String acl = resourceIdFuture.result().getString("accessPolicy");
+              promise.complete(acl);
+            } else {
+              LOGGER.error("ACL not defined in group or resource item");
+              promise.fail("ACL not defined in group or resource item");
+              return;
+            }
+          }else {
+            String acl=null;
+            
+            JsonObject groupCacheResult=groupCacheResultHandler.result();
+            if (groupCacheResult != null && groupCacheResult.containsKey("accessPolicy")) {
+              acl = groupIdFuture.result().getString("accessPolicy");
+              
+            }
+            
+            JsonObject resourceCacheResult=resourceIdFuture.result();
+            if (resourceCacheResult != null && resourceCacheResult.containsKey("accessPolicy")) {
+              acl = resourceIdFuture.result().getString("accessPolicy");
+            }
+            
+            if(acl==null) {
+              LOGGER.error("ACL not defined in group or resource item");
+              promise.fail("ACL not defined in group or resource item");
+              return;
+            }else {
+              promise.complete(acl);
+            }
+            
+          }
+        });
+      }
     });
+
     return promise.future();
   }
 
@@ -406,6 +437,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     
     return promise.future();
   }
+  
 
   // class to contain intermeddiate data for token interospection
   final class ResultContainer {
