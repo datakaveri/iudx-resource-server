@@ -219,7 +219,7 @@ public class QueryMapper {
     if (isAttributeSearch) {
       searchType.append(Constants.JSON_ATTRIBUTE_SEARCH);
     }
-    return searchType.substring(0, searchType.length() - 1).toString();
+    return searchType.toString().isEmpty()?"": searchType.substring(0, searchType.length() - 1).toString();
   }
 
   JsonObject getQueryTerms(String queryTerms) {
