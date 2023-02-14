@@ -18,7 +18,7 @@ public class FailureHandler implements Handler<RoutingContext> {
   @Override
   public void handle(RoutingContext context) {
     Throwable failure = context.failure();
-
+    LOGGER.debug("exception caught");
     if (failure instanceof DxRuntimeException) {
       DxRuntimeException exception = (DxRuntimeException) failure;
       LOGGER.error(exception.getUrn().getUrn() + " : " + exception.getMessage());
@@ -46,6 +46,12 @@ public class FailureHandler implements Handler<RoutingContext> {
           .end(validationFailureReponse(validationErrorMessage).toString());
 
     }
+    
+    if(context.response().ended()) {
+      LOGGER.debug("Already ended");
+      return;
+    }
+    
     context.next();
     return;
   }

@@ -20,8 +20,12 @@ import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEPROP
 import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEREL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,24 +34,30 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.cli.annotations.Description;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
 
 
-@ExtendWith(VertxExtension.class)
+@ExtendWith({VertxExtension.class,MockitoExtension.class})
 public class QueryMapperTest {
 
   private QueryMapper qm;
+  @Mock
+  RoutingContext context;
+
 
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
-    qm = new QueryMapper();
+    qm = new QueryMapper(context);
     testContext.completeNow();
   }
 
@@ -179,9 +189,8 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_TIMEPROPERTY, "observationTimeRel");
     NGSILDQueryParams params = new NGSILDQueryParams(map);
 
-    RuntimeException ex = assertThrows(RuntimeException.class, () -> {
-      qm.toJson(params, true);
-    });
+    qm.toJson(params, true);
+    verify(context,times(1)).fail(anyInt(),any());
     testContext.completeNow();
   }
 
@@ -222,10 +231,9 @@ public class QueryMapperTest {
   @Description("coordinates type parameter invalid values.")
   public void testInvalidQTermValue(String value, String result, Vertx vertx,
       VertxTestContext testContext) {
-    RuntimeException ex = assertThrows(RuntimeException.class, () -> {
-      qm.getQueryTerms(value);
-    });
-    assertEquals(result, ex.getMessage());
+      
+    qm.getQueryTerms(value);
+    verify(context,atLeast(1)).fail(anyInt(),any());
     testContext.completeNow();
   }
 
@@ -238,10 +246,9 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_TIMEREL, "during");
     map.add(NGSILDQUERY_TIME, "2020-01-23T14:20:00Z");
     NGSILDQueryParams params = new NGSILDQueryParams(map);
-    RuntimeException ex = assertThrows(RuntimeException.class, () -> {
-      qm.toJson(params, true);
-    });
-    assertEquals("time and endTime both are mandatory for during Query.", ex.getMessage());
+      
+    qm.toJson(params, true);
+    verify(context,times(2)).fail(anyInt(),any());
     testContext.completeNow();
   }
 
@@ -255,10 +262,9 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_TIME, "2020-01-13T14:20:00Z");
     map.add(NGSILDQUERY_ENDTIME, "2020-01-30T14:40:00Z");
     NGSILDQueryParams params = new NGSILDQueryParams(map);
-    RuntimeException ex = assertThrows(RuntimeException.class, () -> {
-      qm.toJson(params, true);
-    });
-    assertEquals("time interval greater than 10 days is not allowed", ex.getMessage());
+    
+    qm.toJson(params, true);
+    verify(context,times(1)).fail(anyInt(),any());  
     testContext.completeNow();
   }
 
@@ -274,13 +280,8 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_COORDINATES, "[8.6846,49.40606]");
 
     NGSILDQueryParams params = new NGSILDQueryParams(map);
-
-    RuntimeException ex = assertThrows(RuntimeException.class, () -> {
-      qm.toJson(params, true);
-    });
-    assertEquals(
-        "incomplete geo-query geoproperty, geometry, georel, coordinates all are mandatory.",
-        ex.getMessage());
+    qm.toJson(params, true);
+    verify(context,times(1)).fail(anyInt(),any());
     testContext.completeNow();
   }
 

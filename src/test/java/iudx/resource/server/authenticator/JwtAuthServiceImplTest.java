@@ -9,10 +9,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
+import java.util.Arrays;
 import iudx.resource.server.common.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joda.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import io.micrometer.core.ipc.http.HttpSender.Method;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -39,6 +41,8 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.authenticator.model.JwtData;
 import iudx.resource.server.cache.CacheService;
+import iudx.resource.server.cache.cacheImpl.CacheType;
+import iudx.resource.server.cache.cacheImpl.IudxCache;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.metering.MeteringService;
@@ -112,23 +116,41 @@ public class JwtAuthServiceImplTest {
     closeId =
             "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information";
     invalidId = "example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group1";
+//    iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information
 
-    jwtAuthenticationService.resourceIdCache.put(openId, "OPEN");
-    jwtAuthenticationService.resourceIdCache.put(closeId, "CLOSED");
-    jwtAuthenticationService.resourceIdCache.put(invalidId, "CLOSED");
-    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
-    when(asyncResult.succeeded()).thenReturn(false);
+//    jwtAuthenticationService.resourceIdCache.put(openId, "OPEN");
+//    jwtAuthenticationService.resourceIdCache.put(closeId, "CLOSED");
+//    jwtAuthenticationService.resourceIdCache.put(invalidId, "CLOSED");
+//    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+//    when(asyncResult.succeeded()).thenReturn(false);
 
-    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
-      @SuppressWarnings("unchecked")
-      @Override
-      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
-        return null;
-      }
-    }).when(cacheService).get(any(), any());
-
-
+//    Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+//      @SuppressWarnings("unchecked")
+//      @Override
+//      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+//        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult);
+//        return null;
+//      }
+//    }).when(cacheService).get(any());
+    
+    when(cacheService.get(any())).thenReturn(Future.failedFuture("failed"));
+    
+    JsonObject openIdJson=new JsonObject();
+    openIdJson.put("type", CacheType.CATALOGUE_CACHE);
+    openIdJson.put("key", openId);
+    when(cacheService.get(openIdJson)).thenReturn(Future.succeededFuture(new JsonObject().put("accessPolicy", "OPEN")));
+    
+    JsonObject closedIdJson=new JsonObject();
+    closedIdJson.put("type", CacheType.CATALOGUE_CACHE);
+    closedIdJson.put("key", closeId);
+    when(cacheService.get(closedIdJson)).thenReturn(Future.succeededFuture(new JsonObject().put("accessPolicy", "SECURE")));
+    
+    JsonObject invalidIdJson=new JsonObject();
+    invalidIdJson.put("type", CacheType.CATALOGUE_CACHE);
+    invalidIdJson.put("key", invalidId);
+    when(cacheService.get(invalidIdJson)).thenReturn(Future.failedFuture("Failed future"));
+    
+    
     LOGGER.info("Auth tests setup complete");
 
     testContext.completeNow();
@@ -183,7 +205,13 @@ public class JwtAuthServiceImplTest {
     authInfo.put("method", Method.GET);
 
     JsonObject request = new JsonObject();
-
+    
+    when(cacheService.get(any())).thenReturn(Future.failedFuture(""));
+    
+    JsonObject closedIdJson=new JsonObject();
+    closedIdJson.put("type", CacheType.CATALOGUE_CACHE);
+    closedIdJson.put("key", closeId);
+    when(cacheService.get(closedIdJson)).thenReturn(Future.succeededFuture(new JsonObject().put("accessPolicy", "SECURE")));
 
     jwtAuthenticationService.tokenInterospect(request, authInfo, handler -> {
       if (handler.succeeded()) {
@@ -251,6 +279,13 @@ public class JwtAuthServiceImplTest {
     authInfo.put("id", openId);
     authInfo.put("apiEndpoint", apis.getSubscriptionUrl());
     authInfo.put("method", Method.POST);
+    
+    when(cacheService.get(any())).thenReturn(Future.failedFuture("failed"));
+    
+    JsonObject openIdJson=new JsonObject();
+    openIdJson.put("type", CacheType.CATALOGUE_CACHE);
+    openIdJson.put("key", openId);
+    when(cacheService.get(openIdJson)).thenReturn(Future.succeededFuture(new JsonObject().put("accessPolicy", "OPEN")));
 
     jwtAuthenticationService.tokenInterospect(request, authInfo, handler -> {
       if (handler.succeeded()) {
@@ -775,334 +810,233 @@ public class JwtAuthServiceImplTest {
       }
     });
   }
+  
+  
+  
   @Test
-  @DisplayName("Testing Success for isItemExist method with List of String IDs")
-  public void testIsItemExistSuccess(VertxTestContext vertxTestContext)
-  {
-    JwtAuthenticationServiceImpl.catWebClient=mock(WebClient.class);
-    when(JwtAuthenticationServiceImpl.catWebClient.get(anyInt(),anyString(),anyString())).thenReturn(httpRequest);
-    when(httpRequest.addQueryParam(anyString(),anyString())).thenReturn(httpRequest);
-    when(httpRequest.expect(any())).thenReturn(httpRequest);
-    when(asyncResult.succeeded()).thenReturn(true);
-    when(asyncResult.result()).thenReturn(httpResponse);
-    String id="abcd/*";
-    JsonObject responseJSonObject = new JsonObject();
-    responseJSonObject.put("status","success");
-    responseJSonObject.put("totalHits", 10);
-    when(httpResponse.bodyAsJsonObject()).thenReturn(responseJSonObject);
-    doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
-      @Override
-      public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
-
-        ((Handler<AsyncResult<HttpResponse<Buffer>>>)arg0.getArgument(0)).handle(asyncResult);
-        return null;
-      }
-    }).when(httpRequest).send(any());
-    jwtAuthenticationService.isItemExist(id).onComplete(handler -> {
-      if (handler.succeeded())
-      {
-        assertTrue(handler.result());
-        vertxTestContext.completeNow();
-      }
-      else
-      {
-        vertxTestContext.failNow(handler.cause());
+  @DisplayName("Revoked token passed")
+  public void testRevokedTokenPassed(VertxTestContext testContext) {
+    JwtData jwtData = new JwtData();
+    jwtData.setSub("valid_sub");
+    jwtData.setIss("auth.test.com");
+    jwtData.setAud("rs.iudx.io");
+    jwtData.setExp(1627408865);
+    jwtData.setIat(1627408865);
+    jwtData.setIid("rg:example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
+    jwtData.setRole("provider");
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
+    
+    JsonObject revokedTokenRequest=new JsonObject();
+    revokedTokenRequest.put("type", CacheType.REVOKED_CLIENT);
+    revokedTokenRequest.put("key", jwtData.getSub());
+    
+    when(cacheService.get(revokedTokenRequest)).thenReturn(Future.succeededFuture(new JsonObject().put("value", LocalDateTime.now().minusDays(1).toString())));
+    
+    jwtAuthenticationService.isRevokedClientToken(jwtData).onComplete(handler->{
+      if(handler.succeeded()) {
+        testContext.failNow("access provided for revoked token");
+      }else {
+        testContext.completeNow();
       }
     });
+    
   }
+  
+  
   @Test
-  @DisplayName("Testing Failure for isItemExist method with List of String IDs")
-  public void testIsItemExistFailure(VertxTestContext vertxTestContext)
-  {
-    JwtAuthenticationServiceImpl.catWebClient= mock(WebClient.class);
-    when(JwtAuthenticationServiceImpl.catWebClient.get(anyInt(),anyString(),anyString())).thenReturn(httpRequest);
-    when(httpRequest.addQueryParam(anyString(),anyString())).thenReturn(httpRequest);
-    when(httpRequest.expect(any())).thenReturn(httpRequest);
-    String id="abcd/*";
-    when(asyncResult.succeeded()).thenReturn(false);
-    doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
-      @Override
-      public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
-
-        ((Handler<AsyncResult<HttpResponse<Buffer>>>)arg0.getArgument(0)).handle(asyncResult);
-        return null;
-      }
-    }).when(httpRequest).send(any());
-    jwtAuthenticationService.isItemExist(id).onComplete(handler -> {
-      if (handler.succeeded())
-      {
-        vertxTestContext.failNow(handler.cause());
-      }
-      else
-      {
-        vertxTestContext.completeNow();
+  @DisplayName("correct unrevoked token passed")
+  public void testCorrectUnrevokedTokenPassed(VertxTestContext testContext) {
+    JwtData jwtData = new JwtData();
+    jwtData.setSub("valid_sub");
+    jwtData.setIss("auth.test.com");
+    jwtData.setAud("rs.iudx.io");
+    jwtData.setExp(1676016492);
+    jwtData.setIat(1676016492);
+    jwtData.setIid("rg:example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
+    jwtData.setRole("provider");
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
+    
+    JsonObject revokedTokenRequest=new JsonObject();
+    revokedTokenRequest.put("type", CacheType.REVOKED_CLIENT);
+    revokedTokenRequest.put("key", jwtData.getSub());
+    String time="2023-02-08T12:37:26.796"; 
+    when(cacheService.get(revokedTokenRequest)).thenReturn(Future.succeededFuture(new JsonObject().put("value", time)));
+    
+    
+    jwtAuthenticationService.isRevokedClientToken(jwtData).onComplete(handler->{
+      if(handler.succeeded()) {
+        testContext.completeNow();
+      }else {
+        testContext.failNow("no access for correct token");
       }
     });
-
+    
   }
+  
   @Test
   @DisplayName("Test isOpenResource method for Cache miss for Valid Group ID")
-  public void testIsOpenResource(VertxTestContext vertxTestContext)
+  public void testIsOpenResourceGroupId(VertxTestContext vertxTestContext)
   {
 
-    AsyncResult<HttpResponse<Buffer>> asyncResultMock = mock(AsyncResult.class);
-
-    JsonObject jsonObject2 = new JsonObject();
-    jsonObject2.put("accessPolicy", "Dummy Access Policy");
-    JsonArray jsonArray = new JsonArray();
-    jsonArray.add(0,jsonObject2);
-
-    JsonObject jsonObject = new JsonObject();
-    jsonObject.put("type", "urn:dx:cat:Success");
-    jsonObject.put("totalHits", 3);
-    jsonObject.put("results",jsonArray);
     String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
+    String[] idComponents = id.split("/");
+    String groupId =(idComponents.length == 4)? id:String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
+    
+    JsonObject openResourceIdJson=new JsonObject();
+    openResourceIdJson.put("type", CacheType.CATALOGUE_CACHE);
+    openResourceIdJson.put("key", id);
+    when(cacheService.get(openResourceIdJson)).thenReturn(Future.succeededFuture(new JsonObject()));
+    
+    JsonObject openGroupIdJson=openResourceIdJson.copy();
+    openGroupIdJson.put("key", groupId);
+    when(cacheService.get(openGroupIdJson)).thenReturn(Future.succeededFuture(new JsonObject().put("accessPolicy", "OPEN")));
 
-
-    jwtAuthenticationService.catWebClient = mock(WebClient.class);
-
-    when(jwtAuthenticationService.catWebClient.get(anyInt(),anyString(),anyString())).thenReturn(httpRequestMock);
-    when(httpRequestMock.addQueryParam(anyString(),anyString())).thenReturn(httpRequestMock);
-    when(httpRequestMock.expect(any())).thenReturn(httpRequestMock);
-    when(asyncResultMock.result()).thenReturn(httpResponseMock);
-    when(httpResponseMock.statusCode()).thenReturn(200);
-
-    when(httpResponseMock.bodyAsJsonObject()).thenReturn(jsonObject);
-    doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>(){
-      @Override
-      public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable{
-        (  (Handler<AsyncResult<HttpResponse<Buffer>>>)arg0.getArgument(0)).handle(asyncResultMock);
-        return null;
-      }
-    }).when(httpRequestMock).send(any());
-    jwtAuthenticationService.isOpenResource(id).onComplete(openResourceHandler -> {
-      if(openResourceHandler.succeeded()) {
-        assertEquals("Dummy Access Policy",openResourceHandler.result());
+    jwtAuthenticationService.isOpenResource(id).onComplete(handler -> {
+      if (handler.succeeded()) {
         vertxTestContext.completeNow();
       } else {
-        vertxTestContext.failNow("open resource validation failed : " + openResourceHandler.cause());
-
+        vertxTestContext.failNow(handler.cause());
       }
     });
   }
+  
+  
   @Test
-  @DisplayName("Test isOpenResource method for Cache miss with 0 total hits")
-  public void testIsOpenResourceWith0TotalHits(VertxTestContext vertxTestContext)
+  @DisplayName("Test isOpenResource method for Cache miss for Valid Group ID")
+  public void testIsOpenResourceId(VertxTestContext vertxTestContext)
   {
 
-    AsyncResult<HttpResponse<Buffer>> asyncResultMock = mock(AsyncResult.class);
-
-    JsonObject jsonObject2 = new JsonObject();
-    jsonObject2.put("accessPolicy", "Dummy Access Policy");
-    JsonArray jsonArray = new JsonArray();
-    jsonArray.add(0,jsonObject2);
     String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
-    JsonObject jsonObject = new JsonObject();
-    jsonObject.put("type", "urn:dx:cat:Success");
-    jsonObject.put("totalHits", 0);
-    jsonObject.put("results",jsonArray);
-    jwtAuthenticationService.catWebClient = mock(WebClient.class);
-    when(jwtAuthenticationService.catWebClient.get(anyInt(),anyString(),anyString())).thenReturn(httpRequestMock);
-    when(httpRequestMock.addQueryParam(anyString(),anyString())).thenReturn(httpRequestMock);
-    when(httpRequestMock.expect(any())).thenReturn(httpRequestMock);
-    when(asyncResultMock.result()).thenReturn(httpResponseMock);
-    when(httpResponseMock.statusCode()).thenReturn(200);
+    String[] idComponents = id.split("/");
+    String groupId =(idComponents.length == 4)? id:String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
+    
+    JsonObject openResourceIdJson=new JsonObject();
+    openResourceIdJson.put("type", CacheType.CATALOGUE_CACHE);
+    openResourceIdJson.put("key", id);
+    when(cacheService.get(openResourceIdJson)).thenReturn(Future.succeededFuture(new JsonObject().put("accessPolicy", "OPEN")));
+    
+    JsonObject openGroupIdJson=openResourceIdJson.copy();
+    openGroupIdJson.put("key", groupId);
+    when(cacheService.get(openGroupIdJson)).thenReturn(Future.succeededFuture(new JsonObject()));
 
-    when(httpResponseMock.bodyAsJsonObject()).thenReturn(jsonObject);
-
-    doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>(){
-      @Override
-      public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable{
-        (  (Handler<AsyncResult<HttpResponse<Buffer>>>)arg0.getArgument(0)).handle(asyncResultMock);
-        return null;
-      }
-    }).when(httpRequestMock).send(any());
-
-    jwtAuthenticationService.isOpenResource(id).onComplete(openResourceHandler -> {
-      if(openResourceHandler.succeeded()) {
-        vertxTestContext.failNow("open resource validation failed : " + openResourceHandler.cause());
-      } else {
-        assertNull(openResourceHandler.result());
+    jwtAuthenticationService.isOpenResource(id).onComplete(handler -> {
+      if (handler.succeeded()) {
         vertxTestContext.completeNow();
+      } else {
+        vertxTestContext.failNow(handler.cause());
       }
     });
   }
+  
+  
   @Test
-  @DisplayName("Testing Failure for isResourceExist method with List of String IDs")
-  public void testIsResourceExistFailure(VertxTestContext vertxTestContext)
+  @DisplayName("Test isOpenResource method for Resource level ACL [No entry for resource Id]")
+  public void testIsOpenResourceIdNoGroupId(VertxTestContext vertxTestContext)
   {
-    String id="Dummy id";
-    String groupACL="Dummy id";
-    JsonObject responseJSonObject=new JsonObject();
-    responseJSonObject.put("type","urn:dx:cat:Success");
-    responseJSonObject.put("totalHits", 10);
-    JwtAuthenticationServiceImpl.catWebClient=mock(WebClient.class);
-    when(JwtAuthenticationServiceImpl.catWebClient.get(anyInt(),anyString(),anyString())).thenReturn(httpRequest);
-    when(httpRequest.addQueryParam(anyString(),anyString())).thenReturn(httpRequest);
-    when(httpRequest.expect(any())).thenReturn(httpRequest);
-    when(asyncResult.result()).thenReturn(httpResponse);
-    when(httpResponse.bodyAsJsonObject()).thenReturn(responseJSonObject);
-    when(httpResponse.statusCode()).thenReturn(400);
-    doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
-      @Override
-      public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
 
-        ((Handler<AsyncResult<HttpResponse<Buffer>>>)arg0.getArgument(0)).handle(asyncResult);
-        return null;
-      }
-    }).when(httpRequest).send(any());
-    jwtAuthenticationService.isResourceExist(id,groupACL).onComplete(handler -> {
-      if (handler.succeeded())
-      {
-        vertxTestContext.failNow("false");
-      }
-      else
-      {
+    String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
+    String[] idComponents = id.split("/");
+    String groupId =(idComponents.length == 4)? id:String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
+    
+    JsonObject openResourceIdJson=new JsonObject();
+    openResourceIdJson.put("type", CacheType.CATALOGUE_CACHE);
+    openResourceIdJson.put("key", id);
+    when(cacheService.get(openResourceIdJson)).thenReturn(Future.succeededFuture(new JsonObject().put("accessPolicy", "OPEN")));
+    
+    JsonObject openGroupIdJson=openResourceIdJson.copy();
+    openGroupIdJson.put("key", groupId);
+    when(cacheService.get(openGroupIdJson)).thenReturn(Future.failedFuture("failed for group id"));
+
+    jwtAuthenticationService.isOpenResource(id).onComplete(handler -> {
+      if (handler.succeeded()) {
         vertxTestContext.completeNow();
+      } else {
+        vertxTestContext.failNow(handler.cause());
       }
     });
   }
+  
+  
   @Test
-  @DisplayName("Testing Failure for isResourceExist method with List of String IDs")
-  public void testIsResourceExistFailure2(VertxTestContext vertxTestContext)
+  @DisplayName("Test isOpenResource method for Group level ACL, but no resource id")
+  public void testIsOpenResourceGroupNoResourceIdExist(VertxTestContext vertxTestContext)
   {
-    String id="Dummy id";
-    String groupACL="Dummy id";
-    JsonObject responseJSonObject=new JsonObject();
-    responseJSonObject.put("type","dummy");
-    responseJSonObject.put("totalHits", 10);
-    JwtAuthenticationServiceImpl.catWebClient=mock(WebClient.class);
-    when(JwtAuthenticationServiceImpl.catWebClient.get(anyInt(),anyString(),anyString())).thenReturn(httpRequest);
-    when(httpRequest.addQueryParam(anyString(),anyString())).thenReturn(httpRequest);
-    when(httpRequest.expect(any())).thenReturn(httpRequest);
-    when(asyncResult.result()).thenReturn(httpResponse);
-    when(httpResponse.bodyAsJsonObject()).thenReturn(responseJSonObject);
-    when(httpResponse.statusCode()).thenReturn(200);
-    doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
-      @Override
-      public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
 
-        ((Handler<AsyncResult<HttpResponse<Buffer>>>)arg0.getArgument(0)).handle(asyncResult);
-        return null;
-      }
-    }).when(httpRequest).send(any());
-    jwtAuthenticationService.isResourceExist(id,groupACL).onComplete(handler -> {
-      if (handler.succeeded())
-      {
-        vertxTestContext.failNow("Not Found");
-      }
-      else
-      {
-        vertxTestContext.completeNow();
-      }
-    });
-  }
-  @Test
-  @DisplayName("Testing Failure for isResourceExist method with List of String IDs")
-  public void testIsResourceExistFailure3(VertxTestContext vertxTestContext) {
-    String id = "Dummy id";
-    String groupACL = "Dummy id";
-    String resourceACL="SECURE";
-    JsonObject responseJSonObject = new JsonObject();
-    JsonArray jsonarray=new JsonArray();
-    responseJSonObject.put("type", "wrong type");
-    responseJSonObject.put("totalHits", 10);
-//   resourceACL=responseJSonObject.getJsonArray("results").getJsonObject(0).getString("accessPolicy");
-    JwtAuthenticationServiceImpl.catWebClient = mock(WebClient.class);
-    when(JwtAuthenticationServiceImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
-    when(httpRequest.addQueryParam(anyString(), anyString())).thenReturn(httpRequest);
-    when(httpRequest.expect(any())).thenReturn(httpRequest);
-    when(asyncResult.result()).thenReturn(httpResponse);
-    when(httpResponse.bodyAsJsonObject()).thenReturn(responseJSonObject);
-    when(httpResponse.statusCode()).thenReturn(200);
+    String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/non-existing";
+    String[] idComponents = id.split("/");
+    String groupId =(idComponents.length == 4)? id:String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
+    
+    JsonObject openResourceIdJson=new JsonObject();
+    openResourceIdJson.put("type", CacheType.CATALOGUE_CACHE);
+    openResourceIdJson.put("key", id);
+    when(cacheService.get(openResourceIdJson)).thenReturn(Future.failedFuture("failed for resource id"));
+    
+    JsonObject openGroupIdJson=openResourceIdJson.copy();
+    openGroupIdJson.put("key", groupId);
+    when(cacheService.get(openGroupIdJson)).thenReturn(Future.succeededFuture(new JsonObject().put("accessPolicy", "OPEN")));
 
-
-    doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
-      @Override
-      public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
-
-        ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0)).handle(asyncResult);
-        return null;
-      }
-    }).when(httpRequest).send(any());
-    jwtAuthenticationService.isResourceExist(id, groupACL).onComplete(handler -> {
+    jwtAuthenticationService.isOpenResource(id).onComplete(handler -> {
       if (handler.succeeded()) {
-        vertxTestContext.failNow("Not Found");
+        vertxTestContext.failNow(handler.cause());
       } else {
         vertxTestContext.completeNow();
       }
     });
   }
+  
   @Test
-  @DisplayName("Testing Failure for isResourceExist method with List of String IDs")
-  public void testGroupAccessPolicyFailure2(VertxTestContext vertxTestContext) {
-    String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";    String groupACL = "Dummy id";
-    String resourceACL="SECURE";
-    JsonObject responseJSonObject = new JsonObject();
-    JsonArray jsonarray=new JsonArray();
-    responseJSonObject.put("type", "urn:dx:cat:Success");
-    responseJSonObject.put("totalHits", 10);
-//   resourceACL=responseJSonObject.getJsonArray("results").getJsonObject(0).getString("accessPolicy");
-    JwtAuthenticationServiceImpl.catWebClient = mock(WebClient.class);
-    when(JwtAuthenticationServiceImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
-    when(httpRequest.addQueryParam(anyString(), anyString())).thenReturn(httpRequest);
-    when(httpRequest.expect(any())).thenReturn(httpRequest);
-    when(asyncResult.result()).thenReturn(httpResponse);
-//    when(httpResponse.bodyAsJsonObject()).thenReturn(responseJSonObject);
-    when(httpResponse.statusCode()).thenReturn(400);
+  @DisplayName("Test isOpenResource method for Group level ACL")
+  public void testIsOpenResourceGroupNoACL4ResourceId(VertxTestContext vertxTestContext)
+  {
 
+    String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
+    String[] idComponents = id.split("/");
+    String groupId =(idComponents.length == 4)? id:String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
+    
+    JsonObject openResourceIdJson=new JsonObject();
+    openResourceIdJson.put("type", CacheType.CATALOGUE_CACHE);
+    openResourceIdJson.put("key", id);
+    when(cacheService.get(openResourceIdJson)).thenReturn(Future.succeededFuture(new JsonObject()));
+    
+    JsonObject openGroupIdJson=openResourceIdJson.copy();
+    openGroupIdJson.put("key", groupId);
+    when(cacheService.get(openGroupIdJson)).thenReturn(Future.succeededFuture(new JsonObject().put("accessPolicy", "OPEN")));
 
-    doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
-      @Override
-      public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
-
-        ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0)).handle(asyncResult);
-        return null;
-      }
-    }).when(httpRequest).send(any());
-    jwtAuthenticationService.getGroupAccessPolicy(id).onComplete(handler -> {
+    jwtAuthenticationService.isOpenResource(id).onComplete(handler -> {
       if (handler.succeeded()) {
-        vertxTestContext.failNow("Not Found");
-      } else {
         vertxTestContext.completeNow();
+      } else {
+        vertxTestContext.failNow(handler.cause());
       }
     });
   }
+  
   @Test
-  @DisplayName("Testing Failure for isResourceExist method with List of String IDs")
-  public void testGroupAccessPolicyFailure(VertxTestContext vertxTestContext) {
-    String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";    String groupACL = "Dummy id";
-    String resourceACL="SECURE";
-    JsonObject responseJSonObject = new JsonObject();
-    JsonArray jsonarray=new JsonArray();
-    responseJSonObject.put("type", "wrong type");
-    responseJSonObject.put("totalHits", 10);
-//   resourceACL=responseJSonObject.getJsonArray("results").getJsonObject(0).getString("accessPolicy");
-    JwtAuthenticationServiceImpl.catWebClient = mock(WebClient.class);
-    when(JwtAuthenticationServiceImpl.catWebClient.get(anyInt(), anyString(), anyString())).thenReturn(httpRequest);
-    when(httpRequest.addQueryParam(anyString(), anyString())).thenReturn(httpRequest);
-    when(httpRequest.expect(any())).thenReturn(httpRequest);
-    when(asyncResult.result()).thenReturn(httpResponse);
-    when(httpResponse.bodyAsJsonObject()).thenReturn(responseJSonObject);
-    when(httpResponse.statusCode()).thenReturn(200);
+  @DisplayName("Test No ACL at group and resource level")
+  public void testNoACL(VertxTestContext vertxTestContext)
+  {
 
+    String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
+    String[] idComponents = id.split("/");
+    String groupId =(idComponents.length == 4)? id:String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
+    
+    JsonObject openResourceIdJson=new JsonObject();
+    openResourceIdJson.put("type", CacheType.CATALOGUE_CACHE);
+    openResourceIdJson.put("key", id);
+    when(cacheService.get(openResourceIdJson)).thenReturn(Future.succeededFuture(new JsonObject()));
+    
+    JsonObject openGroupIdJson=openResourceIdJson.copy();
+    openGroupIdJson.put("key", groupId);
+    when(cacheService.get(openGroupIdJson)).thenReturn(Future.succeededFuture(new JsonObject()));
 
-    doAnswer(new Answer<AsyncResult<HttpResponse<Buffer>>>() {
-      @Override
-      public AsyncResult<HttpResponse<Buffer>> answer(InvocationOnMock arg0) throws Throwable {
-
-        ((Handler<AsyncResult<HttpResponse<Buffer>>>) arg0.getArgument(0)).handle(asyncResult);
-        return null;
-      }
-    }).when(httpRequest).send(any());
-    jwtAuthenticationService.getGroupAccessPolicy(id).onComplete(handler -> {
+    jwtAuthenticationService.isOpenResource(id).onComplete(handler -> {
       if (handler.succeeded()) {
-        vertxTestContext.failNow("Not Found");
+        vertxTestContext.failNow(handler.cause());
       } else {
         vertxTestContext.completeNow();
+        
       }
     });
   }
-
 
 }

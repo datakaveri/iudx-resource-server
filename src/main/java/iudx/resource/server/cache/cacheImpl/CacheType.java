@@ -2,7 +2,8 @@ package iudx.resource.server.cache.cacheImpl;
 
 public enum CacheType {
   REVOKED_CLIENT("revoked_client"),
-  UNIQUE_ATTRIBUTE("unique_attribute");
+  UNIQUE_ATTRIBUTE("unique_attribute"),
+  CATALOGUE_CACHE("catalogue_cache");
 
   String cacheName;
 

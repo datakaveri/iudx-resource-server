@@ -123,14 +123,13 @@ public class LatestDataServiceImpl implements LatestDataService {
     JsonObject requestJson = new JsonObject();
     requestJson.put("type", CacheType.UNIQUE_ATTRIBUTE);
     requestJson.put("key", id);
-    cache.get(requestJson, handler -> {
-      if (handler.succeeded()) {
-        JsonObject json = handler.result();
-        promise.complete(json);
-      } else {
-        LOGGER.info("unique attribute doesn't exist for id : " + id);
-        promise.fail("unique attribute doesn't exist for id : " + id);
-      }
+    
+    Future<JsonObject> cacheFuture=cache.get(requestJson);
+    cacheFuture.onSuccess(successHandler->{
+      promise.complete(successHandler);
+    }).onFailure(failureHandler->{
+      LOGGER.info("unique attribute doesn't exist for id : " + id);
+      promise.fail("unique attribute doesn't exist for id : " + id);
     });
     return promise.future();
   }

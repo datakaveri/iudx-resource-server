@@ -112,6 +112,8 @@
         {
             "id": "iudx.resource.server.cache.CacheVerticle",
             "isWorkerVerticle":false,
+            "catServerHost": "cat-api",
+            "catServerPort": 123,
             "verticleInstances": 1
         },
         {

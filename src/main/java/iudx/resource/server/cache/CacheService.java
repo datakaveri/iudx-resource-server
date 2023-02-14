@@ -5,6 +5,7 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -42,8 +43,7 @@ public interface CacheService {
    * @param handler handler
    * @return
    */
-  @Fluent
-  CacheService get(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  Future<JsonObject> get(JsonObject request);
 
   /**
    * put value in cache passing a json object specifying cache name (in case of multiple caches are
@@ -76,8 +76,7 @@ public interface CacheService {
    * }
    *         </pre>
    */
-  @Fluent
-  CacheService put(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  Future<JsonObject> put(JsonObject request);
 
   /**
    * method used to refresh content of cache specifying the name of cache, key(optional) and
@@ -98,7 +97,6 @@ public interface CacheService {
    * @param handler
    * @return
    */
-  @Fluent
-  CacheService refresh(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
+  Future<JsonObject> refresh(JsonObject request);
 
 }

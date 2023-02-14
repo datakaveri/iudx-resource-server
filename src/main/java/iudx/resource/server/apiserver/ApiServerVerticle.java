@@ -7,6 +7,7 @@ import static iudx.resource.server.apiserver.util.Constants.ID;
 import static iudx.resource.server.apiserver.util.Constants.IID;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
+import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
@@ -52,6 +53,7 @@ import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.util.RequestType;
 import iudx.resource.server.apiserver.validation.ValidatorsHandlersFactory;
 import iudx.resource.server.authenticator.AuthenticationService;
+import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.common.Api;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
@@ -127,6 +129,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     private Api api;
     private LatestDataService latestDataService;
+    private CacheService cacheService; 
 
     /**
      * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
@@ -188,6 +191,8 @@ public class ApiServerVerticle extends AbstractVerticle {
             requestHandler.next();
         });
 
+        
+        
         // attach custom http error responses to router
         HttpStatusCode[] statusCodes = HttpStatusCode.values();
         Stream.of(statusCodes).forEach(code -> {
@@ -207,12 +212,11 @@ public class ApiServerVerticle extends AbstractVerticle {
                         .end(errorResponse(code));
             });
         });
-
+        
         router.route().handler(BodyHandler.create());
-        router.route().handler(TimeoutHandler.create(10000, 508));
+        router.route().handler(TimeoutHandler.create(10000, 408));
         ValidatorsHandlersFactory validators = new ValidatorsHandlersFactory();
         FailureHandler validationsFailureHandler = new FailureHandler();
-
         /* NGSI-LD api endpoints */
         ValidationHandler entityValidationHandler = new ValidationHandler(vertx, RequestType.ENTITY);
         router
@@ -429,10 +433,10 @@ public class ApiServerVerticle extends AbstractVerticle {
         databroker = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
         meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
         latestDataService = LatestDataService.createProxy(vertx, LATEST_SEARCH_ADDRESS);
-
+        cacheService=CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
         managementApi = new ManagementApiImpl();
         subsService = new SubscriptionService();
-        catalogueService = new CatalogueService(vertx, config());
+        catalogueService = new CatalogueService(vertx, config(),cacheService);
         validator = new ParamsValidator(catalogueService);
 
         postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
@@ -468,14 +472,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                             .toString());
         });
 
-        router.route().last().handler(requestHandler -> {
-            HttpServerResponse response = requestHandler.response();
-            response
-                    .putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
-                    .setStatusCode(404)
-                    .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
-                            .toString());
-        });
+        
         /* Print the deployed endpoints */
         printDeployedEndpoints(router);
         LOGGER.info("API server deployed on :" + serverOptions.getPort());
@@ -671,8 +668,9 @@ public class ApiServerVerticle extends AbstractVerticle {
                     routingContext.fail(ex);
                 }
                 // create json
-                QueryMapper queryMapper = new QueryMapper();
-                JsonObject json = queryMapper.toJson(ngsildquery, false);
+                JsonObject json;
+                QueryMapper queryMapper = new QueryMapper(routingContext);
+                json = queryMapper.toJson(ngsildquery, false);
                 Future<List<String>> filtersFuture =
                         catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
                 /* HTTP request instance/host details */
@@ -725,7 +723,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             if (validationHandler.succeeded()) {
                 // parse query params
                 NGSILDQueryParams ngsildquery = new NGSILDQueryParams(requestJson);
-                QueryMapper queryMapper = new QueryMapper();
+                QueryMapper queryMapper = new QueryMapper(routingContext);
                 JsonObject json = queryMapper.toJson(ngsildquery, requestJson.containsKey("temporalQ"));
                 Future<List<String>> filtersFuture =
                         catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
@@ -924,8 +922,10 @@ public class ApiServerVerticle extends AbstractVerticle {
                 // parse query params
                 NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
                 // create json
-                QueryMapper queryMapper = new QueryMapper();
+                QueryMapper queryMapper = new QueryMapper(routingContext);
+                
                 JsonObject json = queryMapper.toJson(ngsildquery, true);
+                
                 Future<List<String>> filtersFuture =
                         catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
                 json.put(JSON_INSTANCEID, instanceID);
@@ -944,6 +944,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                         }
                     } else {
                         LOGGER.error("catalogue item/group doesn't have filters.");
+                        handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN,"faiuled");
                     }
                 });
             } else if (validationHandler.failed()) {

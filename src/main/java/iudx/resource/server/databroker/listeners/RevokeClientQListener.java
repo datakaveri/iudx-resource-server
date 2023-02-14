@@ -56,12 +56,11 @@ public class RevokeClientQListener implements RMQListeners {
                 cacheJson.put("key", key);
                 cacheJson.put("value", value);
 
-                cache.refresh(cacheJson, cacheHandler -> {
-                  if (cacheHandler.succeeded()) {
-                    LOGGER.debug("revoked client message published to Cache Verticle");
-                  } else {
-                    LOGGER.debug("revoked client message published to Cache Verticle fail");
-                  }
+                Future<JsonObject> cacheFuture=cache.refresh(cacheJson);
+                cacheFuture.onSuccess(successHandler->{
+                  LOGGER.debug("revoked client message published to Cache Verticle");
+                }).onFailure(failureHandler->{
+                  LOGGER.debug("revoked client message published to Cache Verticle fail");
                 });
               } else {
                 LOGGER.error("Empty json received from revoke_token queue");
