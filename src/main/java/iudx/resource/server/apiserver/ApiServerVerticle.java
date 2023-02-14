@@ -368,7 +368,8 @@ public class ApiServerVerticle extends AbstractVerticle {
                 .get(api.getMonthlyOverview())
                 .handler(overViewValidation)
                 .handler(AuthHandler.create(vertx,api))
-                .handler(this::getMonthlyOverview);
+                .handler(this::getMonthlyOverview)
+                .failureHandler(validationsFailureHandler);
 
         /** Documentation routes */
         /* Static Resource Handler */
