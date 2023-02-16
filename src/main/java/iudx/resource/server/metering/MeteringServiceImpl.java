@@ -3,10 +3,13 @@ package iudx.resource.server.metering;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.*;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
+import iudx.resource.server.cache.CacheService;
+import iudx.resource.server.cache.cacheImpl.CacheType;
 import iudx.resource.server.common.Response;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
@@ -16,9 +19,16 @@ import iudx.resource.server.metering.util.ResponseBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import static iudx.resource.server.apiserver.util.Constants.ENDT;
 import static iudx.resource.server.apiserver.util.Constants.STARTT;
 import static iudx.resource.server.common.Constants.BROKER_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
 import static iudx.resource.server.metering.util.Constants.*;
 
 public class MeteringServiceImpl implements MeteringService {
@@ -37,7 +47,7 @@ public class MeteringServiceImpl implements MeteringService {
     PgConnectOptions connectOptions;
     PoolOptions poolOptions;
     PgPool pool;
-    String queryPg, queryCount,queryOverview;
+    String queryPg, queryCount,queryOverview,summaryOverview;
     int total;
     JsonObject validationCheck = new JsonObject();
     private JsonObject query = new JsonObject();
@@ -50,7 +60,11 @@ public class MeteringServiceImpl implements MeteringService {
     private String databaseTableName;
     private ResponseBuilder responseBuilder;
     private PostgresService postgresService;
-    private final DataBrokerService rmqService;
+    public static DataBrokerService rmqService;
+    private CacheService cacheService;
+    JsonArray jsonArray ;
+    JsonArray resultJsonArray;
+    int i;
     private final ObjectMapper objectMapper = new ObjectMapper();
     public MeteringServiceImpl(JsonObject propObj, Vertx vertxInstance, PostgresService postgresService) {
         if (propObj != null && !propObj.isEmpty()) {
@@ -78,6 +92,8 @@ public class MeteringServiceImpl implements MeteringService {
         this.vertx = vertxInstance;
         this.postgresService = postgresService;
         this.rmqService = DataBrokerService.createProxy(vertxInstance, BROKER_SERVICE_ADDRESS);
+
+        this.cacheService = CacheService.createProxy(vertxInstance,CACHE_SERVICE_ADDRESS);
 
         _COUNT_COLUMN =
                 COUNT_COLUMN.insert(0, "(" + databaseName + "." + databaseTableName + ".").toString();
@@ -209,6 +225,64 @@ public class MeteringServiceImpl implements MeteringService {
            }
         });
         return this;
+    }
+
+    @Override
+    public MeteringService summaryOverview(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+
+        summaryOverview = queryBuilder.buildSummaryOverview(request);
+        LOGGER.debug("summary query =" + summaryOverview);
+        Future<JsonObject> result = executeQueryDatabaseOperation(summaryOverview);
+        result.onComplete(handlers -> {
+            if (handlers.succeeded()) {
+                jsonArray = handlers.result().getJsonArray("result");
+                cacheCall(jsonArray).onSuccess(resultHandler -> {
+                    JsonObject resultJson = new JsonObject().put("type", "urn:dx:dm:Success")
+                            .put("title", "Success")
+                            .put("results", resultHandler);
+                    handler.handle(Future.succeededFuture(resultJson));
+                });
+            } else {
+                LOGGER.debug("Could not read from DB : " + handlers.cause());
+                handler.handle(Future.failedFuture(handlers.cause().getMessage()));
+            }
+        });
+
+        return this;
+    }
+
+    public Future<JsonArray> cacheCall(JsonArray jsonArray) {
+        Promise<JsonArray> promise = Promise.promise();
+        HashMap<String, Integer> resourceCount = new HashMap<>();
+        resultJsonArray = new JsonArray();
+        List<Future> list = new ArrayList<>();
+
+        for (i = 0; i < jsonArray.size(); i++) {
+            JsonObject jsonObject = new JsonObject()
+                    .put("type", CacheType.CATALOGUE_CACHE)
+                    .put("key", jsonArray.getJsonObject(i).getString("resourceid"));
+            resourceCount.put(jsonArray.getJsonObject(i).getString("resourceid"), Integer.valueOf(jsonArray.getJsonObject(i).getString("count")));
+
+            list.add(cacheService.get(jsonObject));
+        }
+
+        CompositeFuture.join(list).map(CompositeFuture::list).map(result -> result.stream()
+                .filter(Objects::nonNull).collect(Collectors.toList())).onSuccess(l -> {
+            for (int i = 0; i < l.size(); i++) {
+                JsonObject result = (JsonObject) l.get(i);
+                JsonObject outputFormat = new JsonObject()
+                        .put("resourceid", result.getString("id"))
+                        .put("resource_label", result.getString("description"))
+                        .put("publisher", result.getString("name"))
+                        .put("publisher_id", result.getString("provider"))
+                        .put("city", result.getString("instance"))
+                        .put("count", resourceCount.get(result.getString("id")));
+
+                resultJsonArray.add(outputFormat);
+            }
+            promise.complete(resultJsonArray);
+        });
+        return promise.future();
     }
 
     @Override

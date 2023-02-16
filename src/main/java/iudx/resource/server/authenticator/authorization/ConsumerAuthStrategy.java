@@ -28,7 +28,7 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
   private static volatile ConsumerAuthStrategy instance;
 
 
-  
+
   private ConsumerAuthStrategy(boolean isLimitsAllowed,Api api) {
     this.isLimitsEnabled=isLimitsAllowed;
     this.api = api;
@@ -63,6 +63,7 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     apiAccessList.add(new AuthorizationRequest(GET,api.getIudxConsumerAuditUrl()));
     apiAccessList.add(new AuthorizationRequest(GET, api.getIudxAsyncSearchApi()));
     apiAccessList.add(new AuthorizationRequest(GET, api.getMonthlyOverview()));
+    apiAccessList.add(new AuthorizationRequest(GET, api.getSummaryPath()));
     consumerAuthorizationRules.put(IudxAccess.API.getAccess(), apiAccessList);
 
     // subscriptions access list/rules

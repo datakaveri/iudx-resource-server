@@ -94,4 +94,5 @@ public class Constants {
   public static final String MONTHLY_OVERVIEW_GROUPBY = "\ngroup by month,year\n" +
           "order by month";
 
+  public static final String SUMMARY_QUERY_FOR_METERING = "select resourceid,count(*) from auditing_rs group by resourceid";
   }

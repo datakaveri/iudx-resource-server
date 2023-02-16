@@ -22,7 +22,7 @@ public class Api {
 
     private StringBuilder asyncPath;
     private StringBuilder monthlyOverview;
-
+    private StringBuilder summaryPath;
 
     private static volatile Api apiInstance;
 
@@ -65,6 +65,7 @@ public class Api {
         iudxAsyncStatusApi = new StringBuilder(dxApiBasePath).append(ASYNC + STATUS);
         resetPassword = new StringBuilder(dxApiBasePath).append(RESET_PWD);
         monthlyOverview = new StringBuilder(dxApiBasePath).append(MONTHLY_OVERVIEW);
+        summaryPath = new StringBuilder(dxApiBasePath).append(SUMMARY_ENDPOINT);
 
     }
 
@@ -130,5 +131,8 @@ public class Api {
     public String getMonthlyOverview(){
         return monthlyOverview.toString();
 
+    }
+    public String getSummaryPath(){
+        return summaryPath.toString();
     }
 }

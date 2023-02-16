@@ -371,6 +371,14 @@ public class ApiServerVerticle extends AbstractVerticle {
                 .handler(this::getMonthlyOverview)
                 .failureHandler(validationsFailureHandler);
 
+        //Metering Summary
+        router
+                .get(api.getSummaryPath())
+                .handler(AuthHandler.create(vertx,api))
+                .handler(this::getAllSummaryHandler)
+                .failureHandler(validationsFailureHandler);
+
+
         /** Documentation routes */
         /* Static Resource Handler */
         /* Get openapiv3 spec */
@@ -489,6 +497,26 @@ public class ApiServerVerticle extends AbstractVerticle {
             if (handler.succeeded())
             {
                 LOGGER.debug("Successful");
+                handleSuccessResponse(response, ResponseType.Ok.getCode(),
+                        handler.result().toString());
+            }
+            else {
+                LOGGER.error("Fail: Bad request");
+                processBackendResponse(response, handler.cause().getMessage());
+            }
+        });
+    }
+
+    private void getAllSummaryHandler(RoutingContext routingContext) {
+        LOGGER.trace("Info: getAllSummary Started.");
+        HttpServerRequest request = routingContext.request();
+        JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+        LOGGER.debug("auth info = "+ authInfo);
+        HttpServerResponse response = routingContext.response();
+        meteringService.summaryOverview(authInfo,handler->{
+            if (handler.succeeded())
+            {
+                LOGGER.info("Successful");
                 handleSuccessResponse(response, ResponseType.Ok.getCode(),
                         handler.result().toString());
             }

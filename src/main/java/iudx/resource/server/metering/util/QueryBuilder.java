@@ -185,4 +185,9 @@ public class QueryBuilder {
 
         return monthQuery.toString();
     }
+    public String buildSummaryOverview(JsonObject request) {
+        StringBuilder summaryQuery=
+                new StringBuilder(SUMMARY_QUERY_FOR_METERING);
+        return summaryQuery.toString();
+    }
 }
