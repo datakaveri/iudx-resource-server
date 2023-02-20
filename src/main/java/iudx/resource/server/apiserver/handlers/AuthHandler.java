@@ -262,6 +262,8 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = api.getIudxAsyncSearchApi();
     } else if (url.matches(IUDX_ASYNC_STATUS)) {
       path = api.getIudxAsyncStatusApi();
+    } else if (url.matches(getpathRegex((api.getDetailSummary())))) {
+      path =api.getDetailSummary();
     }
     return path;
   }

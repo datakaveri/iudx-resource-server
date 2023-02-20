@@ -38,6 +38,7 @@ public class MeteringServiceImpl implements MeteringService {
     PoolOptions poolOptions;
     PgPool pool;
     String queryPg, queryCount,queryOverview;
+    String detailSummaryQuery;
     int total;
     JsonObject validationCheck = new JsonObject();
     private JsonObject query = new JsonObject();
@@ -49,6 +50,7 @@ public class MeteringServiceImpl implements MeteringService {
     private int databasePoolSize;
     private String databaseTableName;
     private ResponseBuilder responseBuilder;
+
     private PostgresService postgresService;
     private final DataBrokerService rmqService;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -235,6 +237,26 @@ public class MeteringServiceImpl implements MeteringService {
                     }
                 }
             });
+        return this;
+    }
+
+    @Override
+    public MeteringService detailSummary(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+
+        detailSummaryQuery = queryBuilder.buildDetailSummary(request);
+        LOGGER.debug("query =" + detailSummaryQuery);
+
+        Future<JsonObject> result = executeQueryDatabaseOperation(detailSummaryQuery);
+        result.onComplete(handlers -> {
+            if (handlers.succeeded()){
+                LOGGER.debug("Details return Successfully");
+                handler.handle(Future.succeededFuture(handlers.result()));
+            }
+            else {
+                LOGGER.debug("Could not read from DB : " + handlers.cause());
+                handler.handle(Future.failedFuture(handlers.cause().getMessage()));
+            }
+        });
         return this;
     }
 

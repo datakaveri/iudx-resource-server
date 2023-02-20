@@ -94,4 +94,6 @@ public class Constants {
   public static final String MONTHLY_OVERVIEW_GROUPBY = "\ngroup by month,year\n" +
           "order by month";
 
+  public static final String DETAIL_SUMMARY_QUERY = "select api , time from auditing_rs where resourceid = '$0' and providerid ='$1' and time between now()- interval '30 days' and now()";
+
   }

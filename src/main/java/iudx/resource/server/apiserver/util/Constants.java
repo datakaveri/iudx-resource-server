@@ -91,6 +91,7 @@ public class Constants {
   public static final String ADMIN = "/admin";
 
   public static final String MONTHLY_OVERVIEW = "/overview";
+  public static final String DETAIL_SUMMARY = "/detail_summary";
 
   /** Accept Headers and CORS */
   public static final String MIME_APPLICATION_JSON = "application/json";
@@ -254,6 +255,9 @@ public class Constants {
   public static final Pattern VALIDATION_ID_PATTERN =
       Pattern.compile(
           "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z.]{4,100}/{1}[a-zA-Z-_.]{4,100}/{1}[a-zA-Z0-9-_.]{4,100}$");
+  public static final Pattern VALIDATION_PROVIDER_ID =
+          Pattern.compile(
+                  "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}$");
   public static final int VALIDATION_MAX_ATTRS = 5;
   public static final int VALIDATION_MAX_DAYS_INTERVAL_ALLOWED = 10;
   public static final int VALIDATION_MAX_DAYS_INTERVAL_ALLOWED_FOR_ASYNC = 365;
