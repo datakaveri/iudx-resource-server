@@ -25,7 +25,8 @@ public class Constants {
           "/async/search",
           "/subscription",
           "/user/resetPassword"
-          ,"/overview");
+          ,"/overview"
+          ,"/summary");
   public static final String AUTH_TIP_PATH = "/auth/v1/token/introspect";
   public static final List<String> CLOSED_ENDPOINTS =
       List.of("/ingestion");
