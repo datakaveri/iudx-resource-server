@@ -18,8 +18,7 @@ public class Api {
     private StringBuilder ingestionPath;
     private StringBuilder resetPassword;
 
-
-
+    private StringBuilder detailSummary;
     private StringBuilder asyncPath;
     private StringBuilder monthlyOverview;
     private StringBuilder summaryPath;
@@ -66,7 +65,7 @@ public class Api {
         resetPassword = new StringBuilder(dxApiBasePath).append(RESET_PWD);
         monthlyOverview = new StringBuilder(dxApiBasePath).append(MONTHLY_OVERVIEW);
         summaryPath = new StringBuilder(dxApiBasePath).append(SUMMARY_ENDPOINT);
-
+        detailSummary = new StringBuilder(dxApiBasePath).append(DETAIL_SUMMARY);
     }
 
     public String getEntitiesUrl() {
@@ -130,9 +129,11 @@ public class Api {
 
     public String getMonthlyOverview(){
         return monthlyOverview.toString();
-
     }
-    public String getSummaryPath(){
+    public String getSummaryPath() {
         return summaryPath.toString();
+    }
+    public String getDetailSummary(){
+        return detailSummary.toString();
     }
 }

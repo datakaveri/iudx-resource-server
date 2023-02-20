@@ -185,9 +185,22 @@ public class QueryBuilder {
 
         return monthQuery.toString();
     }
+
     public String buildSummaryOverview(JsonObject request) {
-        StringBuilder summaryQuery=
+        StringBuilder summaryQuery =
                 new StringBuilder(SUMMARY_QUERY_FOR_METERING);
         return summaryQuery.toString();
+    }
+
+    public String buildDetailSummary(JsonObject request) {
+        String city = request.getString("city");
+        String resourceid = request.getString(RESOURCE_ID);
+        String providerid = request.getString(PROVIDER_ID);
+
+        StringBuilder detailSummary = new StringBuilder(DETAIL_SUMMARY_QUERY
+                .replace("$0", resourceid)
+                .replace("$1", providerid));
+
+        return detailSummary.toString();
     }
 }

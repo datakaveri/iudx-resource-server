@@ -69,11 +69,22 @@ public class ValidatorsHandlersFactory {
         break;
       case OVERVIEW:
         validator = getOverviewValidator(parameters,headers);
+        break;
+      case DETAIL_SUMMARY:
+        validator = getDetailSummary(parameters,headers);
+        break;
       default:
         break;
     }
 
     return validator;
+  }
+
+  private List<Validator> getDetailSummary(MultiMap parameters, MultiMap headers) {
+    List<Validator> validators = new ArrayList<>();
+    validators.add(new IDTypeValidator(parameters.get(ID),true));
+    validators.add(new ProviderIDTypeValidator(parameters.get("providerid"),true));
+    return validators;
   }
 
   private List<Validator> getOverviewValidator(MultiMap parameters, MultiMap headers) {

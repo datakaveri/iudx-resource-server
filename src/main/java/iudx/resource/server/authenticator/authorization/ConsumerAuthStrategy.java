@@ -64,6 +64,7 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     apiAccessList.add(new AuthorizationRequest(GET, api.getIudxAsyncSearchApi()));
     apiAccessList.add(new AuthorizationRequest(GET, api.getMonthlyOverview()));
     apiAccessList.add(new AuthorizationRequest(GET, api.getSummaryPath()));
+    apiAccessList.add(new AuthorizationRequest(GET, api.getDetailSummary()));
     consumerAuthorizationRules.put(IudxAccess.API.getAccess(), apiAccessList);
 
     // subscriptions access list/rules

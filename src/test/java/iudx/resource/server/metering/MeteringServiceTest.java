@@ -1136,4 +1136,37 @@ public class MeteringServiceTest {
                                         })));
 
     }
+
+    @Test
+    public void testDetailSummary(VertxTestContext vertxTestContext) {
+        AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+        postgresService = mock(PostgresService.class);
+        JsonObject json = new JsonObject().put("role", "admin");
+        json.put(RESOURCE_ID, "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta");
+        json.put(PROVIDER_ID, "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86");
+        json.put("city", "surat");
+        JsonObject expected = new JsonObject().put(SUCCESS, "detail summary return");
+
+        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(expected);
+
+        Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(postgresService).executeQuery(anyString(), any());
+
+        meteringService.detailSummary(
+                json,
+                vertxTestContext.succeeding(
+                        response ->
+                                vertxTestContext.verify(
+                                        () -> {
+                                            assertEquals("detail summary return", response.getString(SUCCESS));
+                                            vertxTestContext.completeNow();
+                                        })));
+    }
 }

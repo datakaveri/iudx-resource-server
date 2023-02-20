@@ -93,6 +93,7 @@ public class Constants {
           "where time between "+ "'$0'" + " and " + "'$1'";
   public static final String MONTHLY_OVERVIEW_GROUPBY = "\ngroup by month,year\n" +
           "order by month";
-
   public static final String SUMMARY_QUERY_FOR_METERING = "select resourceid,count(*) from auditing_rs group by resourceid";
+  public static final String DETAIL_SUMMARY_QUERY = "select api , time from auditing_rs where resourceid = '$0' and providerid ='$1' and time between now()- interval '30 days' and now()";
+
   }

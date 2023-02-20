@@ -378,6 +378,13 @@ public class ApiServerVerticle extends AbstractVerticle {
                 .handler(this::getAllSummaryHandler)
                 .failureHandler(validationsFailureHandler);
 
+        ValidationHandler detailSummaryValidation = new ValidationHandler(vertx, RequestType.DETAIL_SUMMARY);
+        router
+                .get(api.getDetailSummary())
+                .handler(detailSummaryValidation)
+                .handler(AuthHandler.create(vertx,api))
+                .handler(this::getDetailsSummary)
+                .failureHandler(validationsFailureHandler);
 
         /** Documentation routes */
         /* Static Resource Handler */
@@ -486,6 +493,29 @@ public class ApiServerVerticle extends AbstractVerticle {
         printDeployedEndpoints(router);
         LOGGER.info("API server deployed on :" + serverOptions.getPort());
     }
+
+    private void getDetailsSummary(RoutingContext routingContext) {
+        HttpServerRequest request = routingContext.request();
+        JsonObject entries = new JsonObject().put(RESOURCE_ID, request.getParam("id"))
+                .put(PROVIDER_ID, request.getParam("providerid"))
+                .put("city", request.getParam("city"));
+        LOGGER.debug("entries =" + entries);
+
+        JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+        entries.put("authInfo", authInfo);
+        HttpServerResponse response = routingContext.response();
+        meteringService.detailSummary(entries, handler -> {
+            if (handler.succeeded()) {
+                LOGGER.debug("Successful");
+                handleSuccessResponse(response, ResponseType.Ok.getCode(),
+                        handler.result().toString());
+            } else {
+                LOGGER.error("Fail: Bad request");
+                processBackendResponse(response, handler.cause().getMessage());
+            }
+        });
+    }
+
     private void getMonthlyOverview(RoutingContext routingContext) {
         HttpServerRequest request = routingContext.request();
         LOGGER.trace("Info: getMonthlyOverview Started.");
