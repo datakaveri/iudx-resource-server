@@ -330,6 +330,7 @@ public class MeteringServiceImpl implements MeteringService {
                 handler.handle(Future.failedFuture(handlers.cause().getMessage()));
             }
         });
+
         return this;
     }
 
