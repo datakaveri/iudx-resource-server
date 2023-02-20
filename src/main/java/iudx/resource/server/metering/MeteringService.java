@@ -29,7 +29,7 @@ public interface MeteringService {
 
   @Fluent
   MeteringService summaryOverview(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
-
+  @Fluent
   MeteringService detailSummary(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 
 
