@@ -22924,8 +22924,6 @@
 						}
 					},
 					"response": []
-<<<<<<< HEAD
-=======
 				},
 				{
 					"name": "200 - (Success) Detail_Summary",
@@ -23030,7 +23028,7 @@
 					"response": []
 				},
 				{
-					"name": "401 - (Not Authorized) Detail_Summary",
+					"name": "401- (Not Authorized) Detail_Summary",
 					"event": [
 						{
 							"listen": "test",
@@ -23079,7 +23077,6 @@
 						}
 					},
 					"response": []
->>>>>>> bcd699c (/detail-summary)
 				}
 			]
 		}
