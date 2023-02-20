@@ -196,7 +196,6 @@ public class QueryBuilder {
         String city = request.getString("city");
         String resourceid = request.getString(RESOURCE_ID);
         String providerid = request.getString(PROVIDER_ID);
-
         StringBuilder detailSummary = new StringBuilder(DETAIL_SUMMARY_QUERY
                 .replace("$0", resourceid)
                 .replace("$1", providerid));
