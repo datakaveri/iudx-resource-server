@@ -85,14 +85,23 @@ public class Constants {
   public static final StringBuilder RESPONSE_SIZE_COLUMN = new StringBuilder("size)");
 
   public static final StringBuilder ID_COLUMN = new StringBuilder("id)");
-  public static final String MESSAGE = "message";
+  public static final String OVERVIEW_QUERY ="SELECT month,year,COALESCE(counts, 0) as counts\n" +
+          "FROM  (\n" +
+          "   SELECT day::date ,to_char(date_trunc('month', day),'month') as month,extract('year' from day) as year\n" +
+          "   FROM   generate_series(timestamp '$0'\n" +
+          "                        , timestamp '$1'\n" +
+          "                        , interval  '1 month') day\n" +
+          "   ) d\n" +
+          "LEFT  JOIN (\n" +
+          "   SELECT date_trunc('month', time)::date AS day\n" +
+          "        , count(api) as counts \n" +
+          "   FROM   auditing_rs\n" +
+          "   WHERE  time between '$2'\n" +
+          "   AND '$3'\n" ;
 
-  public static final String MONTHLY_OVERVIEW_QUERY = "select to_char(date_trunc('month', time),'month') as month\n" +
-          ",extract('year' from time) as year,\n" +
-          "count(api) as count from auditing_rs\n" +
-          "where time between "+ "'$0'" + " and " + "'$1'";
-  public static final String MONTHLY_OVERVIEW_GROUPBY = "\ngroup by month,year\n" +
-          "order by month";
-
+  public static final String GROUPBY = "\n" +
+          "   GROUP  BY 1\n" +
+          "   ) t USING (day)\n" +
+          "ORDER  BY day";
   public static final String SUMMARY_QUERY_FOR_METERING = "select resourceid,count(*) from auditing_rs group by resourceid";
   }
