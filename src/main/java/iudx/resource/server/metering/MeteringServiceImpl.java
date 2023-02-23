@@ -190,6 +190,7 @@ public class MeteringServiceImpl implements MeteringService {
 
     private void readMethod(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
             queryPg = queryBuilder.buildReadQueryFromPG(request);
+            LOGGER.debug("read query = "+ queryPg);
             Future<JsonObject> resultsPg = executeQueryDatabaseOperation(queryPg);
             resultsPg.onComplete(readHandler -> {
                 if (readHandler.succeeded()) {

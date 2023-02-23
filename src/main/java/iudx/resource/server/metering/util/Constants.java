@@ -68,8 +68,10 @@ public class Constants {
   public static final String PROVIDERID_TIME_INTERVAL_READ_QUERY =
       "SELECT * FROM $0 where epochtime>=$1 and epochtime<=$2 and providerid='$3'";
 
-  public static final String ORDER_BY_AND_LIMIT= " ORDER BY ID LIMIT 999;";
+  public static final String ORDER_BY= " ORDER BY time";
 
+  public static final String OFFSET = " offset $8";
+  public static final String LIMIT = " limit $7";
   public static final String COUNT="count";
   public static final String API_QUERY = " and api='$5'";
   public static final String USER_ID_QUERY = " and userid='$6'";

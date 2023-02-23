@@ -50,7 +50,9 @@ public class QueryBuilder {
         String providerID = request.getString(PROVIDER_ID);
         String consumerID = request.getString(CONSUMER_ID);
         String databaseTableName = request.getString(TABLE_NAME);
-        StringBuilder query;
+        StringBuilder query = null;
+        String limit = request.getString("limit");
+        String offset = request.getString("offset");
 
         ZonedDateTime startZDT = ZonedDateTime.parse(startTime);
         ZonedDateTime endZDT = ZonedDateTime.parse(endTime);
@@ -58,22 +60,416 @@ public class QueryBuilder {
         long fromTime = getEpochTime(startZDT);
         long toTime = getEpochTime(endZDT);
 
-        if (providerID != null) {
-            query =
-                    new StringBuilder(
-                            PROVIDERID_TIME_INTERVAL_READ_QUERY
-                                    .replace("$0", databaseTableName)
-                                    .replace("$1", Long.toString(fromTime))
-                                    .replace("$2", Long.toString(toTime))
-                                    .replace("$3", providerID));
-        } else {
-            query =
-                    new StringBuilder(
-                            CONSUMERID_TIME_INTERVAL_READ_QUERY
-                                    .replace("$0", databaseTableName)
-                                    .replace("$1", Long.toString(fromTime))
-                                    .replace("$2", Long.toString(toTime))
-                                    .replace("$3", userId));
+        if (limit!=null && offset!=null){
+                if (providerID != null) {
+                    if (api != null && resourceId != null && consumerID != null) {
+                        query =
+                                new StringBuilder(
+                                        PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4' and resourceid = '$5' and userid = '$6'")
+                                                .concat(ORDER_BY).concat(OFFSET).concat(LIMIT)
+                                                .replace("$0", databaseTableName)
+                                                .replace("$1", Long.toString(fromTime))
+                                                .replace("$2", Long.toString(toTime))
+                                                .replace("$3", providerID)
+                                                .replace("$4", api)
+                                                .replace("$5", resourceId)
+                                                .replace("$6", consumerID)
+                                                .replace("$7", limit)
+                                                .replace("$8", offset));
+                    } else if (api != null && resourceId != null) {
+                        query =
+                                new StringBuilder(
+                                        PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4' and resourceid = '$5'").concat(ORDER_BY)
+                                                .concat(OFFSET).concat(LIMIT)
+                                                .replace("$0", databaseTableName)
+                                                .replace("$1", Long.toString(fromTime))
+                                                .replace("$2", Long.toString(toTime))
+                                                .replace("$3", providerID)
+                                                .replace("$4", api)
+                                                .replace("$5", resourceId)
+                                                .replace("$7", limit)
+                                                .replace("$8", offset));
+                    } else if (api != null && consumerID != null) {
+                        query =
+                                new StringBuilder(
+                                        PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4' and userid = '$5'")
+                                                .concat(ORDER_BY).concat(OFFSET).concat(LIMIT)
+                                                .replace("$0", databaseTableName)
+                                                .replace("$1", Long.toString(fromTime))
+                                                .replace("$2", Long.toString(toTime))
+                                                .replace("$3", providerID)
+                                                .replace("$4", api)
+                                                .replace("$5", consumerID)
+                                                .replace("$7", limit)
+                                                .replace("$8", offset));
+                    } else if (resourceId != null && consumerID != null) {
+                        query =
+                                new StringBuilder(
+                                        PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and resourceid = '$4' and userid = '$5'")
+                                                .concat(ORDER_BY).concat(OFFSET).concat(LIMIT)
+                                                .replace("$0", databaseTableName)
+                                                .replace("$1", Long.toString(fromTime))
+                                                .replace("$2", Long.toString(toTime))
+                                                .replace("$3", providerID)
+                                                .replace("$4", resourceId)
+                                                .replace("$5", consumerID)
+                                                .replace("$7", limit)
+                                                .replace("$8", offset));
+                    } else if (api != null) {
+                        query =
+                                new StringBuilder(
+                                        PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4'")
+                                                .concat(ORDER_BY).concat(OFFSET).concat(LIMIT)
+                                                .replace("$0", databaseTableName)
+                                                .replace("$1", Long.toString(fromTime))
+                                                .replace("$2", Long.toString(toTime))
+                                                .replace("$3", providerID)
+                                                .replace("$4", api)
+                                                .replace("$7", limit)
+                                                .replace("$8", offset));
+                    } else if (resourceId != null) {
+                        query =
+                                new StringBuilder(
+                                        PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and resourceid = '$4'")
+                                                .concat(ORDER_BY).concat(OFFSET).concat(LIMIT)
+                                                .replace("$0", databaseTableName)
+                                                .replace("$1", Long.toString(fromTime))
+                                                .replace("$2", Long.toString(toTime))
+                                                .replace("$3", providerID)
+                                                .replace("$4", resourceId)
+                                                .replace("$7", limit)
+                                                .replace("$8", offset));
+                    } else if (consumerID != null) {
+                        query =
+                                new StringBuilder(
+                                        PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and userid = '$4'")
+                                                .concat(ORDER_BY).concat(OFFSET).concat(LIMIT)
+                                                .replace("$0", databaseTableName)
+                                                .replace("$1", Long.toString(fromTime))
+                                                .replace("$2", Long.toString(toTime))
+                                                .replace("$3", providerID)
+                                                .replace("$4", consumerID)
+                                                .replace("$7", limit)
+                                                .replace("$8", offset));
+                    } else {
+                        query =
+                                new StringBuilder(
+                                        PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(ORDER_BY)
+                                                .concat(OFFSET).concat(LIMIT)
+                                                .replace("$0", databaseTableName)
+                                                .replace("$1", Long.toString(fromTime))
+                                                .replace("$2", Long.toString(toTime))
+                                                .replace("$3", providerID)
+                                                .replace("$7", limit)
+                                                .replace("$8", offset));
+                    }
+                } else {
+                    if (api != null && resourceId != null) {
+                        query =
+                                new StringBuilder(
+                                        CONSUMERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4' and resourceid = '$5'")
+                                                .concat(ORDER_BY).concat(OFFSET).concat(LIMIT)
+                                                .replace("$0", databaseTableName)
+                                                .replace("$1", Long.toString(fromTime))
+                                                .replace("$2", Long.toString(toTime))
+                                                .replace("$3", userId)
+                                                .replace("$4", api)
+                                                .replace("$5", resourceId)
+                                                .replace("$7", limit)
+                                                .replace("$8", offset));
+                    } else if (api != null) {
+                        query =
+                                new StringBuilder(
+                                        CONSUMERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4'").concat(ORDER_BY)
+                                                .concat(OFFSET).concat(LIMIT)
+                                                .replace("$0", databaseTableName)
+                                                .replace("$1", Long.toString(fromTime))
+                                                .replace("$2", Long.toString(toTime))
+                                                .replace("$3", userId)
+                                                .replace("$4", api)
+                                                .replace("$7", limit)
+                                                .replace("$8", offset));
+                    } else if (resourceId != null) {
+                        query =
+                                new StringBuilder(
+                                        CONSUMERID_TIME_INTERVAL_READ_QUERY.concat(" and resourceid = '$4'")
+                                                .concat(ORDER_BY).concat(OFFSET).concat(LIMIT)
+                                                .replace("$0", databaseTableName)
+                                                .replace("$1", Long.toString(fromTime))
+                                                .replace("$2", Long.toString(toTime))
+                                                .replace("$3", userId)
+                                                .replace("$4", resourceId)
+                                                .replace("$7", limit)
+                                                .replace("$8", offset));
+                    } else {
+                        query =
+                                new StringBuilder(
+                                        CONSUMERID_TIME_INTERVAL_READ_QUERY.concat(ORDER_BY).concat(OFFSET)
+                                                .concat(LIMIT)
+                                                .replace("$0", databaseTableName)
+                                                .replace("$1", Long.toString(fromTime))
+                                                .replace("$2", Long.toString(toTime))
+                                                .replace("$3", userId)
+                                                .replace("$7", limit)
+                                                .replace("$8", offset));
+                    }
+                }
+        } else if (limit!=null) {
+            if (providerID != null) {
+                if (api != null && resourceId != null && consumerID != null) {
+                    query =
+                            new StringBuilder(
+                                    PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4' and resourceid = '$5' and userid = '$6'")
+                                            .concat(ORDER_BY).concat(LIMIT)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", providerID)
+                                            .replace("$4", api)
+                                            .replace("$5", resourceId)
+                                            .replace("$6", consumerID)
+                                            .replace("$7", limit));
+                } else if (api != null && resourceId != null) {
+                    query =
+                            new StringBuilder(
+                                    PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4' and resourceid = '$5'")
+                                            .concat(ORDER_BY).concat(LIMIT)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", providerID)
+                                            .replace("$4", api)
+                                            .replace("$5", resourceId)
+                                            .replace("$7", limit));
+                } else if (api != null && consumerID != null) {
+                    query =
+                            new StringBuilder(
+                                    PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4' and userid = '$5'")
+                                            .concat(ORDER_BY).concat(LIMIT)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", providerID)
+                                            .replace("$4", api)
+                                            .replace("$5", consumerID)
+                                            .replace("$7", limit));
+                } else if (resourceId != null && consumerID != null) {
+                    query =
+                            new StringBuilder(
+                                    PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and resourceid = '$4' and userid = '$5'")
+                                            .concat(ORDER_BY).concat(LIMIT)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", providerID)
+                                            .replace("$4", resourceId)
+                                            .replace("$5", consumerID)
+                                            .replace("$7", limit));
+                } else if (api != null) {
+                    query =
+                            new StringBuilder(
+                                    PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4'")
+                                            .concat(ORDER_BY).concat(LIMIT)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", providerID)
+                                            .replace("$4", api)
+                                            .replace("$7", limit));
+                } else if (resourceId != null) {
+                    query =
+                            new StringBuilder(
+                                    PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and resourceid = '$4'")
+                                            .concat(ORDER_BY).concat(LIMIT)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", providerID)
+                                            .replace("$4", resourceId)
+                                            .replace("$7", limit));
+                } else if (consumerID != null) {
+                    query =
+                            new StringBuilder(
+                                    PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and userid = '$4'")
+                                            .concat(ORDER_BY).concat(LIMIT)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", providerID)
+                                            .replace("$4", consumerID)
+                                            .replace("$7", limit));
+                } else {
+                    query =
+                            new StringBuilder(
+                                    PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(ORDER_BY).concat(LIMIT)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", providerID)
+                                            .replace("$7", limit));
+                }
+            } else {
+                if (api != null && resourceId != null) {
+                    query =
+                            new StringBuilder(
+                                    CONSUMERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4' and resourceid = '$5'")
+                                            .concat(ORDER_BY).concat(LIMIT)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", userId)
+                                            .replace("$4", api)
+                                            .replace("$5", resourceId)
+                                            .replace("$7", limit));
+                } else if (api != null) {
+                    query =
+                            new StringBuilder(
+                                    CONSUMERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4'").concat(ORDER_BY).concat(LIMIT)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", userId)
+                                            .replace("$4", api)
+                                            .replace("$7", limit));
+                } else if (resourceId != null) {
+                    query =
+                            new StringBuilder(
+                                    CONSUMERID_TIME_INTERVAL_READ_QUERY.concat(" and resourceid = '$4'").concat(ORDER_BY).concat(LIMIT)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", userId)
+                                            .replace("$4", resourceId)
+                                            .replace("$7", limit));
+                } else {
+                    query =
+                            new StringBuilder(
+                                    CONSUMERID_TIME_INTERVAL_READ_QUERY.concat(ORDER_BY).concat(LIMIT)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", userId)
+                                            .replace("$7", limit));
+                }
+            }
+        }else {
+            if (providerID != null) {
+                if (api != null && resourceId != null && consumerID != null) {
+                    query =
+                            new StringBuilder(
+                                    PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4' and resourceid = '$5' and userid = '$6'").concat(ORDER_BY)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", providerID)
+                                            .replace("$4", api)
+                                            .replace("$5", resourceId)
+                                            .replace("$6", consumerID));
+                } else if (api != null && resourceId != null) {
+                    query =
+                            new StringBuilder(
+                                    PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4' and resourceid = '$5'").concat(ORDER_BY)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", providerID)
+                                            .replace("$4", api)
+                                            .replace("$5", resourceId));
+                } else if (api != null && consumerID != null) {
+                    query =
+                            new StringBuilder(
+                                    PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4' and userid = '$5'").concat(ORDER_BY)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", providerID)
+                                            .replace("$4", api)
+                                            .replace("$5", consumerID));
+                } else if (resourceId != null && consumerID != null) {
+                    query =
+                            new StringBuilder(
+                                    PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and resourceid = '$4' and userid = '$5'").concat(ORDER_BY)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", providerID)
+                                            .replace("$4", resourceId)
+                                            .replace("$5", consumerID));
+                } else if (api != null) {
+                    query =
+                            new StringBuilder(
+                                    PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4'").concat(ORDER_BY)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", providerID)
+                                            .replace("$4", api));
+                } else if (resourceId != null) {
+                    query =
+                            new StringBuilder(
+                                    PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and resourceid = '$4'").concat(ORDER_BY)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", providerID)
+                                            .replace("$4", resourceId));
+                } else if (consumerID != null) {
+                    query =
+                            new StringBuilder(
+                                    PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(" and userid = '$4'").concat(ORDER_BY)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", providerID)
+                                            .replace("$4", consumerID));
+                } else {
+                    query =
+                            new StringBuilder(
+                                    PROVIDERID_TIME_INTERVAL_READ_QUERY.concat(ORDER_BY)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", providerID));
+                }
+            } else {
+                if (api != null && resourceId != null) {
+                    query =
+                            new StringBuilder(
+                                    CONSUMERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4' and resourceid = '$5'").concat(ORDER_BY)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", userId)
+                                            .replace("$4", api)
+                                            .replace("$5", resourceId));
+                } else if (api != null) {
+                    query =
+                            new StringBuilder(
+                                    CONSUMERID_TIME_INTERVAL_READ_QUERY.concat(" and api = '$4'").concat(ORDER_BY)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", userId)
+                                            .replace("$4", api));
+                } else if (resourceId != null) {
+                    query =
+                            new StringBuilder(
+                                    CONSUMERID_TIME_INTERVAL_READ_QUERY.concat(" and resourceid = '$4'").concat(ORDER_BY)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", userId)
+                                            .replace("$4", resourceId));
+                } else {
+                    query =
+                            new StringBuilder(
+                                    CONSUMERID_TIME_INTERVAL_READ_QUERY.concat(ORDER_BY)
+                                            .replace("$0", databaseTableName)
+                                            .replace("$1", Long.toString(fromTime))
+                                            .replace("$2", Long.toString(toTime))
+                                            .replace("$3", userId));
+                }
+            }
         }
         return query.toString();
     }
@@ -87,7 +483,7 @@ public class QueryBuilder {
         String providerID = request.getString(PROVIDER_ID);
         String consumerID = request.getString(CONSUMER_ID);
         String databaseTableName = request.getString(TABLE_NAME);
-        StringBuilder query;
+        StringBuilder query = null;
 
         ZonedDateTime startZDT = ZonedDateTime.parse(startTime);
         ZonedDateTime endZDT = ZonedDateTime.parse(endTime);
