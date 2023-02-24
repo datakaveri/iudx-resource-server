@@ -291,7 +291,7 @@ public class Constants {
 
   // subscriptions queries
   public static final String CREATE_SUB_SQL =
-      "INSERT INTO subscriptions(_id,_type,queue_name,entity,expiry) VALUES('$1','$2','$3','$4','$5')";
+          "INSERT INTO subscriptions(_id,_type,queue_name,entity,expiry,dataset_name,dataset_json,user_id) VALUES('$1','$2','$3','$4','$5','$6','$7','$8')";
 
   public static final String UPDATE_SUB_SQL =
       "UPDATE subscriptions SET expiry='$1' where queue_name='$2' and entity='$3'";
@@ -308,4 +308,6 @@ public class Constants {
 
   public static final String STARTT="starttime";
   public static final String ENDT="endtime";
+  public static final String GET_ALL_QUEUE =
+          "SELECT queue_name as queueName,entity,dataset_json as catItem FROM subscriptions WHERE user_id ='$1'";
 }

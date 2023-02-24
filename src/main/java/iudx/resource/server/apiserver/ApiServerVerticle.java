@@ -1005,7 +1005,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         jsonObj.put(JSON_INSTANCEID, instanceID);
         LOGGER.debug("Info: json for subs :: ;" + jsonObj);
         Future<JsonObject> subsReq =
-                subsService.createSubscription(jsonObj, databroker, postgresService, authInfo);
+                subsService.createSubscription(jsonObj, databroker, postgresService, authInfo, cacheService);
         subsReq.onComplete(subHandler -> {
             if (subHandler.succeeded()) {
                 LOGGER.info("Success: Handle Subscription request;");
@@ -1162,9 +1162,9 @@ public class ApiServerVerticle extends AbstractVerticle {
         JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
         JsonObject jsonObj = new JsonObject();
         jsonObj.put(USER_ID, authInfo.getString(USER_ID));
-       
+
         Future<JsonObject> subsReq =
-                subsService.getAllSubscriptionQueueForUser(jsonObj, databroker);
+                subsService.getAllSubscriptionQueueForUser(jsonObj, postgresService);
         subsReq.onComplete(subHandler -> {
             if (subHandler.succeeded()) {
                 LOGGER.info("Success: Getting subscription queue");

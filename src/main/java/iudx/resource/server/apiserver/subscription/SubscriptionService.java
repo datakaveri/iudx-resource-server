@@ -1,28 +1,22 @@
 package iudx.resource.server.apiserver.subscription;
 
-import static iudx.resource.server.apiserver.util.Constants.APPEND_SUB_SQL;
-import static iudx.resource.server.apiserver.util.Constants.CREATE_SUB_SQL;
-import static iudx.resource.server.apiserver.util.Constants.DELETE_SUB_SQL;
-import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.SELECT_SUB_SQL;
-import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
-import static iudx.resource.server.apiserver.util.Constants.SUB_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.UPDATE_SUB_SQL;
-import static iudx.resource.server.databroker.util.Constants.*;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.apiserver.response.ResponseType;
+import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
+import static iudx.resource.server.cache.cacheImpl.CacheType.CATALOGUE_CACHE;
+import static iudx.resource.server.databroker.util.Constants.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * class contains all method for operations on subscriptions.
@@ -63,37 +57,49 @@ public class SubscriptionService {
    * @return a future of JsonObject
    */
   public Future<JsonObject> createSubscription(JsonObject json, DataBrokerService databroker,
-      PostgresService pgService, JsonObject authInfo) {
+                                               PostgresService pgService, JsonObject authInfo, CacheService cacheService) {
     LOGGER.info("createSubscription() method started");
     Promise<JsonObject> promise = Promise.promise();
     SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
-    if (subscription == null)
-    {
+    if (subscription == null) {
       subscription = getSubscriptionContext(subType, databroker, pgService);
     }
     assertNotNull(subscription);
     subscription.create(json).onComplete(handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
-        JsonObject brokerResponse=response.getJsonArray("results").getJsonObject(0);
+        JsonObject brokerResponse = response.getJsonArray("results").getJsonObject(0);
+        LOGGER.debug("brokerResponse: " + brokerResponse);
 
-        StringBuilder query = new StringBuilder(CREATE_SUB_SQL
-            .replace("$1", brokerResponse.getString("id"))
-            .replace("$2", subType.type)
-            .replace("$3", brokerResponse.getString("id"))
-            .replace("$4", json.getJsonArray("entities").getString(0))
-            .replace("$5", authInfo.getString("expiry")));
+        JsonObject cacheJson = new JsonObject()
+                .put("key", json.getJsonArray("entities").getString(0))
+                .put("type", CATALOGUE_CACHE);
+        cacheService.get(cacheJson).onSuccess(
+                cacheResult -> {
+                  LOGGER.debug("cacheResult: " + cacheResult);
+                  StringBuilder query = new StringBuilder(CREATE_SUB_SQL
+                          .replace("$1", brokerResponse.getString("id"))
+                          .replace("$2", subType.type)
+                          .replace("$3", brokerResponse.getString("id"))
+                          .replace("$4", json.getJsonArray("entities").getString(0))
+                          .replace("$5", authInfo.getString("expiry"))
+                          .replace("$6", cacheResult.getString("name"))
+                          .replace("$7", cacheResult.toString())
+                          .replace("$8", authInfo.getString("userid")));
 
-        pgService.executeQuery(query.toString(), pgHandler -> {
-          if (pgHandler.succeeded()) {
-            promise.complete(response);
-          } else {
-            // TODO : rollback mechanism in case of pg error [to unbind/delete created sub]
-            JsonObject res = new JsonObject(pgHandler.cause().getMessage());
-            promise.fail(generateResponse(res).toString());
-          }
-        });
+                  LOGGER.debug("query: " + query);
+                  pgService.executeQuery(query.toString(), pgHandler -> {
+                    if (pgHandler.succeeded()) {
+                      promise.complete(response);
+                    } else {
+                      // TODO : rollback mechanism in case of pg error [to unbind/delete created sub]
+                      JsonObject res = new JsonObject(pgHandler.cause().getMessage());
+                      promise.fail(generateResponse(res).toString());
+                    }
+                  });
 
+                  LOGGER.debug("cache result" + cacheResult);
+                });
       } else {
         JsonObject res = new JsonObject(handler.cause().getMessage());
         promise.fail(generateResponse(res).toString());
@@ -241,18 +247,20 @@ public class SubscriptionService {
     });
     return promise.future();
   }
-  public Future<JsonObject> getAllSubscriptionQueueForUser(JsonObject json, DataBrokerService databroker) {
+
+  public Future<JsonObject> getAllSubscriptionQueueForUser(JsonObject json, PostgresService pgService) {
     LOGGER.info("getAllSubscriptionQueueForUser() method started");
     Promise<JsonObject> promise = Promise.promise();
-    databroker.listAllQueue(json,handler->{
-      if (handler.succeeded()) {
-        JsonObject response = new JsonObject();
-        response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
-        response.put(TITLE, "success");
-        response.put(RESULTS, new JsonArray().add(handler.result()));
-        promise.complete(response);
+    StringBuilder query = new StringBuilder(GET_ALL_QUEUE
+            .replace("$1", json.getString("userid")));
+
+    LOGGER.debug("query: " + query);
+    pgService.executeQuery(query.toString(), pgHandler -> {
+      if (pgHandler.succeeded()) {
+        promise.complete(pgHandler.result());
       } else {
-        JsonObject res = new JsonObject(handler.cause().getMessage());
+        // TODO : rollback mechanism in case of pg error [to unbind/delete created sub]
+        JsonObject res = new JsonObject(pgHandler.cause().getMessage());
         promise.fail(generateResponse(res).toString());
       }
     });

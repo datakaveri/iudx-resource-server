@@ -650,27 +650,6 @@ public class RabbitClient {
     }
     return promise.future();
   }
-
-  Future<JsonObject> listAllQueue(JsonObject request){
-    LOGGER.trace("Info : RabbitClient#listAllQueue() started");
-    Promise<JsonObject> promise = Promise.promise();
-    if (request != null && !request.isEmpty()) {
-      String userid = request.getString(USER_ID);
-      LOGGER.debug("username = "+ encodeValue(userid));
-      String url = "/api/queues?page="+encodeValue("1")+"&page_size="+encodeValue("100")+"&"+"name="+encodeValue(userid)+"&use_regex=true&pagination=true";
-      JsonObject jsonObject = new JsonObject();
-      webClient.requestAsyncs(REQUEST_GET, url).onComplete(asyncResult -> {
-        if (asyncResult.succeeded()) {
-          jsonObject.put("Subscription",asyncResult.result());
-          promise.complete(jsonObject);
-        } else {
-          promise.fail("getQueue_error" + asyncResult.cause());
-        }
-      });
-    }
-    return promise.future();
-  }
-
   public Future<JsonObject> registerAdapter(JsonObject request, String vhost) {
     LOGGER.trace("Info : RabbitClient#registerAdaptor() started");
     LOGGER.debug("Request :" + request + " vhost : " + vhost);
