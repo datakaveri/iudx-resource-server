@@ -13,6 +13,7 @@ import iudx.resource.server.cache.cacheImpl.CacheType;
 import iudx.resource.server.common.Response;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
+import iudx.resource.server.metering.readpg.ReadQueryBuilder;
 import iudx.resource.server.metering.util.ParamsValidation;
 import iudx.resource.server.metering.util.QueryBuilder;
 import iudx.resource.server.metering.util.ResponseBuilder;
@@ -189,7 +190,9 @@ public class MeteringServiceImpl implements MeteringService {
     }
 
     private void readMethod(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-            queryPg = queryBuilder.buildReadQueryFromPG(request);
+           // queryPg = queryBuilder.buildReadQueryFromPG(request);
+            ReadQueryBuilder readQueryBuilder = new ReadQueryBuilder();
+            queryPg = readQueryBuilder.getQuery(request);
             LOGGER.debug("read query = "+ queryPg);
             Future<JsonObject> resultsPg = executeQueryDatabaseOperation(queryPg);
             resultsPg.onComplete(readHandler -> {

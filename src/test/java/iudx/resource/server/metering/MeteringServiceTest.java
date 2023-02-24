@@ -1136,4 +1136,87 @@ public class MeteringServiceTest {
                                         })));
 
     }
+
+    @Test
+    @DisplayName("Testing read query with given Time Interval")
+    void readFromValidTimeIntervalWithLimitAndOffSet(VertxTestContext vertxTestContext) {
+        JsonObject responseJson = new JsonObject().put(SUCCESS, "Success");
+        AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+        postgresService = mock(PostgresService.class);
+        JsonObject json = mock(JsonObject.class);
+        JsonArray jsonArray = mock(JsonArray.class);
+
+        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(json, responseJson);
+
+        when(json.getJsonArray(anyString())).thenReturn(jsonArray);
+        when(jsonArray.getJsonObject(anyInt())).thenReturn(json);
+        when(json.getInteger(anyString())).thenReturn(39);
+
+        Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(postgresService).executeQuery(anyString(), any());
+
+        JsonObject request = readConsumerRequest();
+        request.put("limit","110").put("offset","0");
+
+        meteringService.executeReadQuery(
+                request,
+                vertxTestContext.succeeding(
+                        response ->
+                                vertxTestContext.verify(
+                                        () -> {
+                                            LOGGER.info(response);
+                                            assertEquals(SUCCESS, response.getString(SUCCESS));
+                                            vertxTestContext.completeNow();
+                                        })));
+    }
+
+    @Test
+    @DisplayName("Testing read query with given Time Interval")
+    void readFromValidTimeIntervalWithLimitAndOffSetProvider(VertxTestContext vertxTestContext) {
+        JsonObject responseJson = new JsonObject().put(SUCCESS, "Success");
+        AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+        postgresService = mock(PostgresService.class);
+        JsonObject json = mock(JsonObject.class);
+        JsonArray jsonArray = mock(JsonArray.class);
+
+        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(json, responseJson);
+
+        when(json.getJsonArray(anyString())).thenReturn(jsonArray);
+        when(jsonArray.getJsonObject(anyInt())).thenReturn(json);
+        when(json.getInteger(anyString())).thenReturn(39);
+
+        Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(postgresService).executeQuery(anyString(), any());
+
+        JsonObject request = read();
+        request.put("limit","110").put("offset","0");
+
+        meteringService.executeReadQuery(
+                request,
+                vertxTestContext.succeeding(
+                        response ->
+                                vertxTestContext.verify(
+                                        () -> {
+                                            LOGGER.info(response);
+                                            assertEquals(SUCCESS, response.getString(SUCCESS));
+                                            vertxTestContext.completeNow();
+                                        })));
+    }
+
 }
