@@ -8,10 +8,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
-import io.vertx.sqlclient.PoolOptions;
 import iudx.resource.server.cache.cacheImpl.CacheType;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.database.postgres.PostgresService;
@@ -23,7 +20,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -61,18 +57,7 @@ public class MeteringServiceTest {
     private static int databasePoolSize;
     private static String databaseTableName;
     private static MeteringServiceImpl meteringService;
-
     private static Configuration config;
-    @Mock
-    private static PgPool pool;
-    private static PgConnectOptions connectOptions;
-    private static String databaseIPPG;
-    private static int databasePortPG;
-    private static String databaseNamePG;
-    private static String databaseUserNamePG;
-    private static String databasePasswordPG;
-    private static int poolSize;
-    private static PoolOptions poolOptions;
     private static JsonObject dbConfig;
     private static PostgresService postgresService;
 
@@ -151,7 +136,7 @@ public class MeteringServiceTest {
 
         meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
         request.put(START_TIME, "2021-11-01T05:30:00+05:30[Asia/Kolkata]");
-        request.put(END_TIME, "2021-11-24T02:00:00+05:30[Asia/Kolkata]");
+        request.put(END_TIME, "2021-11-01T02:00:00+05:30[Asia/Kolkata]");
         meteringService.executeReadQuery(
                 request,
                 testContext.failing(

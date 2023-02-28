@@ -88,8 +88,7 @@ public class ParamsValidation {
         zonedDateTimeDayDifference,
         zonedDateTimeMinuteDifference);
 
-    if (zonedDateTimeDayDifference > 14
-        || zonedDateTimeDayDifference < 0
+    if (zonedDateTimeDayDifference < 0
         || zonedDateTimeMinuteDifference <= 0) {
       LOGGER.error(INVALID_DATE_DIFFERENCE);
       return new JsonObject().put(ERROR, INVALID_DATE_DIFFERENCE);

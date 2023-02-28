@@ -11,12 +11,14 @@ import io.vertx.sqlclient.PoolOptions;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.cache.cacheImpl.CacheType;
 import iudx.resource.server.common.Response;
+import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.metering.readpg.ReadQueryBuilder;
 import iudx.resource.server.metering.util.ParamsValidation;
 import iudx.resource.server.metering.util.QueryBuilder;
 import iudx.resource.server.metering.util.ResponseBuilder;
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,8 +28,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static iudx.resource.server.apiserver.util.Constants.ENDT;
-import static iudx.resource.server.apiserver.util.Constants.STARTT;
+import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.Constants.BROKER_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
 import static iudx.resource.server.metering.util.Constants.*;
@@ -49,7 +50,7 @@ public class MeteringServiceImpl implements MeteringService {
     PoolOptions poolOptions;
     PgPool pool;
     String queryPg, queryCount,queryOverview,summaryOverview;
-    int total;
+    long total;
     JsonObject validationCheck = new JsonObject();
     private JsonObject query = new JsonObject();
     private String databaseIP;
@@ -147,6 +148,7 @@ public class MeteringServiceImpl implements MeteringService {
 
     private void countQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
         queryCount = queryBuilder.buildCountReadQueryFromPG(request);
+        LOGGER.debug("Count query  = "+ queryCount);
         Future<JsonObject> resultCountPg = executeQueryDatabaseOperation(queryCount);
         resultCountPg.onComplete(countHandler -> {
             if (countHandler.succeeded()) {
@@ -158,7 +160,7 @@ public class MeteringServiceImpl implements MeteringService {
                         handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
 
                     } else {
-                        responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200).setCount(total);
+                        responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200).setCount((int) total);
                         handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
                     }
                 }catch (NullPointerException nullPointerException){
@@ -169,12 +171,14 @@ public class MeteringServiceImpl implements MeteringService {
     }
     private void countQueryForRead(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
         queryCount = queryBuilder.buildCountReadQueryFromPG(request);
+        LOGGER.debug("Count query  = "+ queryCount);
         Future<JsonObject> resultCountPg = executeQueryDatabaseOperation(queryCount);
         resultCountPg.onComplete(countHandler -> {
             if (countHandler.succeeded()) {
                 try {
                     var countHandle = countHandler.result().getJsonArray("result");
                     total = countHandle.getJsonObject(0).getInteger("count");
+                    request.put("totalHits", total);
                     if (total == 0) {
                         responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(0);
                         handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
@@ -190,16 +194,33 @@ public class MeteringServiceImpl implements MeteringService {
     }
 
     private void readMethod(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-           // queryPg = queryBuilder.buildReadQueryFromPG(request);
             ReadQueryBuilder readQueryBuilder = new ReadQueryBuilder();
+            String limit,offset;
+            if(request.getString(LIMITPARAM)==null){
+                limit = "2000";
+                request.put(LIMITPARAM,limit);
+            }
+            else {
+                limit = request.getString(LIMITPARAM);
+            }
+            if(request.getString(OFFSETPARAM)==null){
+                offset = "0";
+                request.put(OFFSETPARAM,offset);
+            }
+            else {
+                offset = request.getString(OFFSETPARAM);
+            }
             queryPg = readQueryBuilder.getQuery(request);
             LOGGER.debug("read query = "+ queryPg);
             Future<JsonObject> resultsPg = executeQueryDatabaseOperation(queryPg);
             resultsPg.onComplete(readHandler -> {
                 if (readHandler.succeeded()) {
                     LOGGER.info("Read Completed successfully");
-                    handler.handle(Future.succeededFuture(readHandler.result()));
-
+                    JsonObject resultJsonObject = readHandler.result();
+                    resultJsonObject.put(LIMITPARAM,limit);
+                    resultJsonObject.put(OFFSETPARAM,offset);
+                    resultJsonObject.put("totalHits",request.getLong("totalHits"));
+                    handler.handle(Future.succeededFuture(resultJsonObject));
                 } else {
                     LOGGER.debug("Could not read from DB : " + readHandler.cause());
                     handler.handle(Future.failedFuture(readHandler.cause().getMessage()));

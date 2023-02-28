@@ -2008,12 +2008,22 @@ paths:
           required: true
           schema:
             type: string
+        - name: offset
+          in: query
+          description: 'This parameter specifies the <b>offset</b> for the read metering query. <br/> By default offset value is 0 and we can give offset value according our need.'
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: 'This parameter specifies the <b>limit</b> for the read metering query. <br/> By default limit value is 2000 and we can give limit value according our need.'
+          schema:
+            type: string
 
       x-codeSamples:
         - lang: 'cURL'
           label: 'get data read query'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/consumer/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=during&time=2022-03-20T14:20:00Z&endTime=2022-03-24T14:20:00Z&api=/ngsi-ld/v1/temporal/entities' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/consumer/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=during&time=2022-03-20T14:20:00Z&endTime=2022-03-24T14:20:00Z&api=/ngsi-ld/v1/temporal/entities&offset=0&limit=2000' \
             --header 'token: <tokenValue>'
 
       responses:
@@ -2111,12 +2121,22 @@ paths:
           description: 'Id of the provider'
           schema:
             type: string
+        - name: offset
+          in: query
+          description: 'This parameter specifies the <b>offset</b> for the read metering query. <br/> By default offset value is 0 and we can give offset value according our need.'
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: 'This parameter specifies the <b>limit</b> for the read metering query. <br/> By default limit value is 2000 and we can give limit value according our need.'
+          schema:
+            type: string
 
       x-codeSamples:
         - lang: 'cURL'
           label: 'get data read query'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2021-11-20T14:20:00Z&endTime=2021-12-02T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2021-11-20T14:20:00Z&endTime=2021-12-02T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86&offset=0&limit=2000' \
             --header 'token: <tokenValue>'
 
       responses:
@@ -3306,6 +3326,9 @@ components:
             "size": 456
           }
         ]
+        limit: "2000"
+        offset: "0"
+        totalHits: 568
 
     revokeToken:
       title: revoke-token

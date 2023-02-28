@@ -600,8 +600,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         entries.put("resourceId", request.getParam("id"));
         entries.put("api", request.getParam("api"));
         entries.put("options", request.headers().get("options"));
-        entries.put("offset", request.getParam("offset"));
-        entries.put("limit", request.getParam("limit"));
+        entries.put("offset", request.getParam(OFFSETPARAM));
+        entries.put("limit", request.getParam(LIMITPARAM));
 
         {
             LOGGER.debug(entries);

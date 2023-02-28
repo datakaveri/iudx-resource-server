@@ -4,29 +4,31 @@ import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static iudx.resource.server.apiserver.util.Constants.LIMITPARAM;
+import static iudx.resource.server.apiserver.util.Constants.OFFSETPARAM;
+import static iudx.resource.server.metering.util.Constants.LIMIT_QUERY;
+import static iudx.resource.server.metering.util.Constants.OFFSET_QUERY;
+
 public class LimitOffSet {
     private static final Logger LOGGER = LogManager.getLogger(LimitOffSet.class);
     JsonObject jsonObject = null;
-    StringBuilder finalQuery= null;
-    LimitOffSet(JsonObject jO, StringBuilder q){
+    StringBuilder finalQuery = null;
+    String limit = null;
+    String offset = null;
+    LimitOffSet(JsonObject jO, StringBuilder q) {
         this.jsonObject = jO;
         this.finalQuery = q;
     }
-    String limit = null;
-    String offset =null;
-    public StringBuilder setLimitOffset(){
-        limit = jsonObject.getString("limit");
-        offset = jsonObject.getString("offset");
-        if(limit!=null){
-            finalQuery = finalQuery.append(" limit '$7'"
-                    .replace("$7", limit));
-        }
 
-        if(offset!=null){
-            finalQuery = finalQuery.append(" offset '$8'"
-                    .replace("$8", offset));
-        }
+    public StringBuilder setLimitOffset() {
+        limit = jsonObject.getString(LIMITPARAM);
+        offset = jsonObject.getString(OFFSETPARAM);
+        finalQuery.append(LIMIT_QUERY
+                .replace("$7", limit));
+
+        finalQuery.append(OFFSET_QUERY
+                .replace("$8", offset));
+
         return finalQuery;
     }
-
 }
