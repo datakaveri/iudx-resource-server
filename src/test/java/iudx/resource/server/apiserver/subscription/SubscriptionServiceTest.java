@@ -7,6 +7,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.database.archives.DatabaseService;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
@@ -18,6 +19,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
@@ -50,6 +52,8 @@ public class SubscriptionServiceTest {
     Future<JsonObject> jsonObjectFuture;
     @Mock
     Throwable throwable;
+    @Mock
+    CacheService cacheService;
 
     @Test
     @DisplayName("Test createSubscription Success")
@@ -82,8 +86,9 @@ public class SubscriptionServiceTest {
             }
         }).when(jsonObjectFuture).onComplete(any());
 
+        when(cacheService.get(any())).thenReturn(Future.succeededFuture(json));
 
-        service.createSubscription(json, databroker, pgService, authInfo).onComplete(handler -> {
+        service.createSubscription(json, databroker, pgService, authInfo, cacheService).onComplete(handler -> {
             if (handler.succeeded()) {
                 assertEquals(json, handler.result());
                 vertxTestContext.completeNow();
@@ -133,7 +138,7 @@ public class SubscriptionServiceTest {
         }).when(jsonObjectFuture).onComplete(any());
 
 
-        service.createSubscription(json, databroker, pgService, authInfo).onComplete(handler -> {
+        service.createSubscription(json, databroker, pgService, authInfo, cacheService).onComplete(handler -> {
             if (handler.failed()) {
                 String throwable = "io.vertx.core.impl.NoStackTraceThrowable: ";
                 String expected = throwable + result;
@@ -397,28 +402,29 @@ public class SubscriptionServiceTest {
     }
 
     @Test
-    public void testAllSubscriptionQueue(VertxTestContext vertxTestContext){
+    public void testAllSubscriptionQueue(VertxTestContext vertxTestContext) {
         SubscriptionService subscriptionService = new SubscriptionService();
-        JsonObject jsonObject = new JsonObject().put(USER_ID,"89a36273d77dac4cf38114fca1bbe64392547f86");
-        DataBrokerService dataBrokerService = mock(DataBrokerService.class);
+        JsonObject jsonObject = new JsonObject().put(USER_ID, "89a36273d77dac4cf38114fca1bbe64392547f86");
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json);
-        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+        when(json.getString("title")).thenReturn("success");
+        when(json.getString("type")).thenReturn("urn:dx:rs:success");
+
+        Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
             @Override
-            public AsyncResult<JsonObject> answer(InvocationOnMock arg2) throws Throwable {
-                ((Handler<AsyncResult<JsonObject>>)arg2.getArgument(1)).handle(asyncResult);
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
                 return null;
             }
-        }).when(dataBrokerService).listAllQueue(any(),any());
-        subscriptionService.getAllSubscriptionQueueForUser(jsonObject,dataBrokerService).onComplete(handler->{
-            if(handler.succeeded())
-            {
-                assertEquals("success",handler.result().getString("title"));
-                assertEquals("urn:dx:rs:success",handler.result().getString("type"));
+        }).when(pgService).executeQuery(anyString(), any());
+
+
+        subscriptionService.getAllSubscriptionQueueForUser(jsonObject, pgService).onComplete(handler -> {
+            if (handler.succeeded()) {
+                assertEquals("success", handler.result().getString("title"));
+                assertEquals("urn:dx:rs:success", handler.result().getString("type"));
                 vertxTestContext.completeNow();
-            }
-            else
-            {
+            } else {
                 vertxTestContext.failNow(handler.cause());
             }
         });

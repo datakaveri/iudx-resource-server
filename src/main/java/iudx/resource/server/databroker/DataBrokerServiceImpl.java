@@ -733,24 +733,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     }
     return null;
   }
-
-  @Override
-  public DataBrokerService listAllQueue(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-    if (request != null && !request.isEmpty()) {
-      Future<JsonObject>result = webClient.listAllQueue(request);
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-        }
-        if (resultHandler.failed()) {
-          LOGGER.error("failed ::" + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
-        }
-      });
-    }
-    return this;
-  }
-
   /**
    * {@inheritDoc}
    */
