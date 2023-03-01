@@ -106,7 +106,15 @@ public class AuthHandlerTest {
         Arguments.of(apis.getIudxConsumerAuditUrl(), apis.getIudxConsumerAuditUrl()),
         Arguments.of(apis.getIudxProviderAuditUrl(), apis.getIudxProviderAuditUrl()),
         Arguments.of(apis.getIudxAsyncSearchApi(), apis.getIudxAsyncSearchApi()),
-        Arguments.of(apis.getIudxAsyncStatusApi(), apis.getIudxAsyncStatusApi()) );
+        Arguments.of(apis.getIudxAsyncStatusApi(), apis.getIudxAsyncStatusApi()),
+        Arguments.of(apis.getMonthlyOverview(), apis.getMonthlyOverview()),
+        Arguments.of(apis.getSummaryPath(), apis.getSummaryPath()),
+        Arguments.of(apis.getEntitiesUrl(), apis.getEntitiesUrl()),
+        Arguments.of(apis.getTemporalUrl(), apis.getTemporalUrl()),
+        Arguments.of(apis.getPostEntitiesQueryPath(), apis.getPostEntitiesQueryPath()),
+        Arguments.of(apis.getIngestionPath(), apis.getIngestionPath()),
+        Arguments.of(apis.getPostTemporalQueryPath(), apis.getPostTemporalQueryPath()),
+        Arguments.of(apis.getSubscriptionUrl(), apis.getSubscriptionUrl()));
   }
 
 

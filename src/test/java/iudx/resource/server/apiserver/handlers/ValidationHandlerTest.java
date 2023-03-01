@@ -50,7 +50,8 @@ public class ValidationHandlerTest {
         Arguments.of(RequestType.POST_ENTITIES),
         Arguments.of(RequestType.SUBSCRIPTION),
         Arguments.of(RequestType.ASYNC_SEARCH),
-        Arguments.of(RequestType.ASYNC_STATUS)
+        Arguments.of(RequestType.ASYNC_STATUS),
+        Arguments.of(RequestType.OVERVIEW)
         );
   }
 

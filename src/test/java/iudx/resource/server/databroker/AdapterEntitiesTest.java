@@ -7,8 +7,8 @@ import static iudx.resource.server.databroker.util.Constants.PORT;
 import static iudx.resource.server.databroker.util.Constants.URL;
 import static iudx.resource.server.databroker.util.Constants.USER_NAME;
 import static iudx.resource.server.databroker.util.Constants.VHOST;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
@@ -542,7 +542,11 @@ public class AdapterEntitiesTest {
 
   }
 
-
+  @Test
+  public void ResponseTypeTestFromCode(VertxTestContext vertxTestContext){
+    assertNull(ResponseType.fromCode(1));
+    vertxTestContext.completeNow();
+  }
 }
 
 
