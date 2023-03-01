@@ -22,9 +22,9 @@ public class ReadQueryBuilder {
             meteringReadBuilder = new ConsumerBuilder(jsonObject);
             query = meteringReadBuilder.add();
         }
-        JsonObject limitOffset = new JsonObject().put(LIMITPARAM, jsonObject.getString(LIMITPARAM))
-                .put(OFFSETPARAM, jsonObject.getString(OFFSETPARAM));
-        LimitOffSet limitOffSet = new LimitOffSet(limitOffset, new StringBuilder(query));
+        int limit = Integer.parseInt(jsonObject.getString(LIMITPARAM));
+        int offset = Integer.parseInt(jsonObject.getString(OFFSETPARAM));
+        LimitOffSet limitOffSet = new LimitOffSet(limit, offset, new StringBuilder(query));
         query = String.valueOf(limitOffSet.setLimitOffset());
         return query;
     }

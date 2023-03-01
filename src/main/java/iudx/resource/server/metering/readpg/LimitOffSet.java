@@ -1,6 +1,5 @@
 package iudx.resource.server.metering.readpg;
 
-import io.vertx.core.json.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -11,24 +10,22 @@ import static iudx.resource.server.metering.util.Constants.OFFSET_QUERY;
 
 public class LimitOffSet {
     private static final Logger LOGGER = LogManager.getLogger(LimitOffSet.class);
-    JsonObject jsonObject = null;
+    int limit, offset;
     StringBuilder finalQuery = null;
-    String limit = null;
-    String offset = null;
 
-    LimitOffSet(JsonObject jO, StringBuilder q) {
-        this.jsonObject = jO;
+    LimitOffSet(int limit, int offset, StringBuilder q) {
+        this.limit = limit;
+        this.offset = offset;
         this.finalQuery = q;
     }
 
     public StringBuilder setLimitOffset() {
-        limit = jsonObject.getString(LIMITPARAM);
-        offset = jsonObject.getString(OFFSETPARAM);
+
         finalQuery.append(LIMIT_QUERY
-                .replace("$7", limit));
+                .replace("$7", Integer.toString(limit)));
 
         finalQuery.append(OFFSET_QUERY
-                .replace("$8", offset));
+                .replace("$8", Integer.toString(offset)));
 
         return finalQuery;
     }
