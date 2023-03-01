@@ -11,14 +11,12 @@ import io.vertx.sqlclient.PoolOptions;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.cache.cacheImpl.CacheType;
 import iudx.resource.server.common.Response;
-import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.metering.readpg.ReadQueryBuilder;
 import iudx.resource.server.metering.util.ParamsValidation;
 import iudx.resource.server.metering.util.QueryBuilder;
 import iudx.resource.server.metering.util.ResponseBuilder;
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -36,6 +34,7 @@ import static iudx.resource.server.metering.util.Constants.*;
 public class MeteringServiceImpl implements MeteringService {
 
     private static final Logger LOGGER = LogManager.getLogger(MeteringServiceImpl.class);
+    public static DataBrokerService rmqService;
     public final String _COUNT_COLUMN;
     public final String _RESOURCEID_COLUMN;
     public final String _API_COLUMN;
@@ -46,12 +45,16 @@ public class MeteringServiceImpl implements MeteringService {
     private final Vertx vertx;
     private final QueryBuilder queryBuilder = new QueryBuilder();
     private final ParamsValidation validation = new ParamsValidation();
+    private final ObjectMapper objectMapper = new ObjectMapper();
     PgConnectOptions connectOptions;
     PoolOptions poolOptions;
     PgPool pool;
-    String queryPg, queryCount,queryOverview,summaryOverview;
+    String queryPg, queryCount, queryOverview, summaryOverview;
     long total;
     JsonObject validationCheck = new JsonObject();
+    JsonArray jsonArray;
+    JsonArray resultJsonArray;
+    int i;
     private JsonObject query = new JsonObject();
     private String databaseIP;
     private int databasePort;
@@ -62,12 +65,8 @@ public class MeteringServiceImpl implements MeteringService {
     private String databaseTableName;
     private ResponseBuilder responseBuilder;
     private PostgresService postgresService;
-    public static DataBrokerService rmqService;
     private CacheService cacheService;
-    JsonArray jsonArray ;
-    JsonArray resultJsonArray;
-    int i;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+
     public MeteringServiceImpl(JsonObject propObj, Vertx vertxInstance, PostgresService postgresService) {
         if (propObj != null && !propObj.isEmpty()) {
             databaseIP = propObj.getString("meteringDatabaseIP");
@@ -95,7 +94,7 @@ public class MeteringServiceImpl implements MeteringService {
         this.postgresService = postgresService;
         this.rmqService = DataBrokerService.createProxy(vertxInstance, BROKER_SERVICE_ADDRESS);
 
-        this.cacheService = CacheService.createProxy(vertxInstance,CACHE_SERVICE_ADDRESS);
+        this.cacheService = CacheService.createProxy(vertxInstance, CACHE_SERVICE_ADDRESS);
 
         _COUNT_COLUMN =
                 COUNT_COLUMN.insert(0, "(" + databaseName + "." + databaseTableName + ".").toString();
@@ -138,7 +137,7 @@ public class MeteringServiceImpl implements MeteringService {
 
         String count = request.getString("options");
         if (count == null) {
-            countQueryForRead(request,handler);
+            countQueryForRead(request, handler);
         } else {
             countQuery(request, handler);
         }
@@ -148,13 +147,12 @@ public class MeteringServiceImpl implements MeteringService {
 
     private void countQuery(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
         queryCount = queryBuilder.buildCountReadQueryFromPG(request);
-        LOGGER.debug("Count query  = "+ queryCount);
         Future<JsonObject> resultCountPg = executeQueryDatabaseOperation(queryCount);
         resultCountPg.onComplete(countHandler -> {
             if (countHandler.succeeded()) {
-                try{
-                    var countHandle= countHandler.result().getJsonArray("result");
-                    total= countHandle.getJsonObject(0).getInteger("count");
+                try {
+                    var countHandle = countHandler.result().getJsonArray("result");
+                    total = countHandle.getJsonObject(0).getInteger("count");
                     if (total == 0) {
                         responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(0);
                         handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
@@ -163,22 +161,23 @@ public class MeteringServiceImpl implements MeteringService {
                         responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200).setCount((int) total);
                         handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
                     }
-                }catch (NullPointerException nullPointerException){
+                } catch (NullPointerException nullPointerException) {
                     LOGGER.debug(nullPointerException.toString());
                 }
             }
         });
     }
+
     private void countQueryForRead(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
         queryCount = queryBuilder.buildCountReadQueryFromPG(request);
-        LOGGER.debug("Count query  = "+ queryCount);
+
         Future<JsonObject> resultCountPg = executeQueryDatabaseOperation(queryCount);
         resultCountPg.onComplete(countHandler -> {
             if (countHandler.succeeded()) {
                 try {
                     var countHandle = countHandler.result().getJsonArray("result");
                     total = countHandle.getJsonObject(0).getInteger("count");
-                    request.put("totalHits", total);
+                    request.put(TOTALHITS, total);
                     if (total == 0) {
                         responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(0);
                         handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
@@ -194,45 +193,43 @@ public class MeteringServiceImpl implements MeteringService {
     }
 
     private void readMethod(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-            ReadQueryBuilder readQueryBuilder = new ReadQueryBuilder();
-            String limit,offset;
-            if(request.getString(LIMITPARAM)==null){
-                limit = "2000";
-                request.put(LIMITPARAM,limit);
+        ReadQueryBuilder readQueryBuilder = new ReadQueryBuilder();
+        String limit, offset;
+        if (request.getString(LIMITPARAM) == null) {
+            limit = "2000";
+            request.put(LIMITPARAM, limit);
+        } else {
+            limit = request.getString(LIMITPARAM);
+        }
+        if (request.getString(OFFSETPARAM) == null) {
+            offset = "0";
+            request.put(OFFSETPARAM, offset);
+        } else {
+            offset = request.getString(OFFSETPARAM);
+        }
+        queryPg = readQueryBuilder.getQuery(request);
+        LOGGER.debug("read query = " + queryPg);
+        Future<JsonObject> resultsPg = executeQueryDatabaseOperation(queryPg);
+        resultsPg.onComplete(readHandler -> {
+            if (readHandler.succeeded()) {
+                LOGGER.info("Read Completed successfully");
+                JsonObject resultJsonObject = readHandler.result();
+                resultJsonObject.put(LIMITPARAM, limit);
+                resultJsonObject.put(OFFSETPARAM, offset);
+                resultJsonObject.put(TOTALHITS, request.getLong(TOTALHITS));
+                handler.handle(Future.succeededFuture(resultJsonObject));
+            } else {
+                LOGGER.debug("Could not read from DB : " + readHandler.cause());
+                handler.handle(Future.failedFuture(readHandler.cause().getMessage()));
             }
-            else {
-                limit = request.getString(LIMITPARAM);
-            }
-            if(request.getString(OFFSETPARAM)==null){
-                offset = "0";
-                request.put(OFFSETPARAM,offset);
-            }
-            else {
-                offset = request.getString(OFFSETPARAM);
-            }
-            queryPg = readQueryBuilder.getQuery(request);
-            LOGGER.debug("read query = "+ queryPg);
-            Future<JsonObject> resultsPg = executeQueryDatabaseOperation(queryPg);
-            resultsPg.onComplete(readHandler -> {
-                if (readHandler.succeeded()) {
-                    LOGGER.info("Read Completed successfully");
-                    JsonObject resultJsonObject = readHandler.result();
-                    resultJsonObject.put(LIMITPARAM,limit);
-                    resultJsonObject.put(OFFSETPARAM,offset);
-                    resultJsonObject.put("totalHits",request.getLong("totalHits"));
-                    handler.handle(Future.succeededFuture(resultJsonObject));
-                } else {
-                    LOGGER.debug("Could not read from DB : " + readHandler.cause());
-                    handler.handle(Future.failedFuture(readHandler.cause().getMessage()));
-                }
-            });
+        });
     }
 
     @Override
     public MeteringService monthlyOverview(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
         String startTime = request.getString(STARTT);
         String endTime = request.getString(ENDT);
-        if ((startTime!=null && endTime==null) || (startTime==null && endTime!=null) ){
+        if ((startTime != null && endTime == null) || (startTime == null && endTime != null)) {
             handler.handle(Future.failedFuture("Bad Request"));
         }
         queryOverview = queryBuilder.buildMonthlyOverview(request);
@@ -240,14 +237,13 @@ public class MeteringServiceImpl implements MeteringService {
 
         Future<JsonObject> result = executeQueryDatabaseOperation(queryOverview);
         result.onComplete(handlers -> {
-           if (handlers.succeeded()){
-               LOGGER.debug("Count return Successfully");
-               handler.handle(Future.succeededFuture(handlers.result()));
-           }
-           else {
-               LOGGER.debug("Could not read from DB : " + handlers.cause());
-               handler.handle(Future.failedFuture(handlers.cause().getMessage()));
-           }
+            if (handlers.succeeded()) {
+                LOGGER.debug("Count return Successfully");
+                handler.handle(Future.succeededFuture(handlers.result()));
+            } else {
+                LOGGER.debug("Could not read from DB : " + handlers.cause());
+                handler.handle(Future.failedFuture(handlers.cause().getMessage()));
+            }
         });
         return this;
     }
@@ -317,23 +313,23 @@ public class MeteringServiceImpl implements MeteringService {
         JsonObject writeMessage = queryBuilder.buildMessageForRMQ(request);
 
         rmqService.publishMessage(writeMessage, EXCHANGE_NAME, ROUTING_KEY,
-            rmqHandler -> {
-                if (rmqHandler.succeeded()) {
-                    handler.handle(Future.succeededFuture());
-                    LOGGER.info("inserted into rmq");
-                } else {
-                    LOGGER.error(rmqHandler.cause());
-                    try {
-                        Response resp =
-                            objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
-                        LOGGER.debug("response from rmq "+resp);
-                        handler.handle(Future.failedFuture(resp.toString()));
-                    } catch (JsonProcessingException e) {
-                        LOGGER.error("Failure message not in format [type,title,detail]");
-                        handler.handle(Future.failedFuture(e.getMessage()));
+                rmqHandler -> {
+                    if (rmqHandler.succeeded()) {
+                        handler.handle(Future.succeededFuture());
+                        LOGGER.info("inserted into rmq");
+                    } else {
+                        LOGGER.error(rmqHandler.cause());
+                        try {
+                            Response resp =
+                                    objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
+                            LOGGER.debug("response from rmq " + resp);
+                            handler.handle(Future.failedFuture(resp.toString()));
+                        } catch (JsonProcessingException e) {
+                            LOGGER.error("Failure message not in format [type,title,detail]");
+                            handler.handle(Future.failedFuture(e.getMessage()));
+                        }
                     }
-                }
-            });
+                });
         return this;
     }
 

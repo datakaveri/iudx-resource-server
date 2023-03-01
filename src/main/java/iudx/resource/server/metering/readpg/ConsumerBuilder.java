@@ -51,7 +51,6 @@ public class ConsumerBuilder implements MeteringReadBuilder {
 
         finalQuery.append(ORDER_BY);
 
-        LOGGER.debug("From Consumer Builder = " + finalQuery);
         return finalQuery.toString();
     }
 

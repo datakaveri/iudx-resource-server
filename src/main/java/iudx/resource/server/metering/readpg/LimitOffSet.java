@@ -15,6 +15,7 @@ public class LimitOffSet {
     StringBuilder finalQuery = null;
     String limit = null;
     String offset = null;
+
     LimitOffSet(JsonObject jO, StringBuilder q) {
         this.jsonObject = jO;
         this.finalQuery = q;
