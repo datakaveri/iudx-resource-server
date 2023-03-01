@@ -46,7 +46,6 @@ public class CatalogueCacheImpl implements IudxCache {
     vertx.setPeriodic(TimeUnit.HOURS.toMillis(1), handler -> {
       refreshCache();
     });
-    System.out.println("hiii");
   }
 
   @Override

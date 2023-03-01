@@ -13,6 +13,7 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -20,6 +21,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 @ExtendWith(VertxExtension.class)
@@ -73,14 +75,16 @@ public class CatalogueCacheImplTest {
     }
 
     @Test
+    @DisplayName("Testing get for empty value")
     void test1(VertxTestContext vertxTestContext) {
-        CatalogueCacheImpl.get("null");
+        assertNotNull(CatalogueCacheImpl.get("")) ;
         vertxTestContext.completeNow();
     }
 
     @Test
+    @DisplayName("Testing get for id")
     void test2(VertxTestContext vertxTestContext) {
-        CatalogueCacheImpl.get("abcd/abcd/abcd/abcd");
+       assertNotNull(CatalogueCacheImpl.get("abcd/abcd/abcd/abcd")) ;
         vertxTestContext.completeNow();
     }
 

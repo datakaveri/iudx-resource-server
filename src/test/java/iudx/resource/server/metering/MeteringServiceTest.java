@@ -66,7 +66,7 @@ public class MeteringServiceTest {
     static void startVertex(Vertx vertx, VertxTestContext vertxTestContext) {
         vertxObj = vertx;
         config = new Configuration();
-        dbConfig = config.configLoader(4, vertx);
+        dbConfig = config.configLoader(6, vertx);
         LOGGER.debug(dbConfig);
         databaseIP = dbConfig.getString("meteringDatabaseIP");
         databasePort = dbConfig.getInteger("meteringDatabasePort");
