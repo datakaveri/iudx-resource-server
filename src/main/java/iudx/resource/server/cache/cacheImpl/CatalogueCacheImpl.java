@@ -57,7 +57,6 @@ public class CatalogueCacheImpl implements IudxCache {
   public Future<CacheValue<JsonObject>> get(String key) {
     LOGGER.trace("request for id : {}",key);
     Promise<CacheValue<JsonObject>> promise=Promise.promise();
-    System.out.println(cache.getIfPresent(key));
     if (cache.getIfPresent(key) != null) {
       return Future.succeededFuture(cache.getIfPresent(key));
     } else {
@@ -84,7 +83,7 @@ public class CatalogueCacheImpl implements IudxCache {
   }
 
   private Future<Void> populateCache() {
-    LOGGER.info("refresh() cache started");
+    LOGGER.debug("refresh() cache started");
     Promise<Void> promise = Promise.promise();
     String url=catBasePath+"/search";
     catWebClient
@@ -103,7 +102,7 @@ public class CatalogueCacheImpl implements IudxCache {
                 CacheValue<JsonObject> cacheValue=createCacheValue(id, res.toString());
                 cache.put(id, cacheValue);
               });
-              LOGGER.info("refresh() cache completed");
+              LOGGER.debug("refresh() cache completed");
               promise.complete();
             } else if (catHandler.failed()) {
               LOGGER.error("Failed to populate catalogue cache");
