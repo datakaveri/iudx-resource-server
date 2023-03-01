@@ -351,8 +351,8 @@ public class CacheServiceImplTest {
     testContext.completeNow();
   }
 
- // @Test
-  @DisplayName("Test refresh method : with IllegalArgumentException ")
+  @Test
+  @DisplayName("Test refresh method : with IllegalArgumentException")
   public void test_refresh_with_no_cache(VertxTestContext vertxTestContext)
   {
     JsonObject jsonObject = new JsonObject();

@@ -180,6 +180,37 @@ public class SubscriptionServiceTest {
             }
         });
     }
+    @Test
+    @DisplayName("Test updateSubscription method Success")
+    public void testUpdateSubscriptionSuccessZero(VertxTestContext vertxTestContext) {
+        service = new SubscriptionService();
+        when(json.getString(anyString())).thenReturn("Dummy queueName");
+        when(json.getJsonArray(anyString())).thenReturn(jsonArray);
+        when(jsonArray.getString(anyInt())).thenReturn("Dummy entity");
+        lenient().when(authInfo.getString(anyString())).thenReturn("Dummy authinfo value");
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(json);
+        when(jsonArray.size()).thenReturn(0);
+
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(pgService).executeQuery(anyString(), any());
+        service.updateSubscription(json, databroker, pgService, authInfo).onComplete(handler -> {
+            if (handler.succeeded()) {
+                JsonObject expected = new JsonObject().put("type",400)
+                        .put("title","urn:dx:rs:resourceNotFound")
+                        .put("details","Subscription not found for [queue,entity]");
+                assertEquals(handler.cause(),expected);
+                vertxTestContext.failNow(handler.cause());
+            } else {
+                vertxTestContext.completeNow();
+            }
+        });
+    }
 
     @Test
     @DisplayName("Test updateSubscription method Failure")

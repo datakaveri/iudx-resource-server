@@ -27,6 +27,7 @@ import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
 import static iudx.resource.server.databroker.util.Constants.*;
 import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -1094,5 +1095,10 @@ public class ManagementApiImplTest {
             }
         });
 
+    }
+    @Test
+    public void fromCodeTestResponseUrn(VertxTestContext vertxTestContext){
+        assertNotNull(ResponseUrn.fromCode("urn:dx:rs:backend"));
+        vertxTestContext.completeNow();
     }
 }

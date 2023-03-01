@@ -1,17 +1,13 @@
 package iudx.resource.server.database.archives;
 
-import static iudx.resource.server.database.archives.Constants.ID;
-import static iudx.resource.server.database.archives.Constants.REQ_TIMEREL;
-import static iudx.resource.server.database.archives.Constants.SEARCH_TYPE;
-import static iudx.resource.server.database.archives.Constants.TEMPORAL_SEARCH_REGEX;
-import static iudx.resource.server.database.archives.Constants.TIME_KEY;
+import static iudx.resource.server.database.archives.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
 import java.text.ParseException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -1725,6 +1721,26 @@ public class DatabaseServiceTest {
     when(jsonObject.getString(anyString())).thenReturn("dummy failure reason - no idea ! ");
     when(jsonObject.getJsonArray(anyString())).thenReturn(jsonArray);
     when(jsonArray.getJsonObject(anyInt())).thenReturn(jsonObject);
+    assertNotNull(builder.setMessage(jsonObject));
+
+    assertEquals(expected, builder.getResponse());
+    vertxTestContext.completeNow();
+  }
+
+  @Test
+  @DisplayName("Test setMessage method ")
+  public void test_setMessage2(VertxTestContext vertxTestContext) {
+    ResponseBuilder builder = new ResponseBuilder("status");
+    JsonObject jsonObject = mock(JsonObject.class);
+    JsonArray jsonArray = mock(JsonArray.class);
+    JsonObject expected = new JsonObject();
+    expected.put("detail", INVALID_RESOURCE_ID);
+
+    when(jsonObject.getInteger(anyString())).thenReturn(404);
+    when(jsonObject.getJsonObject(anyString())).thenReturn(jsonObject);
+    when(jsonObject.getString(anyString())).thenReturn(INDEX_NOT_FOUND);
+    lenient().when(jsonObject.getJsonArray(anyString())).thenReturn(jsonArray);
+    lenient().when(jsonArray.getJsonObject(anyInt())).thenReturn(jsonObject);
     assertNotNull(builder.setMessage(jsonObject));
 
     assertEquals(expected, builder.getResponse());
