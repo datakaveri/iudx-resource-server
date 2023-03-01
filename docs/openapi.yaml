@@ -66,6 +66,8 @@ info:
        - <b>/temporal/entities</b>
        - <b>/temporal/entityOperations/query</b>
        - <b>/entityOperations/query</b>
+       - <b>/consumer/audit</b>
+       - <b>/provider/audit</b>
     
     Additional query parameters to be used:
       - <b>offset</b> : The from parameter defines the offset from the first result you want to fetch,  ( <i>default : 0</i> ,<i>minValue: 0</i>, <i>maxValue: 49999</i> )
@@ -254,20 +256,20 @@ paths:
           description: 'Name of the <b> geospatial </b> property in the <b> DX(Data exchange) data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
           schema:
             type: string
-            enum: [location]
+            enum: [ location ]
         - name: georel
           in: query
           description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'
           schema:
             type: string
-            enum: [near;maxdistance=<distance_in_meters>, within, intersects]
+            enum: [ near;maxdistance=<distance_in_meters>, within, intersects ]
 
         - name: geometry
           in: query
           description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b> '
           schema:
             type: string
-            enum: [Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox]
+            enum: [ Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox ]
 
         - name: coordinates
           in: query
@@ -307,7 +309,7 @@ paths:
           description: 'The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a query. <br/> It should be used along with the <b> valid </b> `spatial`, `attribute` or `complex` queries. <br/> It <b>cannot</b> be used along with a <b>attrs</b> filter. The value should be equal to `count` and it is <b>case sensitive</b>'
           schema:
             type: string
-            enum: [count]
+            enum: [ count ]
 
 
       responses:
@@ -488,7 +490,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: [between, before, after]
+            enum: [ between, before, after ]
         - name: time
           in: query
           description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> data exchange currently accepts `IST` and `UTC` time zones for the temporal query.'
@@ -506,20 +508,20 @@ paths:
           description: 'Name of the <b> geospatial </b> property in the <b> DX(Data exchange) data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
           schema:
             type: string
-            enum: [location]
+            enum: [ location ]
         - name: georel
           in: query
           description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'
           schema:
             type: string
-            enum: [near;maxdistance=<distance_in_meters>, within, intersects]
+            enum: [ near;maxdistance=<distance_in_meters>, within, intersects ]
 
         - name: geometry
           in: query
           description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b> '
           schema:
             type: string
-            enum: [Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox]
+            enum: [ Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox ]
 
         - name: coordinates
           in: query
@@ -559,7 +561,7 @@ paths:
           description: 'The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a spatial query. <br/> It should be used along with the <b> valid temporal query</b> or a <b> valid complex query</b>. <br/> It <b>cannot</b> be used along with a <b>attrs</b> filter. The value should be equal to `count` and it is <b>case sensitive</b>'
           schema:
             type: string
-            enum: [count]
+            enum: [ count ]
 
       responses:
         200:
@@ -761,7 +763,7 @@ paths:
                 - id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta
               geoQ:
                 geometry: Point
-                coordinates: [21.178,72.834]
+                coordinates: [ 21.178,72.834 ]
                 georel: near;maxDistance=10
                 geoproperty: location
         required: true
@@ -907,7 +909,7 @@ paths:
                 - id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta
               geoQ:
                 geometry: Point
-                coordinates: [21.178,72.834]
+                coordinates: [ 21.178,72.834 ]
                 georel: near;maxDistance=1000
                 geoproperty: location
               temporalQ:
@@ -1320,7 +1322,7 @@ paths:
           style: simple
           schema:
             type: string
-            enum: [streaming]
+            enum: [ streaming ]
 
       x-codeSamples:
         - lang: 'cURL'
@@ -1400,7 +1402,7 @@ paths:
           style: simple
           schema:
             type: string
-            enum: [streaming]
+            enum: [ streaming ]
         - name: id
           in: path
           description: 'Subscription ID obtained during registration.'
@@ -1479,7 +1481,7 @@ paths:
           style: simple
           schema:
             type: string
-            enum: [streaming]
+            enum: [ streaming ]
         - name: id
           in: path
           description: 'Subscription ID obtained during registration.'
@@ -1567,7 +1569,7 @@ paths:
           style: simple
           schema:
             type: string
-            enum: [streaming]
+            enum: [ streaming ]
         - name: id
           in: path
           description: 'Subscription ID obtained during registration.'
@@ -1644,7 +1646,7 @@ paths:
           style: simple
           schema:
             type: string
-            enum: [streaming]
+            enum: [ streaming ]
 
         - name: token
           in: header
@@ -1792,7 +1794,7 @@ paths:
           #required: true
           schema:
             type: string
-            enum: [between, before, after]
+            enum: [ between, before, after ]
         - name: time
           in: query
           description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> data exchange currently accepts `IST` and `UTC` time zones for the temporal query.'
@@ -1810,20 +1812,20 @@ paths:
           description: 'Name of the <b> geospatial </b> property in the <b> DX(Data exchange) data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
           schema:
             type: string
-            enum: [location]
+            enum: [ location ]
         - name: georel
           in: query
           description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'
           schema:
             type: string
-            enum: [near;maxdistance=<distance_in_meters>, within, intersects]
+            enum: [ near;maxdistance=<distance_in_meters>, within, intersects ]
 
         - name: geometry
           in: query
           description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b> '
           schema:
             type: string
-            enum: [Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox]
+            enum: [ Point (or) point, Polygon (or) polygon, LineString (or) linestring, bbox ]
 
         - name: coordinates
           in: query
@@ -1976,7 +1978,7 @@ paths:
           style: simple
           schema:
             type: string
-            enum: [count]
+            enum: [ count ]
         - name: id
           in: query
           description: 'id of the resource in catalogue'
@@ -1995,7 +1997,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: [between]
+            enum: [ between ]
         - name: time
           in: query
           description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> data exchange currently accepts `IST` and `UTC` time zones for the temporal query.'
@@ -2008,12 +2010,22 @@ paths:
           required: true
           schema:
             type: string
+        - name: offset
+          in: query
+          description: 'This parameter specifies the <b>offset</b> for the read metering query. <br/> By default offset value is 0 and we can give offset value according our need.'
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: 'This parameter specifies the <b>limit</b> for the read metering query. <br/> By default limit value is 2000 and we can give limit value according our need.'
+          schema:
+            type: string
 
       x-codeSamples:
         - lang: 'cURL'
           label: 'get data read query'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/consumer/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=during&time=2022-03-20T14:20:00Z&endTime=2022-03-24T14:20:00Z&api=/ngsi-ld/v1/temporal/entities' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/consumer/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=during&time=2022-03-20T14:20:00Z&endTime=2022-03-24T14:20:00Z&api=/ngsi-ld/v1/temporal/entities&offset=0&limit=2000' \
             --header 'token: <tokenValue>'
 
       responses:
@@ -2068,7 +2080,7 @@ paths:
           style: simple
           schema:
             type: string
-            enum: [count]
+            enum: [ count ]
         - name: id
           in: query
           description: 'id of the resource in catalogue'
@@ -2087,7 +2099,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: [between]
+            enum: [ between ]
         - name: time
           in: query
           description: 'This parameter specifies the <b>start time</b> for the temporal-query in `ISO8601` format. <br/> data exchange currently accepts `IST` and `UTC` time zones for the temporal query.'
@@ -2111,12 +2123,22 @@ paths:
           description: 'Id of the provider'
           schema:
             type: string
+        - name: offset
+          in: query
+          description: 'This parameter specifies the <b>offset</b> for the read metering query. <br/> By default offset value is 0 and we can give offset value according our need.'
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: 'This parameter specifies the <b>limit</b> for the read metering query. <br/> By default limit value is 2000 and we can give limit value according our need.'
+          schema:
+            type: string
 
       x-codeSamples:
         - lang: 'cURL'
           label: 'get data read query'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2021-11-20T14:20:00Z&endTime=2021-12-02T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2021-11-20T14:20:00Z&endTime=2021-12-02T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86&offset=0&limit=2000' \
             --header 'token: <tokenValue>'
 
       responses:
@@ -2344,9 +2366,9 @@ paths:
             maxLength: 512
             pattern: '^[a-zA-Z0-9\/\@\.]*$'
         - name: id
-          in : query
+          in: query
           description: 'Valid DX(Data exchange) resource id'
-          required : true
+          required: true
           schema:
             type: string
             maxLength: 512
@@ -2398,7 +2420,7 @@ components:
           maxLength: 512
         type:
           type: string
-          enum: [subscription]
+          enum: [ subscription ]
 
         entities:
           type: array
@@ -2426,7 +2448,7 @@ components:
 
         type:
           type: string
-          enum: [subscription]
+          enum: [ subscription ]
 
         entities:
           type: array
@@ -2455,7 +2477,7 @@ components:
 
         type:
           type: string
-          enum: [subscription]
+          enum: [ subscription ]
 
         entities:
           type: array
@@ -2521,7 +2543,7 @@ components:
       properties:
         geometry:
           type: string
-          enum: [Point (or) point, Polygon (or) polygon, bbox, LineString (or) linestring]
+          enum: [ Point (or) point, Polygon (or) polygon, bbox, LineString (or) linestring ]
           description: 'The geometry type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/>The list is <b>case sensitive</b>'
         coordinates:
           type: array
@@ -2532,11 +2554,11 @@ components:
           description: 'The coordinates for a specific geometry query type. <br/> This parameter accepts both <b> one dimentional array and multi dimentional arrays </b> based on the <b> geometry</b> type. <br/> For e.g, [longitude-1,latitude-1] should be used for geometry <b>point</b>.  <br/>[[[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]]] should be used for geometry <b>polygon</b>. <br/> [[longitude-1,latitude-1], [longitude-2,latitude-2],...., [longitude-n,latitude-n]] should be used for geometry <b>bbox and linestring </b>. <br/> Maximum of 10 latitude, longitude pairs can be used for geometry <b>polygon, bbox and linestring </b>. <br/> Note: The data-type of this field is a string, therefore the coordinates are a string encoded multidimensional array. <br/> Maximum precision allowed is upto 6 decimal places.'
         georel:
           type: string
-          enum: [within, contains, intersects]
+          enum: [ within, contains, intersects ]
           description: 'The relation type of <b>geoquery</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> The relation <b> near </b> should be always accomodated with a <b> maxdistance </b> property. <br/> Apart from <b> maxdistance</b> , all other fields in the Enum list are <b> case sensitive </b> fields. <br/> The relation <b> near;maxdistance </b> is applicable only for a <b> point </b>.  <br/> The relation <b> within </b> and  <b> intersects </b> are applicable only for <b> bbox, polygon and linestring</b>.'
         geoproperty:
           type: string
-          enum: [location]
+          enum: [ location ]
           description: 'Name of the <b> geospatial </b> property in the <b> DX(Data exchange) data descriptor </b>. <br /> The current version of the API <b> mandates </b> it to be equal to `location`'
       example:
         geometry: Point
@@ -2768,7 +2790,7 @@ components:
       properties:
         timerel:
           type: string
-          enum: [between, before, after]
+          enum: [ between, before, after ]
           description: 'The temporal relation type of <b>timerel</b> to be performed. <br/> This <b>should</b> be one from the available options in the Enum list. <br/> If the relation is <b> between </b> it should be always accomodated with a <b> time </b> and <b> endtime </b> property.  <br/> If the relation is <b> before </b> or <b> after </b>it should be always accomodated <b> only</b> with a <b> time </b> property.'
         time:
           type: string
@@ -2778,7 +2800,7 @@ components:
           description: 'This parameter specifies the <b>end time</b> for the temporal-query in `ISO8601` format. <br/> data exchange currently accepts `IST` and `UTC` time zones for the temporal query. <br/>If <b>timerel</b> is `between` time and endtime are mandatory'
         timeProperty:
           type: string
-          enum: [observationDateTime]
+          enum: [ observationDateTime ]
       example:
         timerel: between
         time: 2020-06-01T14:20:00Z
@@ -2839,7 +2861,7 @@ components:
       properties:
         type:
           type: string
-          enum: [Query]
+          enum: [ Query ]
         entities:
           type: array
           items:
@@ -2859,7 +2881,7 @@ components:
           description: 'The attrs parameter is used as an <b>application filter</b>. <br/> This is an optional parameter. It can be used to provide the list of attributes which the consumer expects to be responded by the server. <br/> The consumer is expected to provide <b>only</b> the attributes available in the <b>data descriptor</b> of the item in the DX(Data exchange) Catalogue. <br/> Minimum of 1 and a Maximum of 5 attributes can be provided in a comma separated fashion.'
         options:
           type: string
-          enum: [count]
+          enum: [ count ]
           description: 'The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a spatial query. <br/> It should be used along with the <b> valid temporal query</b> or a <b> valid complex query</b>. <br/> It <b>cannot</b> be used along with a <b>attrs</b> filter. The value should be equal to `count` and it is <b>case sensitive</b>'
       example:
         type: Query
@@ -2891,7 +2913,7 @@ components:
       properties:
         type:
           type: string
-          enum: [Query]
+          enum: [ Query ]
         entities:
           type: array
           items:
@@ -2909,7 +2931,7 @@ components:
           description: 'The attrs parameter is used as an <b>application filter</b>. <br/> This is an optional parameter. It can be used to provide the list of attributes which the consumer expects to be responded by the server. <br/> The consumer is expected to provide <b>only</b> the attributes available in the <b>data descriptor</b> of the item in the data exchange Catalogue. <br/> Minimum of 1 and a Maximum of 5 attributes can be provided in a comma separated fashion.'
         options:
           type: string
-          enum: [count]
+          enum: [ count ]
           description: 'The <b>options</b> parameter is used for obtaining the <b>number of hits</b> for a spatial query. <br/> It should be used along with the <b> valid temporal query</b> or a <b> valid complex query</b>. <br/> It <b>cannot</b> be used along with a <b>attrs</b> filter. The value should be equal to `count` and it is <b>case sensitive</b>'
       example:
         type: Query
@@ -3120,7 +3142,7 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-          { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/surat-itms/.*"]
+          { "entities": [ "iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/surat-itms/.*" ]
           }
         ]
 
@@ -3143,7 +3165,7 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-          { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/surat-itms/.*"]
+          { "entities": [ "iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/surat-itms/.*" ]
           }
         ]
 
@@ -3166,7 +3188,7 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-          { "entities":["iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/surat-itms/.*"]
+          { "entities": [ "iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/surat-itms/.*" ]
           }
         ]
 
@@ -3204,8 +3226,8 @@ components:
         type: urn:dx:rs:success
         title: Successfully changed the password
         results: [
-          {"username":"asasdasd-asdasd-aada-d23342",
-           "apiKey":"asass8a7s"
+          { "username": "asasdasd-asdasd-aada-d23342",
+            "apiKey": "asass8a7s"
           }
         ]
 
@@ -3226,7 +3248,7 @@ components:
         type: urn:dx:rs:success
         title: query submitted successfully
         results: [
-          {"searchId":"asasdasd-asdasd-a353f-dasdas5"
+          { "searchId": "asasdasd-asdasd-a353f-dasdas5"
           }
         ]
 
@@ -3247,11 +3269,11 @@ components:
         type: urn:dx:rs:success
         title: success
         results: [
-          {"status":"COMPLETE",
-           "progress": 100.00,
-           "file-download-url": "https://example.com/filename",
-           "searchId":"asasdasd-asdasd-aasasd-dasdasd",
-           "userId":"aefvsdfsdf-exvsf-cezxcwscs-adasd"
+          { "status": "COMPLETE",
+            "progress": 100.00,
+            "file-download-url": "https://example.com/filename",
+            "searchId": "asasdasd-asdasd-aasasd-dasdasd",
+            "userId": "aefvsdfsdf-exvsf-cezxcwscs-adasd"
           }
         ]
 
@@ -3272,10 +3294,10 @@ components:
         type: urn:dx:rs:success
         title: success
         results: [
-          {"status":"IN_PROGRESS",
-           "progress": 70.00,
-           "searchId":"asasdasd-asdasd-aasasd-dasdasd",
-           "userId":"aefvsdfsdf-exvsf-cezxcwscs-adasd"
+          { "status": "IN_PROGRESS",
+            "progress": 70.00,
+            "searchId": "asasdasd-asdasd-aasasd-dasdasd",
+            "userId": "aefvsdfsdf-exvsf-cezxcwscs-adasd"
           }
         ]
     meteringApiResponse:
@@ -3306,6 +3328,9 @@ components:
             "size": 456
           }
         ]
+        limit: "2000"
+        offset: "0"
+        totalHits: 568
 
     revokeToken:
       title: revoke-token
@@ -3410,7 +3435,7 @@ components:
         type: urn:dx:rs:success
         title: success
         results: [
-          {"Subscription": []
+          { "Subscription": [ ]
           }
         ]
 
@@ -3435,7 +3460,7 @@ components:
         type: urn:dx:rs:success
         title: success
         results: [
-          {"Adapters": []
+          { "Adapters": [ ]
           }
         ]
 

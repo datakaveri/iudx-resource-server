@@ -29,53 +29,16 @@ public class QueryBuilder {
                 resourceId.substring(0, resourceId.indexOf('/', resourceId.indexOf('/') + 1));
 
 
-        request.put(PRIMARY_KEY,primaryKey);
-        request.put(USER_ID,userId);
-        request.put(PROVIDER_ID,providerID);
-        request.put(ORIGIN,ORIGIN_SERVER);
+        request.put(PRIMARY_KEY, primaryKey);
+        request.put(USER_ID, userId);
+        request.put(PROVIDER_ID, providerID);
+        request.put(ORIGIN, ORIGIN_SERVER);
         LOGGER.trace("Info: Request " + request);
         return request;
     }
 
     private long getEpochTime(ZonedDateTime time) {
         return time.toInstant().toEpochMilli();
-    }
-
-    public String buildReadQueryFromPG(JsonObject request) {
-        String startTime = request.getString(START_TIME);
-        String endTime = request.getString(END_TIME);
-        String resourceId = request.getString(RESOURCE_ID);
-        String userId = request.getString(USER_ID);
-        String api = request.getString(API);
-        String providerID = request.getString(PROVIDER_ID);
-        String consumerID = request.getString(CONSUMER_ID);
-        String databaseTableName = request.getString(TABLE_NAME);
-        StringBuilder query;
-
-        ZonedDateTime startZDT = ZonedDateTime.parse(startTime);
-        ZonedDateTime endZDT = ZonedDateTime.parse(endTime);
-
-        long fromTime = getEpochTime(startZDT);
-        long toTime = getEpochTime(endZDT);
-
-        if (providerID != null) {
-            query =
-                    new StringBuilder(
-                            PROVIDERID_TIME_INTERVAL_READ_QUERY
-                                    .replace("$0", databaseTableName)
-                                    .replace("$1", Long.toString(fromTime))
-                                    .replace("$2", Long.toString(toTime))
-                                    .replace("$3", providerID));
-        } else {
-            query =
-                    new StringBuilder(
-                            CONSUMERID_TIME_INTERVAL_READ_QUERY
-                                    .replace("$0", databaseTableName)
-                                    .replace("$1", Long.toString(fromTime))
-                                    .replace("$2", Long.toString(toTime))
-                                    .replace("$3", userId));
-        }
-        return query.toString();
     }
 
     public String buildCountReadQueryFromPG(JsonObject request) {
@@ -87,7 +50,7 @@ public class QueryBuilder {
         String providerID = request.getString(PROVIDER_ID);
         String consumerID = request.getString(CONSUMER_ID);
         String databaseTableName = request.getString(TABLE_NAME);
-        StringBuilder query;
+        StringBuilder query = null;
 
         ZonedDateTime startZDT = ZonedDateTime.parse(startTime);
         ZonedDateTime endZDT = ZonedDateTime.parse(endTime);
@@ -103,6 +66,15 @@ public class QueryBuilder {
                                     .replace("$1", Long.toString(fromTime))
                                     .replace("$2", Long.toString(toTime))
                                     .replace("$3", providerID));
+            if (api != null) {
+                query = query.append(API_QUERY.replace("$4", api));
+            }
+            if (resourceId != null) {
+                query = query.append(RESOURCEID_QUERY.replace("$5", resourceId));
+            }
+            if (consumerID != null) {
+                query = query.append(USER_ID_QUERY.replace("$6", consumerID));
+            }
         } else {
             query =
                     new StringBuilder(
@@ -111,6 +83,12 @@ public class QueryBuilder {
                                     .replace("$1", Long.toString(fromTime))
                                     .replace("$2", Long.toString(toTime))
                                     .replace("$3", userId));
+            if (api != null) {
+                query = query.append(API_QUERY.replace("$4", api));
+            }
+            if (resourceId != null) {
+                query = query.append(RESOURCEID_QUERY.replace("$5", resourceId));
+            }
         }
         return query.toString();
     }
@@ -136,7 +114,7 @@ public class QueryBuilder {
         if (startTime != null || endTime != null) {
             ZonedDateTime timeSeries = ZonedDateTime.parse(startTime);
             String timeSeriesToFirstDay = String.valueOf(timeSeries.withDayOfMonth(1));
-            LOGGER.debug("Time series = "+ timeSeriesToFirstDay);
+            LOGGER.debug("Time series = " + timeSeriesToFirstDay);
             if (role.equalsIgnoreCase("admin")) {
                 monthQuery =
                         new StringBuilder(OVERVIEW_QUERY.concat(GROUPBY)
@@ -200,8 +178,9 @@ public class QueryBuilder {
 
         return monthQuery.toString();
     }
+
     public String buildSummaryOverview(JsonObject request) {
-        StringBuilder summaryQuery=
+        StringBuilder summaryQuery =
                 new StringBuilder(SUMMARY_QUERY_FOR_METERING);
         return summaryQuery.toString();
     }

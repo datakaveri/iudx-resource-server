@@ -52,7 +52,7 @@ public class Constants {
   public static final String INVALID_PROVIDER_ID = "invalid provider id.";
   public static final String INVALID_PROVIDER_REQUIRED = "provider id required.";
   public static final String INVALID_DATE_DIFFERENCE =
-      "Difference between dates cannot be greater than 14 days or less than 1 Minute.";
+      "Difference between dates cannot be less than 1 Minute.";
   public static final String RESPONSE_LIMIT_EXCEED = "Requested time range exceeds response limit";
   public static final String RESOURCE_QUERY = " and resourceId='$4'";
 
@@ -68,11 +68,14 @@ public class Constants {
   public static final String PROVIDERID_TIME_INTERVAL_READ_QUERY =
       "SELECT * FROM $0 where epochtime>=$1 and epochtime<=$2 and providerid='$3'";
 
-  public static final String ORDER_BY_AND_LIMIT= " ORDER BY ID LIMIT 999;";
+  public static final String ORDER_BY= " ORDER BY time";
 
+  public static final String OFFSET_QUERY = " offset $8";
+  public static final String LIMIT_QUERY = " limit $7";
   public static final String COUNT="count";
-  public static final String API_QUERY = " and api='$5'";
-  public static final String USER_ID_QUERY = " and userid='$6'";
+  public static final String API_QUERY = " and api='$4' ";
+  public static final String RESOURCEID_QUERY = " and resourceid = '$5' ";
+  public static final String USER_ID_QUERY = " and userid='$6' ";
 
   public static final String ID_QUERY=" id>'$7' and";
   public static final String API = "api";
