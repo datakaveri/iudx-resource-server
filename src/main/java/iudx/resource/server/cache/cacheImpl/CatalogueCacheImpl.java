@@ -19,7 +19,7 @@ public class CatalogueCacheImpl implements IudxCache {
   private static final Logger LOGGER = LogManager.getLogger(CatalogueCacheImpl.class);
   private final static CacheType cacheType = CacheType.CATALOGUE_CACHE;
 
-  private WebClient catWebClient;
+  static WebClient catWebClient;
   private String catHost;
   private int catPort;
   private String catBasePath;

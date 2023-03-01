@@ -432,24 +432,24 @@ public class AsyncServiceTest {
 
 
 
-//  @ParameterizedTest
-//  @ValueSource(booleans = {true,false})
-//  @DisplayName("Test updateProgress method : Different boolean values")
-//  public void testUpdateProgressFailure(boolean value,VertxTestContext vertxTestContext) {
-//    AsyncFileScrollProgressListener.executionCounter = mock(AsyncFileScrollProgressListener.ExecutionCounter.class);
-//    when(asyncResult2.succeeded()).thenReturn(value);
-//    lenient().when(asyncResult2.cause()).thenReturn(throwable);
-//    lenient().doAnswer(new Answer<AsyncResult<JsonObject>>() {
-//      @Override
-//      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
-//        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult2);
-//        return null;
-//      }
-//    }).when(postgresService).executeQuery(anyString(), any());
-//    listener = new AsyncFileScrollProgressListener("Dummy search ID", postgresService);
-//    listener.updateProgress(0.55);
-//    vertxTestContext.completeNow();
-//  }
+  @ParameterizedTest
+  @ValueSource(booleans = {true,false})
+  @DisplayName("Test updateProgress method : Different boolean values")
+  public void testUpdateProgressFailure(boolean value,VertxTestContext vertxTestContext) {
+    AsyncFileScrollProgressListener.executionCounter = mock(AsyncFileScrollProgressListener.ExecutionCounter.class);
+    when(asyncResult2.succeeded()).thenReturn(value);
+    lenient().when(asyncResult2.cause()).thenReturn(throwable);
+    lenient().doAnswer(new Answer<AsyncResult<JsonObject>>() {
+      @Override
+      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(1)).handle(asyncResult2);
+        return null;
+      }
+    }).when(postgresService).executeQuery(anyString(), any());
+    listener = new AsyncFileScrollProgressListener("Dummy search ID", postgresService);
+    listener.updateProgress(0.55);
+    vertxTestContext.completeNow();
+  }
 //@Test
 //@DisplayName("s3Upload upload successfully")
 //public void failDownloadForNewRequestI(Vertx vertx, VertxTestContext testContext) {

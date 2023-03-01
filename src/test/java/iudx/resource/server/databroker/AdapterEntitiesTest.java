@@ -32,7 +32,6 @@ import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.common.VHosts;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.databroker.util.Constants;
-
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AdapterEntitiesTest {
