@@ -3435,9 +3435,16 @@ components:
         type: urn:dx:rs:success
         title: success
         results: [
-          { "Subscription": [ ]
+          {"queueName": "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias-RL-OPEN",
+           "entity": "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood",catItem": {
+            "id": "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood",
+            "description": "Flood level sensors in Pune city.",
+            "label": "Environment",
+            "provider": "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b",
+            "name": "pune-env-flood",
+            "accessPolicy": "OPEN"
           }
-        ]
+          }]
 
     allexchange:
       title: Response
