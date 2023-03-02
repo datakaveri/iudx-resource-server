@@ -106,5 +106,6 @@ public class Constants {
           "   GROUP  BY 1\n" +
           "   ) t USING (day)\n" +
           "ORDER  BY day";
-  public static final String SUMMARY_QUERY_FOR_METERING = "select resourceid,count(*) from auditing_rs group by resourceid";
+  public static final String SUMMARY_QUERY_FOR_METERING = "select resourceid,count(*) from auditing_rs" ;
+  public static final String GROUPBY_RESOURCEID =" group by resourceid";
   }
