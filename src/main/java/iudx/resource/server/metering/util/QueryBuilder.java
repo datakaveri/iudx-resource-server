@@ -180,8 +180,13 @@ public class QueryBuilder {
     }
 
     public String buildSummaryOverview(JsonObject request) {
-        StringBuilder summaryQuery =
-                new StringBuilder(SUMMARY_QUERY_FOR_METERING);
+        String startTime = request.getString(STARTT);
+        String endTime = request.getString(ENDT);
+        StringBuilder summaryQuery = new StringBuilder(SUMMARY_QUERY_FOR_METERING);
+        if(startTime!=null && endTime!=null){
+            summaryQuery.append(" where time between '$2' AND '$3' ".replace("$2",startTime).replace("$3",endTime));
+        }
+        summaryQuery.append(GROUPBY_RESOURCEID);
         return summaryQuery.toString();
     }
 }

@@ -1121,6 +1121,62 @@ public class MeteringServiceTest {
                                         })));
 
     }
+    @Test
+    public void testForSummaryApiWithSTET(VertxTestContext vertxTestContext) {
+        AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+        postgresService = mock(PostgresService.class);
+        JsonObject json = new JsonObject().put("role", "consumer");
+        json.put(IID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
+        json.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
+        json.put(STARTT, "2022-11-20T00:00:00Z");
+        json.put(ENDT, "2022-12-20T00:00:00Z");
+
+        JsonObject jsonObject = new JsonObject().put("resourceid", "datakaveri.org/0808eb81ea0e5773187ae06110f55915a55f5c05/rs.iudx.io/integration-test-rsg-one")
+                .put("count", 5);
+        JsonArray jsonArray = new JsonArray().add(jsonObject);
+
+        JsonObject postgresJson = new JsonObject().put("type", "urn:dx:rs:success").put("title", "Success")
+                .put("result", jsonArray);
+
+        JsonObject cacheInteraction = new JsonObject();
+        cacheInteraction.put("type", CacheType.CATALOGUE_CACHE);
+        cacheInteraction.put("key", jsonArray.getJsonObject(0).getString("resourceid"));
+
+        JsonObject outputFormat = new JsonObject()
+                .put("resourceid", "datakaveri.org/0808eb81ea0e5773187ae06110f55915a55f5c05/rs.iudx.io/integration-test-rsg-one");
+        JsonArray outputArray = new JsonArray().add(outputFormat);
+
+        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+
+        MeteringServiceImpl spyMeteringService = Mockito.spy(meteringService);
+
+
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(postgresJson);
+        Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(postgresService).executeQuery(anyString(), any());
+
+        doAnswer(Answer -> Future.succeededFuture(outputArray))
+                .when(spyMeteringService).cacheCall(any());
+
+        spyMeteringService.summaryOverview(
+                json,
+                vertxTestContext.succeeding(
+                        response ->
+                                vertxTestContext.verify(
+                                        () -> {
+                                            assertEquals(response.getString("type"), "urn:dx:dm:Success");
+                                            assertEquals(response.getString("title"), "Success");
+                                            vertxTestContext.completeNow();
+                                        })));
+
+    }
+
 
     @Test
     @DisplayName("Testing read query with given Time Interval")

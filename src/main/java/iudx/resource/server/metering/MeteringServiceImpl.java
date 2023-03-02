@@ -250,13 +250,22 @@ public class MeteringServiceImpl implements MeteringService {
 
     @Override
     public MeteringService summaryOverview(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-
+        String startTime = request.getString(STARTT);
+        String endTime = request.getString(ENDT);
+        if ((startTime != null && endTime == null) || (startTime == null && endTime != null)) {
+            handler.handle(Future.failedFuture("Bad Request"));
+        }
         summaryOverview = queryBuilder.buildSummaryOverview(request);
         LOGGER.debug("summary query =" + summaryOverview);
         Future<JsonObject> result = executeQueryDatabaseOperation(summaryOverview);
         result.onComplete(handlers -> {
             if (handlers.succeeded()) {
                 jsonArray = handlers.result().getJsonArray("result");
+                if (jsonArray.size() == 0) {
+                    responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setMessage("NO ID Present");
+                    handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+
+                }
                 cacheCall(jsonArray).onSuccess(resultHandler -> {
                     JsonObject resultJson = new JsonObject().put("type", "urn:dx:dm:Success")
                             .put("title", "Success")
@@ -303,6 +312,7 @@ public class MeteringServiceImpl implements MeteringService {
             }
             promise.complete(resultJsonArray);
         });
+
         return promise.future();
     }
 
