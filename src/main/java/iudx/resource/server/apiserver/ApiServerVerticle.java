@@ -1508,6 +1508,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         jsonObj.put(PROVIDER_ID, providerID);
         Future<JsonObject> allAdapterForUser =
             managementApi.getAllAdapterDetailsForUser(jsonObj, postgresService);
+
     allAdapterForUser.onComplete(
         handler -> {
           if (handler.succeeded()) {
