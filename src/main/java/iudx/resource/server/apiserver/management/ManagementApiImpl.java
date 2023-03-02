@@ -3,9 +3,22 @@ package iudx.resource.server.apiserver.management;
 import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
 import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.VHOST;
+import static iudx.resource.server.cache.cacheImpl.CacheType.CATALOGUE_CACHE;
+import static iudx.resource.server.common.Constants.CREATE_INGESTION_SQL;
+import static iudx.resource.server.common.Constants.DELETE_INGESTION_SQL;
+import static iudx.resource.server.common.Constants.SELECT_INGESTION_SQL;
+import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_CODE;
+import static iudx.resource.server.databroker.util.Constants.DETAIL;
+import static iudx.resource.server.databroker.util.Constants.ENTITIES;
 import static iudx.resource.server.databroker.util.Constants.RESULTS;
 import static iudx.resource.server.databroker.util.Constants.TITLE;
 import static iudx.resource.server.databroker.util.Constants.TYPE;
+import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
+
+import iudx.resource.server.cache.CacheService;
+import iudx.resource.server.database.postgres.PostgresService;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.Future;
@@ -273,26 +286,63 @@ public class ManagementApiImpl implements ManagementApi {
    * {@inheritDoc}
    */
   @Override
-  public Future<JsonObject> registerAdapter(JsonObject json, DataBrokerService databroker) {
+  public Future<JsonObject> registerAdapter(JsonObject requestJson, DataBrokerService dataBroker,
+                                            CacheService cacheService, PostgresService postgresService) {
     Promise<JsonObject> promise = Promise.promise();
-    databroker.registerAdaptor(json,VHosts.IUDX_PROD.name(), handler -> {
-      if (handler.succeeded()) {
-        JsonObject result = handler.result();
-        LOGGER.debug("Result from databroker verticle :: " + result);
-        if (!result.containsKey(Constants.JSON_TYPE)) {
-          
-          JsonObject iudxResponse=new JsonObject();
-          iudxResponse.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
-          iudxResponse.put(TITLE, "Success");
-          iudxResponse.put(RESULTS, new JsonArray().add(result));
-          
-          promise.complete(iudxResponse);
-        } else {
-          promise.fail(generateResponse(result).toString());
-        }
-      } else {
-        promise.fail(handler.cause().getMessage());
-      }
+
+    JsonObject cacheJson = new JsonObject()
+        .put("key", requestJson.getJsonArray("entities").getString(0))
+        .put("type", CATALOGUE_CACHE);
+
+    cacheService.get(cacheJson).onSuccess(cacheServiceResult->{
+
+          StringBuilder query = new StringBuilder(CREATE_INGESTION_SQL
+              .replace("$1", requestJson.getJsonArray("entities").getString(0)) /* exchange name */
+              .replace("$2", cacheServiceResult.getString("id")) /* resource id */
+              .replace("$3", cacheServiceResult.getString("name")) /* dataset name */
+              .replace("$4", cacheServiceResult.toString()) /* dataset json */
+              .replace("$5", requestJson.getString("userid"))); /* user id */
+
+          postgresService.executeQuery(query.toString(), pgHandler -> {
+                if (pgHandler.succeeded()) {
+                  LOGGER.debug("Inserted in postgres.");
+                  dataBroker.registerAdaptor(requestJson,VHosts.IUDX_PROD.name(), brokerHandler -> {
+                  if(brokerHandler.succeeded()){
+                    JsonObject brokerResponse = brokerHandler.result();
+                    if (!brokerResponse.containsKey(Constants.JSON_TYPE)) {
+                      JsonObject iudxResponse=new JsonObject();
+                      iudxResponse.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+                      iudxResponse.put(TITLE, "Success");
+                      iudxResponse.put(RESULTS, new JsonArray().add(brokerResponse));
+                      promise.complete(iudxResponse);
+                    }
+                    else{
+                      promise.fail(generateResponse(brokerResponse).toString());
+                    }
+                  }
+                  else {
+                    StringBuilder deleteQuery= new StringBuilder(DELETE_INGESTION_SQL.
+                        replace("$0",requestJson.getJsonArray("entities").getString(0)));
+                    postgresService.executeQuery(deleteQuery.toString(),deletePgHandler->{
+                      if (deletePgHandler.succeeded()){
+                        LOGGER.debug("Deleted from postgres.");
+                        LOGGER.error("broker fail "+brokerHandler.cause().getMessage());
+                        promise.fail(brokerHandler.cause().getMessage());
+                      }
+                    });
+                  }
+                  });
+                }
+          else {
+                  JsonObject pgFailResponseBuild=new JsonObject();
+                  pgFailResponseBuild.put(TYPE, 400);
+                  promise.fail(pgFailResponseBuild.toString());
+                }
+          });
+      }).onFailure(cacheFailHandler-> {
+      JsonObject cacheFailResponseBuild=new JsonObject();
+      cacheFailResponseBuild.put(TYPE, 404);
+      promise.fail(cacheFailResponseBuild.toString());
     });
     return promise.future();
   }
@@ -302,7 +352,7 @@ public class ManagementApiImpl implements ManagementApi {
    */
   @Override
   public Future<JsonObject> deleteAdapter(String adapterId, String userId,
-      DataBrokerService databroker) {
+                                          DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_ID, adapterId);
@@ -311,12 +361,12 @@ public class ManagementApiImpl implements ManagementApi {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
-        
+
         JsonObject iudxResponse=new JsonObject();
         iudxResponse.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
         iudxResponse.put(TITLE, "Success");
         iudxResponse.put(RESULTS, "Adapter deleted");
-        
+
         promise.complete(iudxResponse);
       } else if (handler.failed()) {
         String result = handler.cause().getMessage();
@@ -339,13 +389,13 @@ public class ManagementApiImpl implements ManagementApi {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
         if (!result.containsKey(Constants.JSON_TYPE)) {
-          
-          
+
+
           JsonObject iudxResponse=new JsonObject();
           iudxResponse.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
           iudxResponse.put(TITLE, "Success");
           iudxResponse.put(RESULTS, new JsonArray().add(result));
-          
+
           promise.complete(iudxResponse);
         } else {
           promise.fail(generateResponse(result).toString());
@@ -448,19 +498,21 @@ public class ManagementApiImpl implements ManagementApi {
   }
 
   @Override
-  public Future<JsonObject> publishAllAdapterForUser(JsonObject request, DataBrokerService databroker) {
+  public Future<JsonObject> publishAllAdapterForUser(JsonObject request, PostgresService postgresService) {
     LOGGER.debug("publishAllAdapterForUser() started");
     Promise<JsonObject> promise = Promise.promise();
-    databroker.getExchanges(request,handler->{
-      if (handler.succeeded()) {
-        JsonObject response = new JsonObject();
-        response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
-        response.put(TITLE, "success");
-        response.put(RESULTS, new JsonArray().add(handler.result()));
-        promise.complete(response);
-      } else {
-        JsonObject res = new JsonObject(handler.cause().getMessage());
-        promise.fail(generateResponse(res).toString());
+
+    StringBuilder selectIngestionQuery = new StringBuilder(SELECT_INGESTION_SQL.replace("$0",request.getString(PROVIDER_ID)));
+    postgresService.executeQuery(selectIngestionQuery.toString(),postgresServiceHandler->{
+      if(postgresServiceHandler.succeeded()){
+        JsonObject result= postgresServiceHandler.result();
+        promise.complete(result);
+      }
+      else {
+        JsonObject pgFailResponseBuild=new JsonObject();
+        pgFailResponseBuild.put(TYPE, 400);
+        LOGGER.debug("cause "+postgresServiceHandler.cause());
+        promise.fail(pgFailResponseBuild.toString());
       }
     });
     return promise.future();
