@@ -1292,7 +1292,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
         String userId = authInfo.getString(USER_ID);
         Future<JsonObject> brokerResult =
-            managementApi.deleteAdapter(adapterIdBuilder.toString(), userId, databroker);
+            managementApi.deleteAdapter(adapterIdBuilder.toString(), userId, databroker,postgresService);
         brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
                 LOGGER.info("Success: Deleting adapter");
@@ -1507,7 +1507,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
         jsonObj.put(PROVIDER_ID, providerID);
         Future<JsonObject> allAdapterForUser =
-            managementApi.publishAllAdapterForUser(jsonObj, postgresService);
+            managementApi.getAllAdapterDetailsForUser(jsonObj, postgresService);
     allAdapterForUser.onComplete(
         handler -> {
           if (handler.succeeded()) {
