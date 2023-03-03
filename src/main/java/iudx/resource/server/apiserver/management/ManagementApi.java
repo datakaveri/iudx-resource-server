@@ -172,5 +172,4 @@ public interface ManagementApi {
    */
   Future<JsonObject> getAllAdapterDetailsForUser(JsonObject json, PostgresService postgresService);
 
-
 }

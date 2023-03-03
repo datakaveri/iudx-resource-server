@@ -37,5 +37,4 @@ public class Constants {
   public static final String SELECT_INGESTION_SQL =
       "SELECT * from adaptors_details where resource_id like '$0%';";
 
-
 }

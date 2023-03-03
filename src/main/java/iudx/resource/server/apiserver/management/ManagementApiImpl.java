@@ -353,7 +353,6 @@ public class ManagementApiImpl implements ManagementApi {
   @Override
   public Future<JsonObject> deleteAdapter(String adapterId, String userId,
                                           DataBrokerService dataBrokerService,PostgresService postgresService) {
-
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_ID, adapterId);
