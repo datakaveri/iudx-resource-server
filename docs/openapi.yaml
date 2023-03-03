@@ -47,7 +47,9 @@ info:
           -  /provider/audit
           -  /ingestion
           -  /ingestion/{id}
-          - /user/resetPassword
+          -  /user/resetPassword
+          -  /overview
+          -  /summary
       <br>
     - **Request Samples**:
       - The `<tokeValue>` in the header of request sample could be replaced with respective token value [Also refer Tokens section [here](#section/Tokens)]
@@ -2170,6 +2172,124 @@ paths:
           description: 'Resource not found'
       description: Provider API can be used by a user having provider token to get audit details of API's.
 
+  /summary:
+    get:
+      tags:
+        - Metering
+      summary: summary details
+      operationId: summary details
+      parameters:
+
+        - name: token
+          in: header
+          description: 'data exchange auth token for accessing the API'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+        - name: starttime
+          in: query
+          description: 'This parameter specifies the <b>start time</b> for the summary-query.'
+          schema:
+            type: string
+        - name: endtime
+          in: query
+          description: 'This parameter specifies the <b>end time</b> for the summary-query.'
+          schema:
+            type: string
+
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'get query'
+          source: |
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/summary?starttime=2022-11-20T14:20:00Z&endtime=2023-01-24T14:20:00Z' \
+            --header 'token: <tokenValue>'
+
+      responses:
+        200:
+          description: 'summary details'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/summaryApiResponse'
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/summaryBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/summaryInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+        204:
+          description: 'Empty Response'
+      description: Summary API is used to get summary details and counts , group by resourceid.
+
+  /overview:
+    get:
+      tags:
+        - Metering
+      summary: overview
+      operationId: overview
+      parameters:
+
+        - name: token
+          in: header
+          description: 'data exchange auth token for accessing the API'
+          required: true
+          style: simple
+          schema:
+            type: string
+            maxLength: 512
+            pattern: '^[a-zA-Z0-9\/\@\.]*$'
+        - name: starttime
+          in: query
+          description: 'This parameter specifies the <b>start time</b> for the overview-query.'
+          schema:
+            type: string
+        - name: endtime
+          in: query
+          description: 'This parameter specifies the <b>end time</b> for the overview-query.'
+          schema:
+            type: string
+
+      x-codeSamples:
+        - lang: 'cURL'
+          label: 'get query'
+          source: |
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/overview?starttime=2022-11-20T14:20:00Z&endtime=2022-12-24T14:20:00Z' \
+            --header 'token: <tokenValue>'
+
+      responses:
+        200:
+          description: 'overview details'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/overviewApiResponse'
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/summaryBadRequestErrorResponse"
+          description: 'Bad query'
+
+        401:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/summaryInvalidTokenErrorResponse"
+          description: 'Unauthorized'
+
+      description: Overview API is used to get count based on month. Without parameter it will return last 12 months count data.
+
   /admin/revokeToken:
     servers:
       - url: 'https://example.com/'
@@ -3332,6 +3452,62 @@ components:
         offset: "0"
         totalHits: 568
 
+    summaryApiResponse:
+      title: summaryresponse
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          description: An array of objects
+          type: array
+          items:
+            type: object
+      example:
+        type: urn:dx:rs:success
+        title: success
+        results: [
+          {
+            "resourceid": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055",
+            "resource_label": "description",
+            "publisher": "pune-env-flood",
+            "publisher_id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86",
+            "city": "pune",
+            "count": 19
+          }
+        ]
+
+    overviewApiResponse:
+      title: overview response
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          description: An array of objects
+          type: array
+          items:
+            type: object
+      example:
+        type: urn:dx:rs:success
+        title: success
+        results: [
+          {
+            "month": "november",
+            "year": "2022",
+            "counts": 19
+          },
+          {
+            "month": "december",
+            "year": "2022",
+            "counts": 156
+          }
+        ]
+
     revokeToken:
       title: revoke-token
       required:
@@ -3399,6 +3575,20 @@ components:
         type: urn:dx:rs:invalidAuthorizationToken
         title: Invalid credentials
         detail: Invalid credentials
+
+    summaryInvalidTokenErrorResponse:
+      title: standardInvalidTokenErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:invalidAuthorizationToken
+        title: Not Authorized
+        detail: Not Authorized
 
     standardResourceNotFoundErrorResponse:
       title: standardResourceNotFoundErrorResponse
@@ -3498,3 +3688,16 @@ components:
         type: urn:dx:rs:badRequest
         title: Bad Request Data
         detail: Missing/Invalid parameters
+    summaryBadRequestErrorResponse:
+      title: adapterBadRequestErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:backend
+        title: bad request
+        detail: bad request

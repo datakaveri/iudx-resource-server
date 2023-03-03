@@ -111,7 +111,7 @@ public class QueryBuilder {
                 .minusDays(today).plusDays(1).withHour(0).withMinute(0).withSecond(0).toString();
         LOGGER.debug("Year back =" + timeYearBack);
 
-        if (startTime != null || endTime != null) {
+        if (startTime != null && endTime != null) {
             ZonedDateTime timeSeries = ZonedDateTime.parse(startTime);
             String timeSeriesToFirstDay = String.valueOf(timeSeries.withDayOfMonth(1));
             LOGGER.debug("Time series = " + timeSeriesToFirstDay);
