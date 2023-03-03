@@ -143,6 +143,11 @@ tags:
     description: |
       Metering APIs provide the ability to the user (Consumer/Provider) to query the audit data using temporal & resource-id query
 
+  - name: Access Summary
+    x-display: "Summary"
+    description: |
+      Access Summary is the Metering APIs extension to provide summary and overview details
+
   - name: Admin
     x-display: "Admin"
     description: |
@@ -2175,7 +2180,7 @@ paths:
   /summary:
     get:
       tags:
-        - Metering
+        - Access Summary
       summary: summary details
       operationId: summary details
       parameters:
@@ -2235,7 +2240,7 @@ paths:
   /overview:
     get:
       tags:
-        - Metering
+        - Access Summary
       summary: overview
       operationId: overview
       parameters:
