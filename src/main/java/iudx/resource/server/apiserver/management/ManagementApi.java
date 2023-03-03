@@ -116,7 +116,7 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  Future<JsonObject> deleteAdapter(String adapterId, String userId, DataBrokerService databroker);
+  Future<JsonObject> deleteAdapter(String adapterId, String userId, DataBrokerService dataBroker,PostgresService postgresService);
 
   /**
    * get adapter details.
@@ -170,6 +170,6 @@ public interface ManagementApi {
    * @param postgresService PostgresService object
    * @return Future
    */
-  Future<JsonObject> publishAllAdapterForUser(JsonObject json, PostgresService postgresService);
+  Future<JsonObject> getAllAdapterDetailsForUser(JsonObject json, PostgresService postgresService);
 
 }

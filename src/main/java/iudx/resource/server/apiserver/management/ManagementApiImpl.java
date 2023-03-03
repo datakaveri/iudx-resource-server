@@ -352,24 +352,31 @@ public class ManagementApiImpl implements ManagementApi {
    */
   @Override
   public Future<JsonObject> deleteAdapter(String adapterId, String userId,
-                                          DataBrokerService databroker) {
+                                          DataBrokerService dataBrokerService,PostgresService postgresService) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
     json.put(Constants.JSON_ID, adapterId);
     json.put(Constants.USER_ID, userId);
-    databroker.deleteAdaptor(json,VHosts.IUDX_PROD.name(), handler -> {
-      if (handler.succeeded()) {
-        JsonObject result = handler.result();
-        LOGGER.debug("Result from databroker verticle :: " + result);
-
-        JsonObject iudxResponse=new JsonObject();
-        iudxResponse.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
-        iudxResponse.put(TITLE, "Success");
-        iudxResponse.put(RESULTS, "Adapter deleted");
-
-        promise.complete(iudxResponse);
-      } else if (handler.failed()) {
-        String result = handler.cause().getMessage();
+    dataBrokerService.deleteAdaptor(json,VHosts.IUDX_PROD.name(), dataBrokerHandler -> {
+      if (dataBrokerHandler.succeeded()) {
+        postgresService.executeQuery(DELETE_INGESTION_SQL.replace("$0",adapterId), pgHandler->{
+          if (pgHandler.succeeded()){
+            JsonObject result = dataBrokerHandler.result();
+            LOGGER.debug("Result from dataBroker verticle :: " + result);
+            JsonObject iudxResponse=new JsonObject();
+            iudxResponse.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+            iudxResponse.put(TITLE, "Success");
+            iudxResponse.put(RESULTS, "Adapter deleted");
+            promise.complete(iudxResponse);
+          }
+          else {
+            // TODO need to figure out the rollback if postgres delete fails
+            LOGGER.debug("fail to delete");
+            promise.fail("unable to delete");
+          }
+        });
+      } else if (dataBrokerHandler.failed()) {
+        String result = dataBrokerHandler.cause().getMessage();
         promise.fail(generateResponse(new JsonObject(result)).toString());
       }
     });
@@ -498,8 +505,8 @@ public class ManagementApiImpl implements ManagementApi {
   }
 
   @Override
-  public Future<JsonObject> publishAllAdapterForUser(JsonObject request, PostgresService postgresService) {
-    LOGGER.debug("publishAllAdapterForUser() started");
+  public Future<JsonObject> getAllAdapterDetailsForUser(JsonObject request, PostgresService postgresService) {
+    LOGGER.debug("getAllAdapterDetailsForUser() started");
     Promise<JsonObject> promise = Promise.promise();
 
     StringBuilder selectIngestionQuery = new StringBuilder(SELECT_INGESTION_SQL.replace("$0",request.getString(PROVIDER_ID)));
