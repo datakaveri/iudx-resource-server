@@ -478,37 +478,6 @@ public class MeteringServiceTest {
 
     }
 
-//@Test
-//  @DisplayName("Testing Write Query")
-//  void writeData(VertxTestContext vertxTestContext) {
-//    JsonObject request = new JsonObject();
-//    DataBrokerService rabbitMQMessage = mock(DataBrokerService.class);
-//    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
-//    long time = zst.toInstant().toEpochMilli();
-//    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
-//
-//    request.put(EPOCH_TIME,time);
-//    request.put(ISO_TIME,isoTime);
-//    request.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
-//    request.put(ID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
-//    request.put(API, "/ngsi-ld/v1/subscription");
-//    request.put(RESPONSE_SIZE,12);
-//
-//    meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
-//    meteringService.insertMeteringValuesInRMQ(
-//        request,
-//        vertxTestContext.succeeding(
-//            response ->
-//                vertxTestContext.verify(
-//                    () -> {
-//
-//                      assertEquals("Success", response.getString("title"));
-//                      vertxTestContext.completeNow();
-//                    })));
-//
-//  }
-
-
     @Test
     @DisplayName("Testing Write Query Failure")
     void writeDataFailure(VertxTestContext vertxTestContext) {
@@ -1121,6 +1090,7 @@ public class MeteringServiceTest {
                                         })));
 
     }
+
     @Test
     public void testForSummaryApiWithSTET(VertxTestContext vertxTestContext) {
         AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
@@ -1177,6 +1147,97 @@ public class MeteringServiceTest {
 
     }
 
+    @Test
+    @DisplayName("summary api where count is zero")
+    public void testForSummaryApiZeroValues(VertxTestContext vertxTestContext) {
+
+        JsonObject responseJson = new JsonObject().put(SUCCESS, "Success");
+        AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+        postgresService = mock(PostgresService.class);
+        JsonObject json = mock(JsonObject.class);
+        JsonArray jsonArray = mock(JsonArray.class);
+
+        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResult.result()).thenReturn(json);
+
+        when(json.getJsonArray(anyString())).thenReturn(jsonArray);
+        when(jsonArray.size()).thenReturn(0);
+
+        Mockito.doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(postgresService).executeQuery(anyString(), any());
+        JsonObject jsonObject = readProviderRequest();
+
+        meteringService.summaryOverview(
+                jsonObject,
+                vertxTestContext.succeeding(
+                        response ->
+                                vertxTestContext.verify(
+                                        () -> {
+                                            assertEquals(SUCCESS, response.getString("title"));
+                                            vertxTestContext.completeNow();
+                                        })));
+
+    }
+
+    @Test
+    @DisplayName("summary api for bad request")
+    public void testForSummaryApiFail(VertxTestContext vertxTestContext) {
+        AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+        Future future = mock(Future.class);
+        Throwable throwable = mock(Throwable.class);
+        postgresService = mock(PostgresService.class);
+        JsonObject json = new JsonObject().put("role", "consumer");
+        json.put(IID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
+        json.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
+        json.put(STARTT, "2022-11-20T00:00:00Z");
+
+        lenient().when(future.succeeded()).thenReturn(false);
+        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+
+        meteringService.summaryOverview(json, handler -> {
+            if (handler.failed()) {
+                assertEquals(handler.cause().getMessage(), "Bad Request");
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow("failed");
+            }
+        });
+
+    }
+
+    @Test
+    @DisplayName("Overview api for bad request")
+    public void testForOverviewApiFail(VertxTestContext vertxTestContext) {
+        AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+        Future future = mock(Future.class);
+        Throwable throwable = mock(Throwable.class);
+        postgresService = mock(PostgresService.class);
+        JsonObject json = new JsonObject().put("role", "admin");
+        json.put(IID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
+        json.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
+        json.put(STARTT, "2022-11-20T00:00:00Z");
+
+        lenient().when(future.succeeded()).thenReturn(false);
+
+        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+
+        meteringService.monthlyOverview(json, handler -> {
+            if (handler.failed()) {
+                assertEquals(handler.cause().getMessage(), "Bad Request");
+                vertxTestContext.completeNow();
+            } else {
+                vertxTestContext.failNow("failed");
+            }
+        });
+    }
+
 
     @Test
     @DisplayName("Testing read query with given Time Interval")
@@ -1205,7 +1266,7 @@ public class MeteringServiceTest {
         }).when(postgresService).executeQuery(anyString(), any());
 
         JsonObject request = readConsumerRequest();
-        request.put("limit","110").put("offset","0");
+        request.put("limit", "110").put("offset", "0");
 
         meteringService.executeReadQuery(
                 request,
@@ -1246,7 +1307,7 @@ public class MeteringServiceTest {
         }).when(postgresService).executeQuery(anyString(), any());
 
         JsonObject request = read();
-        request.put("limit","110").put("offset","0");
+        request.put("limit", "110").put("offset", "0");
 
         meteringService.executeReadQuery(
                 request,
