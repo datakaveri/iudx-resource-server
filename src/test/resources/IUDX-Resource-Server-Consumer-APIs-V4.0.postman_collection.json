@@ -13058,7 +13058,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{secureResourceToken}}",
+								"value": "{{openResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -13361,7 +13361,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{secureResourceToken}}",
+								"value": "{{openResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -21890,7 +21890,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{secureResourceToken}}",
+								"value": "{{openResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -21962,7 +21962,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{secureResourceToken}}",
+								"value": "{{openResourceToken}}",
 								"type": "text"
 							},
 							{
@@ -22036,7 +22036,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{secureResourceToken}}",
+								"value": "{{openResourceToken}}",
 								"type": "text"
 							}
 						],
@@ -22247,7 +22247,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{secureResourceToken}}",
+								"value": "{{openResourceToken}}",
 								"type": "text"
 							}
 						],
