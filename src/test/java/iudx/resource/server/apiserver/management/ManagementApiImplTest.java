@@ -695,7 +695,7 @@ public class ManagementApiImplTest {
         managementApi.registerAdapter(json,dataBrokerService,cacheService,postgresService).onComplete(handler -> {
             if(handler.failed())
             {
-                assertEquals(new JsonObject().put("type",404).toString(),handler.cause().getMessage());
+                assertEquals(new JsonObject().put("type",404).put("title","urn:dx:rs:resourceNotFound").toString(),handler.cause().getMessage());
                 vertxTestContext.completeNow();
             }
             else
@@ -727,7 +727,7 @@ public class ManagementApiImplTest {
             }
             else
             {
-                assertEquals(new JsonObject().put("type",400).toString(),handler.cause().getMessage());
+                assertEquals(new JsonObject().put("type",409).put("title","urn:dx:rs:resourceAlreadyExist").toString(),handler.cause().getMessage());
                 vertxTestContext.completeNow();
             }
         });
