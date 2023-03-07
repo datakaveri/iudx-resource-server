@@ -335,13 +335,16 @@ public class ManagementApiImpl implements ManagementApi {
                 }
           else {
                   JsonObject pgFailResponseBuild=new JsonObject();
-                  pgFailResponseBuild.put(TYPE, 400);
+                  pgFailResponseBuild.put(TYPE, 409);
+                  pgFailResponseBuild.put(TITLE,"urn:dx:rs:resourceAlreadyExist");
                   promise.fail(pgFailResponseBuild.toString());
                 }
           });
       }).onFailure(cacheFailHandler-> {
       JsonObject cacheFailResponseBuild=new JsonObject();
       cacheFailResponseBuild.put(TYPE, 404);
+      cacheFailResponseBuild.put(TITLE,"urn:dx:rs:resourceNotFound");
+
       promise.fail(cacheFailResponseBuild.toString());
     });
     return promise.future();
