@@ -344,7 +344,6 @@ public class ManagementApiImpl implements ManagementApi {
       JsonObject cacheFailResponseBuild=new JsonObject();
       cacheFailResponseBuild.put(TYPE, 404);
       cacheFailResponseBuild.put(TITLE,"urn:dx:rs:resourceNotFound");
-
       promise.fail(cacheFailResponseBuild.toString());
     });
     return promise.future();
