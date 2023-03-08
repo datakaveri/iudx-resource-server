@@ -21,7 +21,7 @@ public enum ResponseUrn {
   MISSING_TOKEN_URN("urn:dx:rs:missingAuthorizationToken", "Token needed and not present"),
   INVALID_TOKEN_URN("urn:dx:rs:invalidAuthorizationToken", "Token is invalid"),
   RESOURCE_NOT_FOUND_URN("urn:dx:rs:resourceNotFound", "Document of given id does not exist"),
-
+  RESOURCE_ALREADY_EXIST_URN("urn:dx:rs:resourceAlreadyExist", "Resource already exist"),
 
 
   LIMIT_EXCEED_URN("urn:dx:rs:requestLimitExceeded", "Operation exceeds the default value of limit"),

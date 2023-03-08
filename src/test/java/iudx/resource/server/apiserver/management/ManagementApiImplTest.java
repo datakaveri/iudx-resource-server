@@ -1,12 +1,16 @@
+
 package iudx.resource.server.apiserver.management;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.common.ResponseUrn;
+import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,7 +31,6 @@ import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
 import static iudx.resource.server.databroker.util.Constants.*;
 import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -37,15 +40,25 @@ public class ManagementApiImplTest {
     @Mock
     DataBrokerService dataBrokerService;
     @Mock
-    AsyncResult<JsonObject> asyncResult;
+    PostgresService postgresService;
+    @Mock
+    CacheService cacheService;
+    @Mock
+    AsyncResult<JsonObject> asyncResult,asyncResultForBroker;
     @Mock
     Throwable throwable;
     JsonObject json;
+    JsonArray jsonArray = new JsonArray();
+    @Mock
+    JsonObject mockJsonObject;
     @BeforeEach
     public void setUp(VertxTestContext vertxTestContext)
     {
         json = new JsonObject();
+
         json.put("Dummy key", "Dummy value");
+        json.put("entities",jsonArray.add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"));
+        json.put(USER_ID,"dummy user");
         managementApi = new ManagementApiImpl();
         vertxTestContext.completeNow();
     }
@@ -637,6 +650,19 @@ public class ManagementApiImplTest {
         expectedJSON.put(TITLE, "Success");
         expectedJSON.put(RESULTS, new JsonArray().add(json));
 
+        when(mockJsonObject.getString("id")).thenReturn("dummy_id");
+        when(mockJsonObject.getString("name")).thenReturn("dummy_name");
+        when(asyncResult.succeeded()).thenReturn(true);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(postgresService).executeQuery(anyString(), any());
+
+
+        when(cacheService.get(any())).thenReturn(Future.succeededFuture(mockJsonObject));
         doAnswer(new Answer<AsyncResult<JsonObject>>() {
             @Override
             public AsyncResult<JsonObject> answer(InvocationOnMock arg2) throws Throwable {
@@ -645,7 +671,7 @@ public class ManagementApiImplTest {
             }
         }).when(dataBrokerService).registerAdaptor(any(),anyString(),any());
 
-        managementApi.registerAdapter(json,dataBrokerService).onComplete(handler -> {
+        managementApi.registerAdapter(json,dataBrokerService,cacheService,postgresService).onComplete(handler -> {
             if(handler.succeeded())
             {
                 assertEquals(expectedJSON,handler.result());
@@ -661,24 +687,15 @@ public class ManagementApiImplTest {
 
     }
     @Test
-    @DisplayName("Test registerAdapter method for Failure")
-    public void testRegisterAdapterFailure(VertxTestContext vertxTestContext)
+    @DisplayName("Test registerAdapter method for Cache Failure")
+    public void testRegisterAdapterFailureForCache(VertxTestContext vertxTestContext)
     {
-        when(asyncResult.succeeded()).thenReturn(false);
-        when(asyncResult.cause()).thenReturn(throwable);
-        when(throwable.getMessage()).thenReturn("Dummy throwable message");
-        doAnswer(new Answer<AsyncResult<JsonObject>>() {
-            @Override
-            public AsyncResult<JsonObject> answer(InvocationOnMock arg2) throws Throwable {
-                ((Handler<AsyncResult<JsonObject>>)arg2.getArgument(2)).handle(asyncResult);
-                return null;
-            }
-        }).when(dataBrokerService).registerAdaptor(any(),anyString(),any());
+        when(cacheService.get(any())).thenReturn(Future.failedFuture("Failed."));
 
-        managementApi.registerAdapter(json,dataBrokerService).onComplete(handler -> {
+        managementApi.registerAdapter(json,dataBrokerService,cacheService,postgresService).onComplete(handler -> {
             if(handler.failed())
             {
-                assertEquals("Dummy throwable message",handler.cause().getMessage());
+                assertEquals(new JsonObject().put("type",404).put("title","urn:dx:rs:resourceNotFound").toString(),handler.cause().getMessage());
                 vertxTestContext.completeNow();
             }
             else
@@ -686,8 +703,76 @@ public class ManagementApiImplTest {
                 vertxTestContext.failNow(handler.cause());
             }
         });
-        verify(dataBrokerService).registerAdaptor(any(),anyString(),any());
+    }
 
+    @Test
+    @DisplayName("Test registerAdapter method for Postgres Failure")
+    public void testRegisterAdapterFailureForPostgres(VertxTestContext vertxTestContext)
+    {
+        when(mockJsonObject.getString("id")).thenReturn("dummy_id");
+        when(mockJsonObject.getString("name")).thenReturn("dummy_name");
+        when(cacheService.get(any())).thenReturn(Future.succeededFuture(mockJsonObject));
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(postgresService).executeQuery(anyString(), any());
+
+        managementApi.registerAdapter(json,dataBrokerService,cacheService,postgresService).onComplete(handler -> {
+            if(handler.succeeded())
+            {
+           vertxTestContext.failNow(handler.cause().getMessage());
+            }
+            else
+            {
+                assertEquals(new JsonObject().put("type",409).put("title","urn:dx:rs:resourceAlreadyExist").toString(),handler.cause().getMessage());
+                vertxTestContext.completeNow();
+            }
+        });
+    }
+
+    @Test
+    @DisplayName("Test registerAdapter method for DataBroker Failure")
+    public void testRegisterAdapterFailureForBroker(VertxTestContext vertxTestContext)
+    {
+        when(asyncResult.succeeded()).thenReturn(true);
+        when(asyncResultForBroker.cause()).thenReturn(throwable);
+        when(throwable.getMessage()).thenReturn("Dummy throwable message");
+
+        when(mockJsonObject.getString("id")).thenReturn("dummy_id");
+        when(mockJsonObject.getString("name")).thenReturn("dummy_name");
+        when(asyncResult.succeeded()).thenReturn(true);
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(postgresService).executeQuery(anyString(), any());
+
+
+        when(cacheService.get(any())).thenReturn(Future.succeededFuture(mockJsonObject));
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg2) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>)arg2.getArgument(2)).handle(asyncResultForBroker);
+                return null;
+            }
+        }).when(dataBrokerService).registerAdaptor(any(),anyString(),any());
+
+        managementApi.registerAdapter(json,dataBrokerService,cacheService,postgresService).onComplete(handler -> {
+            if(handler.succeeded())
+            {
+                vertxTestContext.failNow(handler.cause().getMessage());
+            }
+            else
+            {
+                assertEquals("Dummy throwable message",handler.cause().getMessage());
+                vertxTestContext.completeNow();
+            }
+        });
     }
 
         @Test
@@ -711,7 +796,15 @@ public class ManagementApiImplTest {
             }
         }).when(dataBrokerService).deleteAdaptor(any(),anyString(),any());
 
-        managementApi.deleteAdapter(adapterId,userId,dataBrokerService).onComplete(handler -> {
+        doAnswer(new Answer<AsyncResult<JsonObject>>() {
+            @Override
+            public AsyncResult<JsonObject> answer(InvocationOnMock arg2) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>)arg2.getArgument(1)).handle(asyncResult);
+                return null;
+            }
+        }).when(postgresService).executeQuery(anyString(),any());
+
+        managementApi.deleteAdapter(adapterId,userId,dataBrokerService,postgresService).onComplete(handler -> {
             if(handler.succeeded())
             {
                 assertEquals(expectedJSON,handler.result());
@@ -756,7 +849,7 @@ public class ManagementApiImplTest {
             }
         }).when(dataBrokerService).deleteAdaptor(any(),anyString(),any());
 
-        managementApi.deleteAdapter(adapterId,userId,dataBrokerService).onComplete(handler -> {
+        managementApi.deleteAdapter(adapterId,userId,dataBrokerService,postgresService).onComplete(handler -> {
             if(handler.failed())
             {
                 assertEquals(expected,handler.cause().getMessage());
@@ -770,14 +863,14 @@ public class ManagementApiImplTest {
         verify(dataBrokerService).deleteAdaptor(any(),anyString(),any());
 
     }
-
-
-        @Test
+    @Test
     @DisplayName("Test getAdapterDetails method for Success")
     public void testGetAdapterDetailsSuccess(VertxTestContext vertxTestContext)
     {
         String adapterId = "Dummy adapterId ID";
         when(asyncResult.succeeded()).thenReturn(true);
+        json.remove("entities");
+        json.remove(USER_ID);
         when(asyncResult.result()).thenReturn(json);
         doAnswer(new Answer<AsyncResult<JsonObject>>() {
             @Override
@@ -893,7 +986,7 @@ public class ManagementApiImplTest {
 
 
 
-        @Test
+    @Test
     @DisplayName("Test publishDownstreamIssues method for Success")
     public void testPublishDownstreamIssuesSuccess(VertxTestContext vertxTestContext)
     {
@@ -920,7 +1013,6 @@ public class ManagementApiImplTest {
             }
         });
         verify(dataBrokerService).publishHeartbeat(any(),anyString(),any());
-
     }
     @Test
     @DisplayName("Test publishDownstreamIssues method for Failure")
@@ -949,11 +1041,10 @@ public class ManagementApiImplTest {
             }
         });
         verify(dataBrokerService).publishHeartbeat(any(),anyString(),any());
-
     }
 
 
-        @Test
+    @Test
     @DisplayName("Test publishDataIssue method for Success")
     public void testPublishDataIssueSuccess(VertxTestContext vertxTestContext)
     {
@@ -980,7 +1071,6 @@ public class ManagementApiImplTest {
             }
         });
         verify(dataBrokerService).publishHeartbeat(any(),anyString(),any());
-
     }
     @Test
     @DisplayName("Test publishDataIssue method for Failure")
@@ -1010,10 +1100,9 @@ public class ManagementApiImplTest {
             }
         });
         verify(dataBrokerService).publishHeartbeat(any(),anyString(),any());
-
     }
 
-        @Test
+    @Test
     @DisplayName("Test publishDataFromAdapter method for Success")
     public void testPublishDataFromAdapterSuccess(VertxTestContext vertxTestContext)
     {
@@ -1039,7 +1128,6 @@ public class ManagementApiImplTest {
             }
         });
         verify(dataBrokerService).publishFromAdaptor(any(),anyString(),any());
-
     }
     @Test
     @DisplayName("Test publishDataFromAdapter method for Failure")
@@ -1070,35 +1158,61 @@ public class ManagementApiImplTest {
         verify(dataBrokerService).publishFromAdaptor(any(),anyString(),any());
     }
 
-    @Test
-    public void testPublishAllAdapterForUser(VertxTestContext vertxTestContext){
-        JsonObject jsonObject = new JsonObject().put(PROVIDER_ID,"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86");
-        when(asyncResult.succeeded()).thenReturn(true);
-        when(asyncResult.result()).thenReturn(json);
-        doAnswer(new Answer<AsyncResult<JsonObject>>() {
-            @Override
-            public AsyncResult<JsonObject> answer(InvocationOnMock arg2) throws Throwable {
-                ((Handler<AsyncResult<JsonObject>>)arg2.getArgument(1)).handle(asyncResult);
+  @Test
+  public void testPublishAllAdapterForUser(VertxTestContext vertxTestContext) {
+    JsonObject jsonObject =
+        new JsonObject().put(PROVIDER_ID, "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86");
+    when(asyncResult.succeeded()).thenReturn(true);
+    when(asyncResult.result()).thenReturn(mockJsonObject);
+    when(mockJsonObject.getString("title")).thenReturn("success");
+    when(mockJsonObject.getString("type")).thenReturn("urn:dx:rs:success");
+    doAnswer(
+            new Answer<AsyncResult<JsonObject>>() {
+              @Override
+              public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
                 return null;
-            }
-        }).when(dataBrokerService).getExchanges(any(),any());
-        managementApi.publishAllAdapterForUser(jsonObject,dataBrokerService).onComplete(handler->{
-            if(handler.succeeded())
-            {
-                assertEquals("success",handler.result().getString("title"));
-                assertEquals("urn:dx:rs:success",handler.result().getString("type"));
-                vertxTestContext.completeNow();
-            }
-            else
-            {
-                vertxTestContext.failNow(handler.cause());
-            }
-        });
+              }
+            })
+        .when(postgresService)
+        .executeQuery(anyString(), any());
 
-    }
-    @Test
-    public void fromCodeTestResponseUrn(VertxTestContext vertxTestContext){
-        assertNotNull(ResponseUrn.fromCode("urn:dx:rs:backend"));
-        vertxTestContext.completeNow();
-    }
+    managementApi
+        .getAllAdapterDetailsForUser(jsonObject, postgresService)
+        .onComplete(
+            handler -> {
+              if (handler.succeeded()) {
+                assertEquals("success", handler.result().getString("title"));
+                assertEquals("urn:dx:rs:success", handler.result().getString("type"));
+                vertxTestContext.completeNow();
+              } else {
+                vertxTestContext.failNow(handler.cause());
+              }
+            });
+}
+        @Test
+        public void testPublishAllAdapterForUserFailure(VertxTestContext vertxTestContext){
+            JsonObject jsonObject = new JsonObject().put(PROVIDER_ID,"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86");
+       doAnswer(new Answer<AsyncResult<JsonObject>>() {
+                @Override
+                public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                    ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                    return null;
+                }
+            }).when(postgresService).executeQuery(anyString(), any());
+
+            managementApi.getAllAdapterDetailsForUser(jsonObject,postgresService).onComplete(handler->{
+                if(handler.succeeded())
+                {
+                    assertEquals("success",handler.result().getString("title"));
+                    assertEquals("urn:dx:rs:success",handler.result().getString("type"));
+                    vertxTestContext.failNow("");
+                }
+                else
+                {
+                    assertEquals(new JsonObject().put("type",400).toString(),handler.cause().getMessage());
+                    vertxTestContext.completeNow();
+                }
+            });
+        }
 }

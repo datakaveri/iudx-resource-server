@@ -129,7 +129,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     private Api api;
     private LatestDataService latestDataService;
-    private CacheService cacheService; 
+    private CacheService cacheService;
 
     /**
      * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
@@ -175,24 +175,24 @@ public class ApiServerVerticle extends AbstractVerticle {
 
         router = Router.router(vertx);
         router
-                .route()
-                .handler(CorsHandler
-                        .create("*")
-                        .allowedHeaders(allowedHeaders)
-                        .allowedMethods(allowedMethods));
+            .route()
+            .handler(CorsHandler
+                .create("*")
+                .allowedHeaders(allowedHeaders)
+                .allowedMethods(allowedMethods));
 
         router.route().handler(requestHandler -> {
             requestHandler
-                    .response()
-                    .putHeader("Cache-Control", "no-cache, no-store,  must-revalidate,max-age=0")
-                    .putHeader("Pragma", "no-cache")
-                    .putHeader("Expires", "0")
-                    .putHeader("X-Content-Type-Options", "nosniff");
+                .response()
+                .putHeader("Cache-Control", "no-cache, no-store,  must-revalidate,max-age=0")
+                .putHeader("Pragma", "no-cache")
+                .putHeader("Expires", "0")
+                .putHeader("X-Content-Type-Options", "nosniff");
             requestHandler.next();
         });
 
-        
-        
+
+
         // attach custom http error responses to router
         HttpStatusCode[] statusCodes = HttpStatusCode.values();
         Stream.of(statusCodes).forEach(code -> {
@@ -207,12 +207,12 @@ public class ApiServerVerticle extends AbstractVerticle {
                     return;
                 }
                 response
-                        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                        .setStatusCode(code.getValue())
-                        .end(errorResponse(code));
+                    .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                    .setStatusCode(code.getValue())
+                    .end(errorResponse(code));
             });
         });
-        
+
         router.route().handler(BodyHandler.create());
         router.route().handler(TimeoutHandler.create(10000, 408));
         ValidatorsHandlersFactory validators = new ValidatorsHandlersFactory();
@@ -220,160 +220,160 @@ public class ApiServerVerticle extends AbstractVerticle {
         /* NGSI-LD api endpoints */
         ValidationHandler entityValidationHandler = new ValidationHandler(vertx, RequestType.ENTITY);
         router
-                .get(api.getEntitiesUrl())
-                .handler(entityValidationHandler)
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::handleEntitiesQuery)
-                .failureHandler(validationsFailureHandler);
+            .get(api.getEntitiesUrl())
+            .handler(entityValidationHandler)
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::handleEntitiesQuery)
+            .failureHandler(validationsFailureHandler);
 
         ValidationHandler latestValidationHandler = new ValidationHandler(vertx, RequestType.LATEST);
         router
-                .get(api.getEntitiesUrl() + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
-                .handler(latestValidationHandler)
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::handleLatestEntitiesQuery)
-                .failureHandler(validationsFailureHandler);
+            .get(api.getEntitiesUrl() + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
+            .handler(latestValidationHandler)
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::handleLatestEntitiesQuery)
+            .failureHandler(validationsFailureHandler);
 
         ValidationHandler postTemporalValidationHandler =
-                new ValidationHandler(vertx, RequestType.POST_TEMPORAL);
+            new ValidationHandler(vertx, RequestType.POST_TEMPORAL);
         router
-                .post(api.getPostTemporalQueryPath())
-                .consumes(APPLICATION_JSON)
-                .handler(postTemporalValidationHandler)
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::handlePostEntitiesQuery)
-                .failureHandler(validationsFailureHandler);
+            .post(api.getPostTemporalQueryPath())
+            .consumes(APPLICATION_JSON)
+            .handler(postTemporalValidationHandler)
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::handlePostEntitiesQuery)
+            .failureHandler(validationsFailureHandler);
 
         ValidationHandler postEntitiesValidationHandler =
-                new ValidationHandler(vertx, RequestType.POST_ENTITIES);
+            new ValidationHandler(vertx, RequestType.POST_ENTITIES);
         router
-                .post(api.getPostEntitiesQueryPath())
-                .consumes(APPLICATION_JSON)
-                .handler(postEntitiesValidationHandler)
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::handlePostEntitiesQuery)
-                .failureHandler(validationsFailureHandler);
+            .post(api.getPostEntitiesQueryPath())
+            .consumes(APPLICATION_JSON)
+            .handler(postEntitiesValidationHandler)
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::handlePostEntitiesQuery)
+            .failureHandler(validationsFailureHandler);
 
         ValidationHandler temporalValidationHandler =
-                new ValidationHandler(vertx, RequestType.TEMPORAL);
+            new ValidationHandler(vertx, RequestType.TEMPORAL);
         router
-                .get(api.getTemporalUrl())
-                .handler(temporalValidationHandler)
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::handleTemporalQuery)
-                .failureHandler(validationsFailureHandler);
+            .get(api.getTemporalUrl())
+            .handler(temporalValidationHandler)
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::handleTemporalQuery)
+            .failureHandler(validationsFailureHandler);
 
         // create sub
         ValidationHandler subsValidationHandler =
-                new ValidationHandler(vertx, RequestType.SUBSCRIPTION);
+            new ValidationHandler(vertx, RequestType.SUBSCRIPTION);
         router
-                .post(api.getSubscriptionUrl())
-                .handler(subsValidationHandler)
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::handleSubscriptions)
-                .failureHandler(validationsFailureHandler);
+            .post(api.getSubscriptionUrl())
+            .handler(subsValidationHandler)
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::handleSubscriptions)
+            .failureHandler(validationsFailureHandler);
         // append sub
         router
-                .patch(api.getSubscriptionUrl() + "/:userid/:alias")
-                .handler(subsValidationHandler)
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::appendSubscription)
-                .failureHandler(validationsFailureHandler);
+            .patch(api.getSubscriptionUrl() + "/:userid/:alias")
+            .handler(subsValidationHandler)
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::appendSubscription)
+            .failureHandler(validationsFailureHandler);
         // update sub
         router
-                .put(api.getSubscriptionUrl() + "/:userid/:alias")
-                .handler(subsValidationHandler)
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::updateSubscription)
-                .failureHandler(validationsFailureHandler);
+            .put(api.getSubscriptionUrl() + "/:userid/:alias")
+            .handler(subsValidationHandler)
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::updateSubscription)
+            .failureHandler(validationsFailureHandler);
         // get sub
         router
-                .get(api.getSubscriptionUrl() + "/:userid/:alias")
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::getSubscription);
+            .get(api.getSubscriptionUrl() + "/:userid/:alias")
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::getSubscription);
 
         //get sub for all queue
         router
-                .get(api.getSubscriptionUrl())
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::getAllSubscriptionForUser);
+            .get(api.getSubscriptionUrl())
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::getAllSubscriptionForUser);
         // delete sub
         router
-                .delete(api.getSubscriptionUrl() + "/:userid/:alias")
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::deleteSubscription);
+            .delete(api.getSubscriptionUrl() + "/:userid/:alias")
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::deleteSubscription);
 
         /* Management Api endpoints */
         // Exchange
 
         router
-                .get(api.getIudxConsumerAuditUrl())
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::getConsumerAuditDetail);
+            .get(api.getIudxConsumerAuditUrl())
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::getConsumerAuditDetail);
         router
-                .get(api.getIudxProviderAuditUrl())
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::getProviderAuditDetail);
+            .get(api.getIudxProviderAuditUrl())
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::getProviderAuditDetail);
 
         // adapter
         router
-                .post(api.getIngestionPath())
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::registerAdapter);
+            .post(api.getIngestionPath())
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::registerAdapter);
         router
-                .delete(api.getIngestionPath()
-                        + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::deleteAdapter);
+            .delete(api.getIngestionPath()
+                + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::deleteAdapter);
         router
-                .delete(
-                        api.getIngestionPath() + "/:domain/:userSha/:resourceServer/:resourceGroup")
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::deleteAdapter);
+            .delete(
+                api.getIngestionPath() + "/:domain/:userSha/:resourceServer/:resourceGroup")
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::deleteAdapter);
         router
-                .get(api.getIngestionPath()
-                        + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::getAdapterDetails);
+            .get(api.getIngestionPath()
+                + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::getAdapterDetails);
 
         router
-                .get(api.getIngestionPath() + "/:domain/:userSha/:resourceServer/:resourceGroup")
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::getAdapterDetails);
+            .get(api.getIngestionPath() + "/:domain/:userSha/:resourceServer/:resourceGroup")
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::getAdapterDetails);
 
         router
-                .post(api.getIngestionPath() + "/heartbeat")
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::publishHeartbeat);
+            .post(api.getIngestionPath() + "/heartbeat")
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::publishHeartbeat);
         router
-                .post(api.getIngestionPath() + "/downstreamissue")
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::publishDownstreamIssue);
+            .post(api.getIngestionPath() + "/downstreamissue")
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::publishDownstreamIssue);
         router
-                .post(api.getIngestionPath() + "/dataissue")
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::publishDataIssue);
+            .post(api.getIngestionPath() + "/dataissue")
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::publishDataIssue);
         router
-                .post(api.getIngestionPath() + "/entities")
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::publishDataFromAdapter);
+            .post(api.getIngestionPath() + "/entities")
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::publishDataFromAdapter);
         router
-                .get(api.getIngestionPath())
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::getAllAdaptersForUsers);
+            .get(api.getIngestionPath())
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::getAllAdaptersForUsers);
 
         //Metering extension
         ValidationHandler overViewValidation = new ValidationHandler(vertx, RequestType.OVERVIEW);
         router
-                .get(api.getMonthlyOverview())
-                .handler(overViewValidation)
-                .handler(AuthHandler.create(vertx,api))
-                .handler(this::getMonthlyOverview)
-                .failureHandler(validationsFailureHandler);
+            .get(api.getMonthlyOverview())
+            .handler(overViewValidation)
+            .handler(AuthHandler.create(vertx,api))
+            .handler(this::getMonthlyOverview)
+            .failureHandler(validationsFailureHandler);
 
         //Metering Summary
         router
-                .get(api.getSummaryPath())
+            .get(api.getSummaryPath())
                 .handler(overViewValidation)
                 .handler(AuthHandler.create(vertx,api))
                 .handler(this::getAllSummaryHandler)
@@ -412,8 +412,8 @@ public class ApiServerVerticle extends AbstractVerticle {
             /* Setup the HTTPs server properties, APIs and port. */
 
             serverOptions
-                    .setSsl(true)
-                    .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword));
+                .setSsl(true)
+                .setKeyStoreOptions(new JksOptions().setPath(keystore).setPassword(keystorePassword));
             LOGGER.info("Info: Starting HTTPs server at port" + port);
 
         } else {
@@ -453,36 +453,36 @@ public class ApiServerVerticle extends AbstractVerticle {
         encryptionService = EncryptionService.createProxy(vertx, ENCRYPTION_SERVICE_ADDRESS);
 
         router
-                .route(api.getAsyncPath() + "/*")
-                .subRouter(new AsyncRestApi(vertx, router, config(), api).init());
+            .route(api.getAsyncPath() + "/*")
+            .subRouter(new AsyncRestApi(vertx, router, config(), api).init());
 
         router.route(ADMIN + "/*").subRouter(new AdminRestApi(vertx, router, api).init());
 
         // @Deprecated : will be removed in future
         router
-                .mountSubRouter(IUDX_MANAGEMENT_URL, new ManagementRestApi(vertx, databroker, postgresService,
-                        meteringService, managementApi,api).init());
+            .mountSubRouter(IUDX_MANAGEMENT_URL, new ManagementRestApi(vertx, databroker, postgresService,
+                meteringService, managementApi,api).init());
 
         router.
-                post(dxApiBasePath + RESET_PWD).
-                handler(AuthHandler.create(vertx,api)).
-                handler(handler -> {
-                    new ManagementRestApi(vertx, databroker, postgresService,
+            post(dxApiBasePath + RESET_PWD).
+            handler(AuthHandler.create(vertx,api)).
+            handler(handler -> {
+                new ManagementRestApi(vertx, databroker, postgresService,
                     meteringService, managementApi,api).resetPassword(handler);
-        });
+            });
 
 
 
         router.route().last().handler(requestHandler -> {
             HttpServerResponse response = requestHandler.response();
             response
-                    .putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
-                    .setStatusCode(404)
-                    .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
-                            .toString());
+                .putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
+                .setStatusCode(404)
+                .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
+                    .toString());
         });
 
-        
+
         /* Print the deployed endpoints */
         printDeployedEndpoints(router);
         LOGGER.info("API server deployed on :" + serverOptions.getPort());
@@ -499,7 +499,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             {
                 LOGGER.debug("Successful");
                 handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                        handler.result().toString());
+                    handler.result().toString());
             }
             else {
                 LOGGER.error("Fail: Bad request");
@@ -566,27 +566,27 @@ public class ApiServerVerticle extends AbstractVerticle {
         {
             LOGGER.debug(entries);
             meteringService.executeReadQuery(
-                    entries,
-                    handler -> {
-                        if (handler.succeeded()) {
-                            LOGGER.debug("Table Reading Done.");
-                            JsonObject jsonObject = (JsonObject) handler.result();
-                            String checkType = jsonObject.getString("type");
-                            if (checkType.equalsIgnoreCase(NO_CONTENT)) {
-                                handleSuccessResponse(
-                                        response, ResponseType.NoContent.getCode(), handler.result().toString());
-                            } else {
-                                handleSuccessResponse(
-                                        response, ResponseType.Ok.getCode(), handler.result().toString());
-                            }
-                            promise.complete();
+                entries,
+                handler -> {
+                    if (handler.succeeded()) {
+                        LOGGER.debug("Table Reading Done.");
+                        JsonObject jsonObject = (JsonObject) handler.result();
+                        String checkType = jsonObject.getString("type");
+                        if (checkType.equalsIgnoreCase(NO_CONTENT)) {
+                            handleSuccessResponse(
+                                response, ResponseType.NoContent.getCode(), handler.result().toString());
                         } else {
-                            LOGGER.error("Fail msg " + handler.cause().getMessage());
-                            LOGGER.error("Table reading failed.");
-                            processBackendResponse(response, handler.cause().getMessage());
-                            promise.complete();
+                            handleSuccessResponse(
+                                response, ResponseType.Ok.getCode(), handler.result().toString());
                         }
-                    });
+                        promise.complete();
+                    } else {
+                        LOGGER.error("Fail msg " + handler.cause().getMessage());
+                        LOGGER.error("Table reading failed.");
+                        processBackendResponse(response, handler.cause().getMessage());
+                        promise.complete();
+                    }
+                });
             return promise.future();
         }
     }
@@ -616,27 +616,27 @@ public class ApiServerVerticle extends AbstractVerticle {
         {
             LOGGER.debug(entries);
             meteringService.executeReadQuery(
-                    entries,
-                    handler -> {
-                        if (handler.succeeded()) {
-                            LOGGER.debug("Table Reading Done.");
-                            JsonObject jsonObject = (JsonObject) handler.result();
-                            String checkType = jsonObject.getString("type");
-                            if (checkType.equalsIgnoreCase(NO_CONTENT)) {
-                                handleSuccessResponse(
-                                        response, ResponseType.NoContent.getCode(), handler.result().toString());
-                            } else {
-                                handleSuccessResponse(
-                                        response, ResponseType.Ok.getCode(), handler.result().toString());
-                            }
-                            promise.complete();
+                entries,
+                handler -> {
+                    if (handler.succeeded()) {
+                        LOGGER.debug("Table Reading Done.");
+                        JsonObject jsonObject = (JsonObject) handler.result();
+                        String checkType = jsonObject.getString("type");
+                        if (checkType.equalsIgnoreCase(NO_CONTENT)) {
+                            handleSuccessResponse(
+                                response, ResponseType.NoContent.getCode(), handler.result().toString());
                         } else {
-                            LOGGER.error("Fail msg " + handler.cause().getMessage());
-                            LOGGER.error("Table reading failed.");
-                            processBackendResponse(response, handler.cause().getMessage());
-                            promise.complete();
+                            handleSuccessResponse(
+                                response, ResponseType.Ok.getCode(), handler.result().toString());
                         }
-                    });
+                        promise.complete();
+                    } else {
+                        LOGGER.error("Fail msg " + handler.cause().getMessage());
+                        LOGGER.error("Table reading failed.");
+                        processBackendResponse(response, handler.cause().getMessage());
+                        promise.complete();
+                    }
+                });
             return promise.future();
         }
     }
@@ -653,7 +653,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         MultiMap params = getQueryParams(routingContext, response).get();
         if (!params.isEmpty()) {
             RuntimeException ex =
-                    new RuntimeException("Query parameters are not allowed with latest query");
+                new RuntimeException("Query parameters are not allowed with latest query");
             routingContext.fail(ex);
         }
         String domain = request.getParam(DOMAIN);
@@ -663,7 +663,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         String resourceName = request.getParam(RESOURCE_NAME);
 
         String id =
-                domain + "/" + userSha + "/" + resourceServer + "/" + resourceGroup + "/" + resourceName;
+            domain + "/" + userSha + "/" + resourceServer + "/" + resourceGroup + "/" + resourceName;
         JsonObject json = new JsonObject();
         Future<List<String>> filtersFuture = catalogueService.getApplicableFilters(id);
         /* HTTP request instance/host details */
@@ -679,7 +679,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             } else {
                 LOGGER.error("catalogue item/group doesn't have filters.");
                 handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN,
-                        filtersHandler.cause().getMessage());
+                    filtersHandler.cause().getMessage());
             }
         });
     }
@@ -707,7 +707,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
                 if (isTemporalParamsPresent(ngsildquery)) {
                     DxRuntimeException ex = new DxRuntimeException(BAD_REQUEST.getValue(),
-                            INVALID_TEMPORAL_PARAM_URN, "Temporal parameters are not allowed in entities query.");
+                        INVALID_TEMPORAL_PARAM_URN, "Temporal parameters are not allowed in entities query.");
                     routingContext.fail(ex);
                 }
                 // create json
@@ -715,7 +715,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 QueryMapper queryMapper = new QueryMapper(routingContext);
                 json = queryMapper.toJson(ngsildquery, false);
                 Future<List<String>> filtersFuture =
-                        catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
+                    catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
                 /* HTTP request instance/host details */
                 String instanceID = request.getHeader(HEADER_HOST);
                 json.put(JSON_INSTANCEID, instanceID);
@@ -727,7 +727,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                     if (filtersHandler.succeeded()) {
                         json.put("applicableFilters", filtersHandler.result());
                         if (json.containsKey(IUDXQUERY_OPTIONS)
-                                && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
+                            && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
                             executeCountQuery(routingContext, json, response);
                         } else {
                             executeSearchQuery(routingContext, json, response);
@@ -735,13 +735,13 @@ public class ApiServerVerticle extends AbstractVerticle {
                     } else if (validationHandler.failed()) {
                         LOGGER.error("Fail: Validation failed");
                         handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN,
-                                validationHandler.cause().getMessage());
+                            validationHandler.cause().getMessage());
                     }
                 });
             } else if (validationHandler.failed()) {
                 LOGGER.error("Fail: Validation failed");
                 handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN,
-                        validationHandler.cause().getMessage());
+                    validationHandler.cause().getMessage());
             }
         });
     }
@@ -769,7 +769,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 QueryMapper queryMapper = new QueryMapper(routingContext);
                 JsonObject json = queryMapper.toJson(ngsildquery, requestJson.containsKey("temporalQ"));
                 Future<List<String>> filtersFuture =
-                        catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
+                    catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
                 String instanceID = request.getHeader(HEADER_HOST);
                 json.put(JSON_INSTANCEID, instanceID);
                 requestJson.put("ids", json.getJsonArray("id"));
@@ -783,7 +783,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                             json.put("offset", params.get("offset"));
                         }
                         if (json.containsKey(IUDXQUERY_OPTIONS)
-                                && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
+                            && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
                             executeCountQuery(routingContext, json, response);
                         } else {
                             executeSearchQuery(routingContext, json, response);
@@ -795,7 +795,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             } else if (validationHandler.failed()) {
                 LOGGER.error("Fail: Bad request");
                 handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN,
-                        validationHandler.cause().getMessage());
+                    validationHandler.cause().getMessage());
             }
         });
     }
@@ -854,12 +854,12 @@ public class ApiServerVerticle extends AbstractVerticle {
             if (handler.succeeded()) {
                 LOGGER.info("Success: Search Success");
                 if (context.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-                   handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
-                   context.data().put(RESPONSE_SIZE, response.bytesWritten());
-                   Future.future(fu -> updateAuditTable(context));
-               }
+                    handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+                    context.data().put(RESPONSE_SIZE, response.bytesWritten());
+                    Future.future(fu -> updateAuditTable(context));
+                }
                 // Encryption
-            else {
+                else {
                     Future<JsonObject> future = encryption(context, handler.result().getJsonArray("results").toString());
                     future.onComplete(encryptionHandler -> {
                         if (encryptionHandler.succeeded()) {
@@ -966,11 +966,11 @@ public class ApiServerVerticle extends AbstractVerticle {
                 NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
                 // create json
                 QueryMapper queryMapper = new QueryMapper(routingContext);
-                
+
                 JsonObject json = queryMapper.toJson(ngsildquery, true);
-                
+
                 Future<List<String>> filtersFuture =
-                        catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
+                    catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
                 json.put(JSON_INSTANCEID, instanceID);
                 LOGGER.debug("Info: IUDX temporal json query;" + json);
                 /* HTTP request body as Json */
@@ -980,7 +980,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                     if (filtersHandler.succeeded()) {
                         json.put("applicableFilters", filtersHandler.result());
                         if (json.containsKey(IUDXQUERY_OPTIONS)
-                                && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
+                            && JSON_COUNT.equalsIgnoreCase(json.getString(IUDXQUERY_OPTIONS))) {
                             executeCountQuery(routingContext, json, response);
                         } else {
                             executeSearchQuery(routingContext, json, response);
@@ -993,7 +993,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             } else if (validationHandler.failed()) {
                 LOGGER.error("Fail: Bad request;");
                 handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN,
-                        validationHandler.cause().getMessage());
+                    validationHandler.cause().getMessage());
             }
         });
     }
@@ -1026,7 +1026,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 routingContext.data().put(RESPONSE_SIZE, 0);
                 Future.future(fu -> updateAuditTable(routingContext));
                 handleSuccessResponse(response, ResponseType.Created.getCode(),
-                        subHandler.result().toString());
+                    subHandler.result().toString());
             } else {
                 LOGGER.error("Fail: Handle Subscription request;");
                 processBackendResponse(response, subHandler.cause().getMessage());
@@ -1058,14 +1058,14 @@ public class ApiServerVerticle extends AbstractVerticle {
             JsonObject jsonObj = requestJson.copy();
             jsonObj.put(USER_ID, authInfo.getString(USER_ID));
             Future<JsonObject> subsReq =
-                    subsService.appendSubscription(jsonObj, databroker, postgresService, authInfo);
+                subsService.appendSubscription(jsonObj, databroker, postgresService, authInfo);
             subsReq.onComplete(subsRequestHandler -> {
                 if (subsRequestHandler.succeeded()) {
                     LOGGER.debug("Success: Appending subscription");
                     routingContext.data().put(RESPONSE_SIZE, 0);
                     Future.future(fu -> updateAuditTable(routingContext));
                     handleSuccessResponse(response, ResponseType.Created.getCode(),
-                            subsRequestHandler.result().toString());
+                        subsRequestHandler.result().toString());
                 } else {
                     LOGGER.error("Fail: Appending subscription");
                     processBackendResponse(response, subsRequestHandler.cause().getMessage());
@@ -1101,14 +1101,14 @@ public class ApiServerVerticle extends AbstractVerticle {
             jsonObj.put(JSON_INSTANCEID, instanceID);
             jsonObj.put(USER_ID, authInfo.getString(USER_ID));
             Future<JsonObject> subsReq =
-                    subsService.updateSubscription(jsonObj, databroker, postgresService, authInfo);
+                subsService.updateSubscription(jsonObj, databroker, postgresService, authInfo);
             subsReq.onComplete(subsRequestHandler -> {
                 if (subsRequestHandler.succeeded()) {
                     LOGGER.info("result : " + subsRequestHandler.result());
                     routingContext.data().put(RESPONSE_SIZE, 0);
                     Future.future(fu -> updateAuditTable(routingContext));
                     handleSuccessResponse(response, ResponseType.Created.getCode(),
-                            subsRequestHandler.result().toString());
+                        subsRequestHandler.result().toString());
                 } else {
                     LOGGER.error("Fail: Bad request");
                     processBackendResponse(response, subsRequestHandler.cause().getMessage());
@@ -1145,14 +1145,14 @@ public class ApiServerVerticle extends AbstractVerticle {
             JsonObject jsonObj = requestJson.copy();
             jsonObj.put(JSON_CONSUMER, authInfo.getString(JSON_CONSUMER));
             Future<JsonObject> subsReq =
-                    subsService.getSubscription(jsonObj, databroker, postgresService);
+                subsService.getSubscription(jsonObj, databroker, postgresService);
             subsReq.onComplete(subHandler -> {
                 if (subHandler.succeeded()) {
                     LOGGER.info("Success: Getting subscription");
                     routingContext.data().put(RESPONSE_SIZE, 0);
                     Future.future(fu -> updateAuditTable(routingContext));
                     handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                            subHandler.result().toString());
+                        subHandler.result().toString());
                 } else {
                     LOGGER.error("Fail: Bad request");
                     processBackendResponse(response, subHandler.cause().getMessage());
@@ -1185,7 +1185,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                /* routingContext.data().put(RESPONSE_SIZE, 0);
                 Future.future(fu -> updateAuditTable(routingContext));*/
                 handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                        subHandler.result().toString());
+                    subHandler.result().toString());
             } else {
                 LOGGER.error("Fail: Bad request");
                 processBackendResponse(response, subHandler.cause().getMessage());
@@ -1217,13 +1217,13 @@ public class ApiServerVerticle extends AbstractVerticle {
             JsonObject jsonObj = requestJson.copy();
             jsonObj.put(USER_ID, authInfo.getString(USER_ID));
             Future<JsonObject> subsReq =
-                    subsService.deleteSubscription(jsonObj, databroker, postgresService);
+                subsService.deleteSubscription(jsonObj, databroker, postgresService);
             subsReq.onComplete(subHandler -> {
                 if (subHandler.succeeded()) {
                     routingContext.data().put(RESPONSE_SIZE, 0);
                     Future.future(fu -> updateAuditTable(routingContext));
                     handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                            subHandler.result().toString());
+                        subHandler.result().toString());
                 } else {
                     processBackendResponse(response, subHandler.cause().getMessage());
                 }
@@ -1234,7 +1234,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     }
 
     /**
-     * register a adapter in Rabbit MQ.
+     * register an adapter in Rabbit MQ.
      *
      * @param routingContext routingContext
      */
@@ -1248,7 +1248,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
         requestJson.put(USER_ID, authInfo.getString(USER_ID));
 
-        Future<JsonObject> brokerResult = managementApi.registerAdapter(requestJson, databroker);
+        Future<JsonObject> brokerResult = managementApi.registerAdapter(requestJson, databroker,cacheService,postgresService);
 
         brokerResult.onComplete(handler -> {
             if (handler.succeeded()) {
@@ -1292,14 +1292,14 @@ public class ApiServerVerticle extends AbstractVerticle {
         JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
         String userId = authInfo.getString(USER_ID);
         Future<JsonObject> brokerResult =
-                managementApi.deleteAdapter(adapterIdBuilder.toString(), userId, databroker);
+            managementApi.deleteAdapter(adapterIdBuilder.toString(), userId, databroker,postgresService);
         brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
                 LOGGER.info("Success: Deleting adapter");
                 routingContext.data().put(RESPONSE_SIZE, 0);
                 Future.future(fu -> updateAuditTable(routingContext));
                 handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                        brokerResultHandler.result().toString());
+                    brokerResultHandler.result().toString());
             } else {
                 LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
                 processBackendResponse(response, brokerResultHandler.cause().getMessage());
@@ -1332,13 +1332,13 @@ public class ApiServerVerticle extends AbstractVerticle {
         }
 
         Future<JsonObject> brokerResult =
-                managementApi.getAdapterDetails(adapterIdBuilder.toString(), databroker);
+            managementApi.getAdapterDetails(adapterIdBuilder.toString(), databroker);
         brokerResult.onComplete(brokerResultHandler -> {
             if (brokerResultHandler.succeeded()) {
                 routingContext.data().put(RESPONSE_SIZE, 0);
                 Future.future(fu -> updateAuditTable(routingContext));
                 handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                        brokerResultHandler.result().toString());
+                    brokerResultHandler.result().toString());
             } else {
                 processBackendResponse(response, brokerResultHandler.cause().getMessage());
             }
@@ -1370,7 +1370,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                     routingContext.data().put(RESPONSE_SIZE, 0);
                     Future.future(fu -> updateAuditTable(routingContext));
                     handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                            brokerResultHandler.result().toString());
+                        brokerResultHandler.result().toString());
                 } else {
                     LOGGER.debug("Fail: Unauthorized;" + brokerResultHandler.cause().getMessage());
                     processBackendResponse(response, brokerResultHandler.cause().getMessage());
@@ -1402,14 +1402,14 @@ public class ApiServerVerticle extends AbstractVerticle {
             authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
 
             Future<JsonObject> brokerResult =
-                    managementApi.publishDownstreamIssues(requestJson, databroker);
+                managementApi.publishDownstreamIssues(requestJson, databroker);
             brokerResult.onComplete(brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                     LOGGER.info("Success: published downstream issue");
                     routingContext.data().put(RESPONSE_SIZE, 0);
                     Future.future(fu -> updateAuditTable(routingContext));
                     handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                            brokerResultHandler.result().toString());
+                        brokerResultHandler.result().toString());
                 } else {
                     LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
                     processBackendResponse(response, brokerResultHandler.cause().getMessage());
@@ -1446,7 +1446,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                     routingContext.data().put(RESPONSE_SIZE, 0);
                     Future.future(fu -> updateAuditTable(routingContext));
                     handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                            brokerResultHandler.result().toString());
+                        brokerResultHandler.result().toString());
                 } else {
                     LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
                     processBackendResponse(response, brokerResultHandler.cause().getMessage());
@@ -1476,14 +1476,14 @@ public class ApiServerVerticle extends AbstractVerticle {
             authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
 
             Future<JsonObject> brokerResult =
-                    managementApi.publishDataFromAdapter(requestJson, databroker);
+                managementApi.publishDataFromAdapter(requestJson, databroker);
             brokerResult.onComplete(brokerResultHandler -> {
                 if (brokerResultHandler.succeeded()) {
                     LOGGER.debug("Success: publishing data from adapter");
                     routingContext.data().put(RESPONSE_SIZE, 0);
                     Future.future(fu -> updateAuditTable(routingContext));
                     handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                            brokerResultHandler.result().toString());
+                        brokerResultHandler.result().toString());
                 } else {
                     LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
                     processBackendResponse(response, brokerResultHandler.cause().getMessage());
@@ -1503,32 +1503,38 @@ public class ApiServerVerticle extends AbstractVerticle {
 
         String iid = authInfo.getString(IID);
         String providerID =
-                iid.substring(0, iid.indexOf('/', iid.indexOf('/') + 1));
+            iid.substring(0, iid.indexOf('/', iid.indexOf('/') + 1));
 
         jsonObj.put(PROVIDER_ID, providerID);
         Future<JsonObject> allAdapterForUser =
-                managementApi.publishAllAdapterForUser(jsonObj, databroker);
-        allAdapterForUser.onComplete(handler->{
-           if(handler.succeeded()){
-               LOGGER.debug("Successful");
-               /*routingContext.data().put(RESPONSE_SIZE, 0);
+            managementApi.getAllAdapterDetailsForUser(jsonObj, postgresService);
+    allAdapterForUser.onComplete(
+        handler -> {
+          if (handler.succeeded()) {
+              LOGGER.debug("Successful");
+            if (handler.result().getJsonArray("result").isEmpty()) {
+              handleSuccessResponse(
+                  response, ResponseType.NoContent.getCode(), handler.result().toString());
+            } else {
+              /*routingContext.data().put(RESPONSE_SIZE, 0);
                Future.future(fu -> updateAuditTable(routingContext));*/
-               handleSuccessResponse(response,ResponseType.Ok.getCode(),handler.result().toString());
-           }else{
-               LOGGER.debug(handler.cause());
-               processBackendResponse(response,handler.cause().getMessage());
-           }
+              handleSuccessResponse(
+                  response, ResponseType.Ok.getCode(), handler.result().toString());
+            }
+          } else {
+            LOGGER.debug(handler.cause());
+            processBackendResponse(response, handler.cause().getMessage());
+          }
         });
-
     }
 
 
     /**
      * handle HTTP response.
      *
-     * @param response response object
-     * @param responseType Http status for response
-     * @param isBodyRequired body is required or not for response
+     * @param response HttpServerResponse object
+     * @param statusCode Http status code for response
+     * @param result String of response
      */
     private void handleSuccessResponse(HttpServerResponse response, int statusCode, String result) {
         response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(statusCode).end(result);
@@ -1549,9 +1555,9 @@ public class ApiServerVerticle extends AbstractVerticle {
             }
             // return urn in body
             response
-                    .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                    .setStatusCode(type)
-                    .end(generateResponse(status, urn).toString());
+                .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .setStatusCode(type)
+                .end(generateResponse(status, urn).toString());
         } catch (DecodeException ex) {
             LOGGER.error("ERROR : Expecting Json from backend service [ jsonFormattingException ]");
             handleResponse(response, HttpStatusCode.BAD_REQUEST, BACKING_SERVICE_FORMAT_URN);
@@ -1565,9 +1571,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     private void handleResponse(HttpServerResponse response, HttpStatusCode statusCode,
                                 ResponseUrn urn, String message) {
         response
-                .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .setStatusCode(statusCode.getValue())
-                .end(generateResponse(statusCode, urn, message).toString());
+            .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .setStatusCode(statusCode.getValue())
+            .end(generateResponse(statusCode, urn, message).toString());
     }
 
     /**
@@ -1586,16 +1592,16 @@ public class ApiServerVerticle extends AbstractVerticle {
             // Internally + sign is dropped and treated as space, replacing + with %2B do the trick
             String uri = routingContext.request().uri().replaceAll("\\+", "%2B");
             Map<String, List<String>> decodedParams =
-                    new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET, true, 1024, true).parameters();
+                new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET, true, 1024, true).parameters();
             for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
                 LOGGER.debug("Info: param :" + entry.getKey() + " value : " + entry.getValue());
                 queryParams.add(entry.getKey(), entry.getValue());
             }
         } catch (IllegalArgumentException ex) {
             response
-                    .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-                    .setStatusCode(HttpStatusCode.BAD_REQUEST.getValue())
-                    .end(generateResponse(HttpStatusCode.BAD_REQUEST, INVALID_PARAM_URN).toString());
+                .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .setStatusCode(HttpStatusCode.BAD_REQUEST.getValue())
+                .end(generateResponse(HttpStatusCode.BAD_REQUEST, INVALID_PARAM_URN).toString());
         }
         return Optional.of(queryParams);
     }
@@ -1607,8 +1613,8 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     private boolean isTemporalParamsPresent(NGSILDQueryParams ngsildquery) {
         return ngsildquery.getTemporalRelation().getTemprel() != null
-                || ngsildquery.getTemporalRelation().getTime() != null
-                || ngsildquery.getTemporalRelation().getEndTime() != null;
+            || ngsildquery.getTemporalRelation().getTime() != null
+            || ngsildquery.getTemporalRelation().getEndTime() != null;
     }
 
     private Future<Void> updateAuditTable(RoutingContext context) {
@@ -1628,16 +1634,16 @@ public class ApiServerVerticle extends AbstractVerticle {
         request.put(RESPONSE_SIZE, context.data().get(RESPONSE_SIZE));
 
         meteringService.insertMeteringValuesInRMQ(
-                request,
-                handler -> {
-                    if (handler.succeeded()) {
-                        LOGGER.info("message published in RMQ.");
-                        promise.complete();
-                    } else {
-                        LOGGER.error("failed to publish message in RMQ.");
-                        promise.complete();
-                    }
-                });
+            request,
+            handler -> {
+                if (handler.succeeded()) {
+                    LOGGER.info("message published in RMQ.");
+                    promise.complete();
+                } else {
+                    LOGGER.error("failed to publish message in RMQ.");
+                    promise.complete();
+                }
+            });
         return promise.future();
     }
 }
