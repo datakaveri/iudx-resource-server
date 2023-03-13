@@ -22,8 +22,6 @@ info:
     For publication and subscription, it allows users to use AMQP streaming protocol over TLS.
     It enables *Providers* of datasources to publish data as per the DX(Data exchange) data descriptor.
     It enables *Consumers* of datasources to search and query for data using HTTPs APIs.
-    It enables *Streaming Consumer* a.k.a [Subscribers] of datasources to stream data using AMQP streaming protocol over TLS.
-    
     
     # Configurations
     - **Server**: 
@@ -1054,15 +1052,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/allexchange'
 
+        400:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
+          description: 'Bad query'
+
         401:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/standardInvalidTokenErrorResponseAllQueueAndExcahnge"
+                "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
-      description: |
-        It will return all the exchange by using iid of token
 
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
       x-codeSamples:
         - lang: 'cURL'
           label: 'ingestion'
@@ -1122,6 +1131,20 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
+
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource Not Found'
+
+        409:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceAlreadyExistErrorResponse"
+          description: 'Resource Already Exist'
 
       description: |
         Ingestion API allows a provider to register an ingestion adapter with DX(Data exchange) Resource Server. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
@@ -3609,6 +3632,20 @@ components:
         title: Not Found
         detail: Resource Not Found
 
+    standardResourceAlreadyExistErrorResponse:
+      title: standardResourceAlreadyExistErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:resourceAlreadyExist
+        title: Conflict
+        detail: Conflict
+
     allqueue:
       title: Response
       required:
@@ -3631,7 +3668,7 @@ components:
         title: success
         results: [
           {"queueName": "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias-RL-OPEN",
-           "entity": "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood",catItem": {
+           "entity": "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood","catItem": {
             "id": "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood",
             "description": "Flood level sensors in Pune city.",
             "label": "Environment",
@@ -3661,10 +3698,25 @@ components:
       example:
         type: urn:dx:rs:success
         title: success
-        results: [
-          { "Adapters": [ ]
+        results:  [
+          {
+            "_id": "eff324fa-ee59-48fe-ada5-e1c2d0efb5c2",
+            "exchange_name": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/rs-adaptor-test/adaptor-test-resource",
+            "resource_id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/rs-adaptor-test/adaptor-test-resource",
+            "dataset_name": "adaptor-test-resource",
+            "dataset_details_json": {
+              "id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/rs-adaptor-test/adaptor-test-resource",
+              "name": "adaptor-test-resource",
+              "instance": "surat",
+              "provider": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86",
+              "description": "RS Adaptor Test Resource"
+            },
+            "user_id": "15c7506f-c800-48d6-adeb-0542b03947c6",
+            "created_at": "2023-03-09T12:47:07.538342",
+            "modified_at": "2023-03-09T12:47:07.538342"
           }
         ]
+
 
     standardInvalidTokenErrorResponseAllQueueAndExcahnge:
       title: standardInvalidTokenErrorResponse
