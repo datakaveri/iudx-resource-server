@@ -1032,7 +1032,11 @@ paths:
     get:
       tags:
         - Data Ingestion Adaptor
-      summary: list of adapter exchange
+      summary: List of adaptor exchange
+      description: 'Ingestion API allows a provider and delegate to get list of all registered adaptors in DX(Data exchange) Resource Server.
+        Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API.'
+
+
       operationId: adapterexchange
       parameters:
         - name: token
@@ -3693,7 +3697,7 @@ components:
         results:
           type: object
           properties:
-            Subscription:
+            Ingestion:
               type: object
       example:
         type: urn:dx:rs:success
@@ -3711,7 +3715,7 @@ components:
               "provider": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86",
               "description": "RS Adaptor Test Resource"
             },
-            "user_id": "15c7506f-c800-48d6-adeb-0542b03947c6",
+            "user_id": "12345-0000-6789",
             "created_at": "2023-03-09T12:47:07.538342",
             "modified_at": "2023-03-09T12:47:07.538342"
           }
