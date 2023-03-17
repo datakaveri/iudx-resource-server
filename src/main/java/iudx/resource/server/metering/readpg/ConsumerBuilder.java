@@ -27,16 +27,10 @@ public class ConsumerBuilder implements MeteringReadBuilder {
         String api = jsonObject.getString(API);
         String databaseTableName = jsonObject.getString(TABLE_NAME);
 
-        ZonedDateTime startZDT = ZonedDateTime.parse(startTime);
-        ZonedDateTime endZDT = ZonedDateTime.parse(endTime);
-
-        long fromTime = getEpochTime(startZDT);
-        long toTime = getEpochTime(endZDT);
-
         finalQuery = new StringBuilder(consumerQuery
                 .replace("$0", databaseTableName)
-                .replace("$1", Long.toString(fromTime))
-                .replace("$2", Long.toString(toTime))
+                .replace("$1", startTime)
+                .replace("$2", endTime)
                 .replace("$3", userId));
 
         if (resourceId != null) {
