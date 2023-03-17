@@ -138,9 +138,9 @@ public class AuthHandler implements Handler<RoutingContext> {
    * extract id from request (path/query or body )
    *
    *
-   * @param ctx     current routing context
-   * @param forPath endpoint called for
-   * @return id extraced fro path if present
+   * @param context     current routing context
+   * @param path endpoint called for
+   * @return id extracted from path if present
    */
   private String getId(RoutingContext context, String path, String method) {
 
@@ -187,7 +187,6 @@ public class AuthHandler implements Handler<RoutingContext> {
         id.append(pathParams.get(USER_ID)).append("/").append(pathParams.get(JSON_ALIAS));
       }
     }
-    LOGGER.debug("id :" + id);
     return id != null ? id.toString() : null;
   }
 
@@ -211,7 +210,6 @@ public class AuthHandler implements Handler<RoutingContext> {
         }
       }
     }
-    LOGGER.debug("id : " + id);
     return id;
   }
 

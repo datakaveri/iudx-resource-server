@@ -314,6 +314,7 @@ public class Constants {
     public static final String ENDT = "endtime";
     public static final String GET_ALL_QUEUE =
             "SELECT queue_name as queueName,entity,dataset_json as catItem FROM subscriptions WHERE user_id ='$1'";
+    public static final String ENTITY_QUERY = "select entity from subscriptions where queue_name='$0';";
     public static final String LIMITPARAM = "limit";
     public static final String OFFSETPARAM = "offset";
     public static final String TOTALHITS = "totalHits";

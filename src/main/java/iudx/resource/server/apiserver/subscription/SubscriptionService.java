@@ -205,6 +205,7 @@ public class SubscriptionService {
         LOGGER.debug(query);
         pgService.executeQuery(query.toString(), pgHandler -> {
           if (pgHandler.succeeded()) {
+            handler.result().remove("status");
             promise.complete(handler.result());
           } else {
             JsonObject res = new JsonObject(pgHandler.cause().getMessage());
