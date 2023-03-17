@@ -3,6 +3,7 @@ package iudx.resource.server.apiserver;
 import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Constants.API;
+import static iudx.resource.server.apiserver.util.Constants.ENTITY_QUERY;
 import static iudx.resource.server.apiserver.util.Constants.ID;
 import static iudx.resource.server.apiserver.util.Constants.IID;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
@@ -10,11 +11,13 @@ import static iudx.resource.server.apiserver.util.Util.errorResponse;
 import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
+import static iudx.resource.server.common.HttpStatusCode.NOT_FOUND;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
 import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TEMPORAL_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN_URN;
+import static iudx.resource.server.common.ResponseUrn.RESOURCE_NOT_FOUND_URN;
 import static iudx.resource.server.metering.util.Constants.*;
 
 import io.netty.handler.codec.http.HttpConstants;
@@ -1010,8 +1013,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         JsonObject requestBody = routingContext.body().asJsonObject();
         String instanceID = request.getHeader(HEADER_HOST);
         String subHeader = request.getHeader(HEADER_OPTIONS);
-        String subscrtiptionType = SubsType.STREAMING.type;
-        requestBody.put(SUB_TYPE, subscrtiptionType);
+        String subscriptionType = SubsType.STREAMING.type;
+        requestBody.put(SUB_TYPE, subscriptionType);
         JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
 
         JsonObject jsonObj = requestBody.copy();
@@ -1051,8 +1054,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         requestJson.put(SUBSCRIPTION_ID, subsId);
         requestJson.put(JSON_INSTANCEID, instanceID);
         String subHeader = request.getHeader(HEADER_OPTIONS);
-        String subscrtiptionType = SubsType.STREAMING.type;
-        requestJson.put(SUB_TYPE, subscrtiptionType);
+        String subscriptionType = SubsType.STREAMING.type;
+        requestJson.put(SUB_TYPE, subscriptionType);
         JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
         if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
             JsonObject jsonObj = requestJson.copy();
@@ -1092,8 +1095,8 @@ public class ApiServerVerticle extends AbstractVerticle {
         JsonObject requestJson = routingContext.body().asJsonObject();
         String instanceID = request.getHeader(HEADER_HOST);
         String subHeader = request.getHeader(HEADER_OPTIONS);
-        String subscrtiptionType = SubsType.STREAMING.type;
-        requestJson.put(SUB_TYPE, subscrtiptionType);
+        String subscriptionType = SubsType.STREAMING.type;
+        requestJson.put(SUB_TYPE, subscriptionType);
         JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
         if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
             JsonObject jsonObj = requestJson.copy();
@@ -1137,27 +1140,39 @@ public class ApiServerVerticle extends AbstractVerticle {
         requestJson.put(SUBSCRIPTION_ID, subsId);
         requestJson.put(JSON_INSTANCEID, instanceID);
         String subHeader = request.getHeader(HEADER_OPTIONS);
-        String subscrtiptionType = SubsType.STREAMING.type;
-        requestJson.put(SUB_TYPE, subscrtiptionType);
+        String subscriptionType = SubsType.STREAMING.type;
+        requestJson.put(SUB_TYPE, subscriptionType);
         JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
 
         if (requestJson != null && requestJson.containsKey(SUB_TYPE)) {
-            JsonObject jsonObj = requestJson.copy();
-            jsonObj.put(JSON_CONSUMER, authInfo.getString(JSON_CONSUMER));
-            Future<JsonObject> subsReq =
-                subsService.getSubscription(jsonObj, databroker, postgresService);
-            subsReq.onComplete(subHandler -> {
-                if (subHandler.succeeded()) {
-                    LOGGER.info("Success: Getting subscription");
-                    routingContext.data().put(RESPONSE_SIZE, 0);
-                    Future.future(fu -> updateAuditTable(routingContext));
-                    handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                        subHandler.result().toString());
-                } else {
-                    LOGGER.error("Fail: Bad request");
-                    processBackendResponse(response, subHandler.cause().getMessage());
-                }
-            });
+                JsonObject jsonObj = requestJson.copy();
+                jsonObj.put(JSON_CONSUMER, authInfo.getString(JSON_CONSUMER));
+                Future<JsonObject> entityName = getEntityName(requestJson);
+                entityName
+                    .onSuccess(
+                        entityNameHandler -> {
+                            ((JsonObject) routingContext.data().get("authInfo")).put("id",entityNameHandler.getValue("id"));
+                            Future<JsonObject> subsReq =
+                                subsService.getSubscription(jsonObj, databroker, postgresService);
+                            subsReq.onComplete(
+                                subHandler -> {
+                                    if (subHandler.succeeded()) {
+                                        LOGGER.info("Success: Getting subscription");
+                                        routingContext.data().put(RESPONSE_SIZE, 0);
+                                        Future.future(fu -> updateAuditTable(routingContext));
+                                        handleSuccessResponse(
+                                            response, ResponseType.Ok.getCode(), subHandler.result().toString());
+                                    } else {
+                                        LOGGER.error("Fail: Bad request");
+                                        processBackendResponse(response, subHandler.cause().getMessage());
+                                    }
+                                });
+                        })
+                    .onFailure(
+                        entityNameFailureHandler -> {
+                            LOGGER.error("Fail: Bad request from DB ");
+                            handleResponse(response, NOT_FOUND, RESOURCE_NOT_FOUND_URN, entityNameFailureHandler.getLocalizedMessage());
+                        });
         } else {
             LOGGER.error("Fail: Bad request");
             handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_SUB_TYPE_NOT_FOUND);
@@ -1210,24 +1225,33 @@ public class ApiServerVerticle extends AbstractVerticle {
         requestJson.put(SUBSCRIPTION_ID, subsId);
         requestJson.put(JSON_INSTANCEID, instanceID);
         String subHeader = request.getHeader(HEADER_OPTIONS);
-        String subscrtiptionType = SubsType.STREAMING.type;
-        requestJson.put(SUB_TYPE, subscrtiptionType);
+        String subscriptionType = SubsType.STREAMING.type;
+        requestJson.put(SUB_TYPE, subscriptionType);
         JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
         if (requestJson.containsKey(SUB_TYPE)) {
             JsonObject jsonObj = requestJson.copy();
             jsonObj.put(USER_ID, authInfo.getString(USER_ID));
-            Future<JsonObject> subsReq =
-                subsService.deleteSubscription(jsonObj, databroker, postgresService);
-            subsReq.onComplete(subHandler -> {
-                if (subHandler.succeeded()) {
-                    routingContext.data().put(RESPONSE_SIZE, 0);
-                    Future.future(fu -> updateAuditTable(routingContext));
-                    handleSuccessResponse(response, ResponseType.Ok.getCode(),
-                        subHandler.result().toString());
-                } else {
-                    processBackendResponse(response, subHandler.cause().getMessage());
-                }
+            Future<JsonObject> entityName = getEntityName(requestJson);
+            entityName.onSuccess(entityNameSuccessHandler->{
+                ((JsonObject) routingContext.data().get("authInfo")).put("id",entityNameSuccessHandler.getValue("id"));
+                Future<JsonObject> subsReq =
+                    subsService.deleteSubscription(jsonObj, databroker, postgresService);
+                subsReq.onComplete(subHandler -> {
+                    if (subHandler.succeeded()) {
+                        routingContext.data().put(RESPONSE_SIZE, 0);
+                        Future.future(fu -> updateAuditTable(routingContext));
+                        handleSuccessResponse(response, ResponseType.Ok.getCode(),
+                            subHandler.result().toString());
+                    } else {
+                        processBackendResponse(response, subHandler.cause().getMessage());
+                    }
+                });
+            }).onFailure(entityNameFailureHandler->{
+                LOGGER.error("ERROR: bad request from DB");
+                handleResponse(response, NOT_FOUND, RESOURCE_NOT_FOUND_URN, entityNameFailureHandler.getLocalizedMessage());
+
             });
+
         } else {
             handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_SUB_TYPE_NOT_FOUND);
         }
@@ -1643,6 +1667,26 @@ public class ApiServerVerticle extends AbstractVerticle {
                     LOGGER.error("failed to publish message in RMQ.");
                     promise.complete();
                 }
+            });
+        return promise.future();
+    }
+    private Future<JsonObject> getEntityName(JsonObject request){
+        Promise<JsonObject> promise = Promise.promise();
+            String getEntityNameQuery= ENTITY_QUERY.replace("$0",request.getString(SUBSCRIPTION_ID));
+            postgresService.executeQuery(getEntityNameQuery,pgHandler->{
+                if(pgHandler.succeeded() && !pgHandler.result().getJsonArray("result").isEmpty()){
+                    request.put("id",pgHandler.result().getJsonArray("result").getJsonObject(0).getString("entity"));
+                    promise.complete(request);
+                }
+                else {
+                    if (pgHandler.result().getJsonArray("result").isEmpty()){
+                        LOGGER.error("Empty response from database.");
+                        promise.fail("Resource Not Found");
+                    }
+                    else {
+                        LOGGER.error("fail here");
+                    promise.fail(pgHandler.cause().getMessage());
+                }}
             });
         return promise.future();
     }
