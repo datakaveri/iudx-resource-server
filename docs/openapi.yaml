@@ -2223,12 +2223,12 @@ paths:
             pattern: '^[a-zA-Z0-9\/\@\.]*$'
         - name: starttime
           in: query
-          description: 'This parameter specifies the <b>start time</b> for the summary-query.'
+          description: 'This parameter specifies the <b>start time</b> for the summary-query in `ISO8601` format. <br/> Data exchange currently accepts `IST` and `UTC` time zones.'
           schema:
             type: string
         - name: endtime
           in: query
-          description: 'This parameter specifies the <b>end time</b> for the summary-query.'
+          description: 'This parameter specifies the <b>end time</b> for the summary-query in `ISO8601` format. <br/> Data exchange currently accepts `IST` and `UTC` time zones.'
           schema:
             type: string
 
@@ -2283,12 +2283,12 @@ paths:
             pattern: '^[a-zA-Z0-9\/\@\.]*$'
         - name: starttime
           in: query
-          description: 'This parameter specifies the <b>start time</b> for the overview-query.'
+          description: 'This parameter specifies the <b>start time</b> for the overview-query in `ISO8601` format. <br/> Data exchange currently accepts `IST` and `UTC` time zones.'
           schema:
             type: string
         - name: endtime
           in: query
-          description: 'This parameter specifies the <b>end time</b> for the overview-query.'
+          description: 'This parameter specifies the <b>end time</b> for the overview-query in `ISO8601` format. <br/> Data exchange currently accepts `IST` and `UTC` time zones.'
           schema:
             type: string
 
