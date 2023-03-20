@@ -57,16 +57,16 @@ public class Constants {
   public static final String RESOURCE_QUERY = " and resourceId='$4'";
 
   public static final String CONSUMERID_TIME_INTERVAL_COUNT_QUERY =
-      "SELECT count(*) FROM $0 where epochtime>=$1 and epochtime<=$2 and userid='$3'";
+      "SELECT count(*) FROM $0 where time between '$1' and '$2' and userid='$3'";
 
   public static final String PROVIDERID_TIME_INTERVAL_COUNT_QUERY =
-      "SELECT count(*) FROM $0 where epochtime>=$1 and epochtime<=$2 and providerid='$3'";
+      "SELECT count(*) FROM $0 where time between '$1' and '$2' and providerid='$3'";
 
   public static final String CONSUMERID_TIME_INTERVAL_READ_QUERY =
-      "SELECT * FROM $0 where epochtime>=$1 and epochtime<=$2 and userid='$3'";
+      "SELECT * FROM $0 where time between '$1' and '$2' and userid='$3'";
 
   public static final String PROVIDERID_TIME_INTERVAL_READ_QUERY =
-      "SELECT * FROM $0 where epochtime>=$1 and epochtime<=$2 and providerid='$3'";
+      "SELECT * FROM $0 where time between '$1' and '$2' and providerid='$3'";
 
   public static final String ORDER_BY= " ORDER BY time";
 

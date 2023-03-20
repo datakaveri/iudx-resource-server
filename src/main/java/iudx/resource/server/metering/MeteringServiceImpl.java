@@ -14,6 +14,7 @@ import iudx.resource.server.common.Response;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.metering.readpg.ReadQueryBuilder;
+import iudx.resource.server.metering.util.DateValidation;
 import iudx.resource.server.metering.util.ParamsValidation;
 import iudx.resource.server.metering.util.QueryBuilder;
 import iudx.resource.server.metering.util.ResponseBuilder;
@@ -45,6 +46,7 @@ public class MeteringServiceImpl implements MeteringService {
     private final Vertx vertx;
     private final QueryBuilder queryBuilder = new QueryBuilder();
     private final ParamsValidation validation = new ParamsValidation();
+    private final DateValidation dateValidation = new DateValidation();
     private final ObjectMapper objectMapper = new ObjectMapper();
     PgConnectOptions connectOptions;
     PoolOptions poolOptions;
@@ -232,6 +234,16 @@ public class MeteringServiceImpl implements MeteringService {
         if ((startTime != null && endTime == null) || (startTime == null && endTime != null)) {
             handler.handle(Future.failedFuture("Bad Request"));
         }
+        if(startTime!=null && endTime!=null) {
+            validationCheck = dateValidation.dateParamCheck(request);
+
+            if (validationCheck != null && validationCheck.containsKey(ERROR)) {
+                responseBuilder =
+                        new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(validationCheck.getString(ERROR));
+                handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+                return this;
+            }
+        }
         queryOverview = queryBuilder.buildMonthlyOverview(request);
         LOGGER.debug("query Overview =" + queryOverview);
 
@@ -254,6 +266,16 @@ public class MeteringServiceImpl implements MeteringService {
         String endTime = request.getString(ENDT);
         if ((startTime != null && endTime == null) || (startTime == null && endTime != null)) {
             handler.handle(Future.failedFuture("Bad Request"));
+        }
+        if(startTime!=null && endTime!=null) {
+            validationCheck = dateValidation.dateParamCheck(request);
+
+            if (validationCheck != null && validationCheck.containsKey(ERROR)) {
+                responseBuilder =
+                        new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(validationCheck.getString(ERROR));
+                handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
+                return this;
+            }
         }
         summaryOverview = queryBuilder.buildSummaryOverview(request);
         LOGGER.debug("summary query =" + summaryOverview);

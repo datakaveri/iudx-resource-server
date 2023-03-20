@@ -369,7 +369,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         ValidationHandler overViewValidation = new ValidationHandler(vertx, RequestType.OVERVIEW);
         router
             .get(api.getMonthlyOverview())
-            .handler(overViewValidation)
             .handler(AuthHandler.create(vertx,api))
             .handler(this::getMonthlyOverview)
             .failureHandler(validationsFailureHandler);
@@ -377,7 +376,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         //Metering Summary
         router
             .get(api.getSummaryPath())
-                .handler(overViewValidation)
                 .handler(AuthHandler.create(vertx,api))
                 .handler(this::getAllSummaryHandler)
                 .failureHandler(validationsFailureHandler);

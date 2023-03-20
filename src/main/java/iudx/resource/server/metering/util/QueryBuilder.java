@@ -52,19 +52,13 @@ public class QueryBuilder {
         String databaseTableName = request.getString(TABLE_NAME);
         StringBuilder query = null;
 
-        ZonedDateTime startZDT = ZonedDateTime.parse(startTime);
-        ZonedDateTime endZDT = ZonedDateTime.parse(endTime);
-
-        long fromTime = getEpochTime(startZDT);
-        long toTime = getEpochTime(endZDT);
-
         if (providerID != null) {
             query =
                     new StringBuilder(
                             PROVIDERID_TIME_INTERVAL_COUNT_QUERY
                                     .replace("$0", databaseTableName)
-                                    .replace("$1", Long.toString(fromTime))
-                                    .replace("$2", Long.toString(toTime))
+                                    .replace("$1", startTime)
+                                    .replace("$2", endTime)
                                     .replace("$3", providerID));
             if (api != null) {
                 query = query.append(API_QUERY.replace("$4", api));
@@ -80,8 +74,8 @@ public class QueryBuilder {
                     new StringBuilder(
                             CONSUMERID_TIME_INTERVAL_COUNT_QUERY
                                     .replace("$0", databaseTableName)
-                                    .replace("$1", Long.toString(fromTime))
-                                    .replace("$2", Long.toString(toTime))
+                                    .replace("$1", startTime)
+                                    .replace("$2", endTime)
                                     .replace("$3", userId));
             if (api != null) {
                 query = query.append(API_QUERY.replace("$4", api));
