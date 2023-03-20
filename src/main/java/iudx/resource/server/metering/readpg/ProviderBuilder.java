@@ -47,7 +47,7 @@ public class ProviderBuilder implements MeteringReadBuilder {
 
         if (consumerID != null) {
             finalQuery.append(USER_ID_QUERY
-                    .replace("$6", userId));
+                    .replace("$6", consumerID));
         }
 
         finalQuery.append(ORDER_BY);
