@@ -49,16 +49,8 @@ public class MeteringServiceTest {
     public static String userId;
     public static String id;
     private static Vertx vertxObj;
-    private static String databaseIP;
-    private static int databasePort;
-    private static String databaseName;
-    private static String databaseUserName;
-    private static String databasePassword;
-    private static int databasePoolSize;
-    private static String databaseTableName;
     private static MeteringServiceImpl meteringService;
     private static Configuration config;
-    private static JsonObject dbConfig;
     private static PostgresService postgresService;
 
     @BeforeAll
@@ -66,15 +58,6 @@ public class MeteringServiceTest {
     static void startVertex(Vertx vertx, VertxTestContext vertxTestContext) {
         vertxObj = vertx;
         config = new Configuration();
-        dbConfig = config.configLoader(6, vertx);
-        LOGGER.debug(dbConfig);
-        databaseIP = dbConfig.getString("meteringDatabaseIP");
-        databasePort = dbConfig.getInteger("meteringDatabasePort");
-        databaseName = dbConfig.getString("meteringDatabaseName");
-        databaseUserName = dbConfig.getString("meteringDatabaseUserName");
-        databasePassword = dbConfig.getString("meteringDatabasePassword");
-        databasePoolSize = dbConfig.getInteger("meteringPoolSize");
-        databaseTableName = dbConfig.getString("meteringDatabaseTableName");
 
         userId = UUID.randomUUID().toString();
         id = "89a36273d77dac4cf38114fca1bbe64392547f86";
@@ -134,7 +117,7 @@ public class MeteringServiceTest {
         JsonObject request = readConsumerRequest();
         postgresService = mock(PostgresService.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
         request.put(START_TIME, "2021-11-01T05:30:00+05:30[Asia/Kolkata]");
         request.put(END_TIME, "2021-11-01T02:00:00+05:30[Asia/Kolkata]");
         meteringService.executeReadQuery(
@@ -159,7 +142,7 @@ public class MeteringServiceTest {
         JsonObject json = mock(JsonObject.class);
         JsonArray jsonArray = mock(JsonArray.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json, responseJson);
@@ -197,7 +180,7 @@ public class MeteringServiceTest {
         request.remove(USER_ID);
         postgresService = mock(PostgresService.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         meteringService.executeReadQuery(
                 request,
@@ -220,7 +203,7 @@ public class MeteringServiceTest {
         request.remove(TIME_RELATION);
         postgresService = mock(PostgresService.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
         meteringService.executeReadQuery(
                 request,
                 vertxTestContext.failing(
@@ -242,7 +225,7 @@ public class MeteringServiceTest {
         request.remove(START_TIME);
         postgresService = mock(PostgresService.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
         meteringService.executeReadQuery(
                 request,
                 vertxTestContext.failing(
@@ -262,7 +245,7 @@ public class MeteringServiceTest {
         request.put(START_TIME, "2021-009-18T00:30:00+05:30[Asia/Kolkata]");
         postgresService = mock(PostgresService.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
         meteringService.executeReadQuery(
                 request,
                 vertxTestContext.failing(
@@ -286,7 +269,7 @@ public class MeteringServiceTest {
         JsonObject json = mock(JsonObject.class);
         JsonArray jsonArray = mock(JsonArray.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json, responseJson);
@@ -327,7 +310,7 @@ public class MeteringServiceTest {
         JsonObject json = mock(JsonObject.class);
         JsonArray jsonArray = mock(JsonArray.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json, responseJson);
@@ -367,7 +350,7 @@ public class MeteringServiceTest {
         JsonObject json = mock(JsonObject.class);
         JsonArray jsonArray = mock(JsonArray.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json, responseJson);
@@ -407,7 +390,7 @@ public class MeteringServiceTest {
         JsonObject json = mock(JsonObject.class);
         JsonArray jsonArray = mock(JsonArray.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json, responseJson);
@@ -446,7 +429,7 @@ public class MeteringServiceTest {
         JsonObject json = mock(JsonObject.class);
         JsonArray jsonArray = mock(JsonArray.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json, responseJson);
@@ -492,7 +475,7 @@ public class MeteringServiceTest {
         request.put(API, "/ngsi-ld/v1/subscription");
         request.put(RESPONSE_SIZE, 12);
         postgresService = mock(PostgresService.class);
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         DataBrokerService dataBrokerService = mock(DataBrokerService.class);
 
@@ -526,7 +509,7 @@ public class MeteringServiceTest {
         request.put(API, "/ngsi-ld/v1/subscription");
         request.put(RESPONSE_SIZE, 12);
         postgresService = mock(PostgresService.class);
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
         MeteringServiceImpl.rmqService = mock(DataBrokerService.class);
@@ -555,7 +538,7 @@ public class MeteringServiceTest {
     @DisplayName("Testing read query with missing providerId.")
     void readForMissingProviderId(VertxTestContext vertxTestContext) {
         postgresService = mock(PostgresService.class);
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
         JsonObject request = readProviderRequest();
         request.remove(PROVIDER_ID);
         meteringService.executeReadQuery(
@@ -601,7 +584,7 @@ public class MeteringServiceTest {
         JsonObject json = mock(JsonObject.class);
         JsonArray jsonArray = mock(JsonArray.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json, responseJson);
@@ -640,7 +623,7 @@ public class MeteringServiceTest {
         JsonObject json = mock(JsonObject.class);
         JsonArray jsonArray = mock(JsonArray.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json, responseJson);
@@ -679,7 +662,7 @@ public class MeteringServiceTest {
         JsonObject json = mock(JsonObject.class);
         JsonArray jsonArray = mock(JsonArray.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json, responseJson);
@@ -719,7 +702,7 @@ public class MeteringServiceTest {
         JsonObject json = mock(JsonObject.class);
         JsonArray jsonArray = mock(JsonArray.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json, responseJson);
@@ -761,7 +744,7 @@ public class MeteringServiceTest {
         JsonObject json = mock(JsonObject.class);
         JsonArray jsonArray = mock(JsonArray.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json);
@@ -799,7 +782,7 @@ public class MeteringServiceTest {
         JsonObject json = mock(JsonObject.class);
         JsonArray jsonArray = mock(JsonArray.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json);
@@ -836,7 +819,7 @@ public class MeteringServiceTest {
         JsonObject json = new JsonObject().put("role", "admin");
         JsonObject expected = new JsonObject().put(SUCCESS, "count return");
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(expected);
 
@@ -870,7 +853,7 @@ public class MeteringServiceTest {
         json.put(USER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
         JsonObject expected = new JsonObject().put(SUCCESS, "count return");
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(expected);
 
@@ -905,7 +888,7 @@ public class MeteringServiceTest {
 
         JsonObject expected = new JsonObject().put(SUCCESS, "count return");
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(expected);
 
@@ -939,7 +922,7 @@ public class MeteringServiceTest {
         json.put(ENDT, "2022-12-20T00:00:00Z");
         JsonObject expected = new JsonObject().put(SUCCESS, "count return");
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(expected);
 
@@ -975,7 +958,7 @@ public class MeteringServiceTest {
         json.put(ENDT, "2022-12-20T00:00:00Z");
         JsonObject expected = new JsonObject().put(SUCCESS, "count return");
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(expected);
 
@@ -1012,7 +995,7 @@ public class MeteringServiceTest {
 
         JsonObject expected = new JsonObject().put(SUCCESS, "count return");
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(expected);
 
@@ -1060,7 +1043,7 @@ public class MeteringServiceTest {
                 .put("resourceid", "datakaveri.org/0808eb81ea0e5773187ae06110f55915a55f5c05/rs.iudx.io/integration-test-rsg-one");
         JsonArray outputArray = new JsonArray().add(outputFormat);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         MeteringServiceImpl spyMeteringService = Mockito.spy(meteringService);
 
@@ -1116,7 +1099,7 @@ public class MeteringServiceTest {
                 .put("resourceid", "datakaveri.org/0808eb81ea0e5773187ae06110f55915a55f5c05/rs.iudx.io/integration-test-rsg-one");
         JsonArray outputArray = new JsonArray().add(outputFormat);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         MeteringServiceImpl spyMeteringService = Mockito.spy(meteringService);
 
@@ -1157,7 +1140,7 @@ public class MeteringServiceTest {
         JsonObject json = mock(JsonObject.class);
         JsonArray jsonArray = mock(JsonArray.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json);
@@ -1199,7 +1182,7 @@ public class MeteringServiceTest {
         json.put(STARTT, "2022-11-20T00:00:00Z");
 
         lenient().when(future.succeeded()).thenReturn(false);
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         meteringService.summaryOverview(json, handler -> {
             if (handler.failed()) {
@@ -1226,7 +1209,7 @@ public class MeteringServiceTest {
 
         lenient().when(future.succeeded()).thenReturn(false);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         meteringService.monthlyOverview(json, handler -> {
             if (handler.failed()) {
@@ -1248,7 +1231,7 @@ public class MeteringServiceTest {
         JsonObject json = mock(JsonObject.class);
         JsonArray jsonArray = mock(JsonArray.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json, responseJson);
@@ -1289,7 +1272,7 @@ public class MeteringServiceTest {
         JsonObject json = mock(JsonObject.class);
         JsonArray jsonArray = mock(JsonArray.class);
 
-        meteringService = new MeteringServiceImpl(dbConfig, vertxObj, postgresService);
+        meteringService = new MeteringServiceImpl( vertxObj, postgresService);
 
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json, responseJson);

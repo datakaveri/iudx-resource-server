@@ -36,13 +36,6 @@ public class MeteringServiceImpl implements MeteringService {
 
     private static final Logger LOGGER = LogManager.getLogger(MeteringServiceImpl.class);
     public static DataBrokerService rmqService;
-    public final String _COUNT_COLUMN;
-    public final String _RESOURCEID_COLUMN;
-    public final String _API_COLUMN;
-    public final String _USERID_COLUMN;
-    public final String _TIME_COLUMN;
-    public final String _RESPONSE_SIZE_COLUMN;
-    public final String _ID_COLUMN;
     private final Vertx vertx;
     private final QueryBuilder queryBuilder = new QueryBuilder();
     private final ParamsValidation validation = new ParamsValidation();
@@ -57,65 +50,17 @@ public class MeteringServiceImpl implements MeteringService {
     JsonArray jsonArray;
     JsonArray resultJsonArray;
     int i;
-    private JsonObject query = new JsonObject();
-    private String databaseIP;
-    private int databasePort;
-    private String databaseName;
-    private String databaseUserName;
-    private String databasePassword;
-    private int databasePoolSize;
-    private String databaseTableName;
     private ResponseBuilder responseBuilder;
     private PostgresService postgresService;
     private CacheService cacheService;
 
-    public MeteringServiceImpl(JsonObject propObj, Vertx vertxInstance, PostgresService postgresService) {
-        if (propObj != null && !propObj.isEmpty()) {
-            databaseIP = propObj.getString("meteringDatabaseIP");
-            databasePort = propObj.getInteger("meteringDatabasePort");
-            databaseName = propObj.getString("meteringDatabaseName");
-            databaseUserName = propObj.getString("meteringDatabaseUserName");
-            databasePassword = propObj.getString("meteringDatabasePassword");
-            databasePoolSize = propObj.getInteger("meteringPoolSize");
-            databaseTableName = propObj.getString("meteringDatabaseTableName");
-        }
-
-        this.connectOptions =
-                new PgConnectOptions()
-                        .setPort(databasePort)
-                        .setHost(databaseIP)
-                        .setDatabase(databaseName)
-                        .setUser(databaseUserName)
-                        .setPassword(databasePassword)
-                        .setReconnectAttempts(2)
-                        .setReconnectInterval(1000);
-
-        this.poolOptions = new PoolOptions().setMaxSize(databasePoolSize);
-        this.pool = PgPool.pool(vertxInstance, connectOptions, poolOptions);
+    public MeteringServiceImpl( Vertx vertxInstance, PostgresService postgresService) {
         this.vertx = vertxInstance;
         this.postgresService = postgresService;
         this.rmqService = DataBrokerService.createProxy(vertxInstance, BROKER_SERVICE_ADDRESS);
 
         this.cacheService = CacheService.createProxy(vertxInstance, CACHE_SERVICE_ADDRESS);
 
-        _COUNT_COLUMN =
-                COUNT_COLUMN.insert(0, "(" + databaseName + "." + databaseTableName + ".").toString();
-        _RESOURCEID_COLUMN =
-                RESOURCEID_COLUMN.insert(0, "(" + databaseName + "." + databaseTableName + ".").toString();
-        _API_COLUMN =
-                API_COLUMN.insert(0, "(" + databaseName + "." + databaseTableName + ".").toString();
-        _USERID_COLUMN =
-                USERID_COLUMN.insert(0, "(" + databaseName + "." + databaseTableName + ".").toString();
-        _TIME_COLUMN =
-                TIME_COLUMN.insert(0, "(" + databaseName + "." + databaseTableName + ".").toString();
-        _RESPONSE_SIZE_COLUMN =
-                RESPONSE_SIZE_COLUMN
-                        .insert(0, "(" + databaseName + "." + databaseTableName + ".")
-                        .toString();
-        _ID_COLUMN =
-                ID_COLUMN
-                        .insert(0, "(" + databaseName + "." + databaseTableName + ".")
-                        .toString();
     }
 
     @Override
@@ -135,7 +80,7 @@ public class MeteringServiceImpl implements MeteringService {
             handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
             return this;
         }
-        request.put(TABLE_NAME, databaseTableName);
+        request.put(TABLE_NAME, RS_DATABASE_TABLE_NAME);
 
         String count = request.getString("options");
         if (count == null) {
