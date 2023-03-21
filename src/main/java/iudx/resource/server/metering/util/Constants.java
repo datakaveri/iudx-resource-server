@@ -90,7 +90,7 @@ public class Constants {
   public static final StringBuilder ID_COLUMN = new StringBuilder("id)");
   public static final String OVERVIEW_QUERY ="SELECT month,year,COALESCE(counts, 0) as counts\n" +
           "FROM  (\n" +
-          "   SELECT day::date ,to_char(date_trunc('month', day),'month') as month,extract('year' from day) as year\n" +
+          "   SELECT day::date ,to_char(date_trunc('month', day),'FMmonth') as month,extract('year' from day) as year\n" +
           "   FROM   generate_series(timestamp '$0'\n" +
           "                        , timestamp '$1'\n" +
           "                        , interval  '1 month') day\n" +
