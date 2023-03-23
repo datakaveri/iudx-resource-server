@@ -1,5 +1,4 @@
 import psycopg2
-from psycopg2.extras import Json
 import json
 import requests
 import logging
@@ -40,7 +39,7 @@ for data in records:
 	result= response.json()
 	dataset_name= result['results'][0]['name']
 	dataset_json= result['results'][0]
-	insert_query ="""UPDATE testing_subscriptions set dataset_name=%s,dataset_json=%s,user_id= %s where _id = %s and queue_name= %s"""
+	insert_query ="""UPDATE subscriptions set dataset_name=%s,dataset_json=%s,user_id= %s where _id = %s and queue_name= %s"""
 	val= (dataset_name,json.dumps(dataset_json),user_id,_id,queue_name)
 	cur.execute(insert_query,val)
 	
