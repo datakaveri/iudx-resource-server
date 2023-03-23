@@ -121,7 +121,7 @@ In order to connect to the appropriate Postgres database, required information s
 
 
 #### Schemas for PostgreSQL tables in IUDX Resource Server
-- Refer to Flyway Schemas [here](https://github.com/gopal-mahajan/iudx-resource-server/blob/e2625988d2b5c6d8eedb8d9177a33eef7992be7b/src/main/resources/db/migration).
+- Refer to Flyway Schemas [here](https://github.com/datakaveri/iudx-resource-server/tree/master/src/main/resources/db/migration).
 1. Token Invalidation Table Schema
 ```
 CREATE TABLE IF NOT EXISTS revoked_tokens
@@ -334,10 +334,7 @@ In order to connect to the appropriate Redis instance, required information such
     "redisMaxWaitingHandlers": <max-waiting-handlers>,
     "redisPoolRecycleTimeout": <recycle-timeout-in milliseconds>,
     "redisHost": "localhost",
-    "redisPort": <port-number>,
-     "attributeList": {
-                <type>: <value>
-            }
+    "redisPort": <port-number>
 }
 ```
 ----
