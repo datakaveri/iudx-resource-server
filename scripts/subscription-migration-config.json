@@ -1,0 +1,10 @@
+{
+	"postgersDatabaseName" : "",
+	"postgersUser" : "",
+	"postgersPassword" : "",
+	"postgersHost" : "",
+	"postgersPort" : 1234,
+	"host_url" : ""
+}
+
+
