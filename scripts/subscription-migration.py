@@ -25,7 +25,7 @@ conn = psycopg2.connect(host=postgersHost, database=postgersDatabaseName, user=p
 cur = conn.cursor()
 
 # get data from subscriptions table in postgers
-select_stmt = "select _id,queue_name,entity from testing_subscriptions;"
+select_stmt = "select _id,queue_name,entity from subscriptions;"
 cur.execute(select_stmt)
 records=cur.fetchall()
 
