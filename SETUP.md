@@ -15,18 +15,19 @@ The Resource Server connects with various external dependencies namely
   - Query and status information of Async APIs
   - Subscription Status
   - Unique attributes
-- `ImmuDB` : used to store metering information
+  - Metering information
 - `RabbitMQ` : used to
   - publish and subscribe data
   - registration of publishers and subscribers
   - broadcast token invalidation info
+  - publish auditing data for auditing-server
 - `Redis` : used to query latest data
 - `AWS S3` : used to upload files for async search
 
 The Resource Server also connects with various DX dependencies namely
 - Authorization Server : used to download the certificate for token decoding
 - Catalogue Server : used to download the list of resources, access policies and query types supported on a resource.
-
+- Auditing Server : used to store metering related data.
 ## Setting up ELK for IUDX Resource Server
 - Refer to the docker files available [here](https://github.com/datakaveri/iudx-deployment/blob/master/Docker-Swarm-deployment/single-node/elk) to setup ELK stack
 
@@ -120,6 +121,7 @@ In order to connect to the appropriate Postgres database, required information s
 
 
 #### Schemas for PostgreSQL tables in IUDX Resource Server
+- Refer to Flyway Schemas [here](https://github.com/datakaveri/iudx-resource-server/tree/master/src/main/resources/db/migration).
 1. Token Invalidation Table Schema
 ```
 CREATE TABLE IF NOT EXISTS revoked_tokens
@@ -162,6 +164,9 @@ CREATE TABLE IF NOT EXISTS subscriptions
    expiry timestamp without time zone NOT NULL,
    created_at timestamp without time zone NOT NULL,
    modified_at timestamp without time zone NOT NULL,
+   dataset_name varchar,
+   dataset_json jsonb,
+   user_id uuid,
    CONSTRAINT sub_pk PRIMARY KEY
    (
       queue_name,
@@ -196,12 +201,68 @@ CREATE TABLE IF NOT EXISTS databroker
    CONSTRAINT databroker_username_key UNIQUE (username)
 );
 ```
+6. Adaptor Details Table
+```
+CREATE TABLE IF NOT EXISTS adaptors_details
+(
+   _id uuid DEFAULT uuid_generate_v4 () NOT NULL,
+   exchange_name varchar NOT NULL,
+   resource_id varchar NOT NULL,
+   dataset_name varchar NOT NULL,
+   dataset_details_json jsonb NOT NULL,
+   user_id varchar NOT NULL,
+   created_at timestamp without time zone NOT NULL,
+   modified_at timestamp without time zone NOT NULL,
+   CONSTRAINT exchange_name_unique UNIQUE (exchange_name),
+   CONSTRAINT candidate_key PRIMARY KEY (_id,exchange_name)
+);
+```
+7. Resource Server Auditing Table
+```
+CREATE TABLE IF NOT EXISTS auditing_rs
+(
+   id varchar NOT NULL,
+   api varchar NOT NULL,
+   userid varchar NOT NULL,
+   epochtime numeric NOT NULL,
+   resourceid varchar NOT NULL,
+   isotime varchar NOT NULL,
+   providerid varchar NOT NULL,
+   size numeric NOT NULL
+);
+```
+8. Auditing Server Auditing Table
+```
+CREATE TABLE IF NOT EXISTS auditing_aaa
+(
+   id varchar NOT NULL,
+   body varchar NOT NULL,
+   userid varchar NOT NULL,
+   endpoint varchar NOT NULL,
+   method varchar NOT NULL,
+   time numeric NOT NULL,
+   CONSTRAINT auditing_aaa_pk PRIMARY KEY (id)
+);
+```
+9. Catalogue Server Auditing Table
+```
+CREATE TABLE IF NOT EXISTS auditing_cat
+(
+   id varchar NOT NULL,
+   userrole varchar NOT NULL,
+   userid varchar NOT NULL,
+   iid varchar NOT NULL,
+   api varchar NOT NULL,
+   method varchar NOT NULL,
+   time numeric NOT NULL,
+   iudxid varchar NOT NULL,
+   CONSTRAINT auditing_cat_pk PRIMARY KEY (id)
+);
+```
 ----
 
 ## Setting up ImmuDB for IUDX Resource Server
 - Refer to the docker files available [here](https://github.com/datakaveri/iudx-deployment/blob/master/Docker-Swarm-deployment/single-node/immudb) to setup ImmuDB.
-- Refer [this](https://github.com/datakaveri/iudx-deployment/blob/master/Docker-Swarm-deployment/single-node/immudb/docker/immudb-config-generator/immudb-config-generator.py) to create table/user.
-- In order to connect to the appropriate ImmuDB database, required information such as meteringDatabaseIP, meteringDatabasePort etc. should be updated in the MeteringVerticle module available in [config-example.json](configs/config-example.json).
 
 **MeteringVerticle**
 
@@ -210,31 +271,8 @@ CREATE TABLE IF NOT EXISTS databroker
     "id": "iudx.resource.server.metering.MeteringVerticle",
     "isWorkerVerticle":false,
     "verticleInstances": <num-of-verticle-instances>,
-    "meteringDatabaseIP": "localhost",
-    "meteringDatabasePort": <port-number>,
-    "meteringDatabaseName": <database-name>,
-    "meteringDatabaseUserName": <username-for-immudb>,
-    "meteringDatabasePassword": <password-for-immudb>,
-    "meteringDatabaseTableName": <tabel-name-for-immudb>
-    "meteringPoolSize": <pool-size>
 }
 ```
-
-**Metering Table Schema**
-```
-CREATE TABLE IF NOT EXISTS rsaudit (
-    id VARCHAR[128] NOT NULL, 
-    api VARCHAR[128], 
-    userid VARCHAR[128],
-    epochtime INTEGER,
-    resourceid VARCHAR[200],
-    isotime VARCHAR[128],
-    providerid VARCHAR[128],
-    size INTEGER,
-    PRIMARY KEY id
-);
-```
-
 ----
 
 ## Setting up RabbitMQ for IUDX Resource Server
@@ -251,7 +289,9 @@ In order to connect to the appropriate RabbitMQ instance, required information s
     "verticleInstances": <num-of-verticle-instances>,
     "dataBrokerIP": "localhost",
     "dataBrokerPort": <port-number>,
-    "dataBrokerVhost": <vHost-name>,
+    "prodVhost": <prod-vhost>,
+    "internalVhost": <internal-vhost>,
+    "externalVhost": <external-vhost>,
     "dataBrokerUserName": <username-for-rmq>,
     "dataBrokerPassword": <password-for-rmq>,
     "dataBrokerManagementPort": <management-port-number>,
@@ -294,7 +334,7 @@ In order to connect to the appropriate Redis instance, required information such
     "redisMaxWaitingHandlers": <max-waiting-handlers>,
     "redisPoolRecycleTimeout": <recycle-timeout-in milliseconds>,
     "redisHost": "localhost",
-    "redisPort": <port-number>,
+    "redisPort": <port-number>
 }
 ```
 ----

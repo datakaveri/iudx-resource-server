@@ -28,6 +28,7 @@ The consumers can access data from the resource server using HTTPs and AMQPs.
 - Secure data access over TLS
 - Scalable, service mesh architecture based implementation using open source components: Vert.X API framework, Elasticsearch/Logstash for database and RabbitMQ for data broker.
 - Hazelcast and Zookeeper based cluster management and service discovery
+- Integration with auditing server for metering purpose
 
 ## API Docs 
 The api docs can be found [here](https://rs.iudx.org.in/apis).
@@ -38,7 +39,6 @@ The api docs can be found [here](https://rs.iudx.org.in/apis).
 The Resource Server connects with various external dependencies namely
 - ELK stack 
 - PostgreSQL
-- ImmuDB
 - RabbitMQ
 - Redis
 - AWS S3

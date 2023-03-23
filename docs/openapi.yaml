@@ -50,7 +50,7 @@ info:
           -  /summary
       <br>
     - **Request Samples**:
-      - The `<tokeValue>` in the header of request sample could be replaced with respective token value [Also refer Tokens section [here](#section/Tokens)]
+      - The `<tokenValue>` in the header of request sample could be replaced with respective token value [Also refer Tokens section [here](#section/Tokens)]
       - The `<publicKeyValue>` in the header of request sample could be replaced with the respective public key [Also refer Encryption section [here](#section/Encryption)]
       - The `<payload>` in the request sample could be replaced with the payload given adjacent to the request sample
     

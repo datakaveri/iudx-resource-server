@@ -82,14 +82,7 @@
         {
             "id": "iudx.resource.server.metering.MeteringVerticle",
             "isWorkerVerticle":false,
-            "verticleInstances": 1,
-            "meteringDatabaseIP": "",
-            "meteringDatabasePort": 1234,
-            "meteringDatabaseName": "",
-            "meteringDatabaseUserName": "",
-            "meteringDatabasePassword": "",
-            "meteringDatabaseTableName": "",
-            "meteringPoolSize": 25
+            "verticleInstances": 1
         },
         {
             "id":"iudx.resource.server.database.postgres.PostgresVerticle",
