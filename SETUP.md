@@ -127,7 +127,7 @@ In order to connect to the appropriate Postgres database, required information s
 CREATE TABLE IF NOT EXISTS revoked_tokens
 (
    _id uuid NOT NULL,
-   expiry timestamp with time zone NOT NULL,
+   expiry timestamp without time zone NOT NULL,
    created_at timestamp without time zone NOT NULL,
    modified_at timestamp without time zone NOT NULL,
    CONSTRAINT revoke_tokens_pk PRIMARY KEY (_id)
@@ -150,6 +150,8 @@ CREATE TABLE IF NOT EXISTS s3_upload_url
    object_id varchar,
    created_at timestamp without time zone NOT NULL,
    modified_at timestamp without time zone NOT NULL,
+   query JSON NOT NULL DEFAULT '{}'::JSON,
+   size numeric DEFAULT 0 NOT NULL,
    CONSTRAINT upload_url_pk PRIMARY KEY (_id)
 );
 ```
@@ -195,8 +197,6 @@ CREATE TABLE IF NOT EXISTS databroker
 (
    username character varying (255) NOT NULL,
    password character varying (50) NOT NULL,
-   created_at timestamp without time zone NOT NULL,
-   modified_at timestamp without time zone NOT NULL,
    CONSTRAINT databroker_pkey PRIMARY KEY (username),
    CONSTRAINT databroker_username_key UNIQUE (username)
 );
@@ -228,7 +228,8 @@ CREATE TABLE IF NOT EXISTS auditing_rs
    resourceid varchar NOT NULL,
    isotime varchar NOT NULL,
    providerid varchar NOT NULL,
-   size numeric NOT NULL
+   size numeric NOT NULL,
+   time timestamp without time zone 
 );
 ```
 8. Auditing Server Auditing Table
