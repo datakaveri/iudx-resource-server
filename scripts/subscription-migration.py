@@ -25,19 +25,20 @@ conn = psycopg2.connect(host=postgersHost, database=postgersDatabaseName, user=p
 cur = conn.cursor()
 
 # get data from subscriptions table in postgers
-select_stmt = "select _id,queue_name,entity from subscriptions;"
+select_stmt = "select _id,queue_name,entity from subscriptions where dataset_name is null or dataset_json is null or user_id is null;"
 cur.execute(select_stmt)
 records=cur.fetchall()
 
 for data in records:
 	_id=data[0]
-	print(_id)
 	queue_name=data[1]
 	entity= data[2]
 	user_id = queue_name.split("/")[0]
 	response = requests.get(host_url+request_url.replace("entity",entity))
 	result= response.json()
 	dataset_name= result['results'][0]['name']
+	print(entity)
+	print(result['results'][0]['id'])
 	dataset_json= result['results'][0]
 	insert_query ="""UPDATE subscriptions set dataset_name=%s,dataset_json=%s,user_id= %s where _id = %s and queue_name= %s"""
 	val= (dataset_name,json.dumps(dataset_json),user_id,_id,queue_name)
@@ -46,5 +47,4 @@ for data in records:
 	conn.commit()
 	
 # Closing the connection
-conn.close()  
-
+conn.close()
