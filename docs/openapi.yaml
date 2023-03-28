@@ -2380,7 +2380,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
-      description: revoke token API used by admin user to revoke token of user in certain cases.
+      description: Revoke token API used by admin user to revoke token of user in certain cases. It removes the authorization to access the resource by removing the admin user's permission to access the token.
 
   /admin/resourceattribute:
     servers:
@@ -2442,7 +2442,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
-      description: The `resourceattribute` API used by admin user to create unique attribute for a resource in DX(Data exchange).
+      description: This API is used by admin user to create unique attribute for a resource by mentioning its resource `id` and the unique attribute in payload to the DX(Data exchange). If the unique attribute for the resource is already created, it would respond with a bad request.
 
     put:
       tags:
@@ -2464,7 +2464,7 @@ paths:
         - lang: 'cURL'
           label: 'update unique attribute'
           source: |
-            curl --location --request UPDATE 'https://example.com/admin/resourceattribute' \
+            curl --location --request PUT 'https://example.com/admin/resourceattribute' \
             --header 'token: <tokenValue>' \
             --header 'Content-Type: application/json' \
             --data-raw '<payload>'
@@ -2500,7 +2500,14 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
-      description: The `resourceattribute` API used by admin user to update unique attribute for a resource in DX(Data exchange).
+
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
+      description: The `resourceattribute` API is used by admin user to update unique attribute for a resource in DX(Data exchange) by providing it's resource `id` and the unique attribute.
 
     delete:
       tags:
@@ -2552,12 +2559,17 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
           description: 'Unauthorized'
-      description: The `resourceattribute` API used by admin user to delete unique attribute for a resource in DX(Data exchange).
 
 
+        404:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
+          description: 'Resource not found'
+      description: The `resourceattribute` API is used by admin user to delete unique attribute for a resource in DX(Data exchange). The user could provide the resource `id` to delete the unique attribute.
 
 components:
-
   schemas:
     createastreamingsubscriptionrequest:
       title: createastreamingsubscriptionrequest
