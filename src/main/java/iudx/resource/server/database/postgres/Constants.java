@@ -11,10 +11,10 @@ public class Constants {
       "INSERT INTO unique_attributes(resource_id,unique_attribute) VALUES('$1','$2')";
 
   public static String UPDATE_UNIQUE_ATTR_SQL =
-      "UPDATE unique_attributes SET unique_attribute=$1 WHERE resource_id=$2";
+      "UPDATE unique_attributes SET unique_attribute='$1' WHERE resource_id='$2'";
 
   public static String DELETE_UNIQUE_ATTR_SQL =
-      "DELETE FROM unique_attributes WHERE resource_id=$1";
+      "DELETE FROM unique_attributes WHERE resource_id = '$1'";
 
   public static String INSERT_S3_PENDING_SQL =
       "INSERT INTO s3_upload_url(_id, search_id, request_id, user_id, status, progress,query) values('$1','$2','$3','$4','$5', $6, '$7'::JSON)";
