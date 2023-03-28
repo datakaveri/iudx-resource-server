@@ -5,7 +5,7 @@ import logging
 from requests.auth import HTTPBasicAuth
 
 #reading configuration file from system
-with open("adaptors_details_migration_config.json") as file:
+with open("config-file-path.json") as file:
     config=json.load(file)
 
 # init local variables
