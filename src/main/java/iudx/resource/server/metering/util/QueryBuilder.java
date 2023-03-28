@@ -176,9 +176,33 @@ public class QueryBuilder {
     public String buildSummaryOverview(JsonObject request) {
         String startTime = request.getString(STARTT);
         String endTime = request.getString(ENDT);
+        String role = request.getString(ROLE);
+
         StringBuilder summaryQuery = new StringBuilder(SUMMARY_QUERY_FOR_METERING);
-        if(startTime!=null && endTime!=null){
-            summaryQuery.append(" and time between '$2' AND '$3' ".replace("$2",startTime).replace("$3",endTime));
+        if (startTime != null && endTime != null) {
+            summaryQuery.append(" and time between '$2' AND '$3' ".replace("$2", startTime).replace("$3", endTime));
+            if(role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate")){
+                String resourceId = request.getString(IID);
+                String providerID =
+                        resourceId.substring(0, resourceId.indexOf('/', resourceId.indexOf('/') + 1));
+                summaryQuery.append(PROVIDERID_SUMMARY.replace("$8",providerID));
+            }
+            if(role.equalsIgnoreCase("consumer")){
+                String userid = request.getString(USER_ID);
+                summaryQuery.append(USERID_SUMMARY.replace("$9",userid));
+            }
+        }
+        else {
+            if(role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate")){
+                String resourceId = request.getString(IID);
+                String providerID =
+                        resourceId.substring(0, resourceId.indexOf('/', resourceId.indexOf('/') + 1));
+                summaryQuery.append(PROVIDERID_SUMMARY.replace("$8",providerID));
+            }
+            if(role.equalsIgnoreCase("consumer")){
+                String userid = request.getString(USER_ID);
+                summaryQuery.append(USERID_SUMMARY.replace("$9",userid));
+            }
         }
         summaryQuery.append(GROUPBY_RESOURCEID);
         return summaryQuery.toString();
