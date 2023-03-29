@@ -1,0 +1,13 @@
+{
+  "postgersDatabaseName" : "",
+  "postgersUser" : "",
+  "postgersPassword" : "",
+  "postgersHost" : "",
+  "postgersPort" : 533,
+  "host_url_db" : "",
+  "host_url_cache" : "",
+  "vhost" : "",
+  "dataBrokerUserName" : "",
+  "dataBrokerPassword" : ""
+}
+
