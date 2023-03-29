@@ -26,6 +26,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
+import io.vertx.core.http.HttpServerRequest;
 import iudx.resource.server.common.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -94,6 +95,7 @@ public final class AdminRestApi {
     HttpServerResponse response = context.response();
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
     JsonObject requestBody = context.body().asJsonObject();
+
 
 
 //    context.queryParam(ID).add("admin_op");
@@ -205,14 +207,15 @@ public final class AdminRestApi {
       return;
     }
 
-    JsonObject queryparams = new JsonObject().put("attribute", attribute).put("id", id);
+//    JsonObject queryparams = new JsonObject().put("attribute", attribute).put("id", id);
 
+    String query = UPDATE_UNIQUE_ATTR_SQL.replace("$2", id).replace("$1",attribute);
     JsonObject rmqMessage = new JsonObject();
     rmqMessage.put("id", id);
     rmqMessage.put("unique-attribute", attribute);
     rmqMessage.put("eventType", BroadcastEventType.UPDATE);
 
-    pgService.executePreparedQuery(UPDATE_UNIQUE_ATTR_SQL, queryparams, pghandler -> {
+    pgService.executePreparedQuery(query, new JsonObject(), pghandler -> {
       if (pghandler.succeeded()) {
         RMQbrokerService.publishMessage(rmqMessage, UNIQUE_ATTR_EX, UNIQUE_ATTR_EX_ROUTING_KEY,
             rmqHandler -> {
@@ -246,19 +249,20 @@ public final class AdminRestApi {
   private void deleteUniqueAttribute(RoutingContext context) {
     HttpServerResponse response = context.response();
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
-    JsonObject requestBody = context.body().asJsonObject();
 
-    String id = requestBody.getString("id");
-    String attribute = requestBody.getString("attribute");
+    HttpServerRequest request = context.request();
+    String id = request.params().get("id");
 
-    JsonObject queryparams = new JsonObject().put("id", id);
+    JsonObject queryparams = new JsonObject();
 
     JsonObject rmqMessage = new JsonObject();
     rmqMessage.put("id", id);
-    rmqMessage.put("unique-attribute", attribute);
+    rmqMessage.put("unique-attribute", "dummy_attribute");
     rmqMessage.put("eventType", BroadcastEventType.DELETE);
+    String query = DELETE_UNIQUE_ATTR_SQL.replace("$1", id);
+    LOGGER.trace("query : " + query);
 
-    pgService.executePreparedQuery(DELETE_UNIQUE_ATTR_SQL, queryparams, pghandler -> {
+    pgService.executePreparedQuery(query, queryparams, pghandler -> {
       if (pghandler.succeeded()) {
         RMQbrokerService.publishMessage(rmqMessage, UNIQUE_ATTR_EX, UNIQUE_ATTR_EX_ROUTING_KEY,
             rmqHandler -> {
@@ -321,6 +325,7 @@ public final class AdminRestApi {
     long time = zst.toInstant().toEpochMilli();
     String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
 
+    request.put(USER_ID, authInfo.getString(USER_ID));
     if(authInfo.containsKey(ID) && authInfo.getString(ID) != null)
     {
       request.put(ID, authInfo.getValue(ID));
@@ -334,7 +339,7 @@ public final class AdminRestApi {
     request.put(API, authInfo.getValue(API_ENDPOINT));
     request.put(RESPONSE_SIZE,0);
 
-
+      LOGGER.debug("request : " + request.encode());
     auditService.insertMeteringValuesInRMQ(request, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("message published in RMQ.");
@@ -347,6 +352,7 @@ public final class AdminRestApi {
 
     return promise.future();
   }
+
 
 
 }

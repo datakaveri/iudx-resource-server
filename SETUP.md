@@ -274,6 +274,16 @@ CREATE TABLE IF NOT EXISTS auditing_cat
     "verticleInstances": <num-of-verticle-instances>,
 }
 ```
+
+**EncryptionVerticle**
+
+```
+{
+    "id": "iudx.resource.server.encryption.EncryptionVerticle",
+    "isWorkerVerticle": false,
+    "verticleInstances": <num-of-verticle-instance>
+}
+```
 ----
 
 ## Setting up RabbitMQ for IUDX Resource Server

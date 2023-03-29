@@ -83,9 +83,9 @@ public class Constants {
     public static final List<String> bypassEndpoint = List.of(ROUTE_STATIC_SPEC, ROUTE_DOC);
     public static final List<String> openEndPoints =
             List.of(
-                    "/ngsi-ld/v1/temporal/entities",
-                    "/ngsi-ld/v1/entities",
-                    "/ngsi-ld/v1/entityOperations/query");
+                    "/temporal/entities",
+                    "/entities",
+                    "/entityOperations/query");
     public static final String REVOKE_TOKEN = "/revokeToken";
     public static final String REVOKE_TOKEN_REGEX = "/admin/revokeToken" + "(.*)";
     public static final String RESOURCE_ATTRIBS = "/resourceattribute";
