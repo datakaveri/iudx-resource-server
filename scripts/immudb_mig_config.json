@@ -1,0 +1,15 @@
+{
+	"starttime": 1680307200000,
+	"endtime": 1631491200000,
+	"immudbHost: "",
+	"immudbDatabase: "",
+	"immudbUserName: "",
+	"immudbPassword: "",
+	"immudbTableName: "",
+	"postgresHost: "",
+	"postgresPort": 1234,
+	"postgresDatabase: "",
+	"postgresUserName: "",
+	"postgresPassword: "",
+	"postgresTableName: ""
+}
