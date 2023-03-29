@@ -325,8 +325,7 @@ public final class AdminRestApi {
     long time = zst.toInstant().toEpochMilli();
     String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
 
-    addUserIDInRequest(authInfo, request);
-
+    request.put(USER_ID, authInfo.getString(USER_ID));
     if(authInfo.containsKey(ID) && authInfo.getString(ID) != null)
     {
       request.put(ID, authInfo.getValue(ID));
@@ -354,17 +353,6 @@ public final class AdminRestApi {
     return promise.future();
   }
 
-  /**
-   * Adds userID or sub in the request that is sent to RMQ
-   *
-   * @param authInfo Access token authInfo
-   * @param request Request sent to RMQ
-   */
-  private void addUserIDInRequest(JsonObject authInfo, JsonObject request) {
-      // userId is present in the authInfo and not in request body for /resourceattribute APIs
-      LOGGER.debug("userId present in authInfo : "+ authInfo.getString(USER_ID));
-      request.put(USER_ID, authInfo.getString(USER_ID));
-  }
 
 
 }
