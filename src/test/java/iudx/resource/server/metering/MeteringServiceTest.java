@@ -31,6 +31,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.authenticator.Constants.ROLE;
 import static iudx.resource.server.database.archives.Constants.ID;
 import static iudx.resource.server.metering.util.Constants.API;
 import static iudx.resource.server.metering.util.Constants.IID;
@@ -89,6 +90,7 @@ public class MeteringServiceTest {
         jsonObject.put(CONSUMER_ID, "15c7506f-c800-48d6-adeb-0542b03947c6");
         jsonObject.put(IID, "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias/");
         jsonObject.put(ENDPOINT, "/ngsi-ld/v1/provider/audit");
+        jsonObject.put(ROLE,"provider");
         return jsonObject;
     }
 
