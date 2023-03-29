@@ -97,6 +97,7 @@ public final class AdminRestApi {
     JsonObject requestBody = context.body().asJsonObject();
 
 
+
 //    context.queryParam(ID).add("admin_op");
 
     StringBuilder query = new StringBuilder(INSERT_REVOKE_TOKEN_SQL
@@ -259,6 +260,7 @@ public final class AdminRestApi {
     rmqMessage.put("unique-attribute", "dummy_attribute");
     rmqMessage.put("eventType", BroadcastEventType.DELETE);
     String query = DELETE_UNIQUE_ATTR_SQL.replace("$1", id);
+    LOGGER.trace("query : " + query);
 
     pgService.executePreparedQuery(query, queryparams, pghandler -> {
       if (pghandler.succeeded()) {
@@ -323,6 +325,8 @@ public final class AdminRestApi {
     long time = zst.toInstant().toEpochMilli();
     String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
 
+    addUserIDInRequest(authInfo, request);
+
     if(authInfo.containsKey(ID) && authInfo.getString(ID) != null)
     {
       request.put(ID, authInfo.getValue(ID));
@@ -336,7 +340,7 @@ public final class AdminRestApi {
     request.put(API, authInfo.getValue(API_ENDPOINT));
     request.put(RESPONSE_SIZE,0);
 
-
+      LOGGER.debug("request : " + request.encode());
     auditService.insertMeteringValuesInRMQ(request, handler -> {
       if (handler.succeeded()) {
         LOGGER.info("message published in RMQ.");
@@ -348,6 +352,18 @@ public final class AdminRestApi {
     });
 
     return promise.future();
+  }
+
+  /**
+   * Adds userID or sub in the request that is sent to RMQ
+   *
+   * @param authInfo Access token authInfo
+   * @param request Request sent to RMQ
+   */
+  private void addUserIDInRequest(JsonObject authInfo, JsonObject request) {
+      // userId is present in the authInfo and not in request body for /resourceattribute APIs
+      LOGGER.debug("userId present in authInfo : "+ authInfo.getString(USER_ID));
+      request.put(USER_ID, authInfo.getString(USER_ID));
   }
 
 
