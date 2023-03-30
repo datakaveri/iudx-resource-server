@@ -97,7 +97,7 @@ tags:
   - name: Latest Entity
     x-displayName: "Latest Data"
     description: |
-      A Spatial Search is used by DX(Data exchange) Data *Consumers* for querying a resource using a <b>valid data exchange</b> `id`. <br/> Information about the data exchange ID of the resource and security scope of the resource can be obtained from the <b> DX(Data exchange) catalogue server </b> .
+      A Latest Search query is used by DX(Data exchange) Data *Consumers* for querying a resource using a <b>valid data exchange</b> `id`. Information about the data exchange ID of the resource and security scope of the resource can be obtained from the <b> DX(Data exchange) catalogue server </b> . Latest APIs get the latest data belonging to the given valid DX `id`. The user could provide a valid access token while using the API.
 
   - name: Spatial Entities
     x-displayName: "Spatial Search"
@@ -129,7 +129,7 @@ tags:
   - name: Management
     x-displayName: "Management"
     description: |
-      Management APIs provide the ability to the users to reset streaming credentials.
+      Management API provides the ability to the users to reset streaming credentials.
 
   - name: Async
     x-display: "Async"
@@ -139,12 +139,8 @@ tags:
   - name: Metering
     x-display: "Metering/Audit"
     description: |
-      Metering APIs provide the ability to the user (Consumer/Provider) to query the audit data using temporal & resource-id query
+      Metering APIs provide the ability to the user (Consumer/Provider) to query the audit data using temporal & resource-id query. Access Summary API is an extension of Metering API to provide summary and overview details.
 
-  - name: Access Summary
-    x-display: "Summary"
-    description: |
-      Access Summary is the Metering APIs extension to provide summary and overview details
 
   - name: Admin
     x-display: "Admin"
@@ -909,21 +905,28 @@ paths:
             schema:
               $ref: '#/components/schemas/complex-geo-circle-time-filterrequest'
             example:
-              type: Query
-              entities:
-                - id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta
-              geoQ:
-                geometry: Point
-                coordinates: [ 21.178,72.834 ]
-                georel: near;maxDistance=1000
-                geoproperty: location
-              temporalQ:
-                timerel: between
-                time: 2020-06-01T14:20:00Z
-                endtime: 2020-06-03T15:00:00Z
-                timeProperty: observationDateTime
-              q: speed>30.0
-              attrs: id,speed
+              {
+                "type": "Query",
+                "entities": [
+                  {
+                    "id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta"
+                  }
+                ],
+                "geoQ": {
+                  "geometry": "Point",
+                  "coordinates": [ 21.178,72.834 ],
+                  "georel": "near;maxDistance=1000",
+                  "geoproperty": "location"
+                },
+                "temporalQ": {
+                  "timerel": "between",
+                  "time": "2020-10-18T14:20:00Z",
+                  "endtime": "2020-10-19T14:20:00Z",
+                  "timeProperty": "observationDateTime"
+                },
+                "q": "speed>30.0",
+                "attrs": "id,speed"
+              }
 
         required: true
 
@@ -1325,7 +1328,7 @@ paths:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponseAllQueueAndExcahnge"
           description: 'Unauthorized'
       description: |
-        It will return all the queues by using sub of token
+        This API could be used by a consumer to get the list of all the data subscription under the given user. The API could be used by the subscriber by providing the user access token.
       x-codeSamples:
         - lang: 'cURL'
           label: 'subscription'
@@ -1750,7 +1753,7 @@ paths:
     post:
       tags:
         - Management
-      summary: Reset user password.
+      summary: Reset user password
       operationId: resetPassword
       parameters:
         - name: token
@@ -1762,7 +1765,7 @@ paths:
             type: string
             maxLength: 512
             pattern: '^[a-zA-Z0-9\/\@\.]*$'
-
+      description: Reset user password is a type of management API that could update password or retrieve lost password of the given user to subscribe the resource through subscription APIs. The user could provider the required access token while using the API.
       x-codeSamples:
         - lang: 'cURL'
           label: 'reset password'
@@ -2059,8 +2062,15 @@ paths:
         - lang: 'cURL'
           label: 'get data read query'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/consumer/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=during&time=2022-03-20T14:20:00Z&endTime=2022-03-24T14:20:00Z&api=/ngsi-ld/v1/temporal/entities&offset=0&limit=2000' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/consumer/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=during&time=2022-11-12T14:20:00Z&endTime=2022-11-25T14:20:00Z&api=/ngsi-ld/v1/temporal/entities&offset=0&limit=2000' \
             --header 'token: <tokenValue>'
+
+        - lang: 'cURL'
+          label: 'get total API calls made'
+          source: |
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/consumer/audit?timerel=between&time=2022-11-20T00:00:00Z&endTime=2022-11-21T16:00:00Z' \
+            --header 'token: <tokenValue>' \
+            --header 'options: count'
 
       responses:
         200:
@@ -2089,7 +2099,7 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
           description: 'Resource not found'
-      description: Consumer API can be used by a user having consumer token to get audit details of API's.
+      description: Consumer API can be used by a user to get detailed audit summary of all the APIs from DX Resource Server when the user provides the required query parameters. This API could also give the total number of requests made to all the APIs from DX Resource Server when the `option` is query parameter is count.
 
   /provider/audit:
     get:
@@ -2172,8 +2182,15 @@ paths:
         - lang: 'cURL'
           label: 'get data read query'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2021-11-20T14:20:00Z&endTime=2021-12-02T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86&offset=0&limit=2000' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2022-11-24T14:20:00Z&endTime=2022-11-28T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86&consumer=15c7506f-c800-48d6-adeb-0542b03947c6&offset=0&limit=2000' \
             --header 'token: <tokenValue>'
+
+        - lang: 'cURL'
+          label: 'get total API calls made'
+          source: |
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/provider/audit?timerel=between&time=2022-11-20T14:20:00Z&endTime=2022-11-21T14:20:00Z' \
+            --header 'token: <tokenValue>' \
+            --header 'options: count'
 
       responses:
         200:
@@ -2202,12 +2219,12 @@ paths:
               schema:
                 "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
           description: 'Resource not found'
-      description: Provider API can be used by a user having provider token to get audit details of API's.
+      description: A provider could use `/provider/audit` API to get the detailed summary of the resources with the APIs associated with provider. The count query gives the sum total of calls by the provider to the DX Resource Server when the user provides `count` in the options.
 
   /summary:
     get:
       tags:
-        - Access Summary
+        - Metering
       summary: summary details
       operationId: summary details
       parameters:
@@ -2262,12 +2279,12 @@ paths:
 
         204:
           description: 'Empty Response'
-      description: Summary API is used to get summary details and counts , group by resourceid.
+      description:  Summary API is used to get summary details and count for a given resource within the given time frame. The consumer could provide `starttime` and `endtime` and get the frequency usage of the resources.
 
   /overview:
     get:
       tags:
-        - Access Summary
+        - Metering
       summary: overview
       operationId: overview
       parameters:
@@ -2291,6 +2308,7 @@ paths:
           description: 'This parameter specifies the <b>end time</b> for the overview-query in `ISO8601` format. <br/> Data exchange currently accepts `IST` and `UTC` time zones.'
           schema:
             type: string
+
 
       x-codeSamples:
         - lang: 'cURL'
@@ -2320,7 +2338,7 @@ paths:
                 "$ref": "#/components/schemas/summaryInvalidTokenErrorResponse"
           description: 'Unauthorized'
 
-      description: Overview API is used to get count based on month. Without parameter it will return last 12 months count data.
+      description: Overview API is used to get count based on month. Without parameter it will return last 12 months count data. This responds the number of times the API requests are made from DX Resource Server within the given time frame when the user specifies `starttime` and `endtime`.
 
   /admin/revokeToken:
     servers:
