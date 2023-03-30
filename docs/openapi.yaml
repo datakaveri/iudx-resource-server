@@ -906,19 +906,27 @@ paths:
               $ref: '#/components/schemas/complex-geo-circle-time-filterrequest'
             example:
               {
-              "type": "Query",
-              "entities": [
-                {
-                  "id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"
-                }
-              ],
-              "temporalQ": {
-                "timerel": "before",
-                "time": "2020-10-19T14:20:00Z",
-                "timeProperty": "observationDateTime"
-              },
-              "attrs": "id"
-          }
+                "type": "Query",
+                "entities": [
+                  {
+                    "id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta"
+                  }
+                ],
+                "geoQ": {
+                  "geometry": "Point",
+                  "coordinates": [ 21.178,72.834 ],
+                  "georel": "near;maxDistance=1000",
+                  "geoproperty": "location"
+                },
+                "temporalQ": {
+                  "timerel": "between",
+                  "time": "2020-10-18T14:20:00Z",
+                  "endtime": "2020-10-19T14:20:00Z",
+                  "timeProperty": "observationDateTime"
+                },
+                "q": "speed>30.0",
+                "attrs": "id,speed"
+              }
 
         required: true
 
