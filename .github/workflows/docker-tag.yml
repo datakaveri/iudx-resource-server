@@ -33,7 +33,7 @@ jobs:
 
         if [ "$newtag4_5_0" != "$oldtag4_5_0" ]
         then
-         git checkout -b rs-4.5.0-automatic-updates/$newtag4_0
+         git checkout -b rs-4.5.0-automatic-updates/$newtag4_5_0
          sed -i s/$oldtag4_5_0/$newtag4_5_0/g Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml
          export oldappversion=`yq -r .version K8s-deployment/Charts/resource-server/Chart.yaml`
          export newappversion=`yq -r .version K8s-deployment/Charts/resource-server/Chart.yaml | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}' `
@@ -53,7 +53,7 @@ jobs:
          export oldappversion=`yq -r .version K8s-deployment/Charts/resource-server/Chart.yaml`
          export newappversion=`yq -r .version K8s-deployment/Charts/resource-server/Chart.yaml | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}' `
          sed -i s/$oldappversion/$newappversion/g K8s-deployment/Charts/resource-server/Chart.yaml
-         sed -i s/$oldtag4_5_0/$newtag5_0_0/g K8s-deployment/Charts/resource-server/values.yaml
+         sed -i s/$oldtag5_0_0/$newtag5_0_0/g K8s-deployment/Charts/resource-server/values.yaml
          git add Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml K8s-deployment/Charts/resource-server/values.yaml K8s-deployment/Charts/resource-server/Chart.yaml
          git commit --allow-empty -m "updated rs docker image tag to $newtag5_0_0"
          git push --set-upstream origin rs-automatic-updates/$newtag5_0_0
