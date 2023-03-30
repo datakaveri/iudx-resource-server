@@ -1,6 +1,8 @@
 package iudx.resource.server.database.elastic;
 
 import static iudx.resource.server.database.archives.Constants.*;
+
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -96,7 +98,7 @@ public class TemporalQueryFiltersDecorator implements ElasticsearchQueryDecorato
   }
 
   private void addDefaultForProduction(Map<FilterType, List<Query>> queryLists) {
-    ZonedDateTime currentDateTime = ZonedDateTime.now().minusDays(defaultDateLimit);
+    OffsetDateTime currentDateTime = OffsetDateTime.now().minusDays(defaultDateLimit);
     Query temporalQuery = RangeQuery
         .of(r -> r.field("observationDateTime").gte(JsonData.of(currentDateTime.toString())))
           ._toQuery();
