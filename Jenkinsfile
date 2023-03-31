@@ -101,7 +101,7 @@ pipeline {
           script{
             startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0'])
             sh 'curl http://127.0.0.1:8090/JSON/pscan/action/disableScanners/?ids=10096'
-            sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V4.5.0.postman_collection.json -e /home/ubuntu/configs/rs-postman-env.json -n 2 --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html --reporter-htmlextra-skipSensitiveData'
+            sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V4.5.0.postman_collection.json -e /home/ubuntu/configs/4.5.0/rs-postman-env.json -n 2 --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html --reporter-htmlextra-skipSensitiveData'
             runZapAttack()
           }
         }
@@ -111,7 +111,7 @@ pipeline {
           node('built-in') {
             script{
               publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportTitles: '', reportName: 'Integration Test Report'])
-              archiveZap failHighAlerts: 1, failMediumAlerts: 1, failLowAlerts: 4
+              archiveZap failHighAlerts: 1, failMediumAlerts: 1, failLowAlerts: 1
             }
           }
         }
@@ -126,67 +126,21 @@ pipeline {
       }
     }
 
-    stage('Continuous Deployment') {
-      when {
-        allOf {
-          anyOf {
-            changeset "docker/**"
-            changeset "docs/**"
-            changeset "pom.xml"
-            changeset "src/main/**"
-            triggeredBy cause: 'UserIdCause'
-          }
-          expression {
-            return env.GIT_BRANCH == 'origin/master';
-          }
+    stage('Push Images') {
+      when{
+        expression {
+          return env.GIT_BRANCH == 'origin/4.5.0';
         }
       }
-      stages {
-        stage('Push Images') {
-          steps {
-            script {
-              docker.withRegistry( registryUri, registryCredential ) {
-                devImage.push("4.5.0-alpha-${env.GIT_HASH}")
-                deplImage.push("4.5.0-alpha-${env.GIT_HASH}")
-              }
-            }
-          }
-        }
-        stage('Docker Swarm deployment') {
-          steps {
-            script {
-              sh "ssh azureuser@docker-swarm 'docker service update rs_rs --image ghcr.io/datakaveri/rs-depl:4.5.0-alpha-${env.GIT_HASH}'"
-              sh 'sleep 10'
-            }
-          }
-          post{
-            failure{
-              error "Failed to deploy image in Docker Swarm"
-            }
-          }          
-        }
-        stage('Integration test on swarm deployment') {
-          steps {
-            node('built-in') {
-              script{
-                sh 'newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V4.5.0.postman_collection.json -e /home/ubuntu/configs/cd/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/cd-report.html --reporter-htmlextra-skipSensitiveData'
-              }
-            }
-          }
-          post{
-            always{
-              node('built-in') {
-                script{
-                  publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'cd-report.html', reportTitles: '', reportName: 'Docker-Swarm Integration Test Report'])
-                }
-              }
-            }
-            failure{
-              error "Test failure. Stopping pipeline execution!"
-            }
+      steps{
+        script {
+          docker.withRegistry( registryUri, registryCredential ) {
+            devImage.push("4.5.0-${env.GIT_HASH}")
+            deplImage.push("4.5.0-${env.GIT_HASH}")
           }
         }
       }
     }
   }
 }
+

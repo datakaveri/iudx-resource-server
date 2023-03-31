@@ -11,8 +11,8 @@ services:
       - /home/ubuntu/configs/.rs.env
     volumes:
       - ./src/:/usr/share/app/src
-      - /home/ubuntu/configs/rs-config-test.json:/usr/share/app/configs/config-test.json
-      - /home/ubuntu/configs/keystore.jks:/usr/share/app/configs/keystore.jks
+      - /home/ubuntu/configs/4.5.0/rs-config-test.json:/usr/share/app/configs/config-test.json
+      - /home/ubuntu/configs/4.5.0/keystore.jks:/usr/share/app/configs/keystore.jks
       - ./docker/runTests.sh:/usr/share/app/docker/runTests.sh
       - ${WORKSPACE}:/tmp/test
       - /var/run/docker.sock:/var/run/docker.sock
@@ -32,8 +32,8 @@ services:
     env_file:
       - /home/ubuntu/configs/.rs.env
     volumes:
-      - /home/ubuntu/configs/rs-config-dev.json:/usr/share/app/configs/config.json
-      - /home/ubuntu/configs/keystore-rs.jks:/usr/share/app/configs/keystore.jks
+      - /home/ubuntu/configs/4.5.0/rs-config-dev.json:/usr/share/app/configs/config.json
+      - /home/ubuntu/configs/4.5.0/keystore-rs.jks:/usr/share/app/configs/keystore.jks
       - type: volume
         source: rs-volume
         target: /usr/share/app/storage/temp-dir
