@@ -120,8 +120,9 @@ public class ElasticClient {
           for (Hit<ObjectNode> sh : searchHits) {
             if (appendComma) {
               filew.write("," + sh.source().toString());
+            } else {
+              filew.write(sh.source().toString());
             }
-            filew.write(sh.source().toString());
             appendComma = true;
           }
           ScrollRequest scrollRequest = nextScrollRequest(scrollId);
