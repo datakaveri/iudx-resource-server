@@ -5,11 +5,11 @@ import io.vertx.core.json.JsonObject;
 
 public interface IudxCache{
 
-  public Future<Void> put(String key, CacheValue<JsonObject> value);
+   Future<Void> put(String key, CacheValue<JsonObject> value);
 
-  public Future<CacheValue<JsonObject>> get(String key);
+   Future<CacheValue<JsonObject>> get(String key);
 
-  public Future<Void> refreshCache();
+   Future<Void> refreshCache();
   
-  public CacheValue<JsonObject> createCacheValue(String key, String value);
+   CacheValue<JsonObject> createCacheValue(String key, String value);
 }

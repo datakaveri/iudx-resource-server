@@ -77,7 +77,7 @@ public class JwtAuthServiceTest {
         JWTAuth jwtAuth = JWTAuth.create(Vertx.vertx(), jwtAuthOptions);
         when(config.getString(anyString())).thenReturn("Dummy String");
         when(config.getInteger(anyString())).thenReturn(8443);
-        jwtAuthenticationService = new JwtAuthenticationServiceImpl(Vertx.vertx(),jwtAuth,webClient,config,cacheService,meteringService,apis);
+        jwtAuthenticationService = new JwtAuthenticationServiceImpl(Vertx.vertx(),jwtAuth,config,cacheService,meteringService,apis);
         vertxTestContext.completeNow();
     }
 

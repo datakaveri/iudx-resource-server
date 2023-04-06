@@ -37,28 +37,16 @@ import iudx.resource.server.databroker.util.Util;
 public class DataBrokerServiceImpl implements DataBrokerService {
 
   private static final Logger LOGGER = LogManager.getLogger(DataBrokerServiceImpl.class);
-  private String url;
-  JsonObject requestBody = new JsonObject();
   JsonObject finalResponse =
       Util.getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, BAD_REQUEST_DATA);
-  private String user;
-  private String password;
 
   private JsonObject config;
-
-  private int totalBindCount;
-  private int totalBindSuccess;
-  private int totalUnBindCount;
-  private int totalUnBindSuccess;
-  private boolean bindingSuccessful;
   private RabbitClient webClient;
-  private PostgresClient pgClient;
   static SubscriptionService subscriptionService;
 
 
   public DataBrokerServiceImpl(RabbitClient webClient, PostgresClient pgClient, JsonObject config) {
     this.webClient = webClient;
-    this.pgClient = pgClient;
     this.config = config;
     this.subscriptionService = new SubscriptionService(this.webClient, pgClient, config);
 
@@ -797,7 +785,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                   String queueName = map.getKey();
                   JsonArray array = (JsonArray) map.getValue();
                   array.forEach(rk -> {
-                    if ((rk.toString()).contains(routingKey)) {
+                    if (rk.toString().contains(routingKey)) {
                       // routingKey matched. now publish message
                       JsonObject message = new JsonObject();
                       message.put("body", request.toString());

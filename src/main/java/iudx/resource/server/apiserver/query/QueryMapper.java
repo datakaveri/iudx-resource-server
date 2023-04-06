@@ -167,10 +167,6 @@ public class QueryMapper {
             "time and endTime both are mandatory for during Query.");
         this.context.fail(400,exc);
       }
-    } else if (timeRel.equalsIgnoreCase("after")) {
-      // how to enforce days duration for after and before,i.e here or DB
-    } else if (timeRel.equalsIgnoreCase("before")) {
-
     }
     if (isAsyncQuery
         && totalDaysAllowed > Constants.VALIDATION_MAX_DAYS_INTERVAL_ALLOWED_FOR_ASYNC) {

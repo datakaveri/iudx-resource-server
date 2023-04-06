@@ -15,7 +15,6 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.event.ProgressListener;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.retry.RetryPolicy;
 import com.amazonaws.services.s3.AmazonS3;
@@ -42,9 +41,6 @@ public class S3FileOpsHelper {
     this.clientRegion = clientRegion;
     this.bucketName = bucketName;
   }
-
-  private ProgressListener uploadProgressListener =
-      progressEvent -> LOGGER.debug("Transferred bytes: " + progressEvent.getBytesTransferred());
 
   private ClientConfiguration getClientConfiguration() {
     ClientConfiguration clientConfiguration = new ClientConfiguration();

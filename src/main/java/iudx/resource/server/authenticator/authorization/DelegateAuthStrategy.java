@@ -5,26 +5,17 @@ import java.util.List;
 import java.util.Map;
 
 import iudx.resource.server.common.Api;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.authenticator.model.JwtData;
 
 public class DelegateAuthStrategy implements AuthorizationStrategy {
 
-  private static final Logger LOGGER = LogManager.getLogger(DelegateAuthStrategy.class);
-
-  private final Api api;
-
-
   private static volatile DelegateAuthStrategy instance;
 
-
   static Map<String, List<AuthorizationRequest>> delegateAuthorizationRules = new HashMap<>();
-  private DelegateAuthStrategy(Api api)
+  private DelegateAuthStrategy()
   {
-    this.api = api;
-    buildPermissions(api);
+    buildPermissions();
   }
   public static DelegateAuthStrategy getInstance(Api api)
   {
@@ -36,14 +27,14 @@ public class DelegateAuthStrategy implements AuthorizationStrategy {
       {
         if(instance == null)
         {
-          instance = new DelegateAuthStrategy(api);
+          instance = new DelegateAuthStrategy();
         }
       }
     }
     return instance;
 
   }
-  private void buildPermissions(Api api) {
+  private void buildPermissions() {
     // delegate allowed to access all endpoints
   }
 

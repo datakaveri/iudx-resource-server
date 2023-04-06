@@ -1,15 +1,9 @@
 package iudx.resource.server.metering.readpg;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import static iudx.resource.server.apiserver.util.Constants.LIMITPARAM;
-import static iudx.resource.server.apiserver.util.Constants.OFFSETPARAM;
 import static iudx.resource.server.metering.util.Constants.LIMIT_QUERY;
 import static iudx.resource.server.metering.util.Constants.OFFSET_QUERY;
 
 public class LimitOffSet {
-    private static final Logger LOGGER = LogManager.getLogger(LimitOffSet.class);
     int limit, offset;
     StringBuilder finalQuery = null;
 

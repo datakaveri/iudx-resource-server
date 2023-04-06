@@ -106,7 +106,7 @@ public class JwtAuthServiceImplTest {
     meteringService=Mockito.mock(MeteringService.class);
     WebClient webClient = AuthenticationVerticle.createWebClient(vertx, authConfig, true);
     jwtAuthenticationService =
-            new JwtAuthenticationServiceImpl(vertx, jwtAuth, webClient, authConfig, cacheService,meteringService,apis);
+            new JwtAuthenticationServiceImpl(vertx, jwtAuth, authConfig, cacheService,meteringService,apis);
 
     // since test token doesn't contains valid id's, so forcibly put some dummy id in cache
     // for

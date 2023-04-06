@@ -53,7 +53,6 @@ public class FailureHandler implements Handler<RoutingContext> {
     }
     
     context.next();
-    return;
   }
 
   private JsonObject validationFailureReponse(String message) {

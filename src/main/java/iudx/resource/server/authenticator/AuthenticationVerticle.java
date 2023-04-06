@@ -38,7 +38,6 @@ import iudx.resource.server.metering.MeteringService;
 public class AuthenticationVerticle extends AbstractVerticle {
 
   private static final Logger LOGGER = LogManager.getLogger(AuthenticationVerticle.class);
-  private AuthenticationService authentication;
   private AuthenticationService jwtAuthenticationService;
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
@@ -99,7 +98,7 @@ public class AuthenticationVerticle extends AbstractVerticle {
               api = Api.getInstance(dxApiBasePath);
               jwtAuthenticationService =
                   new JwtAuthenticationServiceImpl(
-                      vertx, jwtAuth, createWebClient(vertx, config()), config(), cacheService,
+                      vertx, jwtAuth, config(), cacheService,
                       meteringService,api);
 
               /* Publish the Authentication service with the Event Bus against an address. */

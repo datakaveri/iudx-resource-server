@@ -37,10 +37,6 @@ public class QueryBuilder {
         return request;
     }
 
-    private long getEpochTime(ZonedDateTime time) {
-        return time.toInstant().toEpochMilli();
-    }
-
     public String buildCountReadQueryFromPG(JsonObject request) {
         String startTime = request.getString(START_TIME);
         String endTime = request.getString(END_TIME);

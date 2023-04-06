@@ -38,10 +38,8 @@ public class ValidationHandler implements Handler<RoutingContext> {
     MultiMap headers = context.request().headers();
     RequestBody requestBody=context.body();
     JsonObject body=null;
-    if(requestBody!=null) {
-      if(requestBody.asJsonObject()!=null) {
+    if(requestBody!=null && requestBody.asJsonObject()!=null) {
         body=requestBody.asJsonObject().copy();
-      }
     }
     Map<String, String> pathParams = context.pathParams();
     parameters.set(HEADER_PUBLIC_KEY,context.request().getHeader(HEADER_PUBLIC_KEY));
@@ -53,7 +51,6 @@ public class ValidationHandler implements Handler<RoutingContext> {
       validator.isValid();
     }
     context.next();
-    return;
   }
 
 }

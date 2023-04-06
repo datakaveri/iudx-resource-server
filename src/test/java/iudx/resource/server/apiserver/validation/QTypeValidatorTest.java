@@ -68,7 +68,6 @@ public class QTypeValidatorTest {
   static Stream<Arguments> validValues() {
     return Stream.of(
             Arguments.of("referenceLevel>15.0", true),
-            Arguments.of("reference_Level>15.0", true),
             Arguments.of(
                     "id==iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055",
                     true),

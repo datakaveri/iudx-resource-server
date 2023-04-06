@@ -1,33 +1,6 @@
 package iudx.resource.server.databroker;
 
-import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_CODE;
-import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_DATA;
-import static iudx.resource.server.databroker.util.Constants.BINDING_FAILED;
-import static iudx.resource.server.databroker.util.Constants.DELETE_CALLBACK;
-import static iudx.resource.server.databroker.util.Constants.DUPLICATE_KEY;
-import static iudx.resource.server.databroker.util.Constants.ENTITIES;
-import static iudx.resource.server.databroker.util.Constants.ERROR;
-import static iudx.resource.server.databroker.util.Constants.EXCHANGE_NAME;
-import static iudx.resource.server.databroker.util.Constants.FAILURE;
-import static iudx.resource.server.databroker.util.Constants.INSERT_CALLBACK;
-import static iudx.resource.server.databroker.util.Constants.INTERNAL_ERROR_CODE;
-import static iudx.resource.server.databroker.util.Constants.INVALID_ROUTING_KEY;
-import static iudx.resource.server.databroker.util.Constants.MSG_PUBLISH_FAILED;
-import static iudx.resource.server.databroker.util.Constants.PAYLOAD_ERROR;
-import static iudx.resource.server.databroker.util.Constants.QUEUE_CREATE_ERROR;
-import static iudx.resource.server.databroker.util.Constants.QUEUE_DELETE_ERROR;
-import static iudx.resource.server.databroker.util.Constants.QUEUE_LIST_ERROR;
-import static iudx.resource.server.databroker.util.Constants.QUEUE_NAME;
-import static iudx.resource.server.databroker.util.Constants.RESULTS;
-import static iudx.resource.server.databroker.util.Constants.SELECT_CALLBACK;
-import static iudx.resource.server.databroker.util.Constants.SQL_ERROR;
-import static iudx.resource.server.databroker.util.Constants.SUBSCRIPTION_ID;
-import static iudx.resource.server.databroker.util.Constants.SUCCESS;
-import static iudx.resource.server.databroker.util.Constants.TITLE;
-import static iudx.resource.server.databroker.util.Constants.TYPE;
-import static iudx.resource.server.databroker.util.Constants.UPDATE_CALLBACK;
-import static iudx.resource.server.databroker.util.Constants.USER_ID;
-import static iudx.resource.server.databroker.util.Constants.VHOST_IUDX;
+import static iudx.resource.server.databroker.util.Constants.*;
 import static iudx.resource.server.databroker.util.Util.getResponseJson;
 import static iudx.resource.server.databroker.util.Util.getSha;
 import java.time.OffsetDateTime;
@@ -43,26 +16,15 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.common.VHosts;
-import iudx.resource.server.databroker.util.Constants;
 import iudx.resource.server.databroker.util.PermissionOpType;
 
 public class SubscriptionService {
   private static final Logger LOGGER = LogManager.getLogger(SubscriptionService.class);
-
-  JsonObject requestBody = new JsonObject();
-  JsonObject finalResponse = new JsonObject();
-  private String user;
-  private String password;
   private String vhost;
   private int totalBindCount;
   private int totalBindSuccess;
-  private int totalUnBindCount;
-  private int totalUnBindSuccess;
-  private boolean bindingSuccessful;
-
   private RabbitClient rabbitClient;
   private PostgresClient pgSQLClient;
-
   private String amqpUrl;
   private int amqpPort;
 
@@ -128,7 +90,7 @@ public class SubscriptionService {
                       String exchangeName;
                       if (isGroupResource(routingKey)) {
                         exchangeName = routingKey;
-                        array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                        array.add(exchangeName + DATA_WILDCARD_ROUTINGKEY);
                       } else {
                         exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
                         array.add(exchangeName + "/."
@@ -166,17 +128,17 @@ public class SubscriptionService {
                                             queueName)
                                     .onComplete(userPermissionHandler -> {
                                       if (userPermissionHandler.succeeded()) {
-                                        registerStreamingSubscriptionResponse.put(Constants.USER_NAME,
+                                        registerStreamingSubscriptionResponse.put(USER_NAME,
                                                 streamingUserName);
-                                        registerStreamingSubscriptionResponse.put(Constants.APIKEY,
+                                        registerStreamingSubscriptionResponse.put(APIKEY,
                                                 apiKey);
-                                        registerStreamingSubscriptionResponse.put(Constants.ID,
+                                        registerStreamingSubscriptionResponse.put(ID,
                                                 queueName);
-                                        registerStreamingSubscriptionResponse.put(Constants.URL,
+                                        registerStreamingSubscriptionResponse.put(URL,
                                                 this.amqpUrl);
-                                        registerStreamingSubscriptionResponse.put(Constants.PORT,
+                                        registerStreamingSubscriptionResponse.put(PORT,
                                                 this.amqpPort);
-                                        registerStreamingSubscriptionResponse.put(Constants.VHOST,
+                                        registerStreamingSubscriptionResponse.put(VHOST,
                                                 this.vhost);
 
                                         JsonObject response = new JsonObject();
@@ -212,9 +174,9 @@ public class SubscriptionService {
                                * used promise.tryFail() instead of promise.fail()
                                * to avoid java.lang.IllegalStateException: Result is already complete
                                */
-                              promise.tryFail((getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA,
+                              promise.tryFail(getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA,
                                       BINDING_FAILED)
-                                      .toString()));
+                                      .toString());
                             }
                           });
                         }
@@ -262,8 +224,6 @@ public class SubscriptionService {
         if (resultCreateUserhandler.succeeded()) {
           JsonObject result = resultCreateUserhandler.result();
           LOGGER.debug("success :: createUserIfNotExist " + result);
-          String streamingUserName = result.getString(USER_ID);
-          String apiKey = result.getString("apiKey");
 
           JsonArray entitites = request.getJsonArray(ENTITIES);
           LOGGER.debug("Info : Request Access for " + entitites);
@@ -308,7 +268,7 @@ public class SubscriptionService {
                           String exchangeName;
                           if (isGroupResource(routingKey)) {
                             exchangeName = routingKey;
-                            array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                            array.add(exchangeName + DATA_WILDCARD_ROUTINGKEY);
                           } else {
                             exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
                             array.add(exchangeName + "/."
@@ -347,7 +307,7 @@ public class SubscriptionService {
                                                 queueName)
                                         .onComplete(permissionHandler -> {
                                           if (permissionHandler.succeeded()) {
-                                            updateStreamingSubscriptionResponse.put(Constants.ENTITIES,
+                                            updateStreamingSubscriptionResponse.put(ENTITIES,
                                                     entitites);
 
                                             JsonObject response = new JsonObject();
@@ -456,7 +416,7 @@ public class SubscriptionService {
                   String exchangeName;
                   if (isGroupResource(routingKey)) {
                     exchangeName = routingKey;
-                    array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                    array.add(exchangeName + DATA_WILDCARD_ROUTINGKEY);
                   } else {
                     exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
                     array.add(exchangeName + "/."
@@ -489,7 +449,7 @@ public class SubscriptionService {
                                         PermissionOpType.ADD_READ, queueName)
                                 .onComplete(permissionHandler -> {
                                   if (permissionHandler.succeeded()) {
-                                    appendStreamingSubscriptionResponse.put(Constants.ENTITIES,
+                                    appendStreamingSubscriptionResponse.put(ENTITIES,
                                             entitites);
 
                                     JsonObject response = new JsonObject();
@@ -622,13 +582,13 @@ public class SubscriptionService {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject registerCallbackSubscriptionResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      String userName = request.getString(Constants.CONSUMER);
+      String userName = request.getString(CONSUMER);
       String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
       String subscriptionID =
-              domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
+              domain + "/" + getSha(userName) + "/" + request.getString(NAME);
       JsonObject publishjson = new JsonObject();
-      publishjson.put(Constants.SUBSCRIPTION_ID, subscriptionID);
-      publishjson.put(Constants.OPERATION, "create");
+      publishjson.put(SUBSCRIPTION_ID, subscriptionID);
+      publishjson.put(OPERATION, "create");
       JsonObject requestjson = new JsonObject();
 
       LOGGER.debug("Info : Call Back registration ID check starts");
@@ -652,12 +612,12 @@ public class SubscriptionService {
           } else {
 
             OffsetDateTime dateTime = OffsetDateTime.now();
-            String callbackUrl = request.getString(Constants.CALLBACKURL);
-            String queueName = request.getString(Constants.QUEUE);
-            JsonArray entitites = request.getJsonArray(Constants.ENTITIES);
+            String callbackUrl = request.getString(CALLBACKURL);
+            String queueName = request.getString(QUEUE);
+            JsonArray entitites = request.getJsonArray(ENTITIES);
             totalBindCount = entitites.size();
             totalBindSuccess = 0;
-            requestjson.put(Constants.QUEUE_NAME, queueName);
+            requestjson.put(QUEUE_NAME, queueName);
 
             for (Object currentEntity : entitites) {
               String routingKey = (String) currentEntity;
@@ -673,11 +633,11 @@ public class SubscriptionService {
                   LOGGER.debug("Info : Valid ID :: Call Back registration starts");
                   String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
                   JsonArray array = new JsonArray();
-                  array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+                  array.add(exchangeName + DATA_WILDCARD_ROUTINGKEY);
                   JsonObject json = new JsonObject();
-                  json.put(Constants.EXCHANGE_NAME, exchangeName);
-                  json.put(Constants.QUEUE_NAME, queueName);
-                  json.put(Constants.ENTITIES, array);
+                  json.put(EXCHANGE_NAME, exchangeName);
+                  json.put(QUEUE_NAME, queueName);
+                  json.put(ENTITIES, array);
 
                   Future<JsonObject> resultbind = rabbitClient.bindQueue(json, vhost);
                   resultbind.onComplete(resultHandlerbind -> {
@@ -686,8 +646,8 @@ public class SubscriptionService {
                       LOGGER.debug("sucess :: totalBindSuccess " + totalBindSuccess
                               + resultHandlerbind.result());
                       JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
-                      if (bindResponse.containsKey(Constants.TITLE) && bindResponse
-                              .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+                      if (bindResponse.containsKey(TITLE) && bindResponse
+                              .getString(TITLE).equalsIgnoreCase(FAILURE)) {
                         LOGGER.error("failed ::" + resultHandlerbind.cause());
                         String deleteQuery = DELETE_CALLBACK.replace("$1", subscriptionID);
                         pgSQLClient.executeAsync(deleteQuery).onComplete(resulthandlerdel -> {
@@ -797,7 +757,7 @@ public class SubscriptionService {
       totalBindCount = entities.size();
       totalBindSuccess = 0;
       JsonObject requestjson = new JsonObject();
-      requestjson.put(Constants.QUEUE_NAME, queueName);
+      requestjson.put(QUEUE_NAME, queueName);
       for (Object currentEntity : entities) {
         String routingKey = (String) currentEntity;
         LOGGER.debug("Info : routingKey is " + routingKey);
@@ -812,11 +772,11 @@ public class SubscriptionService {
 
             String exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
             JsonArray array = new JsonArray();
-            array.add(exchangeName + Constants.DATA_WILDCARD_ROUTINGKEY);
+            array.add(exchangeName + DATA_WILDCARD_ROUTINGKEY);
             JsonObject json = new JsonObject();
-            json.put(Constants.EXCHANGE_NAME, exchangeName);
-            json.put(Constants.QUEUE_NAME, queueName);
-            json.put(Constants.ENTITIES, array);
+            json.put(EXCHANGE_NAME, exchangeName);
+            json.put(QUEUE_NAME, queueName);
+            json.put(ENTITIES, array);
             Future<JsonObject> resultbind = rabbitClient.bindQueue(json, vhost);
             resultbind.onComplete(resultHandlerbind -> {
               if (resultHandlerbind.succeeded()) {
@@ -825,11 +785,11 @@ public class SubscriptionService {
                 LOGGER.debug(
                         "sucess :: totalBindSuccess " + totalBindSuccess + resultHandlerbind.result());
                 JsonObject bindResponse = (JsonObject) resultHandlerbind.result();
-                if (bindResponse.containsKey(Constants.TITLE) && bindResponse
-                        .getString(Constants.TITLE).equalsIgnoreCase(Constants.FAILURE)) {
+                if (bindResponse.containsKey(TITLE) && bindResponse
+                        .getString(TITLE).equalsIgnoreCase(FAILURE)) {
                   LOGGER.error("failed ::" + resultHandlerbind.cause());
 
-                  updateCallbackSubscriptionResponse.put(Constants.ERROR, "Binding Failed");
+                  updateCallbackSubscriptionResponse.put(ERROR, "Binding Failed");
                   updateCallbackSubscriptionResponse.clear()
                           .mergeIn(getResponseJson(BAD_REQUEST_CODE, ERROR, BINDING_FAILED));
                   promise.tryFail(updateCallbackSubscriptionResponse.toString());
@@ -896,10 +856,10 @@ public class SubscriptionService {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject deleteCallbackSubscriptionResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      String userName = request.getString(Constants.CONSUMER);
+      String userName = request.getString(CONSUMER);
       String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
       String subscriptionID =
-              domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
+              domain + "/" + getSha(userName) + "/" + request.getString(NAME);
       LOGGER.debug("Info : Call Back registration ID check starts");
       String selectQuery = SELECT_CALLBACK.replace("$1", subscriptionID);
       pgSQLClient.executeAsync(selectQuery).onComplete(resultHandlerSelectID -> {
@@ -914,12 +874,12 @@ public class SubscriptionService {
             }
           if (!subscriptionID.equalsIgnoreCase(subscriptionIDdb) && subscriptionID == null) {
             LOGGER.debug("Info : Call Back ID not found");
-            deleteCallbackSubscriptionResponse.put(Constants.ERROR, "Call Back ID not found");
+            deleteCallbackSubscriptionResponse.put(ERROR, "Call Back ID not found");
             promise.fail(deleteCallbackSubscriptionResponse.toString());
           } else {
             JsonObject publishjson = new JsonObject();
-            publishjson.put(Constants.SUBSCRIPTION_ID, subscriptionID);
-            publishjson.put(Constants.OPERATION, "delete");
+            publishjson.put(SUBSCRIPTION_ID, subscriptionID);
+            publishjson.put(OPERATION, "delete");
             String deleteQuery = DELETE_CALLBACK.replace("$1", subscriptionID);
             pgSQLClient.executeAsync(deleteQuery).onComplete(ar -> {
               if (ar.succeeded()) {
@@ -932,7 +892,7 @@ public class SubscriptionService {
                         messageBuffer,
                         resultHandler -> {
                           if (resultHandler.succeeded()) {
-                            deleteCallbackSubscriptionResponse.put(Constants.SUBSCRIPTION_ID,
+                            deleteCallbackSubscriptionResponse.put(SUBSCRIPTION_ID,
                                     subscriptionID);
                             LOGGER.debug("Info : Message published to queue");
                           } else {
@@ -945,7 +905,7 @@ public class SubscriptionService {
                         });
               } else {
                 LOGGER.error("failed ::" + ar.cause().getMessage());
-                deleteCallbackSubscriptionResponse.put(Constants.ERROR, "delete failed");
+                deleteCallbackSubscriptionResponse.put(ERROR, "delete failed");
                 deleteCallbackSubscriptionResponse.clear()
                         .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, FAILURE));
                 promise.fail(deleteCallbackSubscriptionResponse.toString());
@@ -968,10 +928,10 @@ public class SubscriptionService {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject listCallbackSubscriptionResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      String userName = request.getString(Constants.CONSUMER);
+      String userName = request.getString(CONSUMER);
       String domain = userName.substring(userName.indexOf("@") + 1, userName.length());
       String subscriptionID =
-              domain + "/" + getSha(userName) + "/" + request.getString(Constants.NAME);
+              domain + "/" + getSha(userName) + "/" + request.getString(NAME);
       String selectQuery = SELECT_CALLBACK.replace("$1", subscriptionID);
       pgSQLClient.executeAsync(selectQuery).onComplete(ar -> {
         if (ar.succeeded()) {
@@ -983,9 +943,9 @@ public class SubscriptionService {
               String subscriptionIDdb = row.getString(0);
               String callBackUrl = row.getString(1);
               JsonArray entities = (JsonArray) row.getValue(2);
-              listCallbackSubscriptionResponse.put(Constants.SUBSCRIPTION_ID, subscriptionIDdb);
-              listCallbackSubscriptionResponse.put(Constants.CALLBACKURL, callBackUrl);
-              listCallbackSubscriptionResponse.put(Constants.ENTITIES, entities);
+              listCallbackSubscriptionResponse.put(SUBSCRIPTION_ID, subscriptionIDdb);
+              listCallbackSubscriptionResponse.put(CALLBACKURL, callBackUrl);
+              listCallbackSubscriptionResponse.put(ENTITIES, entities);
             }
             promise.complete(listCallbackSubscriptionResponse);
           } else {

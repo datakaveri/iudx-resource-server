@@ -1657,10 +1657,10 @@ public class SubscriptionServiceTest {
     @DisplayName("Test deleteCallbackSubscription method : when delete failed")
     public void test_deleteCallbackSubscription_failed_delete(VertxTestContext vertxTestContext)
     {
-        when(pgSQLClient.executeAsync(anyString())).thenReturn(rowSetFuture);
-        when(asyncResult.succeeded()).thenReturn(true,false);
         when(asyncResult.cause()).thenReturn(throwable);
         when(throwable.getMessage()).thenReturn("Dummy failure message");
+        when(pgSQLClient.executeAsync(anyString())).thenReturn(rowSetFuture);
+        when(asyncResult.succeeded()).thenReturn(true,false);
         when(asyncResult.result()).thenReturn(rowSet);
 
         doAnswer(new Answer<AsyncResult<RowSet<Row>>>() {
@@ -1688,19 +1688,19 @@ public class SubscriptionServiceTest {
     @Test
     @DisplayName("Test deleteCallbackSubscription method : when message publish failed")
     public void test_deleteCallbackSubscription_publish_message_failure(VertxTestContext vertxTestContext) {
-        when(voidAsyncResult.succeeded()).thenReturn(false);
-        when(rabbitClient.getRabbitMQClient()).thenReturn(rabbitMQClient);
+        lenient().when(voidAsyncResult.succeeded()).thenReturn(false);
+        lenient().when(rabbitClient.getRabbitMQClient()).thenReturn(rabbitMQClient);
         when(asyncResult.result()).thenReturn(rowSet);
         when(asyncResult.succeeded()).thenReturn(true);
         when(pgSQLClient.executeAsync(anyString())).thenReturn(rowSetFuture);
-        doAnswer(new Answer<AsyncResult<RowSet<Row>>>() {
+        lenient().doAnswer(new Answer<AsyncResult<RowSet<Row>>>() {
             @Override
             public AsyncResult<RowSet<Row>> answer(InvocationOnMock arg0) throws Throwable {
                 ((Handler<AsyncResult<RowSet<Row>>>) arg0.getArgument(0)).handle(asyncResult);
                 return null;
             }
         }).when(rowSetFuture).onComplete(any());
-        doAnswer(new Answer<AsyncResult<Void>>() {
+        lenient().doAnswer(new Answer<AsyncResult<Void>>() {
             @Override
             public AsyncResult<Void> answer(InvocationOnMock arg0) throws Throwable {
                 ((Handler<AsyncResult<Void>>) arg0.getArgument(3)).handle(voidAsyncResult);

@@ -33,18 +33,16 @@ public class SubscriptionService {
    * 
    * @param type type of subscription either <strong>streaming</strong> or <strong>callback</strong>
    * @param databroker databroker verticle object
-   * @param pgService database verticle object
    * @return an object of Subscription class
    */
-  private Subscription getSubscriptionContext(SubsType type, DataBrokerService databroker,
-      PostgresService pgService) {
+  private Subscription getSubscriptionContext(SubsType type, DataBrokerService databroker) {
     LOGGER.info("getSubscriptionContext() method started");
     if (type != null && type.equals(SubsType.CALLBACK)) {
       LOGGER.info("callback subscription context");
-      return new CallbackSubscription(databroker, pgService);
+      return new CallbackSubscription(databroker);
     } else {
       LOGGER.info("streaming subscription context");
-      return new StreamingSubscription(databroker, pgService);
+      return new StreamingSubscription(databroker);
     }
   }
 
@@ -62,7 +60,7 @@ public class SubscriptionService {
     Promise<JsonObject> promise = Promise.promise();
     SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
     if (subscription == null) {
-      subscription = getSubscriptionContext(subType, databroker, pgService);
+      subscription = getSubscriptionContext(subType, databroker);
     }
     assertNotNull(subscription);
     subscription.create(json).onComplete(handler -> {
@@ -194,7 +192,7 @@ public class SubscriptionService {
     SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
     if (subscription == null)
     {
-      subscription = getSubscriptionContext(subType, databroker, pgService);
+      subscription = getSubscriptionContext(subType, databroker);
     }
     assertNotNull(subscription);
     subscription.delete(json).onComplete(handler -> {
@@ -235,7 +233,7 @@ public class SubscriptionService {
     SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
     if (subscription == null)
     {
-      subscription = getSubscriptionContext(subType, databroker, pgService);
+      subscription = getSubscriptionContext(subType, databroker);
     }
     assertNotNull(subscription);
     subscription.get(json).onComplete(handler -> {
@@ -283,7 +281,7 @@ public class SubscriptionService {
     SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
     if (subscription == null)
     {
-      subscription = getSubscriptionContext(subType, databroker, pgService);
+      subscription = getSubscriptionContext(subType, databroker);
     }
     assertNotNull(subscription);
     subscription.append(json).onComplete(handler -> {
@@ -318,7 +316,6 @@ public class SubscriptionService {
   private JsonObject generateResponse(JsonObject response) {
     JsonObject finalResponse = new JsonObject();
     int type = response.getInteger(JSON_TYPE);
-    String title = response.getString(JSON_TITLE);
     switch (type) {
       case 400: {
         finalResponse.put(JSON_TYPE, type)

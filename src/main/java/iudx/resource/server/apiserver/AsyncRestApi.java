@@ -49,7 +49,6 @@ import iudx.resource.server.database.async.AsyncService;
 import iudx.resource.server.database.async.util.QueryProgress;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
-import iudx.resource.server.metering.MeteringService;
 
 public class AsyncRestApi {
 
@@ -57,7 +56,6 @@ public class AsyncRestApi {
 
   private final Vertx vertx;
   private final Router router;
-  private final MeteringService meteringService;
   private AsyncService asyncService;
   private final ParamsValidator validator;
   private final CatalogueService catalogueService;
@@ -67,20 +65,17 @@ public class AsyncRestApi {
   private EncryptionService encryptionService;
   private Api api;
 
-  AsyncRestApi(Vertx vertx, Router router, JsonObject config, Api api) {
+  AsyncRestApi(Vertx vertx, Router router, Api api) {
     this.vertx = vertx;
     this.router = router;
     this.databroker = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
-    this.meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
     this.cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
-    this.catalogueService = new CatalogueService(vertx, config, cacheService);
+    this.catalogueService = new CatalogueService(cacheService);
     this.validator = new ParamsValidator(catalogueService);
     this.postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
     this.encryptionService = EncryptionService.createProxy(vertx, ENCRYPTION_SERVICE_ADDRESS);
     this.api = api;
   }
-
-
 
   Router init() {
     FailureHandler validationsFailureHandler = new FailureHandler();
@@ -114,14 +109,14 @@ public class AsyncRestApi {
     String instanceID = request.getHeader(HEADER_HOST);
     MultiMap params = getQueryParams(routingContext, response).get();
 
-    if (containsTemporalParams(params) && !isValidTemporalQuery(params, routingContext)) {
+    if (containsTemporalParams(params) && !isValidTemporalQuery(params)) {
       routingContext
           .fail(400,
               new DxRuntimeException(400, ResponseUrn.BAD_REQUEST_URN, "Invalid temporal query"));
       return;
     }
 
-    if (containsGeoParams(params) && !isValidGeoQuery(params, routingContext)) {
+    if (containsGeoParams(params) && !isValidGeoQuery(params)) {
       routingContext
           .fail(400, new DxRuntimeException(400, ResponseUrn.BAD_REQUEST_URN, "Invalid geo query"));
       return;
@@ -352,7 +347,7 @@ public class AsyncRestApi {
           .end(generateResponse(statusCode, urn, message).toString());
   }
 
-  private boolean isValidTemporalQuery(MultiMap params, RoutingContext context) {
+  private boolean isValidTemporalQuery(MultiMap params) {
     return params.contains(JSON_TIMEREL) && params.contains(JSON_TIME)
         && params.contains(JSON_ENDTIME);
   }
@@ -363,7 +358,7 @@ public class AsyncRestApi {
   }
 
 
-  private boolean isValidGeoQuery(MultiMap params, RoutingContext context) {
+  private boolean isValidGeoQuery(MultiMap params) {
     return params.contains(JSON_GEOPROPERTY) && params.contains(JSON_GEOREL)
         && params.contains(JSON_GEOMETRY) && params.contains(JSON_COORDINATES);
   }

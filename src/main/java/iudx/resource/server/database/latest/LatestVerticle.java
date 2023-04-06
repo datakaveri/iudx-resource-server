@@ -25,7 +25,6 @@ public class LatestVerticle extends AbstractVerticle {
    */
   private LatestDataService latestData;
   private RedisClient redisClient;
-  private JsonObject attributeList;
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
   private static final Logger LOGGER = LogManager.getLogger(LatestVerticle.class);
@@ -43,7 +42,7 @@ public class LatestVerticle extends AbstractVerticle {
   @Override
   public void start() throws Exception {
 
-    attributeList = config().getJsonObject("attributeList");
+    config().getJsonObject("attributeList");
     new RedisClient(vertx, config()).start().onSuccess(handler -> {
       
       redisClient = handler;

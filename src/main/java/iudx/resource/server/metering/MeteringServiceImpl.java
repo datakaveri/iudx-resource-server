@@ -5,9 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.PoolOptions;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.cache.cacheImpl.CacheType;
 import iudx.resource.server.common.Response;
@@ -41,9 +38,6 @@ public class MeteringServiceImpl implements MeteringService {
     private final ParamsValidation validation = new ParamsValidation();
     private final DateValidation dateValidation = new DateValidation();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    PgConnectOptions connectOptions;
-    PoolOptions poolOptions;
-    PgPool pool;
     String queryPg, queryCount, queryOverview, summaryOverview;
     long total;
     JsonObject validationCheck = new JsonObject();
@@ -57,9 +51,9 @@ public class MeteringServiceImpl implements MeteringService {
     public MeteringServiceImpl( Vertx vertxInstance, PostgresService postgresService) {
         this.vertx = vertxInstance;
         this.postgresService = postgresService;
-        this.rmqService = DataBrokerService.createProxy(vertxInstance, BROKER_SERVICE_ADDRESS);
+        this.rmqService = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
 
-        this.cacheService = CacheService.createProxy(vertxInstance, CACHE_SERVICE_ADDRESS);
+        this.cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
 
     }
 
@@ -67,16 +61,13 @@ public class MeteringServiceImpl implements MeteringService {
     public MeteringService executeReadQuery(
             JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
 
-        Promise<JsonObject> promise = Promise.promise();
-        JsonObject response = new JsonObject();
-
         LOGGER.trace("Info: Read Query" + request.toString());
 
         validationCheck = validation.paramsCheck(request);
 
         if (validationCheck != null && validationCheck.containsKey(ERROR)) {
             responseBuilder =
-                    new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(validationCheck.getString(ERROR));
+                    new ResponseBuilder().setTypeAndTitle(400).setMessage(validationCheck.getString(ERROR));
             handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
             return this;
         }
@@ -101,11 +92,11 @@ public class MeteringServiceImpl implements MeteringService {
                     var countHandle = countHandler.result().getJsonArray("result");
                     total = countHandle.getJsonObject(0).getInteger("count");
                     if (total == 0) {
-                        responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(0);
+                        responseBuilder = new ResponseBuilder().setTypeAndTitle(204).setCount(0);
                         handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
 
                     } else {
-                        responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200).setCount((int) total);
+                        responseBuilder = new ResponseBuilder().setTypeAndTitle(200).setCount((int) total);
                         handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
                     }
                 } catch (NullPointerException nullPointerException) {
@@ -126,7 +117,7 @@ public class MeteringServiceImpl implements MeteringService {
                     total = countHandle.getJsonObject(0).getInteger("count");
                     request.put(TOTALHITS, total);
                     if (total == 0) {
-                        responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setCount(0);
+                        responseBuilder = new ResponseBuilder().setTypeAndTitle(204).setCount(0);
                         handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
 
                     } else {
@@ -176,7 +167,7 @@ public class MeteringServiceImpl implements MeteringService {
     public MeteringService monthlyOverview(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
         String startTime = request.getString(STARTT);
         String endTime = request.getString(ENDT);
-        if ((startTime != null && endTime == null) || (startTime == null && endTime != null)) {
+        if (startTime != null && endTime == null || startTime == null && endTime != null) {
             handler.handle(Future.failedFuture("Bad Request"));
         }
         if(startTime!=null && endTime!=null) {
@@ -184,7 +175,7 @@ public class MeteringServiceImpl implements MeteringService {
 
             if (validationCheck != null && validationCheck.containsKey(ERROR)) {
                 responseBuilder =
-                        new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(validationCheck.getString(ERROR));
+                        new ResponseBuilder().setTypeAndTitle(400).setMessage(validationCheck.getString(ERROR));
                 handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
                 return this;
             }
@@ -209,7 +200,7 @@ public class MeteringServiceImpl implements MeteringService {
     public MeteringService summaryOverview(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
         String startTime = request.getString(STARTT);
         String endTime = request.getString(ENDT);
-        if ((startTime != null && endTime == null) || (startTime == null && endTime != null)) {
+        if (startTime != null && endTime == null || startTime == null && endTime != null) {
             handler.handle(Future.failedFuture("Bad Request"));
         }
         if(startTime!=null && endTime!=null) {
@@ -217,7 +208,7 @@ public class MeteringServiceImpl implements MeteringService {
 
             if (validationCheck != null && validationCheck.containsKey(ERROR)) {
                 responseBuilder =
-                        new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(validationCheck.getString(ERROR));
+                        new ResponseBuilder().setTypeAndTitle(400).setMessage(validationCheck.getString(ERROR));
                 handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
                 return this;
             }
@@ -229,7 +220,7 @@ public class MeteringServiceImpl implements MeteringService {
             if (handlers.succeeded()) {
                 jsonArray = handlers.result().getJsonArray("result");
                 if (jsonArray.size() == 0) {
-                    responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204).setMessage("NO ID Present");
+                    responseBuilder = new ResponseBuilder().setTypeAndTitle(204).setMessage("NO ID Present");
                     handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
 
                 }
@@ -312,7 +303,6 @@ public class MeteringServiceImpl implements MeteringService {
 
     private Future<JsonObject> executeQueryDatabaseOperation(String query) {
         Promise<JsonObject> promise = Promise.promise();
-        JsonObject response = new JsonObject();
         postgresService.executeQuery(
                 query,
                 dbHandler -> {

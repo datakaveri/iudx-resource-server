@@ -44,7 +44,7 @@ public class StreamingSubscriptionTest {
         expected = new JsonObject();
         expected.put("Dummy key", "Dummy value");
         failureMessage = "Dummy failure message";
-        service = new StreamingSubscription(databroker, pgService);
+        service = new StreamingSubscription(databroker);
         vertxTestContext.completeNow();
     }
 

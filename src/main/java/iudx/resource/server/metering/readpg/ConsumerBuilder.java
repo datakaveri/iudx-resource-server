@@ -1,15 +1,12 @@
 package iudx.resource.server.metering.readpg;
 
 import io.vertx.core.json.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.time.ZonedDateTime;
 
 import static iudx.resource.server.metering.util.Constants.*;
 
 public class ConsumerBuilder implements MeteringReadBuilder {
-    private static final Logger LOGGER = LogManager.getLogger(ConsumerBuilder.class);
     JsonObject jsonObject;
     String consumerQuery = CONSUMERID_TIME_INTERVAL_READ_QUERY;
     StringBuilder finalQuery = null;

@@ -38,7 +38,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.database.archives.ResponseBuilder;
 import iudx.resource.server.database.async.ProgressListener;
-import iudx.resource.server.database.postgres.PostgresService;
 
 public class ElasticClient {
 
@@ -70,11 +69,6 @@ public class ElasticClient {
     asyncClient = new ElasticsearchAsyncClient(transport);
   }
 
-  public ElasticClient(String databaseIP, int databasePort, String user, String password,
-      String filePath, PostgresService pgService) {
-    this(databaseIP, databasePort, user, password);
-  }
-
   public Future<JsonObject> asyncScroll(File file, String index, Query query, String[] source,
       String searchId, ProgressListener progressListener) {
     Promise<JsonObject> promise = Promise.promise();
@@ -84,9 +78,6 @@ public class ElasticClient {
         .of(e -> e.index(index).query(query).size(10000).scroll(scr -> scr.time("5m")));
     
     asyncClient.search(searchRequest, ObjectNode.class).whenCompleteAsync((response, ex) -> {
-      if (ex != null) {
-
-      }
       String scrollId=null;
       try {
         // LOGGER.info("response : {}",response.toString());

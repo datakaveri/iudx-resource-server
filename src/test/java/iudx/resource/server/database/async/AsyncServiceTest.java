@@ -86,7 +86,7 @@ public class AsyncServiceTest {
     util = mock(Util.class);
 
     asyncService =
-        new AsyncServiceImpl(vertx, client, pgService, fileOpsHelper, timeLimit, filePath);
+        new AsyncServiceImpl(vertx, client, pgService, fileOpsHelper, filePath);
     asyncServiceSpy = spy(asyncService);
 
 
@@ -378,7 +378,7 @@ public class AsyncServiceTest {
       }
     }).when(postgresService).executeQuery(anyString(), any());
     when(jsonArray.isEmpty()).thenReturn(true);
-    asyncService2 = new AsyncServiceImpl(Vertx.vertx(), client, postgresService, fileOpsHelper, timeLimit, filePath);
+    asyncService2 = new AsyncServiceImpl(Vertx.vertx(), client, postgresService, fileOpsHelper, filePath);
     asyncService2.getRecord4RequestId("Dummy ID").onComplete(handler -> {
       if (handler.failed()) {
         assertEquals("Record doesn't exist in db for requestId.", handler.cause().getMessage());
@@ -393,7 +393,7 @@ public class AsyncServiceTest {
   @Test
   @DisplayName("Test executePGQuery method : failure")
   public void testExecutePgQueryFailure(VertxTestContext vertxTestContext) {
-    asyncService2 = new AsyncServiceImpl(Vertx.vertx(), client, postgresService, fileOpsHelper, timeLimit, filePath);
+    asyncService2 = new AsyncServiceImpl(Vertx.vertx(), client, postgresService, fileOpsHelper, filePath);
     when(asyncResult2.succeeded()).thenReturn(false);
     when(asyncResult2.cause()).thenReturn(throwable);
     doAnswer(new Answer<AsyncResult<JsonObject>>() {
@@ -418,7 +418,7 @@ public class AsyncServiceTest {
   @DisplayName("Test scrollQuery method : for Invalid Query")
   public void testScrollQueryWithInvalidQuery(VertxTestContext vertxTestContext) {
     ProgressListener progressListener = mock(ProgressListener.class);
-    asyncService2 = new AsyncServiceImpl(Vertx.vertx(), client, postgresService, fileOpsHelper, timeLimit, filePath);
+    asyncService2 = new AsyncServiceImpl(Vertx.vertx(), client, postgresService, fileOpsHelper, filePath);
     when(jsonObject.put(anyString(), anyBoolean())).thenReturn(jsonObject);
     asyncService2.scrollQuery(file, jsonObject, "Dummy SearchID", progressListener, handler -> {
       if (handler.succeeded()) {

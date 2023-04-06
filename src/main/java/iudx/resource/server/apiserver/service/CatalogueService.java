@@ -8,10 +8,7 @@ import org.apache.logging.log4j.Logger;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
-import iudx.resource.server.authenticator.Constants;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.cache.cacheImpl.CacheType;
 
@@ -22,28 +19,14 @@ import iudx.resource.server.cache.cacheImpl.CacheType;
 public class CatalogueService {
 
   private static final Logger LOGGER = LogManager.getLogger(CatalogueService.class);
-
-  static WebClient catWebClient;
-  private long cacheTimerid;
-  private static String catHost;
-  private static int catPort;;
-  private Vertx vertx;
-  private String catBasePath;
-  private String catItemPath;
-  private String catSearchPath;
-
   // private final Cache<String, List<String>> applicableFilterCache =
   // CacheBuilder.newBuilder().maximumSize(1000)
   // .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
 
   private CacheService cacheService;
 
-  public CatalogueService(Vertx vertx, JsonObject config, CacheService cacheService) {
-    this.vertx = vertx;
-    catHost = config.getString("catServerHost");
-    catPort = config.getInteger("catServerPort");
+  public CatalogueService(CacheService cacheService) {
 //    catSearchPath = Constants.CAT_RSG_PATH;
-    catItemPath = Constants.CAT_ITEM_PATH;
     this.cacheService = cacheService;
     // WebClientOptions options =
     // new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);

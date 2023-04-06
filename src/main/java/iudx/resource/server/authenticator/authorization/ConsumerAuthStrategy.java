@@ -1,7 +1,6 @@
 package iudx.resource.server.authenticator.authorization;
 
 import static iudx.resource.server.apiserver.util.Constants.RESET_PWD;
-import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION;
 import static iudx.resource.server.authenticator.authorization.Method.DELETE;
 import static iudx.resource.server.authenticator.authorization.Method.GET;
 import static iudx.resource.server.authenticator.authorization.Method.PATCH;
@@ -24,14 +23,12 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
   private static final Logger LOGGER = LogManager.getLogger(ConsumerAuthStrategy.class);
   
   private final boolean isLimitsEnabled;
-  private final Api api;
   private static volatile ConsumerAuthStrategy instance;
 
 
 
   private ConsumerAuthStrategy(boolean isLimitsAllowed,Api api) {
     this.isLimitsEnabled=isLimitsAllowed;
-    this.api = api;
     buildPermissions(api);
   }
   public static ConsumerAuthStrategy getInstance(boolean isLimitsAllowed, Api api)

@@ -7,7 +7,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.apiserver.util.Constants;
-import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 
 /**
@@ -19,12 +18,9 @@ public class StreamingSubscription implements Subscription {
   private static final Logger LOGGER = LogManager.getLogger(StreamingSubscription.class);
 
   private DataBrokerService databroker;
-  private PostgresService pgService;
-  private static volatile StreamingSubscription instance;
 
-  public StreamingSubscription(DataBrokerService databroker, PostgresService pgService) {
+  public StreamingSubscription(DataBrokerService databroker) {
     this.databroker = databroker;
-    this.pgService=pgService;
   }
 
 //  public static StreamingSubscription getInstance(DataBrokerService databroker,

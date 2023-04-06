@@ -5,24 +5,18 @@ import java.util.List;
 import java.util.Map;
 
 import iudx.resource.server.common.Api;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.authenticator.model.JwtData;
 
 public class ProviderAuthStrategy implements AuthorizationStrategy {
 
-  private static final Logger LOGGER = LogManager.getLogger(ProviderAuthStrategy.class);
-
   static Map<String, List<AuthorizationRequest>> providerAuthorizationRules = new HashMap<>();
-  private final Api api;
   private static volatile ProviderAuthStrategy instance;
 
 
-  private ProviderAuthStrategy(Api api)
+  private ProviderAuthStrategy()
   {
-    this.api = api;
-    buildPermissions(api);
+    buildPermissions();
   }
   public static ProviderAuthStrategy getInstance(Api api)
   {
@@ -33,14 +27,14 @@ public class ProviderAuthStrategy implements AuthorizationStrategy {
       {
         if(instance == null)
         {
-          instance = new ProviderAuthStrategy(api);
+          instance = new ProviderAuthStrategy();
         }
       }
     }
     return instance;
 
   }
-  private void buildPermissions(Api api) {
+  private void buildPermissions() {
     // provider allowed to access all endpoints
   }
 

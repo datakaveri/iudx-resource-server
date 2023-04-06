@@ -1,16 +1,10 @@
 package iudx.resource.server.apiserver.management;
 
-import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.VHOST;
+import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.cache.cacheImpl.CacheType.CATALOGUE_CACHE;
 import static iudx.resource.server.common.Constants.CREATE_INGESTION_SQL;
 import static iudx.resource.server.common.Constants.DELETE_INGESTION_SQL;
 import static iudx.resource.server.common.Constants.SELECT_INGESTION_SQL;
-import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_CODE;
-import static iudx.resource.server.databroker.util.Constants.DETAIL;
-import static iudx.resource.server.databroker.util.Constants.ENTITIES;
 import static iudx.resource.server.databroker.util.Constants.RESULTS;
 import static iudx.resource.server.databroker.util.Constants.TITLE;
 import static iudx.resource.server.databroker.util.Constants.TYPE;
@@ -18,7 +12,6 @@ import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
 
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.database.postgres.PostgresService;
-import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import io.vertx.core.Future;
@@ -26,7 +19,6 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.apiserver.response.ResponseType;
-import iudx.resource.server.apiserver.util.Constants;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.common.VHosts;
 import iudx.resource.server.databroker.DataBrokerService;
@@ -70,7 +62,7 @@ public class ManagementApiImpl implements ManagementApi {
   public Future<JsonObject> deleteExchange(String exchangeid, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
-    json.put(Constants.JSON_EXCHANGE_NAME, exchangeid);
+    json.put(JSON_EXCHANGE_NAME, exchangeid);
     databroker.deleteExchange(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
@@ -95,13 +87,13 @@ public class ManagementApiImpl implements ManagementApi {
   public Future<JsonObject> getExchangeDetails(String exchangeid, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
-    json.put(Constants.JSON_EXCHANGE_NAME, exchangeid);
+    json.put(JSON_EXCHANGE_NAME, exchangeid);
     json.put("id", exchangeid);
     databroker.listExchangeSubscribers(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
-        if (!result.containsKey(Constants.JSON_TYPE)) {
+        if (!result.containsKey(JSON_TYPE)) {
           promise.complete(result);
         } else {
           promise.fail(result.toString());
@@ -124,7 +116,7 @@ public class ManagementApiImpl implements ManagementApi {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
-        if (!result.containsKey(Constants.JSON_TYPE)) {
+        if (!result.containsKey(JSON_TYPE)) {
           promise.complete(result);
         } else {
           promise.fail(result.toString());
@@ -144,12 +136,12 @@ public class ManagementApiImpl implements ManagementApi {
   public Future<JsonObject> deleteQueue(String queueId, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
-    json.put(Constants.JSON_QUEUE_NAME, queueId);
+    json.put(JSON_QUEUE_NAME, queueId);
     databroker.deleteQueue(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
-        if (!result.containsKey(Constants.JSON_TYPE)) {
+        if (!result.containsKey(JSON_TYPE)) {
           promise.complete(result);
         } else {
           promise.fail(result.toString());
@@ -169,12 +161,12 @@ public class ManagementApiImpl implements ManagementApi {
   public Future<JsonObject> getQueueDetails(String queueId, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
-    json.put(Constants.JSON_QUEUE_NAME, queueId);
+    json.put(JSON_QUEUE_NAME, queueId);
     databroker.listQueueSubscribers(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
-        if (!result.containsKey(Constants.JSON_TYPE)) {
+        if (!result.containsKey(JSON_TYPE)) {
           promise.complete(result);
         } else {
           promise.fail(result.toString());
@@ -197,7 +189,7 @@ public class ManagementApiImpl implements ManagementApi {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
-        if (!result.containsKey(Constants.JSON_TYPE)) {
+        if (!result.containsKey(JSON_TYPE)) {
           promise.complete(result);
         } else {
           promise.fail(result.toString());
@@ -221,7 +213,7 @@ public class ManagementApiImpl implements ManagementApi {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
-        if (!result.containsKey(Constants.JSON_TYPE)) {
+        if (!result.containsKey(JSON_TYPE)) {
           promise.complete(result);
         } else {
           promise.fail(result.toString());
@@ -244,7 +236,7 @@ public class ManagementApiImpl implements ManagementApi {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
-        if (!result.containsKey(Constants.JSON_TYPE)) {
+        if (!result.containsKey(JSON_TYPE)) {
           promise.complete(result);
         } else {
           promise.fail(result.toString());
@@ -264,12 +256,12 @@ public class ManagementApiImpl implements ManagementApi {
   public Future<JsonObject> deleteVHost(String vhostID, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
-    json.put(Constants.JSON_VHOST, vhostID);
+    json.put(JSON_VHOST, vhostID);
     databroker.deletevHost(json, handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
-        if (!result.containsKey(Constants.JSON_TYPE)) {
+        if (!result.containsKey(JSON_TYPE)) {
           promise.complete(result);
         } else {
           promise.fail(result.toString());
@@ -309,7 +301,7 @@ public class ManagementApiImpl implements ManagementApi {
                   dataBroker.registerAdaptor(requestJson,VHosts.IUDX_PROD.name(), brokerHandler -> {
                   if(brokerHandler.succeeded()){
                     JsonObject brokerResponse = brokerHandler.result();
-                    if (!brokerResponse.containsKey(Constants.JSON_TYPE)) {
+                    if (!brokerResponse.containsKey(JSON_TYPE)) {
                       JsonObject iudxResponse=new JsonObject();
                       iudxResponse.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
                       iudxResponse.put(TITLE, "Success");
@@ -357,8 +349,8 @@ public class ManagementApiImpl implements ManagementApi {
                                           DataBrokerService dataBrokerService,PostgresService postgresService) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
-    json.put(Constants.JSON_ID, adapterId);
-    json.put(Constants.USER_ID, userId);
+    json.put(JSON_ID, adapterId);
+    json.put(USER_ID, userId);
     dataBrokerService.deleteAdaptor(json,VHosts.IUDX_PROD.name(), dataBrokerHandler -> {
       if (dataBrokerHandler.succeeded()) {
         postgresService.executeQuery(DELETE_INGESTION_SQL.replace("$0",adapterId), pgHandler->{
@@ -392,12 +384,12 @@ public class ManagementApiImpl implements ManagementApi {
   public Future<JsonObject> getAdapterDetails(String adapterId, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject json = new JsonObject();
-    json.put(Constants.JSON_ID, adapterId);
+    json.put(JSON_ID, adapterId);
     databroker.listAdaptor(json,VHosts.IUDX_PROD.name(), handler -> {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
-        if (!result.containsKey(Constants.JSON_TYPE)) {
+        if (!result.containsKey(JSON_TYPE)) {
 
 
           JsonObject iudxResponse=new JsonObject();
@@ -426,8 +418,8 @@ public class ManagementApiImpl implements ManagementApi {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
-        if (result.containsKey(Constants.JSON_TYPE)
-            && result.getString(Constants.JSON_TYPE).equalsIgnoreCase(Constants.SUCCCESS)) {
+        if (result.containsKey(JSON_TYPE)
+            && result.getString(JSON_TYPE).equalsIgnoreCase(SUCCCESS)) {
           promise.complete(result);
         } else {
           promise.fail(result.toString());
@@ -450,7 +442,7 @@ public class ManagementApiImpl implements ManagementApi {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
-        if (result.getString(Constants.JSON_TYPE).equalsIgnoreCase(Constants.SUCCCESS)) {
+        if (result.getString(JSON_TYPE).equalsIgnoreCase(SUCCCESS)) {
           promise.complete(result);
         } else {
           promise.fail(result.toString());
@@ -472,7 +464,7 @@ public class ManagementApiImpl implements ManagementApi {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
-        if (result.getString(Constants.JSON_TYPE).equalsIgnoreCase(Constants.SUCCCESS)) {
+        if (result.getString(JSON_TYPE).equalsIgnoreCase(SUCCCESS)) {
           promise.complete(result);
         } else {
           promise.fail(result.toString());
@@ -494,7 +486,7 @@ public class ManagementApiImpl implements ManagementApi {
       if (handler.succeeded()) {
         JsonObject result = handler.result();
         LOGGER.debug("Result from databroker verticle :: " + result);
-        if (!result.containsKey(Constants.JSON_TYPE)) {
+        if (!result.containsKey(JSON_TYPE)) {
           promise.complete(result);
         } else {
           promise.fail(result.toString());

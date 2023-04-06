@@ -1,11 +1,7 @@
 package iudx.resource.server.databroker;
 
-import static iudx.resource.server.apiserver.util.Constants.IID;
 import static iudx.resource.server.databroker.util.Constants.*;
-import static iudx.resource.server.databroker.util.Util.encodeValue;
-import static iudx.resource.server.databroker.util.Util.getResponseJson;
-import static iudx.resource.server.databroker.util.Util.isGroupId;
-import static iudx.resource.server.databroker.util.Util.isValidId;
+import static iudx.resource.server.databroker.util.Util.*;
 import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
 
 import java.util.Arrays;
@@ -29,9 +25,7 @@ import io.vertx.sqlclient.RowSet;
 import iudx.resource.server.common.Response;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.common.VHosts;
-import iudx.resource.server.databroker.util.Constants;
 import iudx.resource.server.databroker.util.PermissionOpType;
-import iudx.resource.server.databroker.util.Util;
 
 public class RabbitClient {
 
@@ -94,15 +88,15 @@ public class RabbitClient {
           if (statusCode == HttpStatus.SC_CREATED) {
             responseJson.put(EXCHANGE, exchangeName);
           } else if (statusCode == HttpStatus.SC_NO_CONTENT) {
-            responseJson = Util.getResponseJson(HttpStatus.SC_CONFLICT, FAILURE, EXCHANGE_EXISTS);
+            responseJson = getResponseJson(HttpStatus.SC_CONFLICT, FAILURE, EXCHANGE_EXISTS);
           } else if (statusCode == HttpStatus.SC_BAD_REQUEST) {
-            responseJson = Util.getResponseJson(statusCode, FAILURE,
+            responseJson = getResponseJson(statusCode, FAILURE,
                     EXCHANGE_EXISTS_WITH_DIFFERENT_PROPERTIES);
           }
           LOGGER.debug("Success : " + responseJson);
           promise.complete(responseJson);
         } else {
-          JsonObject errorJson = Util.getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR,
+          JsonObject errorJson = getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR,
                   EXCHANGE_CREATE_ERROR);
           LOGGER.error("Fail : " + requestHandler.cause());
           promise.fail(errorJson.toString());
@@ -128,12 +122,12 @@ public class RabbitClient {
             LOGGER.debug("Success : " + responseJson);
             promise.complete(responseJson);
           } else {
-            responseJson = Util.getResponseJson(statusCode, FAILURE, EXCHANGE_NOT_FOUND);
+            responseJson = getResponseJson(statusCode, FAILURE, EXCHANGE_NOT_FOUND);
             promise.fail(responseJson.toString());
           }
         } else {
           JsonObject errorJson =
-                  Util.getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR, EXCHANGE_NOT_FOUND);
+                  getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR, EXCHANGE_NOT_FOUND);
           LOGGER.error("Error : " + requestHandler.cause());
           promise.fail(errorJson.toString());
         }
@@ -218,12 +212,12 @@ public class RabbitClient {
             responseJson = new JsonObject();
             responseJson.put(EXCHANGE, exchangeName);
           } else {
-            responseJson = Util.getResponseJson(statusCode, FAILURE, EXCHANGE_NOT_FOUND);
+            responseJson = getResponseJson(statusCode, FAILURE, EXCHANGE_NOT_FOUND);
             LOGGER.debug("Success : " + responseJson);
           }
           promise.complete(responseJson);
         } else {
-          JsonObject errorJson = Util.getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR,
+          JsonObject errorJson = getResponseJson(HttpStatus.SC_INTERNAL_SERVER_ERROR, ERROR,
                   EXCHANGE_DELETE_ERROR);
           LOGGER.error("Error : " + requestHandler.cause());
           promise.fail(errorJson.toString());
@@ -247,7 +241,7 @@ public class RabbitClient {
     if (request != null && !request.isEmpty()) {
       String exchangeName = request.getString(ID);
       String url =
-              "/api/exchanges/" + vhost + "/" + Util.encodeValue(exchangeName) + "/bindings/source";
+              "/api/exchanges/" + vhost + "/" + encodeValue(exchangeName) + "/bindings/source";
       webClient.requestAsync(REQUEST_GET, url).onComplete(ar -> {
         if (ar.succeeded()) {
           HttpResponse<Buffer> response = ar.result();
@@ -260,26 +254,26 @@ public class RabbitClient {
                 Map res = jsonBody.stream().map(JsonObject.class::cast)
                         .collect(Collectors.toMap(json -> json.getString("destination"),
                                 json -> new JsonArray().add(json.getString("routing_key")),
-                                Util.bindingMergeOperator));
+                                bindingMergeOperator));
                 LOGGER.debug("Info : exchange subscribers : " + jsonBody);
                 finalResponse.clear().mergeIn(new JsonObject(res));
                 LOGGER.debug("Info : final Response : " + finalResponse);
                 if (finalResponse.isEmpty()) {
                   finalResponse.clear().mergeIn(
-                          Util.getResponseJson(HttpStatus.SC_NOT_FOUND, FAILURE, EXCHANGE_NOT_FOUND),
+                          getResponseJson(HttpStatus.SC_NOT_FOUND, FAILURE, EXCHANGE_NOT_FOUND),
                           true);
                 }
               }
             } else if (status == HttpStatus.SC_NOT_FOUND) {
               finalResponse.mergeIn(
-                      Util.getResponseJson(HttpStatus.SC_NOT_FOUND, FAILURE, EXCHANGE_NOT_FOUND), true);
+                      getResponseJson(HttpStatus.SC_NOT_FOUND, FAILURE, EXCHANGE_NOT_FOUND), true);
             }
           }
           promise.complete(finalResponse);
           LOGGER.debug("Success :" + finalResponse);
         } else {
           LOGGER.error("Fail : Listing of Exchange failed - ", ar.cause());
-          JsonObject error = Util.getResponseJson(500, FAILURE, "Internal server error");
+          JsonObject error = getResponseJson(500, FAILURE, "Internal server error");
           promise.fail(error.toString());
         }
       });
@@ -300,27 +294,27 @@ public class RabbitClient {
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
       String queueName = request.getString("queueName");
-      String url = "/api/queues/" + vhost + "/" + Util.encodeValue(queueName);// "durable":true
+      String url = "/api/queues/" + vhost + "/" + encodeValue(queueName);// "durable":true
       JsonObject configProp = new JsonObject();
       JsonObject arguments = new JsonObject();
-      arguments.put(Constants.X_MESSAGE_TTL_NAME, Constants.X_MESSAGE_TTL_VALUE)
-              .put(Constants.X_MAXLENGTH_NAME, Constants.X_MAXLENGTH_VALUE)
-              .put(Constants.X_QUEUE_MODE_NAME, Constants.X_QUEUE_MODE_VALUE);
-      configProp.put(Constants.X_QUEUE_TYPE, true);
-      configProp.put(Constants.X_QUEUE_ARGUMENTS, arguments);
+      arguments.put(X_MESSAGE_TTL_NAME, X_MESSAGE_TTL_VALUE)
+              .put(X_MAXLENGTH_NAME, X_MAXLENGTH_VALUE)
+              .put(X_QUEUE_MODE_NAME, X_QUEUE_MODE_VALUE);
+      configProp.put(X_QUEUE_TYPE, true);
+      configProp.put(X_QUEUE_ARGUMENTS, arguments);
       webClient.requestAsync(REQUEST_PUT, url, configProp).onComplete(ar -> {
         if (ar.succeeded()) {
           HttpResponse<Buffer> response = ar.result();
           if (response != null && !response.equals(" ")) {
             int status = response.statusCode();
             if (status == HttpStatus.SC_CREATED) {
-              finalResponse.put(Constants.QUEUE, queueName);
+              finalResponse.put(QUEUE, queueName);
             } else if (status == HttpStatus.SC_NO_CONTENT) {
               finalResponse.mergeIn(
-                      Util.getResponseJson(HttpStatus.SC_CONFLICT, FAILURE, QUEUE_ALREADY_EXISTS),
+                      getResponseJson(HttpStatus.SC_CONFLICT, FAILURE, QUEUE_ALREADY_EXISTS),
                       true);
             } else if (status == HttpStatus.SC_BAD_REQUEST) {
-              finalResponse.mergeIn(Util.getResponseJson(status, FAILURE,
+              finalResponse.mergeIn(getResponseJson(status, FAILURE,
                       QUEUE_ALREADY_EXISTS_WITH_DIFFERENT_PROPERTIES), true);
             }
           }
@@ -328,7 +322,7 @@ public class RabbitClient {
           LOGGER.info("Success : " + finalResponse);
         } else {
           LOGGER.error("Fail : Creation of Queue failed - ", ar.cause());
-          finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, QUEUE_CREATE_ERROR));
+          finalResponse.mergeIn(getResponseJson(500, FAILURE, QUEUE_CREATE_ERROR));
           promise.fail(finalResponse.toString());
         }
       });
@@ -358,16 +352,16 @@ public class RabbitClient {
           if (response != null && !response.equals(" ")) {
             int status = response.statusCode();
             if (status == HttpStatus.SC_NO_CONTENT) {
-              finalResponse.put(Constants.QUEUE, queueName);
+              finalResponse.put(QUEUE, queueName);
             } else if (status == HttpStatus.SC_NOT_FOUND) {
-              finalResponse.mergeIn(Util.getResponseJson(status, FAILURE, QUEUE_DOES_NOT_EXISTS));
+              finalResponse.mergeIn(getResponseJson(status, FAILURE, QUEUE_DOES_NOT_EXISTS));
             }
           }
           LOGGER.info(finalResponse);
           promise.complete(finalResponse);
         } else {
           LOGGER.error("Fail : deletion of queue failed - ", ar.cause());
-          finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, QUEUE_DELETE_ERROR));
+          finalResponse.mergeIn(getResponseJson(500, FAILURE, QUEUE_DELETE_ERROR));
           promise.fail(finalResponse.toString());
         }
       });
@@ -393,7 +387,7 @@ public class RabbitClient {
       JsonArray entities = request.getJsonArray("entities");
       int arrayPos = entities.size() - 1;
       String url = "/api/bindings/" + vhost + "/e/" + encodeValue(exchangeName) + "/q/"
-              + Util.encodeValue(queueName);
+              + encodeValue(queueName);
       for (Object rkey : entities) {
         requestBody.put("routing_key", rkey.toString());
         webClient.requestAsync(REQUEST_POST, url, requestBody).onComplete(ar -> {
@@ -403,12 +397,12 @@ public class RabbitClient {
               int status = response.statusCode();
               LOGGER.info("Info : Binding " + rkey.toString() + "Success. Status is " + status);
               if (status == HttpStatus.SC_CREATED) {
-                finalResponse.put(Constants.EXCHANGE, exchangeName);
-                finalResponse.put(Constants.QUEUE, queueName);
-                finalResponse.put(Constants.ENTITIES, entities);
+                finalResponse.put(EXCHANGE, exchangeName);
+                finalResponse.put(QUEUE, queueName);
+                finalResponse.put(ENTITIES, entities);
               } else if (status == HttpStatus.SC_NOT_FOUND) {
                 finalResponse
-                        .mergeIn(Util.getResponseJson(status, FAILURE, QUEUE_EXCHANGE_NOT_FOUND));
+                        .mergeIn(getResponseJson(status, FAILURE, QUEUE_EXCHANGE_NOT_FOUND));
               }
             }
             if (rkey == entities.getValue(arrayPos)) {
@@ -417,7 +411,7 @@ public class RabbitClient {
             }
           } else {
             LOGGER.error("Fail : Binding of Queue failed - ", ar.cause());
-            finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, QUEUE_BIND_ERROR));
+            finalResponse.mergeIn(getResponseJson(500, FAILURE, QUEUE_BIND_ERROR));
             promise.fail(finalResponse.toString());
           }
         });
@@ -444,18 +438,18 @@ public class RabbitClient {
       int arrayPos = entities.size() - 1;
       for (Object rkey : entities) {
         String url = "/api/bindings/" + vhost + "/e/" + encodeValue(exchangeName) + "/q/"
-                + Util.encodeValue(queueName) + "/" + encodeValue((String) rkey);
+                + encodeValue(queueName) + "/" + encodeValue((String) rkey);
         webClient.requestAsync(REQUEST_DELETE, url).onComplete(ar -> {
           if (ar.succeeded()) {
             HttpResponse<Buffer> response = ar.result();
             if (response != null && !response.equals(" ")) {
               int status = response.statusCode();
               if (status == HttpStatus.SC_NO_CONTENT) {
-                finalResponse.put(Constants.EXCHANGE, exchangeName);
-                finalResponse.put(Constants.QUEUE, queueName);
-                finalResponse.put(Constants.ENTITIES, entities);
+                finalResponse.put(EXCHANGE, exchangeName);
+                finalResponse.put(QUEUE, queueName);
+                finalResponse.put(ENTITIES, entities);
               } else if (status == HttpStatus.SC_NOT_FOUND) {
-                finalResponse.mergeIn(Util.getResponseJson(status, FAILURE, ALL_NOT_FOUND));
+                finalResponse.mergeIn(getResponseJson(status, FAILURE, ALL_NOT_FOUND));
               }
             }
             if (rkey == entities.getValue(arrayPos)) {
@@ -464,7 +458,7 @@ public class RabbitClient {
             }
           } else {
             LOGGER.error("Fail : Unbinding of Queue failed", ar.cause());
-            finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, QUEUE_BIND_ERROR));
+            finalResponse.mergeIn(getResponseJson(500, FAILURE, QUEUE_BIND_ERROR));
             promise.fail(finalResponse.toString());
           }
         });
@@ -492,17 +486,17 @@ public class RabbitClient {
           if (response != null && !response.equals(" ")) {
             int status = response.statusCode();
             if (status == HttpStatus.SC_CREATED) {
-              finalResponse.put(Constants.VHOST, vhost);
+              finalResponse.put(VHOST, vhost);
             } else if (status == HttpStatus.SC_NO_CONTENT) {
               finalResponse.mergeIn(
-                      Util.getResponseJson(HttpStatus.SC_CONFLICT, FAILURE, VHOST_ALREADY_EXISTS));
+                      getResponseJson(HttpStatus.SC_CONFLICT, FAILURE, VHOST_ALREADY_EXISTS));
             }
           }
           promise.complete(finalResponse);
-          LOGGER.info("Successully created vhost : " + Constants.VHOST);
+          LOGGER.info("Successully created vhost : " + VHOST);
         } else {
           LOGGER.error(" Fail : Creation of vHost failed", ar.cause());
-          finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, VHOST_CREATE_ERROR));
+          finalResponse.mergeIn(getResponseJson(500, FAILURE, VHOST_CREATE_ERROR));
           promise.fail(finalResponse.toString());
         }
       });
@@ -530,16 +524,16 @@ public class RabbitClient {
             int status = response.statusCode();
             LOGGER.debug("Info : statusCode" + status);
             if (status == HttpStatus.SC_NO_CONTENT) {
-              finalResponse.put(Constants.VHOST, vhost);
+              finalResponse.put(VHOST, vhost);
             } else if (status == HttpStatus.SC_NOT_FOUND) {
-              finalResponse.mergeIn(Util.getResponseJson(status, FAILURE, VHOST_NOT_FOUND));
+              finalResponse.mergeIn(getResponseJson(status, FAILURE, VHOST_NOT_FOUND));
             }
           }
           promise.complete(finalResponse);
-          LOGGER.info("Successfully deleted vhost : " + Constants.VHOST);
+          LOGGER.info("Successfully deleted vhost : " + VHOST);
         } else {
           LOGGER.error("Fail : Deletion of vHost failed -", ar.cause());
-          finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, VHOST_DELETE_ERROR));
+          finalResponse.mergeIn(getResponseJson(500, FAILURE, VHOST_DELETE_ERROR));
           promise.fail(finalResponse.toString());
         }
       });
@@ -577,18 +571,18 @@ public class RabbitClient {
                   vhostList.add(vhostName);
                 });
                 if (vhostList != null && !vhostList.isEmpty()) {
-                  finalResponse.put(Constants.VHOST, vhostList);
+                  finalResponse.put(VHOST, vhostList);
                 }
               }
             } else if (status == HttpStatus.SC_NOT_FOUND) {
-              finalResponse.mergeIn(Util.getResponseJson(status, FAILURE, VHOST_NOT_FOUND));
+              finalResponse.mergeIn(getResponseJson(status, FAILURE, VHOST_NOT_FOUND));
             }
           }
           LOGGER.debug("Success : " + finalResponse);
           promise.complete(finalResponse);
         } else {
           LOGGER.error("Fail : Listing of vHost failed - ", ar.cause());
-          finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, VHOST_LIST_ERROR));
+          finalResponse.mergeIn(getResponseJson(500, FAILURE, VHOST_LIST_ERROR));
           promise.fail(finalResponse.toString());
         }
       });
@@ -628,22 +622,22 @@ public class RabbitClient {
                   }
                 });
                 if (oroutingKeys != null && !oroutingKeys.isEmpty()) {
-                  finalResponse.put(Constants.ENTITIES, oroutingKeys);
+                  finalResponse.put(ENTITIES, oroutingKeys);
                 } else {
-                  finalResponse.clear().mergeIn(Util.getResponseJson(HttpStatus.SC_NOT_FOUND,
+                  finalResponse.clear().mergeIn(getResponseJson(HttpStatus.SC_NOT_FOUND,
                           FAILURE, QUEUE_DOES_NOT_EXISTS));
                 }
               }
             } else if (status == HttpStatus.SC_NOT_FOUND) {
               finalResponse.clear()
-                      .mergeIn(Util.getResponseJson(status, FAILURE, QUEUE_DOES_NOT_EXISTS));
+                      .mergeIn(getResponseJson(status, FAILURE, QUEUE_DOES_NOT_EXISTS));
             }
           }
           LOGGER.debug("Info : " + finalResponse);
           promise.complete(finalResponse);
         } else {
           LOGGER.error("Error : Listing of Queue failed - " + ar.cause());
-          finalResponse.mergeIn(Util.getResponseJson(500, FAILURE, QUEUE_LIST_ERROR));
+          finalResponse.mergeIn(getResponseJson(500, FAILURE, QUEUE_LIST_ERROR));
           promise.fail(finalResponse.toString());
         }
       });
@@ -688,11 +682,11 @@ public class RabbitClient {
           LOGGER.debug("Success : queue bindings done.");
           JsonObject response = new JsonObject()
                   .put(USER_NAME, requestParams.userid)
-                  .put(Constants.APIKEY, requestParams.apiKey)
-                  .put(Constants.ID, requestParams.adaptorId)
-                  .put(Constants.URL, this.amqpUrl)
-                  .put(Constants.PORT, this.amqpPort)
-                  .put(Constants.VHOST, requestParams.vhost);
+                  .put(APIKEY, requestParams.apiKey)
+                  .put(ID, requestParams.adaptorId)
+                  .put(URL, this.amqpUrl)
+                  .put(PORT, this.amqpPort)
+                  .put(VHOST, requestParams.vhost);
           LOGGER.debug("Success : Adapter created successfully.");
           promise.complete(response);
         }).onFailure(failure -> {
@@ -796,7 +790,7 @@ public class RabbitClient {
     LOGGER.trace("Info : RabbitClient#createUserIfNotPresent() started");
     Promise<JsonObject> promise = Promise.promise();
 
-    String password = Util.randomPassword.get();
+    String password = randomPassword.get();
     String url = "/api/users/" + userid;
     /* Check if user exists */
     JsonObject response = new JsonObject();
@@ -877,7 +871,7 @@ public class RabbitClient {
               response.mergeIn(getResponseJson(SUCCESS_CODE, VHOST_PERMISSIONS,
                       handler.result().getString(DETAIL)));
               // Call the DB method to store username and password
-              Future<JsonObject> createUserinDb = createUserInDb(userid, Util.getSha(password));
+              Future<JsonObject> createUserinDb = createUserInDb(userid, getSha(password));
               createUserinDb.onComplete(createUserinDbHandler -> {
                 if (createUserinDbHandler.succeeded()) {
                   promise.complete(response);

@@ -65,7 +65,6 @@ public class Util {
         .array();
     return Base64.getUrlEncoder().encodeToString(pwdBytes).substring(0,22);
   };
-      ;
 
   /**
    * TODO This method checks the if for special characters other than hyphen, A-Z, a-z and 0-9.
@@ -82,7 +81,7 @@ public class Util {
 
   public static BinaryOperator<JsonArray> bindingMergeOperator = (key1, key2) -> {
     JsonArray mergedArray = new JsonArray();
-    mergedArray.clear().addAll(((JsonArray) key1)).addAll(((JsonArray) key2));
+    mergedArray.clear().addAll((JsonArray) key1).addAll((JsonArray) key2);
     return mergedArray;
   };
   

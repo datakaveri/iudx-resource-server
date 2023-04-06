@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 
 /**
@@ -18,13 +17,9 @@ public class CallbackSubscription implements Subscription {
   private static final Logger LOGGER = LogManager.getLogger(CallbackSubscription.class);
 
   private DataBrokerService databroker;
-  private PostgresService pgService;
 
-  private static volatile CallbackSubscription instance = null;
-
-  public CallbackSubscription(DataBrokerService databroker, PostgresService pgService) {
+  public CallbackSubscription(DataBrokerService databroker) {
     this.databroker = databroker;
-    this.pgService = pgService;
   }
 
   /**

@@ -7,8 +7,6 @@ import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN_URN;
 import static iudx.resource.server.common.ResponseUrn.RESOURCE_NOT_FOUND_URN;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-
 import iudx.resource.server.common.Api;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,8 +26,6 @@ import iudx.resource.server.common.ResponseUrn;
 public class AuthHandler implements Handler<RoutingContext> {
 
   private static final Logger LOGGER = LogManager.getLogger(AuthHandler.class);
-
-  private static final Pattern regexIDPattern = ID_REGEX;
   static AuthenticationService authenticator;
   private final String AUTH_INFO = "authInfo";
   private final List<String> noAuthRequired = bypassEndpoint;
@@ -47,10 +43,8 @@ public class AuthHandler implements Handler<RoutingContext> {
     request = context.request();
     RequestBody requestBody = context.body();
     JsonObject requestJson=null;
-    if(requestBody!=null) {
-      if(requestBody.asJsonObject()!=null) {
+    if(requestBody!=null && requestBody.asJsonObject()!=null) {
         requestJson=requestBody.asJsonObject().copy();
-      }
     }
     if(requestJson==null) {
       requestJson=new JsonObject();
@@ -79,7 +73,7 @@ public class AuthHandler implements Handler<RoutingContext> {
     authInfo.put(ID, id);
 
     JsonArray ids = new JsonArray();
-    String[] idArray = (id == null ? new String[0] : id.split(","));
+    String[] idArray = id == null ? new String[0] : id.split(",");
     for (String i : idArray) {
       ids.add(i);
     }

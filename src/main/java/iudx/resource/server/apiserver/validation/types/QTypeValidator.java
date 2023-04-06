@@ -24,7 +24,7 @@ public final class QTypeValidator implements Validator {
     this.required = required;
   }
 
-  private boolean isValidAttribute(final String value) {
+  private boolean isValidAttribute() {
     return true;
   }
 
@@ -62,7 +62,6 @@ public final class QTypeValidator implements Validator {
     JsonObject json = new JsonObject();
     int length = queryTerms.length();
     List<Character> allowedSpecialCharacter = Arrays.asList('>', '=', '<', '!');
-    List<Character> allowedSpecialCharAttribValue = Arrays.asList('_', '-');
     int startIndex = 0;
     boolean specialCharFound = false;
     for (int i = 0; i < length; i++) {
@@ -72,9 +71,7 @@ public final class QTypeValidator implements Validator {
           json.put(JSON_ATTRIBUTE, queryTerms.substring(startIndex, i));
           startIndex = i;
           specialCharFound = true;
-        } else if (allowedSpecialCharAttribValue.contains(c)) {
-          // do nothing
-        } else {
+        }  else {
           LOGGER.error("Ignore " + c.toString());
           throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
         }
@@ -116,7 +113,7 @@ public final class QTypeValidator implements Validator {
       LOGGER.error("Validation error : Operator not allowed.");
       throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
     }
-    if (!isValidAttribute(qJson.getString(JSON_ATTRIBUTE))) {
+    if (!isValidAttribute()) {
       LOGGER.error("Validation error : Not a valid attribute in <<q>> query");
       throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
     }

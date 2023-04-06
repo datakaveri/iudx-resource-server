@@ -23,10 +23,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -57,7 +55,6 @@ public class AsyncServiceImpl implements AsyncService {
 
   private final ElasticClient client;
   private ResponseBuilder responseBuilder;
-  private String timeLimit;
   private String filePath;
   private final PostgresService pgService;
   private final S3FileOpsHelper s3FileOpsHelper;
@@ -67,12 +64,11 @@ public class AsyncServiceImpl implements AsyncService {
 
 
   public AsyncServiceImpl(Vertx vertx, ElasticClient client, PostgresService pgService,
-      S3FileOpsHelper s3FileOpsHelper, String timeLimit, String filePath) {
+      S3FileOpsHelper s3FileOpsHelper, String filePath) {
     this.vertx = vertx;
     this.client = client;
     this.pgService = pgService;
     this.s3FileOpsHelper = s3FileOpsHelper;
-    this.timeLimit = timeLimit;
     this.filePath = filePath;
     this.util = new Util(pgService);
     this.meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
@@ -172,7 +168,6 @@ public class AsyncServiceImpl implements AsyncService {
   Future<JsonArray> getRecord4RequestId(String requestId) {
     Promise<JsonArray> promise = Promise.promise();
 
-    Map<String, String> result = new HashMap<>();
     StringBuilder query = new StringBuilder(SELECT_S3_SEARCH_SQL
         .replace("$1", requestId)
           .replace("$2", QueryProgress.COMPLETE.toString()));

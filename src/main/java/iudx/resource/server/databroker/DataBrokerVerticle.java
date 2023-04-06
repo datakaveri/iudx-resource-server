@@ -3,8 +3,6 @@ package iudx.resource.server.databroker;
 import static iudx.resource.server.common.Constants.ASYNC_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.BROKER_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -38,10 +36,8 @@ import iudx.resource.server.databroker.listeners.UniqueAttribQListener;
 
 public class DataBrokerVerticle extends AbstractVerticle {
 
-  private static final Logger LOGGER = LogManager.getLogger(DataBrokerVerticle.class);
   private DataBrokerService databroker;
   private RabbitMQOptions config;
-  private RabbitMQClient client;
   private String dataBrokerIP;
   private int dataBrokerPort;
   private int dataBrokerManagementPort;
@@ -53,7 +49,6 @@ public class DataBrokerVerticle extends AbstractVerticle {
   private int handshakeTimeout;
   private int requestedChannelMax;
   private int networkRecoveryInterval;
-  private WebClient webClient;
   private WebClientOptions webConfig;
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
@@ -64,8 +59,6 @@ public class DataBrokerVerticle extends AbstractVerticle {
   private String databaseUserName;
   private String databasePassword;
   private int poolSize;
-  private int databasePoolSize;
-  private PgPool pgclient;
   private PoolOptions poolOptions;
   private PgConnectOptions connectOptions;
   private RabbitClient rabbitClient;
@@ -129,11 +122,11 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
     /* Create a RabbitMQ Clinet with the configuration and vertx cluster instance. */
 
-    client = RabbitMQClient.create(vertx, config);
+    RabbitMQClient.create(vertx, config);
 
     /* Create a Vertx Web Client with the configuration and vertx cluster instance. */
 
-    webClient = WebClient.create(vertx, webConfig);
+    WebClient.create(vertx, webConfig);
 
     /* Set Connection Object */
     if (connectOptions == null) {
@@ -147,7 +140,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
     }
 
     /* Create the client pool */
-    pgclient = PgPool.pool(vertx, connectOptions, poolOptions);
+    PgPool.pool(vertx, connectOptions, poolOptions);
 
     /* Create a Json Object for properties */
 

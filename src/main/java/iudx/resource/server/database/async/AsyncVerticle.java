@@ -32,7 +32,6 @@ public class AsyncVerticle extends AbstractVerticle {
   private String databaseIP;
   private String user;
   private String password;
-  private String timeLimit;
   private int databasePort;
   private String filePath;
   private String bucketName;
@@ -53,16 +52,15 @@ public class AsyncVerticle extends AbstractVerticle {
     databasePort = config().getInteger("databasePort");
     user = config().getString("dbUser");
     password = config().getString("dbPassword");
-    timeLimit = config().getString("timeLimit");
     filePath = config().getString("filePath");
     clientRegion = Regions.AP_SOUTH_1;
     bucketName = config().getString("bucketName");
 
     pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
-    client = new ElasticClient(databaseIP, databasePort, user, password, filePath, pgService);
+    client = new ElasticClient(databaseIP, databasePort, user, password);
     fileOpsHelper = new S3FileOpsHelper(clientRegion, bucketName);
     binder = new ServiceBinder(vertx);
-    asyncService = new AsyncServiceImpl(vertx,client, pgService, fileOpsHelper, timeLimit, filePath);
+    asyncService = new AsyncServiceImpl(vertx,client, pgService, fileOpsHelper, filePath);
 
     consumer = binder.setAddress(ASYNC_SERVICE_ADDRESS).register(AsyncService.class, asyncService);
   }

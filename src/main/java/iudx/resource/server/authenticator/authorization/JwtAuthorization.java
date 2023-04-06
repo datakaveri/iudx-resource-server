@@ -1,13 +1,9 @@
 package iudx.resource.server.authenticator.authorization;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.authenticator.model.JwtData;
 
 public final class JwtAuthorization {
-
-  private static final Logger LOGGER = LogManager.getLogger(JwtAuthorization.class);
 
   private final AuthorizationStrategy authStrategy;
 

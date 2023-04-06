@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
@@ -60,9 +59,6 @@ public class ParamsValidator {
   private static Set<String> validParams = new HashSet<String>();
   private static Set<String> validHeaders = new HashSet<String>();
   private CatalogueService catalogueService;
-
-  private static final Pattern pattern = Pattern.compile("[\\w]+[^\\,]*(?:\\.*[\\w])");
-
   public ParamsValidator(CatalogueService catalogueService) {
     this.catalogueService = catalogueService;
   }
@@ -118,19 +114,6 @@ public class ParamsValidator {
     }
     return true;
   }
-
-
-  private boolean validateHeader(MultiMap headerMap) {
-    final List<Entry<String, String>> entries = headerMap.entries();
-    for (final Entry<String, String> entry : entries) {
-      // 
-      /*
-       * if (!validHeaders.contains(entry.getKey())) { return false; }
-       */
-    }
-    return true;
-  }
-
   /**
    * validate request parameters.
    * 
@@ -204,7 +187,7 @@ public class ParamsValidator {
             || !(new CoordinatesTypeValidator(coordinates, false).isValid())
             || !(new GeoRelTypeValidator(georelArray != null ? georelArray[0] : null, false)
                 .isValid())
-            || !((georelArray != null && georelArray.length == 2)
+            || !(georelArray != null && georelArray.length == 2
                 ? isValidDistance(georelArray[1])
                 : isValidDistance(null));
 
@@ -300,7 +283,7 @@ public class ParamsValidator {
       org.locationtech.jts.geom.Geometry geom = reader.read(geoJson);
       boolean isValidNosCoords = false;
       boolean isPolygon = false;
-      if (("Polygon").equalsIgnoreCase(geom.getGeometryType())) {
+      if ("Polygon".equalsIgnoreCase(geom.getGeometryType())) {
         isPolygon = true;
         Coordinate[] coords = geom.getCoordinates();
         isValidNosCoords = coords.length < 11;

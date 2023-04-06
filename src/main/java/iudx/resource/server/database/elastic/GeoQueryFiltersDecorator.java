@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import co.elastic.clients.elasticsearch._types.GeoShapeRelation;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.WrapperQuery;
 import io.vertx.core.json.JsonArray;
@@ -82,13 +81,13 @@ public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
       double lon = json.getDouble(LON);
       geom = "Circle";
       geoJson.put("radius", json.getString("radius") + "m");
-      coordinates = (new JsonArray().add(lon).add(lat));
+      coordinates = new JsonArray().add(lon).add(lat);
     } else if ("bbox".equalsIgnoreCase(json.getString(GEOMETRY))) {
       geom = "envelope";
-      coordinates = (new JsonArray(json.getString("coordinates")));
+      coordinates = new JsonArray(json.getString("coordinates"));
     } else {
       geom = json.getString(GEOMETRY);
-      coordinates = (new JsonArray(json.getString("coordinates")));
+      coordinates = new JsonArray(json.getString("coordinates"));
     }
     geoJson.put("type", geom);
     geoJson.put("coordinates", coordinates);

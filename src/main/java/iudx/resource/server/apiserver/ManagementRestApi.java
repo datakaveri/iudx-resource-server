@@ -9,7 +9,6 @@ import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN_URN;
 import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN_URN;
 import static iudx.resource.server.common.Util.isValidName;
-import static iudx.resource.server.databroker.util.Constants.QUEUE;
 import static iudx.resource.server.metering.util.Constants.EPOCH_TIME;
 import static iudx.resource.server.metering.util.Constants.ISO_TIME;
 
@@ -580,7 +579,7 @@ public class ManagementRestApi {
           .end(generateResponse(status, urn).toString());
     } catch (DecodeException ex) {
       LOGGER.error("ERROR : Expecting Json from backend service [ jsonFormattingException ]");
-      handleResponse(response, HttpStatusCode.BAD_REQUEST, BACKING_SERVICE_FORMAT_URN);
+      handleResponse(response, BAD_REQUEST, BACKING_SERVICE_FORMAT_URN);
     }
 
   }

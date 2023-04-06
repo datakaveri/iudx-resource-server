@@ -54,8 +54,6 @@ import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.util.RequestType;
-import iudx.resource.server.apiserver.validation.ValidatorsHandlersFactory;
-import iudx.resource.server.authenticator.AuthenticationService;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.common.Api;
 import iudx.resource.server.common.HttpStatusCode;
@@ -103,8 +101,6 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     /** Service addresses */
     private static final String DATABASE_SERVICE_ADDRESS = "iudx.rs.database.service";
-
-    private static final String AUTH_SERVICE_ADDRESS = "iudx.rs.authentication.service";
     private static final String BROKER_SERVICE_ADDRESS = "iudx.rs.broker.service";
     private static final String LATEST_SEARCH_ADDRESS = "iudx.rs.latest.service";
     private static final String METERING_SERVICE_ADDRESS = "iudx.rs.metering.service";
@@ -123,13 +119,9 @@ public class ApiServerVerticle extends AbstractVerticle {
     private DatabaseService database;
     private PostgresService postgresService;
     private DataBrokerService databroker;
-    private AuthenticationService authenticator;
     private ParamsValidator validator;
     private EncryptionService encryptionService;
     private String dxApiBasePath;
-    private String dxCatalogueBasePath;
-    private String dxAuthBasePath;
-
     private Api api;
     private LatestDataService latestDataService;
     private CacheService cacheService;
@@ -170,8 +162,6 @@ public class ApiServerVerticle extends AbstractVerticle {
 
         /* Get base paths from config */
         dxApiBasePath = config().getString("dxApiBasePath");
-        dxCatalogueBasePath = config().getString("dxCatalogueBasePath");
-        dxAuthBasePath = config().getString("dxAuthBasePath");
         api = Api.getInstance(dxApiBasePath);
 
         /* Define the APIs, methods, endpoints and associated methods. */
@@ -218,7 +208,6 @@ public class ApiServerVerticle extends AbstractVerticle {
 
         router.route().handler(BodyHandler.create());
         router.route().handler(TimeoutHandler.create(10000, 408));
-        ValidatorsHandlersFactory validators = new ValidatorsHandlersFactory();
         FailureHandler validationsFailureHandler = new FailureHandler();
         /* NGSI-LD api endpoints */
         ValidationHandler entityValidationHandler = new ValidationHandler(vertx, RequestType.ENTITY);
@@ -366,7 +355,6 @@ public class ApiServerVerticle extends AbstractVerticle {
             .handler(this::getAllAdaptersForUsers);
 
         //Metering extension
-        ValidationHandler overViewValidation = new ValidationHandler(vertx, RequestType.OVERVIEW);
         router
             .get(api.getMonthlyOverview())
             .handler(AuthHandler.create(vertx,api))
@@ -438,16 +426,13 @@ public class ApiServerVerticle extends AbstractVerticle {
         /* Get a handler for the Service Discovery interface. */
 
         database = DatabaseService.createProxy(vertx, DATABASE_SERVICE_ADDRESS);
-
-        authenticator = AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
-
         databroker = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
         meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
         latestDataService = LatestDataService.createProxy(vertx, LATEST_SEARCH_ADDRESS);
         cacheService=CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
         managementApi = new ManagementApiImpl();
         subsService = new SubscriptionService();
-        catalogueService = new CatalogueService(vertx, config(),cacheService);
+        catalogueService = new CatalogueService(cacheService);
         validator = new ParamsValidator(catalogueService);
 
         postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
@@ -455,7 +440,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
         router
             .route(api.getAsyncPath() + "/*")
-            .subRouter(new AsyncRestApi(vertx, router, config(), api).init());
+            .subRouter(new AsyncRestApi(vertx, router, api).init());
 
         router.route(ADMIN + "/*").subRouter(new AdminRestApi(vertx, router, api).init());
 
@@ -479,7 +464,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             response
                 .putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
                 .setStatusCode(404)
-                .end(generateResponse(HttpStatusCode.NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
+                .end(generateResponse(NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN)
                     .toString());
         });
 
@@ -645,7 +630,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     private void handleLatestEntitiesQuery(RoutingContext routingContext) {
         LOGGER.trace("Info:handleLatestEntitiesQuery method started.;");
         /* Handles HTTP request from client */
-        JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
         HttpServerRequest request = routingContext.request();
 
         /* Handles HTTP response from server to client */
@@ -693,13 +677,11 @@ public class ApiServerVerticle extends AbstractVerticle {
     private void handleEntitiesQuery(RoutingContext routingContext) {
         LOGGER.trace("Info:handleEntitiesQuery method started.;");
         /* Handles HTTP request from client */
-        JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
         HttpServerRequest request = routingContext.request();
         /* Handles HTTP response from server to client */
         HttpServerResponse response = routingContext.response();
         // get query paramaters
         MultiMap params = getQueryParams(routingContext, response).get();
-        MultiMap headerParams = request.headers();
         // validate request parameters
         Future<Boolean> validationResult = validator.validate(params);
         validationResult.onComplete(validationHandler -> {
@@ -758,7 +740,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         JsonObject requestJson = routingContext.body().asJsonObject();
         LOGGER.debug("Info: request Json :: ;" + requestJson);
         HttpServerResponse response = routingContext.response();
-        MultiMap headerParams = request.headers();
         // get query paramaters
         MultiMap params = getQueryParams(routingContext, response).get();
         // validate request parameters
@@ -958,7 +939,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         String instanceID = request.getHeader(HEADER_HOST);
         // get query parameters
         MultiMap params = getQueryParams(routingContext, response).get();
-        MultiMap headerParams = request.headers();
         // validate request params
         Future<Boolean> validationResult = validator.validate(params);
         validationResult.onComplete(validationHandler -> {
@@ -1010,7 +990,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         HttpServerResponse response = routingContext.response();
         JsonObject requestBody = routingContext.body().asJsonObject();
         String instanceID = request.getHeader(HEADER_HOST);
-        String subHeader = request.getHeader(HEADER_OPTIONS);
         String subscriptionType = SubsType.STREAMING.type;
         requestBody.put(SUB_TYPE, subscriptionType);
         JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
@@ -1051,7 +1030,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         String instanceID = request.getHeader(HEADER_HOST);
         requestJson.put(SUBSCRIPTION_ID, subsId);
         requestJson.put(JSON_INSTANCEID, instanceID);
-        String subHeader = request.getHeader(HEADER_OPTIONS);
         String subscriptionType = SubsType.STREAMING.type;
         requestJson.put(SUB_TYPE, subscriptionType);
         JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
@@ -1092,7 +1070,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         String subsId = userid + "/" + alias;
         JsonObject requestJson = routingContext.body().asJsonObject();
         String instanceID = request.getHeader(HEADER_HOST);
-        String subHeader = request.getHeader(HEADER_OPTIONS);
         String subscriptionType = SubsType.STREAMING.type;
         requestJson.put(SUB_TYPE, subscriptionType);
         JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
@@ -1137,7 +1114,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         String instanceID = request.getHeader(HEADER_HOST);
         requestJson.put(SUBSCRIPTION_ID, subsId);
         requestJson.put(JSON_INSTANCEID, instanceID);
-        String subHeader = request.getHeader(HEADER_OPTIONS);
         String subscriptionType = SubsType.STREAMING.type;
         requestJson.put(SUB_TYPE, subscriptionType);
         JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
@@ -1184,7 +1160,6 @@ public class ApiServerVerticle extends AbstractVerticle {
      */
     private void getAllSubscriptionForUser(RoutingContext routingContext) {
         LOGGER.trace("Info: getSubscriptionQueue method started");
-        HttpServerRequest request = routingContext.request();
         HttpServerResponse response = routingContext.response();
         JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
         JsonObject jsonObj = new JsonObject();
@@ -1222,7 +1197,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         String instanceID = request.getHeader(HEADER_HOST);
         requestJson.put(SUBSCRIPTION_ID, subsId);
         requestJson.put(JSON_INSTANCEID, instanceID);
-        String subHeader = request.getHeader(HEADER_OPTIONS);
         String subscriptionType = SubsType.STREAMING.type;
         requestJson.put(SUB_TYPE, subscriptionType);
         JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
@@ -1582,7 +1556,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 .end(generateResponse(status, urn).toString());
         } catch (DecodeException ex) {
             LOGGER.error("ERROR : Expecting Json from backend service [ jsonFormattingException ]");
-            handleResponse(response, HttpStatusCode.BAD_REQUEST, BACKING_SERVICE_FORMAT_URN);
+            handleResponse(response, BAD_REQUEST, BACKING_SERVICE_FORMAT_URN);
         }
     }
 
@@ -1623,7 +1597,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             response
                 .putHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .setStatusCode(HttpStatusCode.BAD_REQUEST.getValue())
-                .end(generateResponse(HttpStatusCode.BAD_REQUEST, INVALID_PARAM_URN).toString());
+                .end(generateResponse(BAD_REQUEST, INVALID_PARAM_URN).toString());
         }
         return Optional.of(queryParams);
     }

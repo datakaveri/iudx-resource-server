@@ -7,8 +7,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
 import co.elastic.clients.json.JsonData;
@@ -16,8 +14,6 @@ import io.vertx.core.json.JsonObject;
 import iudx.resource.server.database.elastic.exception.ESQueryException;
 
 public class TemporalQueryFiltersDecorator implements ElasticsearchQueryDecorator {
-
-  private static final Logger LOGGER = LogManager.getLogger(TemporalQueryFiltersDecorator.class);
   private Map<FilterType, List<Query>> queryFilters;
   private JsonObject requestQuery;
   private final int defaultDateLimit;

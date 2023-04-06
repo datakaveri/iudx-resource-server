@@ -5,29 +5,19 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import iudx.resource.server.common.Api;
-import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
-import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import iudx.resource.server.authenticator.authorization.AuthorizationContextFactory;
 import iudx.resource.server.authenticator.authorization.AuthorizationRequest;
 import iudx.resource.server.authenticator.authorization.AuthorizationStrategy;
@@ -58,7 +48,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   final String catBasePath;
 
   JwtAuthenticationServiceImpl(
-      Vertx vertx, final JWTAuth jwtAuth, final WebClient webClient, final JsonObject config,
+      Vertx vertx, final JWTAuth jwtAuth, final JsonObject config,
       final CacheService cacheService, final MeteringService meteringService, final Api apis) {
     this.jwtAuth = jwtAuth;
     this.audience = config.getString("audience");
@@ -88,8 +78,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);
 
     boolean skipResourceIdCheck =
-        (endPoint.equalsIgnoreCase(apis.getSubscriptionUrl())
-            && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")))
+        endPoint.equalsIgnoreCase(apis.getSubscriptionUrl())
+            && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE"))
             || endPoint.equalsIgnoreCase(apis.getManagementBasePath())
             || endPoint.equalsIgnoreCase(apis.getIudxConsumerAuditUrl())
             || endPoint.equalsIgnoreCase("/admin/revokeToken")
@@ -151,9 +141,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
                 jsonResponse.put(JSON_USERID, result.jwtData.getSub());
                 jsonResponse.put(
                     JSON_EXPIRY,
-                    (LocalDateTime.ofInstant(
+                    LocalDateTime.ofInstant(
                         Instant.ofEpochSecond(Long.parseLong(result.jwtData.getExp().toString())),
-                        ZoneId.systemDefault()))
+                        ZoneId.systemDefault())
                             .toString());
                 jsonResponse.put(ROLE, result.jwtData.getRole());
                 return Future.succeededFuture(jsonResponse);
@@ -273,9 +263,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       jsonResponse.put(ROLE,jwtData.getRole());
       jsonResponse.put(
           JSON_EXPIRY,
-          (LocalDateTime.ofInstant(
+          LocalDateTime.ofInstant(
               Instant.ofEpochSecond(Long.parseLong(jwtData.getExp().toString())),
-              ZoneId.systemDefault()))
+              ZoneId.systemDefault())
                   .toString());
       
       return Future.succeededFuture(jsonResponse);
@@ -374,9 +364,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     jsonResponse.put(ROLE,jwtData.getRole());
     jsonResponse.put(
         JSON_EXPIRY,
-        (LocalDateTime.ofInstant(
+        LocalDateTime.ofInstant(
             Instant.ofEpochSecond(Long.parseLong(jwtData.getExp().toString())),
-            ZoneId.systemDefault()))
+            ZoneId.systemDefault())
                 .toString());
     return jsonResponse;
   }
@@ -419,9 +409,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       String timestamp = responseJson.getString("value");
 
       LocalDateTime revokedAt = LocalDateTime.parse(timestamp);
-      LocalDateTime jwtIssuedAt = (LocalDateTime.ofInstant(
+      LocalDateTime jwtIssuedAt = LocalDateTime.ofInstant(
           Instant.ofEpochSecond(jwtData.getIat()),
-          ZoneId.systemDefault()));
+          ZoneId.systemDefault());
 
       if (jwtIssuedAt.isBefore(revokedAt)) {
         LOGGER.info("jwt issued at : " + jwtIssuedAt + " revokedAt : " + revokedAt);

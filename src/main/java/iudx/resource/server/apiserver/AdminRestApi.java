@@ -93,7 +93,6 @@ public final class AdminRestApi {
   private void handleRevokeTokenRequest(RoutingContext context) {
 
     HttpServerResponse response = context.response();
-    JsonObject authInfo = (JsonObject) context.data().get("authInfo");
     JsonObject requestBody = context.body().asJsonObject();
 
 
@@ -143,7 +142,6 @@ public final class AdminRestApi {
   private void createUniqueAttribute(RoutingContext context) {
     LOGGER.trace("createUniqueAttribute() started");
     HttpServerResponse response = context.response();
-    JsonObject authInfo = (JsonObject) context.data().get("authInfo");
     JsonObject requestBody = context.body().asJsonObject();
 
     String id = requestBody.getString("id");
@@ -196,7 +194,6 @@ public final class AdminRestApi {
 
   private void updateUniqueAttribute(RoutingContext context) {
     HttpServerResponse response = context.response();
-    JsonObject authInfo = (JsonObject) context.data().get("authInfo");
     JsonObject requestBody = context.body().asJsonObject();
 
     String id = requestBody.getString("id");
@@ -248,7 +245,6 @@ public final class AdminRestApi {
 
   private void deleteUniqueAttribute(RoutingContext context) {
     HttpServerResponse response = context.response();
-    JsonObject authInfo = (JsonObject) context.data().get("authInfo");
 
     HttpServerRequest request = context.request();
     String id = request.params().get("id");

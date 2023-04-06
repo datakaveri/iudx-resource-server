@@ -12,7 +12,6 @@ import co.elastic.clients.elasticsearch.core.search.SourceConfig;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.apiserver.handlers.FailureHandler;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.elastic.ElasticClient;
 import iudx.resource.server.database.elastic.QueryDecoder;
@@ -34,9 +33,7 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceImpl.class);
   private final ElasticClient client;
-  private JsonObject query;
   private QueryDecoder queryDecoder = new QueryDecoder();
-  private ResponseBuilder responseBuilder;
   private String timeLimit;
 
   public DatabaseServiceImpl(ElasticClient client, String timeLimit) {

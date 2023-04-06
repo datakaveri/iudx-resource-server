@@ -10,7 +10,7 @@ public class ESQueryException extends RuntimeException {
   private static final long serialVersionUID = 1L;
 
   private final int statusCode;
-  private final iudx.resource.server.common.ResponseUrn urn;
+  private final ResponseUrn urn;
   private final String message;
 
   public ESQueryException(final String message) {

@@ -60,7 +60,7 @@ public final class CoordinatesTypeValidator implements Validator {
   }
 
   private boolean isPricisonLengthAllowed(final String value) {
-    return (new BigDecimal(value).scale() > VALIDATION_COORDINATE_PRECISION_ALLOWED);
+    return new BigDecimal(value).scale() > VALIDATION_COORDINATE_PRECISION_ALLOWED;
   }
 
   private boolean isValidCoordinateCount(final String coordinates) {

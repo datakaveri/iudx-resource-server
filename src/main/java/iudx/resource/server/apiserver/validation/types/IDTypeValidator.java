@@ -2,8 +2,6 @@ package iudx.resource.server.apiserver.validation.types;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.ResponseUrn.*;
-
-import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
@@ -12,10 +10,6 @@ import iudx.resource.server.common.HttpStatusCode;
 public final class IDTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(IDTypeValidator.class);
-
-  private Integer minLength = VALIDATION_ID_MIN_LEN;
-  private Integer maxLength = VALIDATION_ID_MAX_LEN;
-  private static final Pattern regexIDPattern =ID_REGEX;
 
   private final String value;
   private final boolean required;

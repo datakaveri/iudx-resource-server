@@ -5,15 +5,10 @@ import iudx.resource.server.authenticator.model.JwtData;
 import iudx.resource.server.common.Api;
 
 public class AdminAuthStrategy implements AuthorizationStrategy{
-
-  private final Api api;
-
   private static volatile AdminAuthStrategy instance;
-
-  private AdminAuthStrategy(Api api)
+  private AdminAuthStrategy()
   {
-    this.api = api;
-    buildPermissions(api);
+    buildPermissions();
   }
   public static AdminAuthStrategy getInstance(Api api)
   {
@@ -23,14 +18,14 @@ public class AdminAuthStrategy implements AuthorizationStrategy{
       {
         if(instance == null)
         {
-          instance = new AdminAuthStrategy(api);
+          instance = new AdminAuthStrategy();
         }
       }
     }
     return instance;
 
   }
-  private void buildPermissions(Api api)
+  private void buildPermissions()
   {
 
   }
