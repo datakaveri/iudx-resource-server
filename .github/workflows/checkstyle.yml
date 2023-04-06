@@ -1,11 +1,8 @@
 name: Format
-
 on:
   push:
     branches: [ master ]
-
 jobs:
-
   formatting:
     runs-on: ubuntu-latest
     steps:
