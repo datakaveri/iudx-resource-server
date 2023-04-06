@@ -1,15 +1,17 @@
 name: Format
 
-on: [ push, pull_request ]
+on:
+  push:
+    branches: [ master ]
 
 jobs:
+
   formatting:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3 # v2 minimum required
       - uses: axel-op/googlejavaformat-action@v3
         with:
-          args: "--replace"
-      - name: Print diffs
-        # "--exit-code" will make this command exit with code 1 if there is a diff
-        run: git --no-pager diff --exit-code
+          args: "--skip-sorting-imports --replace"
+          # Recommended if you use MacOS:
+          # github-token: ${{ secrets.GITHUB_TOKEN }}
