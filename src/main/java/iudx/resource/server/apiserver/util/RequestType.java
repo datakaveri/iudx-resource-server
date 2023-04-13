@@ -1,6 +1,5 @@
 package iudx.resource.server.apiserver.util;
 
-
 public enum RequestType {
   ENTITY("entity"),
   TEMPORAL("temporal"),
@@ -14,11 +13,11 @@ public enum RequestType {
 
   private String filename;
 
-  public String getFilename() {
-    return this.filename;
+  RequestType(String fileName) {
+    this.filename = fileName;
   }
 
-   RequestType(String fileName) {
-    this.filename = fileName;
+  public String getFilename() {
+    return this.filename;
   }
 }
