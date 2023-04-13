@@ -2,7 +2,7 @@ package iudx.resource.server.apiserver.subscription;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
-import static iudx.resource.server.cache.cacheImpl.CacheType.CATALOGUE_CACHE;
+import static iudx.resource.server.cache.cachelmpl.CacheType.CATALOGUE_CACHE;
 import static iudx.resource.server.databroker.util.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

@@ -11,7 +11,7 @@ import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.cache.CacheService;
-import iudx.resource.server.cache.cacheImpl.CacheType;
+import iudx.resource.server.cache.cachelmpl.CacheType;
 import iudx.resource.server.common.Response;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;

@@ -7,7 +7,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.cache.CacheService;
-import iudx.resource.server.cache.cacheImpl.CacheType;
+import iudx.resource.server.cache.cachelmpl.CacheType;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;

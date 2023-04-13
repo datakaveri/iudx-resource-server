@@ -12,7 +12,7 @@ import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQConsumer;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import iudx.resource.server.cache.CacheService;
-import iudx.resource.server.cache.cacheImpl.CacheType;
+import iudx.resource.server.cache.cachelmpl.CacheType;
 import iudx.resource.server.common.BroadcastEventType;
 
 public class UniqueAttribQListener implements RMQListeners {

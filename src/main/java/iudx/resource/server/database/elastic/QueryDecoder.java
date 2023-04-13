@@ -9,13 +9,7 @@ import static iudx.resource.server.database.archives.Constants.SEARCH_TYPE;
 import static iudx.resource.server.database.archives.Constants.TEMPORAL_SEARCH_REGEX;
 import static iudx.resource.server.database.archives.Constants.TIME_KEY;
 import static iudx.resource.server.database.archives.Constants.TIME_LIMIT;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery.Builder;
@@ -27,6 +21,13 @@ import co.elastic.clients.elasticsearch.core.search.SourceFilter;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.database.elastic.exception.ESQueryException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class QueryDecoder {
 
@@ -59,7 +60,8 @@ public class QueryDecoder {
 
     queryLists.get(FilterType.FILTER).add(idTermsQuery);
     ElasticsearchQueryDecorator queryDecorator = null;
-    if (searchType.matches(TEMPORAL_SEARCH_REGEX) && jsonQuery.containsKey(REQ_TIMEREL)
+    if (searchType.matches(TEMPORAL_SEARCH_REGEX)
+        && jsonQuery.containsKey(REQ_TIMEREL)
         && jsonQuery.containsKey(TIME_KEY)) {
 
       if (!isAsyncQuery) {
@@ -99,7 +101,6 @@ public class QueryDecoder {
 
     LOGGER.info("query : {}", q.toString());
     return q;
-
   }
 
   private String[] getTimeLimitArray(JsonObject jsonQuery, boolean isAsyncQuery) {
@@ -120,12 +121,10 @@ public class QueryDecoder {
     JsonArray responseFilteringFileds = queryJson.getJsonArray(RESPONSE_ATTRS);
     if (responseFilteringFileds == null) {
       LOGGER.error("response filtering fields are not passed in attrs parameter");
-      throw new ESQueryException(
-          "response filtering fields are not passed in attrs parameter");
+      throw new ESQueryException("response filtering fields are not passed in attrs parameter");
     }
 
     return getSourceFilter(responseFilteringFileds.getList());
-
   }
 
   private SourceConfig getSourceFilter(List<String> sourceFilterList) {
@@ -160,6 +159,5 @@ public class QueryDecoder {
     }
 
     return boolQuery.build()._toQuery();
-
   }
 }

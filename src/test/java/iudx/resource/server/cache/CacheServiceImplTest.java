@@ -26,8 +26,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import iudx.resource.server.cache.cacheImpl.CacheType;
-import iudx.resource.server.cache.cacheImpl.CatalogueCacheImpl;
+import iudx.resource.server.cache.cachelmpl.CacheType;
+import iudx.resource.server.cache.cachelmpl.CatalogueCacheImpl;
 import iudx.resource.server.database.postgres.PostgresService;
 
 @ExtendWith({VertxExtension.class})

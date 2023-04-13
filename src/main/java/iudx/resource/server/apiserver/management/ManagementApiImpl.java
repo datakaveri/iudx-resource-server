@@ -1,7 +1,7 @@
 package iudx.resource.server.apiserver.management;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
-import static iudx.resource.server.cache.cacheImpl.CacheType.CATALOGUE_CACHE;
+import static iudx.resource.server.cache.cachelmpl.CacheType.CATALOGUE_CACHE;
 import static iudx.resource.server.common.Constants.CREATE_INGESTION_SQL;
 import static iudx.resource.server.common.Constants.DELETE_INGESTION_SQL;
 import static iudx.resource.server.common.Constants.SELECT_INGESTION_SQL;
