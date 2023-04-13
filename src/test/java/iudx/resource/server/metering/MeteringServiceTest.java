@@ -487,7 +487,7 @@ public class MeteringServiceTest {
 
         Future future = mock(Future.class);
 
-        meteringService.insertMeteringValuesInRMQ(
+        meteringService.insertMeteringValuesInRmq(
                 request, handler -> {
                     if (handler.failed()) {
                         vertxTestContext.completeNow();
@@ -525,7 +525,7 @@ public class MeteringServiceTest {
             }
         }).when(MeteringServiceImpl.rmqService).publishMessage(any(), anyString(), anyString(), any());
 
-        meteringService.insertMeteringValuesInRMQ(
+        meteringService.insertMeteringValuesInRmq(
                 request, handler -> {
                     if (handler.succeeded()) {
                         vertxTestContext.completeNow();

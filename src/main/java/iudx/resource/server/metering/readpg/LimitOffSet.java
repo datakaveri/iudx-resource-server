@@ -4,23 +4,22 @@ import static iudx.resource.server.metering.util.Constants.LIMIT_QUERY;
 import static iudx.resource.server.metering.util.Constants.OFFSET_QUERY;
 
 public class LimitOffSet {
-    int limit, offset;
-    StringBuilder finalQuery = null;
+  int limit;
+  int offset;
+  StringBuilder finalQuery = null;
 
-    LimitOffSet(int limit, int offset, StringBuilder q) {
-        this.limit = limit;
-        this.offset = offset;
-        this.finalQuery = q;
-    }
+  LimitOffSet(int limit, int offset, StringBuilder q) {
+    this.limit = limit;
+    this.offset = offset;
+    this.finalQuery = q;
+  }
 
-    public StringBuilder setLimitOffset() {
+  public StringBuilder setLimitOffset() {
 
-        finalQuery.append(LIMIT_QUERY
-                .replace("$7", Integer.toString(limit)));
+    finalQuery.append(LIMIT_QUERY.replace("$7", Integer.toString(limit)));
 
-        finalQuery.append(OFFSET_QUERY
-                .replace("$8", Integer.toString(offset)));
+    finalQuery.append(OFFSET_QUERY.replace("$8", Integer.toString(offset)));
 
-        return finalQuery;
-    }
+    return finalQuery;
+  }
 }

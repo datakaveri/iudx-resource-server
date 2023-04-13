@@ -1,5 +1,7 @@
 package iudx.resource.server.metering;
 
+import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -7,8 +9,6 @@ import io.vertx.serviceproxy.ServiceBinder;
 import iudx.resource.server.database.postgres.PostgresService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 
 public class MeteringVerticle extends AbstractVerticle {
 

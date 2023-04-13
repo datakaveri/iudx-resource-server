@@ -534,7 +534,7 @@ public class ManagementApiImplTest {
             }
         }).when(dataBrokerService).createvHost(any(),any());
 
-        managementApi.createVHost(json,dataBrokerService).onComplete(handler -> {
+        managementApi.createVhost(json,dataBrokerService).onComplete(handler -> {
             if(handler.succeeded())
             {
                 assertEquals(json,handler.result());
@@ -564,7 +564,7 @@ public class ManagementApiImplTest {
             }
         }).when(dataBrokerService).createvHost(any(),any());
 
-        managementApi.createVHost(json,dataBrokerService).onComplete(handler -> {
+        managementApi.createVhost(json,dataBrokerService).onComplete(handler -> {
             if(handler.failed())
             {
                 assertEquals("Dummy throwable message",handler.cause().getMessage());
@@ -594,7 +594,7 @@ public class ManagementApiImplTest {
             }
         }).when(dataBrokerService).deletevHost(any(),any());
 
-        managementApi.deleteVHost(vhostID,dataBrokerService).onComplete(handler -> {
+        managementApi.deleteVhost(vhostID,dataBrokerService).onComplete(handler -> {
             if(handler.succeeded())
             {
                 assertEquals(json,handler.result());
@@ -624,7 +624,7 @@ public class ManagementApiImplTest {
             }
         }).when(dataBrokerService).deletevHost(any(),any());
 
-        managementApi.deleteVHost(vhostID,dataBrokerService).onComplete(handler -> {
+        managementApi.deleteVhost(vhostID,dataBrokerService).onComplete(handler -> {
             if(handler.failed())
             {
                 assertEquals("Dummy throwable message",handler.cause().getMessage());

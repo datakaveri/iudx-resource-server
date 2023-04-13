@@ -356,7 +356,7 @@ public class AsyncServiceImpl implements AsyncService {
     request.put(API, IUDX_ASYNC_SEARCH_API);
     request.put(RESPONSE_SIZE, fileSize);
 
-    meteringService.insertMeteringValuesInRMQ(
+    meteringService.insertMeteringValuesInRmq(
             request,
             handler -> {
               if (handler.succeeded()) {

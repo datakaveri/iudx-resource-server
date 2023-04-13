@@ -21,28 +21,27 @@ import static iudx.resource.server.metering.util.Constants.EPOCH_TIME;
 import static iudx.resource.server.metering.util.Constants.ISO_TIME;
 import static iudx.resource.server.metering.util.Constants.USER_ID;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-
-import io.vertx.core.http.HttpServerRequest;
-import iudx.resource.server.common.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import iudx.resource.server.apiserver.handlers.AuthHandler;
+import iudx.resource.server.common.*;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.metering.MeteringService;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class AdminRestApi {
 
@@ -50,7 +49,7 @@ public final class AdminRestApi {
 
   private final Vertx vertx;
   private final Router router;
-  private final DataBrokerService RMQbrokerService;
+  private final DataBrokerService rmqBrokerService;
   private final PostgresService pgService;
   private final MeteringService auditService;
   private final ObjectMapper objectMapper = new ObjectMapper();
@@ -59,7 +58,7 @@ public final class AdminRestApi {
   AdminRestApi(Vertx vertx, Router router, Api api) {
     this.vertx = vertx;
     this.router = router;
-    this.RMQbrokerService = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
+    this.rmqBrokerService = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
     this.auditService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
     this.pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
     this.api = api;
@@ -68,75 +67,79 @@ public final class AdminRestApi {
   public Router init() {
     router
         .post(REVOKE_TOKEN)
-        .handler(AuthHandler.create(vertx,api))
+        .handler(AuthHandler.create(vertx, api))
         .handler(this::handleRevokeTokenRequest);
 
     router
         .post(RESOURCE_ATTRIBS)
-        .handler(AuthHandler.create(vertx,api))
+        .handler(AuthHandler.create(vertx, api))
         .handler(this::createUniqueAttribute);
 
     router
         .put(RESOURCE_ATTRIBS)
-        .handler(AuthHandler.create(vertx,api))
+        .handler(AuthHandler.create(vertx, api))
         .handler(this::updateUniqueAttribute);
 
     router
         .delete(RESOURCE_ATTRIBS)
-        .handler(AuthHandler.create(vertx,api))
+        .handler(AuthHandler.create(vertx, api))
         .handler(this::deleteUniqueAttribute);
 
     return router;
   }
 
-
   private void handleRevokeTokenRequest(RoutingContext context) {
 
-    HttpServerResponse response = context.response();
     JsonObject requestBody = context.body().asJsonObject();
 
+    //    context.queryParam(ID).add("admin_op");
 
-
-//    context.queryParam(ID).add("admin_op");
-
-    StringBuilder query = new StringBuilder(INSERT_REVOKE_TOKEN_SQL
-        .replace("$1", requestBody.getString("sub"))
-        .replace("$2", LocalDateTime.now().toString()));
-
+    StringBuilder query =
+        new StringBuilder(
+            INSERT_REVOKE_TOKEN_SQL
+                .replace("$1", requestBody.getString("sub"))
+                .replace("$2", LocalDateTime.now().toString()));
 
     JsonObject rmqMessage = new JsonObject();
     rmqMessage.put("sub", requestBody.getString("sub"));
     rmqMessage.put("expiry", LocalDateTime.now().toString());
 
     LOGGER.debug("query : " + query.toString());
-    pgService.executeQuery(query.toString(), pgHandler -> {
-      if (pgHandler.succeeded()) {
-        RMQbrokerService.publishMessage(rmqMessage, TOKEN_INVALID_EX, TOKEN_INVALID_EX_ROUTING_KEY,
-            rmqHandler -> {
-              if (rmqHandler.succeeded()) {
-                Future.future(fu -> updateAuditTable(context));
-                handleResponse(response, SUCCESS, SUCCESS_URN);
-              } else {
-                LOGGER.error(rmqHandler.cause());
-                try {
-                  Response resp =
-                      objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
-                  handleResponse(response, resp);
-                } catch (JsonProcessingException e) {
-                  LOGGER.error("Failure message not in format [type,title,detail]");
-                  handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
-                }
-              }
-            });
-      } else {
-        try {
-          Response resp = objectMapper.readValue(pgHandler.cause().getMessage(), Response.class);
-          handleResponse(response, resp);
-        } catch (JsonProcessingException e) {
-          handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
-        }
-      }
-    });
+    HttpServerResponse response = context.response();
+    pgService.executeQuery(
+        query.toString(),
+        pgHandler -> {
+          if (pgHandler.succeeded()) {
+            rmqBrokerService.publishMessage(
+                rmqMessage,
+                TOKEN_INVALID_EX,
+                TOKEN_INVALID_EX_ROUTING_KEY,
+                rmqHandler -> {
+                  if (rmqHandler.succeeded()) {
+                    Future.future(fu -> updateAuditTable(context));
+                    handleResponse(response, SUCCESS, SUCCESS_URN);
+                  } else {
+                    LOGGER.error(rmqHandler.cause());
+                    try {
+                      Response resp =
+                          objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
+                      handleResponse(response, resp);
+                    } catch (JsonProcessingException e) {
+                      LOGGER.error("Failure message not in format [type,title,detail]");
+                      handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+                    }
+                  }
+                });
+          } else {
+            try {
+              Response resp =
+                  objectMapper.readValue(pgHandler.cause().getMessage(), Response.class);
+              handleResponse(response, resp);
+            } catch (JsonProcessingException e) {
+              handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+            }
+          }
+        });
   }
 
   private void createUniqueAttribute(RoutingContext context) {
@@ -157,39 +160,44 @@ public final class AdminRestApi {
     rmqMessage.put("unique-attribute", attribute);
     rmqMessage.put("eventType", BroadcastEventType.CREATE);
 
-    StringBuilder query = new StringBuilder(INSERT_UNIQUE_ATTR_SQL
-        .replace("$1", id)
-        .replace("$2", attribute));
+    StringBuilder query =
+        new StringBuilder(INSERT_UNIQUE_ATTR_SQL.replace("$1", id).replace("$2", attribute));
 
     LOGGER.debug("query : " + query.toString());
-    pgService.executeQuery(query.toString(), pghandler -> {
-      if (pghandler.succeeded()) {
-        RMQbrokerService.publishMessage(rmqMessage, UNIQUE_ATTR_EX, UNIQUE_ATTR_EX_ROUTING_KEY,
-            rmqHandler -> {
-              if (rmqHandler.succeeded()) {
-                Future.future(fu -> updateAuditTable(context));
-                handleResponse(response, SUCCESS, SUCCESS_URN);
-              } else {
-                LOGGER.error(rmqHandler.cause());
-                try {
-                  Response resp =
-                      objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
-                  handleResponse(response, resp);
-                } catch (JsonProcessingException e) {
-                  handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
-                }
-              }
-            });
-      } else {
-        LOGGER.error(pghandler.cause());
-        try {
-          Response resp = objectMapper.readValue(pghandler.cause().getMessage(), Response.class);
-          handleResponse(response, resp);
-        } catch (JsonProcessingException e) {
-          handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
-        }
-      }
-    });
+    pgService.executeQuery(
+        query.toString(),
+        pghandler -> {
+          if (pghandler.succeeded()) {
+            rmqBrokerService.publishMessage(
+                rmqMessage,
+                UNIQUE_ATTR_EX,
+                UNIQUE_ATTR_EX_ROUTING_KEY,
+                rmqHandler -> {
+                  if (rmqHandler.succeeded()) {
+                    Future.future(fu -> updateAuditTable(context));
+                    handleResponse(response, SUCCESS, SUCCESS_URN);
+                  } else {
+                    LOGGER.error(rmqHandler.cause());
+                    try {
+                      Response resp =
+                          objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
+                      handleResponse(response, resp);
+                    } catch (JsonProcessingException e) {
+                      handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+                    }
+                  }
+                });
+          } else {
+            LOGGER.error(pghandler.cause());
+            try {
+              Response resp =
+                  objectMapper.readValue(pghandler.cause().getMessage(), Response.class);
+              handleResponse(response, resp);
+            } catch (JsonProcessingException e) {
+              handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+            }
+          }
+        });
   }
 
   private void updateUniqueAttribute(RoutingContext context) {
@@ -204,52 +212,54 @@ public final class AdminRestApi {
       return;
     }
 
-//    JsonObject queryparams = new JsonObject().put("attribute", attribute).put("id", id);
+    //    JsonObject queryparams = new JsonObject().put("attribute", attribute).put("id", id);
 
-    String query = UPDATE_UNIQUE_ATTR_SQL.replace("$2", id).replace("$1",attribute);
     JsonObject rmqMessage = new JsonObject();
     rmqMessage.put("id", id);
     rmqMessage.put("unique-attribute", attribute);
     rmqMessage.put("eventType", BroadcastEventType.UPDATE);
-
-    pgService.executePreparedQuery(query, new JsonObject(), pghandler -> {
-      if (pghandler.succeeded()) {
-        RMQbrokerService.publishMessage(rmqMessage, UNIQUE_ATTR_EX, UNIQUE_ATTR_EX_ROUTING_KEY,
-            rmqHandler -> {
-              if (rmqHandler.succeeded()) {
-                Future.future(fu -> updateAuditTable(context));
-                handleResponse(response, SUCCESS, SUCCESS_URN);
-              } else {
-                LOGGER.error(rmqHandler.cause());
-                try {
-                  Response resp =
-                      objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
-                  handleResponse(response, resp);
-                } catch (JsonProcessingException e) {
-                  handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
-                }
-              }
-            });
-      } else {
-        LOGGER.error(pghandler.cause());
-        try {
-          Response resp = objectMapper.readValue(pghandler.cause().getMessage(), Response.class);
-          handleResponse(response, resp);
-        } catch (JsonProcessingException e) {
-          handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
-        }
-      }
-    });
-
+    String query = UPDATE_UNIQUE_ATTR_SQL.replace("$2", id).replace("$1", attribute);
+    pgService.executePreparedQuery(
+        query,
+        new JsonObject(),
+        pghandler -> {
+          if (pghandler.succeeded()) {
+            rmqBrokerService.publishMessage(
+                rmqMessage,
+                UNIQUE_ATTR_EX,
+                UNIQUE_ATTR_EX_ROUTING_KEY,
+                rmqHandler -> {
+                  if (rmqHandler.succeeded()) {
+                    Future.future(fu -> updateAuditTable(context));
+                    handleResponse(response, SUCCESS, SUCCESS_URN);
+                  } else {
+                    LOGGER.error(rmqHandler.cause());
+                    try {
+                      Response resp =
+                          objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
+                      handleResponse(response, resp);
+                    } catch (JsonProcessingException e) {
+                      handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+                    }
+                  }
+                });
+          } else {
+            LOGGER.error(pghandler.cause());
+            try {
+              Response resp =
+                  objectMapper.readValue(pghandler.cause().getMessage(), Response.class);
+              handleResponse(response, resp);
+            } catch (JsonProcessingException e) {
+              handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+            }
+          }
+        });
   }
 
   private void deleteUniqueAttribute(RoutingContext context) {
-    HttpServerResponse response = context.response();
 
     HttpServerRequest request = context.request();
     String id = request.params().get("id");
-
-    JsonObject queryparams = new JsonObject();
 
     JsonObject rmqMessage = new JsonObject();
     rmqMessage.put("id", id);
@@ -257,35 +267,43 @@ public final class AdminRestApi {
     rmqMessage.put("eventType", BroadcastEventType.DELETE);
     String query = DELETE_UNIQUE_ATTR_SQL.replace("$1", id);
     LOGGER.trace("query : " + query);
-
-    pgService.executePreparedQuery(query, queryparams, pghandler -> {
-      if (pghandler.succeeded()) {
-        RMQbrokerService.publishMessage(rmqMessage, UNIQUE_ATTR_EX, UNIQUE_ATTR_EX_ROUTING_KEY,
-            rmqHandler -> {
-              if (rmqHandler.succeeded()) {
-                Future.future(fu -> updateAuditTable(context));
-                handleResponse(response, SUCCESS, SUCCESS_URN);
-              } else {
-                LOGGER.error(rmqHandler.cause());
-                try {
-                  Response resp =
-                      objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
-                  handleResponse(response, resp);
-                } catch (JsonProcessingException e) {
-                  handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
-                }
-              }
-            });
-      } else {
-        LOGGER.error(pghandler.cause());
-        try {
-          Response resp = objectMapper.readValue(pghandler.cause().getMessage(), Response.class);
-          handleResponse(response, resp);
-        } catch (JsonProcessingException e) {
-          handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
-        }
-      }
-    });
+    HttpServerResponse response = context.response();
+    JsonObject queryparams = new JsonObject();
+    pgService.executePreparedQuery(
+        query,
+        queryparams,
+        pghandler -> {
+          if (pghandler.succeeded()) {
+            rmqBrokerService.publishMessage(
+                rmqMessage,
+                UNIQUE_ATTR_EX,
+                UNIQUE_ATTR_EX_ROUTING_KEY,
+                rmqHandler -> {
+                  if (rmqHandler.succeeded()) {
+                    Future.future(fu -> updateAuditTable(context));
+                    handleResponse(response, SUCCESS, SUCCESS_URN);
+                  } else {
+                    LOGGER.error(rmqHandler.cause());
+                    try {
+                      Response resp =
+                          objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
+                      handleResponse(response, resp);
+                    } catch (JsonProcessingException e) {
+                      handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+                    }
+                  }
+                });
+          } else {
+            LOGGER.error(pghandler.cause());
+            try {
+              Response resp =
+                  objectMapper.readValue(pghandler.cause().getMessage(), Response.class);
+              handleResponse(response, resp);
+            } catch (JsonProcessingException e) {
+              handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+            }
+          }
+        });
   }
 
   private void handleResponse(HttpServerResponse response, Response respObject) {
@@ -299,13 +317,12 @@ public final class AdminRestApi {
     handleResponse(response, httpCode, urn, message);
   }
 
-
   private void handleResponse(HttpServerResponse response, HttpStatusCode code, ResponseUrn urn) {
     handleResponse(response, code, urn, code.getDescription());
   }
 
-  private void handleResponse(HttpServerResponse response, HttpStatusCode statusCode,
-      ResponseUrn urn, String message) {
+  private void handleResponse(
+      HttpServerResponse response, HttpStatusCode statusCode, ResponseUrn urn, String message) {
     response
         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
         .setStatusCode(statusCode.getValue())
@@ -313,42 +330,38 @@ public final class AdminRestApi {
   }
 
   private Future<Void> updateAuditTable(RoutingContext context) {
-    Promise<Void> promise = Promise.promise();
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
 
     JsonObject request = new JsonObject();
     ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
     long time = zst.toInstant().toEpochMilli();
-    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
 
     request.put(USER_ID, authInfo.getString(USER_ID));
-    if(authInfo.containsKey(ID) && authInfo.getString(ID) != null)
-    {
+    if (authInfo.containsKey(ID) && authInfo.getString(ID) != null) {
       request.put(ID, authInfo.getValue(ID));
-    }
-    else
-    {
+    } else {
       request.put(ID, RESOURCE_ID_DEFAULT);
     }
-    request.put(EPOCH_TIME,time);
-    request.put(ISO_TIME,isoTime);
+    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+    request.put(EPOCH_TIME, time);
+    request.put(ISO_TIME, isoTime);
     request.put(API, authInfo.getValue(API_ENDPOINT));
-    request.put(RESPONSE_SIZE,0);
+    request.put(RESPONSE_SIZE, 0);
 
-      LOGGER.debug("request : " + request.encode());
-    auditService.insertMeteringValuesInRMQ(request, handler -> {
-      if (handler.succeeded()) {
-        LOGGER.info("message published in RMQ.");
-        promise.complete();
-      } else {
-        LOGGER.error("failed to publish message in RMQ.");
-        promise.complete();
-      }
-    });
+    LOGGER.debug("request : " + request.encode());
+    Promise<Void> promise = Promise.promise();
+    auditService.insertMeteringValuesInRmq(
+        request,
+        handler -> {
+          if (handler.succeeded()) {
+            LOGGER.info("message published in RMQ.");
+            promise.complete();
+          } else {
+            LOGGER.error("failed to publish message in RMQ.");
+            promise.complete();
+          }
+        });
 
     return promise.future();
   }
-
-
-
 }
