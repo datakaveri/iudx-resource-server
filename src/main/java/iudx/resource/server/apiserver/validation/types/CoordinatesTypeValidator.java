@@ -3,6 +3,8 @@ package iudx.resource.server.apiserver.validation.types;
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.ResponseUrn.*;
 
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.common.HttpStatusCode;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.List;
@@ -12,8 +14,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
-import iudx.resource.server.common.HttpStatusCode;
 
 // TODO : find a better way to validate coordinates,
 // current method works but not very efficient,
@@ -26,20 +26,16 @@ public final class CoordinatesTypeValidator implements Validator {
       "^(\\+|-)?(?:90(?:(?:\\.0{1,6})?)|(?:[0-9]|[1-8][0-9])(?:(?:\\.[0-9]{1,6})?))$";
   private static final String LONGITUDE_PATTERN =
       "^(\\+|-)?(?:180(?:(?:\\.0{1,6})?)|(?:[0-9]|[1-9][0-9]|1[0-7][0-9])(?:(?:\\.[0-9]{1,6})?))$";
-  private final int allowedMaxCoordinates = VALIDATION_ALLOWED_COORDINATES;
   private static final Pattern pattern = Pattern.compile("[\\w]+[^\\,]*(?:\\.*[\\w])");
-
-
-
+  private final int allowedMaxCoordinates = VALIDATION_ALLOWED_COORDINATES;
   private final String value;
   private final boolean required;
+  private DecimalFormat df = new DecimalFormat("#.######");
 
   public CoordinatesTypeValidator(final String value, final boolean required) {
     this.value = value;
     this.required = required;
   }
-
-  private DecimalFormat df = new DecimalFormat("#.######");
 
   private boolean isValidLatitude(final String latitude) {
     Float latitudeValue = Float.parseFloat(latitude);

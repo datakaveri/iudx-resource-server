@@ -5,11 +5,10 @@ import static iudx.resource.server.apiserver.util.Constants.VALIDATION_ALLOWED_D
 import static iudx.resource.server.common.ResponseUrn.INVALID_GEO_PARAM_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_GEO_VALUE_URN;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.common.HttpStatusCode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class DistanceTypeValidator implements Validator {
 

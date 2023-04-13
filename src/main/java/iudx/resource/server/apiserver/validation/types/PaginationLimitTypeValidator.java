@@ -3,10 +3,10 @@ package iudx.resource.server.apiserver.validation.types;
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.ResponseUrn.*;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.common.HttpStatusCode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class PaginationLimitTypeValidator implements Validator {
 
@@ -46,12 +46,17 @@ public final class PaginationLimitTypeValidator implements Validator {
       int size = Integer.parseInt(value);
       if (size > VALIDATION_PAGINATION_LIMIT_MAX || size < 0) {
         LOGGER.error(
-            "Validation error : invalid pagination limit Value > 10000 or negative value passed [ " + value + " ]");
+            "Validation error : invalid pagination limit Value > 10000 or negative value passed [ "
+                + value
+                + " ]");
         throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
       }
       return true;
     } catch (Exception ex) {
-      LOGGER.error("Validation error : invalid pagination limit Value [ " + value + " ] only integer expected");
+      LOGGER.error(
+          "Validation error : invalid pagination limit Value [ "
+              + value
+              + " ] only integer expected");
       throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
     }
   }
@@ -65,5 +70,4 @@ public final class PaginationLimitTypeValidator implements Validator {
   public String failureMessage() {
     return INVALID_PARAM_VALUE_URN.getMessage();
   }
-
 }

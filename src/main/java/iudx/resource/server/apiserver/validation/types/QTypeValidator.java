@@ -3,14 +3,14 @@ package iudx.resource.server.apiserver.validation.types;
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.ResponseUrn.*;
 
+import io.vertx.core.json.JsonObject;
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.common.HttpStatusCode;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import io.vertx.core.json.JsonObject;
-import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
-import iudx.resource.server.common.HttpStatusCode;
 
 public final class QTypeValidator implements Validator {
 
@@ -42,7 +42,7 @@ public final class QTypeValidator implements Validator {
     }
   }
 
-  private boolean isValidID(final JsonObject json) {
+  private boolean isValidId(final JsonObject json) {
     if (json.containsKey("id")) {
       String id = json.getString(JSON_VALUE);
       Matcher matcher = VALIDATION_ID_PATTERN.matcher(id);
@@ -55,8 +55,6 @@ public final class QTypeValidator implements Validator {
   public boolean isValidAttributeValue(final String value) {
     return VALIDATION_Q_ATTR_PATTERN.matches(value);
   }
-
-
 
   JsonObject getQueryTerms(final String queryTerms) throws Exception {
     JsonObject json = new JsonObject();
@@ -71,9 +69,10 @@ public final class QTypeValidator implements Validator {
           json.put(JSON_ATTRIBUTE, queryTerms.substring(startIndex, i));
           startIndex = i;
           specialCharFound = true;
-        }  else {
+        } else {
           LOGGER.error("Ignore " + c.toString());
-          throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
+          throw new DxRuntimeException(
+              failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
         }
       } else {
         if (specialCharFound && (Character.isLetter(c) || Character.isDigit(c))) {
@@ -82,7 +81,6 @@ public final class QTypeValidator implements Validator {
           break;
         }
       }
-
     }
     return json;
   }
@@ -126,7 +124,7 @@ public final class QTypeValidator implements Validator {
     // .generateNotMatchValidationException("Not a valid attribute value in <<q>> query");
     // }
 
-    if (!isValidID(qJson)) {
+    if (!isValidId(qJson)) {
       return false;
     }
     return true;
@@ -141,5 +139,4 @@ public final class QTypeValidator implements Validator {
   public String failureMessage() {
     return INVALID_PARAM_VALUE_URN.getMessage();
   }
-
 }

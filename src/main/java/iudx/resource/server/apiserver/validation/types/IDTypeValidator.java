@@ -2,10 +2,11 @@ package iudx.resource.server.apiserver.validation.types;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.ResponseUrn.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.common.HttpStatusCode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class IDTypeValidator implements Validator {
 
@@ -19,7 +20,7 @@ public final class IDTypeValidator implements Validator {
     this.required = required;
   }
 
-  public boolean isvalidIUDXId(final String value) {
+  public boolean isvalidIudxId(final String value) {
     return VALIDATION_ID_PATTERN.matcher(value).matches();
   }
 
@@ -42,7 +43,7 @@ public final class IDTypeValidator implements Validator {
       LOGGER.error("Validation error : Value exceed max character limit.");
       throw new DxRuntimeException(failureCode(), INVALID_ID_VALUE_URN, failureMessage(value));
     }
-    if (!isvalidIUDXId(value)) {
+    if (!isvalidIudxId(value)) {
       LOGGER.error("Validation error : Invalid id.");
       throw new DxRuntimeException(failureCode(), INVALID_ID_VALUE_URN, failureMessage(value));
     }
@@ -58,5 +59,4 @@ public final class IDTypeValidator implements Validator {
   public String failureMessage() {
     return INVALID_ID_VALUE_URN.getMessage();
   }
-
 }

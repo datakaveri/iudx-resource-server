@@ -2,14 +2,14 @@ package iudx.resource.server.apiserver.validation.types;
 
 import static iudx.resource.server.common.ResponseUrn.*;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.NoSyncValidationException;
 import io.vertx.json.schema.Schema;
 import io.vertx.json.schema.ValidationException;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.common.HttpStatusCode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class JsonSchemaTypeValidator implements Validator {
 
@@ -29,10 +29,12 @@ public final class JsonSchemaTypeValidator implements Validator {
       schema.validateSync(value);
     } catch (ValidationException e) {
       LOGGER.error("Validation error :" + e.getMessage());
-      throw new DxRuntimeException(failureCode(), INVALID_PAYLOAD_FORMAT_URN, failureMessage(value.toString()));
+      throw new DxRuntimeException(
+          failureCode(), INVALID_PAYLOAD_FORMAT_URN, failureMessage(value.toString()));
     } catch (NoSyncValidationException e) {
       LOGGER.error("Validation error :" + e.getMessage());
-      throw new DxRuntimeException(failureCode(), INVALID_PAYLOAD_FORMAT_URN, failureMessage(value.toString()));
+      throw new DxRuntimeException(
+          failureCode(), INVALID_PAYLOAD_FORMAT_URN, failureMessage(value.toString()));
     }
     return true;
   }
@@ -46,5 +48,4 @@ public final class JsonSchemaTypeValidator implements Validator {
   public String failureMessage() {
     return INVALID_PAYLOAD_FORMAT_URN.getMessage();
   }
-
 }
