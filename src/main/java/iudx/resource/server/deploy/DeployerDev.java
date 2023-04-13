@@ -1,12 +1,5 @@
 package iudx.resource.server.deploy;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -15,6 +8,13 @@ import io.vertx.core.cli.CommandLine;
 import io.vertx.core.cli.Option;
 import io.vertx.core.eventbus.EventBusOptions;
 import io.vertx.core.json.JsonObject;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Deploys non-clustered vert.x instance of the server. As a JAR, the application requires 1 runtime
@@ -23,7 +23,7 @@ import io.vertx.core.json.JsonObject;
  * <ul>
  *   <li>--config/-c : path to the config file
  * </ul>
- *
+ * <p></p>
  * e.g. <i>java -jar ./fatjar.jar -c configs/config.json</i>
  */
 public class DeployerDev {
@@ -38,9 +38,8 @@ public class DeployerDev {
     moduleConfigurations.put("host", configs.getString("host"));
     String moduleName = moduleConfigurations.getString("id");
     int numInstances = moduleConfigurations.getInteger("verticleInstances");
-    DeploymentOptions deploymentOptions = new DeploymentOptions()
-        .setInstances(numInstances)
-        .setConfig(moduleConfigurations);
+    DeploymentOptions deploymentOptions =
+        new DeploymentOptions().setInstances(numInstances).setConfig(moduleConfigurations);
 
     boolean isWorkerVerticle = moduleConfigurations.getBoolean("isWorkerVerticle");
     if (isWorkerVerticle) {
@@ -52,20 +51,25 @@ public class DeployerDev {
       deploymentOptions.setMaxWorkerExecuteTimeUnit(TimeUnit.MINUTES);
     }
 
-    vertx.deployVerticle(moduleName, deploymentOptions, ar -> {
-      if (ar.succeeded()) {
-        LOGGER.info("Deployed " + moduleName);
-        recursiveDeploy(vertx, configs, i + 1);
-      } else {
-        LOGGER.fatal("Failed to deploy " + moduleName + " cause:", ar.cause());
-      }
-    });
+    vertx.deployVerticle(
+        moduleName,
+        deploymentOptions,
+        ar -> {
+          if (ar.succeeded()) {
+            LOGGER.info("Deployed " + moduleName);
+            recursiveDeploy(vertx, configs, i + 1);
+          } else {
+            LOGGER.fatal("Failed to deploy " + moduleName + " cause:", ar.cause());
+          }
+        });
   }
-  private static JsonObject getConfigForModule(int moduleIndex,JsonObject configurations) {
+
+  private static JsonObject getConfigForModule(int moduleIndex, JsonObject configurations) {
     JsonObject commonConfigs = configurations.getJsonObject("commonConfig");
     JsonObject config = configurations.getJsonArray("modules").getJsonObject(moduleIndex);
     return config.mergeIn(commonConfigs, true);
   }
+
   public static void deploy(String configPath) {
     EventBusOptions ebOptions = new EventBusOptions();
     VertxOptions options = new VertxOptions().setEventBusOptions(ebOptions);
@@ -87,11 +91,21 @@ public class DeployerDev {
   }
 
   public static void main(String[] args) {
-    CLI cli = CLI.create("IUDX Cat").setSummary("A CLI to deploy the resource server")
-        .addOption(new Option().setLongName("help").setShortName("h").setFlag(true)
-            .setDescription("display help"))
-        .addOption(new Option().setLongName("config").setShortName("c")
-            .setRequired(true).setDescription("configuration file"));
+    CLI cli =
+        CLI.create("IUDX Cat")
+            .setSummary("A CLI to deploy the resource server")
+            .addOption(
+                new Option()
+                    .setLongName("help")
+                    .setShortName("h")
+                    .setFlag(true)
+                    .setDescription("display help"))
+            .addOption(
+                new Option()
+                    .setLongName("config")
+                    .setShortName("c")
+                    .setRequired(true)
+                    .setDescription("configuration file"));
 
     StringBuilder usageString = new StringBuilder();
     cli.usage(usageString);
