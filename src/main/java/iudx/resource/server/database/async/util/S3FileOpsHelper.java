@@ -1,14 +1,5 @@
 package iudx.resource.server.database.async.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URL;
-import java.time.ZonedDateTime;
-import java.util.Date;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
@@ -28,14 +19,22 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class S3FileOpsHelper {
 
   private static final Logger LOGGER = LogManager.getLogger(S3FileOpsHelper.class);
-
+  static FileInputStream fileInputStream;
   private final Regions clientRegion;
   private final String bucketName;
-  static FileInputStream fileInputStream;
 
   public S3FileOpsHelper(Regions clientRegion, String bucketName) {
     this.clientRegion = clientRegion;
@@ -114,11 +113,6 @@ public class S3FileOpsHelper {
         new DefaultAWSCredentialsProviderChain();
 
     try {
-      AmazonS3 s3Client =
-          AmazonS3ClientBuilder.standard()
-              .withRegion(clientRegion)
-              .withCredentials(credentialProviderChain)
-              .build();
 
       // Set the presigned URL to expire after one hour.
       LOGGER.debug("expiry : " + expiryTimeMillis);
@@ -132,6 +126,11 @@ public class S3FileOpsHelper {
           new GeneratePresignedUrlRequest(bucketName, objectKey)
               .withMethod(HttpMethod.GET)
               .withExpiration(expiration);
+      AmazonS3 s3Client =
+          AmazonS3ClientBuilder.standard()
+              .withRegion(clientRegion)
+              .withCredentials(credentialProviderChain)
+              .build();
 
       url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
 

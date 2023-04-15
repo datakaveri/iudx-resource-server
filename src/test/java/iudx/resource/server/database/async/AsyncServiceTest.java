@@ -12,7 +12,6 @@ import java.net.URL;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -190,12 +189,12 @@ public class AsyncServiceTest {
     doAnswer(Answer -> Future.succeededFuture(record))
         .when(asyncServiceSpy)
         .getRecord4RequestId(any());
-    doAnswer(Answer -> Future.succeededFuture()).when(asyncServiceSpy).executePGQuery(any());
+    doAnswer(Answer -> Future.succeededFuture()).when(asyncServiceSpy).executePgQuery(any());
 
     asyncServiceSpy.asyncSearch(requestId, sub, searchId, query);
 
     verify(asyncServiceSpy, times(2)).process4ExistingRequestId(any(),any(), any(), any(), any());
-    verify(asyncServiceSpy, times(2)).executePGQuery(any());
+    verify(asyncServiceSpy, times(2)).executePgQuery(any());
     verify(fileOpsHelper, times(2)).generatePreSignedUrl(anyLong(), any());
     testContext.completeNow();
   }
@@ -212,7 +211,7 @@ public class AsyncServiceTest {
     doAnswer(Answer -> Future.succeededFuture(record))
         .when(asyncServiceSpy)
         .getRecord4RequestId(any());
-    doAnswer(Answer -> Future.failedFuture("fail")).when(asyncServiceSpy).executePGQuery(any());
+    doAnswer(Answer -> Future.failedFuture("fail")).when(asyncServiceSpy).executePgQuery(any());
 
     asyncServiceSpy.asyncSearch(requestId, sub, searchId, query);
     testContext.completeNow();
@@ -353,7 +352,7 @@ public class AsyncServiceTest {
     when(asyncResult1.succeeded()).thenReturn(true);
 
     asyncService
-        .executePGQuery(query)
+        .executePgQuery(query)
         .onComplete(
             handler -> {
               if (handler.succeeded()) {
@@ -404,7 +403,7 @@ public class AsyncServiceTest {
       }
     }).when(postgresService).executeQuery(anyString(), any());
 
-    asyncService2.executePGQuery("Dummy Query").onComplete(handler -> {
+    asyncService2.executePgQuery("Dummy Query").onComplete(handler -> {
       if (handler.succeeded()) {
         vertxTestContext.failNow(handler.cause());
       } else {
