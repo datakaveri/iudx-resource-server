@@ -114,7 +114,7 @@ public class DBServiceImplTest {
         request.put("status", "Dummy status");
         request.put("routingKey", "routingKeyValue");
         request.put("type", HttpStatus.SC_OK);
-        when(webClient.getRabbitMQClient()).thenReturn(rabbitMQClient);
+        when(webClient.getRabbitmqClient()).thenReturn(rabbitMQClient);
         when(asyncResult1.succeeded()).thenReturn(true);
 
         doAnswer(new Answer<AsyncResult<Void>>() {
@@ -148,7 +148,7 @@ public class DBServiceImplTest {
         when(webClient.getExchange(any(), anyString())).thenReturn(jsonObjectFuture);
         when(asyncResult.result()).thenReturn(request, queue);
         when(webClient.listExchangeSubscribers(any(), anyString())).thenReturn(jsonObjectFuture);
-        when(webClient.getRabbitMQClient()).thenReturn(rabbitMQClient);
+        when(webClient.getRabbitmqClient()).thenReturn(rabbitMQClient);
         when(asyncResult1.succeeded()).thenReturn(true);
 
         doAnswer(new Answer<AsyncResult<Void>>() {
@@ -193,7 +193,7 @@ public class DBServiceImplTest {
         when(webClient.getExchange(any(), anyString())).thenReturn(jsonObjectFuture);
         when(asyncResult.result()).thenReturn(request, queue);
         when(webClient.listExchangeSubscribers(any(), anyString())).thenReturn(jsonObjectFuture);
-        when(webClient.getRabbitMQClient()).thenReturn(rabbitMQClient);
+        when(webClient.getRabbitmqClient()).thenReturn(rabbitMQClient);
         when(asyncResult1.succeeded()).thenReturn(false);
         when(asyncResult1.cause()).thenReturn(throwable);
 
@@ -373,7 +373,7 @@ public class DBServiceImplTest {
         request.put(USER_ID, "Dummy User ID");
         JsonObject mockJsonObject = mock(JsonObject.class);
         doAnswer(Answer -> Future.succeededFuture(mockJsonObject)).when(webClient).getUserInDb(anyString());
-        doAnswer(Answer -> Future.succeededFuture(mockJsonObject)).when(webClient).resetPasswordInRMQ(anyString(), anyString());
+        doAnswer(Answer -> Future.succeededFuture(mockJsonObject)).when(webClient).resetPasswordInRmq(anyString(), anyString());
         doAnswer(Answer -> Future.succeededFuture(mockJsonObject)).when(webClient).resetPwdInDb(anyString(), anyString());
 
         databroker.resetPassword(request, handler -> {
@@ -396,7 +396,7 @@ public class DBServiceImplTest {
     @Order(12)
     @DisplayName("Test publishMessage method : Success")
     public void test_publishMessage_success(VertxTestContext vertxTestContext) {
-        when(webClient.getRabbitMQClient()).thenReturn(rabbitMQClient);
+        when(webClient.getRabbitmqClient()).thenReturn(rabbitMQClient);
         when(rabbitMQClient.isConnected()).thenReturn(true);
         doAnswer(Answer -> Future.succeededFuture()).when(rabbitMQClient).basicPublish(anyString(), anyString(), any(Buffer.class));
         databroker.publishMessage(request, "Dummy string to Exchange", "Dummy routing Key", handler -> {
@@ -414,7 +414,7 @@ public class DBServiceImplTest {
     @Order(13)
     @DisplayName("Test publishMessage method : Failure")
     public void test_publishMessage_failure(VertxTestContext vertxTestContext) {
-        when(webClient.getRabbitMQClient()).thenReturn(rabbitMQClient);
+        when(webClient.getRabbitmqClient()).thenReturn(rabbitMQClient);
         when(rabbitMQClient.isConnected()).thenReturn(true);
         doAnswer(Answer -> Future.failedFuture("Dummy failure message")).when(rabbitMQClient).basicPublish(anyString(), anyString(), any(Buffer.class));
         databroker.publishMessage(request, "Dummy string to Exchange", "Dummy routing Key", handler -> {
@@ -833,7 +833,7 @@ public class DBServiceImplTest {
         request.put("status", "Dummy status");
         request.put("routingKey", "routingKeyValue");
         request.put("type", HttpStatus.SC_OK);
-        when(webClient.getRabbitMQClient()).thenReturn(rabbitMQClient);
+        when(webClient.getRabbitmqClient()).thenReturn(rabbitMQClient);
         when(asyncResult1.succeeded()).thenReturn(false);
         when(asyncResult1.cause()).thenReturn(throwable);
         when(throwable.getMessage()).thenReturn(throwableMessage);

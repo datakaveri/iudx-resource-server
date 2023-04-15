@@ -683,7 +683,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         LOGGER.debug("Info : routingKey  " + routingKey);
         Buffer buffer = Buffer.buffer(json.toString());
         webClient
-            .getRabbitMQClient()
+            .getRabbitmqClient()
             .basicPublish(
                 resourceGroupId,
                 routingKey,
@@ -740,7 +740,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
                                       message.put("body", request.toString());
                                       Buffer buffer = Buffer.buffer(message.toString());
                                       webClient
-                                          .getRabbitMQClient()
+                                          .getRabbitmqClient()
                                           .basicPublish(
                                               adaptor,
                                               routingKey,
@@ -840,7 +840,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     userFuture
         .compose(
             checkUserFut -> {
-              return webClient.resetPasswordInRMQ(userid, password);
+              return webClient.resetPasswordInRmq(userid, password);
             })
         .compose(
             rmqResetFut -> {
@@ -881,7 +881,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
 
     Buffer buffer = Buffer.buffer(request.toString());
 
-    RabbitMQClient client = webClient.getRabbitMQClient();
+    RabbitMQClient client = webClient.getRabbitmqClient();
     if (!client.isConnected()) {
       rabbitMqClientStartFuture = client.start();
     } else {

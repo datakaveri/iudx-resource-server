@@ -33,7 +33,7 @@ public class RabbitClient {
 
   private RabbitMQClient client;
   private RabbitWebClient webClient;
-  private PostgresClient pgSQLClient;
+  private PostgresClient pgSqlClient;
   private String amqpUrl;
   private int amqpPort;
   private String vhost;
@@ -42,7 +42,7 @@ public class RabbitClient {
       Vertx vertx,
       RabbitMQOptions rabbitConfigs,
       RabbitWebClient webClient,
-      PostgresClient pgSQLClient,
+      PostgresClient pgSqlClient,
       JsonObject configs) {
     this.amqpUrl = configs.getString("brokerAmqpIp");
     this.amqpPort = configs.getInteger("brokerAmqpPort");
@@ -50,9 +50,9 @@ public class RabbitClient {
 
     String internalVhost = configs.getString(VHosts.IUDX_INTERNAL.name());
     rabbitConfigs.setVirtualHost(internalVhost);
-    this.client = getRabbitMQClient(vertx, rabbitConfigs);
+    this.client = getRabbitmqClient(vertx, rabbitConfigs);
     this.webClient = webClient;
-    this.pgSQLClient = pgSQLClient;
+    this.pgSqlClient = pgSqlClient;
     client.start(
         clientStartupHandler -> {
           if (clientStartupHandler.succeeded()) {
@@ -63,8 +63,12 @@ public class RabbitClient {
         });
   }
 
-  private RabbitMQClient getRabbitMQClient(Vertx vertx, RabbitMQOptions rabbitConfigs) {
+  private RabbitMQClient getRabbitmqClient(Vertx vertx, RabbitMQOptions rabbitConfigs) {
     return RabbitMQClient.create(vertx, rabbitConfigs);
+  }
+
+  public RabbitMQClient getRabbitmqClient() {
+    return this.client;
   }
 
   /**
@@ -73,16 +77,16 @@ public class RabbitClient {
    * @param request which is a Json object @Param vHost virtual-host
    * @return response which is a Future object of promise of Json type
    */
-  public Future<JsonObject> createExchange(JsonObject request, String vHost) {
+  public Future<JsonObject> createExchange(JsonObject request, String vhost) {
     LOGGER.trace("Info : RabbitClient#createExchage() started");
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
-      String exchangeName = request.getString("exchangeName");
-      String url = "/api/exchanges/" + vHost + "/" + encodeValue(exchangeName);
       JsonObject obj = new JsonObject();
       obj.put(TYPE, EXCHANGE_TYPE);
       obj.put(AUTO_DELETE, false);
       obj.put(DURABLE, true);
+      String exchangeName = request.getString("exchangeName");
+      String url = "/api/exchanges/" + vhost + "/" + encodeValue(exchangeName);
       webClient
           .requestAsync(REQUEST_PUT, url, obj)
           .onComplete(
@@ -115,12 +119,12 @@ public class RabbitClient {
     return promise.future();
   }
 
-  Future<JsonObject> getExchangeDetails(JsonObject request, String vHost) {
+  Future<JsonObject> getExchangeDetails(JsonObject request, String vhost) {
     LOGGER.trace("Info : RabbitClient#getExchange() started");
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
       String exchangeName = request.getString("exchangeName");
-      String url = "/api/exchanges/" + vHost + "/" + encodeValue(exchangeName);
+      String url = "/api/exchanges/" + vhost + "/" + encodeValue(exchangeName);
       webClient
           .requestAsync(REQUEST_GET, url)
           .onComplete(
@@ -222,12 +226,12 @@ public class RabbitClient {
    * @param request which is a Json object @Param VHost virtual-host
    * @return response which is a Future object of promise of Json type
    */
-  Future<JsonObject> deleteExchange(JsonObject request, String vHost) {
+  Future<JsonObject> deleteExchange(JsonObject request, String vhost) {
     LOGGER.trace("Info : RabbitClient#deleteExchange() started");
     Promise<JsonObject> promise = Promise.promise();
     if (request != null && !request.isEmpty()) {
       String exchangeName = request.getString("exchangeName");
-      String url = "/api/exchanges/" + vHost + "/" + encodeValue(exchangeName);
+      String url = "/api/exchanges/" + vhost + "/" + encodeValue(exchangeName);
       webClient
           .requestAsync(REQUEST_DELETE, url)
           .onComplete(
@@ -332,8 +336,6 @@ public class RabbitClient {
     Promise<JsonObject> promise = Promise.promise();
     JsonObject finalResponse = new JsonObject();
     if (request != null && !request.isEmpty()) {
-      String queueName = request.getString("queueName");
-      String url = "/api/queues/" + vhost + "/" + encodeValue(queueName); // "durable":true
       JsonObject configProp = new JsonObject();
       JsonObject arguments = new JsonObject();
       arguments
@@ -342,6 +344,8 @@ public class RabbitClient {
           .put(X_QUEUE_MODE_NAME, X_QUEUE_MODE_VALUE);
       configProp.put(X_QUEUE_TYPE, true);
       configProp.put(X_QUEUE_ARGUMENTS, arguments);
+      String queueName = request.getString("queueName");
+      String url = "/api/queues/" + vhost + "/" + encodeValue(queueName); // "durable":true
       webClient
           .requestAsync(REQUEST_PUT, url, configProp)
           .onComplete(
@@ -474,6 +478,29 @@ public class RabbitClient {
                 });
       }
     }
+    return promise.future();
+  }
+
+  Future<Void> bindQueue(String queue, String adaptorId, String topics, String vhost) {
+    LOGGER.trace("Info : RabbitClient#bindQueue() started");
+    LOGGER.debug("Info : data : " + queue + " adaptorID : " + adaptorId + " topics : " + topics);
+    Promise<Void> promise = Promise.promise();
+    String url =
+        "/api/bindings/" + vhost + "/e/" + encodeValue(adaptorId) + "/q/" + encodeValue(queue);
+    JsonObject bindRequest = new JsonObject();
+    bindRequest.put("routing_key", topics);
+
+    webClient
+        .requestAsync(REQUEST_POST, url, bindRequest)
+        .onComplete(
+            handler -> {
+              if (handler.succeeded()) {
+                promise.complete();
+              } else {
+                LOGGER.error("Error : Queue" + queue + " binding error : ", handler.cause());
+                promise.fail(handler.cause());
+              }
+            });
     return promise.future();
   }
 
@@ -823,20 +850,20 @@ public class RabbitClient {
           if (resultHandler.succeeded()) {
             int status = resultHandler.result().getInteger("type");
             if (status == 200) {
-              String exchangeID = json.getString("id");
+              String exchangeId = json.getString("id");
               String userId = json.getString("userid");
-              String url = "/api/exchanges/" + vhost + "/" + encodeValue(exchangeID);
+              String url = "/api/exchanges/" + vhost + "/" + encodeValue(exchangeId);
               webClient
                   .requestAsync(REQUEST_DELETE, url)
                   .onComplete(
                       rh -> {
                         if (rh.succeeded()) {
-                          LOGGER.debug("Info : " + exchangeID + " adaptor deleted successfully");
+                          LOGGER.debug("Info : " + exchangeId + " adaptor deleted successfully");
                           finalResponse.mergeIn(getResponseJson(200, "success", "adaptor deleted"));
                           Future.future(
                               fu ->
                                   updateUserPermissions(
-                                      vhost, userId, PermissionOpType.DELETE_WRITE, exchangeID));
+                                      vhost, userId, PermissionOpType.DELETE_WRITE, exchangeId));
                         } else if (rh.failed()) {
                           finalResponse
                               .clear()
@@ -1033,7 +1060,7 @@ public class RabbitClient {
     String query = INSERT_DATABROKER_USER.replace("$1", shaUsername).replace("$2", password);
 
     // Check in DB, get username and password
-    pgSQLClient
+    pgSqlClient
         .executeAsync(query)
         .onComplete(
             db -> {
@@ -1050,7 +1077,7 @@ public class RabbitClient {
     return promise.future();
   }
 
-  Future<JsonObject> resetPasswordInRMQ(String userid, String password) {
+  Future<JsonObject> resetPasswordInRmq(String userid, String password) {
     LOGGER.trace("Info : RabbitClient#resetPassword() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject response = new JsonObject();
@@ -1089,7 +1116,7 @@ public class RabbitClient {
 
     String query = RESET_PWD.replace("$1", password).replace("$2", userid);
 
-    pgSQLClient
+    pgSqlClient
         .executeAsync(query)
         .onComplete(
             db -> {
@@ -1113,7 +1140,7 @@ public class RabbitClient {
     JsonObject response = new JsonObject();
     String query = SELECT_DATABROKER_USER.replace("$1", userid);
     // Check in DB, get username and password
-    pgSQLClient
+    pgSqlClient
         .executeAsync(query)
         .onComplete(
             db -> {
@@ -1138,19 +1165,27 @@ public class RabbitClient {
     return promise.future();
   }
 
-  /** changed the access modifier to default as setTopicPermissions is not being called anywhere */
-  Future<JsonObject> setTopicPermissions(String vhost, String adaptorID, String userID) {
+  /* changed the access modifier to default as setTopicPermissions is not being called anywhere */
+  /**
+   * set topic permissions.
+   *
+   * @param vhost which is a String
+   * @param adaptorId which is a String
+   * @param userId which is a String
+   * @return response which is a Future object of promise of Json type
+   */
+  Future<JsonObject> setTopicPermissions(String vhost, String adaptorId, String userId) {
     LOGGER.trace("Info : RabbitClient#setTopicPermissions() started");
-    String url = "/api/permissions/" + vhost + "/" + encodeValue(userID);
     JsonObject param = new JsonObject();
     // set all mandatory fields
-    param.put(EXCHANGE, adaptorID);
+    param.put(EXCHANGE, adaptorId);
     param.put(WRITE, ALLOW);
     param.put(READ, DENY);
     param.put(CONFIGURE, DENY);
 
     Promise<JsonObject> promise = Promise.promise();
     JsonObject response = new JsonObject();
+    String url = "/api/permissions/" + vhost + "/" + encodeValue(userId);
     webClient
         .requestAsync(REQUEST_PUT, url, param)
         .onComplete(
@@ -1192,15 +1227,6 @@ public class RabbitClient {
   }
 
   /**
-   * set topic permissions.
-   *
-   * @param vhost which is a String
-   * @param adaptorID which is a String
-   * @param userID which is a String
-   * @return response which is a Future object of promise of Json type
-   */
-
-  /**
    * set vhost permissions for given userName.
    *
    * @param shaUsername which is a String
@@ -1210,7 +1236,6 @@ public class RabbitClient {
   Future<JsonObject> setVhostPermissions(String shaUsername, String vhost) {
     LOGGER.trace("Info : RabbitClient#setVhostPermissions() started");
     /* Construct URL to use */
-    String url = "/api/permissions/" + vhost + "/" + encodeValue(shaUsername);
     JsonObject vhostPermissions = new JsonObject();
     // all keys are mandatory. empty strings used for configure,read as not
     // permitted.
@@ -1220,6 +1245,7 @@ public class RabbitClient {
     Promise<JsonObject> promise = Promise.promise();
     /* Construct a response object */
     JsonObject vhostPermissionResponse = new JsonObject();
+    String url = "/api/permissions/" + vhost + "/" + encodeValue(shaUsername);
     webClient
         .requestAsync(REQUEST_PUT, url, vhostPermissions)
         .onComplete(
@@ -1268,37 +1294,37 @@ public class RabbitClient {
   /**
    * Helper method which bind registered exchange with predefined queues
    *
-   * @param adaptorID which is a String object
+   * @param adaptorId which is a String object
    * @return response which is a Future object of promise of Json type
    */
-  Future<JsonObject> queueBinding(String adaptorID, String vhost) {
+  Future<JsonObject> queueBinding(String adaptorId, String vhost) {
     LOGGER.trace("RabbitClient#queueBinding() method started");
     Promise<JsonObject> promise = Promise.promise();
     String topics;
 
-    if (isGroupId(adaptorID)) {
-      topics = adaptorID + DATA_WILDCARD_ROUTINGKEY;
+    if (isGroupId(adaptorId)) {
+      topics = adaptorId + DATA_WILDCARD_ROUTINGKEY;
     } else {
-      topics = adaptorID;
+      topics = adaptorId;
     }
 
-    bindQueue(QUEUE_DATA, adaptorID, topics, vhost)
-        .compose(databaseResult -> bindQueue(REDIS_LATEST, adaptorID, topics, vhost))
+    bindQueue(QUEUE_DATA, adaptorId, topics, vhost)
+        .compose(databaseResult -> bindQueue(REDIS_LATEST, adaptorId, topics, vhost))
         .compose(
             queueDataResult ->
-                bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + HEARTBEAT, vhost))
+                bindQueue(QUEUE_ADAPTOR_LOGS, adaptorId, adaptorId + HEARTBEAT, vhost))
         .compose(
             heartBeatResult ->
-                bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + DATA_ISSUE, vhost))
+                bindQueue(QUEUE_ADAPTOR_LOGS, adaptorId, adaptorId + DATA_ISSUE, vhost))
         .compose(
             dataIssueResult ->
-                bindQueue(QUEUE_ADAPTOR_LOGS, adaptorID, adaptorID + DOWNSTREAM_ISSUE, vhost))
+                bindQueue(QUEUE_ADAPTOR_LOGS, adaptorId, adaptorId + DOWNSTREAM_ISSUE, vhost))
         .onSuccess(
             successHandler -> {
               JsonObject response = new JsonObject();
               response.mergeIn(
                   getResponseJson(
-                      SUCCESS_CODE, "Queue_Database", QUEUE_DATA + " queue bound to " + adaptorID));
+                      SUCCESS_CODE, "Queue_Database", QUEUE_DATA + " queue bound to " + adaptorId));
               LOGGER.debug("Success : " + response);
               promise.complete(response);
             })
@@ -1307,29 +1333,6 @@ public class RabbitClient {
               LOGGER.error("Error : queue bind error : " + failureHandler.getCause().toString());
               JsonObject response = getResponseJson(INTERNAL_ERROR_CODE, ERROR, QUEUE_BIND_ERROR);
               promise.fail(response.toString());
-            });
-    return promise.future();
-  }
-
-  Future<Void> bindQueue(String queue, String adaptorID, String topics, String vhost) {
-    LOGGER.trace("Info : RabbitClient#bindQueue() started");
-    LOGGER.debug("Info : data : " + queue + " adaptorID : " + adaptorID + " topics : " + topics);
-    Promise<Void> promise = Promise.promise();
-    String url =
-        "/api/bindings/" + vhost + "/e/" + encodeValue(adaptorID) + "/q/" + encodeValue(queue);
-    JsonObject bindRequest = new JsonObject();
-    bindRequest.put("routing_key", topics);
-
-    webClient
-        .requestAsync(REQUEST_POST, url, bindRequest)
-        .onComplete(
-            handler -> {
-              if (handler.succeeded()) {
-                promise.complete();
-              } else {
-                LOGGER.error("Error : Queue" + queue + " binding error : ", handler.cause());
-                promise.fail(handler.cause());
-              }
             });
     return promise.future();
   }
@@ -1384,13 +1387,13 @@ public class RabbitClient {
   }
 
   Future<JsonObject> updateUserPermissions(
-      String vHost, String userId, PermissionOpType type, String resourceId) {
+      String vhost, String userId, PermissionOpType type, String resourceId) {
     Promise<JsonObject> promise = Promise.promise();
     getUserPermissions(userId)
         .onComplete(
             handler -> {
               if (handler.succeeded()) {
-                String url = "/api/permissions/" + vHost + "/" + encodeValue(userId);
+                String url = "/api/permissions/" + vhost + "/" + encodeValue(userId);
                 JsonObject existingPermissions = handler.result();
 
                 JsonObject updatedPermission =
@@ -1480,12 +1483,10 @@ public class RabbitClient {
           permissionsJson.put(type.permission, updatedPermission);
         }
         break;
+      default:
+        break;
     }
     return permissionsJson;
-  }
-
-  public RabbitMQClient getRabbitMQClient() {
-    return this.client;
   }
 
   private class AdaptorResultContainer {

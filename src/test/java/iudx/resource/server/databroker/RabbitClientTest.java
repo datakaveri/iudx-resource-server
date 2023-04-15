@@ -138,7 +138,7 @@ public class RabbitClientTest {
                 return null;
             }
         }).when(httpResponseFuture).onComplete(any());
-        rabbitClient.resetPasswordInRMQ(userID, password).onComplete(handler -> {
+        rabbitClient.resetPasswordInRmq(userID, password).onComplete(handler -> {
             if (handler.succeeded()) {
                 assertEquals(expected, handler.result().toString());
             } else {
@@ -162,7 +162,7 @@ public class RabbitClientTest {
                 return null;
             }
         }).when(httpResponseFuture).onComplete(any());
-        rabbitClient.resetPasswordInRMQ(userID, password).onComplete(handler -> {
+        rabbitClient.resetPasswordInRmq(userID, password).onComplete(handler -> {
             if (handler.failed()) {
                 assertEquals(expectedValue, handler.cause().getMessage());
                 vertxTestContext.completeNow();

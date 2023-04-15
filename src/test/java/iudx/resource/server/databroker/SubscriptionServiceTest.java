@@ -105,7 +105,7 @@ public class SubscriptionServiceTest {
 
         when(rabbitClient.bindQueue(any(), anyString())).thenReturn(jsonObjectFuture);
         when(pgSQLClient.executeAsync(anyString())).thenReturn(rowSetFuture);
-        when(rabbitClient.getRabbitMQClient()).thenReturn(rabbitMQClient);
+        when(rabbitClient.getRabbitmqClient()).thenReturn(rabbitMQClient);
 
         doAnswer(new Answer<AsyncResult<JsonObject>>() {
             @Override
@@ -475,7 +475,7 @@ public class SubscriptionServiceTest {
         }).when(jsonObjectFuture).onComplete(any());
 
         when(voidAsyncResult.succeeded()).thenReturn(true);
-        when(rabbitClient.getRabbitMQClient()).thenReturn(rabbitMQClient);
+        when(rabbitClient.getRabbitmqClient()).thenReturn(rabbitMQClient);
         when(asyncResult.result()).thenReturn(rowSet);
         when(asyncResult.succeeded()).thenReturn(true);
         when(pgSQLClient.executeAsync(anyString())).thenReturn(rowSetFuture);
@@ -510,7 +510,7 @@ public class SubscriptionServiceTest {
     @DisplayName("Test deleteCallbackSubscription method : Success")
     public void testDeleteCallbackSubscriptionSuccess(VertxTestContext vertxTestContext) {
         when(voidAsyncResult.succeeded()).thenReturn(true);
-        when(rabbitClient.getRabbitMQClient()).thenReturn(rabbitMQClient);
+        when(rabbitClient.getRabbitmqClient()).thenReturn(rabbitMQClient);
         when(asyncResult.result()).thenReturn(rowSet);
         when(asyncResult.succeeded()).thenReturn(true);
         when(pgSQLClient.executeAsync(anyString())).thenReturn(rowSetFuture);
@@ -1364,7 +1364,7 @@ public class SubscriptionServiceTest {
         }).when(jsonObjectFuture).onComplete(any());
 
         when(voidAsyncResult.succeeded()).thenReturn(false);
-        when(rabbitClient.getRabbitMQClient()).thenReturn(rabbitMQClient);
+        when(rabbitClient.getRabbitmqClient()).thenReturn(rabbitMQClient);
         when(asyncResult.result()).thenReturn(rowSet);
         when(asyncResult.succeeded()).thenReturn(true);
         when(pgSQLClient.executeAsync(anyString())).thenReturn(rowSetFuture);
@@ -1540,7 +1540,7 @@ public class SubscriptionServiceTest {
 
         when(rabbitClient.bindQueue(any(), anyString())).thenReturn(jsonObjectFuture);
         when(pgSQLClient.executeAsync(anyString())).thenReturn(rowSetFuture);
-        when(rabbitClient.getRabbitMQClient()).thenReturn(rabbitMQClient);
+        when(rabbitClient.getRabbitmqClient()).thenReturn(rabbitMQClient);
 
         doAnswer(new Answer<AsyncResult<JsonObject>>() {
             @Override
@@ -1689,7 +1689,7 @@ public class SubscriptionServiceTest {
     @DisplayName("Test deleteCallbackSubscription method : when message publish failed")
     public void test_deleteCallbackSubscription_publish_message_failure(VertxTestContext vertxTestContext) {
         lenient().when(voidAsyncResult.succeeded()).thenReturn(false);
-        lenient().when(rabbitClient.getRabbitMQClient()).thenReturn(rabbitMQClient);
+        lenient().when(rabbitClient.getRabbitmqClient()).thenReturn(rabbitMQClient);
         when(asyncResult.result()).thenReturn(rowSet);
         when(asyncResult.succeeded()).thenReturn(true);
         when(pgSQLClient.executeAsync(anyString())).thenReturn(rowSetFuture);
