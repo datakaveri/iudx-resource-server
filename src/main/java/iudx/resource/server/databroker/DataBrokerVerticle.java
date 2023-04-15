@@ -3,6 +3,7 @@ package iudx.resource.server.databroker;
 import static iudx.resource.server.common.Constants.ASYNC_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.BROKER_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -24,21 +25,20 @@ import iudx.resource.server.databroker.listeners.UniqueAttribQListener;
 
 /**
  * The Data Broker Verticle.
+ *
  * <h1>Data Broker Verticle</h1>
- * <p>
- * The Data Broker Verticle implementation in the the IUDX Resource Server exposes the
- * {@link iudx.resource.server.databroker.DataBrokerService} over the Vert.x Event Bus.
- * </p>
- * 
+ *
+ * <p>The Data Broker Verticle implementation in the the IUDX Resource Server exposes the {@link
+ * iudx.resource.server.databroker.DataBrokerService} over the Vert.x Event Bus.
+ *
  * @version 1.0
  * @since 2020-05-31
  */
-
 public class DataBrokerVerticle extends AbstractVerticle {
 
   private DataBrokerService databroker;
   private RabbitMQOptions config;
-  private String dataBrokerIP;
+  private String dataBrokerIp;
   private int dataBrokerPort;
   private int dataBrokerManagementPort;
   private String dataBrokerVhost;
@@ -53,7 +53,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
   /* Database Properties */
-  private String databaseIP;
+  private String databaseIp;
   private int databasePort;
   private String databaseName;
   private String databaseUserName;
@@ -67,21 +67,18 @@ public class DataBrokerVerticle extends AbstractVerticle {
   private CacheService cache;
   private AsyncService asyncService;
 
-
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
    * service with the Event bus against an address, publishes the service with the service discovery
    * interface.
    */
-
   @Override
   public void start() throws Exception {
 
     /* Read the configuration and set the rabbitMQ server properties. */
-    dataBrokerIP = config().getString("dataBrokerIP");
+    dataBrokerIp = config().getString("dataBrokerIP");
     dataBrokerPort = config().getInteger("dataBrokerPort");
-    dataBrokerManagementPort =
-        config().getInteger("dataBrokerManagementPort");
+    dataBrokerManagementPort = config().getInteger("dataBrokerManagementPort");
     dataBrokerVhost = config().getString("dataBrokerVhost");
     dataBrokerUserName = config().getString("dataBrokerUserName");
     dataBrokerPassword = config().getString("dataBrokerPassword");
@@ -89,9 +86,8 @@ public class DataBrokerVerticle extends AbstractVerticle {
     requestedHeartbeat = config().getInteger("requestedHeartbeat");
     handshakeTimeout = config().getInteger("handshakeTimeout");
     requestedChannelMax = config().getInteger("requestedChannelMax");
-    networkRecoveryInterval =
-        config().getInteger("networkRecoveryInterval");
-    databaseIP = config().getString("postgresDatabaseIP");
+    networkRecoveryInterval = config().getInteger("networkRecoveryInterval");
+    databaseIp = config().getString("postgresDatabaseIP");
     databasePort = config().getInteger("postgresDatabasePort");
     databaseName = config().getString("postgresDatabaseName");
     databaseUserName = config().getString("postgresDatabaseUserName");
@@ -103,7 +99,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
     config = new RabbitMQOptions();
     config.setUser(dataBrokerUserName);
     config.setPassword(dataBrokerPassword);
-    config.setHost(dataBrokerIP);
+    config.setHost(dataBrokerIp);
     config.setPort(dataBrokerPort);
     config.setVirtualHost(dataBrokerVhost);
     config.setConnectionTimeout(connectionTimeout);
@@ -116,7 +112,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
     webConfig = new WebClientOptions();
     webConfig.setKeepAlive(true);
     webConfig.setConnectTimeout(86400000);
-    webConfig.setDefaultHost(dataBrokerIP);
+    webConfig.setDefaultHost(dataBrokerIp);
     webConfig.setDefaultPort(dataBrokerManagementPort);
     webConfig.setKeepAliveTimeout(86400000);
 
@@ -130,8 +126,13 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
     /* Set Connection Object */
     if (connectOptions == null) {
-      connectOptions = new PgConnectOptions().setPort(databasePort).setHost(databaseIP)
-          .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
+      connectOptions =
+          new PgConnectOptions()
+              .setPort(databasePort)
+              .setHost(databaseIp)
+              .setDatabase(databaseName)
+              .setUser(databaseUserName)
+              .setPassword(databasePassword);
     }
 
     /* Pool options */
@@ -149,7 +150,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
     propObj.put("userName", dataBrokerUserName);
     propObj.put("password", dataBrokerPassword);
     propObj.put("vHost", dataBrokerVhost);
-    propObj.put("databaseIP", databaseIP);
+    propObj.put("databaseIP", databaseIp);
     propObj.put("databasePort", databasePort);
     propObj.put("databaseName", databaseName);
     propObj.put("databaseUserName", databaseUserName);
@@ -160,8 +161,7 @@ public class DataBrokerVerticle extends AbstractVerticle {
 
     rabbitWebClient = new RabbitWebClient(vertx, webConfig, propObj);
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
-    rabbitClient =
-        new RabbitClient(vertx, config, rabbitWebClient, pgClient, config());
+    rabbitClient = new RabbitClient(vertx, config, rabbitWebClient, pgClient, config());
 
     binder = new ServiceBinder(vertx);
     databroker = new DataBrokerServiceImpl(rabbitClient, pgClient, config());
@@ -170,29 +170,25 @@ public class DataBrokerVerticle extends AbstractVerticle {
     asyncService = AsyncService.createProxy(vertx, ASYNC_SERVICE_ADDRESS);
 
     String internalVhost = config().getString(VHosts.IUDX_INTERNAL.value);
-    RMQListeners revokeQListener = new RevokeClientQListener(vertx, cache, config, internalVhost);
-    RMQListeners uniqueAttrQListener =
+    RMQListeners revokeQlistener = new RevokeClientQListener(vertx, cache, config, internalVhost);
+    RMQListeners uniqueAttrQlistener =
         new UniqueAttribQListener(vertx, cache, config, internalVhost);
-    RMQListeners asyncQueryQListener =
+    RMQListeners asyncQueryQlistener =
         new AsyncQueryListener(vertx, config, internalVhost, asyncService);
 
     // start
-    revokeQListener.start();
-    uniqueAttrQListener.start();
-    asyncQueryQListener.start();
+    revokeQlistener.start();
+    uniqueAttrQlistener.start();
+    asyncQueryQlistener.start();
 
     /* Publish the Data Broker service with the Event Bus against an address. */
 
     consumer =
-        binder.setAddress(BROKER_SERVICE_ADDRESS)
-            .register(DataBrokerService.class, databroker);
-
+        binder.setAddress(BROKER_SERVICE_ADDRESS).register(DataBrokerService.class, databroker);
   }
-
 
   @Override
   public void stop() {
     binder.unregister(consumer);
   }
 }
-

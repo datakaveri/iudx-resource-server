@@ -12,7 +12,6 @@ public class Constants {
   public static final String APIKEY_TEST_EXAMPLE = "123456";
   public static final String ALLOW_ROUTING_KEY = "/.*";
 
-  
   public static final String BAD_REQUEST =
       "Bad request : insufficient request data to register adaptor";
   public static final String CHECK_CREDENTIALS =
@@ -21,7 +20,7 @@ public class Constants {
   public static final String CONSUMER = "consumer";
   public static final String USER_ID = "userid";
   public static final String CONSUMER_TEST_EXAMPLE = "vasanth.rajaraman@rbccps.org";
-  public static final String CALLBACKURL = "callbackURL";  
+  public static final String CALLBACKURL = "callbackURL";
 
   public static final String DETAILS = "details";
   public static final String DATA_ISSUE = ".dataIssue";
@@ -32,7 +31,7 @@ public class Constants {
   public static final String DATA_WILDCARD_ROUTINGKEY = "/.*";
   public static final String DATABASE_READ_SUCCESS = "Read Database Success";
   public static final String DATABASE_READ_FAILURE = "Read Database Failed";
-  
+
   public static final String ENTITIES = "entities";
   public static final String EXCHANGE_FOUND = "Exchange found";
   public static final String EXCHANGE_EXISTS = "Exchange already exists";
@@ -72,9 +71,9 @@ public class Constants {
   public static final String NAME = "name";
   public static final String NETWORK_ISSUE = "Network Issue";
   public static final String NONE = "None";
-  
+
   public static final String OPERATION = "operation";
-  
+
   public static final String PASSWORD = "password";
   public static final int PASSWORD_LENGTH = 16;
   public static final String PORT = "port";
@@ -87,7 +86,7 @@ public class Constants {
       "Queue already exists with different properties";
   public static final String QUEUE_DATA = "database";
   public static final String QUEUE_ADAPTOR_LOGS = "adaptorLogs";
-  public static final String REDIS_LATEST="redis-latest";
+  public static final String REDIS_LATEST = "redis-latest";
   public static final String QUEUE_LIST_ERROR = "Listing of Queue failed";
   public static final String QUEUE_DELETE_ERROR = "Deletion of Queue failed";
   public static final String QUEUE_CREATE_ERROR = "Creation of Queue failed";
@@ -103,10 +102,10 @@ public class Constants {
 
   public static final String STATUS = "status";
   public static final String SUCCESS = "success";
-//  public static final String USER_ID = "shaUsername";
+  //  public static final String USER_ID = "shaUsername";
   public static final String SUBSCRIPTION_ID = "subscriptionID";
   public static final String STREAMING_URL = "streamingURL";
-  
+
   public static final String TOPIC_PERMISSION = "topic_permissions";
   public static final String TOPIC_PERMISSION_SET_SUCCESS = "topic permission set";
   public static final String TOPIC_PERMISSION_ALREADY_SET = "topic permission already set";
@@ -114,7 +113,7 @@ public class Constants {
   public static final String TAGS = "tags";
   public static final String TYPE = "type";
   public static final String TITLE = "title";
-  public static final String RESULTS= "results";
+  public static final String RESULTS = "results";
 
   public static final String USER_NAME = "username";
   public static final String USER_CREATED = "User created";
@@ -148,7 +147,7 @@ public class Constants {
   public static final String X_QUEUE_MODE_VALUE = "lazy";
   public static final String X_QUEUE_TYPE = "durable";
   public static final String X_QUEUE_ARGUMENTS = "arguments";
-  
+
   public static final int BAD_REQUEST_CODE = 400;
   public static final int INTERNAL_ERROR_CODE = 500;
   public static final int SUCCESS_CODE = 200;
@@ -164,7 +163,9 @@ public class Constants {
   public static final String DELETE_CALLBACK =
       "Delete from registercallback WHERE subscriptionID = '$1'";
   public static final String INSERT_CALLBACK =
-      "INSERT INTO registercallback (subscriptionID  ,callbackURL ,entities ,start_time , end_time , frequency ) VALUES ('$1', '$2', '$3', '$4', '$5', '$6')";
+      "INSERT INTO registercallback "
+          + "(subscriptionID  ,callbackURL ,entities ,start_time , end_time , frequency ) "
+          + "VALUES ('$1', '$2', '$3', '$4', '$5', '$6')";
   public static final String UPDATE_CALLBACK =
       " UPDATE registercallback SET entities = '$1' WHERE subscriptionID = '$2'";
 
@@ -176,13 +177,14 @@ public class Constants {
       "SELECT * FROM subscription_users WHERE username='user-test'";
   public static final String SELECT_DATABROKER_USER =
       "SELECT * FROM subscription_users WHERE username='$1'";
-  public static final String RESET_PWD="UPDATE subscription_users SET password='$1' where username='$2'";
-  
+  public static final String RESET_PWD =
+      "UPDATE subscription_users SET password='$1' where username='$2'";
+
   // sql errors
   public static final String SQL_ERROR = "SQL Error";
   public static final String DUPLICATE_KEY = "duplicate key value violates unique constraint";
-  
-  //message
-  public static final String API_KEY_MESSAGE="Use the apiKey returned on registration, if lost please use /resetPassword API";
 
+  // message
+  public static final String API_KEY_MESSAGE =
+      "Use the apiKey returned on registration, if lost please use /resetPassword API";
 }
