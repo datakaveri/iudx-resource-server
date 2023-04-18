@@ -15,7 +15,7 @@
         <apache-log4j2.version>2.17.1</apache-log4j2.version>
         <lmax-disruptor.version>3.4.4</lmax-disruptor.version>
         <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
-        <checkstyle.version>10.3.1</checkstyle.version>
+        <checkstyle.version>10.7.0</checkstyle.version>
         <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
         <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
         <maven-javadoc-plugin.version>3.4.0</maven-javadoc-plugin.version>
@@ -378,13 +378,17 @@
                     </dependency>
                 </dependencies>
                 <configuration>
-                    <!-- <violationSeverity>warning</violationSeverity> -->
-                    <consoleOutput>true</consoleOutput>
                     <encoding>UTF-8</encoding>
+                    <failsOnError>true</failsOnError>
                     <configLocation>google_checks.xml</configLocation>
-                    <module name="LineLength">
-                        <property name="max" value="120" />
-                    </module>
+                    <violationSeverity>warning</violationSeverity>
+                    <sourceDirectories>
+                        <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                        <!-- <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory> -->
+                    </sourceDirectories>
+                    <excludes>
+                        <exclude>**/*VertxEBProxy.class</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
