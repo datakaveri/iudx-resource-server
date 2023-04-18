@@ -532,6 +532,10 @@
                     </rulesets>
                     <excludes>
                         <exclude>**/*VertxEBProxy.class</exclude>
+                        <exclude>iudx/resource/server/authenticator/AuthenticationServiceVertxEBProxy.java</exclude>
+                        <exclude>iudx/resource/server/authenticator/AuthenticationServiceVertxEBProxy.class</exclude>
+                        <exclude>iudx/resource/server/authenticator/AuthenticationServiceVertxProxyHandler.java</exclude>
+                        <exclude>iudx/resource/server/authenticator/AuthenticationServiceVertxProxyHandler.class</exclude>
                     </excludes>
                 </configuration>
             </plugin>
