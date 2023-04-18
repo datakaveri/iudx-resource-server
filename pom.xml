@@ -378,22 +378,13 @@
                     </dependency>
                 </dependencies>
                 <configuration>
-                    <!--<encoding>UTF-8</encoding>
-                    <failsOnError>true</failsOnError>
-                    <configLocation>google_checks.xml</configLocation>
-                    <violationSeverity>warning</violationSeverity>
-                    <sourceDirectories>
-                        <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
-                        &lt;!&ndash; <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory> &ndash;&gt;
-                    </sourceDirectories>-->
-
-                    <!--<excludes>
-                        <exclude>**/*VertxEBProxy.class</exclude>
-                    </excludes>-->
                     <!-- <violationSeverity>warning</violationSeverity> -->
                     <consoleOutput>true</consoleOutput>
                     <encoding>UTF-8</encoding>
                     <configLocation>google_checks.xml</configLocation>
+                    <!--<excludes>
+                        <exclude>**/*VertxEBProxy.class</exclude>
+                    </excludes>-->
                 </configuration>
             </plugin>
             <plugin>
