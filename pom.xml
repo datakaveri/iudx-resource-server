@@ -386,9 +386,9 @@
                         <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
                         <!-- <sourceDirectory>${project.build.testSourceDirectory}</sourceDirectory> -->
                     </sourceDirectories>
-                    <excludes>
+                    <!--<excludes>
                         <exclude>**/*VertxEBProxy.class</exclude>
-                    </excludes>
+                    </excludes>-->
                 </configuration>
             </plugin>
             <plugin>
