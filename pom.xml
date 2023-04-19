@@ -374,7 +374,7 @@
                 <configuration>
                     <targetJdk>${openjdk.version}</targetJdk>
                     <rulesets>
-                       <!-- <ruleset>/rulesets/java/braces.xml</ruleset>
+                        <!--<ruleset>/rulesets/java/braces.xml</ruleset>
                         <ruleset>/rulesets/java/naming.xml</ruleset>
                         <ruleset>/rulesets/java/imports.xml</ruleset>
                         <ruleset>/rulesets/java/unnecessary.xml</ruleset>
@@ -383,7 +383,7 @@
                         <ruleset>/category/java/performance.xml</ruleset>
                         <ruleset>/category/java/bestpractices.xml</ruleset>
                         <ruleset>/category/java/errorprone.xml</ruleset>-->
-                        <ruleset>./iudx-pmd-ruleset.xml</ruleset>
+                        <ruleset>iudx-pmd-ruleset.xml</ruleset>
 
                     </rulesets>
                     <printFailingErrors>true</printFailingErrors>
