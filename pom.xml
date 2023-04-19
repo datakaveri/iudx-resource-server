@@ -384,8 +384,9 @@
                         <ruleset>/category/java/bestpractices.xml</ruleset>
                         <ruleset>/category/java/errorprone.xml</ruleset>-->
 
-                        <!--<ruleset>iudx-pmd-ruleset.xml</ruleset>-->
-                        <ruleset>${basedir}/iudx-pmd-ruleset.xml</ruleset>
+                        <!--<ruleset>ruleset.xml</ruleset>-->
+                        <ruleset>ruleset.xml</ruleset>
+                        <!--<ruleset>${basedir}/ruleset.xml</ruleset>-->
 
                     </rulesets>
                     <printFailingErrors>true</printFailingErrors>
