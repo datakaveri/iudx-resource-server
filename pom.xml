@@ -385,8 +385,9 @@
                         <ruleset>/category/java/errorprone.xml</ruleset>-->
 
                         <!--<ruleset>./iudx-pmd-ruleset.xml</ruleset>-->
-                        <ruleset>/home/ankit/Documents/3 Nov 2022/iudx-resource-server/iudx-pmd-ruleset.xml</ruleset>
-                        <!--<ruleset>${basedir}/iudx-pmd-ruleset.xml</ruleset>-->
+                        <!--<ruleset>/home/ankit/Documents/3 Nov 2022/iudx-resource-server/iudx-pmd-ruleset.xml</ruleset>-->
+
+                        <ruleset>${basedir}/iudx-pmd-ruleset.xml</ruleset>
 
                     </rulesets>
                     <printFailingErrors>true</printFailingErrors>
@@ -570,21 +571,6 @@
                 </configuration>
             </plugin>
 -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-pmd-plugin</artifactId>
-                <version>${maven-pmd-plugin.version}</version>
-                <configuration>
-                    <rulesets>
-                        <!--<ruleset>./iudx-pmd-ruleset.xml</ruleset>-->
-                        <ruleset>/home/ankit/Documents/3 Nov 2022/iudx-resource-server/iudx-pmd-ruleset.xml</ruleset>
-                        <!--<ruleset>${basedir}/iudx-pmd-ruleset.xml</ruleset>-->
-
-                    </rulesets>
-                    <!--<maxAllowedViolations>622</maxAllowedViolations>-->
-                </configuration>
-            </plugin>
-
             <!--
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
