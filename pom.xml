@@ -383,7 +383,9 @@
                         <ruleset>/category/java/performance.xml</ruleset>
                         <ruleset>/category/java/bestpractices.xml</ruleset>
                         <ruleset>/category/java/errorprone.xml</ruleset>-->
-                        <ruleset>iudx-pmd-ruleset.xml</ruleset>
+
+                        <!--<ruleset>iudx-pmd-ruleset.xml</ruleset>-->
+                        <ruleset>${basedir}/iudx-pmd-ruleset.xml</ruleset>
 
                     </rulesets>
                     <printFailingErrors>true</printFailingErrors>
