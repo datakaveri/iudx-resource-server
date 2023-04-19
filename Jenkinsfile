@@ -41,8 +41,8 @@ pipeline {
       }
       post{
       always {
-                recordIssues enabledForFailure: true, tool: checkStyle(pattern: 'target/checkstyle-result.xml')
-                recordIssues enabledForFailure: true, tool: pmdParser(pattern: 'target/pmd.xml')
+                recordIssues enabledForFailure: true, tool: checkStyle(pattern: 'target/checkstyle-result.xml', exclusionPattern:'target/generated-sources,**/*VertxEBProxy.class')
+                recordIssues enabledForFailure: true, tool: pmdParser(pattern: 'target/pmd.xml', exclusionPattern:'target/generated-sources,**/*VertxEBProxy.class')
               }
         failure{
           script{
