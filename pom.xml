@@ -538,6 +538,9 @@
                        <exclude>iudx/resource/server/authenticator/AuthenticationServiceVertxProxyHandler.java</exclude>
                        <exclude>iudx/resource/server/authenticator/AuthenticationServiceVertxProxyHandler.class</exclude>
                    </excludes>-->
+                    <excludeRoots>
+                        <excludeRoot>target/generated-sources</excludeRoot>
+                    </excludeRoots>
                 </configuration>
             </plugin>
             <plugin>
