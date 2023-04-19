@@ -534,10 +534,10 @@
                     </rulesets>
                     <excludes>
                        <exclude>target/generated-sources</exclude>
-                       <exclude>iudx/resource/server/authenticator/AuthenticationServiceVertxEBProxy.java</exclude>
-                       <exclude>iudx/resource/server/authenticator/AuthenticationServiceVertxEBProxy.class</exclude>
+                       <exclude>.*/AuthenticationServiceVertxEBProxy.java</exclude>
+                       <!--<exclude>iudx/resource/server/authenticator/AuthenticationServiceVertxEBProxy.class</exclude>
                        <exclude>iudx/resource/server/authenticator/AuthenticationServiceVertxProxyHandler.java</exclude>
-                       <exclude>iudx/resource/server/authenticator/AuthenticationServiceVertxProxyHandler.class</exclude>
+                       <exclude>iudx/resource/server/authenticator/AuthenticationServiceVertxProxyHandler.class</exclude>-->
                    </excludes>
                     <excludeRoots>
                         <excludeRoot>target/generated-sources</excludeRoot>
