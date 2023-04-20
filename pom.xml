@@ -384,10 +384,10 @@
                         <ruleset>/category/java/bestpractices.xml</ruleset>
                         <ruleset>/category/java/errorprone.xml</ruleset>-->
 
-                        <!--<ruleset>./iudx-pmd-ruleset.xml</ruleset>-->
-                        <!--<ruleset>/home/ankit/Documents/3 Nov 2022/iudx-resource-server/iudx-pmd-ruleset.xml</ruleset>-->
+                        <ruleset>/iudx-pmd-ruleset.xml</ruleset>
+                        <!--<ruleset>iudx-pmd-ruleset.xml</ruleset>-->
 
-                        <ruleset>${basedir}/iudx-pmd-ruleset.xml</ruleset>
+                        <!--<ruleset>${basedir}/iudx-pmd-ruleset.xml</ruleset>-->
 
                     </rulesets>
                     <printFailingErrors>true</printFailingErrors>

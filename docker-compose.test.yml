@@ -11,7 +11,6 @@ services:
       - /home/ubuntu/configs/.rs.env
     volumes:
       - ./src/:/usr/share/app/src
-      - iudx-pmd-ruleset.xml:/usr/share/app/iudx-pmd-ruleset.xml
       - /home/ubuntu/configs/rs-config-test.json:/usr/share/app/configs/config-test.json
       - /home/ubuntu/configs/keystore.jks:/usr/share/app/configs/keystore.jks
       - ./docker/runTests.sh:/usr/share/app/docker/runTests.sh
