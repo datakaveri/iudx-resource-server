@@ -28,6 +28,7 @@ jobs:
       env: 
         GH_TOKEN: ${{ secrets.JENKINS_UPDATE}}
       run: | 
+
         # Get the latest version of 4.5.0 and 5.0.0-alpha tags from the container registry using GitHub API
         export newtag5_0_0=`(head -n1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/rs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 5.0.0 | sed -e 's/^"//' -e 's/"$//'))`
         export newtag4_5_0=`(head -n1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/rs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 4.5.0-alpha | sed -e 's/^"//' -e 's/"$//'))`
@@ -51,6 +52,7 @@ jobs:
          sed -i s/$oldtag4_5_0/$newtag4_5_0/g Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml
          
          # Exports the current version of the application from K8s-deployment/Charts/resource-server/Chart.yaml file
+
          export oldappversion=`yq -r .version K8s-deployment/Charts/resource-server/Chart.yaml`
          
          # Uses awk to increment the version number in K8s-deployment/Charts/resource-server/Chart.yaml file
@@ -62,8 +64,10 @@ jobs:
          git add Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml K8s-deployment/Charts/resource-server/values.yaml K8s-deployment/Charts/resource-server/Chart.yaml
          git commit --allow-empty -m "updated rs docker image tag to $newtag4_5_0"
          git push --set-upstream origin rs-4.5.0-automatic-updates/$newtag4_5_0
+
          
          # Creates a new pull request on the datakaveri/iudx-deployment repository with the base branch 4.5.0
+
          gh pr create -R datakaveri/iudx-deployment --base 4.5.0 --fill 
         fi
         
@@ -72,10 +76,12 @@ jobs:
          git checkout master
          git checkout -b rs-automatic-updates/$newtag5_0_0
 
+
          # Uses sed to find and replace $oldtag5_0_0 with $newtag5_0_0 in Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml file
          sed -i s/$oldtag5_0_0/$newtag5_0_0/g Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml
          
          # Exports the current version of the application from K8s-deployment/Charts/resource-server/Chart.yaml file
+
          export oldappversion=`yq -r .version K8s-deployment/Charts/resource-server/Chart.yaml`
          
          # Uses awk to increment the version number in K8s-deployment/Charts/resource-server/Chart.yaml file
@@ -87,10 +93,10 @@ jobs:
          git add Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml K8s-deployment/Charts/resource-server/values.yaml K8s-deployment/Charts/resource-server/Chart.yaml
          git commit --allow-empty -m "updated rs docker image tag to $newtag5_0_0"
          git push --set-upstream origin rs-automatic-updates/$newtag5_0_0
+
          
          # Creates a new pull request on the datakaveri/iudx-deployment repository with the base branch master
+
          gh pr create -R datakaveri/iudx-deployment --base master --fill 
         fi
-
-
 
