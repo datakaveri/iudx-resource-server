@@ -66,7 +66,7 @@ pipeline {
       post{
         failure{
           script{
-            sh 'docker compose down --remove-orphans'
+            sh 'docker compose -f docker-compose.test.yml down --remove-orphans'
           }
         }
       }
@@ -89,7 +89,7 @@ pipeline {
       post{
         failure{
           script{
-            sh 'docker compose down --remove-orphans'
+            sh 'docker compose -f docker-compose.test.yml  down --remove-orphans'
           }
         }
       }
