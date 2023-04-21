@@ -29,8 +29,7 @@
     </module>
     <!-- https://checkstyle.org/config_filters.html#SuppressionFilter -->
     <module name="SuppressionFilter">
-        <property name="file" value="${org.checkstyle.google.suppressionfilter.config}"
-                  default="checkstyle-suppressions.xml" />
+        <property name="file" value="$AsyncServiceVertxEBProxy.java$"/>
         <property name="optional" value="true"/>
     </module>
 
