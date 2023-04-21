@@ -404,6 +404,9 @@
                         <!--<exclude>**/*VertxEBProxy.class</exclude>-->
                         target/generated-sources
                     </excludes>
+                    <suppressionsFileExpression>
+                        AsyncServiceVertxEBProxy\.java$
+                    </suppressionsFileExpression>
                 </configuration>
             </plugin>
             <plugin>
