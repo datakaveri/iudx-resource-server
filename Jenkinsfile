@@ -31,7 +31,7 @@ pipeline {
     stage('Unit Tests and Code Coverage Test'){
       steps{
         script{
-          sh 'docker-compose -f docker-compose.test.yml up test'
+          sh 'docker compose -f docker-compose.test.yml up test'
         }
         xunit (
           thresholds: [ skipped(failureThreshold: '1'), failed(failureThreshold: '0') ],
@@ -42,7 +42,7 @@ pipeline {
       post{
         failure{
           script{
-            sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
+            sh 'docker compose -f docker-compose.test.yml down --remove-orphans'
           }
           error "Test failure. Stopping pipeline execution!"
         }
@@ -59,14 +59,14 @@ pipeline {
         script{
           sh 'scp Jmeter/ResourceServer.jmx jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Jmeter/'
           sh 'scp src/test/resources/IUDX-Resource-Server-Consumer-APIs-V4.5.0.postman_collection.json jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Newman/'
-          sh 'docker-compose -f docker-compose.test.yml up -d perfTest'
+          sh 'docker compose -f docker-compose.test.yml up -d perfTest'
           sh 'sleep 120'
         }
       }
       post{
         failure{
           script{
-            sh 'docker-compose down --remove-orphans'
+            sh 'docker compose down --remove-orphans'
           }
         }
       }
@@ -89,7 +89,7 @@ pipeline {
       post{
         failure{
           script{
-            sh 'docker-compose down --remove-orphans'
+            sh 'docker compose down --remove-orphans'
           }
         }
       }
@@ -120,7 +120,7 @@ pipeline {
         }
         cleanup{
           script{
-            sh 'docker-compose -f docker-compose.test.yml down --remove-orphans'
+            sh 'docker compose -f docker-compose.test.yml down --remove-orphans'
           } 
         }
       }
