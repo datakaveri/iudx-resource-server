@@ -399,11 +399,11 @@
                     <!-- <violationSeverity>warning</violationSeverity> -->
                     <consoleOutput>true</consoleOutput>
                     <encoding>UTF-8</encoding>
-                    <configLocation>google_checks.xml</configLocation>
-                    <excludes>
-                        <!--<exclude>**/*VertxEBProxy.class</exclude>-->
+                    <configLocation>./google_checks.xml</configLocation>
+                    <!--<excludes>
+                        &lt;!&ndash;<exclude>**/*VertxEBProxy.class</exclude>&ndash;&gt;
                         target/generated-sources
-                    </excludes>
+                    </excludes>-->
                 </configuration>
             </plugin>
             <plugin>
@@ -536,7 +536,6 @@
 
     <reporting>
         <plugins>
-            <!--
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-checkstyle-plugin</artifactId>
@@ -544,11 +543,11 @@
                             <configuration>
                                 <consoleOutput>true</consoleOutput>
                                 <encoding>UTF-8</encoding>
-                                <configLocation>google_checks.xml</configLocation>
+                                <configLocation>./google_checks.xml</configLocation>
                                 <failOnViolation>false</failOnViolation>
-                                <excludes>
+<!--                                <excludes>
                                    target/generated-sources
-                                </excludes>
+                                </excludes>-->
                             </configuration>
 
                             <reportSets>
@@ -559,7 +558,6 @@
                                 </reportSet>
                             </reportSets>
                         </plugin>
-            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
