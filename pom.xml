@@ -400,10 +400,10 @@
                     <consoleOutput>true</consoleOutput>
                     <encoding>UTF-8</encoding>
                     <configLocation>./google_checks.xml</configLocation>
-                    <!--<excludes>
-                        &lt;!&ndash;<exclude>**/*VertxEBProxy.class</exclude>&ndash;&gt;
+                    <excludes>
+                        <!--<exclude>**/*VertxEBProxy.class</exclude>-->
                         target/generated-sources
-                    </excludes>-->
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
