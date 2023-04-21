@@ -536,6 +536,7 @@
 
     <reporting>
         <plugins>
+<!--
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-checkstyle-plugin</artifactId>
@@ -545,9 +546,9 @@
                                 <encoding>UTF-8</encoding>
                                 <configLocation>./google_checks.xml</configLocation>
                                 <failOnViolation>false</failOnViolation>
-<!--                                <excludes>
+&lt;!&ndash;                                <excludes>
                                    target/generated-sources
-                                </excludes>-->
+                                </excludes>&ndash;&gt;
                             </configuration>
 
                             <reportSets>
@@ -558,6 +559,7 @@
                                 </reportSet>
                             </reportSets>
                         </plugin>
+-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
