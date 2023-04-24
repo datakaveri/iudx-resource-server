@@ -400,22 +400,16 @@
                     <consoleOutput>true</consoleOutput>
                     <encoding>UTF-8</encoding>
                     <configLocation>./google_checks.xml</configLocation>
-                    <excludes>
-                        <!--<exclude>**/*VertxEBProxy.class</exclude>-->
-                        <!--target/generated-sources-->
+                    <!--<excludes>
+                        &lt;!&ndash;<exclude>**/*VertxEBProxy.class</exclude>&ndash;&gt;
+                        &lt;!&ndash;target/generated-sources&ndash;&gt;
                         AsyncServiceVertxEBProxy.java
                     </excludes>
-                    <resourceExcludes>
-                        AsyncServiceVertxEBProxy.java
-                    </resourceExcludes>
-                    <suppressionsFileExpression>
-                        AsyncServiceVertxEBProxy\.java$
-                    </suppressionsFileExpression>
                     <sourceDirectories>
                     <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
-                    <!-- <sourceDirectory>${project.build.testSourceDirectory}
-                    </sourceDirectory> -->
-                    </sourceDirectories>
+                    &lt;!&ndash; <sourceDirectory>${project.build.testSourceDirectory}
+                    </sourceDirectory> &ndash;&gt;
+                    </sourceDirectories>-->
                 </configuration>
             </plugin>
             <plugin>
