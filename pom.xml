@@ -400,11 +400,9 @@
                     <consoleOutput>true</consoleOutput>
                     <encoding>UTF-8</encoding>
                     <configLocation>./google_checks.xml</configLocation>
-                    <sourceDirectories>
+                    <!--<sourceDirectories>
                     <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
-                    <!-- <sourceDirectory>${project.build.testSourceDirectory}
-                    </sourceDirectory> -->
-                    </sourceDirectories>
+                    </sourceDirectories>-->
                 </configuration>
             </plugin>
             <plugin>
