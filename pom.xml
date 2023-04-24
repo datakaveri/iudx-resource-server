@@ -404,12 +404,12 @@
                         &lt;!&ndash;<exclude>**/*VertxEBProxy.class</exclude>&ndash;&gt;
                         &lt;!&ndash;target/generated-sources&ndash;&gt;
                         AsyncServiceVertxEBProxy.java
-                    </excludes>
+                    </excludes>-->
                     <sourceDirectories>
                     <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
-                    &lt;!&ndash; <sourceDirectory>${project.build.testSourceDirectory}
-                    </sourceDirectory> &ndash;&gt;
-                    </sourceDirectories>-->
+                    <!-- <sourceDirectory>${project.build.testSourceDirectory}
+                    </sourceDirectory> -->
+                    </sourceDirectories>
                 </configuration>
             </plugin>
             <plugin>
