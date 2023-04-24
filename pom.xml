@@ -402,11 +402,20 @@
                     <configLocation>./google_checks.xml</configLocation>
                     <excludes>
                         <!--<exclude>**/*VertxEBProxy.class</exclude>-->
-                        target/generated-sources
+                        <!--target/generated-sources-->
+                        AsyncServiceVertxEBProxy.java
                     </excludes>
+                    <resourceExcludes>
+                        AsyncServiceVertxEBProxy.java
+                    </resourceExcludes>
                     <suppressionsFileExpression>
                         AsyncServiceVertxEBProxy\.java$
                     </suppressionsFileExpression>
+                    <sourceDirectories>
+                    <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+                    <!-- <sourceDirectory>${project.build.testSourceDirectory}
+                    </sourceDirectory> -->
+                    </sourceDirectories>
                 </configuration>
             </plugin>
             <plugin>
