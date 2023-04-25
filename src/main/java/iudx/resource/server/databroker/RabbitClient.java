@@ -17,7 +17,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import iudx.resource.server.common.Response;
 import iudx.resource.server.common.ResponseUrn;
-import iudx.resource.server.common.VHosts;
+import iudx.resource.server.common.Vhosts;
 import iudx.resource.server.databroker.util.PermissionOpType;
 import java.util.Arrays;
 import java.util.Map;
@@ -48,7 +48,7 @@ public class RabbitClient {
     this.amqpPort = configs.getInteger("brokerAmqpPort");
     this.vhost = configs.getString("dataBrokerVhost");
 
-    String internalVhost = configs.getString(VHosts.IUDX_INTERNAL.name());
+    String internalVhost = configs.getString(Vhosts.IUDX_INTERNAL.name());
     rabbitConfigs.setVirtualHost(internalVhost);
     this.client = getRabbitmqClient(vertx, rabbitConfigs);
     this.webClient = webClient;

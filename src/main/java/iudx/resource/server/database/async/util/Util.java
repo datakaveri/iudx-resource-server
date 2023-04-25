@@ -1,10 +1,6 @@
 package iudx.resource.server.database.async.util;
 
-import static iudx.resource.server.database.archives.Constants.EMPTY_RESOURCE_ID;
-import static iudx.resource.server.database.archives.Constants.ID;
-import static iudx.resource.server.database.archives.Constants.ID_NOT_FOUND;
-import static iudx.resource.server.database.archives.Constants.SEARCHTYPE_NOT_FOUND;
-import static iudx.resource.server.database.archives.Constants.SEARCH_TYPE;
+import static iudx.resource.server.database.archives.Constants.*;
 import static iudx.resource.server.database.postgres.Constants.INSERT_S3_PENDING_SQL;
 
 import io.vertx.core.Future;

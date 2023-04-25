@@ -17,7 +17,7 @@ import io.vertx.core.json.JsonObject;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.common.ResponseUrn;
-import iudx.resource.server.common.VHosts;
+import iudx.resource.server.common.Vhosts;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import org.apache.logging.log4j.LogManager;
@@ -38,7 +38,7 @@ public class ManagementApiImpl implements ManagementApi {
     LOGGER.info("data broker ::: " + databroker);
     databroker.createExchange(
         json,
-        VHosts.IUDX_PROD.name(),
+        Vhosts.IUDX_PROD.name(),
         handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result();
@@ -64,7 +64,7 @@ public class ManagementApiImpl implements ManagementApi {
     json.put(JSON_EXCHANGE_NAME, exchangeid);
     databroker.deleteExchange(
         json,
-        VHosts.IUDX_PROD.name(),
+        Vhosts.IUDX_PROD.name(),
         handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result();
@@ -91,7 +91,7 @@ public class ManagementApiImpl implements ManagementApi {
     json.put("id", exchangeid);
     databroker.listExchangeSubscribers(
         json,
-        VHosts.IUDX_PROD.name(),
+        Vhosts.IUDX_PROD.name(),
         handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result();
@@ -115,7 +115,7 @@ public class ManagementApiImpl implements ManagementApi {
     Promise<JsonObject> promise = Promise.promise();
     databroker.createQueue(
         json,
-        VHosts.IUDX_PROD.name(),
+        Vhosts.IUDX_PROD.name(),
         handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result();
@@ -141,7 +141,7 @@ public class ManagementApiImpl implements ManagementApi {
     json.put(JSON_QUEUE_NAME, queueId);
     databroker.deleteQueue(
         json,
-        VHosts.IUDX_PROD.name(),
+        Vhosts.IUDX_PROD.name(),
         handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result();
@@ -167,7 +167,7 @@ public class ManagementApiImpl implements ManagementApi {
     json.put(JSON_QUEUE_NAME, queueId);
     databroker.listQueueSubscribers(
         json,
-        VHosts.IUDX_PROD.name(),
+        Vhosts.IUDX_PROD.name(),
         handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result();
@@ -191,7 +191,7 @@ public class ManagementApiImpl implements ManagementApi {
     Promise<JsonObject> promise = Promise.promise();
     databroker.bindQueue(
         json,
-        VHosts.IUDX_PROD.name(),
+        Vhosts.IUDX_PROD.name(),
         handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result();
@@ -216,7 +216,7 @@ public class ManagementApiImpl implements ManagementApi {
     LOGGER.trace("unbind request :: " + json);
     databroker.unbindQueue(
         json,
-        VHosts.IUDX_PROD.name(),
+        Vhosts.IUDX_PROD.name(),
         handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result();
@@ -318,7 +318,7 @@ public class ManagementApiImpl implements ManagementApi {
                       LOGGER.debug("Inserted in postgres.");
                       dataBroker.registerAdaptor(
                           requestJson,
-                          VHosts.IUDX_PROD.name(),
+                          Vhosts.IUDX_PROD.name(),
                           brokerHandler -> {
                             if (brokerHandler.succeeded()) {
                               JsonObject brokerResponse = brokerHandler.result();
@@ -379,7 +379,7 @@ public class ManagementApiImpl implements ManagementApi {
     json.put(USER_ID, userId);
     dataBrokerService.deleteAdaptor(
         json,
-        VHosts.IUDX_PROD.name(),
+        Vhosts.IUDX_PROD.name(),
         dataBrokerHandler -> {
           if (dataBrokerHandler.succeeded()) {
             postgresService.executeQuery(
@@ -415,7 +415,7 @@ public class ManagementApiImpl implements ManagementApi {
     json.put(JSON_ID, adapterId);
     databroker.listAdaptor(
         json,
-        VHosts.IUDX_PROD.name(),
+        Vhosts.IUDX_PROD.name(),
         handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result();
@@ -444,7 +444,7 @@ public class ManagementApiImpl implements ManagementApi {
     Promise<JsonObject> promise = Promise.promise();
     databroker.publishHeartbeat(
         json,
-        VHosts.IUDX_PROD.name(),
+        Vhosts.IUDX_PROD.name(),
         handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result();
@@ -468,7 +468,7 @@ public class ManagementApiImpl implements ManagementApi {
     Promise<JsonObject> promise = Promise.promise();
     databroker.publishHeartbeat(
         json,
-        VHosts.IUDX_PROD.name(),
+        Vhosts.IUDX_PROD.name(),
         handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result();
@@ -491,7 +491,7 @@ public class ManagementApiImpl implements ManagementApi {
     Promise<JsonObject> promise = Promise.promise();
     databroker.publishHeartbeat(
         json,
-        VHosts.IUDX_PROD.name(),
+        Vhosts.IUDX_PROD.name(),
         handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result();
@@ -514,7 +514,7 @@ public class ManagementApiImpl implements ManagementApi {
     Promise<JsonObject> promise = Promise.promise();
     databroker.publishFromAdaptor(
         json,
-        VHosts.IUDX_PROD.name(),
+        Vhosts.IUDX_PROD.name(),
         handler -> {
           if (handler.succeeded()) {
             JsonObject result = handler.result();

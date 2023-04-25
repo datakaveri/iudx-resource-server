@@ -11,7 +11,7 @@ import com.goterl.lazysodium.utils.KeyPair;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.encryption.util.URLBase64MessageEncoder;
+import iudx.resource.server.encryption.util.UrlBase64MessageEncoder;
 import java.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,7 @@ public class EncryptionServiceImpl implements EncryptionService {
 
   public EncryptionServiceImpl() {
     LazySodiumJava lazySodiumJava =
-        new LazySodiumJava(new SodiumJava(), new URLBase64MessageEncoder());
+        new LazySodiumJava(new SodiumJava(), new UrlBase64MessageEncoder());
     this.box = (Box.Lazy) lazySodiumJava;
   }
 

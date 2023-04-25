@@ -1,8 +1,7 @@
 package iudx.resource.server.metering;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
-import static iudx.resource.server.common.Constants.BROKER_SERVICE_ADDRESS;
-import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.*;
 import static iudx.resource.server.metering.util.Constants.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;

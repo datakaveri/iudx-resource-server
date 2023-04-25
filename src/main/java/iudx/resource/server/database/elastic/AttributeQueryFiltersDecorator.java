@@ -9,7 +9,7 @@ import co.elastic.clients.json.JsonData;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.common.ResponseUrn;
-import iudx.resource.server.database.elastic.exception.ESQueryException;
+import iudx.resource.server.database.elastic.exception.EsQueryException;
 import java.util.List;
 import java.util.Map;
 
@@ -104,13 +104,13 @@ public class AttributeQueryFiltersDecorator implements ElasticsearchQueryDecorat
           queryList.add(termQuery);
 
         } else {
-          throw new ESQueryException(
+          throw new EsQueryException(
               ResponseUrn.INVALID_ATTR_PARAM_URN, "invalid attribute operator");
         }
-      } catch (ESQueryException e) {
+      } catch (EsQueryException e) {
         throw e;
       } catch (Exception e) {
-        throw new ESQueryException(
+        throw new EsQueryException(
             ResponseUrn.INVALID_ATTR_PARAM_URN, "exception occured at decoding attributes");
       }
     }

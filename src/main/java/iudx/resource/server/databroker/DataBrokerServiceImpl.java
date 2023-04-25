@@ -16,7 +16,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.rabbitmq.RabbitMQClient;
 import iudx.resource.server.common.Response;
 import iudx.resource.server.common.ResponseUrn;
-import iudx.resource.server.common.VHosts;
+import iudx.resource.server.common.Vhosts;
 import iudx.resource.server.databroker.util.Util;
 import java.util.Map;
 import org.apache.http.HttpStatus;
@@ -914,7 +914,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   }
 
   private String getVhost(String vhost) {
-    String vhostKey = VHosts.valueOf(vhost).value;
+    String vhostKey = Vhosts.valueOf(vhost).value;
     return this.config.getString(vhostKey);
   }
 }

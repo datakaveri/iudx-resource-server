@@ -77,7 +77,7 @@ public class QueryMapperTest {
     MultiMap map = MultiMap.caseInsensitiveMultiMap();
     map.add(NGSILDQUERY_ID, "id1");
     map.add(NGSILDQUERY_ATTRIBUTE, "attr1");
-    NGSILDQueryParams params = new NGSILDQueryParams(map);
+    NgsildQueryParams params = new NgsildQueryParams(map);
     JsonObject json = qm.toJson(params, false);
 
     assertTrue(json.containsKey(NGSILDQUERY_ID));
@@ -98,7 +98,7 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_GEOMETRY, "point");
     map.add(NGSILDQUERY_COORDINATES, "[8.6846,49.40606]");
     map.add(NGSILDQUERY_GEOPROPERTY, "location");
-    NGSILDQueryParams params = new NGSILDQueryParams(map);
+    NgsildQueryParams params = new NgsildQueryParams(map);
 
     JsonObject json = qm.toJson(params, false);
 
@@ -122,7 +122,7 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_COORDINATES,
         "[[[8.68462,49.40606],[8.68550,49.40622],[8.68545,49.406344],[8.68457,49.40617],[8.6846,49.4060]]]");
     map.add(NGSILDQUERY_GEOPROPERTY, "location");
-    NGSILDQueryParams params = new NGSILDQueryParams(map);
+    NgsildQueryParams params = new NgsildQueryParams(map);
 
     JsonObject json = qm.toJson(params, false);
 
@@ -146,7 +146,7 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_TIMEREL, "during");
     map.add(NGSILDQUERY_TIME, "2020-01-23T14:20:00Z");
     map.add(NGSILDQUERY_ENDTIME, "2020-01-24T14:40:00Z");
-    NGSILDQueryParams params = new NGSILDQueryParams(map);
+    NgsildQueryParams params = new NgsildQueryParams(map);
 
     JsonObject json = qm.toJson(params, true);
 
@@ -167,7 +167,7 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_TIMEREL, "before");
     map.add(NGSILDQUERY_TIME, "2020-01-23T14:20:00Z");
     map.add(NGSILDQUERY_TIMEPROPERTY, "observationTimeRel");
-    NGSILDQueryParams params = new NGSILDQueryParams(map);
+    NgsildQueryParams params = new NgsildQueryParams(map);
 
     JsonObject json = qm.toJson(params, true);
     assertTrue(json.containsKey(NGSILDQUERY_ID));
@@ -187,7 +187,7 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_TIME, "2020-01-23X14:20:00Z");
     map.add(NGSILDQUERY_ENDTIME, "2020-01-24T14:40:00Z");
     map.add(NGSILDQUERY_TIMEPROPERTY, "observationTimeRel");
-    NGSILDQueryParams params = new NGSILDQueryParams(map);
+    NgsildQueryParams params = new NgsildQueryParams(map);
 
     qm.toJson(params, true);
     verify(context,times(1)).fail(anyInt(),any());
@@ -201,7 +201,7 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_ID, "id1,id2");
     map.add(NGSILDQUERY_ATTRIBUTE, "attr1,attr2");
     map.add(NGSILDQUERY_Q, "speed>=300;temperature==35");
-    NGSILDQueryParams params = new NGSILDQueryParams(map);
+    NgsildQueryParams params = new NgsildQueryParams(map);
 
     JsonObject json = qm.toJson(params, false);
 
@@ -245,7 +245,7 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_ATTRIBUTE, "attr1,attr2");
     map.add(NGSILDQUERY_TIMEREL, "during");
     map.add(NGSILDQUERY_TIME, "2020-01-23T14:20:00Z");
-    NGSILDQueryParams params = new NGSILDQueryParams(map);
+    NgsildQueryParams params = new NgsildQueryParams(map);
       
     qm.toJson(params, true);
     verify(context,times(2)).fail(anyInt(),any());
@@ -261,7 +261,7 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_TIMEREL, "during");
     map.add(NGSILDQUERY_TIME, "2020-01-13T14:20:00Z");
     map.add(NGSILDQUERY_ENDTIME, "2020-01-30T14:40:00Z");
-    NGSILDQueryParams params = new NGSILDQueryParams(map);
+    NgsildQueryParams params = new NgsildQueryParams(map);
     
     qm.toJson(params, true);
     verify(context,times(1)).fail(anyInt(),any());  
@@ -279,7 +279,7 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_GEOMETRY, "point");
     map.add(NGSILDQUERY_COORDINATES, "[8.6846,49.40606]");
 
-    NGSILDQueryParams params = new NGSILDQueryParams(map);
+    NgsildQueryParams params = new NgsildQueryParams(map);
     qm.toJson(params, true);
     verify(context,times(1)).fail(anyInt(),any());
     testContext.completeNow();

@@ -1,11 +1,6 @@
 package iudx.resource.server.database.latest;
 
-import static iudx.resource.server.database.archives.Constants.ATTRIBUTE_LIST;
-import static iudx.resource.server.database.archives.Constants.EMPTY_RESOURCE_ID;
-import static iudx.resource.server.database.archives.Constants.FAILED;
-import static iudx.resource.server.database.archives.Constants.ID;
-import static iudx.resource.server.database.archives.Constants.ID_NOT_FOUND;
-import static iudx.resource.server.database.archives.Constants.SUCCESS;
+import static iudx.resource.server.database.archives.Constants.*;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

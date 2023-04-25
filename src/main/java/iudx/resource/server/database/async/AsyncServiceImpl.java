@@ -4,15 +4,10 @@ import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Constants.ID;
 import static iudx.resource.server.common.Constants.METERING_SERVICE_ADDRESS;
 import static iudx.resource.server.database.archives.Constants.*;
-import static iudx.resource.server.database.async.util.Constants.FILE_DOWNLOAD_URL;
-import static iudx.resource.server.database.async.util.Constants.OBJECT_ID;
-import static iudx.resource.server.database.async.util.Constants.S3_URL;
+import static iudx.resource.server.database.async.util.Constants.*;
 import static iudx.resource.server.database.async.util.Constants.STATUS;
 import static iudx.resource.server.database.async.util.Constants.USER_ID;
-import static iudx.resource.server.database.postgres.Constants.SELECT_S3_SEARCH_SQL;
-import static iudx.resource.server.database.postgres.Constants.SELECT_S3_STATUS_SQL;
-import static iudx.resource.server.database.postgres.Constants.UPDATE_S3_URL_SQL;
-import static iudx.resource.server.database.postgres.Constants.UPDATE_STATUS_SQL;
+import static iudx.resource.server.database.postgres.Constants.*;
 import static iudx.resource.server.metering.util.Constants.EPOCH_TIME;
 import static iudx.resource.server.metering.util.Constants.ISO_TIME;
 

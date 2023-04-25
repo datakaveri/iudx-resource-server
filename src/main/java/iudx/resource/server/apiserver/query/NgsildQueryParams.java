@@ -34,8 +34,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /** NGSILDQueryParams Class to parse query parameters from HTTP request. */
-public class NGSILDQueryParams {
-  private static final Logger LOGGER = LogManager.getLogger(NGSILDQueryParams.class);
+public class NgsildQueryParams {
+  private static final Logger LOGGER = LogManager.getLogger(NgsildQueryParams.class);
 
   private List<URI> id;
   private List<String> type;
@@ -51,14 +51,14 @@ public class NGSILDQueryParams {
   private String pageFrom;
   private String pageSize;
 
-  public NGSILDQueryParams() {}
+  public NgsildQueryParams() {}
 
   /**
    * constructor a NGSILDParams passing query parameters map.
    *
    * @param paramsMap query paramater's map.
    */
-  public NGSILDQueryParams(MultiMap paramsMap) {
+  public NgsildQueryParams(MultiMap paramsMap) {
     this.setGeoRel(new GeoRelation());
     this.setTemporalRelation(new TemporalRelation());
     this.create(paramsMap);
@@ -69,7 +69,7 @@ public class NGSILDQueryParams {
    *
    * @param json JsonObject of query.
    */
-  public NGSILDQueryParams(JsonObject json) {
+  public NgsildQueryParams(JsonObject json) {
     this.setGeoRel(new GeoRelation());
     this.setTemporalRelation(new TemporalRelation());
     this.create(json);

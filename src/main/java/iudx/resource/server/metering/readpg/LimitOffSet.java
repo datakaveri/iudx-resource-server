@@ -1,7 +1,6 @@
 package iudx.resource.server.metering.readpg;
 
-import static iudx.resource.server.metering.util.Constants.LIMIT_QUERY;
-import static iudx.resource.server.metering.util.Constants.OFFSET_QUERY;
+import static iudx.resource.server.metering.util.Constants.*;
 
 public class LimitOffSet {
   int limit;

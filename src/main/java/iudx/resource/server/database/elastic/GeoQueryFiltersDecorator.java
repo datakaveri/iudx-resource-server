@@ -6,7 +6,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.WrapperQuery;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.database.elastic.exception.ESQueryException;
+import iudx.resource.server.database.elastic.exception.EsQueryException;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +51,7 @@ public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
 
       if (!isValidCoordinates(
           requestQuery.getString(GEOMETRY), new JsonArray(requestQuery.getString("coordinates")))) {
-        throw new ESQueryException("Coordinate mismatch (Polygon)");
+        throw new EsQueryException("Coordinate mismatch (Polygon)");
       }
       String query = String.format(geoQuery, "location", getGeoJson(requestQuery), relation);
       String encodedString = Base64.getEncoder().encodeToString(query.getBytes());
@@ -68,7 +68,7 @@ public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
       String encodedString = Base64.getEncoder().encodeToString(query.getBytes());
       geoWrapperQuery = WrapperQuery.of(w -> w.query(encodedString))._toQuery();
     } else {
-      throw new ESQueryException("Missing/Invalid geo parameters");
+      throw new EsQueryException("Missing/Invalid geo parameters");
     }
     List<Query> queryList = queryFilters.get(FilterType.FILTER);
     queryList.add(geoWrapperQuery);

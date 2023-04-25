@@ -29,7 +29,7 @@ import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.PoolOptions;
 import iudx.resource.server.apiserver.response.ResponseType;
-import iudx.resource.server.common.VHosts;
+import iudx.resource.server.common.Vhosts;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.databroker.util.Constants;
 @ExtendWith(VertxExtension.class)
@@ -201,7 +201,7 @@ public class AdapterEntitiesTest {
     expected.put(Constants.ID, id);
     expected.put(Constants.VHOST, Constants.VHOST_IUDX);
 
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
 
     databroker.registerAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
@@ -234,7 +234,7 @@ public class AdapterEntitiesTest {
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, Constants.EXCHANGE_FOUND);
     LOGGER.debug(id);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.getExchange(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -268,7 +268,7 @@ public class AdapterEntitiesTest {
     expected.put(Constants.QUEUE_DATA, database_entities);
     expected.put(Constants.REDIS_LATEST, database_entities);
 
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.listAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -295,7 +295,7 @@ public class AdapterEntitiesTest {
     expected.put(Constants.ROUTING_KEY, id + ".heartbeat");
     expected.put(Constants.DETAIL, "routingKey matched");
 
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.publishHeartbeat(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -327,7 +327,7 @@ public class AdapterEntitiesTest {
     expected.put(Constants.APIKEY, Constants.APIKEY_TEST_EXAMPLE);
     expected.put(Constants.ID, anotherid);
     expected.put(Constants.VHOST, Constants.VHOST_IUDX);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.registerAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -359,7 +359,7 @@ public class AdapterEntitiesTest {
     expected.put(Constants.TYPE, 200);
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, Constants.EXCHANGE_FOUND);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.getExchange(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -393,7 +393,7 @@ public class AdapterEntitiesTest {
     expected.put(Constants.QUEUE_ADAPTOR_LOGS, adaptorLogs_entities);
     expected.put(Constants.QUEUE_DATA, database_entities);
     expected.put(Constants.REDIS_LATEST, database_entities);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.listAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -421,7 +421,7 @@ public class AdapterEntitiesTest {
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.DETAILS, Constants.EXCHANGE_EXISTS);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.registerAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -448,7 +448,7 @@ public class AdapterEntitiesTest {
     JsonObject request = new JsonObject();
 //    request.put(Constants.ID, id);
     request.put(Constants.ID,"id");
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.deleteAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -478,7 +478,7 @@ public class AdapterEntitiesTest {
     JsonObject request = new JsonObject();
 //    request.put(Constants.ID, anotherid);
     request.put(Constants.ID,"id");
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.deleteAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -503,7 +503,7 @@ public class AdapterEntitiesTest {
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "invalid id");
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.registerAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();

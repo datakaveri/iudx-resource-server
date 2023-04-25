@@ -12,14 +12,14 @@ import java.util.regex.Matcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public final class QTypeValidator implements Validator {
+public final class QtypeValidator implements Validator {
 
-  private static final Logger LOGGER = LogManager.getLogger(QTypeValidator.class);
+  private static final Logger LOGGER = LogManager.getLogger(QtypeValidator.class);
 
   private final String value;
   private final boolean required;
 
-  public QTypeValidator(final String value, final boolean required) {
+  public QtypeValidator(final String value, final boolean required) {
     this.value = value;
     this.required = required;
   }
@@ -104,9 +104,9 @@ public final class QTypeValidator implements Validator {
       LOGGER.error("Validation error : Exceeding max length(512 characters) criteria");
       throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
     }
-    JsonObject qJson;
+    JsonObject qjson;
     try {
-      qJson = getQueryTerms(value);
+      qjson = getQueryTerms(value);
     } catch (Exception ex) {
       LOGGER.error("Validation error : Operator not allowed.");
       throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
@@ -115,7 +115,7 @@ public final class QTypeValidator implements Validator {
       LOGGER.error("Validation error : Not a valid attribute in <<q>> query");
       throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
     }
-    if (!isValidOperator(qJson.getString(JSON_OPERATOR))) {
+    if (!isValidOperator(qjson.getString(JSON_OPERATOR))) {
       LOGGER.error("Validation error : Not a valid Operator in <<q>> query");
       throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
     }
@@ -124,7 +124,7 @@ public final class QTypeValidator implements Validator {
     // .generateNotMatchValidationException("Not a valid attribute value in <<q>> query");
     // }
 
-    if (!isValidId(qJson)) {
+    if (!isValidId(qjson)) {
       return false;
     }
     return true;

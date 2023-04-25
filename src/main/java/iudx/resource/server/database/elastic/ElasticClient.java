@@ -1,8 +1,6 @@
 package iudx.resource.server.database.elastic;
 
-import static iudx.resource.server.database.archives.Constants.EMPTY_RESPONSE;
-import static iudx.resource.server.database.archives.Constants.FAILED;
-import static iudx.resource.server.database.archives.Constants.SUCCESS;
+import static iudx.resource.server.database.archives.Constants.*;
 
 import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;

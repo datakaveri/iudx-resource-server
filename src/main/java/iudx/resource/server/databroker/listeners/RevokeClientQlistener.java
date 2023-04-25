@@ -15,15 +15,15 @@ import iudx.resource.server.cache.cachelmpl.CacheType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class RevokeClientQListener implements RMQListeners {
+public class RevokeClientQlistener implements RmqListeners {
 
-  private static final Logger LOGGER = LogManager.getLogger(RevokeClientQListener.class);
+  private static final Logger LOGGER = LogManager.getLogger(RevokeClientQlistener.class);
   private final CacheService cache;
   private final QueueOptions options =
       new QueueOptions().setMaxInternalQueueSize(1000).setKeepMostRecent(true);
   RabbitMQClient client;
 
-  public RevokeClientQListener(
+  public RevokeClientQlistener(
       Vertx vertx, CacheService cache, RabbitMQOptions config, String vhost) {
     config.setVirtualHost(vhost);
     this.client = RabbitMQClient.create(vertx, config);

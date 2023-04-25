@@ -2,9 +2,8 @@ package iudx.resource.server.apiserver.handlers;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.authenticator.Constants.ROLE;
-import static iudx.resource.server.common.Constants.AUTH_SERVICE_ADDRESS;
-import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN_URN;
-import static iudx.resource.server.common.ResponseUrn.RESOURCE_NOT_FOUND_URN;
+import static iudx.resource.server.common.Constants.*;
+import static iudx.resource.server.common.ResponseUrn.*;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;

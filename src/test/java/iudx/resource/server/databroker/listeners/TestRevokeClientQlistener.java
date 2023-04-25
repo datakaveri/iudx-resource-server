@@ -33,8 +33,8 @@ import iudx.resource.server.cache.CacheService;
 
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-public class TestRevokeClientQListener {
-  RevokeClientQListener revokeClientQListener;
+public class TestRevokeClientQlistener {
+  RevokeClientQlistener revokeClientQListener;
   @Mock
   Vertx vertx;
   @Mock
@@ -62,7 +62,7 @@ public class TestRevokeClientQListener {
   @BeforeEach
   public void setUp(VertxTestContext vertxTestContext) {
     vHost = "Dummy vHost";
-    revokeClientQListener = new RevokeClientQListener(vertx, cache, config, vHost);
+    revokeClientQListener = new RevokeClientQlistener(vertx, cache, config, vHost);
     revokeClientQListener.client = mock(client.getClass());
     vertxTestContext.completeNow();
   }

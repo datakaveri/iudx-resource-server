@@ -12,7 +12,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import iudx.resource.server.common.ResponseUrn;
-import iudx.resource.server.common.VHosts;
+import iudx.resource.server.common.Vhosts;
 import iudx.resource.server.databroker.util.PermissionOpType;
 import java.time.OffsetDateTime;
 import org.apache.http.HttpStatus;
@@ -32,7 +32,7 @@ public class SubscriptionService {
   SubscriptionService(RabbitClient rabbitClient, PostgresClient pgSqlClient, JsonObject config) {
     this.rabbitClient = rabbitClient;
     this.pgSqlClient = pgSqlClient;
-    this.vhost = config.getString(VHosts.IUDX_PROD.value);
+    this.vhost = config.getString(Vhosts.IUDX_PROD.value);
     this.amqpUrl = config.getString("brokerAmqpIp");
     this.amqpPort = config.getInteger("brokerAmqpPort");
   }

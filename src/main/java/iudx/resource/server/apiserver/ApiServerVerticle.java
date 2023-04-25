@@ -8,16 +8,11 @@ import static iudx.resource.server.apiserver.util.Constants.ID;
 import static iudx.resource.server.apiserver.util.Constants.IID;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
-import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
-import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.*;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.HttpStatusCode.NOT_FOUND;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
-import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
-import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
-import static iudx.resource.server.common.ResponseUrn.INVALID_TEMPORAL_PARAM_URN;
-import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN_URN;
-import static iudx.resource.server.common.ResponseUrn.RESOURCE_NOT_FOUND_URN;
+import static iudx.resource.server.common.ResponseUrn.*;
 import static iudx.resource.server.metering.util.Constants.*;
 
 import io.netty.handler.codec.http.HttpConstants;
@@ -47,7 +42,7 @@ import iudx.resource.server.apiserver.handlers.FailureHandler;
 import iudx.resource.server.apiserver.handlers.ValidationHandler;
 import iudx.resource.server.apiserver.management.ManagementApi;
 import iudx.resource.server.apiserver.management.ManagementApiImpl;
-import iudx.resource.server.apiserver.query.NGSILDQueryParams;
+import iudx.resource.server.apiserver.query.NgsildQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.service.CatalogueService;
@@ -700,7 +695,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         validationHandler -> {
           if (validationHandler.succeeded()) {
             // parse query params
-            NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
+            NgsildQueryParams ngsildquery = new NgsildQueryParams(params);
             if (isTemporalParamsPresent(ngsildquery)) {
               DxRuntimeException ex =
                   new DxRuntimeException(
@@ -768,7 +763,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         validationHandler -> {
           if (validationHandler.succeeded()) {
             // parse query params
-            NGSILDQueryParams ngsildquery = new NGSILDQueryParams(requestJson);
+            NgsildQueryParams ngsildquery = new NgsildQueryParams(requestJson);
             QueryMapper queryMapper = new QueryMapper(routingContext);
             JsonObject json = queryMapper.toJson(ngsildquery, requestJson.containsKey("temporalQ"));
             String instanceId = request.getHeader(HEADER_HOST);
@@ -984,7 +979,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         validationHandler -> {
           if (validationHandler.succeeded()) {
             // parse query params
-            NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
+            NgsildQueryParams ngsildquery = new NgsildQueryParams(params);
             // create json
             QueryMapper queryMapper = new QueryMapper(routingContext);
 
@@ -1673,7 +1668,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     LOGGER.info("Stopping the API server");
   }
 
-  private boolean isTemporalParamsPresent(NGSILDQueryParams ngsildquery) {
+  private boolean isTemporalParamsPresent(NgsildQueryParams ngsildquery) {
     return ngsildquery.getTemporalRelation().getTemprel() != null
         || ngsildquery.getTemporalRelation().getTime() != null
         || ngsildquery.getTemporalRelation().getEndTime() != null;

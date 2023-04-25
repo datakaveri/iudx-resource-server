@@ -44,8 +44,4 @@ public class ConsumerBuilder implements MeteringReadBuilder {
     return finalQuery.toString();
   }
 
-  @Override
-  public long getEpochTime(ZonedDateTime time) {
-    return time.toInstant().toEpochMilli();
-  }
 }

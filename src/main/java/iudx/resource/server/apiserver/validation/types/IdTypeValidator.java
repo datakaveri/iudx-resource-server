@@ -8,14 +8,14 @@ import iudx.resource.server.common.HttpStatusCode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public final class IDTypeValidator implements Validator {
+public final class IdTypeValidator implements Validator {
 
-  private static final Logger LOGGER = LogManager.getLogger(IDTypeValidator.class);
+  private static final Logger LOGGER = LogManager.getLogger(IdTypeValidator.class);
 
   private final String value;
   private final boolean required;
 
-  public IDTypeValidator(final String value, final boolean required) {
+  public IdTypeValidator(final String value, final boolean required) {
     this.value = value;
     this.required = required;
   }

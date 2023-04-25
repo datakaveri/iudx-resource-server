@@ -16,12 +16,12 @@ import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.sqlclient.PoolOptions;
 import iudx.resource.server.cache.CacheService;
-import iudx.resource.server.common.VHosts;
+import iudx.resource.server.common.Vhosts;
 import iudx.resource.server.database.async.AsyncService;
 import iudx.resource.server.databroker.listeners.AsyncQueryListener;
-import iudx.resource.server.databroker.listeners.RMQListeners;
-import iudx.resource.server.databroker.listeners.RevokeClientQListener;
-import iudx.resource.server.databroker.listeners.UniqueAttribQListener;
+import iudx.resource.server.databroker.listeners.RevokeClientQlistener;
+import iudx.resource.server.databroker.listeners.RmqListeners;
+import iudx.resource.server.databroker.listeners.UniqueAttribQlistener;
 
 /**
  * The Data Broker Verticle.
@@ -169,11 +169,11 @@ public class DataBrokerVerticle extends AbstractVerticle {
     cache = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
     asyncService = AsyncService.createProxy(vertx, ASYNC_SERVICE_ADDRESS);
 
-    String internalVhost = config().getString(VHosts.IUDX_INTERNAL.value);
-    RMQListeners revokeQlistener = new RevokeClientQListener(vertx, cache, config, internalVhost);
-    RMQListeners uniqueAttrQlistener =
-        new UniqueAttribQListener(vertx, cache, config, internalVhost);
-    RMQListeners asyncQueryQlistener =
+    String internalVhost = config().getString(Vhosts.IUDX_INTERNAL.value);
+    RmqListeners revokeQlistener = new RevokeClientQlistener(vertx, cache, config, internalVhost);
+    RmqListeners uniqueAttrQlistener =
+        new UniqueAttribQlistener(vertx, cache, config, internalVhost);
+    RmqListeners asyncQueryQlistener =
         new AsyncQueryListener(vertx, config, internalVhost, asyncService);
 
     // start

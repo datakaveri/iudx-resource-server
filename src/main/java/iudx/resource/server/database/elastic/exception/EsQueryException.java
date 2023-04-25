@@ -6,7 +6,7 @@ import io.vertx.core.json.JsonObject;
 import iudx.resource.server.common.ResponseUrn;
 import org.apache.http.HttpStatus;
 
-public class ESQueryException extends RuntimeException {
+public class EsQueryException extends RuntimeException {
 
   private static final long serialVersionUID = 1L;
 
@@ -14,15 +14,15 @@ public class ESQueryException extends RuntimeException {
   private final ResponseUrn urn;
   private final String message;
 
-  public ESQueryException(final String message) {
+  public EsQueryException(final String message) {
     this(ResponseUrn.BAD_REQUEST_URN, message, HttpStatus.SC_BAD_REQUEST);
   }
 
-  public ESQueryException(final ResponseUrn urn, final String message) {
+  public EsQueryException(final ResponseUrn urn, final String message) {
     this(urn, message, HttpStatus.SC_BAD_REQUEST);
   }
 
-  public ESQueryException(final ResponseUrn urn, final String message, final int statusCode) {
+  public EsQueryException(final ResponseUrn urn, final String message, final int statusCode) {
     super(message);
     this.urn = urn;
     this.message = message;

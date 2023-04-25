@@ -1,12 +1,6 @@
 package iudx.resource.server.metering.util;
 
-import static iudx.resource.server.metering.util.Constants.DETAIL;
-import static iudx.resource.server.metering.util.Constants.RESULTS;
-import static iudx.resource.server.metering.util.Constants.SUCCESS;
-import static iudx.resource.server.metering.util.Constants.TITLE;
-import static iudx.resource.server.metering.util.Constants.TOTAL;
-import static iudx.resource.server.metering.util.Constants.TOTAL_HITS;
-import static iudx.resource.server.metering.util.Constants.TYPE_KEY;
+import static iudx.resource.server.metering.util.Constants.*;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

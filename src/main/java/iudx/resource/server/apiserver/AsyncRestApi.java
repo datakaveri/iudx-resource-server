@@ -29,7 +29,7 @@ import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.apiserver.handlers.AuthHandler;
 import iudx.resource.server.apiserver.handlers.FailureHandler;
 import iudx.resource.server.apiserver.handlers.ValidationHandler;
-import iudx.resource.server.apiserver.query.NGSILDQueryParams;
+import iudx.resource.server.apiserver.query.NgsildQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.service.CatalogueService;
@@ -125,7 +125,7 @@ public class AsyncRestApi {
     validationResult.onComplete(
         validationHandler -> {
           if (validationHandler.succeeded()) {
-            NGSILDQueryParams ngsildquery = new NGSILDQueryParams(params);
+            NgsildQueryParams ngsildquery = new NgsildQueryParams(params);
             QueryMapper queryMapper = new QueryMapper(routingContext);
             JsonObject json = queryMapper.toJson(ngsildquery, true, true);
             json.put(JSON_INSTANCEID, instanceId);

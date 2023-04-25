@@ -34,7 +34,7 @@ public class QueryMapper {
     this.context = context;
   }
 
-  public JsonObject toJson(NGSILDQueryParams params, boolean isTemporal) {
+  public JsonObject toJson(NgsildQueryParams params, boolean isTemporal) {
     return toJson(params, isTemporal, false);
   }
 
@@ -46,7 +46,7 @@ public class QueryMapper {
    * @param isAsyncQuery flag indicating whether the call is made for Async API or not.
    * @return JsonObject result.
    */
-  public JsonObject toJson(NGSILDQueryParams params, boolean isTemporal, boolean isAsyncQuery) {
+  public JsonObject toJson(NgsildQueryParams params, boolean isTemporal, boolean isAsyncQuery) {
     LOGGER.trace("Info QueryMapper#toJson() started");
     LOGGER.debug("Info : params" + params);
     this.isTemporal = isTemporal;
@@ -205,7 +205,7 @@ public class QueryMapper {
     }
   }
 
-  private boolean isGeoQuery(NGSILDQueryParams params) {
+  private boolean isGeoQuery(NgsildQueryParams params) {
     LOGGER.debug(
         "georel " + params.getGeoRel() + " relation : " + params.getGeoRel().getRelation());
     return params.getGeoRel().getRelation() != null

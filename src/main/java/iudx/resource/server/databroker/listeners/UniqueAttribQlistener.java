@@ -16,15 +16,15 @@ import iudx.resource.server.common.BroadcastEventType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class UniqueAttribQListener implements RMQListeners {
+public class UniqueAttribQlistener implements RmqListeners {
 
-  private static final Logger LOGGER = LogManager.getLogger(UniqueAttribQListener.class);
+  private static final Logger LOGGER = LogManager.getLogger(UniqueAttribQlistener.class);
   private final CacheService cache;
   private final QueueOptions options =
       new QueueOptions().setMaxInternalQueueSize(1000).setKeepMostRecent(true);
   RabbitMQClient client;
 
-  public UniqueAttribQListener(
+  public UniqueAttribQlistener(
       Vertx vertx, CacheService cache, RabbitMQOptions config, String vhost) {
     config.setVirtualHost(vhost);
     this.client = RabbitMQClient.create(vertx, config);

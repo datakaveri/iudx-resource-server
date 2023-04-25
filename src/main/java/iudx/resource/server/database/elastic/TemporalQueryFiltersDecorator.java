@@ -6,7 +6,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
 import co.elastic.clients.json.JsonData;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.database.elastic.exception.ESQueryException;
+import iudx.resource.server.database.elastic.exception.EsQueryException;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
@@ -45,7 +45,7 @@ public class TemporalQueryFiltersDecorator implements ElasticsearchQueryDecorato
       queryRequestStartTime = startDateTime.toString();
       queryRequestEndTime = getEndDateForAfterQuery(startDateTime);
     } else {
-      throw new ESQueryException("exception while parsing date/time");
+      throw new EsQueryException("exception while parsing date/time");
     }
 
     final String startTime = queryRequestStartTime;
@@ -73,7 +73,7 @@ public class TemporalQueryFiltersDecorator implements ElasticsearchQueryDecorato
     } else if (TEST_INSTANCE.equalsIgnoreCase(deploymentType)) {
       addDefaultForDev(queryLists, dateToUseForDevDeployment);
     } else {
-      throw new ESQueryException("invalid timeLimit config passed");
+      throw new EsQueryException("invalid timeLimit config passed");
     }
   }
 
@@ -118,11 +118,11 @@ public class TemporalQueryFiltersDecorator implements ElasticsearchQueryDecorato
 
   private void validateTemporalPeriod(ZonedDateTime startDateTime, ZonedDateTime endDateTime) {
     if (endDateTime == null) {
-      throw new ESQueryException("No endDate[required mandatory field] provided for query");
+      throw new EsQueryException("No endDate[required mandatory field] provided for query");
     }
 
     if (startDateTime.isAfter(endDateTime)) {
-      throw new ESQueryException("end date is before start date");
+      throw new EsQueryException("end date is before start date");
     }
   }
 
@@ -130,7 +130,7 @@ public class TemporalQueryFiltersDecorator implements ElasticsearchQueryDecorato
     try {
       return ZonedDateTime.parse(time);
     } catch (DateTimeParseException e) {
-      throw new ESQueryException("exception while parsing date/time");
+      throw new EsQueryException("exception while parsing date/time");
     }
   }
 }

@@ -1,23 +1,7 @@
 package iudx.resource.server.metering.util;
 
 import static iudx.resource.server.apiserver.util.Constants.IUDX_PROVIDER_AUDIT_URL;
-import static iudx.resource.server.metering.util.Constants.BETWEEN;
-import static iudx.resource.server.metering.util.Constants.DURING;
-import static iudx.resource.server.metering.util.Constants.ENDPOINT;
-import static iudx.resource.server.metering.util.Constants.END_TIME;
-import static iudx.resource.server.metering.util.Constants.ERROR;
-import static iudx.resource.server.metering.util.Constants.IID;
-import static iudx.resource.server.metering.util.Constants.INVALID_DATE_DIFFERENCE;
-import static iudx.resource.server.metering.util.Constants.INVALID_DATE_TIME;
-import static iudx.resource.server.metering.util.Constants.INVALID_PROVIDER_ID;
-import static iudx.resource.server.metering.util.Constants.INVALID_PROVIDER_REQUIRED;
-import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
-import static iudx.resource.server.metering.util.Constants.START_TIME;
-import static iudx.resource.server.metering.util.Constants.TIME_NOT_FOUND;
-import static iudx.resource.server.metering.util.Constants.TIME_RELATION;
-import static iudx.resource.server.metering.util.Constants.TIME_RELATION_NOT_FOUND;
-import static iudx.resource.server.metering.util.Constants.USERID_NOT_FOUND;
-import static iudx.resource.server.metering.util.Constants.USER_ID;
+import static iudx.resource.server.metering.util.Constants.*;
 
 import io.vertx.core.json.JsonObject;
 import java.time.ZonedDateTime;

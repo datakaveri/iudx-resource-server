@@ -1,21 +1,6 @@
 package iudx.resource.server.database.archives;
 
-import static iudx.resource.server.database.archives.Constants.DETAIL;
-import static iudx.resource.server.database.archives.Constants.ERROR;
-import static iudx.resource.server.database.archives.Constants.ERROR_TYPE;
-import static iudx.resource.server.database.archives.Constants.FAILED;
-import static iudx.resource.server.database.archives.Constants.FROM_KEY;
-import static iudx.resource.server.database.archives.Constants.INDEX_NOT_FOUND;
-import static iudx.resource.server.database.archives.Constants.INVALID_RESOURCE_ID;
-import static iudx.resource.server.database.archives.Constants.REASON;
-import static iudx.resource.server.database.archives.Constants.RESULTS;
-import static iudx.resource.server.database.archives.Constants.ROOT_CAUSE;
-import static iudx.resource.server.database.archives.Constants.SIZE_KEY;
-import static iudx.resource.server.database.archives.Constants.STATUS;
-import static iudx.resource.server.database.archives.Constants.SUCCESS;
-import static iudx.resource.server.database.archives.Constants.TITLE;
-import static iudx.resource.server.database.archives.Constants.TOTAL_HITS;
-import static iudx.resource.server.database.archives.Constants.TYPE_KEY;
+import static iudx.resource.server.database.archives.Constants.*;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

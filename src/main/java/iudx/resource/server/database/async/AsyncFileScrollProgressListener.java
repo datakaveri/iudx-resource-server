@@ -46,7 +46,6 @@ public class AsyncFileScrollProgressListener implements ProgressListener {
     if (!executionCounter.isExecuting && !progressQueue.isEmpty() && progressQueue.peek() <= 1.0d) {
       double progress = progressQueue.poll();
       progressQueue.clear();
-      LOGGER.debug("queue cleared");
       executionCounter.isExecuting = true;
       executor.execute(
           () -> {

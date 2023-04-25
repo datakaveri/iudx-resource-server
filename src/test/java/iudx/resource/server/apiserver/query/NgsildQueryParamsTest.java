@@ -22,8 +22,8 @@ import static iudx.resource.server.apiserver.util.Constants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-public class NGSILDQueryParamsTest {
-    NGSILDQueryParams ngsildQueryParams;
+public class NgsildQueryParamsTest {
+    NgsildQueryParams ngsildQueryParams;
     JsonObject jsonObject;
 
     @ParameterizedTest
@@ -52,8 +52,8 @@ public class NGSILDQueryParamsTest {
         jsonObject.put(IUDXQUERY_OPTIONS, "Dummy textQuery");
         jsonObject.put(NGSILDQUERY_FROM, "Dummy textQuery");
         jsonObject.put(NGSILDQUERY_SIZE, "Dummy textQuery");
-        ngsildQueryParams = new NGSILDQueryParams();
-        ngsildQueryParams = new NGSILDQueryParams(jsonObject);
+        ngsildQueryParams = new NgsildQueryParams();
+        ngsildQueryParams = new NgsildQueryParams(jsonObject);
 
         List<String> expected_string_list = new ArrayList<>();
         expected_string_list.add("Dummy textQuery");
@@ -80,7 +80,7 @@ public class NGSILDQueryParamsTest {
         map.add(NGSILDQUERY_SIZE, "Dummy size");
         map.add(NGSILDQUERY_FROM, "Dummy value");
         map.add(NGSILDQUERY_GEOREL, "dummy;" + NGSILDQUERY_MINDISTANCE + "=3");
-        ngsildQueryParams = new NGSILDQueryParams(map);
+        ngsildQueryParams = new NgsildQueryParams(map);
         assertEquals("Dummy value", ngsildQueryParams.getOptions());
         assertEquals("Dummy size", ngsildQueryParams.getPageSize());
         assertEquals("Dummy value", ngsildQueryParams.getPageFrom());
@@ -91,7 +91,7 @@ public class NGSILDQueryParamsTest {
     @Test
     @DisplayName("Test setOptions method")
     public void test_setOptions(VertxTestContext vertxTestContext) {
-        ngsildQueryParams = new NGSILDQueryParams();
+        ngsildQueryParams = new NgsildQueryParams();
         ngsildQueryParams.setOptions("Dummy option");
         assertEquals("Dummy option", ngsildQueryParams.getOptions());
         vertxTestContext.completeNow();
@@ -100,7 +100,7 @@ public class NGSILDQueryParamsTest {
     @Test
     @DisplayName("Test setQ method")
     public void test_setQ(VertxTestContext vertxTestContext) {
-        ngsildQueryParams = new NGSILDQueryParams();
+        ngsildQueryParams = new NgsildQueryParams();
         ngsildQueryParams.setQ("Dummy Q");
         assertEquals("Dummy Q", ngsildQueryParams.getQ());
         vertxTestContext.completeNow();
@@ -109,7 +109,7 @@ public class NGSILDQueryParamsTest {
     @Test
     @DisplayName("Test setIdPattern method")
     public void test_setIdPattern(VertxTestContext vertxTestContext) {
-        ngsildQueryParams = new NGSILDQueryParams();
+        ngsildQueryParams = new NgsildQueryParams();
         List<String> expected_pattern = new ArrayList<>();
         expected_pattern.add("dummy_idPattern");
         ngsildQueryParams.setIdPattern(expected_pattern);
@@ -120,7 +120,7 @@ public class NGSILDQueryParamsTest {
     @Test
     @DisplayName("Test setAttrs method")
     public void test_setAttrs(VertxTestContext vertxTestContext) {
-        ngsildQueryParams = new NGSILDQueryParams();
+        ngsildQueryParams = new NgsildQueryParams();
         List<String> expected_attribute = new ArrayList<>();
         expected_attribute.add("dummy_attribute");
         ngsildQueryParams.setAttrs(expected_attribute);
@@ -131,7 +131,7 @@ public class NGSILDQueryParamsTest {
     @Test
     @DisplayName("Test setType method")
     public void test_setType(VertxTestContext vertxTestContext) {
-        ngsildQueryParams = new NGSILDQueryParams();
+        ngsildQueryParams = new NgsildQueryParams();
         List<String> expected_type = new ArrayList<>();
         expected_type.add("dummy_type");
         ngsildQueryParams.setType(expected_type);
@@ -142,7 +142,7 @@ public class NGSILDQueryParamsTest {
     @Test
     @DisplayName("Test setId method")
     public void test_setId(VertxTestContext vertxTestContext) throws URISyntaxException {
-        ngsildQueryParams = new NGSILDQueryParams();
+        ngsildQueryParams = new NgsildQueryParams();
         List<URI> uri = new ArrayList<>();
         uri.add(new URI("Dummy_URI"));
         ngsildQueryParams.setId(uri);

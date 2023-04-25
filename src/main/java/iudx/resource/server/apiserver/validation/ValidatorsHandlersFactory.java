@@ -91,12 +91,12 @@ public class ValidatorsHandlersFactory {
   private List<Validator> getEntityRequestValidations(final MultiMap parameters) {
     List<Validator> validators = new ArrayList<>();
 
-    validators.add(new IDTypeValidator(parameters.get(NGSILDQUERY_ID), true));
+    validators.add(new IdTypeValidator(parameters.get(NGSILDQUERY_ID), true));
     validators.add(new AttrsTypeValidator(parameters.get(NGSILDQUERY_ATTRIBUTE), false));
     validators.add(new GeoRelTypeValidator(parameters.get(NGSILDQUERY_GEOREL), false));
     validators.add(new GeometryTypeValidator(parameters.get(NGSILDQUERY_GEOMETRY), false));
     validators.add(new GeoPropertyTypeValidator(parameters.get(NGSILDQUERY_GEOPROPERTY), false));
-    validators.add(new QTypeValidator(parameters.get(NGSILDQUERY_Q), false));
+    validators.add(new QtypeValidator(parameters.get(NGSILDQUERY_Q), false));
     validators.add(new DistanceTypeValidator(parameters.get(NGSILDQUERY_MAXDISTANCE), false));
     validators.add(new DistanceTypeValidator(parameters.get("maxDistance"), false));
     validators.add(new OptionsTypeValidator(parameters.get(IUDXQUERY_OPTIONS), false));
@@ -116,12 +116,12 @@ public class ValidatorsHandlersFactory {
 
     List<Validator> validators = new ArrayList<>();
 
-    validators.add(new IDTypeValidator(parameters.get(NGSILDQUERY_ID), true));
+    validators.add(new IdTypeValidator(parameters.get(NGSILDQUERY_ID), true));
     validators.add(new AttrsTypeValidator(parameters.get(NGSILDQUERY_ATTRIBUTE), false));
     validators.add(new GeoRelTypeValidator(parameters.get(NGSILDQUERY_GEOREL), false));
     validators.add(new GeometryTypeValidator(parameters.get(NGSILDQUERY_GEOMETRY), false));
     validators.add(new GeoPropertyTypeValidator(parameters.get(NGSILDQUERY_GEOPROPERTY), false));
-    validators.add(new QTypeValidator(parameters.get(NGSILDQUERY_Q), false));
+    validators.add(new QtypeValidator(parameters.get(NGSILDQUERY_Q), false));
     validators.add(new DistanceTypeValidator(parameters.get(NGSILDQUERY_MAXDISTANCE), false));
     validators.add(new DistanceTypeValidator(parameters.get("maxDistance"), false));
     validators.add(new OptionsTypeValidator(parameters.get(IUDXQUERY_OPTIONS), false));
@@ -204,14 +204,14 @@ public class ValidatorsHandlersFactory {
   private List<Validator> getAsyncRequestValidations(final MultiMap parameters) {
 
     List<Validator> validators = new ArrayList<>();
-    validators.add(new IDTypeValidator(parameters.get(NGSILDQUERY_ID), true));
+    validators.add(new IdTypeValidator(parameters.get(NGSILDQUERY_ID), true));
     validators.add(new AttrsTypeValidator(parameters.get(NGSILDQUERY_ATTRIBUTE), false));
     validators.add(new OptionsTypeValidator(parameters.get(IUDXQUERY_OPTIONS), false));
     // geo fields
     validators.add(new GeoRelTypeValidator(parameters.get(NGSILDQUERY_GEOREL), false));
     validators.add(new GeometryTypeValidator(parameters.get(NGSILDQUERY_GEOMETRY), false));
     validators.add(new GeoPropertyTypeValidator(parameters.get(NGSILDQUERY_GEOPROPERTY), false));
-    validators.add(new QTypeValidator(parameters.get(NGSILDQUERY_Q), false));
+    validators.add(new QtypeValidator(parameters.get(NGSILDQUERY_Q), false));
     validators.add(new DistanceTypeValidator(parameters.get(NGSILDQUERY_MAXDISTANCE), false, true));
     validators.add(new DistanceTypeValidator(parameters.get("maxDistance"), false, true));
     validators.add(new CoordinatesTypeValidator(parameters.get(NGSILDQUERY_COORDINATES), false));

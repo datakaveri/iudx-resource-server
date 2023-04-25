@@ -10,7 +10,7 @@ import io.vertx.core.json.JsonObject;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.elastic.ElasticClient;
 import iudx.resource.server.database.elastic.QueryDecoder;
-import iudx.resource.server.database.elastic.exception.ESQueryException;
+import iudx.resource.server.database.elastic.exception.EsQueryException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -113,11 +113,11 @@ public class DatabaseServiceImpl implements DatabaseService {
                         });
               });
       // TODO : we can use ServiceException here, check for feasibility
-    } catch (ESQueryException ex) {
+    } catch (EsQueryException ex) {
       ResponseUrn exceptionUrn = ResponseUrn.BAD_REQUEST_URN;
-      promise.fail(new ESQueryException(exceptionUrn, ex.getMessage()).toString());
+      promise.fail(new EsQueryException(exceptionUrn, ex.getMessage()).toString());
     } catch (Exception ex) {
-      promise.fail(new ESQueryException("Exception occured executing query").toString());
+      promise.fail(new EsQueryException("Exception occured executing query").toString());
     }
     return promise.future();
   }
@@ -146,7 +146,7 @@ public class DatabaseServiceImpl implements DatabaseService {
               handler -> {
                 String searchType = request.getString(SEARCH_TYPE);
                 if (searchType.matches(RESPONSE_FILTER_REGEX)) {
-                  throw new ESQueryException("Count is not supported with filtering");
+                  throw new EsQueryException("Count is not supported with filtering");
                 }
 
                 String id = request.getJsonArray(ID).getString(0);
@@ -165,11 +165,11 @@ public class DatabaseServiceImpl implements DatabaseService {
                           promise.fail(failure.getMessage());
                         });
               });
-    } catch (ESQueryException ex) {
+    } catch (EsQueryException ex) {
       ResponseUrn exceptionUrn = ResponseUrn.BAD_REQUEST_URN;
-      promise.fail(new ESQueryException(exceptionUrn, ex.getMessage()).toString());
+      promise.fail(new EsQueryException(exceptionUrn, ex.getMessage()).toString());
     } catch (Exception ex) {
-      promise.fail(new ESQueryException("Exception occured executing query").toString());
+      promise.fail(new EsQueryException("Exception occured executing query").toString());
     }
     return promise.future();
   }
@@ -178,16 +178,16 @@ public class DatabaseServiceImpl implements DatabaseService {
     Promise<JsonObject> promise = Promise.promise();
     if (!request.containsKey(ID)) {
       LOGGER.debug("Info: " + ID_NOT_FOUND);
-      promise.fail(new ESQueryException(ResponseUrn.BAD_REQUEST_URN, ID_NOT_FOUND));
+      promise.fail(new EsQueryException(ResponseUrn.BAD_REQUEST_URN, ID_NOT_FOUND));
     } else if (request.getJsonArray(ID).isEmpty()) {
       LOGGER.debug("Info: " + EMPTY_RESOURCE_ID);
-      promise.fail(new ESQueryException(ResponseUrn.BAD_REQUEST_URN, EMPTY_RESOURCE_ID));
+      promise.fail(new EsQueryException(ResponseUrn.BAD_REQUEST_URN, EMPTY_RESOURCE_ID));
     } else if (!request.containsKey(SEARCH_TYPE)) {
       LOGGER.debug("Info: " + SEARCHTYPE_NOT_FOUND);
-      promise.fail(new ESQueryException(ResponseUrn.BAD_REQUEST_URN, SEARCHTYPE_NOT_FOUND));
+      promise.fail(new EsQueryException(ResponseUrn.BAD_REQUEST_URN, SEARCHTYPE_NOT_FOUND));
     } else if (request.getJsonArray(ID).getString(0).split("/").length != 5) {
       LOGGER.error("Malformed ID: " + request.getJsonArray(ID).getString(0));
-      promise.fail(new ESQueryException(ResponseUrn.BAD_REQUEST_URN, MALFORMED_ID));
+      promise.fail(new EsQueryException(ResponseUrn.BAD_REQUEST_URN, MALFORMED_ID));
     } else {
       promise.complete();
     }

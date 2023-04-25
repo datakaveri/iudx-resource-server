@@ -1,9 +1,7 @@
 package iudx.resource.server.apiserver.validation.types;
 
-import static iudx.resource.server.apiserver.util.Constants.VALIDATION_ALLOWED_DIST;
-import static iudx.resource.server.apiserver.util.Constants.VALIDATION_ALLOWED_DIST_FOR_ASYNC;
-import static iudx.resource.server.common.ResponseUrn.INVALID_GEO_PARAM_URN;
-import static iudx.resource.server.common.ResponseUrn.INVALID_GEO_VALUE_URN;
+import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.common.ResponseUrn.*;
 
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.common.HttpStatusCode;

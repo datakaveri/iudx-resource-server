@@ -3,7 +3,7 @@ package iudx.resource.server.encryption.util;
 import com.goterl.lazysodium.interfaces.MessageEncoder;
 import java.util.Base64;
 
-public class URLBase64MessageEncoder implements MessageEncoder {
+public class UrlBase64MessageEncoder implements MessageEncoder {
   @Override
   public String encode(byte[] bytes) {
     return Base64.getUrlEncoder().encodeToString(bytes);

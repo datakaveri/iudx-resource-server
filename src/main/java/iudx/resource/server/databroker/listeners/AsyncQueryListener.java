@@ -1,6 +1,6 @@
 package iudx.resource.server.databroker.listeners;
 
-import static iudx.resource.server.common.Constants.ASYNC_QUERY_Q;
+import static iudx.resource.server.common.Constants.*;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -14,7 +14,7 @@ import iudx.resource.server.database.async.AsyncService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class AsyncQueryListener implements RMQListeners {
+public class AsyncQueryListener implements RmqListeners {
 
   private static final Logger LOGGER = LogManager.getLogger(AsyncQueryListener.class);
   private final QueueOptions options =

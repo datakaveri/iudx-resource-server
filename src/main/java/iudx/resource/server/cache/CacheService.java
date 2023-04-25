@@ -65,10 +65,10 @@ public interface CacheService {
    * @param request valid json request
    * @return in case of success a json object will be returned else handler will fail.
    *     <pre>
-   * {
-   *    "key":"value"
-   * }
-   *         </pre>
+   *     {
+   *        "key":"value"
+   *     }
+   *     </pre>
    */
   Future<JsonObject> put(JsonObject request);
 

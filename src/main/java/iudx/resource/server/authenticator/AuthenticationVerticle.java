@@ -1,9 +1,7 @@
 package iudx.resource.server.authenticator;
 
 import static iudx.resource.server.authenticator.Constants.AUTH_CERTIFICATE_PATH;
-import static iudx.resource.server.common.Constants.AUTH_SERVICE_ADDRESS;
-import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
-import static iudx.resource.server.common.Constants.METERING_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.*;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;

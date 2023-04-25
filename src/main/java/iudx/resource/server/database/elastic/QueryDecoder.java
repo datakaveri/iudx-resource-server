@@ -1,14 +1,6 @@
 package iudx.resource.server.database.elastic;
 
-import static iudx.resource.server.database.archives.Constants.ATTRIBUTE_SEARCH_REGEX;
-import static iudx.resource.server.database.archives.Constants.GEOSEARCH_REGEX;
-import static iudx.resource.server.database.archives.Constants.REQ_TIMEREL;
-import static iudx.resource.server.database.archives.Constants.RESPONSE_ATTRS;
-import static iudx.resource.server.database.archives.Constants.RESPONSE_FILTER_REGEX;
-import static iudx.resource.server.database.archives.Constants.SEARCH_TYPE;
-import static iudx.resource.server.database.archives.Constants.TEMPORAL_SEARCH_REGEX;
-import static iudx.resource.server.database.archives.Constants.TIME_KEY;
-import static iudx.resource.server.database.archives.Constants.TIME_LIMIT;
+import static iudx.resource.server.database.archives.Constants.*;
 
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
@@ -20,7 +12,7 @@ import co.elastic.clients.elasticsearch.core.search.SourceConfig;
 import co.elastic.clients.elasticsearch.core.search.SourceFilter;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.database.elastic.exception.ESQueryException;
+import iudx.resource.server.database.elastic.exception.EsQueryException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -87,7 +79,7 @@ public class QueryDecoder {
     }
 
     if (!isValidQuery) {
-      throw new ESQueryException("Invalid search query");
+      throw new EsQueryException("Invalid search query");
     }
 
     boolean isTemporalResource = jsonQuery.getJsonArray("applicableFilters").contains("TEMPORAL");
@@ -121,7 +113,7 @@ public class QueryDecoder {
     JsonArray responseFilteringFileds = queryJson.getJsonArray(RESPONSE_ATTRS);
     if (responseFilteringFileds == null) {
       LOGGER.error("response filtering fields are not passed in attrs parameter");
-      throw new ESQueryException("response filtering fields are not passed in attrs parameter");
+      throw new EsQueryException("response filtering fields are not passed in attrs parameter");
     }
 
     return getSourceFilter(responseFilteringFileds.getList());

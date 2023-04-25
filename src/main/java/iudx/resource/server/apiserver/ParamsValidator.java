@@ -1,30 +1,7 @@
 package iudx.resource.server.apiserver;
 
-import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
-import static iudx.resource.server.apiserver.util.Constants.IUDXQUERY_OPTIONS;
-import static iudx.resource.server.apiserver.util.Constants.MSG_BAD_QUERY;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ATTRIBUTE;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_COORDINATES;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ENDTIME;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ENTITIES;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_FROM;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOMETRY;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOPROPERTY;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOQ;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_GEOREL;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_ID;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_IDPATTERN;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_Q;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_SIZE;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TEMPORALQ;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEPROPERTY;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEREL;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME_PROPERTY;
-import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TYPE;
-import static iudx.resource.server.common.ResponseUrn.INVALID_GEO_PARAM_URN;
-import static iudx.resource.server.common.ResponseUrn.INVALID_GEO_VALUE_URN;
+import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.common.ResponseUrn.*;
 
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
@@ -37,7 +14,7 @@ import iudx.resource.server.apiserver.validation.types.AttrsTypeValidator;
 import iudx.resource.server.apiserver.validation.types.CoordinatesTypeValidator;
 import iudx.resource.server.apiserver.validation.types.DistanceTypeValidator;
 import iudx.resource.server.apiserver.validation.types.GeoRelTypeValidator;
-import iudx.resource.server.apiserver.validation.types.QTypeValidator;
+import iudx.resource.server.apiserver.validation.types.QtypeValidator;
 import iudx.resource.server.apiserver.validation.types.Validator;
 import iudx.resource.server.common.HttpStatusCode;
 import java.util.HashSet;
@@ -189,7 +166,7 @@ public class ParamsValidator {
 
     boolean validations1 =
         !(new AttrsTypeValidator(attrs, false).isValid())
-            || !(new QTypeValidator(q, false).isValid())
+            || !(new QtypeValidator(q, false).isValid())
             || !(new CoordinatesTypeValidator(coordinates, false).isValid())
             || !(new GeoRelTypeValidator(georelArray != null ? georelArray[0] : null, false)
                 .isValid())
