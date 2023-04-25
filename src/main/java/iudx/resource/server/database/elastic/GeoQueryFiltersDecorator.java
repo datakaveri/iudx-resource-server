@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import co.elastic.clients.elasticsearch._types.GeoShapeRelation;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.WrapperQuery;
 import io.vertx.core.json.JsonArray;
@@ -21,8 +20,8 @@ public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
   private String geoQuery =
       "{ \"geo_shape\": { \"%s\": { \"shape\": %s, \"relation\": \"%s\" } } }";
 
-  public GeoQueryFiltersDecorator(Map<FilterType, List<Query>> queryFilters,
-      JsonObject requestQuery) {
+  public GeoQueryFiltersDecorator(
+      Map<FilterType, List<Query>> queryFilters, JsonObject requestQuery) {
     this.queryFilters = queryFilters;
     this.requestQuery = requestQuery;
   }
@@ -30,7 +29,8 @@ public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
   @Override
   public Map<FilterType, List<Query>> add() {
     Query geoWrapperQuery;
-    if (requestQuery.containsKey(LON) && requestQuery.containsKey(LAT)
+    if (requestQuery.containsKey(LON)
+        && requestQuery.containsKey(LAT)
         && requestQuery.containsKey(GEO_RADIUS)) {
       // circle
       requestQuery.put(GEOMETRY, "Point");
@@ -42,13 +42,14 @@ public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
     } else if (requestQuery.containsKey(GEOMETRY)
         && (requestQuery.getString(GEOMETRY).equalsIgnoreCase(POLYGON)
             || requestQuery.getString(GEOMETRY).equalsIgnoreCase(LINESTRING))
-        && requestQuery.containsKey(GEOREL) && requestQuery.containsKey(COORDINATES_KEY)
+        && requestQuery.containsKey(GEOREL)
+        && requestQuery.containsKey(COORDINATES_KEY)
         && requestQuery.containsKey(GEO_PROPERTY)) {
       // polygon & linestring
       String relation = requestQuery.getString(GEOREL);
 
-      if (!isValidCoordinates(requestQuery.getString(GEOMETRY),
-          new JsonArray(requestQuery.getString("coordinates")))) {
+      if (!isValidCoordinates(
+          requestQuery.getString(GEOMETRY), new JsonArray(requestQuery.getString("coordinates")))) {
         throw new ESQueryException("Coordinate mismatch (Polygon)");
       }
       String query = String.format(geoQuery, "location", getGeoJson(requestQuery), relation);
@@ -57,7 +58,8 @@ public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
 
     } else if (requestQuery.containsKey(GEOMETRY)
         && requestQuery.getString(GEOMETRY).equalsIgnoreCase(BBOX)
-        && requestQuery.containsKey(GEOREL) && requestQuery.containsKey(COORDINATES_KEY)
+        && requestQuery.containsKey(GEOREL)
+        && requestQuery.containsKey(COORDINATES_KEY)
         && requestQuery.containsKey(GEO_PROPERTY)) {
       // bbox
       String relation = requestQuery.getString(GEOREL);
@@ -101,18 +103,16 @@ public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
     if (geometry.equalsIgnoreCase(POLYGON)
         && !coordinates
             .getJsonArray(0)
-              .getJsonArray(0)
-              .getDouble(0)
-              .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(0))
+            .getJsonArray(0)
+            .getDouble(0)
+            .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(0))
         && !coordinates
             .getJsonArray(0)
-              .getJsonArray(0)
-              .getDouble(1)
-              .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(1))) {
+            .getJsonArray(0)
+            .getDouble(1)
+            .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(1))) {
       return false;
-
     }
     return true;
   }
-
 }

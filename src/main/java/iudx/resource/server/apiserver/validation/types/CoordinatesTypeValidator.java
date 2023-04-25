@@ -29,8 +29,6 @@ public final class CoordinatesTypeValidator implements Validator {
   private final int allowedMaxCoordinates = VALIDATION_ALLOWED_COORDINATES;
   private static final Pattern pattern = Pattern.compile("[\\w]+[^\\,]*(?:\\.*[\\w])");
 
-
-
   private final String value;
   private final boolean required;
 
@@ -88,9 +86,7 @@ public final class CoordinatesTypeValidator implements Validator {
   private List<String> getCoordinatesValues(final String coordinates) {
     Matcher matcher = pattern.matcher(coordinates);
     List<String> coordinatesValues =
-        matcher.results()
-            .map(MatchResult::group)
-            .collect(Collectors.toList());
+        matcher.results().map(MatchResult::group).collect(Collectors.toList());
     return coordinatesValues;
   }
 

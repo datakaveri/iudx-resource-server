@@ -52,6 +52,7 @@ public class ResponseBuilder {
     response.put(RESULTS, jsonArray);
     return this;
   }
+
   public ResponseBuilder setTotalHits(int totalHits) {
     response.put(TOTAL_HITS, totalHits);
     return this;

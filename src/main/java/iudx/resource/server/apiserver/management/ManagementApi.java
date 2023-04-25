@@ -107,7 +107,11 @@ public interface ManagementApi {
    * @param postgresService PostgresService object
    * @return Future
    */
-  Future<JsonObject> registerAdapter(JsonObject json, DataBrokerService dataBroker, CacheService cacheService, PostgresService postgresService);
+  Future<JsonObject> registerAdapter(
+      JsonObject json,
+      DataBrokerService dataBroker,
+      CacheService cacheService,
+      PostgresService postgresService);
 
   /**
    * delete a adapter.
@@ -116,7 +120,11 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  Future<JsonObject> deleteAdapter(String adapterId, String userId, DataBrokerService dataBroker,PostgresService postgresService);
+  Future<JsonObject> deleteAdapter(
+      String adapterId,
+      String userId,
+      DataBrokerService dataBroker,
+      PostgresService postgresService);
 
   /**
    * get adapter details.
@@ -171,5 +179,4 @@ public interface ManagementApi {
    * @return Future
    */
   Future<JsonObject> getAllAdapterDetailsForUser(JsonObject json, PostgresService postgresService);
-
 }

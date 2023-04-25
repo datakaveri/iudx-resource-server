@@ -6,6 +6,4 @@ public enum Method {
   PUT,
   PATCH,
   DELETE;
-
-  
 }

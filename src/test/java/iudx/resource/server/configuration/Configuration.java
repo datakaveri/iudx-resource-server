@@ -19,7 +19,7 @@ public class Configuration {
 
   /**
    * This is to read the config.json file from fileSystem to load configuration.
-   * 
+   *
    * @param moduleIndex
    * @param vertx
    * @return module JsonObject
@@ -44,5 +44,4 @@ public class Configuration {
 
     return moduleConf;
   }
-
 }

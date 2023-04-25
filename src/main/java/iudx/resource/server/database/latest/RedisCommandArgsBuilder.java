@@ -14,9 +14,7 @@ public class RedisCommandArgsBuilder {
 
     LOGGER.trace("In LatestSearch Redis");
 
-    String key = id.replace("-", "_")
-        .replaceAll("/", "_")
-        .replaceAll("\\.", "_");
+    String key = id.replace("-", "_").replaceAll("/", "_").replaceAll("\\.", "_");
 
     args.setKey(key);
 
@@ -29,10 +27,7 @@ public class RedisCommandArgsBuilder {
       // aqm type resource
       StringBuilder shaId = new StringBuilder(id).append("/").append(DEFAULT_ATTRIBUTE);
       String sha = DigestUtils.sha1Hex(shaId.toString());
-      pathParam.append(".")
-          .append("_")
-          .append(sha);
-
+      pathParam.append(".").append("_").append(sha);
     }
     args.setPath(pathParam.toString());
     return args;

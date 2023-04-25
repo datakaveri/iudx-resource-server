@@ -28,25 +28,24 @@ public class OptionsTypeValidatorTest {
   static Stream<Arguments> values() {
     // Add any invalid value which will throw error.
     return Stream.of(
-            Arguments.of("count1", true),
-            Arguments.of("AND 1=1", true),
-            Arguments.of("1==1", true),
-            Arguments.of("",true),
-            Arguments.of(null,true),
-            Arguments.of("",false));
+        Arguments.of("count1", true),
+        Arguments.of("AND 1=1", true),
+        Arguments.of("1==1", true),
+        Arguments.of("", true),
+        Arguments.of(null, true),
+        Arguments.of("", false));
   }
 
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
     testContext.completeNow();
-
   }
 
   @ParameterizedTest
   @MethodSource("values")
   @Description("options parameter type failure for different invalid values.")
-  public void testInvalidOptionsValue(String value, boolean required, Vertx vertx,
-                                      VertxTestContext testContext) {
+  public void testInvalidOptionsValue(
+      String value, boolean required, Vertx vertx, VertxTestContext testContext) {
     optionsValidator = new OptionsTypeValidator(value, required);
     assertThrows(DxRuntimeException.class, () -> optionsValidator.isValid());
     testContext.completeNow();
@@ -67,5 +66,4 @@ public class OptionsTypeValidatorTest {
     assertTrue(optionsValidator.isValid());
     testContext.completeNow();
   }
-
 }

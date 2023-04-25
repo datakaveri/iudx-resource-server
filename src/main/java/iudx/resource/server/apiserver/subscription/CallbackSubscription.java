@@ -8,11 +8,7 @@ import io.vertx.core.json.JsonObject;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 
-/**
- * class containing methods to create callback subscriptions in system.
- *
- *
- */
+/** class containing methods to create callback subscriptions in system. */
 public class CallbackSubscription implements Subscription {
 
   private static final Logger LOGGER = LogManager.getLogger(CallbackSubscription.class);
@@ -30,97 +26,105 @@ public class CallbackSubscription implements Subscription {
   /**
    * create a callback subscription.
    *
-   * {@inheritDoc}
+   * <p>{@inheritDoc}
    */
   @Override
   public Future<JsonObject> create(JsonObject subscription) {
     LOGGER.info("callback create() method started");
     Promise<JsonObject> promise = Promise.promise();
-    databroker.registerCallbackSubscription(subscription, handler -> {
-      if (handler.succeeded()) {
-        promise.complete(handler.result());
-      } else {
-        promise.fail(handler.cause().getMessage());
-      }
-    });
+    databroker.registerCallbackSubscription(
+        subscription,
+        handler -> {
+          if (handler.succeeded()) {
+            promise.complete(handler.result());
+          } else {
+            promise.fail(handler.cause().getMessage());
+          }
+        });
     return promise.future();
   }
 
   /**
    * update a callback subscription.
    *
-   * {@inheritDoc}
+   * <p>{@inheritDoc}
    */
   @Override
   public Future<JsonObject> update(JsonObject subscription) {
     LOGGER.info("callback update() method started");
     Promise<JsonObject> promise = Promise.promise();
-    databroker.updateCallbackSubscription(subscription, handler -> {
-      if (handler.succeeded()) {
-        promise.complete(handler.result());
-      } else {
-        promise.fail(handler.cause().getMessage());
-      }
-    });
+    databroker.updateCallbackSubscription(
+        subscription,
+        handler -> {
+          if (handler.succeeded()) {
+            promise.complete(handler.result());
+          } else {
+            promise.fail(handler.cause().getMessage());
+          }
+        });
     return promise.future();
   }
 
   /**
    * append a callback subscription.
    *
-   * {@inheritDoc}
+   * <p>{@inheritDoc}
    */
   @Override
   public Future<JsonObject> append(JsonObject subscription) {
     LOGGER.info("callback append() method started");
     Promise<JsonObject> promise = Promise.promise();
-    databroker.updateCallbackSubscription(subscription, handler -> {
-      if (handler.succeeded()) {
-        promise.complete(handler.result());
-      } else {
-        promise.fail(handler.cause().getMessage());
-      }
-    });
+    databroker.updateCallbackSubscription(
+        subscription,
+        handler -> {
+          if (handler.succeeded()) {
+            promise.complete(handler.result());
+          } else {
+            promise.fail(handler.cause().getMessage());
+          }
+        });
     return promise.future();
   }
 
   /**
    * delete a callback subscription.
    *
-   * {@inheritDoc}
-   *
+   * <p>{@inheritDoc}
    */
   @Override
   public Future<JsonObject> delete(JsonObject subscription) {
     LOGGER.info("callback delete() method started");
     Promise<JsonObject> promise = Promise.promise();
-    databroker.deleteStreamingSubscription(subscription, handler -> {
-      if (handler.succeeded()) {
-        promise.complete(handler.result());
-      } else {
-        promise.fail(handler.cause().getMessage());
-      }
-    });
+    databroker.deleteStreamingSubscription(
+        subscription,
+        handler -> {
+          if (handler.succeeded()) {
+            promise.complete(handler.result());
+          } else {
+            promise.fail(handler.cause().getMessage());
+          }
+        });
     return promise.future();
   }
 
   /**
    * get a callback subscription.
    *
-   * {@inheritDoc}
+   * <p>{@inheritDoc}
    */
   @Override
   public Future<JsonObject> get(JsonObject subscription) {
     LOGGER.info("callback get() method started");
     Promise<JsonObject> promise = Promise.promise();
-    databroker.listCallbackSubscription(subscription, handler -> {
-      if (handler.succeeded()) {
-        promise.complete(handler.result());
-      } else {
-        promise.fail(handler.cause().getMessage());
-      }
-    });
+    databroker.listCallbackSubscription(
+        subscription,
+        handler -> {
+          if (handler.succeeded()) {
+            promise.complete(handler.result());
+          } else {
+            promise.fail(handler.cause().getMessage());
+          }
+        });
     return promise.future();
   }
-
 }

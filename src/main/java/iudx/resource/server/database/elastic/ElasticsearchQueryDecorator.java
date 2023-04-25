@@ -5,5 +5,5 @@ import java.util.Map;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 
 public interface ElasticsearchQueryDecorator {
-  Map<FilterType,List<Query>> add();
+  Map<FilterType, List<Query>> add();
 }

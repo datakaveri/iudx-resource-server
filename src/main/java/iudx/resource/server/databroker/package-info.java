@@ -1,4 +1,5 @@
-@ModuleGen(groupPackage = "iudx.resource.server.databroker",
+@ModuleGen(
+    groupPackage = "iudx.resource.server.databroker",
     name = "iudx-resource-server-databroker-service")
 package iudx.resource.server.databroker;
 

@@ -45,15 +45,11 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
-
-
-@ExtendWith({VertxExtension.class,MockitoExtension.class})
+@ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class QueryMapperTest {
 
   private QueryMapper qm;
-  @Mock
-  RoutingContext context;
-
+  @Mock RoutingContext context;
 
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
@@ -69,7 +65,6 @@ public class QueryMapperTest {
     assertEquals(">=", json.getString(JSON_OPERATOR));
     assertEquals("300", json.getString(JSON_VALUE));
     testContext.completeNow();
-
   }
 
   @Test
@@ -119,7 +114,8 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_ATTRIBUTE, "attr1,attr2");
     map.add(NGSILDQUERY_GEOREL, "within");
     map.add(NGSILDQUERY_GEOMETRY, "Polygon");
-    map.add(NGSILDQUERY_COORDINATES,
+    map.add(
+        NGSILDQUERY_COORDINATES,
         "[[[8.68462,49.40606],[8.68550,49.40622],[8.68545,49.406344],[8.68457,49.40617],[8.6846,49.4060]]]");
     map.add(NGSILDQUERY_GEOPROPERTY, "location");
     NGSILDQueryParams params = new NGSILDQueryParams(map);
@@ -157,7 +153,7 @@ public class QueryMapperTest {
     assertTrue(json.containsKey(NGSILDQUERY_ENDTIME));
     testContext.completeNow();
   }
-  
+
   @Test
   @Description("QueryMapper test for temporal queries(before)")
   public void testToJson4TemporalQuery(Vertx vertx, VertxTestContext testContext) {
@@ -176,7 +172,7 @@ public class QueryMapperTest {
     assertTrue(json.containsKey(NGSILDQUERY_TIME));
     testContext.completeNow();
   }
-  
+
   @Test
   @Description("QueryMapper test for temporal queries(Invalid time format)")
   public void testToJson4TemporalInvalidTimeQuery(Vertx vertx, VertxTestContext testContext) {
@@ -190,7 +186,7 @@ public class QueryMapperTest {
     NGSILDQueryParams params = new NGSILDQueryParams(map);
 
     qm.toJson(params, true);
-    verify(context,times(1)).fail(anyInt(),any());
+    verify(context, times(1)).fail(anyInt(), any());
     testContext.completeNow();
   }
 
@@ -213,7 +209,6 @@ public class QueryMapperTest {
     testContext.completeNow();
   }
 
-
   static Stream<Arguments> invalidQTermsValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
@@ -223,17 +218,16 @@ public class QueryMapperTest {
         Arguments.of("refrenceLevel><10", "Operator not allowed."),
         Arguments.of("refrenceLevel>+10", "Operator not allowed."),
         Arguments.of("refrenceLevel+<10", "Operator not allowed."));
-
   }
 
   @ParameterizedTest
   @MethodSource("invalidQTermsValues")
   @Description("coordinates type parameter invalid values.")
-  public void testInvalidQTermValue(String value, String result, Vertx vertx,
-      VertxTestContext testContext) {
-      
+  public void testInvalidQTermValue(
+      String value, String result, Vertx vertx, VertxTestContext testContext) {
+
     qm.getQueryTerms(value);
-    verify(context,atLeast(1)).fail(anyInt(),any());
+    verify(context, atLeast(1)).fail(anyInt(), any());
     testContext.completeNow();
   }
 
@@ -246,9 +240,9 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_TIMEREL, "during");
     map.add(NGSILDQUERY_TIME, "2020-01-23T14:20:00Z");
     NGSILDQueryParams params = new NGSILDQueryParams(map);
-      
+
     qm.toJson(params, true);
-    verify(context,times(2)).fail(anyInt(),any());
+    verify(context, times(2)).fail(anyInt(), any());
     testContext.completeNow();
   }
 
@@ -262,9 +256,9 @@ public class QueryMapperTest {
     map.add(NGSILDQUERY_TIME, "2020-01-13T14:20:00Z");
     map.add(NGSILDQUERY_ENDTIME, "2020-01-30T14:40:00Z");
     NGSILDQueryParams params = new NGSILDQueryParams(map);
-    
+
     qm.toJson(params, true);
-    verify(context,times(1)).fail(anyInt(),any());  
+    verify(context, times(1)).fail(anyInt(), any());
     testContext.completeNow();
   }
 
@@ -281,13 +275,10 @@ public class QueryMapperTest {
 
     NGSILDQueryParams params = new NGSILDQueryParams(map);
     qm.toJson(params, true);
-    verify(context,times(1)).fail(anyInt(),any());
+    verify(context, times(1)).fail(anyInt(), any());
     testContext.completeNow();
   }
 
   @AfterEach
-  public void teardown() {
-
-  }
-
+  public void teardown() {}
 }

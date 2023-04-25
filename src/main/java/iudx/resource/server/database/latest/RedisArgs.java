@@ -20,7 +20,4 @@ public class RedisArgs {
   public void setPath(String path) {
     this.path = path;
   }
-
-
-
 }

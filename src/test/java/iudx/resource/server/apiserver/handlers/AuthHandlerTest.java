@@ -43,34 +43,25 @@ import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.apiserver.util.Constants;
 import iudx.resource.server.authenticator.AuthenticationService;
 
-
 @ExtendWith(VertxExtension.class)
 @ExtendWith(MockitoExtension.class)
 public class AuthHandlerTest {
 
-
-  @Mock
-  RoutingContext routingContext;
-  @Mock
-  HttpServerResponse httpServerResponse;
-  @Mock
-  HttpServerRequest httpServerRequest;
-  @Mock
-  HttpMethod httpMethod;
-  @Mock
-  AsyncResult<JsonObject> asyncResult;
-  @Mock
-  MultiMap map;
-  @Mock
-  Throwable throwable;
-  @Mock
-  Future<Void> voidFuture;
+  @Mock RoutingContext routingContext;
+  @Mock HttpServerResponse httpServerResponse;
+  @Mock HttpServerRequest httpServerRequest;
+  @Mock HttpMethod httpMethod;
+  @Mock AsyncResult<JsonObject> asyncResult;
+  @Mock MultiMap map;
+  @Mock Throwable throwable;
+  @Mock Future<Void> voidFuture;
 
   AuthHandler authHandler;
   JsonObject jsonObject;
   private static String dxApiBasePath;
 
   private static Api apis;
+
   @BeforeEach
   public void setUp(VertxTestContext vertxTestContext) {
     jsonObject = new JsonObject();
@@ -78,7 +69,7 @@ public class AuthHandlerTest {
     jsonObject.put("IID", "Dummy IID value");
     jsonObject.put("USER_ID", "Dummy USER_ID");
     jsonObject.put("EXPIRY", "Dummy EXPIRY");
-    jsonObject.put("dxApiBasePath","/ngsi-ld/v1");
+    jsonObject.put("dxApiBasePath", "/ngsi-ld/v1");
     lenient().when(httpServerRequest.method()).thenReturn(httpMethod);
     lenient().when(httpMethod.toString()).thenReturn("GET");
     lenient().when(routingContext.request()).thenReturn(httpServerRequest);
@@ -86,7 +77,7 @@ public class AuthHandlerTest {
     dxApiBasePath = "/ngsi-ld/v1";
     apis = Api.getInstance(dxApiBasePath);
 
-    authHandler = AuthHandler.create(Vertx.vertx(),apis);
+    authHandler = AuthHandler.create(Vertx.vertx(), apis);
     vertxTestContext.completeNow();
   }
 
@@ -94,13 +85,12 @@ public class AuthHandlerTest {
     dxApiBasePath = "/ngsi-ld/v1";
     apis = Api.getInstance(dxApiBasePath);
     return Stream.of(
-
         Arguments.of(Constants.EXCHANGE_URL_REGEX, IUDX_MANAGEMENT_URL + EXCHANGE_PATH + "(.*)"),
         Arguments.of(Constants.QUEUE_URL_REGEX, IUDX_MANAGEMENT_URL + QUEUE_PATH + "(.*)"),
         Arguments.of(Constants.VHOST_URL_REGEX, IUDX_MANAGEMENT_URL + VHOST + "(.*)"),
         Arguments.of(Constants.BIND_URL_REGEX, IUDX_MANAGEMENT_URL + BIND + "(.*)"),
         Arguments.of(Constants.UNBIND_URL_REGEX, IUDX_MANAGEMENT_URL + UNBIND + "(.*)"),
-        Arguments.of(apis.getManagementBasePath()+"(.*)",  dxApiBasePath + RESET_PWD + "(.*)"),
+        Arguments.of(apis.getManagementBasePath() + "(.*)", dxApiBasePath + RESET_PWD + "(.*)"),
         Arguments.of(Constants.REVOKE_TOKEN_REGEX, ADMIN + REVOKE_TOKEN + "(.*)"),
         Arguments.of(Constants.UNIQUE_ATTR_REGEX, ADMIN + RESOURCE_ATTRIBS),
         Arguments.of(apis.getIudxConsumerAuditUrl(), apis.getIudxConsumerAuditUrl()),
@@ -116,7 +106,6 @@ public class AuthHandlerTest {
         Arguments.of(apis.getPostTemporalQueryPath(), apis.getPostTemporalQueryPath()),
         Arguments.of(apis.getSubscriptionUrl(), apis.getSubscriptionUrl()));
   }
-
 
   @ParameterizedTest(name = "{index}) url = {0}, path = {1}")
   @MethodSource("urls")
@@ -137,13 +126,16 @@ public class AuthHandlerTest {
     when(map.get(anyString())).thenReturn("Dummy Token");
     when(asyncResult.succeeded()).thenReturn(true);
     when(asyncResult.result()).thenReturn(jsonObject);
-    doAnswer(new Answer<AsyncResult<JsonObject>>() {
-      @Override
-      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(2)).handle(asyncResult);
-        return null;
-      }
-    }).when(AuthHandler.authenticator).tokenInterospect(any(), any(), any());
+    doAnswer(
+            new Answer<AsyncResult<JsonObject>>() {
+              @Override
+              public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(2)).handle(asyncResult);
+                return null;
+              }
+            })
+        .when(AuthHandler.authenticator)
+        .tokenInterospect(any(), any(), any());
 
     authHandler.handle(routingContext);
 
@@ -164,12 +156,11 @@ public class AuthHandlerTest {
     JsonObject jsonObject = new JsonObject();
     jsonObject.put("Dummy Key", "Dummy Value");
 
-
     RequestBody requestBody = mock(RequestBody.class);
 
     when(routingContext.body()).thenReturn(requestBody);
     when(requestBody.asJsonObject()).thenReturn(jsonObject);
-    //when(jsonObject.copy()).thenReturn(jsonObject);
+    // when(jsonObject.copy()).thenReturn(jsonObject);
 
     // when(routingContext.body().asJsonObject()).thenReturn(jsonObject);
     when(httpServerRequest.path()).thenReturn(str);
@@ -183,11 +174,14 @@ public class AuthHandlerTest {
     when(httpServerResponse.setStatusCode(anyInt())).thenReturn(httpServerResponse);
     when(httpServerResponse.end(anyString())).thenReturn(voidFuture);
     when(asyncResult.succeeded()).thenReturn(false);
-    doAnswer((Answer<AsyncResult<JsonObject>>) arg0 -> {
-      ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(2)).handle(asyncResult);
-      return null;
-    }).when(AuthHandler.authenticator).tokenInterospect(any(), any(), any());
-
+    doAnswer(
+            (Answer<AsyncResult<JsonObject>>)
+                arg0 -> {
+                  ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(2)).handle(asyncResult);
+                  return null;
+                })
+        .when(AuthHandler.authenticator)
+        .tokenInterospect(any(), any(), any());
 
     authHandler.handle(routingContext);
 
@@ -232,13 +226,16 @@ public class AuthHandlerTest {
     when(httpServerResponse.setStatusCode(anyInt())).thenReturn(httpServerResponse);
     when(httpServerResponse.end(anyString())).thenReturn(voidFuture);
     when(asyncResult.succeeded()).thenReturn(false);
-    doAnswer(new Answer<AsyncResult<JsonObject>>() {
-      @Override
-      public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(2)).handle(asyncResult);
-        return null;
-      }
-    }).when(AuthHandler.authenticator).tokenInterospect(any(), any(), any());
+    doAnswer(
+            new Answer<AsyncResult<JsonObject>>() {
+              @Override
+              public AsyncResult<JsonObject> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg0.getArgument(2)).handle(asyncResult);
+                return null;
+              }
+            })
+        .when(AuthHandler.authenticator)
+        .tokenInterospect(any(), any(), any());
 
     authHandler.handle(routingContext);
 
@@ -258,8 +255,7 @@ public class AuthHandlerTest {
   @Test
   public void testCanCreate(VertxTestContext vertxTestContext) {
     AuthHandler.authenticator = mock(AuthenticationService.class);
-    assertNotNull(AuthHandler.create(Vertx.vertx(),apis));
+    assertNotNull(AuthHandler.create(Vertx.vertx(), apis));
     vertxTestContext.completeNow();
   }
-
 }

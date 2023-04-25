@@ -15,7 +15,7 @@ public final class IDTypeValidator implements Validator {
 
   private Integer minLength = VALIDATION_ID_MIN_LEN;
   private Integer maxLength = VALIDATION_ID_MAX_LEN;
-  private static final Pattern regexIDPattern =ID_REGEX;
+  private static final Pattern regexIDPattern = ID_REGEX;
 
   private final String value;
   private final boolean required;
@@ -64,5 +64,4 @@ public final class IDTypeValidator implements Validator {
   public String failureMessage() {
     return INVALID_ID_VALUE_URN.getMessage();
   }
-
 }

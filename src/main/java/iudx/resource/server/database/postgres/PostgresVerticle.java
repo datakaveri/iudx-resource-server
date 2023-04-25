@@ -11,36 +11,36 @@ import io.vertx.pgclient.PgPool;
 import io.vertx.serviceproxy.ServiceBinder;
 import io.vertx.sqlclient.PoolOptions;
 
-public class PostgresVerticle extends AbstractVerticle{
-  
+public class PostgresVerticle extends AbstractVerticle {
+
   private static final Logger LOGGER = LogManager.getLogger(PostgresService.class);
-  
+
   private MessageConsumer<JsonObject> consumer;
   private ServiceBinder binder;
-  
+
   private PgConnectOptions connectOptions;
   private PoolOptions poolOptions;
   private PgPool pool;
-  
+
   private String databaseIP;
   private int databasePort;
   private String databaseName;
   private String databaseUserName;
   private String databasePassword;
   private int poolSize;
-  
+
   private PostgresService pgService;
-  
+
   @Override
   public void start() throws Exception {
-    
+
     databaseIP = config().getString("databaseIp");
     databasePort = config().getInteger("databasePort");
     databaseName = config().getString("databaseName");
     databaseUserName = config().getString("databaseUserName");
     databasePassword = config().getString("databasePassword");
     poolSize = config().getInteger("poolSize");
-    
+
     this.connectOptions =
         new PgConnectOptions()
             .setPort(databasePort)
@@ -50,22 +50,19 @@ public class PostgresVerticle extends AbstractVerticle{
             .setPassword(databasePassword)
             .setReconnectAttempts(2)
             .setReconnectInterval(1000L);
-    
-    
+
     this.poolOptions = new PoolOptions().setMaxSize(poolSize);
     this.pool = PgPool.pool(vertx, connectOptions, poolOptions);
-    
-    pgService=new PostgresServiceImpl(this.pool);
-    
+
+    pgService = new PostgresServiceImpl(this.pool);
+
     binder = new ServiceBinder(vertx);
-    consumer =binder.setAddress(PG_SERVICE_ADDRESS).register(PostgresService.class, pgService);
+    consumer = binder.setAddress(PG_SERVICE_ADDRESS).register(PostgresService.class, pgService);
     LOGGER.info("Postgres verticle started.");
   }
 
-
   @Override
   public void stop() {
-        binder.unregister(consumer);
+    binder.unregister(consumer);
   }
 }
-

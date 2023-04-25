@@ -3,7 +3,6 @@ package iudx.resource.server.authenticator.authorization;
 import java.util.stream.Stream;
 
 public enum IudxRole {
-  
   CONSUMER("consumer"),
   PROVIDER("provider"),
   DELEGATE("delegate"),
@@ -20,10 +19,6 @@ public enum IudxRole {
   }
 
   public static IudxRole fromRole(final String role) {
-    return Stream.of(values())
-        .filter(v -> v.role.equalsIgnoreCase(role))
-        .findAny()
-        .orElse(null);
+    return Stream.of(values()).filter(v -> v.role.equalsIgnoreCase(role)).findAny().orElse(null);
   }
-
 }

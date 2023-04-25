@@ -38,9 +38,8 @@ public class DeployerDev {
     moduleConfigurations.put("host", configs.getString("host"));
     String moduleName = moduleConfigurations.getString("id");
     int numInstances = moduleConfigurations.getInteger("verticleInstances");
-    DeploymentOptions deploymentOptions = new DeploymentOptions()
-        .setInstances(numInstances)
-        .setConfig(moduleConfigurations);
+    DeploymentOptions deploymentOptions =
+        new DeploymentOptions().setInstances(numInstances).setConfig(moduleConfigurations);
 
     boolean isWorkerVerticle = moduleConfigurations.getBoolean("isWorkerVerticle");
     if (isWorkerVerticle) {
@@ -52,20 +51,25 @@ public class DeployerDev {
       deploymentOptions.setMaxWorkerExecuteTimeUnit(TimeUnit.MINUTES);
     }
 
-    vertx.deployVerticle(moduleName, deploymentOptions, ar -> {
-      if (ar.succeeded()) {
-        LOGGER.info("Deployed " + moduleName);
-        recursiveDeploy(vertx, configs, i + 1);
-      } else {
-        LOGGER.fatal("Failed to deploy " + moduleName + " cause:", ar.cause());
-      }
-    });
+    vertx.deployVerticle(
+        moduleName,
+        deploymentOptions,
+        ar -> {
+          if (ar.succeeded()) {
+            LOGGER.info("Deployed " + moduleName);
+            recursiveDeploy(vertx, configs, i + 1);
+          } else {
+            LOGGER.fatal("Failed to deploy " + moduleName + " cause:", ar.cause());
+          }
+        });
   }
-  private static JsonObject getConfigForModule(int moduleIndex,JsonObject configurations) {
+
+  private static JsonObject getConfigForModule(int moduleIndex, JsonObject configurations) {
     JsonObject commonConfigs = configurations.getJsonObject("commonConfig");
     JsonObject config = configurations.getJsonArray("modules").getJsonObject(moduleIndex);
     return config.mergeIn(commonConfigs, true);
   }
+
   public static void deploy(String configPath) {
     EventBusOptions ebOptions = new EventBusOptions();
     VertxOptions options = new VertxOptions().setEventBusOptions(ebOptions);
@@ -87,11 +91,21 @@ public class DeployerDev {
   }
 
   public static void main(String[] args) {
-    CLI cli = CLI.create("IUDX Cat").setSummary("A CLI to deploy the resource server")
-        .addOption(new Option().setLongName("help").setShortName("h").setFlag(true)
-            .setDescription("display help"))
-        .addOption(new Option().setLongName("config").setShortName("c")
-            .setRequired(true).setDescription("configuration file"));
+    CLI cli =
+        CLI.create("IUDX Cat")
+            .setSummary("A CLI to deploy the resource server")
+            .addOption(
+                new Option()
+                    .setLongName("help")
+                    .setShortName("h")
+                    .setFlag(true)
+                    .setDescription("display help"))
+            .addOption(
+                new Option()
+                    .setLongName("config")
+                    .setShortName("c")
+                    .setRequired(true)
+                    .setDescription("configuration file"));
 
     StringBuilder usageString = new StringBuilder();
     cli.usage(usageString);

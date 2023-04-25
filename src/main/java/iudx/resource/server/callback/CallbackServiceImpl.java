@@ -26,11 +26,12 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
 
 /**
+ *
+ *
  * <h1>Callback Service Service Implementation.</h1>
- * <p>
- * The Callback Service implementation in the IUDX Resource Server implements the definitions of the
- * {@link iudx.resource.server.callback.CallbackService}.
- * </p>
+ *
+ * <p>The Callback Service implementation in the IUDX Resource Server implements the definitions of
+ * the {@link iudx.resource.server.callback.CallbackService}.
  *
  * @version 1.0
  * @since 2020-07-15
@@ -62,8 +63,11 @@ public class CallbackServiceImpl implements CallbackService {
    * @param propObj which is a properties JsonObject
    * @param vertxInstance which is a Vertx Instance
    */
-  public CallbackServiceImpl(RabbitMQClient clientInstance, WebClient webClientInstance,
-                             JsonObject propObj, Vertx vertxInstance) {
+  public CallbackServiceImpl(
+      RabbitMQClient clientInstance,
+      WebClient webClientInstance,
+      JsonObject propObj,
+      Vertx vertxInstance) {
 
     LOGGER.trace("Got the RabbitMQ Client instance");
     client = clientInstance;
@@ -90,37 +94,40 @@ public class CallbackServiceImpl implements CallbackService {
   }
 
   @Override
-  public CallbackService connectToCallbackNotificationQueue(JsonObject request,
-                                                            Handler<AsyncResult<JsonObject>> handler) {
+  public CallbackService connectToCallbackNotificationQueue(
+      JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
       Future<JsonObject> result = connectToCallbackNotificationQueue(request);
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-        }
-        if (resultHandler.failed()) {
-          LOGGER.error("connectToCallbackNotificationQueue resultHandler failed : "
-                  + resultHandler.cause().getMessage().toString());
-          handler.handle(Future.failedFuture(resultHandler.cause().getMessage().toString()));
-        }
-      });
+      result.onComplete(
+          resultHandler -> {
+            if (resultHandler.succeeded()) {
+              handler.handle(Future.succeededFuture(resultHandler.result()));
+            }
+            if (resultHandler.failed()) {
+              LOGGER.error(
+                  "connectToCallbackNotificationQueue resultHandler failed : "
+                      + resultHandler.cause().getMessage().toString());
+              handler.handle(Future.failedFuture(resultHandler.cause().getMessage().toString()));
+            }
+          });
     }
     return this;
   }
 
   /**
    * connectToCallbackNotificationQueue Method.
+   *
    * <p>
+   *
    * <h1>This method execute tasks</h1>
-   * <li>Connect to RabbitMQ callback.notification Queue (callback.notification)</li>
-   * <li>Create RabbitMQConsumer for consuming queue messages</li>
-   * <li>Get the database operation value from message</li>
-   * <li>Query Database when database operation is create|update|delete</li>
-   * </p>
+   *
+   * <li>Connect to RabbitMQ callback.notification Queue (callback.notification)
+   * <li>Create RabbitMQConsumer for consuming queue messages
+   * <li>Get the database operation value from message
+   * <li>Query Database when database operation is create|update|delete
    *
    * @param request which is a JSON object
    * @return response which is a Future object of promise of JSON type
-   *
    */
   public Future<JsonObject> connectToCallbackNotificationQueue(JsonObject request) {
     JsonObject finalResponse = new JsonObject();
@@ -129,131 +136,154 @@ public class CallbackServiceImpl implements CallbackService {
     if (request != null && !request.isEmpty()) {
       /* Set Queue Options */
       QueueOptions options =
-              new QueueOptions().setMaxInternalQueueSize(1000).setKeepMostRecent(true);
+          new QueueOptions().setMaxInternalQueueSize(1000).setKeepMostRecent(true);
       /* Get Queue Name from request */
       String queueName = request.getString(Constants.QUEUE_NAME);
 
-      client.start(startHandler -> {
-        if (startHandler.succeeded()) {
-          /* Create a stream of messages from a queue */
-          client.basicConsumer(queueName, options, rabbitMQConsumerAsyncResult -> {
-            if (rabbitMQConsumerAsyncResult.succeeded()) {
-              RabbitMQConsumer mqConsumer = rabbitMQConsumerAsyncResult.result();
-              mqConsumer.handler(message -> {
-                /* Message from Queue */
-                Buffer body = message.body();
-                if (body != null) {
-                  JsonObject currentBodyJsonObj = null;
-                  String operation = null;
-                  try {
-                    /* Convert message body to JsonObject */
-                    currentBodyJsonObj = new JsonObject(body.toString());
-                  } catch (Exception e) {
-                    LOGGER.error(Constants.JSON_PARSE_EXCEPTION, e.getCause());
-                    finalResponse.put(Constants.MESSAGE, Constants.JSON_PARSE_EXCEPTION);
-                    promise.fail(finalResponse.toString());
-                  }
+      client.start(
+          startHandler -> {
+            if (startHandler.succeeded()) {
+              /* Create a stream of messages from a queue */
+              client.basicConsumer(
+                  queueName,
+                  options,
+                  rabbitMQConsumerAsyncResult -> {
+                    if (rabbitMQConsumerAsyncResult.succeeded()) {
+                      RabbitMQConsumer mqConsumer = rabbitMQConsumerAsyncResult.result();
+                      mqConsumer.handler(
+                          message -> {
+                            /* Message from Queue */
+                            Buffer body = message.body();
+                            if (body != null) {
+                              JsonObject currentBodyJsonObj = null;
+                              String operation = null;
+                              try {
+                                /* Convert message body to JsonObject */
+                                currentBodyJsonObj = new JsonObject(body.toString());
+                              } catch (Exception e) {
+                                LOGGER.error(Constants.JSON_PARSE_EXCEPTION, e.getCause());
+                                finalResponse.put(
+                                    Constants.MESSAGE, Constants.JSON_PARSE_EXCEPTION);
+                                promise.fail(finalResponse.toString());
+                              }
 
-                  /* Get operation value from currentMessageJsonObj */
-                  operation = currentBodyJsonObj.getString(Constants.OPERATION);
+                              /* Get operation value from currentMessageJsonObj */
+                              operation = currentBodyJsonObj.getString(Constants.OPERATION);
 
-                  /* Check for operation */
-                  if (operation != null && !operation.isEmpty() && !operation.isBlank()) {
-                    if (operation.equals(Constants.CREATE) || operation.equals(Constants.UPDATE)
-                            || operation.equals(Constants.DELETE)) {
+                              /* Check for operation */
+                              if (operation != null
+                                  && !operation.isEmpty()
+                                  && !operation.isBlank()) {
+                                if (operation.equals(Constants.CREATE)
+                                    || operation.equals(Constants.UPDATE)
+                                    || operation.equals(Constants.DELETE)) {
 
-                      /* Create request object for Query DataBase */
-                      JsonObject requestObj = new JsonObject();
-                      requestObj.put(Constants.TABLE_NAME, "registercallback");
+                                  /* Create request object for Query DataBase */
+                                  JsonObject requestObj = new JsonObject();
+                                  requestObj.put(Constants.TABLE_NAME, "registercallback");
 
-                      /* Query DataBase */
-                      Future<JsonObject> result = queryCallBackDataBase(requestObj);
-                      result.onComplete(resultHandler -> {
-                        if (resultHandler.succeeded()) {
-                          LOGGER.debug(Constants.DATABASE_QUERY_RESULT + resultHandler.result());
-                          finalResponse.put(Constants.DATABASE_QUERY_RESULT,
-                                  Constants.CACHE_UPDATE_SUCCESS);
-                        } else {
-                          LOGGER.error(Constants.DATABASE_QUERY_RESULT + Constants.COLON,
-                                  resultHandler.cause());
-                          finalResponse.put(Constants.DATABASE_QUERY_RESULT,
-                                  Constants.DATABASE_QUERY_FAIL);
-                          promise.fail(finalResponse.toString());
-                        }
-                      });
+                                  /* Query DataBase */
+                                  Future<JsonObject> result = queryCallBackDataBase(requestObj);
+                                  result.onComplete(
+                                      resultHandler -> {
+                                        if (resultHandler.succeeded()) {
+                                          LOGGER.debug(
+                                              Constants.DATABASE_QUERY_RESULT
+                                                  + resultHandler.result());
+                                          finalResponse.put(
+                                              Constants.DATABASE_QUERY_RESULT,
+                                              Constants.CACHE_UPDATE_SUCCESS);
+                                        } else {
+                                          LOGGER.error(
+                                              Constants.DATABASE_QUERY_RESULT + Constants.COLON,
+                                              resultHandler.cause());
+                                          finalResponse.put(
+                                              Constants.DATABASE_QUERY_RESULT,
+                                              Constants.DATABASE_QUERY_FAIL);
+                                          promise.fail(finalResponse.toString());
+                                        }
+                                      });
+                                } else {
+                                  LOGGER.error(Constants.DATABASE_OPERATION_INVALID);
+                                  finalResponse.put(
+                                      Constants.ERROR, Constants.DATABASE_OPERATION_INVALID);
+                                  promise.fail(finalResponse.toString());
+                                }
+                              } else {
+                                LOGGER.error(Constants.DATABASE_OPERATION_NOT_FOUND);
+                                finalResponse.put(
+                                    Constants.ERROR, Constants.DATABASE_OPERATION_NOT_FOUND);
+                                promise.fail(finalResponse.toString());
+                              }
+                            }
+                          });
+                      LOGGER.info(Constants.QUEUE_EMPTY);
+                      finalResponse.put(
+                          Constants.DATABASE_QUERY_RESULT,
+                          Constants.CONNECT_TO_CALLBACK_NOTIFICATION_QUEUE);
+                      promise.tryComplete(finalResponse);
+                      /**
+                       * Changed promise.complete(finalResponse) to
+                       * promise.tryComplete(finalResponse) to avoid
+                       * java.lang.IllegalStateException: Result is already complete
+                       */
                     } else {
-                      LOGGER.error(Constants.DATABASE_OPERATION_INVALID);
-                      finalResponse.put(Constants.ERROR, Constants.DATABASE_OPERATION_INVALID);
+                      LOGGER.error(
+                          Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON + queueName);
+                      LOGGER.error(Constants.ERROR + rabbitMQConsumerAsyncResult.cause());
+                      finalResponse.put(
+                          Constants.ERROR,
+                          Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON + queueName);
                       promise.fail(finalResponse.toString());
                     }
-                  } else {
-                    LOGGER.error(Constants.DATABASE_OPERATION_NOT_FOUND);
-                    finalResponse.put(Constants.ERROR, Constants.DATABASE_OPERATION_NOT_FOUND);
-                    promise.fail(finalResponse.toString());
-                  }
-                }
-              });
-              LOGGER.info(Constants.QUEUE_EMPTY);
-              finalResponse.put(Constants.DATABASE_QUERY_RESULT,
-                      Constants.CONNECT_TO_CALLBACK_NOTIFICATION_QUEUE);
-              promise.tryComplete(finalResponse);
-              /**
-               * Changed promise.complete(finalResponse) to
-               * promise.tryComplete(finalResponse) to avoid
-               * java.lang.IllegalStateException: Result is already complete
-               */
+                  });
             } else {
-              LOGGER.error(Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON + queueName);
-              LOGGER.error(Constants.ERROR + rabbitMQConsumerAsyncResult.cause());
-              finalResponse.put(Constants.ERROR,
-                      Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON + queueName);
+              LOGGER.error(Constants.QUEUE_CONNECTION_FAIL + Constants.COLON + queueName);
+              finalResponse.put(
+                  Constants.ERROR, Constants.QUEUE_CONNECTION_FAIL + Constants.COLON + queueName);
               promise.fail(finalResponse.toString());
             }
           });
-        } else {
-          LOGGER.error(Constants.QUEUE_CONNECTION_FAIL + Constants.COLON + queueName);
-          finalResponse.put(Constants.ERROR,
-                  Constants.QUEUE_CONNECTION_FAIL + Constants.COLON + queueName);
-          promise.fail(finalResponse.toString());
-        }
-      });
     }
     return promise.future();
   }
 
   @Override
-  public CallbackService connectToCallbackDataQueue(JsonObject request,
-                                                    Handler<AsyncResult<JsonObject>> handler) {
+  public CallbackService connectToCallbackDataQueue(
+      JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
       Future<JsonObject> result = connectToCallbackDataQueue(request);
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-        }
-        if (resultHandler.failed()) {
-          LOGGER.error("connectToCallbackDataQueue resultHandler failed : "
-                  + resultHandler.cause().getMessage().toString());
-          handler.handle(Future.failedFuture(resultHandler.cause().getMessage().toString()));
-        }
-      });
+      result.onComplete(
+          resultHandler -> {
+            if (resultHandler.succeeded()) {
+              handler.handle(Future.succeededFuture(resultHandler.result()));
+            }
+            if (resultHandler.failed()) {
+              LOGGER.error(
+                  "connectToCallbackDataQueue resultHandler failed : "
+                      + resultHandler.cause().getMessage().toString());
+              handler.handle(Future.failedFuture(resultHandler.cause().getMessage().toString()));
+            }
+          });
     }
     return this;
   }
 
   /**
    * connectToCallbackDataQueue Method.
+   *
    * <p>
+   *
    * <h1>This method execute tasks</h1>
-   * <li>Connect to RabbitMQ callback.data Queue (callback.data)</li>
-   * <li>Create RabbitMQConsumer for consuming queue messages</li>
-   * <li>Get the routing key of message</li>
-   * <li>Get callbackUrl JsonObject from cache using routingKey</li>
-   * <li>Send message data to callbackUrl</li>
-   * </p>
+   *
+   * <li>Connect to RabbitMQ callback.data Queue (callback.data)
+   * <li>Create RabbitMQConsumer for consuming queue messages
+   * <li>Get the routing key of message
+   * <li>Get callbackUrl JsonObject from cache using routingKey
+   * <li>Send message data to callbackUrl
    *
    * @param request which is a JSON object
    * @return response which is a Future object of promise of JSON type
-   *
    */
   public Future<JsonObject> connectToCallbackDataQueue(JsonObject request) {
 
@@ -263,139 +293,168 @@ public class CallbackServiceImpl implements CallbackService {
     if (request != null && !request.isEmpty()) {
       /* Set Queue Options */
       QueueOptions options =
-              new QueueOptions().setMaxInternalQueueSize(1000).setKeepMostRecent(true);
+          new QueueOptions().setMaxInternalQueueSize(1000).setKeepMostRecent(true);
       /* Get Queue Name from request */
       String queueName = request.getString(Constants.QUEUE_NAME);
 
-      client.start(startHandler -> {
-        if (startHandler.succeeded()) {
-          /* Create a stream of messages from a queue */
-          client.basicConsumer(queueName, options, rabbitMQConsumerAsyncResult -> {
-            if (rabbitMQConsumerAsyncResult.succeeded()) {
-              LOGGER.info(Constants.RABBITMQ_CONSUMER_CREATED);
-              RabbitMQConsumer mqConsumer = rabbitMQConsumerAsyncResult.result();
-              mqConsumer.handler(message -> {
-                /* Message from Queue */
-                Buffer body = message.body();
-                LOGGER.debug(Constants.MESSAGE + Constants.COLON + message.body());
-                if (body != null) {
-                  String routingKey = null;
-                  JsonObject currentBodyJsonObj = null;
+      client.start(
+          startHandler -> {
+            if (startHandler.succeeded()) {
+              /* Create a stream of messages from a queue */
+              client.basicConsumer(
+                  queueName,
+                  options,
+                  rabbitMQConsumerAsyncResult -> {
+                    if (rabbitMQConsumerAsyncResult.succeeded()) {
+                      LOGGER.info(Constants.RABBITMQ_CONSUMER_CREATED);
+                      RabbitMQConsumer mqConsumer = rabbitMQConsumerAsyncResult.result();
+                      mqConsumer.handler(
+                          message -> {
+                            /* Message from Queue */
+                            Buffer body = message.body();
+                            LOGGER.debug(Constants.MESSAGE + Constants.COLON + message.body());
+                            if (body != null) {
+                              String routingKey = null;
+                              JsonObject currentBodyJsonObj = null;
 
-                  /* Convert body message to JsonObject */
-                  try {
-                    currentBodyJsonObj = new JsonObject(body.toString());
-                  } catch (Exception e) {
-                    LOGGER.error(Constants.ERROR + Constants.COLON + e.getCause());
-                    finalResponse.put(Constants.ERROR, Constants.JSON_PARSE_EXCEPTION);
-                    promise.fail(finalResponse.toString());
-                  }
+                              /* Convert body message to JsonObject */
+                              try {
+                                currentBodyJsonObj = new JsonObject(body.toString());
+                              } catch (Exception e) {
+                                LOGGER.error(Constants.ERROR + Constants.COLON + e.getCause());
+                                finalResponse.put(Constants.ERROR, Constants.JSON_PARSE_EXCEPTION);
+                                promise.fail(finalResponse.toString());
+                              }
 
-                  /* Get routingKey and currentMessageData from Message */
-                  routingKey = message.envelope().getRoutingKey();
-                  currentBodyJsonObj = new JsonObject(message.body().toString());
+                              /* Get routingKey and currentMessageData from Message */
+                              routingKey = message.envelope().getRoutingKey();
+                              currentBodyJsonObj = new JsonObject(message.body().toString());
 
-                  JsonObject callBackJsonObj = null;
+                              JsonObject callBackJsonObj = null;
 
-                  /* Get callback Object from Cache */
-                  callBackJsonObj = pgCache.get(routingKey);
+                              /* Get callback Object from Cache */
+                              callBackJsonObj = pgCache.get(routingKey);
 
-                  LOGGER.debug(
-                          Constants.ROUTING_KEY + Constants.COLON + message.envelope().getRoutingKey());
-                  LOGGER.debug(Constants.MESSAGE + Constants.COLON + currentBodyJsonObj);
+                              LOGGER.debug(
+                                  Constants.ROUTING_KEY
+                                      + Constants.COLON
+                                      + message.envelope().getRoutingKey());
+                              LOGGER.debug(
+                                  Constants.MESSAGE + Constants.COLON + currentBodyJsonObj);
 
-                  /* Creating Request Object */
-                  if (callBackJsonObj != null && !callBackJsonObj.isEmpty()) {
-                    JsonObject requestObj = new JsonObject();
-                    requestObj.put(Constants.CALLBACK_JSON_OBJECT, callBackJsonObj);
-                    requestObj.put(Constants.CURRENT_MESSAGE_JSON_OBJECT, currentBodyJsonObj);
+                              /* Creating Request Object */
+                              if (callBackJsonObj != null && !callBackJsonObj.isEmpty()) {
+                                JsonObject requestObj = new JsonObject();
+                                requestObj.put(Constants.CALLBACK_JSON_OBJECT, callBackJsonObj);
+                                requestObj.put(
+                                    Constants.CURRENT_MESSAGE_JSON_OBJECT, currentBodyJsonObj);
 
-                    /* Send data to callback Url */
-                    Future<JsonObject> result = sendDataToCallBackSubscriber(requestObj);
-                    result.onComplete(resultHandler -> {
-                      if (resultHandler.succeeded()) {
-                        LOGGER.debug(Constants.CALLBACK_URL_RESPONSE + Constants.COLON
-                                + resultHandler.result());
-                        finalResponse.put(Constants.SUCCESS,
-                                Constants.DATA_SEND_TO_CALLBACK_URL_SUCCESS);
-                      } else {
-                        LOGGER.error(Constants.CALLBACK_URL_RESPONSE + resultHandler.cause());
-                        finalResponse.put(Constants.ERROR,
-                                Constants.DATA_SEND_TO_CALLBACK_URL_FAIL);
-                        promise.fail(finalResponse.toString());
-                      }
-                    });
-                  } else {
-                    LOGGER.error(
-                            Constants.NO_CALLBACK_URL_FOR_ROUTING_KEY + Constants.COLON + routingKey);
-                    finalResponse.put(Constants.ERROR,
-                            Constants.NO_CALLBACK_URL_FOR_ROUTING_KEY + routingKey);
-                    promise.fail(finalResponse.toString());
-                  }
-                } else {
-                  LOGGER.error(Constants.ERROR + Constants.COLON + Constants.MESSAGE_BODY_NULL);
-                  finalResponse.put(Constants.ERROR, Constants.MESSAGE_BODY_NULL);
-                  promise.fail(finalResponse.toString());
-                }
-              });
-              LOGGER.info(Constants.QUEUE_EMPTY);
-              finalResponse.put(Constants.DATABASE_QUERY_RESULT,
-                      Constants.CONNECT_TO_CALLBACK_DATA_QUEUE);
-              /**
-               * Changed promise.complete(finalResponse) to
-               * promise.tryComplete(finalResponse) to avoid
-               * java.lang.IllegalStateException: Result is already complete
-               */
-              promise.tryComplete(finalResponse);
+                                /* Send data to callback Url */
+                                Future<JsonObject> result =
+                                    sendDataToCallBackSubscriber(requestObj);
+                                result.onComplete(
+                                    resultHandler -> {
+                                      if (resultHandler.succeeded()) {
+                                        LOGGER.debug(
+                                            Constants.CALLBACK_URL_RESPONSE
+                                                + Constants.COLON
+                                                + resultHandler.result());
+                                        finalResponse.put(
+                                            Constants.SUCCESS,
+                                            Constants.DATA_SEND_TO_CALLBACK_URL_SUCCESS);
+                                      } else {
+                                        LOGGER.error(
+                                            Constants.CALLBACK_URL_RESPONSE
+                                                + resultHandler.cause());
+                                        finalResponse.put(
+                                            Constants.ERROR,
+                                            Constants.DATA_SEND_TO_CALLBACK_URL_FAIL);
+                                        promise.fail(finalResponse.toString());
+                                      }
+                                    });
+                              } else {
+                                LOGGER.error(
+                                    Constants.NO_CALLBACK_URL_FOR_ROUTING_KEY
+                                        + Constants.COLON
+                                        + routingKey);
+                                finalResponse.put(
+                                    Constants.ERROR,
+                                    Constants.NO_CALLBACK_URL_FOR_ROUTING_KEY + routingKey);
+                                promise.fail(finalResponse.toString());
+                              }
+                            } else {
+                              LOGGER.error(
+                                  Constants.ERROR + Constants.COLON + Constants.MESSAGE_BODY_NULL);
+                              finalResponse.put(Constants.ERROR, Constants.MESSAGE_BODY_NULL);
+                              promise.fail(finalResponse.toString());
+                            }
+                          });
+                      LOGGER.info(Constants.QUEUE_EMPTY);
+                      finalResponse.put(
+                          Constants.DATABASE_QUERY_RESULT,
+                          Constants.CONNECT_TO_CALLBACK_DATA_QUEUE);
+                      /**
+                       * Changed promise.complete(finalResponse) to
+                       * promise.tryComplete(finalResponse) to avoid
+                       * java.lang.IllegalStateException: Result is already complete
+                       */
+                      promise.tryComplete(finalResponse);
+                    } else {
+                      LOGGER.error(
+                          Constants.ERROR
+                              + Constants.CONSUME_QUEUE_MESSAGE_FAIL
+                              + Constants.COLON
+                              + queueName);
+                      finalResponse.put(
+                          Constants.ERROR, Constants.CONSUME_QUEUE_MESSAGE_FAIL + queueName);
+                      promise.fail(finalResponse.toString());
+                    }
+                  });
             } else {
-              LOGGER.error(Constants.ERROR + Constants.CONSUME_QUEUE_MESSAGE_FAIL + Constants.COLON
-                      + queueName);
-              finalResponse.put(Constants.ERROR, Constants.CONSUME_QUEUE_MESSAGE_FAIL + queueName);
+              LOGGER.error(Constants.QUEUE_CONNECTION_FAIL + Constants.COLON + queueName);
+              finalResponse.put(Constants.ERROR, Constants.QUEUE_CONNECTION_FAIL + queueName);
               promise.fail(finalResponse.toString());
             }
           });
-        } else {
-          LOGGER.error(Constants.QUEUE_CONNECTION_FAIL + Constants.COLON + queueName);
-          finalResponse.put(Constants.ERROR, Constants.QUEUE_CONNECTION_FAIL + queueName);
-          promise.fail(finalResponse.toString());
-        }
-      });
     }
     return promise.future();
   }
 
   @Override
-  public CallbackService sendDataToCallBackSubscriber(JsonObject request,
-                                                      Handler<AsyncResult<JsonObject>> handler) {
+  public CallbackService sendDataToCallBackSubscriber(
+      JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
       Future<JsonObject> result = sendDataToCallBackSubscriber(request);
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-        }
-        if (resultHandler.failed()) {
-          LOGGER.error("sendDataToCallBackSubscriber resultHandler failed : "
-                  + resultHandler.cause().getMessage().toString());
-          handler.handle(Future.failedFuture(resultHandler.cause().getMessage().toString()));
-        }
-      });
+      result.onComplete(
+          resultHandler -> {
+            if (resultHandler.succeeded()) {
+              handler.handle(Future.succeededFuture(resultHandler.result()));
+            }
+            if (resultHandler.failed()) {
+              LOGGER.error(
+                  "sendDataToCallBackSubscriber resultHandler failed : "
+                      + resultHandler.cause().getMessage().toString());
+              handler.handle(Future.failedFuture(resultHandler.cause().getMessage().toString()));
+            }
+          });
     }
     return this;
   }
 
   /**
    * sendDataToCallBackSubscriber Method.
+   *
    * <p>
+   *
    * <h1>This method execute tasks</h1>
-   * <li>Get callBackJsonObj and currentMessageJsonObj from request parameter</li>
-   * <li>Get callBackUrl, userName and password from callBackJsonObj</li>
-   * <li>Create instance of HttpRequest<Buffer> using webClient</li>
-   * <li>Send message data [currentMessageJsonObj] to callbackUrl</li>
-   * </p>
+   *
+   * <li>Get callBackJsonObj and currentMessageJsonObj from request parameter
+   * <li>Get callBackUrl, userName and password from callBackJsonObj
+   * <li>Create instance of HttpRequest<Buffer> using webClient
+   * <li>Send message data [currentMessageJsonObj] to callbackUrl
    *
    * @param request which is a JSON object
    * @return response which is a Future object of promise of JSON type
-   *
    */
   public Future<JsonObject> sendDataToCallBackSubscriber(JsonObject request) {
     JsonObject finalResponse = new JsonObject();
@@ -410,7 +469,7 @@ public class CallbackServiceImpl implements CallbackService {
 
       JsonObject callBackJsonObj = request.getJsonObject(Constants.CALLBACK_JSON_OBJECT);
       JsonObject currentMessageJsonObj =
-              request.getJsonObject(Constants.CURRENT_MESSAGE_JSON_OBJECT);
+          request.getJsonObject(Constants.CURRENT_MESSAGE_JSON_OBJECT);
 
       if (callBackJsonObj != null && !callBackJsonObj.isEmpty()) {
         callBackUrl = callBackJsonObj.getString(Constants.CALLBACK_URL);
@@ -422,7 +481,7 @@ public class CallbackServiceImpl implements CallbackService {
         if (callBackUrl != null && !callBackUrl.isEmpty() && !callBackUrl.isBlank()) {
           if (userName != null && password != null && !userName.isBlank() && !password.isBlank()) {
             webRequest =
-                    webClient.postAbs(callBackUrl.toString()).basicAuthentication(userName, password);
+                webClient.postAbs(callBackUrl.toString()).basicAuthentication(userName, password);
           } else {
             webRequest = webClient.postAbs(callBackUrl.toString());
           }
@@ -431,51 +490,56 @@ public class CallbackServiceImpl implements CallbackService {
             /* Set Request Header */
             webRequest.putHeader(Constants.CONTENT_TYPE, Constants.APPLICATION_JSON);
             /* Send data to callback URL */
-            webRequest.sendJsonObject(currentMessageJsonObj, handler -> {
-              if (handler.succeeded()) {
-                HttpResponse<Buffer> result = handler.result();
-                if (result != null) {
-                  int status = result.statusCode();
-                  if (status == HttpStatus.SC_OK) {
-                    /* Callback URL 200 OK Status */
-                    String responseBody = result.bodyAsString();
-                    LOGGER.debug(Constants.RESPONSE_BODY + Constants.COLON + Constants.NEW_LINE
-                            + responseBody);
-                    LOGGER.debug(Constants.STATUS + Constants.COLON + status);
-                    finalResponse.put(Constants.TYPE, status);
-                    finalResponse.put(Constants.TITLE, Constants.SUCCESS);
-                    finalResponse.put(Constants.DETAIL, Constants.CALLBACK_SUCCESS);
-                    LOGGER.debug(Constants.CALLBACK_URL_RESPONSE + finalResponse);
-                    promise.complete(finalResponse);
-                  } else if (status == HttpStatus.SC_NOT_FOUND) {
-                    /* Callback URL not found */
-                    finalResponse.put(Constants.TYPE, status);
-                    finalResponse.put(Constants.TITLE, Constants.FAILURE);
-                    finalResponse.put(Constants.DETAIL, Constants.CALLBACK_URL_NOT_FOUND);
-                    LOGGER.debug(Constants.CALLBACK_URL_RESPONSE + finalResponse);
-                    promise.fail(finalResponse.toString());
+            webRequest.sendJsonObject(
+                currentMessageJsonObj,
+                handler -> {
+                  if (handler.succeeded()) {
+                    HttpResponse<Buffer> result = handler.result();
+                    if (result != null) {
+                      int status = result.statusCode();
+                      if (status == HttpStatus.SC_OK) {
+                        /* Callback URL 200 OK Status */
+                        String responseBody = result.bodyAsString();
+                        LOGGER.debug(
+                            Constants.RESPONSE_BODY
+                                + Constants.COLON
+                                + Constants.NEW_LINE
+                                + responseBody);
+                        LOGGER.debug(Constants.STATUS + Constants.COLON + status);
+                        finalResponse.put(Constants.TYPE, status);
+                        finalResponse.put(Constants.TITLE, Constants.SUCCESS);
+                        finalResponse.put(Constants.DETAIL, Constants.CALLBACK_SUCCESS);
+                        LOGGER.debug(Constants.CALLBACK_URL_RESPONSE + finalResponse);
+                        promise.complete(finalResponse);
+                      } else if (status == HttpStatus.SC_NOT_FOUND) {
+                        /* Callback URL not found */
+                        finalResponse.put(Constants.TYPE, status);
+                        finalResponse.put(Constants.TITLE, Constants.FAILURE);
+                        finalResponse.put(Constants.DETAIL, Constants.CALLBACK_URL_NOT_FOUND);
+                        LOGGER.debug(Constants.CALLBACK_URL_RESPONSE + finalResponse);
+                        promise.fail(finalResponse.toString());
+                      } else {
+                        /* some other issue */
+                        finalResponse.put(Constants.TYPE, status);
+                        finalResponse.put(Constants.TITLE, Constants.FAILURE);
+                        finalResponse.put(Constants.DETAIL, result.statusMessage());
+                        LOGGER.debug(Constants.CALLBACK_URL_RESPONSE + finalResponse);
+                        promise.fail(finalResponse.toString());
+                      }
+                    } else {
+                      LOGGER.error(Constants.ERROR + handler.cause().getMessage());
+                      finalResponse.put(Constants.ERROR, Constants.CALLBACK_URL_RESPONSE_NULL);
+                      promise.fail(finalResponse.toString());
+                    }
                   } else {
-                    /* some other issue */
-                    finalResponse.put(Constants.TYPE, status);
-                    finalResponse.put(Constants.TITLE, Constants.FAILURE);
-                    finalResponse.put(Constants.DETAIL, result.statusMessage());
-                    LOGGER.debug(Constants.CALLBACK_URL_RESPONSE + finalResponse);
+                    LOGGER.error(Constants.ERROR + handler.cause().getMessage());
+                    finalResponse.put(Constants.ERROR, Constants.CONNECT_TO_CALLBACK_URL_FAIL);
                     promise.fail(finalResponse.toString());
                   }
-                } else {
-                  LOGGER.error(Constants.ERROR + handler.cause().getMessage());
-                  finalResponse.put(Constants.ERROR, Constants.CALLBACK_URL_RESPONSE_NULL);
-                  promise.fail(finalResponse.toString());
-                }
-              } else {
-                LOGGER.error(Constants.ERROR + handler.cause().getMessage());
-                finalResponse.put(Constants.ERROR, Constants.CONNECT_TO_CALLBACK_URL_FAIL);
-                promise.fail(finalResponse.toString());
-              }
-            });
+                });
           } else {
             LOGGER.error(
-                    Constants.ERROR + Constants.COLON + Constants.CREATE_CALLBACK_REQUEST_OBJECT_FAIL);
+                Constants.ERROR + Constants.COLON + Constants.CREATE_CALLBACK_REQUEST_OBJECT_FAIL);
             finalResponse.put(Constants.ERROR, Constants.CREATE_CALLBACK_REQUEST_OBJECT_FAIL);
             promise.fail(finalResponse.toString());
           }
@@ -515,35 +579,36 @@ public class CallbackServiceImpl implements CallbackService {
   }
 
   @Override
-  public CallbackService queryCallBackDataBase(JsonObject request,
-                                               Handler<AsyncResult<JsonObject>> handler) {
+  public CallbackService queryCallBackDataBase(
+      JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     if (request != null && !request.isEmpty()) {
       Future<JsonObject> result = queryCallBackDataBase(request);
-      result.onComplete(resultHandler -> {
-        if (resultHandler.succeeded()) {
-          handler.handle(Future.succeededFuture(resultHandler.result()));
-        }
-        if (resultHandler.failed()) {
-          LOGGER.error("queryCallBackDataBase resultHandler failed : "
-                  + resultHandler.cause());
-          handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
-        }
-      });
+      result.onComplete(
+          resultHandler -> {
+            if (resultHandler.succeeded()) {
+              handler.handle(Future.succeededFuture(resultHandler.result()));
+            }
+            if (resultHandler.failed()) {
+              LOGGER.error("queryCallBackDataBase resultHandler failed : " + resultHandler.cause());
+              handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
+            }
+          });
     }
     return this;
   }
 
   /**
    * queryCallBackDataBase Method.
+   *
    * <p>
+   *
    * <h1>This method execute tasks</h1>
-   * <li>Create instance of pgClient and Query callback database</li>
-   * <li>Update Cache for entity and callBackDataObj</li>
-   * </p>
+   *
+   * <li>Create instance of pgClient and Query callback database
+   * <li>Update Cache for entity and callBackDataObj
    *
    * @param request which is a JSON object
    * @return response which is a Future object of promise of JSON type
-   *
    */
   public Future<JsonObject> queryCallBackDataBase(JsonObject request) {
     JsonObject finalResponse = new JsonObject();
@@ -554,8 +619,13 @@ public class CallbackServiceImpl implements CallbackService {
 
     /* Set Connection Object */
     if (connectOptions == null) {
-      connectOptions = new PgConnectOptions().setPort(databasePort).setHost(databaseIP)
-              .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
+      connectOptions =
+          new PgConnectOptions()
+              .setPort(databasePort)
+              .setHost(databaseIP)
+              .setDatabase(databaseName)
+              .setUser(databaseUserName)
+              .setPassword(databasePassword);
     }
 
     /* Pool options */
@@ -564,70 +634,78 @@ public class CallbackServiceImpl implements CallbackService {
     }
 
     /* Create the client pool */
-    if(pgClient == null)
-    {
+    if (pgClient == null) {
       pgClient = PgPool.pool(vertx, connectOptions, poolOptions);
     }
     if (pgClient != null) {
       try {
         /* Execute simple query */
-        pgClient.getConnection(handler -> {
-          if (handler.succeeded()) {
-            SqlConnection pgConnection = handler.result();
-            pgConnection.preparedQuery("SELECT * FROM " + tableName).execute(action -> {
-              if (action.succeeded()) {
-                LOGGER.debug(Constants.EXECUTING_SQL_QUERY + Constants.COLON + tableName);
-                /* Rows in Table */
-                RowSet<Row> rows = action.result();
-                LOGGER.debug(Constants.FETCH_DATA_FROM_DATABASE);
-                LOGGER.debug(Constants.ROWS + Constants.COLON + rows.size());
+        pgClient.getConnection(
+            handler -> {
+              if (handler.succeeded()) {
+                SqlConnection pgConnection = handler.result();
+                pgConnection
+                    .preparedQuery("SELECT * FROM " + tableName)
+                    .execute(
+                        action -> {
+                          if (action.succeeded()) {
+                            LOGGER.debug(
+                                Constants.EXECUTING_SQL_QUERY + Constants.COLON + tableName);
+                            /* Rows in Table */
+                            RowSet<Row> rows = action.result();
+                            LOGGER.debug(Constants.FETCH_DATA_FROM_DATABASE);
+                            LOGGER.debug(Constants.ROWS + Constants.COLON + rows.size());
 
-                /* Clear Cache Data */
-                if (pgCache != null) {
-                  clearCacheData();
-                  LOGGER.debug("Cache Data Clear.....!!!");
-                }
+                            /* Clear Cache Data */
+                            if (pgCache != null) {
+                              clearCacheData();
+                              LOGGER.debug("Cache Data Clear.....!!!");
+                            }
 
-                /* Iterating Rows */
-                for (Row row : rows) {
-                  /* Getting entities, callBackUrl, userName and password from row */
-                  JsonObject callBackDataObj = new JsonObject();
-                  String callBackUrl = row.getString(1);
-                  JsonArray entities = (JsonArray) row.getValue(2);
-                  String userName = row.getString(6);
-                  String password = row.getString(7);
+                            /* Iterating Rows */
+                            for (Row row : rows) {
+                              /* Getting entities, callBackUrl, userName and password from row */
+                              JsonObject callBackDataObj = new JsonObject();
+                              String callBackUrl = row.getString(1);
+                              JsonArray entities = (JsonArray) row.getValue(2);
+                              String userName = row.getString(6);
+                              String password = row.getString(7);
 
-                  /* Iterating entities JsonArray for updating Cache */
-                  if (entities != null) {
-                    entities.forEach(entity -> {
-                      /* Creating entityData */
-                      callBackDataObj.put(Constants.CALLBACK_URL, callBackUrl);
-                      callBackDataObj.put(Constants.USER_NAME, userName);
-                      callBackDataObj.put(Constants.PASSWORD, password);
-                      /* Update Cache for each entity */
-                      if (entity != null) {
-                        updateCache(entity.toString(), callBackDataObj);
-                      }
-                    });
-                  }
-                }
-                LOGGER.debug(Constants.SUCCESS + Constants.COLON + Constants.CACHE_UPDATE_SUCCESS);
-                LOGGER.debug(Constants.CACHE_DATA + Constants.COLON + pgCache);
-                finalResponse.put(Constants.SUCCESS, Constants.CACHE_UPDATE_SUCCESS);
-                promise.complete(finalResponse);
+                              /* Iterating entities JsonArray for updating Cache */
+                              if (entities != null) {
+                                entities.forEach(
+                                    entity -> {
+                                      /* Creating entityData */
+                                      callBackDataObj.put(Constants.CALLBACK_URL, callBackUrl);
+                                      callBackDataObj.put(Constants.USER_NAME, userName);
+                                      callBackDataObj.put(Constants.PASSWORD, password);
+                                      /* Update Cache for each entity */
+                                      if (entity != null) {
+                                        updateCache(entity.toString(), callBackDataObj);
+                                      }
+                                    });
+                              }
+                            }
+                            LOGGER.debug(
+                                Constants.SUCCESS
+                                    + Constants.COLON
+                                    + Constants.CACHE_UPDATE_SUCCESS);
+                            LOGGER.debug(Constants.CACHE_DATA + Constants.COLON + pgCache);
+                            finalResponse.put(Constants.SUCCESS, Constants.CACHE_UPDATE_SUCCESS);
+                            promise.complete(finalResponse);
+                          } else {
+                            LOGGER.error(Constants.ERROR + action.cause());
+                            LOGGER.error("", action.cause());
+                            finalResponse.put(Constants.ERROR, Constants.EXECUTE_QUERY_FAIL);
+                            promise.fail(finalResponse.toString());
+                          }
+                        });
               } else {
-                LOGGER.error(Constants.ERROR + action.cause());
-                LOGGER.error("", action.cause());
-                finalResponse.put(Constants.ERROR, Constants.EXECUTE_QUERY_FAIL);
+                LOGGER.error(Constants.CONNECT_DATABASE_FAIL + handler.cause().getMessage());
+                finalResponse.put(Constants.ERROR, Constants.CONNECT_DATABASE_FAIL);
                 promise.fail(finalResponse.toString());
               }
             });
-          } else {
-            LOGGER.error(Constants.CONNECT_DATABASE_FAIL + handler.cause().getMessage());
-            finalResponse.put(Constants.ERROR, Constants.CONNECT_DATABASE_FAIL);
-            promise.fail(finalResponse.toString());
-          }
-        });
 
       } catch (Exception e) {
         LOGGER.error(Constants.CONNECT_DATABASE_FAIL, e.getCause());

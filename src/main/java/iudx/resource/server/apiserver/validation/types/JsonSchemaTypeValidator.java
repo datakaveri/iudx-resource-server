@@ -29,10 +29,12 @@ public final class JsonSchemaTypeValidator implements Validator {
       schema.validateSync(value);
     } catch (ValidationException e) {
       LOGGER.error("Validation error :" + e.getMessage());
-      throw new DxRuntimeException(failureCode(), INVALID_PAYLOAD_FORMAT_URN, failureMessage(value.toString()));
+      throw new DxRuntimeException(
+          failureCode(), INVALID_PAYLOAD_FORMAT_URN, failureMessage(value.toString()));
     } catch (NoSyncValidationException e) {
       LOGGER.error("Validation error :" + e.getMessage());
-      throw new DxRuntimeException(failureCode(), INVALID_PAYLOAD_FORMAT_URN, failureMessage(value.toString()));
+      throw new DxRuntimeException(
+          failureCode(), INVALID_PAYLOAD_FORMAT_URN, failureMessage(value.toString()));
     }
     return true;
   }
@@ -46,5 +48,4 @@ public final class JsonSchemaTypeValidator implements Validator {
   public String failureMessage() {
     return INVALID_PAYLOAD_FORMAT_URN.getMessage();
   }
-
 }

@@ -62,7 +62,8 @@ public class AsyncVerticle extends AbstractVerticle {
     client = new ElasticClient(databaseIP, databasePort, user, password, filePath, pgService);
     fileOpsHelper = new S3FileOpsHelper(clientRegion, bucketName);
     binder = new ServiceBinder(vertx);
-    asyncService = new AsyncServiceImpl(vertx,client, pgService, fileOpsHelper, timeLimit, filePath);
+    asyncService =
+        new AsyncServiceImpl(vertx, client, pgService, fileOpsHelper, timeLimit, filePath);
 
     consumer = binder.setAddress(ASYNC_SERVICE_ADDRESS).register(AsyncService.class, asyncService);
   }

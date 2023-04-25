@@ -34,7 +34,4 @@ public class TemporalRelation {
   public String toString() {
     return "TemporalRelation [endTime=" + endTime + ", temprel=" + temprel + ", time=" + time + "]";
   }
-
-
-
 }

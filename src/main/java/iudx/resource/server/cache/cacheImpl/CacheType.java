@@ -10,6 +10,4 @@ public enum CacheType {
   CacheType(String name) {
     this.cacheName = name;
   }
-
-
 }

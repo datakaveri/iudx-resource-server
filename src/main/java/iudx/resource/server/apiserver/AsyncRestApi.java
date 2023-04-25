@@ -89,19 +89,19 @@ public class AsyncRestApi {
 
     ValidationHandler asyncSearchValidation = new ValidationHandler(vertx, ASYNC_SEARCH);
     router
-        .get(SEARCH)
-          .handler(asyncSearchValidation)
-          .handler(AuthHandler.create(vertx, api))
-          .handler(this::handleAsyncSearchRequest)
-          .failureHandler(validationsFailureHandler);
+            .get(SEARCH)
+            .handler(asyncSearchValidation)
+            .handler(AuthHandler.create(vertx, api))
+            .handler(this::handleAsyncSearchRequest)
+            .failureHandler(validationsFailureHandler);
 
     ValidationHandler asyncStatusValidation = new ValidationHandler(vertx, ASYNC_STATUS);
     router
-        .get(STATUS)
-          .handler(asyncStatusValidation)
-          .handler(AuthHandler.create(vertx, api))
-          .handler(this::handleAsyncStatusRequest)
-          .failureHandler(validationsFailureHandler);
+            .get(STATUS)
+            .handler(asyncStatusValidation)
+            .handler(AuthHandler.create(vertx, api))
+            .handler(this::handleAsyncStatusRequest)
+            .failureHandler(validationsFailureHandler);
 
     return this.router;
   }
@@ -116,14 +116,14 @@ public class AsyncRestApi {
 
     if (containsTemporalParams(params) && !isValidTemporalQuery(params, routingContext)) {
       routingContext
-          .fail(400,
-              new DxRuntimeException(400, ResponseUrn.BAD_REQUEST_URN, "Invalid temporal query"));
+              .fail(400,
+                      new DxRuntimeException(400, ResponseUrn.BAD_REQUEST_URN, "Invalid temporal query"));
       return;
     }
 
     if (containsGeoParams(params) && !isValidGeoQuery(params, routingContext)) {
       routingContext
-          .fail(400, new DxRuntimeException(400, ResponseUrn.BAD_REQUEST_URN, "Invalid geo query"));
+              .fail(400, new DxRuntimeException(400, ResponseUrn.BAD_REQUEST_URN, "Invalid geo query"));
       return;
     }
 
@@ -134,9 +134,11 @@ public class AsyncRestApi {
         QueryMapper queryMapper = new QueryMapper(routingContext);
         JsonObject json = queryMapper.toJson(ngsildquery, true, true);
         Future<List<String>> filtersFuture =
-            catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
+                catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
         json.put(JSON_INSTANCEID, instanceID);
         LOGGER.debug("Info: IUDX json query;" + json);
+        json.put("someKey", Math.random());
+
         JsonObject requestBody = new JsonObject();
         requestBody.put("ids", json.getJsonArray("id"));
         filtersFuture.onComplete(filtersHandler -> {
@@ -150,7 +152,7 @@ public class AsyncRestApi {
       } else if (validationHandler.failed()) {
         LOGGER.error("Fail: Bad request;");
         handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN,
-            validationHandler.cause().getMessage());
+                validationHandler.cause().getMessage());
       }
     });
   }
@@ -159,24 +161,24 @@ public class AsyncRestApi {
     String sub = ((JsonObject) routingContext.data().get("authInfo")).getString(USER_ID);
 
     String requestId =
-        Hashing.sha256().hashString(json.toString(), StandardCharsets.UTF_8).toString();
+            Hashing.sha256().hashString(json.toString(), StandardCharsets.UTF_8).toString();
 
     String searchId = UUID.randomUUID().toString();
 
     StringBuilder insert_query = new StringBuilder(INSERT_S3_PENDING_SQL
-        .replace("$1", UUID.randomUUID().toString())
-          .replace("$2", searchId)
-          .replace("$3", requestId)
-          .replace("$4", sub)
-          .replace("$5", QueryProgress.SUBMITTED.toString())
-          .replace("$6", String.valueOf(0.0))
-          .replace("$7", json.toString()));
+            .replace("$1", UUID.randomUUID().toString())
+            .replace("$2", searchId)
+            .replace("$3", requestId)
+            .replace("$4", sub)
+            .replace("$5", QueryProgress.SUBMITTED.toString())
+            .replace("$6", String.valueOf(0.0))
+            .replace("$7", json.toString()));
 
     JsonObject rmqQueryMessage = new JsonObject()
-        .put("searchId", searchId)
-          .put("requestId", requestId)
-          .put("user", sub)
-          .put("query", json);
+            .put("searchId", searchId)
+            .put("requestId", requestId)
+            .put("user", sub)
+            .put("query", json);
 
     postgresService.executeQuery(insert_query.toString(), pgInsertHandler -> {
       if (pgInsertHandler.succeeded()) {
@@ -190,23 +192,23 @@ public class AsyncRestApi {
             response.put("result", resultArray);
             if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
               handleSuccessResponse(routingContext.response(), ResponseType.Created.getCode(),
-                  response.toString());
+                      response.toString());
             }
             // Encryption
             else {
               Future<JsonObject> future =
-                  encryption(routingContext, response.getJsonArray("result").toString());
+                      encryption(routingContext, response.getJsonArray("result").toString());
               future.onComplete(encryptionHandler -> {
                 if (encryptionHandler.succeeded()) {
                   JsonObject result = encryptionHandler.result();
                   response.put("result", result);
                   handleSuccessResponse(routingContext.response(), ResponseType.Created.getCode(),
-                      response.encode());
+                          response.encode());
                 } else {
                   LOGGER
-                      .error("Encryption not completed: " + encryptionHandler.cause().getMessage());
+                          .error("Encryption not completed: " + encryptionHandler.cause().getMessage());
                   processBackendResponse(routingContext.response(),
-                      encryptionHandler.cause().getMessage());
+                          encryptionHandler.cause().getMessage());
                 }
               });
             }
@@ -240,7 +242,7 @@ public class AsyncRestApi {
         // Encryption
         else {
           Future<JsonObject> future =
-              encryption(routingContext, handler.result().getJsonArray("results").toString());
+                  encryption(routingContext, handler.result().getJsonArray("results").toString());
           future.onComplete(encryptionHandler -> {
             if (encryptionHandler.succeeded()) {
               JsonObject result = encryptionHandler.result();
@@ -261,7 +263,7 @@ public class AsyncRestApi {
 
   /**
    * Encrypts the result of API response.
-   * 
+   *
    * @param context Routing Context
    * @param result value of result param in the API response
    * @return encrypted data
@@ -272,7 +274,7 @@ public class AsyncRestApi {
 
     /* get the urlbase64 public key from the header and send it for encryption */
     Future<JsonObject> future =
-        encryptionService.encrypt(result, new JsonObject().put(ENCODED_KEY, URLbase64PublicKey));
+            encryptionService.encrypt(result, new JsonObject().put(ENCODED_KEY, URLbase64PublicKey));
     future.onComplete(handler -> {
       if (handler.succeeded()) {
         /* get encoded cipher text */
@@ -309,9 +311,9 @@ public class AsyncRestApi {
       }
       // return urn in body
       response
-          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(type)
-            .end(generateResponse(status, urn, detail).toString());
+              .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+              .setStatusCode(type)
+              .end(generateResponse(status, urn, detail).toString());
     } catch (DecodeException ex) {
       LOGGER.error("ERROR : Expecting Json from backend service [ jsonFormattingException ]");
       handleResponse(response, BAD_REQUEST, BACKING_SERVICE_FORMAT_URN);
@@ -319,23 +321,23 @@ public class AsyncRestApi {
   }
 
   private Optional<MultiMap> getQueryParams(RoutingContext routingContext,
-      HttpServerResponse response) {
+                                            HttpServerResponse response) {
     MultiMap queryParams = null;
     try {
       queryParams = MultiMap.caseInsensitiveMultiMap();
       // Internally + sign is dropped and treated as space, replacing + with %2B do the trick
       String uri = routingContext.request().uri().replaceAll("\\+", "%2B");
       Map<String, List<String>> decodedParams =
-          new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET, true, 1024, true).parameters();
+              new QueryStringDecoder(uri, HttpConstants.DEFAULT_CHARSET, true, 1024, true).parameters();
       for (Map.Entry<String, List<String>> entry : decodedParams.entrySet()) {
         LOGGER.debug("Info: param :" + entry.getKey() + " value : " + entry.getValue());
         queryParams.add(entry.getKey(), entry.getValue());
       }
     } catch (IllegalArgumentException ex) {
       response
-          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-            .setStatusCode(BAD_REQUEST.getValue())
-            .end(generateResponse(BAD_REQUEST, INVALID_PARAM_URN).toString());
+              .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+              .setStatusCode(BAD_REQUEST.getValue())
+              .end(generateResponse(BAD_REQUEST, INVALID_PARAM_URN).toString());
     }
     return Optional.of(queryParams);
   }
@@ -345,31 +347,31 @@ public class AsyncRestApi {
   }
 
   private void handleResponse(HttpServerResponse response, HttpStatusCode statusCode,
-      ResponseUrn urn, String message) {
+                              ResponseUrn urn, String message) {
     response
-        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-          .setStatusCode(statusCode.getValue())
-          .end(generateResponse(statusCode, urn, message).toString());
+            .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+            .setStatusCode(statusCode.getValue())
+            .end(generateResponse(statusCode, urn, message).toString());
   }
 
   private boolean isValidTemporalQuery(MultiMap params, RoutingContext context) {
     return params.contains(JSON_TIMEREL) && params.contains(JSON_TIME)
-        && params.contains(JSON_ENDTIME);
+            && params.contains(JSON_ENDTIME);
   }
 
   private boolean containsTemporalParams(MultiMap params) {
     return params.contains(JSON_TIMEREL) || params.contains(JSON_TIME)
-        || params.contains(JSON_ENDTIME);
+            || params.contains(JSON_ENDTIME);
   }
 
 
   private boolean isValidGeoQuery(MultiMap params, RoutingContext context) {
     return params.contains(JSON_GEOPROPERTY) && params.contains(JSON_GEOREL)
-        && params.contains(JSON_GEOMETRY) && params.contains(JSON_COORDINATES);
+            && params.contains(JSON_GEOMETRY) && params.contains(JSON_COORDINATES);
   }
 
   private boolean containsGeoParams(MultiMap params) {
     return params.contains(JSON_GEOPROPERTY) || params.contains(JSON_GEOREL)
-        || params.contains(JSON_GEOMETRY) || params.contains(JSON_COORDINATES);
+            || params.contains(JSON_GEOMETRY) || params.contains(JSON_COORDINATES);
   }
 }

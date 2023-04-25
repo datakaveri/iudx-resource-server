@@ -26,8 +26,7 @@ public class AsyncFileScrollProgressListener implements ProgressListener {
     progressQueue.add(0.1);
     this.searchId = searchId;
     this.postgresService = service;
-    if (executionCounter == null)
-    {
+    if (executionCounter == null) {
       executionCounter = new ExecutionCounter();
     }
     executor = Executors.newSingleThreadExecutor();
@@ -36,13 +35,11 @@ public class AsyncFileScrollProgressListener implements ProgressListener {
   @Override
   public void updateProgress(double progressCount) {
     progressQueue.add(progressCount);
-    if (!executionCounter.isExecuting)
-      updateProgress(executionCounter);
+    if (!executionCounter.isExecuting) updateProgress(executionCounter);
     else {
       LOGGER.debug("Queue top: " + progressQueue.peek());
     }
   }
-
 
   private void updateProgress(ExecutionCounter executionCounter) {
     if (!executionCounter.isExecuting && !progressQueue.isEmpty() && progressQueue.peek() <= 1.0d) {
@@ -51,48 +48,53 @@ public class AsyncFileScrollProgressListener implements ProgressListener {
       LOGGER.debug("queue cleared");
       executionCounter.isExecuting = true;
 
-      executor.execute(() -> {
-        updateProgress(progress, executionCounter)
-                .onComplete(handler -> {
-                  try {
-                    // sleep for 5s to avoid request flooding in PG or pool connection exhaustion.
-                    Thread.sleep(5000);
-                  } catch (InterruptedException e) {
-                    e.printStackTrace();
-                  }
-                  executionCounter.isExecuting = false;
-                });
-      });
+      executor.execute(
+          () -> {
+            updateProgress(progress, executionCounter)
+                .onComplete(
+                    handler -> {
+                      try {
+                        // sleep for 5s to avoid request flooding in PG or pool connection
+                        // exhaustion.
+                        Thread.sleep(5000);
+                      } catch (InterruptedException e) {
+                        e.printStackTrace();
+                      }
+                      executionCounter.isExecuting = false;
+                    });
+          });
     }
   }
 
   private Future<Void> updateProgress(double progress, ExecutionCounter executionCounter) {
     Promise<Void> promise = Promise.promise();
-    StringBuilder query = new StringBuilder(UPDATE_S3_PROGRESS_SQL
-            .replace("$1", String.valueOf(progress * 100.0))
-            .replace("$2", searchId));
+    StringBuilder query =
+        new StringBuilder(
+            UPDATE_S3_PROGRESS_SQL
+                .replace("$1", String.valueOf(progress * 100.0))
+                .replace("$2", searchId));
     LOGGER.debug("updating progress : " + query.toString());
-    postgresService
-            .executeQuery(query.toString(), pgHandler -> {
-              LOGGER.debug(pgHandler);
-              if (pgHandler.succeeded()) {
-                LOGGER.debug("updated success for progress :" + progress);
-                LOGGER.debug("execution status : " + executionCounter.isExecuting);
-                promise.complete();
-              } else {
-                LOGGER.error(pgHandler);
-                executionCounter.isExecuting = false;
-                promise.fail(pgHandler.cause());
-              }
-            });
+    postgresService.executeQuery(
+        query.toString(),
+        pgHandler -> {
+          LOGGER.debug(pgHandler);
+          if (pgHandler.succeeded()) {
+            LOGGER.debug("updated success for progress :" + progress);
+            LOGGER.debug("execution status : " + executionCounter.isExecuting);
+            promise.complete();
+          } else {
+            LOGGER.error(pgHandler);
+            executionCounter.isExecuting = false;
+            promise.fail(pgHandler.cause());
+          }
+        });
     return promise.future();
   }
 
   @Override
   public void finish() {
     progressQueue.add(1.0);
-    if (executor != null)
-      executor.shutdownNow();
+    if (executor != null) executor.shutdownNow();
   }
 
   class ExecutionCounter {
@@ -105,9 +107,5 @@ public class AsyncFileScrollProgressListener implements ProgressListener {
     synchronized void updateCounter(boolean value) {
       this.isExecuting = value;
     }
-
   }
-
-
-
 }

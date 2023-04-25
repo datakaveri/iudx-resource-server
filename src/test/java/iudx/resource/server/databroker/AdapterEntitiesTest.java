@@ -1,6 +1,5 @@
 package iudx.resource.server.databroker;
 
-
 import static iudx.resource.server.apiserver.util.Constants.JSON_PROVIDER;
 import static iudx.resource.server.databroker.util.Constants.APIKEY;
 import static iudx.resource.server.databroker.util.Constants.PORT;
@@ -32,26 +31,27 @@ import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.common.VHosts;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.databroker.util.Constants;
+
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AdapterEntitiesTest {
 
   static DataBrokerService databroker;
-  static private Properties properties;
-  static private InputStream inputstream;
-  static private String dataBrokerIP;
-  static private int dataBrokerPort;
-  static private int dataBrokerManagementPort;
-  static private String dataBrokerVhost;
-  static private String dataBrokerUserName;
-  static private String dataBrokerPassword;
-  static private int connectionTimeout;
-  static private int requestedHeartbeat;
-  static private int handshakeTimeout;
-  static private int requestedChannelMax;
-  static private int networkRecoveryInterval;
-  static private WebClient webClient;
-  static private WebClientOptions webConfig;
+  private static Properties properties;
+  private static InputStream inputstream;
+  private static String dataBrokerIP;
+  private static int dataBrokerPort;
+  private static int dataBrokerManagementPort;
+  private static String dataBrokerVhost;
+  private static String dataBrokerUserName;
+  private static String dataBrokerPassword;
+  private static int connectionTimeout;
+  private static int requestedHeartbeat;
+  private static int handshakeTimeout;
+  private static int requestedChannelMax;
+  private static int networkRecoveryInterval;
+  private static WebClient webClient;
+  private static WebClientOptions webConfig;
   private static RabbitMQOptions config;
   private static RabbitMQClient client;
   private static String exchangeName;
@@ -90,12 +90,9 @@ public class AdapterEntitiesTest {
 
     try {
 
-
-
       dataBrokerIP = brokerConfig.getString("dataBrokerIP");
       dataBrokerPort = brokerConfig.getInteger("dataBrokerPort");
-      dataBrokerManagementPort =
-              brokerConfig.getInteger("dataBrokerManagementPort");
+      dataBrokerManagementPort = brokerConfig.getInteger("dataBrokerManagementPort");
       dataBrokerVhost = brokerConfig.getString("dataBrokerVhost");
       dataBrokerUserName = brokerConfig.getString("dataBrokerUserName");
       dataBrokerPassword = brokerConfig.getString("dataBrokerPassword");
@@ -130,14 +127,12 @@ public class AdapterEntitiesTest {
     config.setNetworkRecoveryInterval(networkRecoveryInterval);
     config.setAutomaticRecoveryEnabled(true);
 
-
     webConfig = new WebClientOptions();
     webConfig.setKeepAlive(true);
     webConfig.setConnectTimeout(86400000);
     webConfig.setDefaultHost(dataBrokerIP);
     webConfig.setDefaultPort(dataBrokerManagementPort);
     webConfig.setKeepAliveTimeout(86400000);
-
 
     /* Create a RabbitMQ Clinet with the configuration and vertx cluster instance. */
     client = RabbitMQClient.create(vertx, config);
@@ -147,8 +142,13 @@ public class AdapterEntitiesTest {
 
     /* Set Connection Object */
     if (connectOptions == null) {
-      connectOptions = new PgConnectOptions().setPort(databasePort).setHost(databaseIP)
-              .setDatabase(databaseName).setUser(databaseUserName).setPassword(databasePassword);
+      connectOptions =
+          new PgConnectOptions()
+              .setPort(databasePort)
+              .setHost(databaseIP)
+              .setDatabase(databaseName)
+              .setUser(databaseUserName)
+              .setPassword(databasePassword);
     }
 
     /* Pool options */
@@ -175,7 +175,8 @@ public class AdapterEntitiesTest {
 
     rabbitMQWebClient = new RabbitWebClient(vertx, webConfig, propObj);
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
-    rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient, pgClient, brokerConfig);
+    rabbitMQStreamingClient =
+        new RabbitClient(vertx, config, rabbitMQWebClient, pgClient, brokerConfig);
     databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, brokerConfig);
 
     resourceGroup = brokerConfig.getString("testResourceGroup");
@@ -183,15 +184,19 @@ public class AdapterEntitiesTest {
     consumer = UUID.randomUUID().toString();
     provider = UUID.randomUUID().toString();
     testContext.completeNow();
-
   }
 
   @Test
-  @DisplayName("Testing registerAdaptor method with a new adaptor (adaptor-1) registration (with new user)")
+  @DisplayName(
+      "Testing registerAdaptor method with a new adaptor (adaptor-1) registration (with new user)")
   @Order(1)
   void successRegisterAdaptor(VertxTestContext testContext) {
     JsonObject request = new JsonObject();
-    request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information_1"));
+    request.put(
+        Constants.ENTITIES,
+        new JsonArray()
+            .add(
+                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information_1"));
     request.put(Constants.USER_ID, consumer);
     request.put(JSON_PROVIDER, provider);
 
@@ -201,61 +206,69 @@ public class AdapterEntitiesTest {
     expected.put(Constants.ID, id);
     expected.put(Constants.VHOST, Constants.VHOST_IUDX);
 
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost = VHosts.IUDX_PROD.name();
 
-    databroker.registerAdaptor(request,vhost, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        LOGGER.debug("inside  successRegisterAdaptor - RegisteAdaptor response is : " + response);
-        assertTrue(response.containsKey(USER_NAME));
-        assertTrue(response.containsKey(APIKEY));
-        assertTrue(response.containsKey(URL));
-        assertTrue(response.containsKey(PORT));
-        assertTrue(response.containsKey(VHOST));
+    databroker.registerAdaptor(
+        request,
+        vhost,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result();
+            LOGGER.debug(
+                "inside  successRegisterAdaptor - RegisteAdaptor response is : " + response);
+            assertTrue(response.containsKey(USER_NAME));
+            assertTrue(response.containsKey(APIKEY));
+            assertTrue(response.containsKey(URL));
+            assertTrue(response.containsKey(PORT));
+            assertTrue(response.containsKey(VHOST));
 
-        id = response.getString(Constants.ID);
-        userName2Delete = response.getString(USER_NAME);
-        // assertEquals(expected, response);
-      }
-      testContext.completeNow();
-    });
+            id = response.getString(Constants.ID);
+            userName2Delete = response.getString(USER_NAME);
+            // assertEquals(expected, response);
+          }
+          testContext.completeNow();
+        });
     testContext.completeNow();
   }
 
   @Test
-  @DisplayName("Testing getExchange method for exchange created after new adaptor (adaptor-1) registration")
+  @DisplayName(
+      "Testing getExchange method for exchange created after new adaptor (adaptor-1) registration")
   @Order(2)
   void successGetExchange(VertxTestContext testContext) throws InterruptedException {
     JsonObject request = new JsonObject();
-//    request.put(Constants.ID, id);
-    request.put(Constants.ID,"id");
+    //    request.put(Constants.ID, id);
+    request.put(Constants.ID, "id");
     JsonObject expected = new JsonObject();
     expected.put(Constants.TYPE, 200);
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, Constants.EXCHANGE_FOUND);
     LOGGER.debug(id);
-    String vhost=VHosts.IUDX_PROD.name();
-    databroker.getExchange(request,vhost, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        LOGGER.debug("inside  successGetExchange - getExchange response : " + response);
-        assertEquals(expected, response);
-      }
-      testContext.completeNow();
-    });
+    String vhost = VHosts.IUDX_PROD.name();
+    databroker.getExchange(
+        request,
+        vhost,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result();
+            LOGGER.debug("inside  successGetExchange - getExchange response : " + response);
+            assertEquals(expected, response);
+          }
+          testContext.completeNow();
+        });
     testContext.completeNow();
-
   }
 
   @Test
-  @DisplayName("Testing listAdaptor method for bindings done after new adaptor (adaptor-1) registration")
+  @DisplayName(
+      "Testing listAdaptor method for bindings done after new adaptor (adaptor-1) registration")
   @Order(3)
   void successListAdaptor(VertxTestContext testContext) throws InterruptedException {
     Thread.sleep(1000);
     JsonObject request = new JsonObject();
-//    request.put(Constants.ID, id);
-    request.put(Constants.ID,"id");
-    request.put("exchangeName", id);// TODO : discuss conflict between impl and test code
+    //    request.put(Constants.ID, id);
+    request.put(Constants.ID, "id");
+    request.put("exchangeName", id); // TODO : discuss conflict between impl and test code
     LOGGER.debug("request: " + request);
     JsonObject expected = new JsonObject();
     JsonArray adaptorLogs_entities = new JsonArray();
@@ -268,17 +281,19 @@ public class AdapterEntitiesTest {
     expected.put(Constants.QUEUE_DATA, database_entities);
     expected.put(Constants.REDIS_LATEST, database_entities);
 
-    String vhost=VHosts.IUDX_PROD.name();
-    databroker.listAdaptor(request,vhost, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        LOGGER.debug("inside test - listAdaptor response is : " + response);
-        assertEquals(expected, response);
-      }
-      testContext.completeNow();
-    });
+    String vhost = VHosts.IUDX_PROD.name();
+    databroker.listAdaptor(
+        request,
+        vhost,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result();
+            LOGGER.debug("inside test - listAdaptor response is : " + response);
+            assertEquals(expected, response);
+          }
+          testContext.completeNow();
+        });
     testContext.completeNow();
-
   }
 
   @Test
@@ -295,30 +310,38 @@ public class AdapterEntitiesTest {
     expected.put(Constants.ROUTING_KEY, id + ".heartbeat");
     expected.put(Constants.DETAIL, "routingKey matched");
 
-    String vhost=VHosts.IUDX_PROD.name();
-    databroker.publishHeartbeat(request,vhost, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        LOGGER.debug("inside test - publishHeartbeat response is : " + response);
-        assertEquals(expected, response);
-      }
-      testContext.completeNow();
-    });
+    String vhost = VHosts.IUDX_PROD.name();
+    databroker.publishHeartbeat(
+        request,
+        vhost,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result();
+            LOGGER.debug("inside test - publishHeartbeat response is : " + response);
+            assertEquals(expected, response);
+          }
+          testContext.completeNow();
+        });
     testContext.completeNow();
-
   }
 
   @Test
-  @DisplayName("Testing registerAdaptor method for another adaptor (adaptor-2) registration (with an existing user)")
+  @DisplayName(
+      "Testing registerAdaptor method for another adaptor (adaptor-2) registration (with an"
+          + " existing user)")
   @Order(5)
   void successRegisterAdaptorwithExistingUser(VertxTestContext testContext)
-          throws InterruptedException {
+      throws InterruptedException {
     anotherProvider = Constants.USER_NAME_TEST_EXAMPLE;
 
     JsonObject request = new JsonObject();
-//    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
-//    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
-    request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information1"));
+    //    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
+    //    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    request.put(
+        Constants.ENTITIES,
+        new JsonArray()
+            .add(
+                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information1"));
     request.put(Constants.USER_ID, consumer);
     request.put(JSON_PROVIDER, anotherProvider);
 
@@ -327,60 +350,68 @@ public class AdapterEntitiesTest {
     expected.put(Constants.APIKEY, Constants.APIKEY_TEST_EXAMPLE);
     expected.put(Constants.ID, anotherid);
     expected.put(Constants.VHOST, Constants.VHOST_IUDX);
-    String vhost=VHosts.IUDX_PROD.name();
-    databroker.registerAdaptor(request,vhost, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        anotherid = response.getString(Constants.ID);
-        LOGGER.debug(
+    String vhost = VHosts.IUDX_PROD.name();
+    databroker.registerAdaptor(
+        request,
+        vhost,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result();
+            anotherid = response.getString(Constants.ID);
+            LOGGER.debug(
                 "inside  successRegisterAdaptor with existing user - RegisteAdaptor response is : "
-                        + response);
-        assertTrue(response.containsKey(USER_NAME));
-        assertTrue(response.containsKey(APIKEY));
-        assertTrue(response.containsKey(URL));
-        assertTrue(response.containsKey(PORT));
-        assertTrue(response.containsKey(VHOST));
-      }
-      testContext.completeNow();
-    });
+                    + response);
+            assertTrue(response.containsKey(USER_NAME));
+            assertTrue(response.containsKey(APIKEY));
+            assertTrue(response.containsKey(URL));
+            assertTrue(response.containsKey(PORT));
+            assertTrue(response.containsKey(VHOST));
+          }
+          testContext.completeNow();
+        });
     testContext.completeNow();
-
   }
 
   @Test
-  @DisplayName("Testing getExchange method for exchanges created after another adaptor (adaptor-2) registration")
+  @DisplayName(
+      "Testing getExchange method for exchanges created after another adaptor (adaptor-2)"
+          + " registration")
   @Order(6)
   void successGetExchangeExistingUser(VertxTestContext testContext) throws InterruptedException {
     JsonObject request = new JsonObject();
-//    LOGGER.debug("Exchange name :"+anotherid);
-//    request.put(Constants.ID, anotherid);
-    request.put(Constants.ID,"id");
+    //    LOGGER.debug("Exchange name :"+anotherid);
+    //    request.put(Constants.ID, anotherid);
+    request.put(Constants.ID, "id");
     JsonObject expected = new JsonObject();
     expected.put(Constants.TYPE, 200);
     expected.put(Constants.TITLE, Constants.SUCCESS);
     expected.put(Constants.DETAIL, Constants.EXCHANGE_FOUND);
-    String vhost=VHosts.IUDX_PROD.name();
-    databroker.getExchange(request,vhost, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        LOGGER.debug("inside  successGetExchange - getExchange response : " + response);
-        assertEquals(expected, response);
-      }
-      testContext.completeNow();
-    });
+    String vhost = VHosts.IUDX_PROD.name();
+    databroker.getExchange(
+        request,
+        vhost,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result();
+            LOGGER.debug("inside  successGetExchange - getExchange response : " + response);
+            assertEquals(expected, response);
+          }
+          testContext.completeNow();
+        });
     testContext.completeNow();
-
   }
 
   @Test
-  @DisplayName("Testing listAdaptor method for bindings done after another adaptor (adaptor-2) registration")
+  @DisplayName(
+      "Testing listAdaptor method for bindings done after another adaptor (adaptor-2) registration")
   @Order(7)
   void successListAdaptorExistingUser(VertxTestContext testContext) throws InterruptedException {
     Thread.sleep(1000);
     JsonObject request = new JsonObject();
-//    request.put(Constants.ID, anotherid);
-    request.put(Constants.ID,"id");
-//    request.put("exchangeName", anotherid);// TODO : discuss conflict between impl and test code
+    //    request.put(Constants.ID, anotherid);
+    request.put(Constants.ID, "id");
+    //    request.put("exchangeName", anotherid);// TODO : discuss conflict between impl and test
+    // code
     request.put("exchangeName", "id");
 
     JsonObject expected = new JsonObject();
@@ -393,46 +424,57 @@ public class AdapterEntitiesTest {
     expected.put(Constants.QUEUE_ADAPTOR_LOGS, adaptorLogs_entities);
     expected.put(Constants.QUEUE_DATA, database_entities);
     expected.put(Constants.REDIS_LATEST, database_entities);
-    String vhost=VHosts.IUDX_PROD.name();
-    databroker.listAdaptor(request,vhost, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        LOGGER.debug("inside test - listAdaptor response is : " + response);
-        assertEquals(expected, response);
-      }
-      testContext.completeNow();
-    });
+    String vhost = VHosts.IUDX_PROD.name();
+    databroker.listAdaptor(
+        request,
+        vhost,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result();
+            LOGGER.debug("inside test - listAdaptor response is : " + response);
+            assertEquals(expected, response);
+          }
+          testContext.completeNow();
+        });
     testContext.completeNow();
-
   }
 
   @Test
-  @DisplayName("Testing registerAdaptor method for registering an adaptor (adaptor-2) which was already registered")
+  @DisplayName(
+      "Testing registerAdaptor method for registering an adaptor (adaptor-2) which was already"
+          + " registered")
   @Order(8)
   void failureRegisterAdaptorwithExistingUser(VertxTestContext testContext)
-          throws InterruptedException {
+      throws InterruptedException {
     Thread.sleep(1000);
     JsonObject request = new JsonObject();
-//    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
-//    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
-    request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information"));
+    //    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup);
+    //    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    request.put(
+        Constants.ENTITIES,
+        new JsonArray()
+            .add(
+                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information"));
     request.put(Constants.USER_ID, consumer);
     request.put(JSON_PROVIDER, provider);
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.DETAILS, Constants.EXCHANGE_EXISTS);
-    String vhost=VHosts.IUDX_PROD.name();
-    databroker.registerAdaptor(request,vhost, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        LOGGER.debug("inside  failureRegisterAdaptorwithExistingUser - RegisteAdaptor response is : "
-                + response);
-        assertEquals(expected, response);
-      }
-      testContext.completeNow();
-    });
+    String vhost = VHosts.IUDX_PROD.name();
+    databroker.registerAdaptor(
+        request,
+        vhost,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result();
+            LOGGER.debug(
+                "inside  failureRegisterAdaptorwithExistingUser - RegisteAdaptor response is : "
+                    + response);
+            assertEquals(expected, response);
+          }
+          testContext.completeNow();
+        });
     testContext.completeNow();
-
   }
 
   @Test
@@ -446,23 +488,27 @@ public class AdapterEntitiesTest {
     expected.put(Constants.DETAIL, "adaptor deleted");
 
     JsonObject request = new JsonObject();
-//    request.put(Constants.ID, id);
-    request.put(Constants.ID,"id");
-    String vhost=VHosts.IUDX_PROD.name();
-    databroker.deleteAdaptor(request,vhost, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        LOGGER.debug("inside test - DeleteAdaptor response is : " + response);
-        assertEquals(ResponseType.Ok.getCode(), handler.result().getInteger(Constants.TYPE));
-        testContext.completeNow();
-      } else {
-//        testContext.failNow(handler.cause());
-        assertEquals("{\"type\":500,\"title\":\"bad request\",\"detail\":\"nothing to delete\"}",handler.cause().getMessage());
-        testContext.completeNow();
-      }
-    });
+    //    request.put(Constants.ID, id);
+    request.put(Constants.ID, "id");
+    String vhost = VHosts.IUDX_PROD.name();
+    databroker.deleteAdaptor(
+        request,
+        vhost,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result();
+            LOGGER.debug("inside test - DeleteAdaptor response is : " + response);
+            assertEquals(ResponseType.Ok.getCode(), handler.result().getInteger(Constants.TYPE));
+            testContext.completeNow();
+          } else {
+            //        testContext.failNow(handler.cause());
+            assertEquals(
+                "{\"type\":500,\"title\":\"bad request\",\"detail\":\"nothing to delete\"}",
+                handler.cause().getMessage());
+            testContext.completeNow();
+          }
+        });
     testContext.completeNow();
-
   }
 
   @Test
@@ -476,19 +522,21 @@ public class AdapterEntitiesTest {
     expected.put(Constants.DETAIL, "adaptor deleted");
 
     JsonObject request = new JsonObject();
-//    request.put(Constants.ID, anotherid);
-    request.put(Constants.ID,"id");
-    String vhost=VHosts.IUDX_PROD.name();
-    databroker.deleteAdaptor(request,vhost, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        LOGGER.debug("inside test - DeleteAdaptor response is : " + response);
-        assertEquals(200, response.getInteger(Constants.TYPE));
-      }
-      testContext.completeNow();
-    });
+    //    request.put(Constants.ID, anotherid);
+    request.put(Constants.ID, "id");
+    String vhost = VHosts.IUDX_PROD.name();
+    databroker.deleteAdaptor(
+        request,
+        vhost,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result();
+            LOGGER.debug("inside test - DeleteAdaptor response is : " + response);
+            assertEquals(200, response.getInteger(Constants.TYPE));
+          }
+          testContext.completeNow();
+        });
     testContext.completeNow();
-
   }
 
   @Test
@@ -496,24 +544,30 @@ public class AdapterEntitiesTest {
   @Order(11)
   void failureRegisterInvalidAdaptorID(VertxTestContext testContext) throws InterruptedException {
     JsonObject request = new JsonObject();
-//    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup + "+()*&");
-//    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
-    request.put(Constants.ENTITIES, new JsonArray().add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information()*&"));
+    //    request.put(Constants.JSON_RESOURCE_GROUP, resourceGroup + "+()*&");
+    //    request.put(Constants.JSON_RESOURCE_SERVER, resourceServer);
+    request.put(
+        Constants.ENTITIES,
+        new JsonArray()
+            .add(
+                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information()*&"));
     request.put(Constants.CONSUMER, Constants.CONSUMER_TEST_EXAMPLE);
 
     JsonObject expected = new JsonObject();
     expected.put(Constants.ERROR, "invalid id");
-    String vhost=VHosts.IUDX_PROD.name();
-    databroker.registerAdaptor(request,vhost, handler -> {
-      if (handler.succeeded()) {
-        JsonObject response = handler.result();
-        LOGGER.debug("inside invalid ID test - RegisteAdaptor response is : " + response);
-        assertEquals(expected, response);
-      }
-      testContext.completeNow();
-    });
+    String vhost = VHosts.IUDX_PROD.name();
+    databroker.registerAdaptor(
+        request,
+        vhost,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonObject response = handler.result();
+            LOGGER.debug("inside invalid ID test - RegisteAdaptor response is : " + response);
+            assertEquals(expected, response);
+          }
+          testContext.completeNow();
+        });
     testContext.completeNow();
-
   }
 
   @Test
@@ -521,31 +575,30 @@ public class AdapterEntitiesTest {
   static void cleanUp(VertxTestContext testContext) {
 
     if (userName2Delete != null) {
-      LOGGER.debug("cleanup : delete user "+userName2Delete);
-      String url = "/api/users/bulk-delete";// + Util.encodeValue(userName2Delete);
-      JsonObject request=new JsonObject();
+      LOGGER.debug("cleanup : delete user " + userName2Delete);
+      String url = "/api/users/bulk-delete"; // + Util.encodeValue(userName2Delete);
+      JsonObject request = new JsonObject();
       request.put("users", new JsonArray().add(userName2Delete));
 
-      rabbitMQWebClient.requestAsync(Constants.REQUEST_DELETE, url,request).onComplete(handler -> {
-        if (handler.succeeded()) {
-          LOGGER.debug(userName2Delete + " deleted");
-        } else {
-          LOGGER.error(handler.cause());
-          LOGGER.debug(userName2Delete + " deletion failed");
-        }
-        testContext.completeNow();
-      });
+      rabbitMQWebClient
+          .requestAsync(Constants.REQUEST_DELETE, url, request)
+          .onComplete(
+              handler -> {
+                if (handler.succeeded()) {
+                  LOGGER.debug(userName2Delete + " deleted");
+                } else {
+                  LOGGER.error(handler.cause());
+                  LOGGER.debug(userName2Delete + " deletion failed");
+                }
+                testContext.completeNow();
+              });
       testContext.completeNow();
-
     }
-
   }
 
   @Test
-  public void ResponseTypeTestFromCode(VertxTestContext vertxTestContext){
+  public void ResponseTypeTestFromCode(VertxTestContext vertxTestContext) {
     assertNull(ResponseType.fromCode(1));
     vertxTestContext.completeNow();
   }
 }
-
-

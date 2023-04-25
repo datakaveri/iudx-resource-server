@@ -14,22 +14,23 @@ public class LatestVerticle extends AbstractVerticle {
 
   /**
    * The Latest Verticle.
+   *
    * <h1>Latest Verticle</h1>
-   * <p>
-   * The Database Verticle implementation in the the IUDX Resource Server exposes the
-   * {@link iudx.resource.server.database.archives.DatabaseService} over the Vert.x Event Bus.
-   * </p>
+   *
+   * <p>The Database Verticle implementation in the the IUDX Resource Server exposes the {@link
+   * iudx.resource.server.database.archives.DatabaseService} over the Vert.x Event Bus.
    *
    * @version 1.0
    * @since 2020-05-31
    */
   private LatestDataService latestData;
+
   private RedisClient redisClient;
   private JsonObject attributeList;
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
   private static final Logger LOGGER = LogManager.getLogger(LatestVerticle.class);
-  
+
   private CacheService cacheService;
 
   /**
@@ -39,23 +40,28 @@ public class LatestVerticle extends AbstractVerticle {
    *
    * @throws Exception which is a start up exception.
    */
-
   @Override
   public void start() throws Exception {
 
     attributeList = config().getJsonObject("attributeList");
-    new RedisClient(vertx, config()).start().onSuccess(handler -> {
-      
-      redisClient = handler;
-      cacheService=CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
-      binder = new ServiceBinder(vertx);
-      latestData = new LatestDataServiceImpl(redisClient, cacheService);
-      consumer = binder.setAddress(LATEST_SERVICE_ADDRESS)
-          .register(LatestDataService.class, latestData);
-      LOGGER.info("Latest verticle deployed.");
-    }).onFailure(handler -> {
-      LOGGER.error("failed to start redis client");
-    });
+    new RedisClient(vertx, config())
+        .start()
+        .onSuccess(
+            handler -> {
+              redisClient = handler;
+              cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
+              binder = new ServiceBinder(vertx);
+              latestData = new LatestDataServiceImpl(redisClient, cacheService);
+              consumer =
+                  binder
+                      .setAddress(LATEST_SERVICE_ADDRESS)
+                      .register(LatestDataService.class, latestData);
+              LOGGER.info("Latest verticle deployed.");
+            })
+        .onFailure(
+            handler -> {
+              LOGGER.error("failed to start redis client");
+            });
   }
 
   @Override
@@ -66,4 +72,3 @@ public class LatestVerticle extends AbstractVerticle {
     binder.unregister(consumer);
   }
 }
-

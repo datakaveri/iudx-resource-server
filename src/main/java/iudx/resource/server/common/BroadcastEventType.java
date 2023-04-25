@@ -4,8 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum BroadcastEventType {
-
-  CREATE("create"), UPDATE("update"), DELETE("delete");
+  CREATE("create"),
+  UPDATE("update"),
+  DELETE("delete");
 
   public final String eventType;
 
@@ -25,4 +26,3 @@ public enum BroadcastEventType {
     return eventsMap.get(text);
   }
 }
-

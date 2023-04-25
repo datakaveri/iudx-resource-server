@@ -19,13 +19,11 @@ public final class JwtAuthorization {
     return authStrategy.isAuthorized(authRequest, jwtData);
   }
 
-  public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData,
-      JsonObject userQuotaLimit) {
-    if(authStrategy instanceof ConsumerAuthStrategy) {
+  public boolean isAuthorized(
+      AuthorizationRequest authRequest, JwtData jwtData, JsonObject userQuotaLimit) {
+    if (authStrategy instanceof ConsumerAuthStrategy) {
       return authStrategy.isAuthorized(authRequest, jwtData, userQuotaLimit);
     }
     return this.isAuthorized(authRequest, jwtData);
-    
   }
-
 }

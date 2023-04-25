@@ -2,7 +2,7 @@ package iudx.resource.server.metering.util;
 
 import io.vertx.core.json.JsonObject;
 
-import static iudx.resource.server.apiserver.util.Constants.IUDX_PROVIDER_AUDIT_URL ;
+import static iudx.resource.server.apiserver.util.Constants.IUDX_PROVIDER_AUDIT_URL;
 import static iudx.resource.server.metering.util.Constants.BETWEEN;
 import static iudx.resource.server.metering.util.Constants.DURING;
 import static iudx.resource.server.metering.util.Constants.ENDPOINT;
@@ -63,7 +63,7 @@ public class ParamsValidation {
       return new JsonObject().put(ERROR, INVALID_PROVIDER_ID);
     }
 
-    //since + is treated as space in uri
+    // since + is treated as space in uri
     String startTime = request.getString(START_TIME).trim().replaceAll("\\s", "+");
     String endTime = request.getString(END_TIME).trim().replaceAll("\\s", "+");
 
@@ -88,8 +88,7 @@ public class ParamsValidation {
         zonedDateTimeDayDifference,
         zonedDateTimeMinuteDifference);
 
-    if (zonedDateTimeDayDifference < 0
-        || zonedDateTimeMinuteDifference <= 0) {
+    if (zonedDateTimeDayDifference < 0 || zonedDateTimeMinuteDifference <= 0) {
       LOGGER.error(INVALID_DATE_DIFFERENCE);
       return new JsonObject().put(ERROR, INVALID_DATE_DIFFERENCE);
     }

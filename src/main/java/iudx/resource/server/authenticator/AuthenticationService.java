@@ -11,18 +11,17 @@ import io.vertx.core.json.JsonObject;
 
 /**
  * The Authentication Service.
+ *
  * <h1>Authentication Service</h1>
- * <p>
- * The Authentication Service in the IUDX Resource Server defines the operations to be performed
+ *
+ * <p>The Authentication Service in the IUDX Resource Server defines the operations to be performed
  * with the IUDX Authentication and Authorization server.
- * </p>
  *
  * @version 1.0
  * @see io.vertx.codegen.annotations.ProxyGen
  * @see io.vertx.codegen.annotations.VertxGen
  * @since 2020-05-31
  */
-
 @VertxGen
 @ProxyGen
 public interface AuthenticationService {
@@ -34,7 +33,6 @@ public interface AuthenticationService {
    * @param address which is the proxy address
    * @return AuthenticationServiceVertxEBProxy which is a service proxy
    */
-
   @GenIgnore
   static AuthenticationService createProxy(Vertx vertx, String address) {
     return new AuthenticationServiceVertxEBProxy(vertx, address);
@@ -47,12 +45,11 @@ public interface AuthenticationService {
    *
    * @param request which is a JsonObject containing ids: [String]
    * @param authenticationInfo which is a JsonObject containing token: String and apiEndpoint:
-   *        String
+   *     String
    * @param handler which is a request handler
    * @return AuthenticationService which is a service
    */
-
   @Fluent
-  AuthenticationService tokenInterospect(JsonObject request, JsonObject authenticationInfo,
-      Handler<AsyncResult<JsonObject>> handler);
+  AuthenticationService tokenInterospect(
+      JsonObject request, JsonObject authenticationInfo, Handler<AsyncResult<JsonObject>> handler);
 }

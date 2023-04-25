@@ -31,43 +31,42 @@ public class DateTypeValidatorTest {
   static Stream<Arguments> allowedValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
-            Arguments.of("2020-10-18T14:20:00Z", true),
-            Arguments.of("2020-10-18T20:45:00+05:30", true),
-            Arguments.of(null, false));
+        Arguments.of("2020-10-18T14:20:00Z", true),
+        Arguments.of("2020-10-18T20:45:00+05:30", true),
+        Arguments.of(null, false));
   }
 
   @ParameterizedTest
   @MethodSource("allowedValues")
   @Description("date type parameter allowed values.")
-  public void testValidDateTypeValue(String value, boolean required, Vertx vertx,
-                                     VertxTestContext testContext) {
+  public void testValidDateTypeValue(
+      String value, boolean required, Vertx vertx, VertxTestContext testContext) {
     dateTypeValidator = new DateTypeValidator(value, required);
     assertTrue(dateTypeValidator.isValid());
     testContext.completeNow();
   }
 
-
   static Stream<Arguments> invalidValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
-            Arguments.of("", true),
-            Arguments.of("  ", true),
-            Arguments.of("2020-13-18T14:20:00Z", true),
-            Arguments.of("2020-10-18V14:20:00Z", true),
-            Arguments.of("2020-10-18T25:20:00Z", true),
-            Arguments.of("2020-10-32T14:20:00Z", true),
-            Arguments.of("date-time", true),
-            Arguments.of("{{asdbbjas}}", true),
-            Arguments.of("",true),
-            Arguments.of(null,true),
-            Arguments.of("",false));
+        Arguments.of("", true),
+        Arguments.of("  ", true),
+        Arguments.of("2020-13-18T14:20:00Z", true),
+        Arguments.of("2020-10-18V14:20:00Z", true),
+        Arguments.of("2020-10-18T25:20:00Z", true),
+        Arguments.of("2020-10-32T14:20:00Z", true),
+        Arguments.of("date-time", true),
+        Arguments.of("{{asdbbjas}}", true),
+        Arguments.of("", true),
+        Arguments.of(null, true),
+        Arguments.of("", false));
   }
 
   @ParameterizedTest
   @MethodSource("invalidValues")
   @Description("date type parameter invalid values.")
-  public void testInvalidDateTypeValue(String value, boolean required, Vertx vertx,
-                                       VertxTestContext testContext) {
+  public void testInvalidDateTypeValue(
+      String value, boolean required, Vertx vertx, VertxTestContext testContext) {
     dateTypeValidator = new DateTypeValidator(value, required);
     assertThrows(DxRuntimeException.class, () -> dateTypeValidator.isValid());
     testContext.completeNow();

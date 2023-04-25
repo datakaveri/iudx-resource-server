@@ -28,7 +28,6 @@ public class CoordinatesTypeValidatorTest {
     testContext.completeNow();
   }
 
-
   static Stream<Arguments> allowedValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
@@ -41,17 +40,15 @@ public class CoordinatesTypeValidatorTest {
         Arguments.of(null, false));
   }
 
-
   @ParameterizedTest
   @MethodSource("allowedValues")
   @Description("coordinates type parameter allowed values.")
-  public void testValidCoordinatesTypeValue(String value, boolean required, Vertx vertx,
-      VertxTestContext testContext) {
+  public void testValidCoordinatesTypeValue(
+      String value, boolean required, Vertx vertx, VertxTestContext testContext) {
     coordinatesTypeValidator = new CoordinatesTypeValidator(value, required);
     assertTrue(coordinatesTypeValidator.isValid());
     testContext.completeNow();
   }
-
 
   static Stream<Arguments> invalidValues() {
     // Add any valid value which will pass successfully.
@@ -74,11 +71,10 @@ public class CoordinatesTypeValidatorTest {
   @ParameterizedTest
   @MethodSource("invalidValues")
   @Description("coordinates type parameter invalid values.")
-  public void testInvalidCoordinatesTypeValue(String value, boolean required, Vertx vertx,
-      VertxTestContext testContext) {
+  public void testInvalidCoordinatesTypeValue(
+      String value, boolean required, Vertx vertx, VertxTestContext testContext) {
     coordinatesTypeValidator = new CoordinatesTypeValidator(value, required);
     assertThrows(DxRuntimeException.class, () -> coordinatesTypeValidator.isValid());
     testContext.completeNow();
   }
-
 }

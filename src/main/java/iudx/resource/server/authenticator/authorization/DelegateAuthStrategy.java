@@ -16,33 +16,27 @@ public class DelegateAuthStrategy implements AuthorizationStrategy {
 
   private final Api api;
 
-
   private static volatile DelegateAuthStrategy instance;
 
-
   static Map<String, List<AuthorizationRequest>> delegateAuthorizationRules = new HashMap<>();
-  private DelegateAuthStrategy(Api api)
-  {
+
+  private DelegateAuthStrategy(Api api) {
     this.api = api;
     buildPermissions(api);
   }
-  public static DelegateAuthStrategy getInstance(Api api)
-  {
 
+  public static DelegateAuthStrategy getInstance(Api api) {
 
-    if(instance == null)
-    {
-      synchronized (DelegateAuthStrategy.class)
-      {
-        if(instance == null)
-        {
+    if (instance == null) {
+      synchronized (DelegateAuthStrategy.class) {
+        if (instance == null) {
           instance = new DelegateAuthStrategy(api);
         }
       }
     }
     return instance;
-
   }
+
   private void buildPermissions(Api api) {
     // delegate allowed to access all endpoints
   }
@@ -53,8 +47,8 @@ public class DelegateAuthStrategy implements AuthorizationStrategy {
   }
 
   @Override
-  public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData,
-      JsonObject quotaConsumed) {
+  public boolean isAuthorized(
+      AuthorizationRequest authRequest, JwtData jwtData, JsonObject quotaConsumed) {
     return isAuthorized(authRequest, jwtData);
   }
 }

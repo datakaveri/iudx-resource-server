@@ -41,12 +41,10 @@ public final class OptionsTypeValidator implements Validator {
     return true;
   }
 
-
   @Override
   public int failureCode() {
     return HttpStatusCode.BAD_REQUEST.getValue();
   }
-
 
   @Override
   public String failureMessage() {

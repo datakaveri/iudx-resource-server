@@ -32,44 +32,39 @@ public class GeoPropertyTypeValidatorTest {
   static Stream<Arguments> allowedValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
-            Arguments.of("location", true),
-            Arguments.of("Location", true),
-            Arguments.of(null, false));
+        Arguments.of("location", true), Arguments.of("Location", true), Arguments.of(null, false));
   }
 
   @ParameterizedTest
   @MethodSource("allowedValues")
   @Description("GeoProperty parameter allowed values.")
-  public void testValidGeoPropertyValue(String value, boolean required, Vertx vertx,
-                                        VertxTestContext testContext) {
+  public void testValidGeoPropertyValue(
+      String value, boolean required, Vertx vertx, VertxTestContext testContext) {
     geoPropertyTypeValidator = new GeoPropertyTypeValidator(value, required);
     assertTrue(geoPropertyTypeValidator.isValid());
     testContext.completeNow();
   }
 
-
   static Stream<Arguments> invalidValues() {
     // Add any valid value which will pass successfully.
     String random600Id = RandomStringUtils.random(600);
     return Stream.of(
-            Arguments.of("", true),
-            Arguments.of("  ", true),
-            Arguments.of("around", true),
-            Arguments.of("bypass", true),
-            Arguments.of("1=1", true),
-            Arguments.of("AND XYZ=XYZ", true),
-            Arguments.of(random600Id, true),
-            Arguments.of(null,true),
-            Arguments.of("",false));
+        Arguments.of("", true),
+        Arguments.of("  ", true),
+        Arguments.of("around", true),
+        Arguments.of("bypass", true),
+        Arguments.of("1=1", true),
+        Arguments.of("AND XYZ=XYZ", true),
+        Arguments.of(random600Id, true),
+        Arguments.of(null, true),
+        Arguments.of("", false));
   }
-
 
   @ParameterizedTest
   @MethodSource("invalidValues")
   @Description("GeoProperty parameter invalid values.")
-  public void testInvalidGeoPropertyValue(String value, boolean required,
-                                          Vertx vertx,
-                                          VertxTestContext testContext) {
+  public void testInvalidGeoPropertyValue(
+      String value, boolean required, Vertx vertx, VertxTestContext testContext) {
     geoPropertyTypeValidator = new GeoPropertyTypeValidator(value, required);
     assertThrows(DxRuntimeException.class, () -> geoPropertyTypeValidator.isValid());
     testContext.completeNow();

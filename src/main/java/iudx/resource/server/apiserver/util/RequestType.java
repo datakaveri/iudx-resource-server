@@ -1,6 +1,5 @@
 package iudx.resource.server.apiserver.util;
 
-
 public enum RequestType {
   ENTITY("entity"),
   TEMPORAL("temporal"),

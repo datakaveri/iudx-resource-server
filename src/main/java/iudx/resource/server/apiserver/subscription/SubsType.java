@@ -1,7 +1,7 @@
 package iudx.resource.server.apiserver.subscription;
 
 public enum SubsType {
-  CALLBACK("CALLBACK"), 
+  CALLBACK("CALLBACK"),
   STREAMING("STREAMING");
 
   public final String type;
@@ -9,5 +9,4 @@ public enum SubsType {
   SubsType(String type) {
     this.type = type;
   }
-
 }

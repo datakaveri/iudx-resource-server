@@ -4,4 +4,3 @@
 package iudx.resource.server.metering;
 
 import io.vertx.codegen.annotations.ModuleGen;
-

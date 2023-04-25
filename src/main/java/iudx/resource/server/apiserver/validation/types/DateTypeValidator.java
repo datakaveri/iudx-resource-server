@@ -10,7 +10,7 @@ import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.common.HttpStatusCode;
 
 public final class DateTypeValidator implements Validator {
-  
+
   private static final Logger LOGGER = LogManager.getLogger(DateTypeValidator.class);
 
   private final String value;
@@ -22,7 +22,7 @@ public final class DateTypeValidator implements Validator {
   }
 
   private boolean isValidDate(final String value) {
-    String dateString = value.trim().replaceAll("\\s", "+");// since + is treated as space in uri
+    String dateString = value.trim().replaceAll("\\s", "+"); // since + is treated as space in uri
     // params
     try {
       ZonedDateTime.parse(dateString);
@@ -57,5 +57,4 @@ public final class DateTypeValidator implements Validator {
   public String failureMessage() {
     return INVALID_TEMPORAL_DATE_FORMAT_URN.getMessage();
   }
-
 }

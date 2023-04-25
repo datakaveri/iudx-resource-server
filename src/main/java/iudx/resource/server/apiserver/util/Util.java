@@ -19,20 +19,22 @@ public class Util {
     }
   }
 
-  public static Function<String, URI> toUriFunction = (value) -> {
-    URI uri = null;
-    try {
-      uri = new URI(value);
-    } catch (URISyntaxException e) {
-      e.printStackTrace();
-    }
-    return uri;
-  };
+  public static Function<String, URI> toUriFunction =
+      (value) -> {
+        URI uri = null;
+        try {
+          uri = new URI(value);
+        } catch (URISyntaxException e) {
+          e.printStackTrace();
+        }
+        return uri;
+      };
 
   public static String errorResponse(HttpStatusCode code) {
-    return new JsonObject().put("type", code.getUrn())
+    return new JsonObject()
+        .put("type", code.getUrn())
         .put("title", code.getDescription())
-        .put("detail", code.getDescription()).toString();
+        .put("detail", code.getDescription())
+        .toString();
   }
-
 }
