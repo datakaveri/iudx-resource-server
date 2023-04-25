@@ -3,11 +3,15 @@ package iudx.resource.server.database.elastic;
 import static iudx.resource.server.database.archives.Constants.EMPTY_RESPONSE;
 import static iudx.resource.server.database.archives.Constants.FAILED;
 import static iudx.resource.server.database.archives.Constants.SUCCESS;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.List;
+
+import java.io.*;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+
+import co.elastic.clients.elasticsearch.core.*;
+import com.fasterxml.jackson.databind.JsonNode;
+
+
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -22,11 +26,6 @@ import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.Time;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch.core.ClearScrollRequest;
-import co.elastic.clients.elasticsearch.core.CountRequest;
-import co.elastic.clients.elasticsearch.core.ScrollRequest;
-import co.elastic.clients.elasticsearch.core.ScrollResponse;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.core.search.SourceConfig;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
@@ -42,12 +41,13 @@ import iudx.resource.server.database.postgres.PostgresService;
 
 public class ElasticClient {
 
-  ElasticsearchClient esClient;
-  ElasticsearchAsyncClient asyncClient;
+    ElasticsearchClient esClient;
+    ElasticsearchAsyncClient asyncClient;
 
-  private final RestClient client;
-  private ResponseBuilder responseBuilder;
-  private static final Logger LOGGER = LogManager.getLogger(ElasticClient.class);
+    private final RestClient client;
+    private ResponseBuilder responseBuilder;
+    private static final Logger LOGGER = LogManager.getLogger(ElasticClient.class);
+    File csvFile;
 
   /**
    * ElasticClient - Elastic Low level wrapper.
@@ -64,50 +64,49 @@ public class ElasticClient {
                 httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentials));
     client = restClientBuilder.build();
 
-    ElasticsearchTransport transport = new RestClientTransport(client, new JacksonJsonpMapper());
-    // And create the API client
-    esClient = new ElasticsearchClient(transport);
-    asyncClient = new ElasticsearchAsyncClient(transport);
-  }
+        ElasticsearchTransport transport = new RestClientTransport(client, new JacksonJsonpMapper());
+        // And create the API client
+        esClient = new ElasticsearchClient(transport);
+        asyncClient = new ElasticsearchAsyncClient(transport);
 
-  public ElasticClient(
-      String databaseIP,
-      int databasePort,
-      String user,
-      String password,
-      String filePath,
-      PostgresService pgService) {
-    this(databaseIP, databasePort, user, password);
-  }
+        csvFile = new File("something.csv");
+    }
 
-  public Future<JsonObject> asyncScroll(
-      File file,
-      String index,
-      Query query,
-      String[] source,
-      String searchId,
-      ProgressListener progressListener) {
-    Promise<JsonObject> promise = Promise.promise();
+    public ElasticClient(String databaseIP, int databasePort, String user, String password,
+                         String filePath, PostgresService pgService) {
+        this(databaseIP, databasePort, user, password);
+    }
 
-    SearchRequest searchRequest =
-        SearchRequest.of(
-            e -> e.index(index).query(query).size(10000).scroll(scr -> scr.time("5m")));
+    public Future<JsonObject> asyncScroll(File file, String index, Query query, String[] source,
+                                          String searchId, ProgressListener progressListener) {
+        Promise<JsonObject> promise = Promise.promise();
 
-    asyncClient
-        .search(searchRequest, ObjectNode.class)
-        .whenCompleteAsync(
-            (response, ex) -> {
-              if (ex != null) {}
 
-              String scrollId = null;
-              try {
+        SearchRequest searchRequest = SearchRequest
+                .of(e -> e.index(index).query(query).size(10000).scroll(scr -> scr.time("5m")));
+
+
+
+        asyncClient.search(searchRequest, ObjectNode.class).whenCompleteAsync((response, ex) -> {
+            if (ex != null) {
+
+            }
+            String scrollId = null;
+            try {
                 // LOGGER.info("response : {}",response.toString());
                 scrollId = response.scrollId();
+
 
                 long totalHits = response.hits().total().value();
                 LOGGER.debug("Total documents to be downloaded : " + totalHits);
 
                 List<Hit<ObjectNode>> searchHits = response.hits().hits();
+
+                long startTime = System.currentTimeMillis();
+                getHeader(searchHits);
+                appendToFile(searchHits);
+                long endTime = System.currentTimeMillis();
+                LOGGER.debug("Time Taken in milliseconds: {} ", endTime - startTime);
 
                 LOGGER.debug(file.getAbsolutePath());
 
@@ -119,141 +118,199 @@ public class ElasticClient {
                 double iterationCount = 0.0;
                 double progress;
                 while (searchHits != null && searchHits.size() > 0) {
-                  long downloadedDocs = searchHits.size();
-                  totaldocsDownloaded += downloadedDocs;
+                    long downloadedDocs = searchHits.size();
+                    totaldocsDownloaded += downloadedDocs;
 
-                  String downloadLogMessage = "downloaded {} docs of {} total [{} new]";
-                  LOGGER.debug(downloadLogMessage, totaldocsDownloaded, totalHits, downloadedDocs);
-                  iterationCount += 1;
-                  progress = iterationCount / totalIterations;
-                  // keeping progress at 90% of actual to update the last 10% after upload to
-                  // external (s3)
-                  double finalProgress = progress * 0.9;
-                  Future.future(handler -> progressListener.updateProgress(finalProgress));
-                  for (Hit<ObjectNode> sh : searchHits) {
-                    if (appendComma) {
-                      filew.write("," + sh.source().toString());
-                    } else {
-                      filew.write(sh.source().toString());
+                    String downloadLogMessage = "downloaded {} docs of {} total [{} new]";
+                    LOGGER.debug(downloadLogMessage, totaldocsDownloaded, totalHits, downloadedDocs);
+                    iterationCount += 1;
+                    progress = iterationCount / totalIterations;
+                    // keeping progress at 90% of actual to update the last 10% after upload to external (s3)
+                    double finalProgress = progress * 0.9;
+                    Future.future(handler -> progressListener.updateProgress(finalProgress));
+                    for (Hit<ObjectNode> sh : searchHits) {
+                        LOGGER.debug("whats search hits heree ? : " + sh);
+                        if (appendComma) {
+                            filew.write("," + sh.source().toString());
+                        } else {
+                            filew.write(sh.source().toString());
+                        }
+                        appendComma = true;
                     }
-                    appendComma = true;
-                  }
-                  ScrollRequest scrollRequest = nextScrollRequest(scrollId);
-                  CompletableFuture<ScrollResponse<ObjectNode>> future =
-                      asyncClient.scroll(scrollRequest, ObjectNode.class);
-                  ScrollResponse<ObjectNode> scrollResponse = future.get();
-                  scrollId = scrollResponse.scrollId();
-                  searchHits = scrollResponse.hits().hits();
+                    ScrollRequest scrollRequest = nextScrollRequest(scrollId);
+                    CompletableFuture<ScrollResponse<ObjectNode>> future =
+                            asyncClient.scroll(scrollRequest, ObjectNode.class);
+                    ScrollResponse<ObjectNode> scrollResponse = future.get();
+                    scrollId = scrollResponse.scrollId();
+                    searchHits = scrollResponse.hits().hits();
                 }
                 filew.write(']');
                 filew.close();
                 promise.complete();
-              } catch (IOException exception) {
+            } catch (IOException exception) {
                 promise.fail("failed for some IO issues [file access]");
-              } catch (Exception exception) {
+            } catch (Exception exception) {
+                System.err.println(exception);
                 promise.fail("failed for some exception");
                 exception.printStackTrace();
-              } finally {
+            } finally {
                 clearScrollRequest(scrollId);
-              }
-            });
-    return promise.future();
-  }
-
-  private ScrollRequest nextScrollRequest(final String scrollId) {
-    return ScrollRequest.of(
-        scrollRequest -> scrollRequest.scrollId(scrollId).scroll(Time.of(t -> t.time("5m"))));
-  }
-
-  private void clearScrollRequest(String scrollId) {
-    if (scrollId != null) {
-      LOGGER.debug("Closing scroll request with id : {}", scrollId);
-      final String finalScroll = scrollId;
-      ClearScrollRequest clearScrollRequest = ClearScrollRequest.of(f -> f.scrollId(finalScroll));
-      try {
-        asyncClient.clearScroll(clearScrollRequest);
-      } catch (Exception e) {
-        LOGGER.error(e);
-        LOGGER.error(e.getMessage());
-      }
+            }
+        });
+        return promise.future();
     }
-  }
 
-  public Future<JsonObject> asyncSearch(
-      String index, Query query, int size, int from, SourceConfig sourceFilterConfig) {
-    Promise<JsonObject> promise = Promise.promise();
-    SearchRequest searchRequest =
-        SearchRequest.of(
-            e ->
-                e.index(index)
-                    .query(query)
-                    .size(size)
-                    .from(from)
-                    .source(sourceFilterConfig)
-                    .timeout("180s"));
+    private void appendToFile(List<Hit<ObjectNode>> searchHits) {
+        for (Hit hit : searchHits) {
+            Map<String, Object> map = new JsonFlatten((JsonNode) hit.source()).flatten();
+//          LOGGER.debug("Map : " + map);
+//          LOGGER.debug("Field names | header : "+ map.keySet());
+ //         make this as the csv header
 
-    asyncClient
-        .search(searchRequest, ObjectNode.class)
-        .whenCompleteAsync(
-            (response, exception) -> {
-              if (exception != null) {
+            Set<String> header = map.keySet();
+            appendToCSVFile(map, header);
+        }
+    }
+
+    private void getHeader(List<Hit<ObjectNode>> searchHits) {
+        for (Hit hit : searchHits) {
+            Map<String, Object> map = new JsonFlatten((JsonNode) hit.source()).flatten();
+            Set<String> header = map.keySet();
+            simpleFileWriter(header, "something.csv");
+            break;
+        }
+    }
+
+    private void appendToCSVFile(Map<String, Object> map, Set<String> header) {
+        FileWriter fileWriter = null;
+        try {
+            fileWriter = new FileWriter("something.csv", true);
+            StringBuilder stringBuilder = new StringBuilder();
+
+//      LOGGER.debug("map.entrySet() : " + map.entrySet());
+            for (String field : header) {
+                var cell = map.get(field);
+                if (cell == null) {
+                    stringBuilder.append("" + ",");
+                } else {
+                    stringBuilder.append(cell + ",");
+                }
+//        LOGGER.debug("map.get(field) : " + map.get(field));
+            }
+
+
+            String row = stringBuilder.substring(0, stringBuilder.length() - 1);
+//      LOGGER.debug("ROW : " + row);
+            fileWriter.append(row).append("\n");
+
+            fileWriter.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+
+    // for writing headers
+    private void simpleFileWriter(Set<String> header, String fileName) {
+        FileWriter fileWriter = null;
+        try {
+            fileWriter = new FileWriter(fileName);
+            StringBuilder stringBuilder = new StringBuilder();
+            for (String obj : header) {
+                stringBuilder.append(obj + ",");
+            }
+            String data = stringBuilder.substring(0, stringBuilder.length() - 1);
+            fileWriter.write(data + "\n");
+
+            fileWriter.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    private ScrollRequest nextScrollRequest(final String scrollId) {
+        return ScrollRequest
+                .of(scrollRequest -> scrollRequest.scrollId(scrollId).scroll(Time.of(t -> t.time("5m"))));
+    }
+
+    private void clearScrollRequest(String scrollId) {
+        if (scrollId != null) {
+            LOGGER.debug("Closing scroll request with id : {}", scrollId);
+            final String finalScroll = scrollId;
+            ClearScrollRequest clearScrollRequest = ClearScrollRequest.of(f -> f.scrollId(finalScroll));
+            try {
+                asyncClient.clearScroll(clearScrollRequest);
+            } catch (Exception e) {
+                LOGGER.error(e);
+                LOGGER.error(e.getMessage());
+            }
+        }
+    }
+
+
+    public Future<JsonObject> asyncSearch(String index, Query query, int size, int from,
+                                          SourceConfig sourceFilterConfig) {
+        Promise<JsonObject> promise = Promise.promise();
+        SearchRequest searchRequest = SearchRequest
+                .of(e -> e.index(index).query(query).size(size).from(from).source(sourceFilterConfig).timeout("180s"));
+
+        asyncClient.search(searchRequest, ObjectNode.class).whenCompleteAsync((response, exception) -> {
+            if (exception != null) {
                 LOGGER.error("async search query failed : {}", exception);
                 promise.fail(exception);
                 return;
-              }
-              JsonObject queryResult;
-              try {
+            }
+            JsonObject queryResult;
+            try {
                 JsonArray dbResponse = new JsonArray();
                 if (response.hits().total().value() == 0) {
-                  responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204);
-                  responseBuilder.setMessage(EMPTY_RESPONSE);
-                  promise.fail(responseBuilder.getResponse().toString());
-                  return;
+                    responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204);
+                    responseBuilder.setMessage(EMPTY_RESPONSE);
+                    promise.fail(responseBuilder.getResponse().toString());
+                    return;
                 }
 
-                // TODO : explore client API docs to directly get response, avoid loop over response
-                // to
+                // TODO : explore client API docs to directly get response, avoid loop over response to
                 // create a seprate Json
                 for (Hit<ObjectNode> esHitResponse : response.hits().hits()) {
-                  queryResult = new JsonObject(esHitResponse.source().toString());
-                  dbResponse.add(queryResult);
+                    queryResult = new JsonObject(esHitResponse.source().toString());
+                    dbResponse.add(queryResult);
                 }
 
                 responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200);
                 responseBuilder.setMessage(dbResponse);
                 promise.complete(responseBuilder.getResponse());
-              } catch (Exception ex) {
+            } catch (Exception ex) {
                 LOGGER.error("Exception occurred while executing query: {}", ex);
                 JsonObject dbException = new JsonObject(ex.getMessage());
-                responseBuilder =
-                    new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbException);
+                responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(400).setMessage(dbException);
                 promise.fail(responseBuilder.getResponse().toString());
-              }
-            });
-    return promise.future();
-  }
+            }
 
-  public Future<JsonObject> asyncCount(String index, Query query) {
-    Promise<JsonObject> promise = Promise.promise();
-    CountRequest countRequest = CountRequest.of(e -> e.index(index).query(query));
+        });
+        return promise.future();
+    }
 
-    asyncClient
-        .count(countRequest)
-        .whenCompleteAsync(
-            (response, exception) -> {
-              if (exception != null) {
+    public Future<JsonObject> asyncCount(String index, Query query) {
+        Promise<JsonObject> promise = Promise.promise();
+        CountRequest countRequest = CountRequest.of(e -> e.index(index).query(query));
+
+        asyncClient.count(countRequest).whenCompleteAsync((response, exception) -> {
+            if (exception != null) {
                 LOGGER.error("async count query failed : {}", exception);
                 promise.fail(exception);
                 return;
-              }
-              try {
+            }
+            try {
 
                 long count = response.count();
                 if (count == 0) {
-                  responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204);
-                  responseBuilder.setMessage(EMPTY_RESPONSE);
-                  promise.fail(responseBuilder.getResponse().toString());
-                  return;
+                    responseBuilder = new ResponseBuilder(FAILED).setTypeAndTitle(204);
+                    responseBuilder.setMessage(EMPTY_RESPONSE);
+                    promise.fail(responseBuilder.getResponse().toString());
+                    return;
                 }
                 responseBuilder = new ResponseBuilder(SUCCESS).setTypeAndTitle(200);
                 responseBuilder.setCount(count);
