@@ -49,20 +49,20 @@ public class ElasticClient {
     private static final Logger LOGGER = LogManager.getLogger(ElasticClient.class);
     File csvFile;
 
-  /**
-   * ElasticClient - Elastic Low level wrapper.
-   *
-   * @param databaseIP IP of the ElasticDB
-   * @param databasePort Port of the ElasticDB
-   */
-  public ElasticClient(String databaseIP, int databasePort, String user, String password) {
-    CredentialsProvider credentials = new BasicCredentialsProvider();
-    credentials.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(user, password));
-    RestClientBuilder restClientBuilder =
-        RestClient.builder(new HttpHost(databaseIP, databasePort))
-            .setHttpClientConfigCallback(
-                httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentials));
-    client = restClientBuilder.build();
+    /**
+     * ElasticClient - Elastic Low level wrapper.
+     *
+     * @param databaseIP   IP of the ElasticDB
+     * @param databasePort Port of the ElasticDB
+     */
+    public ElasticClient(String databaseIP, int databasePort, String user, String password) {
+        CredentialsProvider credentials = new BasicCredentialsProvider();
+        credentials.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(user, password));
+        RestClientBuilder restClientBuilder = RestClient
+                .builder(new HttpHost(databaseIP, databasePort))
+                .setHttpClientConfigCallback(
+                        httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentials));
+        client = restClientBuilder.build();
 
         ElasticsearchTransport transport = new RestClientTransport(client, new JacksonJsonpMapper());
         // And create the API client

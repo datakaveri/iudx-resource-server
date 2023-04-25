@@ -138,6 +138,7 @@ public class AsyncRestApi {
         json.put(JSON_INSTANCEID, instanceID);
         LOGGER.debug("Info: IUDX json query;" + json);
         json.put("someKey", Math.random());
+
         JsonObject requestBody = new JsonObject();
         requestBody.put("ids", json.getJsonArray("id"));
         filtersFuture.onComplete(filtersHandler -> {
