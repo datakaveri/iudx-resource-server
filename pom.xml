@@ -400,9 +400,9 @@
                     <consoleOutput>true</consoleOutput>
                     <encoding>UTF-8</encoding>
                     <configLocation>./google_checks.xml</configLocation>
-                    <!--<sourceDirectories>
+                    <sourceDirectories>
                     <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
-                    </sourceDirectories>-->
+                    </sourceDirectories>
                 </configuration>
             </plugin>
             <plugin>
@@ -535,30 +535,6 @@
 
     <reporting>
         <plugins>
-<!--
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-checkstyle-plugin</artifactId>
-                            <version>${maven-checkstyle-plugin-google.version}</version>
-                            <configuration>
-                                <consoleOutput>true</consoleOutput>
-                                <encoding>UTF-8</encoding>
-                                <configLocation>./google_checks.xml</configLocation>
-                                <failOnViolation>false</failOnViolation>
-&lt;!&ndash;                                <excludes>
-                                   target/generated-sources
-                                </excludes>&ndash;&gt;
-                            </configuration>
-
-                            <reportSets>
-                                <reportSet>
-                                    <reports>
-                                        <report>checkstyle</report>
-                                    </reports>
-                                </reportSet>
-                            </reportSets>
-                        </plugin>
--->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
