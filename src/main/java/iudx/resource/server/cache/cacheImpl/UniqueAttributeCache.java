@@ -16,7 +16,7 @@ import iudx.resource.server.database.postgres.PostgresService;
 public class UniqueAttributeCache implements IudxCache {
 
   private static final Logger LOGGER = LogManager.getLogger(UniqueAttributeCache.class);
-  private final static CacheType cacheType = CacheType.UNIQUE_ATTRIBUTE;
+  private static final CacheType cacheType = CacheType.UNIQUE_ATTRIBUTE;
 
   private final PostgresService postgresService;
 
@@ -27,9 +27,11 @@ public class UniqueAttributeCache implements IudxCache {
     this.postgresService = postgresService;
     refreshCache();
 
-    vertx.setPeriodic(TimeUnit.HOURS.toMillis(1), handler -> {
-      refreshCache();
-    });
+    vertx.setPeriodic(
+        TimeUnit.HOURS.toMillis(1),
+        handler -> {
+          refreshCache();
+        });
   }
 
   @Override
@@ -52,39 +54,40 @@ public class UniqueAttributeCache implements IudxCache {
     Promise<Void> promise = Promise.promise();
     LOGGER.trace(cacheType + " refreshCache() called");
     String query = Constants.SELECT_UNIQUE_ATTRIBUTE;
-    postgresService.executeQuery(query, handler -> {
-      if (handler.succeeded()) {
-        JsonArray clientIdArray = handler.result().getJsonArray("result");
-        cache.invalidateAll();
-        clientIdArray.forEach(e -> {
-          JsonObject clientInfo = (JsonObject) e;
-          String key = clientInfo.getString("resource_id");
-          String value = clientInfo.getString("unique_attribute");
-          CacheValue<JsonObject> cacheValue=createCacheValue(key, value);
-          this.cache.put(key, cacheValue);
+    postgresService.executeQuery(
+        query,
+        handler -> {
+          if (handler.succeeded()) {
+            JsonArray clientIdArray = handler.result().getJsonArray("result");
+            cache.invalidateAll();
+            clientIdArray.forEach(
+                e -> {
+                  JsonObject clientInfo = (JsonObject) e;
+                  String key = clientInfo.getString("resource_id");
+                  String value = clientInfo.getString("unique_attribute");
+                  CacheValue<JsonObject> cacheValue = createCacheValue(key, value);
+                  this.cache.put(key, cacheValue);
+                });
+            promise.complete();
+          } else {
+            promise.fail("failed to refreash");
+          }
         });
-        promise.complete();
-      } else {
-        promise.fail("failed to refreash");
-      }
-    });
     return promise.future();
   }
-  
+
   @Override
-  public CacheValue<JsonObject> createCacheValue(String id, String unique_attrib){
+  public CacheValue<JsonObject> createCacheValue(String id, String unique_attrib) {
     return new CacheValue<JsonObject>() {
       @Override
       public JsonObject getValue() {
-        JsonObject value=new JsonObject();
+        JsonObject value = new JsonObject();
         value.put("resource_id", id);
         value.put("key", id);
         value.put("unique_attribute", unique_attrib);
         value.put("value", unique_attrib);
         return value;
       }
-      
     };
   }
-
 }

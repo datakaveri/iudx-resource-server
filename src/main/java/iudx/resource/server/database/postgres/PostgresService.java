@@ -9,7 +9,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
-
 @VertxGen
 @ProxyGen
 public interface PostgresService {
@@ -18,13 +17,11 @@ public interface PostgresService {
   PostgresService executeQuery(final String query, Handler<AsyncResult<JsonObject>> handler);
 
   @Fluent
-  PostgresService executePreparedQuery(final String query, final JsonObject queryparams,
-      Handler<AsyncResult<JsonObject>> handler);
-
+  PostgresService executePreparedQuery(
+      final String query, final JsonObject queryparams, Handler<AsyncResult<JsonObject>> handler);
 
   @GenIgnore
   static PostgresService createProxy(Vertx vertx, String address) {
     return new PostgresServiceVertxEBProxy(vertx, address);
   }
-
 }

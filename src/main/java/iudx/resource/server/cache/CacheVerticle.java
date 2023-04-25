@@ -15,7 +15,6 @@ public class CacheVerticle extends AbstractVerticle {
 
   private static final Logger LOGGER = LogManager.getLogger(CacheVerticle.class);
 
-
   private MessageConsumer<JsonObject> consumer;
   private ServiceBinder binder;
 
@@ -27,7 +26,7 @@ public class CacheVerticle extends AbstractVerticle {
   public void start() throws Exception {
 
     pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
-    catalogueCache=new CatalogueCacheImpl(vertx, config());
+    catalogueCache = new CatalogueCacheImpl(vertx, config());
     cacheService = new CacheServiceImpl(vertx, pgService, catalogueCache);
 
     binder = new ServiceBinder(vertx);

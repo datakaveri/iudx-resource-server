@@ -18,28 +18,23 @@ public class ProviderAuthStrategy implements AuthorizationStrategy {
   private final Api api;
   private static volatile ProviderAuthStrategy instance;
 
-
-  private ProviderAuthStrategy(Api api)
-  {
+  private ProviderAuthStrategy(Api api) {
     this.api = api;
     buildPermissions(api);
   }
-  public static ProviderAuthStrategy getInstance(Api api)
-  {
 
-    if(instance == null)
-    {
-      synchronized (ProviderAuthStrategy.class)
-      {
-        if(instance == null)
-        {
+  public static ProviderAuthStrategy getInstance(Api api) {
+
+    if (instance == null) {
+      synchronized (ProviderAuthStrategy.class) {
+        if (instance == null) {
           instance = new ProviderAuthStrategy(api);
         }
       }
     }
     return instance;
-
   }
+
   private void buildPermissions(Api api) {
     // provider allowed to access all endpoints
   }
@@ -50,8 +45,8 @@ public class ProviderAuthStrategy implements AuthorizationStrategy {
   }
 
   @Override
-  public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData,
-      JsonObject quotaConsumed) {
+  public boolean isAuthorized(
+      AuthorizationRequest authRequest, JwtData jwtData, JsonObject quotaConsumed) {
     // TODO Auto-generated method stub
     return isAuthorized(authRequest, jwtData);
   }

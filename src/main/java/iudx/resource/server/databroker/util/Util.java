@@ -25,20 +25,20 @@ public class Util {
 
   /**
    * encode string using URLEncoder's encode method.
-   * 
+   *
    * @param value which is a String
    * @return encoded_value which is a String
-   **/
+   */
   public static String encodeValue(String value) {
     return URLEncoder.encode(value, StandardCharsets.UTF_8);
   }
 
   /**
    * This method is as simple as but it can have more sophisticated encryption logic.
-   * 
+   *
    * @param plainUserName which is a String
    * @return encodedValue which is a String
-   **/
+   */
   public static String getSha(String plainUserName) {
     String encodedValue = null;
     try {
@@ -49,43 +49,40 @@ public class Util {
     return encodedValue;
   }
 
-  /**
-   * This method generate random alphanumeric password of given PASSWORD_LENGTH.
-   **/
+  /** This method generate random alphanumeric password of given PASSWORD_LENGTH. */
   public static String generateRandomPassword() {
     // It is simple one. here we may have strong algorithm for password generation.
     return org.apache.commons.lang3.RandomStringUtils.random(Constants.PASSWORD_LENGTH, true, true);
   }
 
-  public static Supplier<String> randomPassword = () -> {
-    UUID uid=UUID.randomUUID();
-    byte[] pwdBytes=ByteBuffer.wrap(new byte[16])
-        .putLong(uid.getMostSignificantBits())
-        .putLong(uid.getLeastSignificantBits())
-        .array();
-    return Base64.getUrlEncoder().encodeToString(pwdBytes).substring(0,22);
-  };
-      ;
+  public static Supplier<String> randomPassword =
+      () -> {
+        UUID uid = UUID.randomUUID();
+        byte[] pwdBytes =
+            ByteBuffer.wrap(new byte[16])
+                .putLong(uid.getMostSignificantBits())
+                .putLong(uid.getLeastSignificantBits())
+                .array();
+        return Base64.getUrlEncoder().encodeToString(pwdBytes).substring(0, 22);
+      };
+  ;
 
-  /**
-   * TODO This method checks the if for special characters other than hyphen, A-Z, a-z and 0-9.
-   **/
+  /** TODO This method checks the if for special characters other than hyphen, A-Z, a-z and 0-9. */
+  public static Predicate<String> isValidId =
+      (id) -> {
+        if (id == null) return false;
+        Pattern allowedPattern = Pattern.compile("[^-_.//a-zA-Z0-9 ]", Pattern.CASE_INSENSITIVE);
+        Matcher isInvalid = allowedPattern.matcher(id);
+        return !isInvalid.find();
+      };
 
-  public static Predicate<String> isValidId=(id)->{
-    if (id == null)
-      return false;
-    Pattern allowedPattern = Pattern.compile("[^-_.//a-zA-Z0-9 ]", Pattern.CASE_INSENSITIVE);
-    Matcher isInvalid = allowedPattern.matcher(id);
-    return !isInvalid.find();
-  };
+  public static BinaryOperator<JsonArray> bindingMergeOperator =
+      (key1, key2) -> {
+        JsonArray mergedArray = new JsonArray();
+        mergedArray.clear().addAll(((JsonArray) key1)).addAll(((JsonArray) key2));
+        return mergedArray;
+      };
 
-
-  public static BinaryOperator<JsonArray> bindingMergeOperator = (key1, key2) -> {
-    JsonArray mergedArray = new JsonArray();
-    mergedArray.clear().addAll(((JsonArray) key1)).addAll(((JsonArray) key2));
-    return mergedArray;
-  };
-  
   public static JsonObject getResponseJson(int type, String title, String detail) {
     JsonObject json = new JsonObject();
     json.put(TYPE, type);
@@ -94,7 +91,8 @@ public class Util {
     return json;
   }
 
-  public static JsonObject getResponseJson(String type,int statusCode, String title, String detail) {
+  public static JsonObject getResponseJson(
+      String type, int statusCode, String title, String detail) {
     JsonObject json = new JsonObject();
     json.put(TYPE, type);
     json.put(STATUS, statusCode);
@@ -102,7 +100,7 @@ public class Util {
     json.put(DETAIL, detail);
     return json;
   }
-  
+
   public static boolean isGroupId(String id) {
     return id.split("/").length == 4;
   }

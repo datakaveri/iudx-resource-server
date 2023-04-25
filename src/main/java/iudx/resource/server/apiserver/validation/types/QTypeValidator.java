@@ -56,8 +56,6 @@ public final class QTypeValidator implements Validator {
     return VALIDATION_Q_ATTR_PATTERN.matches(value);
   }
 
-
-
   JsonObject getQueryTerms(final String queryTerms) throws Exception {
     JsonObject json = new JsonObject();
     int length = queryTerms.length();
@@ -76,7 +74,8 @@ public final class QTypeValidator implements Validator {
           // do nothing
         } else {
           LOGGER.error("Ignore " + c.toString());
-          throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
+          throw new DxRuntimeException(
+              failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
         }
       } else {
         if (specialCharFound && (Character.isLetter(c) || Character.isDigit(c))) {
@@ -85,7 +84,6 @@ public final class QTypeValidator implements Validator {
           break;
         }
       }
-
     }
     return json;
   }
@@ -144,5 +142,4 @@ public final class QTypeValidator implements Validator {
   public String failureMessage() {
     return INVALID_PARAM_VALUE_URN.getMessage();
   }
-
 }

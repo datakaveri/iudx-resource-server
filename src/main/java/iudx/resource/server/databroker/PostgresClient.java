@@ -17,37 +17,39 @@ public class PostgresClient {
 
   static PgPool pgPool;
 
-  public PostgresClient(Vertx vertx, PgConnectOptions pgConnectOptions,
-      PoolOptions connectionPoolOptions) {
-    if(pgPool == null)
-    {
+  public PostgresClient(
+      Vertx vertx, PgConnectOptions pgConnectOptions, PoolOptions connectionPoolOptions) {
+    if (pgPool == null) {
       pgPool = PgPool.pool(vertx, pgConnectOptions, connectionPoolOptions);
-    }  }
+    }
+  }
 
   public Future<RowSet<Row>> executeAsync(String preparedQuerySQL) {
     LOGGER.trace("Info : PostgresQLClient#executeAsync() started");
     Promise<RowSet<Row>> promise = Promise.promise();
-    pgPool.getConnection(connectionHandler -> {
-      if (connectionHandler.succeeded()) {
-        SqlConnection pgConnection = connectionHandler.result();
-        pgConnection.query(preparedQuerySQL).execute(handler -> {
-          if (handler.succeeded()) {
-            pgConnection.close();
-            promise.complete(handler.result());
-          } else {
-            pgConnection.close();
-            LOGGER.fatal("Fail : " + handler.cause());
-            promise.fail(handler.cause());
-          }          
+    pgPool.getConnection(
+        connectionHandler -> {
+          if (connectionHandler.succeeded()) {
+            SqlConnection pgConnection = connectionHandler.result();
+            pgConnection
+                .query(preparedQuerySQL)
+                .execute(
+                    handler -> {
+                      if (handler.succeeded()) {
+                        pgConnection.close();
+                        promise.complete(handler.result());
+                      } else {
+                        pgConnection.close();
+                        LOGGER.fatal("Fail : " + handler.cause());
+                        promise.fail(handler.cause());
+                      }
+                    });
+          } else if (connectionHandler.failed()) {
+            LOGGER.fatal("Fail : " + connectionHandler.cause());
+            promise.fail(connectionHandler.cause());
+          }
         });
-      }
-      else if(connectionHandler.failed())
-      {
-        LOGGER.fatal("Fail : " + connectionHandler.cause());
-        promise.fail(connectionHandler.cause());
-      }
-    });
-    
+
     return promise.future();
   }
 }

@@ -10,9 +10,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(VertxExtension.class)
 public class TestUtil {
-    @Test
-    public void test(VertxTestContext vertxTestContext){
-        assertNotNull(Util.errorResponse(HttpStatusCode.BAD_REQUEST));
-        vertxTestContext.completeNow();
-    }
+  @Test
+  public void test(VertxTestContext vertxTestContext) {
+    assertNotNull(Util.errorResponse(HttpStatusCode.BAD_REQUEST));
+    vertxTestContext.completeNow();
+  }
 }

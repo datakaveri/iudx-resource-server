@@ -42,7 +42,4 @@ public final class DxRuntimeException extends RuntimeException {
   public String getMessage() {
     return message;
   }
-
-
-
 }

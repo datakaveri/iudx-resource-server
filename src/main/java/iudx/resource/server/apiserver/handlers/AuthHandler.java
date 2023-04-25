@@ -46,14 +46,14 @@ public class AuthHandler implements Handler<RoutingContext> {
   public void handle(RoutingContext context) {
     request = context.request();
     RequestBody requestBody = context.body();
-    JsonObject requestJson=null;
-    if(requestBody!=null) {
-      if(requestBody.asJsonObject()!=null) {
-        requestJson=requestBody.asJsonObject().copy();
+    JsonObject requestJson = null;
+    if (requestBody != null) {
+      if (requestBody.asJsonObject() != null) {
+        requestJson = requestBody.asJsonObject().copy();
       }
     }
-    if(requestJson==null) {
-      requestJson=new JsonObject();
+    if (requestJson == null) {
+      requestJson = new JsonObject();
     }
 
     LOGGER.debug("Info : path " + request.path());
@@ -67,10 +67,10 @@ public class AuthHandler implements Handler<RoutingContext> {
     final String path = getNormalizedPath(request.path());
     final String method = context.request().method().toString();
 
-    if (token == null)
-      token = "public";
+    if (token == null) token = "public";
 
-    JsonObject authInfo = new JsonObject().put(API_ENDPOINT, path).put(HEADER_TOKEN, token).put(API_METHOD, method);
+    JsonObject authInfo =
+        new JsonObject().put(API_ENDPOINT, path).put(HEADER_TOKEN, token).put(API_METHOD, method);
 
     LOGGER.debug("Info :" + context.request().path());
     LOGGER.debug("Info :" + context.request().path().split("/").length);
@@ -98,7 +98,7 @@ public class AuthHandler implements Handler<RoutingContext> {
             authInfo.put(IID, authHandler.result().getValue(IID));
             authInfo.put(USER_ID, authHandler.result().getValue(USER_ID));
             authInfo.put(EXPIRY, authHandler.result().getValue(EXPIRY));
-            authInfo.put(ROLE,authHandler.result().getValue(ROLE));
+            authInfo.put(ROLE, authHandler.result().getValue(ROLE));
             context.data().put(AUTH_INFO, authInfo);
           } else {
             processAuthFailure(context, authHandler.cause().getMessage());
@@ -137,8 +137,7 @@ public class AuthHandler implements Handler<RoutingContext> {
   /**
    * extract id from request (path/query or body )
    *
-   *
-   * @param context     current routing context
+   * @param context current routing context
    * @param path endpoint called for
    * @return id extracted from path if present
    */
@@ -200,7 +199,8 @@ public class AuthHandler implements Handler<RoutingContext> {
     if (body != null) {
       JsonArray array = body.getJsonArray(JSON_ENTITIES);
       if (array != null) {
-        if (endpoint.matches(getpathRegex(api.getIngestionPath())) || endpoint.matches(getpathRegex(api.getSubscriptionUrl()))) {
+        if (endpoint.matches(getpathRegex(api.getIngestionPath()))
+            || endpoint.matches(getpathRegex(api.getSubscriptionUrl()))) {
           id = array.getString(0);
         } else {
           JsonObject json = array.getJsonObject(0);
@@ -234,9 +234,9 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = api.getSubscriptionUrl();
     } else if (url.matches(getpathRegex(api.getIngestionPath()))) {
       path = api.getIngestionPath();
-    } else if (url.matches(getpathRegex(api.getMonthlyOverview()))){
+    } else if (url.matches(getpathRegex(api.getMonthlyOverview()))) {
       path = api.getMonthlyOverview();
-    }else if (url.matches(EXCHANGE_URL_REGEX)) {
+    } else if (url.matches(EXCHANGE_URL_REGEX)) {
       path = IUDX_MANAGEMENT_URL + EXCHANGE_PATH;
     } else if (url.matches(QUEUE_URL_REGEX)) {
       path = IUDX_MANAGEMENT_URL + QUEUE_PATH;
@@ -260,13 +260,13 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = api.getIudxAsyncSearchApi();
     } else if (url.matches(IUDX_ASYNC_STATUS)) {
       path = api.getIudxAsyncStatusApi();
-    }else if (url.matches(getpathRegex(api.getSummaryPath()))) {
+    } else if (url.matches(getpathRegex(api.getSummaryPath()))) {
       path = api.getSummaryPath();
     }
     return path;
   }
-  
+
   private String getpathRegex(String path) {
-    return path+"(.*)";
+    return path + "(.*)";
   }
 }

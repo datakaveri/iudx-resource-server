@@ -14,12 +14,11 @@ import iudx.resource.server.database.elastic.exception.ESQueryException;
 
 public class AttributeQueryFiltersDecorator implements ElasticsearchQueryDecorator {
 
-
   private Map<FilterType, List<Query>> queryFilters;
   private JsonObject requestQuery;
 
-  public AttributeQueryFiltersDecorator(Map<FilterType, List<Query>> queryFilters,
-      JsonObject requestQuery) {
+  public AttributeQueryFiltersDecorator(
+      Map<FilterType, List<Query>> queryFilters, JsonObject requestQuery) {
     this.queryFilters = queryFilters;
     this.requestQuery = requestQuery;
   }
@@ -32,7 +31,6 @@ public class AttributeQueryFiltersDecorator implements ElasticsearchQueryDecorat
       return queryFilters;
     }
 
-
     attrQuery = requestQuery.getJsonArray(ATTRIBUTE_QUERY_KEY);
     for (Object obj : attrQuery) {
       JsonObject attrObj = (JsonObject) obj;
@@ -44,36 +42,36 @@ public class AttributeQueryFiltersDecorator implements ElasticsearchQueryDecorat
 
         if (GREATER_THAN_OP.equalsIgnoreCase(operator)) {
 
-          attrRangeQuery = RangeQuery
-              .of(query -> query.field(attribute).gt(JsonData.of(attributeValue)))
-                ._toQuery();
+          attrRangeQuery =
+              RangeQuery.of(query -> query.field(attribute).gt(JsonData.of(attributeValue)))
+                  ._toQuery();
 
           List<Query> queryList = queryFilters.get(FilterType.FILTER);
           queryList.add(attrRangeQuery);
 
         } else if (LESS_THAN_OP.equalsIgnoreCase(operator)) {
 
-          attrRangeQuery = RangeQuery
-              .of(query -> query.field(attribute).lt(JsonData.of(attributeValue)))
-                ._toQuery();
+          attrRangeQuery =
+              RangeQuery.of(query -> query.field(attribute).lt(JsonData.of(attributeValue)))
+                  ._toQuery();
 
           List<Query> queryList = queryFilters.get(FilterType.FILTER);
           queryList.add(attrRangeQuery);
 
         } else if (GREATER_THAN_EQ_OP.equalsIgnoreCase(operator)) {
 
-          attrRangeQuery = RangeQuery
-              .of(query -> query.field(attribute).gte(JsonData.of(attributeValue)))
-                ._toQuery();
+          attrRangeQuery =
+              RangeQuery.of(query -> query.field(attribute).gte(JsonData.of(attributeValue)))
+                  ._toQuery();
 
           List<Query> queryList = queryFilters.get(FilterType.FILTER);
           queryList.add(attrRangeQuery);
 
         } else if (LESS_THAN_EQ_OP.equalsIgnoreCase(operator)) {
 
-          attrRangeQuery = RangeQuery
-              .of(query -> query.field(attribute).lte(JsonData.of(attributeValue)))
-                ._toQuery();
+          attrRangeQuery =
+              RangeQuery.of(query -> query.field(attribute).lte(JsonData.of(attributeValue)))
+                  ._toQuery();
 
           List<Query> queryList = queryFilters.get(FilterType.FILTER);
           queryList.add(attrRangeQuery);
@@ -105,17 +103,16 @@ public class AttributeQueryFiltersDecorator implements ElasticsearchQueryDecorat
           queryList.add(termQuery);
 
         } else {
-          throw new ESQueryException(ResponseUrn.INVALID_ATTR_PARAM_URN,
-              "invalid attribute operator");
+          throw new ESQueryException(
+              ResponseUrn.INVALID_ATTR_PARAM_URN, "invalid attribute operator");
         }
       } catch (ESQueryException e) {
         throw e;
       } catch (Exception e) {
-        throw new ESQueryException(ResponseUrn.INVALID_ATTR_PARAM_URN,
-            "exception occured at decoding attributes");
+        throw new ESQueryException(
+            ResponseUrn.INVALID_ATTR_PARAM_URN, "exception occured at decoding attributes");
       }
     }
     return queryFilters;
   }
-
 }

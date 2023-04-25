@@ -31,33 +31,21 @@ import io.vertx.rabbitmq.RabbitMQMessage;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import iudx.resource.server.cache.CacheService;
 
-
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class TestRevokeClientQListener {
   RevokeClientQListener revokeClientQListener;
-  @Mock
-  Vertx vertx;
-  @Mock
-  CacheService cache;
-  @Mock
-  RabbitMQOptions config;
-  @Mock
-  RabbitMQClient client;
-  @Mock
-  Future<Void> voidFuture;
+  @Mock Vertx vertx;
+  @Mock CacheService cache;
+  @Mock RabbitMQOptions config;
+  @Mock RabbitMQClient client;
+  @Mock Future<Void> voidFuture;
   String vHost;
-  @Mock
-  AsyncResult<JsonObject> jsonObjectAsyncResult;
-  @Mock
-  AsyncResult<RabbitMQConsumer> consumerAsyncResult;
-  @Mock
-  RabbitMQConsumer rabbitMQConsumer;
-  @Mock
-  RabbitMQMessage message;
-  @Mock
-  Throwable throwable;
-  @Mock
-  Void event;
+  @Mock AsyncResult<JsonObject> jsonObjectAsyncResult;
+  @Mock AsyncResult<RabbitMQConsumer> consumerAsyncResult;
+  @Mock RabbitMQConsumer rabbitMQConsumer;
+  @Mock RabbitMQMessage message;
+  @Mock Throwable throwable;
+  @Mock Void event;
 
   @BeforeEach
   public void setUp(VertxTestContext vertxTestContext) {
@@ -83,35 +71,44 @@ public class TestRevokeClientQListener {
     when(clientStartAsyncResult.succeeded()).thenReturn(true);
     when(message.body()).thenReturn(buffer);
 
+    doAnswer(
+            new Answer<AsyncResult<RabbitMQConsumer>>() {
+              @Override
+              public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<Void>>) arg0.getArgument(0)).handle(clientStartAsyncResult);
+                return null;
+              }
+            })
+        .when(voidFuture)
+        .onComplete(any());
 
-    doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
-      @Override
-      public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<Void>>) arg0.getArgument(0)).handle(clientStartAsyncResult);
-        return null;
-      }
-    }).when(voidFuture).onComplete(any());
-
-    doAnswer(new Answer<RabbitMQMessage>() {
-      @Override
-      public RabbitMQMessage answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<RabbitMQMessage>) arg0.getArgument(0)).handle(message);
-        return null;
-      }
-    }).when(rabbitMQConsumer).handler(any());
+    doAnswer(
+            new Answer<RabbitMQMessage>() {
+              @Override
+              public RabbitMQMessage answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<RabbitMQMessage>) arg0.getArgument(0)).handle(message);
+                return null;
+              }
+            })
+        .when(rabbitMQConsumer)
+        .handler(any());
     when(cache.refresh(any())).thenReturn(Future.succeededFuture(new JsonObject()));
-    doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
-      @Override
-      public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<RabbitMQConsumer>>) arg0.getArgument(2)).handle(consumerAsyncResult);
-        return null;
-      }
-    }).when(revokeClientQListener.client).basicConsumer(anyString(), any(), any());
+    doAnswer(
+            new Answer<AsyncResult<RabbitMQConsumer>>() {
+              @Override
+              public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<RabbitMQConsumer>>) arg0.getArgument(2))
+                    .handle(consumerAsyncResult);
+                return null;
+              }
+            })
+        .when(revokeClientQListener.client)
+        .basicConsumer(anyString(), any(), any());
 
     revokeClientQListener.start();
     verify(voidFuture, times(1)).onComplete(any());
     verify(message).body();
-    verify(cache,times(1)).refresh(any());
+    verify(cache, times(1)).refresh(any());
     assertEquals(buffer, message.body());
     vertxTestContext.completeNow();
   }
@@ -132,34 +129,44 @@ public class TestRevokeClientQListener {
     when(clientStartAsyncResult.succeeded()).thenReturn(true);
     when(message.body()).thenReturn(buffer);
 
-    doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
-      @Override
-      public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<Void>>) arg0.getArgument(0)).handle(clientStartAsyncResult);
-        return null;
-      }
-    }).when(voidFuture).onComplete(any());
+    doAnswer(
+            new Answer<AsyncResult<RabbitMQConsumer>>() {
+              @Override
+              public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<Void>>) arg0.getArgument(0)).handle(clientStartAsyncResult);
+                return null;
+              }
+            })
+        .when(voidFuture)
+        .onComplete(any());
 
-    doAnswer(new Answer<RabbitMQMessage>() {
-      @Override
-      public RabbitMQMessage answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<RabbitMQMessage>) arg0.getArgument(0)).handle(message);
-        return null;
-      }
-    }).when(rabbitMQConsumer).handler(any());
+    doAnswer(
+            new Answer<RabbitMQMessage>() {
+              @Override
+              public RabbitMQMessage answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<RabbitMQMessage>) arg0.getArgument(0)).handle(message);
+                return null;
+              }
+            })
+        .when(rabbitMQConsumer)
+        .handler(any());
     when(cache.refresh(any())).thenReturn(Future.failedFuture(""));
-    doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
-      @Override
-      public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<RabbitMQConsumer>>) arg0.getArgument(2)).handle(consumerAsyncResult);
-        return null;
-      }
-    }).when(revokeClientQListener.client).basicConsumer(anyString(), any(), any());
+    doAnswer(
+            new Answer<AsyncResult<RabbitMQConsumer>>() {
+              @Override
+              public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<RabbitMQConsumer>>) arg0.getArgument(2))
+                    .handle(consumerAsyncResult);
+                return null;
+              }
+            })
+        .when(revokeClientQListener.client)
+        .basicConsumer(anyString(), any(), any());
 
     revokeClientQListener.start();
     verify(voidFuture, times(1)).onComplete(any());
     verify(message).body();
-    verify(cache,times(1)).refresh(any());
+    verify(cache, times(1)).refresh(any());
     assertEquals(buffer, message.body());
     vertxTestContext.completeNow();
   }
@@ -181,30 +188,39 @@ public class TestRevokeClientQListener {
     // when(voidFuture.succeeded()).thenReturn(true);
     when(message.body()).thenReturn(null);
 
-    doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
-      @Override
-      public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<Void>>) arg0.getArgument(0)).handle(clientStartAsyncResult);
-        return null;
-      }
-    }).when(voidFuture).onComplete(any());
+    doAnswer(
+            new Answer<AsyncResult<RabbitMQConsumer>>() {
+              @Override
+              public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<Void>>) arg0.getArgument(0)).handle(clientStartAsyncResult);
+                return null;
+              }
+            })
+        .when(voidFuture)
+        .onComplete(any());
 
+    doAnswer(
+            new Answer<RabbitMQMessage>() {
+              @Override
+              public RabbitMQMessage answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<RabbitMQMessage>) arg0.getArgument(0)).handle(message);
+                return null;
+              }
+            })
+        .when(rabbitMQConsumer)
+        .handler(any());
 
-    doAnswer(new Answer<RabbitMQMessage>() {
-      @Override
-      public RabbitMQMessage answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<RabbitMQMessage>) arg0.getArgument(0)).handle(message);
-        return null;
-      }
-    }).when(rabbitMQConsumer).handler(any());
-
-    doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
-      @Override
-      public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<RabbitMQConsumer>>) arg0.getArgument(2)).handle(consumerAsyncResult);
-        return null;
-      }
-    }).when(revokeClientQListener.client).basicConsumer(anyString(), any(), any());
+    doAnswer(
+            new Answer<AsyncResult<RabbitMQConsumer>>() {
+              @Override
+              public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<RabbitMQConsumer>>) arg0.getArgument(2))
+                    .handle(consumerAsyncResult);
+                return null;
+              }
+            })
+        .when(revokeClientQListener.client)
+        .basicConsumer(anyString(), any(), any());
 
     revokeClientQListener.start();
     verify(voidFuture).onComplete(any());
@@ -212,7 +228,6 @@ public class TestRevokeClientQListener {
     assertEquals(null, message.body());
     vertxTestContext.completeNow();
   }
-
 
   @Test
   @DisplayName("Test start method : Failure")

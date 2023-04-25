@@ -32,7 +32,8 @@ public final class TimeRelTypeValidator implements Validator {
       }
       if (value.isBlank()) {
         LOGGER.error("Validation error :  blank value for passed");
-        throw new DxRuntimeException(failureCode(), INVALID_TEMPORAL_REL_URN, failureMessage(value));
+        throw new DxRuntimeException(
+            failureCode(), INVALID_TEMPORAL_REL_URN, failureMessage(value));
       }
     }
     if (!VALIDATION_ALLOWED_TEMPORAL_REL.contains(value)) {
@@ -42,12 +43,10 @@ public final class TimeRelTypeValidator implements Validator {
     return true;
   }
 
-
   @Override
   public int failureCode() {
     return HttpStatusCode.BAD_REQUEST.getValue();
   }
-
 
   @Override
   public String failureMessage() {

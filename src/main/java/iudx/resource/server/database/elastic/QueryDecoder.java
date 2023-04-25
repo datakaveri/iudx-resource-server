@@ -59,7 +59,8 @@ public class QueryDecoder {
 
     queryLists.get(FilterType.FILTER).add(idTermsQuery);
     ElasticsearchQueryDecorator queryDecorator = null;
-    if (searchType.matches(TEMPORAL_SEARCH_REGEX) && jsonQuery.containsKey(REQ_TIMEREL)
+    if (searchType.matches(TEMPORAL_SEARCH_REGEX)
+        && jsonQuery.containsKey(REQ_TIMEREL)
         && jsonQuery.containsKey(TIME_KEY)) {
 
       if (!isAsyncQuery) {
@@ -99,7 +100,6 @@ public class QueryDecoder {
 
     LOGGER.info("query : {}", q.toString());
     return q;
-
   }
 
   private String[] getTimeLimitArray(JsonObject jsonQuery, boolean isAsyncQuery) {
@@ -120,12 +120,10 @@ public class QueryDecoder {
     JsonArray responseFilteringFileds = queryJson.getJsonArray(RESPONSE_ATTRS);
     if (responseFilteringFileds == null) {
       LOGGER.error("response filtering fields are not passed in attrs parameter");
-      throw new ESQueryException(
-          "response filtering fields are not passed in attrs parameter");
+      throw new ESQueryException("response filtering fields are not passed in attrs parameter");
     }
 
     return getSourceFilter(responseFilteringFileds.getList());
-
   }
 
   private SourceConfig getSourceFilter(List<String> sourceFilterList) {
@@ -160,6 +158,5 @@ public class QueryDecoder {
     }
 
     return boolQuery.build()._toQuery();
-
   }
 }

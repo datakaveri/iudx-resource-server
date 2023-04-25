@@ -3,18 +3,15 @@ package iudx.resource.server.common;
 import io.vertx.core.json.JsonObject;
 
 /**
- * <p>
  * Response Object can be used to pass URN based messages/responses between different verticles,
  * mostly in case of failures. where following parameters can be used
- * 
+ *
  * <pre>
  *  type    : String representation of URN like urn:dx:rs:SomeErrorURN
  *  status  : HttpPstatus code (e.g 404,400 etc.)
  *  title   : brief error title
  *  detail  : detailed message
  * </pre>
- * </p>
- * 
  */
 public class Response {
 
@@ -40,7 +37,6 @@ public class Response {
 
     return json;
   }
-
 
   public static class Builder {
     private String type;
@@ -73,7 +69,6 @@ public class Response {
     }
   }
 
-
   public String getType() {
     return type;
   }
@@ -94,7 +89,4 @@ public class Response {
   public String toString() {
     return toJson().toString();
   }
-
-
-
 }

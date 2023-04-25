@@ -41,16 +41,13 @@ public class CallbackVerticle extends AbstractVerticle {
   private String databasePassword;
   private int poolSize;
 
-  /**
-   * This method is used to start the Verticle. It deploys a verticle in a cluster.
-   */
+  /** This method is used to start the Verticle. It deploys a verticle in a cluster. */
   @Override
   public void start() throws Exception {
 
     dataBrokerIP = config().getString("dataBrokerIP");
     dataBrokerPort = config().getInteger("dataBrokerPort");
-    dataBrokerManagementPort =
-      config().getInteger("dataBrokerManagementPort");
+    dataBrokerManagementPort = config().getInteger("dataBrokerManagementPort");
     dataBrokerVhost = config().getString("dataBrokerVhost");
     dataBrokerUserName = config().getString("dataBrokerUserName");
     dataBrokerPassword = config().getString("dataBrokerPassword");
@@ -58,8 +55,7 @@ public class CallbackVerticle extends AbstractVerticle {
     requestedHeartbeat = config().getInteger("requestedHeartbeat");
     handshakeTimeout = config().getInteger("handshakeTimeout");
     requestedChannelMax = config().getInteger("requestedChannelMax");
-    networkRecoveryInterval =
-      config().getInteger("networkRecoveryInterval");
+    networkRecoveryInterval = config().getInteger("networkRecoveryInterval");
 
     databaseIP = config().getString("callbackDatabaseIP");
     databasePort = config().getInteger("callbackDatabasePort");
@@ -67,7 +63,6 @@ public class CallbackVerticle extends AbstractVerticle {
     databaseUserName = config().getString("callbackDatabaseUserName");
     databasePassword = config().getString("callbackDatabasePassword");
     poolSize = config().getInteger("callbackpoolSize");
-
 
     /* Configure the RabbitMQ Data Broker client with input from config files. */
 
@@ -122,15 +117,13 @@ public class CallbackVerticle extends AbstractVerticle {
     /* Publish the Callback service with the Event Bus against an address. */
 
     consumer =
-        binder.setAddress(CALLBACK_SERVICE_ADDRESS)
-      .register(CallbackService.class, callback);
+        binder.setAddress(CALLBACK_SERVICE_ADDRESS).register(CallbackService.class, callback);
 
     LOGGER.info("Callback Verticle started");
   }
 
   @Override
   public void stop() {
-	binder.unregister(consumer);
+    binder.unregister(consumer);
   }
 }
-

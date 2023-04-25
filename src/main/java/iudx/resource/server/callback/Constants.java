@@ -87,7 +87,6 @@ public class Constants {
   public static final String CALLBACK_URL_RESPONSE_NULL = "CallbackUrl response is null";
   public static final String CALLBACK_URL_INVALID = "CallbackUrl is Invalid";
 
-
   public static final String DATA_SEND_TO_CALLBACK_URL_SUCCESS =
       "Data Send to CallBackUrl Successfully";
   public static final String DATA_SEND_TO_CALLBACK_URL_FAIL = "Failed to send data to callBackUrl";

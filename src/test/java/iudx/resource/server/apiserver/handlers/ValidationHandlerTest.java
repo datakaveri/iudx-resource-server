@@ -34,10 +34,8 @@ import iudx.resource.server.apiserver.util.RequestType;
 @ExtendWith(MockitoExtension.class)
 public class ValidationHandlerTest {
   RequestType requestType;
-  @Mock
-  RoutingContext routingContext;
-  @Mock
-  HttpServerRequest httpServerRequest;
+  @Mock RoutingContext routingContext;
+  @Mock HttpServerRequest httpServerRequest;
 
   ValidationHandler validationHandler;
 
@@ -51,8 +49,7 @@ public class ValidationHandlerTest {
         Arguments.of(RequestType.SUBSCRIPTION),
         Arguments.of(RequestType.ASYNC_SEARCH),
         Arguments.of(RequestType.ASYNC_STATUS),
-        Arguments.of(RequestType.OVERVIEW)
-        );
+        Arguments.of(RequestType.OVERVIEW));
   }
 
   @DisplayName("Test handle method")
@@ -60,37 +57,38 @@ public class ValidationHandlerTest {
   @MethodSource("data")
   public void testHandle(RequestType value, VertxTestContext vertxTestContext) {
     requestType = value;
-    
-    //path params
+
+    // path params
     Map<String, String> stringMap = new HashMap<>();
-    stringMap.put("id",
+    stringMap.put(
+        "id",
         "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta");
-    
-    //parameters
+
+    // parameters
     MultiMap parameters = MultiMap.caseInsensitiveMultiMap();
     parameters.add("timerel", "before");
     parameters.add("time", "2020-10-18T14:20:00Z");
     parameters.add("searchId", UUID.randomUUID().toString());
-    
-    //for latest
+
+    // for latest
     parameters.add(DOMAIN, "iisc.ac.in");
-    parameters.add(USERSHA,"89a36273d77dac4cf38114fca1bbe64392547f86");
+    parameters.add(USERSHA, "89a36273d77dac4cf38114fca1bbe64392547f86");
     parameters.add(RESOURCE_SERVER, "rs.iudx.io");
     parameters.add(RESOURCE_GROUP, "surat-itms-realtime-information");
     parameters.add(RESOURCE_NAME, "surat-itms-live-eta");
-    
-    //headers
+
+    // headers
     MultiMap header = MultiMap.caseInsensitiveMultiMap();
     header.add("options", "streaming");
-    
-    //body
+
+    // body
     JsonObject body = null;
-    if(requestType.equals(RequestType.POST_ENTITIES)) {
-      body=getPostEntitiesJsonRequestBody();
-    }else if(requestType.equals(RequestType.POST_TEMPORAL)){
+    if (requestType.equals(RequestType.POST_ENTITIES)) {
+      body = getPostEntitiesJsonRequestBody();
+    } else if (requestType.equals(RequestType.POST_TEMPORAL)) {
       body = getPostTemporalJsonRequestBody();
-    }else if(requestType.equals(RequestType.SUBSCRIPTION)) {
-      body=getSubscriptionBody();
+    } else if (requestType.equals(RequestType.SUBSCRIPTION)) {
+      body = getSubscriptionBody();
     }
 
     RequestBody requestBody = mock(RequestBody.class);
@@ -111,55 +109,60 @@ public class ValidationHandlerTest {
     verify(routingContext).pathParams();
     vertxTestContext.completeNow();
   }
-  
-  
+
   private JsonObject getPostTemporalJsonRequestBody() {
-    return new JsonObject("{\n"
-        + "    \"type\": \"Query\",\n"
-        + "    \"entities\": [\n"
-        + "        {\n"
-        + "            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n"
-        + "        }\n"
-        + "    ],\n"
-        + "    \"geoQ\": {\n"
-        + "        \"geometry\": \"Point\",\n"
-        + "        \"coordinates\": [21.178,72.834],\n"
-        + "        \"georel\": \"near;maxDistance=1000\",\n"
-        + "        \"geoproperty\": \"location\"\n"
-        + "    },\n"
-        + "    \"temporalQ\": {\n"
-        + "        \"timerel\": \"between\",\n"
-        + "        \"time\": \"2020-10-18T14:20:00Z\",\n"
-        + "        \"endtime\": \"2020-10-19T14:20:00Z\",\n"
-        + "        \"timeProperty\": \"observationDateTime\"\n"
-        + "    },\n"
-        + "    \"q\":\"speed>30.0\",\n"
-        + "    \"attrs\":\"id,speed\"\n"
-        + "}");
+    return new JsonObject(
+        "{\n"
+            + "    \"type\": \"Query\",\n"
+            + "    \"entities\": [\n"
+            + "        {\n"
+            + "            \"id\":"
+            + " \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n"
+            + "        }\n"
+            + "    ],\n"
+            + "    \"geoQ\": {\n"
+            + "        \"geometry\": \"Point\",\n"
+            + "        \"coordinates\": [21.178,72.834],\n"
+            + "        \"georel\": \"near;maxDistance=1000\",\n"
+            + "        \"geoproperty\": \"location\"\n"
+            + "    },\n"
+            + "    \"temporalQ\": {\n"
+            + "        \"timerel\": \"between\",\n"
+            + "        \"time\": \"2020-10-18T14:20:00Z\",\n"
+            + "        \"endtime\": \"2020-10-19T14:20:00Z\",\n"
+            + "        \"timeProperty\": \"observationDateTime\"\n"
+            + "    },\n"
+            + "    \"q\":\"speed>30.0\",\n"
+            + "    \"attrs\":\"id,speed\"\n"
+            + "}");
   }
-  
+
   private JsonObject getPostEntitiesJsonRequestBody() {
-    return new JsonObject("{\n"
-        + "    \"type\": \"Query\",\n"
-        + "    \"entities\": [\n"
-        + "        {\n"
-        + "            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n"
-        + "        }\n"
-        + "    ],\n"
-        + "    \"geoQ\": {\n"
-        + "        \"geometry\": \"Point\",\n"
-        + "        \"coordinates\": [21.178,72.834],\n"
-        + "        \"georel\": \"near;maxDistance=10\",\n"
-        + "        \"geoproperty\": \"location\"\n"
-        + "    }\n"
-        + "}");
+    return new JsonObject(
+        "{\n"
+            + "    \"type\": \"Query\",\n"
+            + "    \"entities\": [\n"
+            + "        {\n"
+            + "            \"id\":"
+            + " \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n"
+            + "        }\n"
+            + "    ],\n"
+            + "    \"geoQ\": {\n"
+            + "        \"geometry\": \"Point\",\n"
+            + "        \"coordinates\": [21.178,72.834],\n"
+            + "        \"georel\": \"near;maxDistance=10\",\n"
+            + "        \"geoproperty\": \"location\"\n"
+            + "    }\n"
+            + "}");
   }
-  
+
   private JsonObject getSubscriptionBody() {
-    return new JsonObject("{\n"
-        + "    \"name\": \"integration-test-alias-RL\",\n"
-        + "    \"type\": \"subscription\",\n"
-        + "    \"entities\": [\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"]\n"
-        + "}");
+    return new JsonObject(
+        "{\n"
+            + "    \"name\": \"integration-test-alias-RL\",\n"
+            + "    \"type\": \"subscription\",\n"
+            + "    \"entities\":"
+            + " [\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"]\n"
+            + "}");
   }
 }

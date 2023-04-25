@@ -21,43 +21,35 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(VertxExtension.class)
 public class FailureHandlerTest {
-    @Mock
-    DxRuntimeException dxRuntimeException;
-    @Mock
-    RoutingContext routingContext;
-    @Mock
-    HttpServerResponse httpServerResponse;
-    @Mock
-    ResponseUrn responseUrn;
-    @Mock
-    Future<Void> voidFuture;
+  @Mock DxRuntimeException dxRuntimeException;
+  @Mock RoutingContext routingContext;
+  @Mock HttpServerResponse httpServerResponse;
+  @Mock ResponseUrn responseUrn;
+  @Mock Future<Void> voidFuture;
 
-    @Test
-    @DisplayName("Test handle method with RuntimeException")
-    public void testHandle(VertxTestContext vertxTestContext)
-    {
-        when(routingContext.failure()).thenReturn(dxRuntimeException);
-        when(dxRuntimeException.getUrn()).thenReturn(responseUrn);
-        when(dxRuntimeException.getStatusCode()).thenReturn(400);
-        when(responseUrn.getUrn()).thenReturn("Dummy URN");
-        when(dxRuntimeException.getMessage()).thenReturn("Dummy Message");
-        when(routingContext.response()).thenReturn(httpServerResponse);
-        when(httpServerResponse.putHeader(anyString(),anyString())).thenReturn(httpServerResponse);
-        when(httpServerResponse.setStatusCode(anyInt())).thenReturn(httpServerResponse);
-        when(httpServerResponse.end(anyString())).thenReturn(voidFuture);
+  @Test
+  @DisplayName("Test handle method with RuntimeException")
+  public void testHandle(VertxTestContext vertxTestContext) {
+    when(routingContext.failure()).thenReturn(dxRuntimeException);
+    when(dxRuntimeException.getUrn()).thenReturn(responseUrn);
+    when(dxRuntimeException.getStatusCode()).thenReturn(400);
+    when(responseUrn.getUrn()).thenReturn("Dummy URN");
+    when(dxRuntimeException.getMessage()).thenReturn("Dummy Message");
+    when(routingContext.response()).thenReturn(httpServerResponse);
+    when(httpServerResponse.putHeader(anyString(), anyString())).thenReturn(httpServerResponse);
+    when(httpServerResponse.setStatusCode(anyInt())).thenReturn(httpServerResponse);
+    when(httpServerResponse.end(anyString())).thenReturn(voidFuture);
 
-        FailureHandler failureHandler = new FailureHandler();
-        failureHandler.handle(routingContext);
+    FailureHandler failureHandler = new FailureHandler();
+    failureHandler.handle(routingContext);
 
-        verify(routingContext,atLeast(2)).response();
-        verify(httpServerResponse, atLeast(2)).putHeader(anyString(),anyString());
-        verify(httpServerResponse, atLeast(2)).setStatusCode(400);
-        verify(httpServerResponse, atLeast(2)).end(anyString());
+    verify(routingContext, atLeast(2)).response();
+    verify(httpServerResponse, atLeast(2)).putHeader(anyString(), anyString());
+    verify(httpServerResponse, atLeast(2)).setStatusCode(400);
+    verify(httpServerResponse, atLeast(2)).end(anyString());
 
-
-        assertEquals("Dummy Message", dxRuntimeException.getMessage());
-        assertEquals("Dummy URN",dxRuntimeException.getUrn().getUrn());
-        vertxTestContext.completeNow();
-    }
-
+    assertEquals("Dummy Message", dxRuntimeException.getMessage());
+    assertEquals("Dummy URN", dxRuntimeException.getUrn().getUrn());
+    vertxTestContext.completeNow();
+  }
 }

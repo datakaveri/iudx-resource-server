@@ -36,18 +36,19 @@ public class ValidationHandler implements Handler<RoutingContext> {
     ValidatorsHandlersFactory validationFactory = new ValidatorsHandlersFactory();
     MultiMap parameters = context.request().params();
     MultiMap headers = context.request().headers();
-    RequestBody requestBody=context.body();
-    JsonObject body=null;
-    if(requestBody!=null) {
-      if(requestBody.asJsonObject()!=null) {
-        body=requestBody.asJsonObject().copy();
+    RequestBody requestBody = context.body();
+    JsonObject body = null;
+    if (requestBody != null) {
+      if (requestBody.asJsonObject() != null) {
+        body = requestBody.asJsonObject().copy();
       }
     }
     Map<String, String> pathParams = context.pathParams();
-    parameters.set(HEADER_PUBLIC_KEY,context.request().getHeader(HEADER_PUBLIC_KEY));
+    parameters.set(HEADER_PUBLIC_KEY, context.request().getHeader(HEADER_PUBLIC_KEY));
     parameters.addAll(pathParams);
 
-    List<Validator> validations = validationFactory.build(vertx, requestType, parameters, headers, body);
+    List<Validator> validations =
+        validationFactory.build(vertx, requestType, parameters, headers, body);
     for (Validator validator : Optional.ofNullable(validations).orElse(Collections.emptyList())) {
       LOGGER.debug("validator :" + validator.getClass().getName());
       validator.isValid();
@@ -55,5 +56,4 @@ public class ValidationHandler implements Handler<RoutingContext> {
     context.next();
     return;
   }
-
 }

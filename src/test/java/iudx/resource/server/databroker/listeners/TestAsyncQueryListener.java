@@ -31,30 +31,19 @@ import io.vertx.rabbitmq.RabbitMQMessage;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import iudx.resource.server.database.async.AsyncService;
 
-
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class TestAsyncQueryListener {
   AsyncQueryListener asyncQueryListener;
-  @Mock
-  Vertx vertx;
-  @Mock
-  RabbitMQOptions config;
-  @Mock
-  RabbitMQClient client;
-  @Mock
-  Future<Void> voidFuture;
+  @Mock Vertx vertx;
+  @Mock RabbitMQOptions config;
+  @Mock RabbitMQClient client;
+  @Mock Future<Void> voidFuture;
   String vHost;
-  @Mock
-  AsyncResult<RabbitMQConsumer> consumerAsyncResult;
-  @Mock
-  RabbitMQConsumer rabbitMQConsumer;
-  @Mock
-  AsyncService asyncService;
-  @Mock
-  RabbitMQMessage message;
-  @Mock
-  Throwable throwable;
-
+  @Mock AsyncResult<RabbitMQConsumer> consumerAsyncResult;
+  @Mock RabbitMQConsumer rabbitMQConsumer;
+  @Mock AsyncService asyncService;
+  @Mock RabbitMQMessage message;
+  @Mock Throwable throwable;
 
   @BeforeEach
   public void setUp(VertxTestContext vertxTestContext) {
@@ -68,7 +57,6 @@ public class TestAsyncQueryListener {
   @DisplayName("Test start method : Success")
   public void test_start_success2(VertxTestContext vertxTestContext) {
 
-
     JsonObject object = new JsonObject();
     object.put("requestId", "dummy_key");
     object.put("searchId", "Dummy_unique-attribute");
@@ -76,13 +64,11 @@ public class TestAsyncQueryListener {
     object.put("query", new JsonObject());
     Buffer buffer = Buffer.buffer(object.toString());
 
-
-    Future<Void> voidFuture=mock(Future.class);
+    Future<Void> voidFuture = mock(Future.class);
     AsyncResult<Void> clientStartAsyncResult = mock(AsyncResult.class);
     AsyncResult<RabbitMQConsumer> consumerASyncResult = mock(AsyncResult.class);
     RabbitMQConsumer rmqConsumer = mock(RabbitMQConsumer.class);
     RabbitMQMessage message = mock(RabbitMQMessage.class);
-
 
     when(asyncQueryListener.client.start()).thenReturn(voidFuture);
     when(clientStartAsyncResult.succeeded()).thenReturn(true);
@@ -90,31 +76,39 @@ public class TestAsyncQueryListener {
     when(consumerASyncResult.result()).thenReturn(rmqConsumer);
     when(message.body()).thenReturn(buffer);
 
+    doAnswer(
+            new Answer<AsyncResult<RabbitMQConsumer>>() {
+              @Override
+              public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<Void>>) arg0.getArgument(0)).handle(clientStartAsyncResult);
+                return null;
+              }
+            })
+        .when(voidFuture)
+        .onComplete(any());
 
+    doAnswer(
+            new Answer<AsyncResult<RabbitMQConsumer>>() {
+              @Override
+              public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<RabbitMQConsumer>>) arg0.getArgument(2))
+                    .handle(consumerASyncResult);
+                return null;
+              }
+            })
+        .when(asyncQueryListener.client)
+        .basicConsumer(anyString(), any(), any());
 
-    doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
-      @Override
-      public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<Void>>) arg0.getArgument(0)).handle(clientStartAsyncResult);
-        return null;
-      }
-    }).when(voidFuture).onComplete(any());
-
-    doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
-      @Override
-      public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<RabbitMQConsumer>>) arg0.getArgument(2)).handle(consumerASyncResult);
-        return null;
-      }
-    }).when(asyncQueryListener.client).basicConsumer(anyString(), any(), any());
-
-    doAnswer(new Answer<RabbitMQMessage>() {
-      @Override
-      public RabbitMQMessage answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<RabbitMQMessage>) arg0.getArgument(0)).handle(message);
-        return null;
-      }
-    }).when(rmqConsumer).handler(any());
+    doAnswer(
+            new Answer<RabbitMQMessage>() {
+              @Override
+              public RabbitMQMessage answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<RabbitMQMessage>) arg0.getArgument(0)).handle(message);
+                return null;
+              }
+            })
+        .when(rmqConsumer)
+        .handler(any());
 
     asyncQueryListener.start();
     verify(voidFuture, times(1)).onComplete(any());
@@ -123,20 +117,17 @@ public class TestAsyncQueryListener {
     verify(message).body();
     assertEquals(buffer, message.body());
     vertxTestContext.completeNow();
-
   }
-
 
   @Test
   @DisplayName("Test start method : with null message body")
   public void test_start_with_null_body(VertxTestContext vertxTestContext) {
 
-    Future<Void> voidFuture=mock(Future.class);
+    Future<Void> voidFuture = mock(Future.class);
     AsyncResult<Void> clientStartAsyncResult = mock(AsyncResult.class);
     AsyncResult<RabbitMQConsumer> consumerASyncResult = mock(AsyncResult.class);
     RabbitMQConsumer rmqConsumer = mock(RabbitMQConsumer.class);
     RabbitMQMessage message = mock(RabbitMQMessage.class);
-
 
     when(asyncQueryListener.client.start()).thenReturn(voidFuture);
     when(clientStartAsyncResult.succeeded()).thenReturn(true);
@@ -144,31 +135,39 @@ public class TestAsyncQueryListener {
     when(consumerASyncResult.result()).thenReturn(rmqConsumer);
     when(message.body()).thenReturn(null);
 
+    doAnswer(
+            new Answer<AsyncResult<RabbitMQConsumer>>() {
+              @Override
+              public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<Void>>) arg0.getArgument(0)).handle(clientStartAsyncResult);
+                return null;
+              }
+            })
+        .when(voidFuture)
+        .onComplete(any());
 
+    doAnswer(
+            new Answer<AsyncResult<RabbitMQConsumer>>() {
+              @Override
+              public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<AsyncResult<RabbitMQConsumer>>) arg0.getArgument(2))
+                    .handle(consumerASyncResult);
+                return null;
+              }
+            })
+        .when(asyncQueryListener.client)
+        .basicConsumer(anyString(), any(), any());
 
-    doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
-      @Override
-      public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<Void>>) arg0.getArgument(0)).handle(clientStartAsyncResult);
-        return null;
-      }
-    }).when(voidFuture).onComplete(any());
-
-    doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
-      @Override
-      public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<AsyncResult<RabbitMQConsumer>>) arg0.getArgument(2)).handle(consumerASyncResult);
-        return null;
-      }
-    }).when(asyncQueryListener.client).basicConsumer(anyString(), any(), any());
-
-    doAnswer(new Answer<RabbitMQMessage>() {
-      @Override
-      public RabbitMQMessage answer(InvocationOnMock arg0) throws Throwable {
-        ((Handler<RabbitMQMessage>) arg0.getArgument(0)).handle(message);
-        return null;
-      }
-    }).when(rmqConsumer).handler(any());
+    doAnswer(
+            new Answer<RabbitMQMessage>() {
+              @Override
+              public RabbitMQMessage answer(InvocationOnMock arg0) throws Throwable {
+                ((Handler<RabbitMQMessage>) arg0.getArgument(0)).handle(message);
+                return null;
+              }
+            })
+        .when(rmqConsumer)
+        .handler(any());
 
     asyncQueryListener.start();
     verify(voidFuture).onComplete(any());
@@ -177,7 +176,6 @@ public class TestAsyncQueryListener {
     assertEquals(null, message.body());
     vertxTestContext.completeNow();
   }
-
 
   @Test
   @DisplayName("Test start method : Failure")

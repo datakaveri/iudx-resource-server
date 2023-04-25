@@ -29,7 +29,6 @@ public class IdTypeValidatorTest {
     testContext.completeNow();
   }
 
-
   static Stream<Arguments> allowedValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
@@ -45,8 +44,8 @@ public class IdTypeValidatorTest {
   @ParameterizedTest
   @MethodSource("allowedValues")
   @Description("geometry type parameter allowed values.")
-  public void testValidIDTypeValue(String value, boolean required, Vertx vertx,
-      VertxTestContext testContext) {
+  public void testValidIDTypeValue(
+      String value, boolean required, Vertx vertx, VertxTestContext testContext) {
     idTypeValidator = new IDTypeValidator(value, required);
     assertTrue(idTypeValidator.isValid());
     testContext.completeNow();
@@ -59,10 +58,12 @@ public class IdTypeValidatorTest {
         Arguments.of("", true),
         Arguments.of("  ", true),
         Arguments.of(
-            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sasd asdd",
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta/sasd"
+                + " asdd",
             true),
         Arguments.of(
-            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta AND 2434=2434 AND 'qLIl'='qLIl",
+            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"
+                + " AND 2434=2434 AND 'qLIl'='qLIl",
             true),
         Arguments.of("bypass", true),
         Arguments.of("1=1", true),
@@ -84,15 +85,15 @@ public class IdTypeValidatorTest {
         Arguments.of(
             "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86$/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
             true),
-            Arguments.of(null,true),
-            Arguments.of("",false));
+        Arguments.of(null, true),
+        Arguments.of("", false));
   }
 
   @ParameterizedTest
   @MethodSource("invalidValues")
   @Description("id type parameter invalid values.")
-  public void testInvalidIDTypeValue(String value, boolean required, Vertx vertx,
-      VertxTestContext testContext) {
+  public void testInvalidIDTypeValue(
+      String value, boolean required, Vertx vertx, VertxTestContext testContext) {
     idTypeValidator = new IDTypeValidator(value, required);
     assertThrows(DxRuntimeException.class, () -> idTypeValidator.isValid());
     testContext.completeNow();

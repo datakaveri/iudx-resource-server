@@ -8,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.common.HttpStatusCode;
 
-
 public final class GeoRelTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(GeoRelTypeValidator.class);
@@ -44,12 +43,10 @@ public final class GeoRelTypeValidator implements Validator {
     return true;
   }
 
-
   @Override
   public int failureCode() {
     return HttpStatusCode.BAD_REQUEST.getValue();
   }
-
 
   @Override
   public String failureMessage() {

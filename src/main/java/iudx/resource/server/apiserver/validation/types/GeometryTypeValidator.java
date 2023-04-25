@@ -51,5 +51,4 @@ public final class GeometryTypeValidator implements Validator {
   public String failureMessage() {
     return INVALID_GEO_VALUE_URN.getMessage();
   }
-
 }

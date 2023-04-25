@@ -23,15 +23,17 @@ public class FailureHandler implements Handler<RoutingContext> {
       DxRuntimeException exception = (DxRuntimeException) failure;
       LOGGER.error(exception.getUrn().getUrn() + " : " + exception.getMessage());
       HttpStatusCode code = HttpStatusCode.getByValue(exception.getStatusCode());
-      
-      JsonObject response = new RestResponse.Builder()
-          .withType(exception.getUrn().getUrn())
-          .withTitle(code.getDescription())
-          .withMessage(code.getDescription())
-          .build()
-          .toJson();
 
-      context.response()
+      JsonObject response =
+          new RestResponse.Builder()
+              .withType(exception.getUrn().getUrn())
+              .withTitle(code.getDescription())
+              .withMessage(code.getDescription())
+              .build()
+              .toJson();
+
+      context
+          .response()
           .putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(exception.getStatusCode())
           .end(response.toString());
@@ -40,18 +42,18 @@ public class FailureHandler implements Handler<RoutingContext> {
     if (failure instanceof RuntimeException) {
 
       String validationErrorMessage = MSG_BAD_QUERY;
-      context.response()
+      context
+          .response()
           .putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(HttpStatus.SC_BAD_REQUEST)
           .end(validationFailureReponse(validationErrorMessage).toString());
-
     }
-    
-    if(context.response().ended()) {
+
+    if (context.response().ended()) {
       LOGGER.debug("Already ended");
       return;
     }
-    
+
     context.next();
     return;
   }
@@ -62,5 +64,4 @@ public class FailureHandler implements Handler<RoutingContext> {
         .put(JSON_TITLE, "Bad Request")
         .put(JSON_DETAIL, message);
   }
-
 }

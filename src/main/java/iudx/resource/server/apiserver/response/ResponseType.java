@@ -2,10 +2,7 @@ package iudx.resource.server.apiserver.response;
 
 import java.util.stream.Stream;
 
-/**
- * enum defines all the possible response codes from API.
- *
- */
+/** enum defines all the possible response codes from API. */
 public enum ResponseType {
   Ok(200, "Ok"),
   Created(201, "created"),
@@ -18,8 +15,8 @@ public enum ResponseType {
   ResourceNotFound(404, "Resource not found"),
   MethodNotAllowed(405, "Method not allowed"),
   AlreadyExists(409, "Already exists"),
-  LenghtRequired(411,
-      "HTTP request provided by a client does not define the Content-Length HTTP header"),
+  LenghtRequired(
+      411, "HTTP request provided by a client does not define the Content-Length HTTP header"),
   RequestEntityTooLarge(413, "HTTP input data stream is too large too many bytes"),
   UnsupportedMediaType(415, "Unsupported Media type"),
   OperationNotSupported(422, "Operation not supported"),
@@ -43,14 +40,10 @@ public enum ResponseType {
   }
 
   public static ResponseType fromCode(final int code) {
-    return Stream.of(values())
-        .filter(v -> v.code == code)
-        .findAny()
-        .orElse(null);
+    return Stream.of(values()).filter(v -> v.code == code).findAny().orElse(null);
   }
 
   public String toString() {
     return "[" + code + " : " + message + " ]";
   }
-
 }

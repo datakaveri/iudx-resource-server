@@ -32,7 +32,8 @@ public class OptionsHeaderValidator implements Validator {
       }
       if (value.isBlank()) {
         LOGGER.error("Validation error :  blank value passed");
-        throw new DxRuntimeException(failureCode(), INVALID_HEADER_VALUE_URN, failureMessage(value));
+        throw new DxRuntimeException(
+            failureCode(), INVALID_HEADER_VALUE_URN, failureMessage(value));
       }
     }
     if (!value.equals("streaming")) {
@@ -42,12 +43,10 @@ public class OptionsHeaderValidator implements Validator {
     return true;
   }
 
-
   @Override
   public int failureCode() {
     return HttpStatusCode.BAD_REQUEST.getValue();
   }
-
 
   @Override
   public String failureMessage() {

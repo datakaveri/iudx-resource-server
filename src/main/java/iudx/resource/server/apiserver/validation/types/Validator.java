@@ -11,5 +11,4 @@ public interface Validator {
   default String failureMessage(final String value) {
     return failureMessage() + " [ " + value + " ] ";
   }
-
 }

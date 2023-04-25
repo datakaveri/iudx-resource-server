@@ -17,7 +17,6 @@ public final class AttrsTypeValidator implements Validator {
   private final int maxAttrLength = VALIDATIONS_MAX_ATTR_LENGTH;
   private static final Pattern attrsValueRegex = Pattern.compile("^[a-zA-Z0-9_]+");
 
-
   private final String value;
   private final boolean required;
 
@@ -33,7 +32,6 @@ public final class AttrsTypeValidator implements Validator {
     }
     return true;
   }
-
 
   private boolean isValidAttributeValue(final String value) {
     String[] attrs = value.split(",");

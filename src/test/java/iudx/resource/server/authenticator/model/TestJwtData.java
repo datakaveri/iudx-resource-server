@@ -13,38 +13,36 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class TestJwtData {
-    JwtData jwtData;
-    @BeforeEach
-    public void setUp(VertxTestContext vertxTestContext)
-    {
-        jwtData = new JwtData();
-        vertxTestContext.completeNow();
-    }
+  JwtData jwtData;
 
-    @Test
-    @DisplayName("Test toJson method")
-    public void test_toJson(VertxTestContext vertxTestContext)
-    {
-        JsonObject actual = jwtData.toJson();
-        assertNotNull(actual);
-        assertEquals(new JsonObject(),actual);
-        vertxTestContext.completeNow();
-    }
-    @Test
-    @DisplayName("Test getAccess_token method")
-    public void test_getAccess_token(VertxTestContext vertxTestContext)
-    {
-        String actual = jwtData.getAccess_token();
-        assertNull(actual);
-        vertxTestContext.completeNow();
-    }
+  @BeforeEach
+  public void setUp(VertxTestContext vertxTestContext) {
+    jwtData = new JwtData();
+    vertxTestContext.completeNow();
+  }
 
-    @Test
-    @DisplayName("Test getIat method")
-    public void test_getIat(VertxTestContext vertxTestContext)
-    {
-        Integer actual = jwtData.getIat();
-        assertNull(actual);
-        vertxTestContext.completeNow();
-    }
+  @Test
+  @DisplayName("Test toJson method")
+  public void test_toJson(VertxTestContext vertxTestContext) {
+    JsonObject actual = jwtData.toJson();
+    assertNotNull(actual);
+    assertEquals(new JsonObject(), actual);
+    vertxTestContext.completeNow();
+  }
+
+  @Test
+  @DisplayName("Test getAccess_token method")
+  public void test_getAccess_token(VertxTestContext vertxTestContext) {
+    String actual = jwtData.getAccess_token();
+    assertNull(actual);
+    vertxTestContext.completeNow();
+  }
+
+  @Test
+  @DisplayName("Test getIat method")
+  public void test_getIat(VertxTestContext vertxTestContext) {
+    Integer actual = jwtData.getIat();
+    assertNull(actual);
+    vertxTestContext.completeNow();
+  }
 }

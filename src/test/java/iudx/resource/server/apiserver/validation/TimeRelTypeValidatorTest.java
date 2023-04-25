@@ -36,19 +36,18 @@ public class TimeRelTypeValidatorTest {
         Arguments.of("before", true),
         Arguments.of("during", true),
         Arguments.of("between", true),
-            Arguments.of(null,false));
+        Arguments.of(null, false));
   }
 
   @ParameterizedTest
   @MethodSource("allowedValues")
   @Description("timerel parameter allowed values.")
-  public void testValidTimeRelValue(String value, boolean required, Vertx vertx,
-      VertxTestContext testContext) {
+  public void testValidTimeRelValue(
+      String value, boolean required, Vertx vertx, VertxTestContext testContext) {
     timeRelTypeValidator = new TimeRelTypeValidator(value, required);
     assertTrue(timeRelTypeValidator.isValid());
     testContext.completeNow();
   }
-
 
   static Stream<Arguments> invalidValues() {
     // Add any valid value which will pass successfully.
@@ -63,18 +62,16 @@ public class TimeRelTypeValidatorTest {
         Arguments.of("1=1", true),
         Arguments.of("AND XYZ=XYZ", true),
         Arguments.of(random600Id, true),
-            Arguments.of(null,true));
+        Arguments.of(null, true));
   }
-
 
   @ParameterizedTest
   @MethodSource("invalidValues")
   @Description("timerel parameter invalid values.")
-  public void testInvalidTimeRelValue(String value, boolean required, Vertx vertx,
-      VertxTestContext testContext) {
+  public void testInvalidTimeRelValue(
+      String value, boolean required, Vertx vertx, VertxTestContext testContext) {
     timeRelTypeValidator = new TimeRelTypeValidator(value, required);
     assertThrows(DxRuntimeException.class, () -> timeRelTypeValidator.isValid());
     testContext.completeNow();
   }
-
 }

@@ -29,5 +29,4 @@ public class GeoRelation {
   public void setRelation(String relation) {
     this.relation = relation;
   }
-
 }

@@ -29,49 +29,46 @@ public class GeoRelTypeValidatorTest {
     testContext.completeNow();
   }
 
-
   static Stream<Arguments> allowedValues() {
     // Add any valid value for which validation will pass successfully.
     return Stream.of(
-            Arguments.of("within", true),
-            Arguments.of("intersects", true),
-            Arguments.of("near", true),
-            Arguments.of(null, false));
+        Arguments.of("within", true),
+        Arguments.of("intersects", true),
+        Arguments.of("near", true),
+        Arguments.of(null, false));
   }
-
 
   @ParameterizedTest
   @MethodSource("allowedValues")
   @Description("georel parameter allowed values.")
-  public void testValidGeoRelValue(String value, boolean required, Vertx vertx,
-                                   VertxTestContext testContext) {
+  public void testValidGeoRelValue(
+      String value, boolean required, Vertx vertx, VertxTestContext testContext) {
     geoRelTypeValidator = new GeoRelTypeValidator(value, required);
     assertTrue(geoRelTypeValidator.isValid());
     testContext.completeNow();
   }
 
-
   static Stream<Arguments> invalidValues() {
     // Add any invalid value for which validation must fail.
     String random600Id = RandomStringUtils.random(600);
     return Stream.of(
-            Arguments.of("", true),
-            Arguments.of("  ", true),
-            Arguments.of("around", true),
-            Arguments.of("bypass", true),
-            Arguments.of("1=1", true),
-            Arguments.of("AND XYZ=XYZ", true),
-            Arguments.of(random600Id, true),
-            Arguments.of("%2cX%2c", true),
-            Arguments.of("", false),
-            Arguments.of(null, true));
+        Arguments.of("", true),
+        Arguments.of("  ", true),
+        Arguments.of("around", true),
+        Arguments.of("bypass", true),
+        Arguments.of("1=1", true),
+        Arguments.of("AND XYZ=XYZ", true),
+        Arguments.of(random600Id, true),
+        Arguments.of("%2cX%2c", true),
+        Arguments.of("", false),
+        Arguments.of(null, true));
   }
 
   @ParameterizedTest
   @MethodSource("invalidValues")
   @Description("geo parameter invalid values.")
-  public void testInvalidGeoRelValue(String value, boolean required, Vertx vertx,
-                                     VertxTestContext testContext) {
+  public void testInvalidGeoRelValue(
+      String value, boolean required, Vertx vertx, VertxTestContext testContext) {
     geoRelTypeValidator = new GeoRelTypeValidator(value, required);
     assertThrows(DxRuntimeException.class, () -> geoRelTypeValidator.isValid());
     testContext.completeNow();

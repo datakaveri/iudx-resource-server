@@ -4,7 +4,6 @@ import java.util.Objects;
 
 public final class AuthorizationRequest {
 
-
   private final Method method;
   private final String api;
 
@@ -12,7 +11,6 @@ public final class AuthorizationRequest {
     this.method = method;
     this.api = api;
   }
-
 
   public Method getMethod() {
     return method;

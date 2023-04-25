@@ -3,7 +3,6 @@ package iudx.resource.server.authenticator.authorization;
 import java.util.stream.Stream;
 
 public enum IudxAccess {
-
   API("api"),
   SUBSCRIPTION("sub"),
   INGESTION("ingestion"),
@@ -26,5 +25,4 @@ public enum IudxAccess {
         .findAny()
         .orElse(null);
   }
-
 }

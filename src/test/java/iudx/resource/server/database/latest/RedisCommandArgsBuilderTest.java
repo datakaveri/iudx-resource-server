@@ -20,15 +20,12 @@ public class RedisCommandArgsBuilderTest {
     redisCmdArgsBuilder = new RedisCommandArgsBuilder();
   }
 
-
   @Test
   public void resourceLevelArgs() {
     String id = "asdas/asdasdas/adsasdasd/asdasda/asdasdas";
     RedisArgs redisArgs = redisCmdArgsBuilder.getRedisCommandArgs(id, true);
 
-    String key = id.replace("-", "_")
-        .replaceAll("/", "_")
-        .replaceAll("\\.", "_");
+    String key = id.replace("-", "_").replaceAll("/", "_").replaceAll("\\.", "_");
 
     assertEquals(key, redisArgs.getKey());
     assertEquals(".", redisArgs.getPath());
@@ -39,9 +36,7 @@ public class RedisCommandArgsBuilderTest {
     String id = "asdas/asdasdas/adsasdasd/asdasda";
     RedisArgs redisArgs = redisCmdArgsBuilder.getRedisCommandArgs(id, false);
 
-    String key = id.replace("-", "_")
-        .replaceAll("/", "_")
-        .replaceAll("\\.", "_");
+    String key = id.replace("-", "_").replaceAll("/", "_").replaceAll("\\.", "_");
 
     StringBuilder shaId = new StringBuilder(id).append("/").append(DEFAULT_ATTRIBUTE);
     String sha = DigestUtils.sha1Hex(shaId.toString());
@@ -49,5 +44,4 @@ public class RedisCommandArgsBuilderTest {
     assertEquals(key, redisArgs.getKey());
     assertEquals("._" + sha, redisArgs.getPath());
   }
-
 }

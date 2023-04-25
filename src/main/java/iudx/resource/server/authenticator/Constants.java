@@ -24,12 +24,11 @@ public class Constants {
           "/consumer/audit",
           "/async/search",
           "/subscription",
-          "/user/resetPassword"
-          ,"/overview"
-          ,"/summary");
+          "/user/resetPassword",
+          "/overview",
+          "/summary");
   public static final String AUTH_TIP_PATH = "/auth/v1/token/introspect";
-  public static final List<String> CLOSED_ENDPOINTS =
-      List.of("/ingestion");
+  public static final List<String> CLOSED_ENDPOINTS = List.of("/ingestion");
   public static final List<String> MANAGEMENT_ENDPOINTS =
       List.of("/management/queue", "/management/exchange", "/management/vhost");
   public static final String ADAPTER_ENDPOINT = "/ingestion";
@@ -37,7 +36,7 @@ public class Constants {
   public static final String MANAGEMENT_ENDPOINT = "/management/*";
   public static final long CACHE_TIMEOUT_AMOUNT = 30;
   public static final ChronoUnit TIP_CACHE_TIMEOUT_UNIT = ChronoUnit.MINUTES;
-//  public static final String CAT_RSG_PATH = "/iudx/cat/v1/search";
+  //  public static final String CAT_RSG_PATH = "/iudx/cat/v1/search";
   public static final String CAT_SEARCH_PATH = "/search";
   public static final String CAT_ITEM_PATH = "/item";
   public static final String JSON_USERID = "userid";

@@ -31,16 +31,14 @@ public class AttrsTypeValidatorTest {
 
   static Stream<Arguments> allowedValues() {
     // Add any valid value which will pass successfully.
-    return Stream.of(
-        Arguments.of("refrenceLeval,Co2,NO2,SO2,CO", true),
-        Arguments.of(null, false));
+    return Stream.of(Arguments.of("refrenceLeval,Co2,NO2,SO2,CO", true), Arguments.of(null, false));
   }
 
   @ParameterizedTest
   @MethodSource("allowedValues")
   @Description("Attrs type parameter allowed values.")
-  public void testValidAttrsTypeValue(String value, boolean required, Vertx vertx,
-      VertxTestContext testContext) {
+  public void testValidAttrsTypeValue(
+      String value, boolean required, Vertx vertx, VertxTestContext testContext) {
     attrsTypevalidator = new AttrsTypeValidator(value, required);
     assertTrue(attrsTypevalidator.isValid());
     testContext.completeNow();
@@ -55,19 +53,17 @@ public class AttrsTypeValidatorTest {
         Arguments.of(RandomStringUtils.random(102) + ",refrenceLeval,Co2,NO2,SO2", true),
         Arguments.of("refrence$Leval,Co2,NO2,SO2", true),
         Arguments.of("refrenceLeval,Co2,NO2,S*&O2", true),
-            Arguments.of(null, true),
-            Arguments.of("", false)
-            );
+        Arguments.of(null, true),
+        Arguments.of("", false));
   }
 
   @ParameterizedTest
   @MethodSource("invalidValues")
   @Description("Attrs type parameter invalid values.")
-  public void testInvalidAttrsTypeValue(String value, boolean required, Vertx vertx,
-      VertxTestContext testContext) {
+  public void testInvalidAttrsTypeValue(
+      String value, boolean required, Vertx vertx, VertxTestContext testContext) {
     attrsTypevalidator = new AttrsTypeValidator(value, required);
     assertThrows(DxRuntimeException.class, () -> attrsTypevalidator.isValid());
     testContext.completeNow();
   }
-
 }

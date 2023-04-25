@@ -46,12 +46,17 @@ public final class PaginationOffsetTypeValidator implements Validator {
       int offset = Integer.parseInt(value);
       if (offset > VALIDATION_PAGINATION_OFFSET_MAX || offset < 0) {
         LOGGER.error(
-            "Validation error : invalid pagination offset Value > 50000 or negative value passed [ " + value + " ]");
+            "Validation error : invalid pagination offset Value > 50000 or negative value passed [ "
+                + value
+                + " ]");
         throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
       }
       return true;
     } catch (Exception ex) {
-      LOGGER.error("Validation error : invalid pagination offset Value [ " + value + " ] only integer expected");
+      LOGGER.error(
+          "Validation error : invalid pagination offset Value [ "
+              + value
+              + " ] only integer expected");
       throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
     }
   }
@@ -65,6 +70,4 @@ public final class PaginationOffsetTypeValidator implements Validator {
   public String failureMessage() {
     return INVALID_PARAM_VALUE_URN.getMessage();
   }
-
 }
-
