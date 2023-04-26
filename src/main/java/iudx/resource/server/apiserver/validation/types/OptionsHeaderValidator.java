@@ -2,11 +2,10 @@ package iudx.resource.server.apiserver.validation.types;
 
 import static iudx.resource.server.common.ResponseUrn.INVALID_HEADER_VALUE_URN;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.common.HttpStatusCode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class OptionsHeaderValidator implements Validator {
 
@@ -32,7 +31,8 @@ public class OptionsHeaderValidator implements Validator {
       }
       if (value.isBlank()) {
         LOGGER.error("Validation error :  blank value passed");
-        throw new DxRuntimeException(failureCode(), INVALID_HEADER_VALUE_URN, failureMessage(value));
+        throw new DxRuntimeException(
+            failureCode(), INVALID_HEADER_VALUE_URN, failureMessage(value));
       }
     }
     if (!value.equals("streaming")) {
@@ -42,12 +42,10 @@ public class OptionsHeaderValidator implements Validator {
     return true;
   }
 
-
   @Override
   public int failureCode() {
     return HttpStatusCode.BAD_REQUEST.getValue();
   }
-
 
   @Override
   public String failureMessage() {

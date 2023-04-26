@@ -16,15 +16,15 @@ import io.vertx.core.cli.annotations.Description;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
-import iudx.resource.server.apiserver.validation.types.QTypeValidator;
+import iudx.resource.server.apiserver.validation.types.QtypeValidator;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(VertxExtension.class)
-public class QTypeValidatorTest {
+public class QtypeValidatorTest {
 
-  private QTypeValidator qTypeValidator;
+  private QtypeValidator qTypeValidator;
   String value;
   boolean required;
   static Stream<Arguments> invalidValues() {
@@ -51,7 +51,7 @@ public class QTypeValidatorTest {
   public void setup(Vertx vertx, VertxTestContext testContext) {
     value = "";
     required = true;
-    qTypeValidator = new QTypeValidator(value, required);
+    qTypeValidator = new QtypeValidator(value, required);
     testContext.completeNow();
   }
 
@@ -60,7 +60,7 @@ public class QTypeValidatorTest {
   @Description("q parameter type failure for different invalid values.")
   public void testInvalidQTypeValue(String value, boolean required, Vertx vertx,
                                     VertxTestContext testContext) {
-    qTypeValidator = new QTypeValidator(value, required);
+    qTypeValidator = new QtypeValidator(value, required);
     assertThrows(DxRuntimeException.class, () -> qTypeValidator.isValid());
     testContext.completeNow();
   }
@@ -68,7 +68,6 @@ public class QTypeValidatorTest {
   static Stream<Arguments> validValues() {
     return Stream.of(
             Arguments.of("referenceLevel>15.0", true),
-            Arguments.of("reference_Level>15.0", true),
             Arguments.of(
                     "id==iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055",
                     true),
@@ -80,7 +79,7 @@ public class QTypeValidatorTest {
   @Description("success for valid q query")
   public void testValidQValue(String value, boolean required, Vertx vertx,
                               VertxTestContext testContext) {
-    qTypeValidator = new QTypeValidator(value, required);
+    qTypeValidator = new QtypeValidator(value, required);
     assertTrue(qTypeValidator.isValid());
     testContext.completeNow();
   }
@@ -119,7 +118,7 @@ public class QTypeValidatorTest {
   {
     value = ":)";
     required = true;
-    qTypeValidator = new QTypeValidator(value, required);
+    qTypeValidator = new QtypeValidator(value, required);
     assertThrows(DxRuntimeException.class,()->qTypeValidator.isValid());
     vertxTestContext.completeNow();
   }

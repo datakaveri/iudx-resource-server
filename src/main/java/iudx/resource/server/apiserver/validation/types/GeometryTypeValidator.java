@@ -3,10 +3,10 @@ package iudx.resource.server.apiserver.validation.types;
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.ResponseUrn.*;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.common.HttpStatusCode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class GeometryTypeValidator implements Validator {
 
@@ -51,5 +51,4 @@ public final class GeometryTypeValidator implements Validator {
   public String failureMessage() {
     return INVALID_GEO_VALUE_URN.getMessage();
   }
-
 }

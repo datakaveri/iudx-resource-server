@@ -2,6 +2,7 @@ package iudx.resource.server.database.async;
 
 import static iudx.resource.server.common.Constants.ASYNC_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
+
 import com.amazonaws.regions.Regions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
@@ -29,10 +30,9 @@ public class AsyncVerticle extends AbstractVerticle {
   private PostgresService pgService;
   private S3FileOpsHelper fileOpsHelper;
   private Regions clientRegion;
-  private String databaseIP;
+  private String databaseIp;
   private String user;
   private String password;
-  private String timeLimit;
   private int databasePort;
   private String filePath;
   private String bucketName;
@@ -49,20 +49,19 @@ public class AsyncVerticle extends AbstractVerticle {
   @Override
   public void start() throws Exception {
 
-    databaseIP = config().getString("databaseIP");
+    databaseIp = config().getString("databaseIP");
     databasePort = config().getInteger("databasePort");
     user = config().getString("dbUser");
     password = config().getString("dbPassword");
-    timeLimit = config().getString("timeLimit");
     filePath = config().getString("filePath");
     clientRegion = Regions.AP_SOUTH_1;
     bucketName = config().getString("bucketName");
 
     pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
-    client = new ElasticClient(databaseIP, databasePort, user, password, filePath, pgService);
+    client = new ElasticClient(databaseIp, databasePort, user, password);
     fileOpsHelper = new S3FileOpsHelper(clientRegion, bucketName);
     binder = new ServiceBinder(vertx);
-    asyncService = new AsyncServiceImpl(vertx,client, pgService, fileOpsHelper, timeLimit, filePath);
+    asyncService = new AsyncServiceImpl(vertx, client, pgService, fileOpsHelper, filePath);
 
     consumer = binder.setAddress(ASYNC_SERVICE_ADDRESS).register(AsyncService.class, asyncService);
   }

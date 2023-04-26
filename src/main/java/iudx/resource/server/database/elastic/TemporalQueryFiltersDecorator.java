@@ -2,28 +2,24 @@ package iudx.resource.server.database.elastic;
 
 import static iudx.resource.server.database.archives.Constants.*;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
+import co.elastic.clients.json.JsonData;
+import io.vertx.core.json.JsonObject;
+import iudx.resource.server.database.elastic.exception.EsQueryException;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery;
-import co.elastic.clients.json.JsonData;
-import io.vertx.core.json.JsonObject;
-import iudx.resource.server.database.elastic.exception.ESQueryException;
 
 public class TemporalQueryFiltersDecorator implements ElasticsearchQueryDecorator {
-
-  private static final Logger LOGGER = LogManager.getLogger(TemporalQueryFiltersDecorator.class);
+  private final int defaultDateLimit;
   private Map<FilterType, List<Query>> queryFilters;
   private JsonObject requestQuery;
-  private final int defaultDateLimit;
 
-  public TemporalQueryFiltersDecorator(Map<FilterType, List<Query>> queryFilters,
-      JsonObject requestQuery, int defaultDateLimit) {
+  public TemporalQueryFiltersDecorator(
+      Map<FilterType, List<Query>> queryFilters, JsonObject requestQuery, int defaultDateLimit) {
     this.queryFilters = queryFilters;
     this.requestQuery = requestQuery;
     this.defaultDateLimit = defaultDateLimit;
@@ -39,7 +35,6 @@ public class TemporalQueryFiltersDecorator implements ElasticsearchQueryDecorato
     ZonedDateTime endDateTime =
         (queryRequestEndTime != null) ? getZonedDateTime(queryRequestEndTime) : null;
 
-
     if (DURING.equalsIgnoreCase(queryRequestTimeRelation)
         || BETWEEN.equalsIgnoreCase(queryRequestTimeRelation)) {
       validateTemporalPeriod(startDateTime, endDateTime);
@@ -50,25 +45,25 @@ public class TemporalQueryFiltersDecorator implements ElasticsearchQueryDecorato
       queryRequestStartTime = startDateTime.toString();
       queryRequestEndTime = getEndDateForAfterQuery(startDateTime);
     } else {
-      throw new ESQueryException("exception while parsing date/time");
+      throw new EsQueryException("exception while parsing date/time");
     }
 
     final String startTime = queryRequestStartTime;
     final String endTime = queryRequestEndTime;
 
-    Query temporalQuery = RangeQuery
-        .of(r -> r
-            .field("observationDateTime")
-              .lte(JsonData.of(endTime))
-              .gte(JsonData.of(startTime)))
-          ._toQuery();
-
+    Query temporalQuery =
+        RangeQuery.of(
+                r ->
+                    r.field("observationDateTime")
+                        .lte(JsonData.of(endTime))
+                        .gte(JsonData.of(startTime)))
+            ._toQuery();
 
     List<Query> queryList = queryFilters.get(FilterType.FILTER);
     queryList.add(temporalQuery);
     return queryFilters;
   }
-  
+
   public void addDefaultTemporalFilters(Map<FilterType, List<Query>> queryLists, JsonObject query) {
     String[] timeLimitConfig = query.getString(TIME_LIMIT).split(",");
     String deploymentType = timeLimitConfig[0];
@@ -77,31 +72,34 @@ public class TemporalQueryFiltersDecorator implements ElasticsearchQueryDecorato
       addDefaultForProduction(queryLists);
     } else if (TEST_INSTANCE.equalsIgnoreCase(deploymentType)) {
       addDefaultForDev(queryLists, dateToUseForDevDeployment);
-    }else {
-      throw new ESQueryException("invalid timeLimit config passed");
+    } else {
+      throw new EsQueryException("invalid timeLimit config passed");
     }
   }
 
-  private void addDefaultForDev(Map<FilterType, List<Query>> queryLists,
-      String dateToUseForDevDeployment) {
+  private void addDefaultForDev(
+      Map<FilterType, List<Query>> queryLists, String dateToUseForDevDeployment) {
     ZonedDateTime endTime = getZonedDateTime(dateToUseForDevDeployment);
     ZonedDateTime startTime = endTime.minusDays(defaultDateLimit);
-    //LOGGER.debug("startTim :{}, endTime : {} [default days : {}]",startTime,endTime,defaultDateLimit);
-    Query temporalQuery = RangeQuery
-        .of(r -> r
-            .field("observationDateTime")
-              .lte(JsonData.of(endTime.toString()))
-              .gte(JsonData.of(startTime.toString())))
-          ._toQuery();
+    // LOGGER.debug("startTim :{}, endTime : {} [default days :
+    // {}]",startTime,endTime,defaultDateLimit);
+    Query temporalQuery =
+        RangeQuery.of(
+                r ->
+                    r.field("observationDateTime")
+                        .lte(JsonData.of(endTime.toString()))
+                        .gte(JsonData.of(startTime.toString())))
+            ._toQuery();
     List<Query> queryList = queryLists.get(FilterType.FILTER);
     queryList.add(temporalQuery);
   }
 
   private void addDefaultForProduction(Map<FilterType, List<Query>> queryLists) {
     OffsetDateTime currentDateTime = OffsetDateTime.now().minusDays(defaultDateLimit);
-    Query temporalQuery = RangeQuery
-        .of(r -> r.field("observationDateTime").gte(JsonData.of(currentDateTime.toString())))
-          ._toQuery();
+    Query temporalQuery =
+        RangeQuery.of(
+                r -> r.field("observationDateTime").gte(JsonData.of(currentDateTime.toString())))
+            ._toQuery();
     List<Query> queryList = queryLists.get(FilterType.FILTER);
     queryList.add(temporalQuery);
   }
@@ -120,11 +118,11 @@ public class TemporalQueryFiltersDecorator implements ElasticsearchQueryDecorato
 
   private void validateTemporalPeriod(ZonedDateTime startDateTime, ZonedDateTime endDateTime) {
     if (endDateTime == null) {
-      throw new ESQueryException("No endDate[required mandatory field] provided for query");
+      throw new EsQueryException("No endDate[required mandatory field] provided for query");
     }
 
     if (startDateTime.isAfter(endDateTime)) {
-      throw new ESQueryException("end date is before start date");
+      throw new EsQueryException("end date is before start date");
     }
   }
 
@@ -132,8 +130,7 @@ public class TemporalQueryFiltersDecorator implements ElasticsearchQueryDecorato
     try {
       return ZonedDateTime.parse(time);
     } catch (DateTimeParseException e) {
-      throw new ESQueryException("exception while parsing date/time");
+      throw new EsQueryException("exception while parsing date/time");
     }
   }
-
 }

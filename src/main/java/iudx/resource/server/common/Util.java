@@ -3,10 +3,9 @@ package iudx.resource.server.common;
 import static iudx.resource.server.apiserver.util.Constants.APP_NAME_REGEX;
 import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_NAME;
 
-import java.util.regex.Pattern;
-
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import java.util.regex.Pattern;
 
 public class Util {
 
@@ -25,5 +24,4 @@ public class Util {
     }
     return promise.future();
   }
-
 }

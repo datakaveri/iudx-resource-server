@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.rabbitmq.RabbitMQClient;
-import iudx.resource.server.cache.cacheImpl.CacheType;
+import iudx.resource.server.cache.cachelmpl.CacheType;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
@@ -487,7 +487,7 @@ public class MeteringServiceTest {
 
         Future future = mock(Future.class);
 
-        meteringService.insertMeteringValuesInRMQ(
+        meteringService.insertMeteringValuesInRmq(
                 request, handler -> {
                     if (handler.failed()) {
                         vertxTestContext.completeNow();
@@ -525,7 +525,7 @@ public class MeteringServiceTest {
             }
         }).when(MeteringServiceImpl.rmqService).publishMessage(any(), anyString(), anyString(), any());
 
-        meteringService.insertMeteringValuesInRMQ(
+        meteringService.insertMeteringValuesInRmq(
                 request, handler -> {
                     if (handler.succeeded()) {
                         vertxTestContext.completeNow();

@@ -41,7 +41,7 @@ public class Constants {
   public static final String SEARCH_KEY = "search";
   public static final String ERROR = "Error";
   public static final String COUNT = "count";
-  public static final String TOTAL_HITS= "totalHits";
+  public static final String TOTAL_HITS = "totalHits";
   public static final String DOC_ID = "_id";
   public static final String DOCS_KEY = "docs";
   public static final String SEARCH_REQ_PARAM = "/_search";
@@ -86,11 +86,11 @@ public class Constants {
   public static final String EQUAL_OP = "==";
   public static final String NOT_EQUAL_OP = "!=";
   public static final String BETWEEN_OP = "<==>";
-  
+
   /*pagination*/
   public static final String PARAM_SIZE = "limit";
   public static final String PARAM_FROM = "offset";
-  
+
   /* Errors */
   public static final String INVALID_OPERATOR = "Invalid operator";
   public static final String INVALID_SEARCH = "Invalid search request";
@@ -153,10 +153,9 @@ public class Constants {
   // needs modification depending on the actual error returned from Redis
   public static final String ID_NOT_PRESENT = "Not found";
 
-
   // pagination
 
   public static final int DEFAULT_SIZE_VALUE = 5000;
   public static final int DEFAULT_FROM_VALUE = 0;
-  public static final String COUNT_MATCH_ALL_QUERY="{\"query\": { \"match_all\": {} }}";
+  public static final String COUNT_MATCH_ALL_QUERY = "{\"query\": { \"match_all\": {} }}";
 }

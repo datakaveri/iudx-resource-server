@@ -1,46 +1,34 @@
 package iudx.resource.server.authenticator.authorization;
 
+import io.vertx.core.json.JsonObject;
+import iudx.resource.server.authenticator.model.JwtData;
+import iudx.resource.server.common.Api;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import iudx.resource.server.common.Api;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import io.vertx.core.json.JsonObject;
-import iudx.resource.server.authenticator.model.JwtData;
-
 public class ProviderAuthStrategy implements AuthorizationStrategy {
 
-  private static final Logger LOGGER = LogManager.getLogger(ProviderAuthStrategy.class);
-
   static Map<String, List<AuthorizationRequest>> providerAuthorizationRules = new HashMap<>();
-  private final Api api;
   private static volatile ProviderAuthStrategy instance;
 
-
-  private ProviderAuthStrategy(Api api)
-  {
-    this.api = api;
-    buildPermissions(api);
+  private ProviderAuthStrategy() {
+    buildPermissions();
   }
-  public static ProviderAuthStrategy getInstance(Api api)
-  {
 
-    if(instance == null)
-    {
-      synchronized (ProviderAuthStrategy.class)
-      {
-        if(instance == null)
-        {
-          instance = new ProviderAuthStrategy(api);
+  public static ProviderAuthStrategy getInstance(Api api) {
+
+    if (instance == null) {
+      synchronized (ProviderAuthStrategy.class) {
+        if (instance == null) {
+          instance = new ProviderAuthStrategy();
         }
       }
     }
     return instance;
-
   }
-  private void buildPermissions(Api api) {
+
+  private void buildPermissions() {
     // provider allowed to access all endpoints
   }
 
@@ -50,8 +38,8 @@ public class ProviderAuthStrategy implements AuthorizationStrategy {
   }
 
   @Override
-  public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData,
-      JsonObject quotaConsumed) {
+  public boolean isAuthorized(
+      AuthorizationRequest authRequest, JwtData jwtData, JsonObject quotaConsumed) {
     // TODO Auto-generated method stub
     return isAuthorized(authRequest, jwtData);
   }

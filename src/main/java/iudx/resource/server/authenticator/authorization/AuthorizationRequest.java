@@ -4,7 +4,6 @@ import java.util.Objects;
 
 public final class AuthorizationRequest {
 
-
   private final Method method;
   private final String api;
 
@@ -12,7 +11,6 @@ public final class AuthorizationRequest {
     this.method = method;
     this.api = api;
   }
-
 
   public Method getMethod() {
     return method;
@@ -24,8 +22,12 @@ public final class AuthorizationRequest {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     AuthorizationRequest that = (AuthorizationRequest) o;
     return getMethod() == that.getMethod() && getApi().equals(that.getApi());
   }

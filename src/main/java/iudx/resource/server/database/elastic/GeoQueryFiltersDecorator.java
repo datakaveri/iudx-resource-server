@@ -1,17 +1,17 @@
 package iudx.resource.server.database.elastic;
 
 import static iudx.resource.server.database.archives.Constants.*;
+
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.WrapperQuery;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import iudx.resource.server.database.elastic.exception.EsQueryException;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import co.elastic.clients.elasticsearch._types.GeoShapeRelation;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
-import co.elastic.clients.elasticsearch._types.query_dsl.WrapperQuery;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import iudx.resource.server.database.elastic.exception.ESQueryException;
 
 public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
 
@@ -21,8 +21,8 @@ public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
   private String geoQuery =
       "{ \"geo_shape\": { \"%s\": { \"shape\": %s, \"relation\": \"%s\" } } }";
 
-  public GeoQueryFiltersDecorator(Map<FilterType, List<Query>> queryFilters,
-      JsonObject requestQuery) {
+  public GeoQueryFiltersDecorator(
+      Map<FilterType, List<Query>> queryFilters, JsonObject requestQuery) {
     this.queryFilters = queryFilters;
     this.requestQuery = requestQuery;
   }
@@ -30,7 +30,8 @@ public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
   @Override
   public Map<FilterType, List<Query>> add() {
     Query geoWrapperQuery;
-    if (requestQuery.containsKey(LON) && requestQuery.containsKey(LAT)
+    if (requestQuery.containsKey(LON)
+        && requestQuery.containsKey(LAT)
         && requestQuery.containsKey(GEO_RADIUS)) {
       // circle
       requestQuery.put(GEOMETRY, "Point");
@@ -42,14 +43,15 @@ public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
     } else if (requestQuery.containsKey(GEOMETRY)
         && (requestQuery.getString(GEOMETRY).equalsIgnoreCase(POLYGON)
             || requestQuery.getString(GEOMETRY).equalsIgnoreCase(LINESTRING))
-        && requestQuery.containsKey(GEOREL) && requestQuery.containsKey(COORDINATES_KEY)
+        && requestQuery.containsKey(GEOREL)
+        && requestQuery.containsKey(COORDINATES_KEY)
         && requestQuery.containsKey(GEO_PROPERTY)) {
       // polygon & linestring
       String relation = requestQuery.getString(GEOREL);
 
-      if (!isValidCoordinates(requestQuery.getString(GEOMETRY),
-          new JsonArray(requestQuery.getString("coordinates")))) {
-        throw new ESQueryException("Coordinate mismatch (Polygon)");
+      if (!isValidCoordinates(
+          requestQuery.getString(GEOMETRY), new JsonArray(requestQuery.getString("coordinates")))) {
+        throw new EsQueryException("Coordinate mismatch (Polygon)");
       }
       String query = String.format(geoQuery, "location", getGeoJson(requestQuery), relation);
       String encodedString = Base64.getEncoder().encodeToString(query.getBytes());
@@ -57,7 +59,8 @@ public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
 
     } else if (requestQuery.containsKey(GEOMETRY)
         && requestQuery.getString(GEOMETRY).equalsIgnoreCase(BBOX)
-        && requestQuery.containsKey(GEOREL) && requestQuery.containsKey(COORDINATES_KEY)
+        && requestQuery.containsKey(GEOREL)
+        && requestQuery.containsKey(COORDINATES_KEY)
         && requestQuery.containsKey(GEO_PROPERTY)) {
       // bbox
       String relation = requestQuery.getString(GEOREL);
@@ -65,7 +68,7 @@ public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
       String encodedString = Base64.getEncoder().encodeToString(query.getBytes());
       geoWrapperQuery = WrapperQuery.of(w -> w.query(encodedString))._toQuery();
     } else {
-      throw new ESQueryException("Missing/Invalid geo parameters");
+      throw new EsQueryException("Missing/Invalid geo parameters");
     }
     List<Query> queryList = queryFilters.get(FilterType.FILTER);
     queryList.add(geoWrapperQuery);
@@ -82,13 +85,13 @@ public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
       double lon = json.getDouble(LON);
       geom = "Circle";
       geoJson.put("radius", json.getString("radius") + "m");
-      coordinates = (new JsonArray().add(lon).add(lat));
+      coordinates = new JsonArray().add(lon).add(lat);
     } else if ("bbox".equalsIgnoreCase(json.getString(GEOMETRY))) {
       geom = "envelope";
-      coordinates = (new JsonArray(json.getString("coordinates")));
+      coordinates = new JsonArray(json.getString("coordinates"));
     } else {
       geom = json.getString(GEOMETRY);
-      coordinates = (new JsonArray(json.getString("coordinates")));
+      coordinates = new JsonArray(json.getString("coordinates"));
     }
     geoJson.put("type", geom);
     geoJson.put("coordinates", coordinates);
@@ -101,18 +104,16 @@ public class GeoQueryFiltersDecorator implements ElasticsearchQueryDecorator {
     if (geometry.equalsIgnoreCase(POLYGON)
         && !coordinates
             .getJsonArray(0)
-              .getJsonArray(0)
-              .getDouble(0)
-              .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(0))
+            .getJsonArray(0)
+            .getDouble(0)
+            .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(0))
         && !coordinates
             .getJsonArray(0)
-              .getJsonArray(0)
-              .getDouble(1)
-              .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(1))) {
+            .getJsonArray(0)
+            .getDouble(1)
+            .equals(coordinates.getJsonArray(0).getJsonArray(length - 1).getDouble(1))) {
       return false;
-
     }
     return true;
   }
-
 }

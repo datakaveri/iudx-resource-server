@@ -3,21 +3,18 @@ package iudx.resource.server.apiserver.validation.types;
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.ResponseUrn.*;
 
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.common.HttpStatusCode;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
-import iudx.resource.server.common.HttpStatusCode;
 
 public final class AttrsTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(AttrsTypeValidator.class);
-
+  private static final Pattern attrsValueRegex = Pattern.compile("^[a-zA-Z0-9_]+");
   private final int maxAttrsItems = VALIDATION_MAX_ATTRS;
   private final int maxAttrLength = VALIDATIONS_MAX_ATTR_LENGTH;
-  private static final Pattern attrsValueRegex = Pattern.compile("^[a-zA-Z0-9_]+");
-
-
   private final String value;
   private final boolean required;
 

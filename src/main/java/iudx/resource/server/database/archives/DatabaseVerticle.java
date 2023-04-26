@@ -1,6 +1,7 @@
 package iudx.resource.server.database.archives;
 
 import static iudx.resource.server.common.Constants.DATABASE_SERVICE_ADDRESS;
+
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
@@ -9,21 +10,20 @@ import iudx.resource.server.database.elastic.ElasticClient;
 
 /**
  * The Database Verticle.
+ *
  * <h1>Database Verticle</h1>
- * <p>
- * The Database Verticle implementation in the the IUDX Resource Server exposes the
- * {@link iudx.resource.server.database.archives.DatabaseService} over the Vert.x Event Bus.
- * </p>
+ *
+ * <p>The Database Verticle implementation in the the IUDX Resource Server exposes the {@link
+ * iudx.resource.server.database.archives.DatabaseService} over the Vert.x Event Bus.
  *
  * @version 1.0
  * @since 2020-05-31
  */
-
 public class DatabaseVerticle extends AbstractVerticle {
 
   private DatabaseService database;
   private ElasticClient client;
-  private String databaseIP;
+  private String databaseIp;
   private String user;
   private String password;
   private String timeLimit;
@@ -38,29 +38,25 @@ public class DatabaseVerticle extends AbstractVerticle {
    *
    * @throws Exception which is a start up exception.
    */
-
   @Override
   public void start() throws Exception {
 
-    databaseIP = config().getString("databaseIP");
+    databaseIp = config().getString("databaseIP");
     databasePort = config().getInteger("databasePort");
     user = config().getString("dbUser");
     password = config().getString("dbPassword");
     timeLimit = config().getString("timeLimit");
 
-    client = new ElasticClient(databaseIP, databasePort, user, password); 
+    client = new ElasticClient(databaseIp, databasePort, user, password);
     binder = new ServiceBinder(vertx);
     database = new DatabaseServiceImpl(client, timeLimit);
 
     consumer =
-        binder.setAddress(DATABASE_SERVICE_ADDRESS)
-        .register(DatabaseService.class, database);
+        binder.setAddress(DATABASE_SERVICE_ADDRESS).register(DatabaseService.class, database);
   }
-
 
   @Override
   public void stop() {
-	binder.unregister(consumer);
+    binder.unregister(consumer);
   }
 }
-

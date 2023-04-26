@@ -60,7 +60,7 @@ public class TestUtil {
                 return null;
             }
         }).when(pgService).executeQuery(anyString(), any());
-        util.writeToDB(searchID,requestID,sub).onComplete(handler -> {
+        util.writeToDb(searchID,requestID,sub).onComplete(handler -> {
             if (handler.succeeded()) {
                 vertxTestContext.failNow(handler.cause());
             } else {
