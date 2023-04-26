@@ -115,13 +115,7 @@ public class ElasticClient {
                 while (searchHits != null && searchHits.size() > 0) {
                   long downloadedDocs = searchHits.size();
                   totaldocsDownloaded += downloadedDocs;
-                long startTime = System.currentTimeMillis();
-                getHeader(searchHits);
-                appendToFile(searchHits);
-                long endTime = System.currentTimeMillis();
-                LOGGER.debug("Time Taken in milliseconds: {} ", endTime - startTime);
 
-                LOGGER.debug(file.getAbsolutePath());
 
                   String downloadLogMessage = "downloaded {} docs of {} total [{} new]";
                   LOGGER.debug(downloadLogMessage, totaldocsDownloaded, totalHits, downloadedDocs);
