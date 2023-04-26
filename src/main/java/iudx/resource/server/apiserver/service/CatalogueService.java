@@ -1,49 +1,30 @@
 package iudx.resource.server.apiserver.service;
 
 import static iudx.resource.server.apiserver.util.Util.toList;
+
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.json.JsonObject;
+import iudx.resource.server.cache.CacheService;
+import iudx.resource.server.cache.cachelmpl.CacheType;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
-import iudx.resource.server.authenticator.Constants;
-import iudx.resource.server.cache.CacheService;
-import iudx.resource.server.cache.cacheImpl.CacheType;
 
-/**
- * catalogue service to fetch calatogue items and groups for the purpose of cache
- *
- */
+/** catalogue service to fetch calatogue items and groups for the purpose of cache */
 public class CatalogueService {
 
   private static final Logger LOGGER = LogManager.getLogger(CatalogueService.class);
-
-  static WebClient catWebClient;
-  private long cacheTimerid;
-  private static String catHost;
-  private static int catPort;;
-  private Vertx vertx;
-  private String catBasePath;
-  private String catItemPath;
-  private String catSearchPath;
-
   // private final Cache<String, List<String>> applicableFilterCache =
   // CacheBuilder.newBuilder().maximumSize(1000)
   // .expireAfterAccess(Constants.CACHE_TIMEOUT_AMOUNT, TimeUnit.MINUTES).build();
 
   private CacheService cacheService;
 
-  public CatalogueService(Vertx vertx, JsonObject config, CacheService cacheService) {
-    this.vertx = vertx;
-    catHost = config.getString("catServerHost");
-    catPort = config.getInteger("catServerPort");
-//    catSearchPath = Constants.CAT_RSG_PATH;
-    catItemPath = Constants.CAT_ITEM_PATH;
+  public CatalogueService(CacheService cacheService) {
+    //    catSearchPath = Constants.CAT_RSG_PATH;
     this.cacheService = cacheService;
     // WebClientOptions options =
     // new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
@@ -57,11 +38,6 @@ public class CatalogueService {
     // });
   }
 
-  /**
-   * populate
-   * 
-   * @return
-   */
   // private Future<Boolean> populateCache() {
   // Promise<Boolean> promise = Promise.promise();
   // catWebClient.get(catPort, catHost, catSearchPath)
@@ -89,7 +65,6 @@ public class CatalogueService {
   // return promise.future();
   // }
 
-
   // public Future<List<String>> getApplicableFilters(String id) {
   // Promise<List<String>> promise = Promise.promise();
   // String groupId = id.substring(0, id.lastIndexOf("/"));
@@ -114,8 +89,6 @@ public class CatalogueService {
   // }
 
   public Future<List<String>> getApplicableFilters(String id) {
-    Promise<List<String>> promise = Promise.promise();
-    List<String> filters = new ArrayList<String>();
     String groupId = id.substring(0, id.lastIndexOf("/"));
 
     JsonObject cacheRequest = new JsonObject();
@@ -125,25 +98,27 @@ public class CatalogueService {
     JsonObject itemCacheRequest = cacheRequest.copy();
     itemCacheRequest.put("key", id);
     Future<JsonObject> itemFilters = cacheService.get(itemCacheRequest);
-    CompositeFuture.all(List.of(groupFilter, itemFilters)).onComplete(ar -> {
-      if(ar.failed()) {
-        promise.fail("no filters available for : "+id);
-        return;
-      }
-      if(groupFilter.result().containsKey("iudxResourceAPIs")) {
-        filters.addAll(toList(groupFilter.result().getJsonArray("iudxResourceAPIs")));
-        promise.complete(filters);
-      }
-      
-      if(itemFilters.result().containsKey("iudxResourceAPIs")) {
-        filters.addAll(toList(itemFilters.result().getJsonArray("iudxResourceAPIs")));
-        promise.complete(filters);
-      }
-     
-    });
+    Promise<List<String>> promise = Promise.promise();
+    List<String> filters = new ArrayList<String>();
+    CompositeFuture.all(List.of(groupFilter, itemFilters))
+        .onComplete(
+            ar -> {
+              if (ar.failed()) {
+                promise.fail("no filters available for : " + id);
+                return;
+              }
+              if (groupFilter.result().containsKey("iudxResourceAPIs")) {
+                filters.addAll(toList(groupFilter.result().getJsonArray("iudxResourceAPIs")));
+                promise.complete(filters);
+              }
+
+              if (itemFilters.result().containsKey("iudxResourceAPIs")) {
+                filters.addAll(toList(itemFilters.result().getJsonArray("iudxResourceAPIs")));
+                promise.complete(filters);
+              }
+            });
     return promise.future();
   }
-
 
   // private Future<List<String>> fetchFilters4Item(String id, String groupId) {
   // Promise<List<String>> promise = Promise.promise();
@@ -219,8 +194,6 @@ public class CatalogueService {
   // });
   // }
 
-
-
   public Future<Boolean> isItemExist(String id) {
     LOGGER.trace("isItemExist() started");
     Promise<Boolean> promise = Promise.promise();
@@ -228,11 +201,15 @@ public class CatalogueService {
     cacheRequest.put("type", CacheType.CATALOGUE_CACHE);
     cacheRequest.put("key", id);
     Future<JsonObject> cacheFuture = cacheService.get(cacheRequest);
-    cacheFuture.onSuccess(successHandler -> {
-      promise.complete(true);
-    }).onFailure(failureHandler -> {
-      promise.fail("Item not found");
-    });
+    cacheFuture
+        .onSuccess(
+            successHandler -> {
+              promise.complete(true);
+            })
+        .onFailure(
+            failureHandler -> {
+              promise.fail("Item not found");
+            });
     return promise.future();
   }
 
@@ -264,14 +241,15 @@ public class CatalogueService {
     for (String id : ids) {
       futures.add(isItemExist(id));
     }
-    CompositeFuture.all(futures).onComplete(handler -> {
-      if (handler.succeeded()) {
-        promise.complete(true);
-      } else {
-        promise.fail(handler.cause());
-      }
-    });
+    CompositeFuture.all(futures)
+        .onComplete(
+            handler -> {
+              if (handler.succeeded()) {
+                promise.complete(true);
+              } else {
+                promise.fail(handler.cause());
+              }
+            });
     return promise.future();
   }
-
 }

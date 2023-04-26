@@ -1,31 +1,32 @@
 package iudx.resource.server.database.elastic.exception;
 
 import static iudx.resource.server.database.archives.Constants.*;
-import org.apache.http.HttpStatus;
+
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.common.ResponseUrn;
+import org.apache.http.HttpStatus;
 
-public class ESQueryException extends RuntimeException {
+public class EsQueryException extends RuntimeException {
 
   private static final long serialVersionUID = 1L;
 
   private final int statusCode;
-  private final iudx.resource.server.common.ResponseUrn urn;
+  private final ResponseUrn urn;
   private final String message;
 
-  public ESQueryException(final String message) {
-    this(ResponseUrn.BAD_REQUEST_URN,message,HttpStatus.SC_BAD_REQUEST);
+  public EsQueryException(final String message) {
+    this(ResponseUrn.BAD_REQUEST_URN, message, HttpStatus.SC_BAD_REQUEST);
   }
 
-  public ESQueryException(final ResponseUrn urn, final String message) {
-    this(urn,message,HttpStatus.SC_BAD_REQUEST);
+  public EsQueryException(final ResponseUrn urn, final String message) {
+    this(urn, message, HttpStatus.SC_BAD_REQUEST);
   }
-  
-  public ESQueryException(final ResponseUrn urn, final String message, final int statusCode) {
+
+  public EsQueryException(final ResponseUrn urn, final String message, final int statusCode) {
     super(message);
     this.urn = urn;
     this.message = message;
-    this.statusCode=statusCode;
+    this.statusCode = statusCode;
   }
 
   public String toString() {

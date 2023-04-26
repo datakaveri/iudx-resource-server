@@ -36,7 +36,7 @@ public class CallbackSubscriptionTest {
     String throwableMessage;
     @BeforeEach
     public void setUp(VertxTestContext vertxTestContext) {
-        subscription = new CallbackSubscription(databroker, pgService);
+        subscription = new CallbackSubscription(databroker);
         throwableMessage = "Dummy failure message";
         vertxTestContext.completeNow();
     }

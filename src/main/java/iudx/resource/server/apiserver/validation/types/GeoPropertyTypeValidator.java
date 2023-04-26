@@ -3,10 +3,10 @@ package iudx.resource.server.apiserver.validation.types;
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.ResponseUrn.*;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.common.HttpStatusCode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class GeoPropertyTypeValidator implements Validator {
 
@@ -41,12 +41,10 @@ public final class GeoPropertyTypeValidator implements Validator {
     return true;
   }
 
-
   @Override
   public int failureCode() {
     return HttpStatusCode.BAD_REQUEST.getValue();
   }
-
 
   @Override
   public String failureMessage() {

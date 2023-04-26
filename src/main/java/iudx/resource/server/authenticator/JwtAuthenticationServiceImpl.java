@@ -1,33 +1,17 @@
 package iudx.resource.server.authenticator;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import static iudx.resource.server.authenticator.Constants.*;
 
-import iudx.resource.server.common.Api;
-import org.apache.http.HttpStatus;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
-import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import iudx.resource.server.authenticator.authorization.AuthorizationContextFactory;
 import iudx.resource.server.authenticator.authorization.AuthorizationRequest;
 import iudx.resource.server.authenticator.authorization.AuthorizationStrategy;
@@ -36,17 +20,22 @@ import iudx.resource.server.authenticator.authorization.JwtAuthorization;
 import iudx.resource.server.authenticator.authorization.Method;
 import iudx.resource.server.authenticator.model.JwtData;
 import iudx.resource.server.cache.CacheService;
-import iudx.resource.server.cache.cacheImpl.CacheType;
+import iudx.resource.server.cache.cachelmpl.CacheType;
+import iudx.resource.server.common.Api;
 import iudx.resource.server.metering.MeteringService;
-
-import static iudx.resource.server.authenticator.Constants.*;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.Arrays;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
   private static final Logger LOGGER = LogManager.getLogger(JwtAuthenticationServiceImpl.class);
-
-  final JWTAuth jwtAuth;
   static WebClient catWebClient;
+  final JWTAuth jwtAuth;
   final String host;
   final int port;
   final String path;
@@ -58,8 +47,12 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   final String catBasePath;
 
   JwtAuthenticationServiceImpl(
-      Vertx vertx, final JWTAuth jwtAuth, final WebClient webClient, final JsonObject config,
-      final CacheService cacheService, final MeteringService meteringService, final Api apis) {
+      Vertx vertx,
+      final JWTAuth jwtAuth,
+      final JsonObject config,
+      final CacheService cacheService,
+      final MeteringService meteringService,
+      final Api apis) {
     this.jwtAuth = jwtAuth;
     this.audience = config.getString("audience");
     this.host = config.getString("catServerHost");
@@ -88,8 +81,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     Future<JwtData> jwtDecodeFuture = decodeJwt(token);
 
     boolean skipResourceIdCheck =
-        (endPoint.equalsIgnoreCase(apis.getSubscriptionUrl())
-            && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE")))
+        endPoint.equalsIgnoreCase(apis.getSubscriptionUrl())
+                && (method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("DELETE"))
             || endPoint.equalsIgnoreCase(apis.getManagementBasePath())
             || endPoint.equalsIgnoreCase(apis.getIudxConsumerAuditUrl())
             || endPoint.equalsIgnoreCase("/admin/revokeToken")
@@ -99,7 +92,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             || endPoint.equalsIgnoreCase(apis.getIngestionPath())
             || endPoint.equalsIgnoreCase(apis.getMonthlyOverview())
             || endPoint.equalsIgnoreCase(apis.getSummaryPath());
-
 
     LOGGER.debug("checkResourceFlag " + skipResourceIdCheck);
 
@@ -130,14 +122,15 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             })
         .compose(
             openResourceHandler -> {
-              LOGGER.debug("isOpenResource messahe {}"+openResourceHandler);
+              LOGGER.debug("isOpenResource messahe {}" + openResourceHandler);
               result.isOpen = openResourceHandler.equalsIgnoreCase("OPEN");
               if (result.isOpen && checkOpenEndPoints(endPoint)) {
                 JsonObject json = new JsonObject();
                 json.put(JSON_USERID, result.jwtData.getSub());
                 return Future.succeededFuture(true);
               } else if (!skipResourceIdCheck
-                  && (!result.isOpen || endPoint.equalsIgnoreCase(apis.getSubscriptionUrl())
+                  && (!result.isOpen
+                      || endPoint.equalsIgnoreCase(apis.getSubscriptionUrl())
                       || endPoint.equalsIgnoreCase(apis.getIngestionPath()))) {
                 return isValidId(result.jwtData, id);
               } else {
@@ -151,10 +144,11 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
                 jsonResponse.put(JSON_USERID, result.jwtData.getSub());
                 jsonResponse.put(
                     JSON_EXPIRY,
-                    (LocalDateTime.ofInstant(
-                        Instant.ofEpochSecond(Long.parseLong(result.jwtData.getExp().toString())),
-                        ZoneId.systemDefault()))
-                            .toString());
+                    LocalDateTime.ofInstant(
+                            Instant.ofEpochSecond(
+                                Long.parseLong(result.jwtData.getExp().toString())),
+                            ZoneId.systemDefault())
+                        .toString());
                 jsonResponse.put(ROLE, result.jwtData.getRole());
                 return Future.succeededFuture(jsonResponse);
               } else {
@@ -194,11 +188,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
     return promise.future();
   }
-  
-  
+
   public Future<String> isOpenResource(String id) {
     LOGGER.trace("isOpenResource() started");
-    Promise<String> promise = Promise.promise();
 
     JsonObject cacheRequest = new JsonObject();
     cacheRequest.put("type", CacheType.CATALOGUE_CACHE);
@@ -211,50 +203,50 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     JsonObject resourceGroupCacheRequest = cacheRequest.copy();
     resourceGroupCacheRequest.put("key", groupId);
     Future<JsonObject> groupIdFuture = cache.get(resourceGroupCacheRequest);
+    Promise<String> promise = Promise.promise();
+    resourceIdFuture.onComplete(
+        isResourceExistHandler -> {
+          if (isResourceExistHandler.failed()) {
+            promise.fail("Not Found  : " + id);
+            return;
+          } else {
+            groupIdFuture.onComplete(
+                groupCacheResultHandler -> {
+                  if (groupCacheResultHandler.failed()) {
+                    if (resourceIdFuture.result() != null
+                        && resourceIdFuture.result().containsKey("accessPolicy")) {
+                      String acl = resourceIdFuture.result().getString("accessPolicy");
+                      promise.complete(acl);
+                    } else {
+                      LOGGER.error("ACL not defined in group or resource item");
+                      promise.fail("ACL not defined in group or resource item");
+                      return;
+                    }
+                  } else {
+                    String acl = null;
 
-    resourceIdFuture.onComplete(isResourceExistHandler -> {
-      if (isResourceExistHandler.failed()) {
-        promise.fail("Not Found  : " + id);
-        return;
-      } else {
-        groupIdFuture.onComplete(groupCacheResultHandler -> {
-          
-          if(groupCacheResultHandler.failed()) {
-            if (resourceIdFuture.result() != null
-                && resourceIdFuture.result().containsKey("accessPolicy")) {
-              String acl = resourceIdFuture.result().getString("accessPolicy");
-              promise.complete(acl);
-            } else {
-              LOGGER.error("ACL not defined in group or resource item");
-              promise.fail("ACL not defined in group or resource item");
-              return;
-            }
-          }else {
-            String acl=null;
-            
-            JsonObject groupCacheResult=groupCacheResultHandler.result();
-            if (groupCacheResult != null && groupCacheResult.containsKey("accessPolicy")) {
-              acl = groupIdFuture.result().getString("accessPolicy");
-              
-            }
-            
-            JsonObject resourceCacheResult=resourceIdFuture.result();
-            if (resourceCacheResult != null && resourceCacheResult.containsKey("accessPolicy")) {
-              acl = resourceIdFuture.result().getString("accessPolicy");
-            }
-            
-            if(acl==null) {
-              LOGGER.error("ACL not defined in group or resource item");
-              promise.fail("ACL not defined in group or resource item");
-              return;
-            }else {
-              promise.complete(acl);
-            }
-            
+                    JsonObject groupCacheResult = groupCacheResultHandler.result();
+                    if (groupCacheResult != null && groupCacheResult.containsKey("accessPolicy")) {
+                      acl = groupIdFuture.result().getString("accessPolicy");
+                    }
+
+                    JsonObject resourceCacheResult = resourceIdFuture.result();
+                    if (resourceCacheResult != null
+                        && resourceCacheResult.containsKey("accessPolicy")) {
+                      acl = resourceIdFuture.result().getString("accessPolicy");
+                    }
+
+                    if (acl == null) {
+                      LOGGER.error("ACL not defined in group or resource item");
+                      promise.fail("ACL not defined in group or resource item");
+                      return;
+                    } else {
+                      promise.complete(acl);
+                    }
+                  }
+                });
           }
         });
-      }
-    });
 
     return promise.future();
   }
@@ -264,20 +256,20 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     LOGGER.trace("validateAccess() started");
     Promise<JsonObject> promise = Promise.promise();
     String jwtId = jwtData.getIid().split(":")[1];
-    
+
     if (openResource && checkOpenEndPoints(authInfo.getString("apiEndpoint"))) {
       LOGGER.info("User access is allowed.");
       JsonObject jsonResponse = new JsonObject();
       jsonResponse.put(JSON_IID, jwtId);
       jsonResponse.put(JSON_USERID, jwtData.getSub());
-      jsonResponse.put(ROLE,jwtData.getRole());
+      jsonResponse.put(ROLE, jwtData.getRole());
       jsonResponse.put(
           JSON_EXPIRY,
-          (LocalDateTime.ofInstant(
-              Instant.ofEpochSecond(Long.parseLong(jwtData.getExp().toString())),
-              ZoneId.systemDefault()))
-                  .toString());
-      
+          LocalDateTime.ofInstant(
+                  Instant.ofEpochSecond(Long.parseLong(jwtData.getExp().toString())),
+                  ZoneId.systemDefault())
+              .toString());
+
       return Future.succeededFuture(jsonResponse);
     }
 
@@ -285,7 +277,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     String api = authInfo.getString("apiEndpoint");
     AuthorizationRequest authRequest = new AuthorizationRequest(method, api);
     IudxRole role = IudxRole.fromRole(jwtData.getRole());
-    AuthorizationContextFactory authFactory = new AuthorizationContextFactory(isLimitsEnabled,apis);
+    AuthorizationContextFactory authFactory =
+        new AuthorizationContextFactory(isLimitsEnabled, apis);
 
     AuthorizationStrategy authStrategy = authFactory.create(role);
     LOGGER.info("strategy : " + authStrategy.getClass().getSimpleName());
@@ -293,7 +286,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     LOGGER.info("endPoint : " + authInfo.getString("apiEndpoint"));
 
     OffsetDateTime startDateTime = OffsetDateTime.now(ZoneId.of("Z", ZoneId.SHORT_IDS));
-    OffsetDateTime endDateTime=startDateTime.withHour(00).withMinute(00).withSecond(00);
+    OffsetDateTime endDateTime = startDateTime.withHour(00).withMinute(00).withSecond(00);
 
     JsonObject meteringCountRequest = new JsonObject();
     meteringCountRequest.put("timeRelation", "during");
@@ -302,46 +295,49 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     meteringCountRequest.put("userid", jwtData.getSub());
     meteringCountRequest.put("endPoint", "/consumer/audit");
     meteringCountRequest.put("options", "count");
-    
+
     LOGGER.debug("metering request : " + meteringCountRequest);
     if (isLimitsEnabled) {
-      meteringService.executeReadQuery(meteringCountRequest, meteringCountHandler -> {
-        if (meteringCountHandler.succeeded()) {
-          JsonObject consumedApiCount = new JsonObject();
-          LOGGER.info("metering response : " + meteringCountHandler.result());
-          JsonObject meteringResponse = meteringCountHandler.result();
-          consumedApiCount.put("api",
-              meteringResponse.getJsonArray("results").getJsonObject(0).getInteger("total"));
-          if (jwtAuthStrategy.isAuthorized(authRequest, jwtData, consumedApiCount)) {
-            LOGGER.info("User access is allowed.");
-            promise.complete(createValidateAccessSuccessResponse(jwtData));
-          } else {
-            LOGGER.error("failed - no access provided to endpoint");
-            JsonObject result = new JsonObject().put("401", "no access provided to endpoint");
-            promise.fail(result.toString());
-          }
-        } else {
-          LOGGER.error("failed to get metering response");
-          String failureMessage=meteringCountHandler.cause().getMessage();
-          JsonObject failureJson=new JsonObject(failureMessage);
-          int failureCode=failureJson.getInteger("type");
-          if(failureCode==204) {
-            JsonObject consumedApiCount=new JsonObject();
-            consumedApiCount.put("api",0);
-            if (jwtAuthStrategy.isAuthorized(authRequest, jwtData, consumedApiCount)) {
-              LOGGER.info("User access is allowed.");
-              promise.complete(createValidateAccessSuccessResponse(jwtData));
+      meteringService.executeReadQuery(
+          meteringCountRequest,
+          meteringCountHandler -> {
+            if (meteringCountHandler.succeeded()) {
+              JsonObject consumedApiCount = new JsonObject();
+              LOGGER.info("metering response : " + meteringCountHandler.result());
+              JsonObject meteringResponse = meteringCountHandler.result();
+              consumedApiCount.put(
+                  "api",
+                  meteringResponse.getJsonArray("results").getJsonObject(0).getInteger("total"));
+              if (jwtAuthStrategy.isAuthorized(authRequest, jwtData, consumedApiCount)) {
+                LOGGER.info("User access is allowed.");
+                promise.complete(createValidateAccessSuccessResponse(jwtData));
+              } else {
+                LOGGER.error("failed - no access provided to endpoint");
+                JsonObject result = new JsonObject().put("401", "no access provided to endpoint");
+                promise.fail(result.toString());
+              }
             } else {
-              LOGGER.error("failed - no access provided to endpoint");
-              JsonObject result = new JsonObject().put("401", "no access provided to endpoint");
-              promise.fail(result.toString());
+              LOGGER.error("failed to get metering response");
+              String failureMessage = meteringCountHandler.cause().getMessage();
+              JsonObject failureJson = new JsonObject(failureMessage);
+              int failureCode = failureJson.getInteger("type");
+              if (failureCode == 204) {
+                JsonObject consumedApiCount = new JsonObject();
+                consumedApiCount.put("api", 0);
+                if (jwtAuthStrategy.isAuthorized(authRequest, jwtData, consumedApiCount)) {
+                  LOGGER.info("User access is allowed.");
+                  promise.complete(createValidateAccessSuccessResponse(jwtData));
+                } else {
+                  LOGGER.error("failed - no access provided to endpoint");
+                  JsonObject result = new JsonObject().put("401", "no access provided to endpoint");
+                  promise.fail(result.toString());
+                }
+              }
+
+              //          JsonObject result = new JsonObject().put("401", "Access limit exceeds");
+              //          promise.fail(result.toString());
             }
-          }
-          
-//          JsonObject result = new JsonObject().put("401", "Access limit exceeds");
-//          promise.fail(result.toString());
-        }
-      });
+          });
     } else {
       if (jwtAuthStrategy.isAuthorized(authRequest, jwtData)) {
         LOGGER.info("User access is allowed.");
@@ -356,10 +352,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   }
 
   private boolean checkOpenEndPoints(String endPoint) {
-    for(String item : OPEN_ENDPOINTS)
-    {
-      if(endPoint.contains(item))
-      {
+    for (String item : OPEN_ENDPOINTS) {
+      if (endPoint.contains(item)) {
         return true;
       }
     }
@@ -371,13 +365,13 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     JsonObject jsonResponse = new JsonObject();
     jsonResponse.put(JSON_USERID, jwtData.getSub());
     jsonResponse.put(JSON_IID, jwtId);
-    jsonResponse.put(ROLE,jwtData.getRole());
+    jsonResponse.put(ROLE, jwtData.getRole());
     jsonResponse.put(
         JSON_EXPIRY,
-        (LocalDateTime.ofInstant(
-            Instant.ofEpochSecond(Long.parseLong(jwtData.getExp().toString())),
-            ZoneId.systemDefault()))
-                .toString());
+        LocalDateTime.ofInstant(
+                Instant.ofEpochSecond(Long.parseLong(jwtData.getExp().toString())),
+                ZoneId.systemDefault())
+            .toString());
     return jsonResponse;
   }
 
@@ -412,33 +406,36 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     String subId = jwtData.getSub();
     JsonObject requestJson = new JsonObject().put("type", cacheType).put("key", subId);
 
-    Future<JsonObject> cacheCallFuture=cache.get(requestJson);
-    cacheCallFuture.onSuccess(successhandler->{
-      JsonObject responseJson = successhandler;
-      LOGGER.debug("responseJson : " + responseJson);
-      String timestamp = responseJson.getString("value");
+    Future<JsonObject> cacheCallFuture = cache.get(requestJson);
+    cacheCallFuture
+        .onSuccess(
+            successhandler -> {
+              JsonObject responseJson = successhandler;
+              LOGGER.debug("responseJson : " + responseJson);
+              String timestamp = responseJson.getString("value");
 
-      LocalDateTime revokedAt = LocalDateTime.parse(timestamp);
-      LocalDateTime jwtIssuedAt = (LocalDateTime.ofInstant(
-          Instant.ofEpochSecond(jwtData.getIat()),
-          ZoneId.systemDefault()));
+              LocalDateTime revokedAt = LocalDateTime.parse(timestamp);
+              LocalDateTime jwtIssuedAt =
+                  LocalDateTime.ofInstant(
+                      Instant.ofEpochSecond(jwtData.getIat()), ZoneId.systemDefault());
 
-      if (jwtIssuedAt.isBefore(revokedAt)) {
-        LOGGER.info("jwt issued at : " + jwtIssuedAt + " revokedAt : " + revokedAt);
-        LOGGER.error("Privilages for client are revoked.");
-        JsonObject result = new JsonObject().put("401", "revoked token passes");
-        promise.fail(result.toString());
-      } else {
-        promise.complete(true);
-      }
-    }).onFailure(failureHandler->{
-      LOGGER.info("cache call result : [fail] " + failureHandler);
-      promise.complete(true);
-    });
-    
+              if (jwtIssuedAt.isBefore(revokedAt)) {
+                LOGGER.info("jwt issued at : " + jwtIssuedAt + " revokedAt : " + revokedAt);
+                LOGGER.error("Privilages for client are revoked.");
+                JsonObject result = new JsonObject().put("401", "revoked token passes");
+                promise.fail(result.toString());
+              } else {
+                promise.complete(true);
+              }
+            })
+        .onFailure(
+            failureHandler -> {
+              LOGGER.info("cache call result : [fail] " + failureHandler);
+              promise.complete(true);
+            });
+
     return promise.future();
   }
-  
 
   // class to contain intermeddiate data for token interospection
   final class ResultContainer {

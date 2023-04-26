@@ -1,18 +1,15 @@
 package iudx.resource.server.database.async.util;
 
-import static iudx.resource.server.database.archives.Constants.EMPTY_RESOURCE_ID;
-import static iudx.resource.server.database.archives.Constants.ID;
-import static iudx.resource.server.database.archives.Constants.ID_NOT_FOUND;
-import static iudx.resource.server.database.archives.Constants.SEARCHTYPE_NOT_FOUND;
-import static iudx.resource.server.database.archives.Constants.SEARCH_TYPE;
+import static iudx.resource.server.database.archives.Constants.*;
 import static iudx.resource.server.database.postgres.Constants.INSERT_S3_PENDING_SQL;
-import java.util.UUID;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.database.postgres.PostgresService;
+import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Util {
 
@@ -23,7 +20,7 @@ public class Util {
     this.pgService = pgService;
   }
 
-  public Future<Void> writeToDB(StringBuilder query) {
+  public Future<Void> writeToDb(StringBuilder query) {
     Promise<Void> promise = Promise.promise();
 
     pgService.executeQuery(
@@ -38,19 +35,19 @@ public class Util {
     return promise.future();
   }
 
-  public Future<Void> writeToDB(String searchID, String requestID, String sub) {
+  public Future<Void> writeToDb(String searchId, String requestId, String sub) {
 
     StringBuilder query =
         new StringBuilder(
             INSERT_S3_PENDING_SQL
                 .replace("$1", UUID.randomUUID().toString())
-                .replace("$2", searchID)
-                .replace("$3", requestID)
+                .replace("$2", searchId)
+                .replace("$3", requestId)
                 .replace("$4", sub)
                 .replace("$5", QueryProgress.IN_PROGRESS.toString())
                 .replace("$6", String.valueOf(0.0)));
 
-    return writeToDB(query);
+    return writeToDb(query);
   }
 
   public boolean isValidQuery(JsonObject query) {

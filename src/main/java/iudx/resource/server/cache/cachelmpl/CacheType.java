@@ -1,4 +1,4 @@
-package iudx.resource.server.cache.cacheImpl;
+package iudx.resource.server.cache.cachelmpl;
 
 public enum CacheType {
   REVOKED_CLIENT("revoked_client"),

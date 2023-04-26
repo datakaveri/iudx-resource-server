@@ -1,13 +1,8 @@
 package iudx.resource.server.authenticator;
 
 import static iudx.resource.server.authenticator.Constants.AUTH_CERTIFICATE_PATH;
-import static iudx.resource.server.common.Constants.AUTH_SERVICE_ADDRESS;
-import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
-import static iudx.resource.server.common.Constants.METERING_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.*;
 
-import iudx.resource.server.common.Api;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -21,16 +16,18 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.serviceproxy.ServiceBinder;
 import iudx.resource.server.cache.CacheService;
+import iudx.resource.server.common.Api;
 import iudx.resource.server.metering.MeteringService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * The Authentication Verticle.
  *
  * <h1>Authentication Verticle</h1>
  *
- * <p>
- * The Authentication Verticle implementation in the the IUDX Resource Server exposes the
- * {@link iudx.resource.server.authenticator.AuthenticationService} over the Vert.x Event Bus.
+ * <p>The Authentication Verticle implementation in the the IUDX Resource Server exposes the {@link
+ * iudx.resource.server.authenticator.AuthenticationService} over the Vert.x Event Bus.
  *
  * @version 1.0
  * @since 2020-05-31
@@ -38,7 +35,6 @@ import iudx.resource.server.metering.MeteringService;
 public class AuthenticationVerticle extends AbstractVerticle {
 
   private static final Logger LOGGER = LogManager.getLogger(AuthenticationVerticle.class);
-  private AuthenticationService authentication;
   private AuthenticationService jwtAuthenticationService;
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
@@ -48,7 +44,8 @@ public class AuthenticationVerticle extends AbstractVerticle {
   private MeteringService meteringService;
   private Api api;
   private String dxApiBasePath;
-    static WebClient createWebClient(Vertx vertx, JsonObject config) {
+
+  static WebClient createWebClient(Vertx vertx, JsonObject config) {
     return createWebClient(vertx, config, false);
   }
 
@@ -84,23 +81,23 @@ public class AuthenticationVerticle extends AbstractVerticle {
                * Default jwtIgnoreExpiry is false. If set through config, then that value is taken
                */
               boolean jwtIgnoreExpiry =
-                  config().getBoolean("jwtIgnoreExpiry") != null &&
-                      config().getBoolean("jwtIgnoreExpiry");
+                  config().getBoolean("jwtIgnoreExpiry") != null
+                      && config().getBoolean("jwtIgnoreExpiry");
               if (jwtIgnoreExpiry) {
                 jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);
                 LOGGER.warn(
-                    "JWT ignore expiration set to true, do not set IgnoreExpiration in production!!");
+                    "JWT ignore expiration set to true, "
+                        + "do not set IgnoreExpiration in production!!");
               }
-              JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
 
               cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
               meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
               dxApiBasePath = config().getString("dxApiBasePath");
               api = Api.getInstance(dxApiBasePath);
+              JWTAuth jwtAuth = JWTAuth.create(vertx, jwtAuthOptions);
               jwtAuthenticationService =
                   new JwtAuthenticationServiceImpl(
-                      vertx, jwtAuth, createWebClient(vertx, config()), config(), cacheService,
-                      meteringService,api);
+                      vertx, jwtAuth, config(), cacheService, meteringService, api);
 
               /* Publish the Authentication service with the Event Bus against an address. */
               consumer =

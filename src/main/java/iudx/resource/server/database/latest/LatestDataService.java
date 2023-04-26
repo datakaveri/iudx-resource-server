@@ -11,42 +11,40 @@ import io.vertx.core.json.JsonObject;
 
 /**
  * The Latest Data Service.
+ *
  * <h1>Latest Data Service</h1>
- * <p>
- * The Latest Data Service in the IUDX Resource Server retrieves the latest data belonging to an ID.
- * </p>
+ *
+ * <p>The Latest Data Service in the IUDX Resource Server retrieves the latest data belonging to an
+ * ID.
  *
  * @see io.vertx.codegen.annotations.ProxyGen
  * @see io.vertx.codegen.annotations.VertxGen
  * @version 1.0
  * @since 2020-05-31
  */
-
 @VertxGen
 @ProxyGen
 public interface LatestDataService {
 
-    /**
-     * The getLatestData retrieves the latest data.
-     *
-     * @param request which is a JsonObject
-     * @param handler which is a Request Handler
-     * @return LatestDataService which is a Service
-     */
+  /**
+   * The createProxy helps the code generation blocks to generate proxy code.
+   *
+   * @param vertx which is the vertx instance
+   * @param address which is the proxy address
+   * @return LatestDataServiceVertxEBProxy which is a service proxy
+   */
+  @GenIgnore
+  static LatestDataService createProxy(Vertx vertx, String address) {
+    return new LatestDataServiceVertxEBProxy(vertx, address);
+  }
 
-    @Fluent
-    LatestDataService getLatestData(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
-
-
-    /**
-     * The createProxy helps the code generation blocks to generate proxy code.
-     * @param vertx which is the vertx instance
-     * @param address which is the proxy address
-     * @return LatestDataServiceVertxEBProxy which is a service proxy
-     */
-
-    @GenIgnore
-    static LatestDataService createProxy(Vertx vertx, String address) {
-        return new LatestDataServiceVertxEBProxy(vertx, address);
-    }
+  /**
+   * The getLatestData retrieves the latest data.
+   *
+   * @param request which is a JsonObject
+   * @param handler which is a Request Handler
+   * @return LatestDataService which is a Service
+   */
+  @Fluent
+  LatestDataService getLatestData(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
 }

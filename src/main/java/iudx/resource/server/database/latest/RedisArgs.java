@@ -2,15 +2,15 @@ package iudx.resource.server.database.latest;
 
 public class RedisArgs {
 
-  private String Key;
+  private String key;
   private String path;
 
   public String getKey() {
-    return Key;
+    return key;
   }
 
   public void setKey(String key) {
-    Key = key;
+    this.key = key;
   }
 
   public String getPath() {
@@ -20,7 +20,4 @@ public class RedisArgs {
   public void setPath(String path) {
     this.path = path;
   }
-
-
-
 }

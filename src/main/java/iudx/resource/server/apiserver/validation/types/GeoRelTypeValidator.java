@@ -2,21 +2,18 @@ package iudx.resource.server.apiserver.validation.types;
 
 import static iudx.resource.server.common.ResponseUrn.*;
 
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
+import iudx.resource.server.common.HttpStatusCode;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
-import iudx.resource.server.common.HttpStatusCode;
-
 
 public final class GeoRelTypeValidator implements Validator {
 
   private static final Logger LOGGER = LogManager.getLogger(GeoRelTypeValidator.class);
-
-  private List<String> allowedValues = List.of("within", "intersects", "near");
-
   private final String value;
   private final boolean required;
+  private List<String> allowedValues = List.of("within", "intersects", "near");
 
   public GeoRelTypeValidator(final String value, final boolean required) {
     this.value = value;

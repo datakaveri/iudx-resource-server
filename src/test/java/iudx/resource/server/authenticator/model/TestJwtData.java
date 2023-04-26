@@ -34,7 +34,7 @@ public class TestJwtData {
     @DisplayName("Test getAccess_token method")
     public void test_getAccess_token(VertxTestContext vertxTestContext)
     {
-        String actual = jwtData.getAccess_token();
+        String actual = jwtData.getAccessToken();
         assertNull(actual);
         vertxTestContext.completeNow();
     }

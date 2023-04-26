@@ -87,16 +87,16 @@ public interface ManagementApi {
    * @param databroker DataBrokerService object
    * @return Future
    */
-  Future<JsonObject> createVHost(JsonObject json, DataBrokerService databroker);
+  Future<JsonObject> createVhost(JsonObject json, DataBrokerService databroker);
 
   /**
    * delete a vhost.
    *
-   * @param vhostID vhost id to be passed
+   * @param vhostId vhost id to be passed
    * @param databroker DataBrokerService object
    * @return Future
    */
-  Future<JsonObject> deleteVHost(String vhostID, DataBrokerService databroker);
+  Future<JsonObject> deleteVhost(String vhostId, DataBrokerService databroker);
 
   /**
    * register a adapter.
@@ -107,16 +107,23 @@ public interface ManagementApi {
    * @param postgresService PostgresService object
    * @return Future
    */
-  Future<JsonObject> registerAdapter(JsonObject json, DataBrokerService dataBroker, CacheService cacheService, PostgresService postgresService);
+  Future<JsonObject> registerAdapter(
+      JsonObject json,
+      DataBrokerService dataBroker,
+      CacheService cacheService,
+      PostgresService postgresService);
 
   /**
    * delete a adapter.
    *
    * @param adapterId adapter id to be deleted
-   * @param databroker DataBrokerService object
    * @return Future
    */
-  Future<JsonObject> deleteAdapter(String adapterId, String userId, DataBrokerService dataBroker,PostgresService postgresService);
+  Future<JsonObject> deleteAdapter(
+      String adapterId,
+      String userId,
+      DataBrokerService dataBroker,
+      PostgresService postgresService);
 
   /**
    * get adapter details.
@@ -171,5 +178,4 @@ public interface ManagementApi {
    * @return Future
    */
   Future<JsonObject> getAllAdapterDetailsForUser(JsonObject json, PostgresService postgresService);
-
 }

@@ -14,8 +14,7 @@ import io.vertx.core.json.JsonObject;
  *
  * <h1>Async Service</h1>
  *
- * <p>
- * The Async Service in the IUDX Resource Server defines the operations to be performed with the
+ * <p>The Async Service in the IUDX Resource Server defines the operations to be performed with the
  * IUDX Async Server.
  *
  * @see io.vertx.codegen.annotations.ProxyGen
@@ -28,28 +27,6 @@ import io.vertx.core.json.JsonObject;
 public interface AsyncService {
 
   /**
-   * The asyncSearch performs asynchronous search for a resource.
-   *
-   * @param requestID which is a String
-   * @param sub which is a String
-   * @param scrollJson which is a JsonObject
-   * @param handler which is a Request handler
-   * @return AsyncService which is a service
-   */
-
-  @Fluent
-  AsyncService asyncSearch(String requestID, String sub, String searchId, JsonObject query);
-
-  /**
-   * The asyncStatus checks on the status of the corresponding async search
-   * 
-   * @param searchID which is a String
-   * @return AsyncService which is a service
-   */
-  @Fluent
-  AsyncService asyncStatus(String sub,String searchID, Handler<AsyncResult<JsonObject>> handler);
-
-  /**
    * The createProxy helps the code generation blocks to generate proxy code.
    *
    * @param vertx which is the vertx instance
@@ -60,4 +37,25 @@ public interface AsyncService {
   static AsyncService createProxy(Vertx vertx, String address) {
     return new AsyncServiceVertxEBProxy(vertx, address);
   }
+
+  /**
+   * The asyncSearch performs asynchronous search for a resource.
+   *
+   * @param requestId which is a String
+   * @param sub which is a String
+   * @param searchId which is a String
+   * @param query which is a Json
+   * @return AsyncService which is a service
+   */
+  @Fluent
+  AsyncService asyncSearch(String requestId, String sub, String searchId, JsonObject query);
+
+  /**
+   * The asyncStatus checks on the status of the corresponding async search
+   *
+   * @param searchId which is a String
+   * @return AsyncService which is a service
+   */
+  @Fluent
+  AsyncService asyncStatus(String sub, String searchId, Handler<AsyncResult<JsonObject>> handler);
 }

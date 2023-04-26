@@ -1,20 +1,18 @@
 package iudx.resource.server.cache;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.cache.cacheImpl.CacheType;
-import iudx.resource.server.cache.cacheImpl.CacheValue;
-import iudx.resource.server.cache.cacheImpl.CatalogueCacheImpl;
-import iudx.resource.server.cache.cacheImpl.IudxCache;
-import iudx.resource.server.cache.cacheImpl.RevokedClientCache;
-import iudx.resource.server.cache.cacheImpl.UniqueAttributeCache;
+import iudx.resource.server.cache.cachelmpl.CacheType;
+import iudx.resource.server.cache.cachelmpl.CacheValue;
+import iudx.resource.server.cache.cachelmpl.CatalogueCacheImpl;
+import iudx.resource.server.cache.cachelmpl.IudxCache;
+import iudx.resource.server.cache.cachelmpl.RevokedClientCache;
+import iudx.resource.server.cache.cachelmpl.UniqueAttributeCache;
 import iudx.resource.server.database.postgres.PostgresService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CacheServiceImpl implements CacheService {
 
@@ -25,19 +23,18 @@ public class CacheServiceImpl implements CacheService {
   private IudxCache catalogueCache;
   private PostgresService postgresService;
 
-  public CacheServiceImpl(Vertx vertx, PostgresService pgService,CatalogueCacheImpl catalogueCache) {
+  public CacheServiceImpl(
+      Vertx vertx, PostgresService pgService, CatalogueCacheImpl catalogueCache) {
     this.postgresService = pgService;
     this.revokedClientCache = new RevokedClientCache(vertx, postgresService);
     this.uniqueAttributeCache = new UniqueAttributeCache(vertx, postgresService);
-    this.catalogueCache=catalogueCache;
+    this.catalogueCache = catalogueCache;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Future<JsonObject> get(JsonObject request) {
-    Promise<JsonObject> promise=Promise.promise();
+    Promise<JsonObject> promise = Promise.promise();
     IudxCache cache = null;
 
     try {
@@ -49,27 +46,29 @@ public class CacheServiceImpl implements CacheService {
 
     String key = request.getString("key");
 
-    if (cache!=null && key != null) {
+    if (cache != null && key != null) {
       Future<CacheValue<JsonObject>> getValueFuture = cache.get(key);
-      getValueFuture.onSuccess(successHandler -> {
-        promise.complete(successHandler.getValue());
-      }).onFailure(failureHandler -> {
-        promise.fail("No entry for given key");
-      });
+      getValueFuture
+          .onSuccess(
+              successHandler -> {
+                promise.complete(successHandler.getValue());
+              })
+          .onFailure(
+              failureHandler -> {
+                promise.fail("No entry for given key");
+              });
     } else {
       promise.fail("null key passed.");
     }
     return promise.future();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Future<JsonObject> put(JsonObject request) {
     LOGGER.trace("message received from for cache put operation");
     LOGGER.debug("message : " + request);
-    Promise<JsonObject> promise=Promise.promise();
+    Promise<JsonObject> promise = Promise.promise();
     IudxCache cache = null;
     try {
       cache = getCache(request);
@@ -80,7 +79,7 @@ public class CacheServiceImpl implements CacheService {
 
     String key = request.getString("key");
     String value = request.getString("value");
-    if (cache!=null && key != null && value != null) {
+    if (cache != null && key != null && value != null) {
       cache.put(key, cache.createCacheValue(key, value));
       promise.complete(new JsonObject().put(key, value));
     } else {
@@ -89,14 +88,12 @@ public class CacheServiceImpl implements CacheService {
     return promise.future();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Future<JsonObject> refresh(JsonObject request) {
     LOGGER.trace("message received for cache refresh()");
     LOGGER.debug("message : " + request);
-    Promise<JsonObject> promise=Promise.promise();
+    Promise<JsonObject> promise = Promise.promise();
     IudxCache cache = null;
     try {
       cache = getCache(request);
@@ -107,7 +104,7 @@ public class CacheServiceImpl implements CacheService {
     String key = request.getString("key");
     String value = request.getString("value");
 
-    if (cache!=null && key != null && value != null) {
+    if (cache != null && key != null && value != null) {
       cache.put(key, cache.createCacheValue(key, value));
     } else {
       cache.refreshCache();
@@ -124,23 +121,18 @@ public class CacheServiceImpl implements CacheService {
     CacheType cacheType = CacheType.valueOf(json.getString("type"));
     IudxCache cache = null;
     switch (cacheType) {
-      case REVOKED_CLIENT: {
+      case REVOKED_CLIENT:
         cache = revokedClientCache;
         break;
-      }
-      case UNIQUE_ATTRIBUTE: {
+      case UNIQUE_ATTRIBUTE:
         cache = uniqueAttributeCache;
         break;
-      }
-      case CATALOGUE_CACHE: {
+      case CATALOGUE_CACHE:
         cache = catalogueCache;
         break;
-      }
-      default: {
+      default:
         throw new IllegalArgumentException("No cache type specified");
-      }
     }
     return cache;
   }
-
 }

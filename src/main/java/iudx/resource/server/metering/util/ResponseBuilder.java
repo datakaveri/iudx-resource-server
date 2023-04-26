@@ -1,24 +1,17 @@
 package iudx.resource.server.metering.util;
 
-import static iudx.resource.server.metering.util.Constants.DETAIL;
-import static iudx.resource.server.metering.util.Constants.RESULTS;
-import static iudx.resource.server.metering.util.Constants.SUCCESS;
-import static iudx.resource.server.metering.util.Constants.TITLE;
-import static iudx.resource.server.metering.util.Constants.TOTAL;
-import static iudx.resource.server.metering.util.Constants.TOTAL_HITS;
-import static iudx.resource.server.metering.util.Constants.TYPE_KEY;
+import static iudx.resource.server.metering.util.Constants.*;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.common.ResponseUrn;
 
 public class ResponseBuilder {
-  private final String status;
+
   private final JsonObject response;
 
   /** Initialise the object with Success or Failure. */
-  public ResponseBuilder(String status) {
-    this.status = status;
+  public ResponseBuilder() {
     response = new JsonObject();
   }
 
@@ -52,6 +45,7 @@ public class ResponseBuilder {
     response.put(RESULTS, jsonArray);
     return this;
   }
+
   public ResponseBuilder setTotalHits(int totalHits) {
     response.put(TOTAL_HITS, totalHits);
     return this;

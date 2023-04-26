@@ -34,8 +34,8 @@ import iudx.resource.server.cache.CacheService;
 
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
-public class TestUniqueAttribQListener {
-  UniqueAttribQListener uniqueAttribQListener;
+public class TestUniqueAttribQlistener {
+  UniqueAttribQlistener uniqueAttribQListener;
   @Mock
   Vertx vertx;
   @Mock
@@ -63,7 +63,7 @@ public class TestUniqueAttribQListener {
   @BeforeEach
   public void setUp(VertxTestContext vertxTestContext) {
     vHost = "Dummy vHost";
-    uniqueAttribQListener = new UniqueAttribQListener(vertx, cache, config, vHost);
+    uniqueAttribQListener = new UniqueAttribQlistener(vertx, cache, config, vHost);
     uniqueAttribQListener.client = mock(client.getClass());
     vertxTestContext.completeNow();
   }

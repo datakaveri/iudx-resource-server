@@ -17,12 +17,12 @@ import io.vertx.core.cli.annotations.Description;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
-import iudx.resource.server.apiserver.validation.types.IDTypeValidator;
+import iudx.resource.server.apiserver.validation.types.IdTypeValidator;
 
 @ExtendWith(VertxExtension.class)
 public class IdTypeValidatorTest {
 
-  private IDTypeValidator idTypeValidator;
+  private IdTypeValidator idTypeValidator;
 
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
@@ -47,7 +47,7 @@ public class IdTypeValidatorTest {
   @Description("geometry type parameter allowed values.")
   public void testValidIDTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    idTypeValidator = new IDTypeValidator(value, required);
+    idTypeValidator = new IdTypeValidator(value, required);
     assertTrue(idTypeValidator.isValid());
     testContext.completeNow();
   }
@@ -93,7 +93,7 @@ public class IdTypeValidatorTest {
   @Description("id type parameter invalid values.")
   public void testInvalidIDTypeValue(String value, boolean required, Vertx vertx,
       VertxTestContext testContext) {
-    idTypeValidator = new IDTypeValidator(value, required);
+    idTypeValidator = new IdTypeValidator(value, required);
     assertThrows(DxRuntimeException.class, () -> idTypeValidator.isValid());
     testContext.completeNow();
   }

@@ -34,8 +34,6 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.*;
@@ -52,7 +50,7 @@ import io.vertx.pgclient.PgPool;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.PoolOptions;
-import iudx.resource.server.common.VHosts;
+import iudx.resource.server.common.Vhosts;
 import iudx.resource.server.configuration.Configuration;
 
 @Disabled
@@ -249,7 +247,7 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(EXCHANGE_NAME, exchangeName);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.createExchange(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -272,7 +270,7 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(EXCHANGE_NAME, exchangeName);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.createExchange(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -293,7 +291,7 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(QUEUE_NAME, queueName);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.createQueue(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -317,7 +315,7 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(QUEUE_NAME, queueName);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.createQueue(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -342,7 +340,7 @@ public class DataBrokerServiceTest {
     request.put(QUEUE_NAME, queueName);
     request.put(EXCHANGE_NAME, exchangeName);
     request.put(ENTITIES, entities);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.bindQueue(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -363,7 +361,7 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(ID, exchangeName);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.listExchangeSubscribers(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -387,7 +385,7 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(QUEUE_NAME, queueName);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.listQueueSubscribers(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -413,7 +411,7 @@ public class DataBrokerServiceTest {
     request.put(QUEUE_NAME, queueName);
     request.put(EXCHANGE_NAME, exchangeName);
     request.put(ENTITIES, entities);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.unbindQueue(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -435,7 +433,7 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(QUEUE_NAME, queueName);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.deleteQueue(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -459,7 +457,7 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(QUEUE_NAME, queueName);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.deleteQueue(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -481,7 +479,7 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(EXCHANGE_NAME, exchangeName);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.deleteExchange(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -505,7 +503,7 @@ public class DataBrokerServiceTest {
 
     JsonObject request = new JsonObject();
     request.put(EXCHANGE_NAME, exchangeName);
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.deleteExchange(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();
@@ -609,7 +607,7 @@ public class DataBrokerServiceTest {
     request.put("O2", 19.66);
     request.put("NO2", 50.62);
 
-    String vhost=VHosts.IUDX_PROD.name();
+    String vhost= Vhosts.IUDX_PROD.name();
     databroker.publishFromAdaptor(request,vhost, handler -> {
       if (handler.succeeded()) {
         JsonObject response = handler.result();

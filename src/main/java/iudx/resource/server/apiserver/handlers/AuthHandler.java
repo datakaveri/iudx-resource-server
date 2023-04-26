@@ -2,16 +2,9 @@ package iudx.resource.server.apiserver.handlers;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.authenticator.Constants.ROLE;
-import static iudx.resource.server.common.Constants.AUTH_SERVICE_ADDRESS;
-import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN_URN;
-import static iudx.resource.server.common.ResponseUrn.RESOURCE_NOT_FOUND_URN;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
+import static iudx.resource.server.common.Constants.*;
+import static iudx.resource.server.common.ResponseUrn.*;
 
-import iudx.resource.server.common.Api;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -21,20 +14,23 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.RoutingContext;
 import iudx.resource.server.authenticator.AuthenticationService;
+import iudx.resource.server.common.Api;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
+import java.util.List;
+import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /** IUDX Authentication handler to authenticate token passed in HEADER */
 public class AuthHandler implements Handler<RoutingContext> {
 
   private static final Logger LOGGER = LogManager.getLogger(AuthHandler.class);
-
-  private static final Pattern regexIDPattern = ID_REGEX;
   static AuthenticationService authenticator;
-  private final String AUTH_INFO = "authInfo";
+  private static Api api;
+  private final String authInfo = "authInfo";
   private final List<String> noAuthRequired = bypassEndpoint;
   private HttpServerRequest request;
-  private static Api api;
 
   public static AuthHandler create(Vertx vertx, Api apis) {
     authenticator = AuthenticationService.createProxy(vertx, AUTH_SERVICE_ADDRESS);
@@ -46,14 +42,12 @@ public class AuthHandler implements Handler<RoutingContext> {
   public void handle(RoutingContext context) {
     request = context.request();
     RequestBody requestBody = context.body();
-    JsonObject requestJson=null;
-    if(requestBody!=null) {
-      if(requestBody.asJsonObject()!=null) {
-        requestJson=requestBody.asJsonObject().copy();
-      }
+    JsonObject requestJson = null;
+    if (requestBody != null && requestBody.asJsonObject() != null) {
+      requestJson = requestBody.asJsonObject().copy();
     }
-    if(requestJson==null) {
-      requestJson=new JsonObject();
+    if (requestJson == null) {
+      requestJson = new JsonObject();
     }
 
     LOGGER.debug("Info : path " + request.path());
@@ -67,10 +61,12 @@ public class AuthHandler implements Handler<RoutingContext> {
     final String path = getNormalizedPath(request.path());
     final String method = context.request().method().toString();
 
-    if (token == null)
+    if (token == null) {
       token = "public";
+    }
 
-    JsonObject authInfo = new JsonObject().put(API_ENDPOINT, path).put(HEADER_TOKEN, token).put(API_METHOD, method);
+    JsonObject authInfo =
+        new JsonObject().put(API_ENDPOINT, path).put(HEADER_TOKEN, token).put(API_METHOD, method);
 
     LOGGER.debug("Info :" + context.request().path());
     LOGGER.debug("Info :" + context.request().path().split("/").length);
@@ -79,7 +75,7 @@ public class AuthHandler implements Handler<RoutingContext> {
     authInfo.put(ID, id);
 
     JsonArray ids = new JsonArray();
-    String[] idArray = (id == null ? new String[0] : id.split(","));
+    String[] idArray = id == null ? new String[0] : id.split(",");
     for (String i : idArray) {
       ids.add(i);
     }
@@ -98,8 +94,8 @@ public class AuthHandler implements Handler<RoutingContext> {
             authInfo.put(IID, authHandler.result().getValue(IID));
             authInfo.put(USER_ID, authHandler.result().getValue(USER_ID));
             authInfo.put(EXPIRY, authHandler.result().getValue(EXPIRY));
-            authInfo.put(ROLE,authHandler.result().getValue(ROLE));
-            context.data().put(AUTH_INFO, authInfo);
+            authInfo.put(ROLE, authHandler.result().getValue(ROLE));
+            context.data().put(this.authInfo, authInfo);
           } else {
             processAuthFailure(context, authHandler.cause().getMessage());
             return;
@@ -137,8 +133,7 @@ public class AuthHandler implements Handler<RoutingContext> {
   /**
    * extract id from request (path/query or body )
    *
-   *
-   * @param context     current routing context
+   * @param context current routing context
    * @param path endpoint called for
    * @return id extracted from path if present
    */
@@ -200,7 +195,8 @@ public class AuthHandler implements Handler<RoutingContext> {
     if (body != null) {
       JsonArray array = body.getJsonArray(JSON_ENTITIES);
       if (array != null) {
-        if (endpoint.matches(getpathRegex(api.getIngestionPath())) || endpoint.matches(getpathRegex(api.getSubscriptionUrl()))) {
+        if (endpoint.matches(getpathRegex(api.getIngestionPath()))
+            || endpoint.matches(getpathRegex(api.getSubscriptionUrl()))) {
           id = array.getString(0);
         } else {
           JsonObject json = array.getJsonObject(0);
@@ -234,9 +230,9 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = api.getSubscriptionUrl();
     } else if (url.matches(getpathRegex(api.getIngestionPath()))) {
       path = api.getIngestionPath();
-    } else if (url.matches(getpathRegex(api.getMonthlyOverview()))){
+    } else if (url.matches(getpathRegex(api.getMonthlyOverview()))) {
       path = api.getMonthlyOverview();
-    }else if (url.matches(EXCHANGE_URL_REGEX)) {
+    } else if (url.matches(EXCHANGE_URL_REGEX)) {
       path = IUDX_MANAGEMENT_URL + EXCHANGE_PATH;
     } else if (url.matches(QUEUE_URL_REGEX)) {
       path = IUDX_MANAGEMENT_URL + QUEUE_PATH;
@@ -260,13 +256,13 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = api.getIudxAsyncSearchApi();
     } else if (url.matches(IUDX_ASYNC_STATUS)) {
       path = api.getIudxAsyncStatusApi();
-    }else if (url.matches(getpathRegex(api.getSummaryPath()))) {
+    } else if (url.matches(getpathRegex(api.getSummaryPath()))) {
       path = api.getSummaryPath();
     }
     return path;
   }
-  
+
   private String getpathRegex(String path) {
-    return path+"(.*)";
+    return path + "(.*)";
   }
 }

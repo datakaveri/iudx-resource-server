@@ -1,49 +1,34 @@
 package iudx.resource.server.authenticator.authorization;
 
+import io.vertx.core.json.JsonObject;
+import iudx.resource.server.authenticator.model.JwtData;
+import iudx.resource.server.common.Api;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import iudx.resource.server.common.Api;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import io.vertx.core.json.JsonObject;
-import iudx.resource.server.authenticator.model.JwtData;
-
 public class DelegateAuthStrategy implements AuthorizationStrategy {
 
-  private static final Logger LOGGER = LogManager.getLogger(DelegateAuthStrategy.class);
-
-  private final Api api;
-
-
+  static Map<String, List<AuthorizationRequest>> delegateAuthorizationRules = new HashMap<>();
   private static volatile DelegateAuthStrategy instance;
 
-
-  static Map<String, List<AuthorizationRequest>> delegateAuthorizationRules = new HashMap<>();
-  private DelegateAuthStrategy(Api api)
-  {
-    this.api = api;
-    buildPermissions(api);
+  private DelegateAuthStrategy() {
+    buildPermissions();
   }
-  public static DelegateAuthStrategy getInstance(Api api)
-  {
 
+  public static DelegateAuthStrategy getInstance(Api api) {
 
-    if(instance == null)
-    {
-      synchronized (DelegateAuthStrategy.class)
-      {
-        if(instance == null)
-        {
-          instance = new DelegateAuthStrategy(api);
+    if (instance == null) {
+      synchronized (DelegateAuthStrategy.class) {
+        if (instance == null) {
+          instance = new DelegateAuthStrategy();
         }
       }
     }
     return instance;
-
   }
-  private void buildPermissions(Api api) {
+
+  private void buildPermissions() {
     // delegate allowed to access all endpoints
   }
 
@@ -53,8 +38,8 @@ public class DelegateAuthStrategy implements AuthorizationStrategy {
   }
 
   @Override
-  public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData,
-      JsonObject quotaConsumed) {
+  public boolean isAuthorized(
+      AuthorizationRequest authRequest, JwtData jwtData, JsonObject quotaConsumed) {
     return isAuthorized(authRequest, jwtData);
   }
 }

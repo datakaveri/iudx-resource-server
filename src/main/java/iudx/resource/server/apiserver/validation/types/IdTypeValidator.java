@@ -3,29 +3,24 @@ package iudx.resource.server.apiserver.validation.types;
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.ResponseUrn.*;
 
-import java.util.regex.Pattern;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.common.HttpStatusCode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-public final class IDTypeValidator implements Validator {
+public final class IdTypeValidator implements Validator {
 
-  private static final Logger LOGGER = LogManager.getLogger(IDTypeValidator.class);
-
-  private Integer minLength = VALIDATION_ID_MIN_LEN;
-  private Integer maxLength = VALIDATION_ID_MAX_LEN;
-  private static final Pattern regexIDPattern =ID_REGEX;
+  private static final Logger LOGGER = LogManager.getLogger(IdTypeValidator.class);
 
   private final String value;
   private final boolean required;
 
-  public IDTypeValidator(final String value, final boolean required) {
+  public IdTypeValidator(final String value, final boolean required) {
     this.value = value;
     this.required = required;
   }
 
-  public boolean isvalidIUDXId(final String value) {
+  public boolean isvalidIudxId(final String value) {
     return VALIDATION_ID_PATTERN.matcher(value).matches();
   }
 
@@ -48,7 +43,7 @@ public final class IDTypeValidator implements Validator {
       LOGGER.error("Validation error : Value exceed max character limit.");
       throw new DxRuntimeException(failureCode(), INVALID_ID_VALUE_URN, failureMessage(value));
     }
-    if (!isvalidIUDXId(value)) {
+    if (!isvalidIudxId(value)) {
       LOGGER.error("Validation error : Invalid id.");
       throw new DxRuntimeException(failureCode(), INVALID_ID_VALUE_URN, failureMessage(value));
     }
@@ -64,5 +59,4 @@ public final class IDTypeValidator implements Validator {
   public String failureMessage() {
     return INVALID_ID_VALUE_URN.getMessage();
   }
-
 }
