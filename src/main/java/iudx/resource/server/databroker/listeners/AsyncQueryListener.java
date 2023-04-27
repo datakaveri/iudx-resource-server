@@ -1,5 +1,6 @@
 package iudx.resource.server.databroker.listeners;
 
+import static iudx.resource.server.apiserver.util.Constants.HEADER_FORMAT;
 import static iudx.resource.server.common.Constants.*;
 
 import io.vertx.core.Future;
@@ -37,7 +38,7 @@ public class AsyncQueryListener implements RmqListeners {
           if (startHandler.succeeded()) {
             LOGGER.trace("starting Q listener for Async query");
             client.basicConsumer(
-                ASYNC_QUERY_Q,
+                "rs-async-q-test",
                 options,
                 asyncQListenerHandler -> {
                   if (asyncQListenerHandler.succeeded()) {
@@ -51,10 +52,11 @@ public class AsyncQueryListener implements RmqListeners {
                             String requestId = asyncQueryJson.getString("requestId");
                             String searchId = asyncQueryJson.getString("searchId");
                             String user = asyncQueryJson.getString("user");
+                            String format = asyncQueryJson.getString(HEADER_FORMAT);
                             JsonObject query = asyncQueryJson.getJsonObject("query");
                             LOGGER.debug("query received from RMQ : {}", query);
 
-                            asyncService.asyncSearch(requestId, user, searchId, query);
+                            asyncService.asyncSearch(requestId, user, searchId, query, format);
                           } else {
                             LOGGER.error("Empty json received from async query queue");
                           }

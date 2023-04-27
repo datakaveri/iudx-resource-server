@@ -48,7 +48,7 @@ public interface AsyncService {
    * @return AsyncService which is a service
    */
   @Fluent
-  AsyncService asyncSearch(String requestId, String sub, String searchId, JsonObject query);
+  AsyncService asyncSearch(String requestId, String sub, String searchId, JsonObject query, String format);
 
   /**
    * The asyncStatus checks on the status of the corresponding async search

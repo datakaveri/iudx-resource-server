@@ -1,5 +1,7 @@
 package iudx.resource.server.database.elastic;
 
+import static iudx.resource.server.apiserver.util.Constants.HEADER_CSV;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_PARQUET;
 import static iudx.resource.server.database.archives.Constants.*;
 
 import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient;
@@ -16,7 +18,6 @@ import co.elastic.clients.elasticsearch.core.search.SourceConfig;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -28,8 +29,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -45,6 +44,7 @@ public class ElasticClient {
 
   private static final Logger LOGGER = LogManager.getLogger(ElasticClient.class);
   private final RestClient client;
+  private ConvertElasticResponseToCSV responseToCSV;
   ElasticsearchClient esClient;
   ElasticsearchAsyncClient asyncClient;
   private ResponseBuilder responseBuilder;
@@ -76,7 +76,8 @@ public class ElasticClient {
       Query query,
       String[] source,
       String searchId,
-      ProgressListener progressListener) {
+      ProgressListener progressListener,
+      String format) {
     Promise<JsonObject> promise = Promise.promise();
 
     SearchRequest searchRequest =
@@ -98,8 +99,9 @@ public class ElasticClient {
                 List<Hit<ObjectNode>> searchHits = response.hits().hits();
 
                 long startTime = System.currentTimeMillis();
-                getHeader(searchHits);
-                appendToFile(searchHits);
+
+                convertToGivenType(format, searchHits);
+
                 long endTime = System.currentTimeMillis();
                 LOGGER.debug("Time Taken in milliseconds: {} ", endTime - startTime);
 
@@ -152,6 +154,27 @@ public class ElasticClient {
               }
             });
     return promise.future();
+  }
+
+  private void convertToGivenType(String format, List<Hit<ObjectNode>> searchHits) {
+    if(format.equals(HEADER_CSV))
+    {
+      convertToCSV(searchHits);
+    }
+    else if(format.equals(HEADER_PARQUET))
+    {
+      LOGGER.debug("Convert from Elastic response to parquet format");
+    }
+    else
+    {
+      LOGGER.debug("Get the elastic response in JSON format");
+    }
+  }
+
+  private void convertToCSV(List<Hit<ObjectNode>> searchHits) {
+    responseToCSV = new ConvertElasticResponseToCSV("something.csv");
+    responseToCSV.getHeader(searchHits);
+    responseToCSV.appendToFile(searchHits);
   }
 
   private ScrollRequest nextScrollRequest(final String scrollId) {
@@ -227,74 +250,6 @@ public class ElasticClient {
     return promise.future();
   }
 
-  private void appendToFile(List<Hit<ObjectNode>> searchHits) {
-    for (Hit hit : searchHits) {
-      Map<String, Object> map = new JsonFlatten((JsonNode) hit.source()).flatten();
-//          LOGGER.debug("Map : " + map);
-//          LOGGER.debug("Field names | header : "+ map.keySet());
-      //         make this as the csv header
-
-      Set<String> header = map.keySet();
-      appendToCSVFile(map, header);
-    }
-  }
-
-  private void getHeader(List<Hit<ObjectNode>> searchHits) {
-    for (Hit hit : searchHits) {
-      Map<String, Object> map = new JsonFlatten((JsonNode) hit.source()).flatten();
-      Set<String> header = map.keySet();
-      simpleFileWriter(header, "something.csv");
-      break;
-    }
-  }
-
-  private void appendToCSVFile(Map<String, Object> map, Set<String> header) {
-    FileWriter fileWriter = null;
-    try {
-      fileWriter = new FileWriter("something.csv", true);
-      StringBuilder stringBuilder = new StringBuilder();
-
-//      LOGGER.debug("map.entrySet() : " + map.entrySet());
-      for (String field : header) {
-        var cell = map.get(field);
-        if (cell == null) {
-          stringBuilder.append("" + ",");
-        } else {
-          stringBuilder.append(cell + ",");
-        }
-//        LOGGER.debug("map.get(field) : " + map.get(field));
-      }
-
-
-      String row = stringBuilder.substring(0, stringBuilder.length() - 1);
-//      LOGGER.debug("ROW : " + row);
-      fileWriter.append(row).append("\n");
-
-      fileWriter.close();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-  }
-
-
-  // for writing headers
-  private void simpleFileWriter(Set<String> header, String fileName) {
-    FileWriter fileWriter = null;
-    try {
-      fileWriter = new FileWriter(fileName);
-      StringBuilder stringBuilder = new StringBuilder();
-      for (String obj : header) {
-        stringBuilder.append(obj + ",");
-      }
-      String data = stringBuilder.substring(0, stringBuilder.length() - 1);
-      fileWriter.write(data + "\n");
-
-      fileWriter.close();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
   public Future<JsonObject> asyncCount(String index, Query query) {
     Promise<JsonObject> promise = Promise.promise();
     CountRequest countRequest = CountRequest.of(e -> e.index(index).query(query));

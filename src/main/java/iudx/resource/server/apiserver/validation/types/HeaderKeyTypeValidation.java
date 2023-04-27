@@ -21,6 +21,7 @@ public class HeaderKeyTypeValidation implements Validator {
 
   @Override
   public boolean isValid() {
+    LOG.debug("value : " + value + "required : " + required);
     LOG.info("inside isValid ");
     if (required && (value == null || value.isEmpty())) {
       LOG.error("Validation error : Public key is null or empty");
