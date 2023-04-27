@@ -38,7 +38,7 @@ public class AsyncQueryListener implements RmqListeners {
           if (startHandler.succeeded()) {
             LOGGER.trace("starting Q listener for Async query");
             client.basicConsumer(
-                "rs-async-q-test",
+                ASYNC_QUERY_Q,
                 options,
                 asyncQListenerHandler -> {
                   if (asyncQListenerHandler.succeeded()) {
