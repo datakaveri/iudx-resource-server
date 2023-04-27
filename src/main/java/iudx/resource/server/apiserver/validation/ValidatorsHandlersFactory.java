@@ -222,7 +222,7 @@ public class ValidatorsHandlersFactory {
 
     // optional header public key
     validators.add(new HeaderKeyTypeValidation(parameters.get(HEADER_PUBLIC_KEY), false));
-    validators.add(new ElasticSearchResponseTypeValidator(parameters.get(HEADER_RESPONSE_FILE_FORMAT), false));
+    validators.add(new ElasticSearchFileResponseTypeValidator(parameters.get(HEADER_RESPONSE_FILE_FORMAT), false));
 
     return validators;
   }

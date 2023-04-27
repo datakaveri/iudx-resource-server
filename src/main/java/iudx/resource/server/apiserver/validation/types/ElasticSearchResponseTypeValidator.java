@@ -10,14 +10,14 @@ import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.ResponseUrn.INVALID_HEADER_VALUE_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_ID_VALUE_URN;
 
-public class ElasticSearchResponseTypeValidator implements Validator {
+public class ElasticSearchFileResponseTypeValidator implements Validator {
 
-    private static final Logger LOGGER = LogManager.getLogger(ElasticSearchResponseTypeValidator.class);
+    private static final Logger LOGGER = LogManager.getLogger(ElasticSearchFileResponseTypeValidator.class);
 
     private final String value;
     private final boolean required;
 
-    public ElasticSearchResponseTypeValidator(final String value, final boolean required) {
+    public ElasticSearchFileResponseTypeValidator(final String value, final boolean required) {
         this.value = value;
         this.required = required;
     }
