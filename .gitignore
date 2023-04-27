@@ -164,6 +164,9 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# CSV Files
+*.csv
+
 # Intellij files
 .idea/
 iudx.resource.server.iml
