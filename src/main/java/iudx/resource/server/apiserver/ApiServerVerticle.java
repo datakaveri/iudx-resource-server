@@ -474,7 +474,7 @@ public class ApiServerVerticle extends AbstractVerticle {
               response
                   .putHeader(HEADER_CONTENT_TYPE, MIME_APPLICATION_JSON)
                   .setStatusCode(404)
-                  .end(generateResponse(NOT_FOUND, ResponseUrn.YET_NOT_IMPLEMENTED_URN).toString());
+                  .end(generateResponse(NOT_FOUND, YET_NOT_IMPLEMENTED_URN).toString());
             });
 
     /* Print the deployed endpoints */
@@ -1607,9 +1607,9 @@ public class ApiServerVerticle extends AbstractVerticle {
       String urnTitle = json.getString(JSON_TITLE);
       ResponseUrn urn;
       if (urnTitle != null) {
-        urn = ResponseUrn.fromCode(urnTitle);
+        urn = fromCode(urnTitle);
       } else {
-        urn = ResponseUrn.fromCode(type + "");
+        urn = fromCode(type + "");
       }
       // return urn in body
       response
