@@ -66,6 +66,8 @@ public class ParamsValidator {
     validHeaders.add(HEADER_TOKEN);
     validHeaders.add("User-Agent");
     validHeaders.add("Content-Type");
+    validHeaders.add(HEADER_CSV);
+    validHeaders.add(HEADER_PARQUET);
   }
 
   private CatalogueService catalogueService;

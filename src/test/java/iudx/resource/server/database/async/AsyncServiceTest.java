@@ -117,7 +117,7 @@ public class AsyncServiceTest {
               }
             })
         .when(client)
-        .asyncScroll(any(File.class), any(), any(),any(), any(), any());
+        .asyncScroll(any(File.class), any(), any(),any(), any(), any(), anyString());
 
     Mockito.doAnswer(
             new Answer<AsyncResult<JsonObject>>() {
@@ -191,9 +191,9 @@ public class AsyncServiceTest {
         .getRecord4RequestId(any());
     doAnswer(Answer -> Future.succeededFuture()).when(asyncServiceSpy).executePgQuery(any());
 
-    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query);
+    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv");
 
-    verify(asyncServiceSpy, times(2)).process4ExistingRequestId(any(),any(), any(), any(), any());
+    verify(asyncServiceSpy, times(2)).process4ExistingRequestId(any(),any(), any(), any(), any(), anyString());
     verify(asyncServiceSpy, times(2)).executePgQuery(any());
     verify(fileOpsHelper, times(2)).generatePreSignedUrl(anyLong(), any());
     testContext.completeNow();
@@ -213,7 +213,7 @@ public class AsyncServiceTest {
         .getRecord4RequestId(any());
     doAnswer(Answer -> Future.failedFuture("fail")).when(asyncServiceSpy).executePgQuery(any());
 
-    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query);
+    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv");
     testContext.completeNow();
   }
 
@@ -231,7 +231,7 @@ public class AsyncServiceTest {
 
     when(asyncResult1.succeeded()).thenReturn(false);
 
-    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query);
+    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv");
     testContext.completeNow();
   }
 
@@ -419,7 +419,7 @@ public class AsyncServiceTest {
     ProgressListener progressListener = mock(ProgressListener.class);
     asyncService2 = new AsyncServiceImpl(Vertx.vertx(), client, postgresService, fileOpsHelper, filePath);
     when(jsonObject.put(anyString(), anyBoolean())).thenReturn(jsonObject);
-    asyncService2.scrollQuery(file, jsonObject, "Dummy SearchID", progressListener, handler -> {
+    asyncService2.scrollQuery(file, jsonObject, "Dummy SearchID", progressListener, "csv", handler -> {
       if (handler.succeeded()) {
         vertxTestContext.failNow(handler.cause());
       } else {
