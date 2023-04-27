@@ -22,6 +22,7 @@ public final class JwtData {
 
   public JwtData(JsonObject json) {
     JwtDataConverter.fromJson(json, this);
+    setAccessToken(json.getString("access_token"));
   }
 
   public JsonObject toJson() {
@@ -104,11 +105,24 @@ public final class JwtData {
 
   @Override
   public String toString() {
-    return "JwtData [access_token=" + accessToken + ", sub=" + sub + ", iss=" + iss + ", aud="
-        + aud + ", exp=" + exp
-        + ", iat=" + iat + ", iid=" + iid + ", role=" + role + ", cons=" + cons + "]";
+    return "JwtData [access_token="
+        + accessToken
+        + ", sub="
+        + sub
+        + ", iss="
+        + iss
+        + ", aud="
+        + aud
+        + ", exp="
+        + exp
+        + ", iat="
+        + iat
+        + ", iid="
+        + iid
+        + ", role="
+        + role
+        + ", cons="
+        + cons
+        + "]";
   }
-
-
-
 }
