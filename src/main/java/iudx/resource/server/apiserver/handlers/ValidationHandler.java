@@ -1,6 +1,6 @@
 package iudx.resource.server.apiserver.handlers;
 
-import static iudx.resource.server.apiserver.util.Constants.HEADER_FORMAT;
+import static iudx.resource.server.apiserver.util.Constants.HEADER_RESPONSE_FILE_FORMAT;
 import static iudx.resource.server.apiserver.util.Constants.HEADER_PUBLIC_KEY;
 
 import io.vertx.core.Handler;
@@ -43,7 +43,7 @@ public class ValidationHandler implements Handler<RoutingContext> {
     }
     Map<String, String> pathParams = context.pathParams();
     parameters.set(HEADER_PUBLIC_KEY, context.request().getHeader(HEADER_PUBLIC_KEY));
-    parameters.set(HEADER_FORMAT, context.request().getHeader(HEADER_FORMAT));
+    parameters.set(HEADER_RESPONSE_FILE_FORMAT, context.request().getHeader(HEADER_RESPONSE_FILE_FORMAT));
     parameters.addAll(pathParams);
     ValidatorsHandlersFactory validationFactory = new ValidatorsHandlersFactory();
     MultiMap headers = context.request().headers();
