@@ -136,7 +136,8 @@ public class Constants {
   public static final String COUNT_HEADER = "Count";
   public static final String PUBLIC_TOKEN = "public";
   public static final String HEADER_PUBLIC_KEY = "publicKey";
-  public static final String HEADER_FORMAT = "format";
+  public static final String HEADER_RESPONSE_FILE_FORMAT = "format";
+
 
   // request/response params
   public static final String CONTENT_TYPE = "content-type";
