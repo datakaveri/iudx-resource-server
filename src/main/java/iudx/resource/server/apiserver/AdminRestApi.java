@@ -296,13 +296,13 @@ public final class AdminRestApi {
   }
 
   private void handleResponse(HttpServerResponse response, Response respObject) {
-    ResponseUrn urn = ResponseUrn.fromCode(respObject.getType());
+    ResponseUrn urn = fromCode(respObject.getType());
     handleResponse(response, respObject, urn.getMessage());
   }
 
   private void handleResponse(HttpServerResponse response, Response respObject, String message) {
-    HttpStatusCode httpCode = HttpStatusCode.getByValue(respObject.getStatus());
-    ResponseUrn urn = ResponseUrn.fromCode(respObject.getType());
+    HttpStatusCode httpCode = getByValue(respObject.getStatus());
+    ResponseUrn urn = fromCode(respObject.getType());
     handleResponse(response, httpCode, urn, message);
   }
 
