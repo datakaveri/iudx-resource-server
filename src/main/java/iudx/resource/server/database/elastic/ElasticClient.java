@@ -1,7 +1,6 @@
 package iudx.resource.server.database.elastic;
 
-import static iudx.resource.server.apiserver.util.Constants.HEADER_CSV;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_PARQUET;
+
 import static iudx.resource.server.database.archives.Constants.*;
 
 import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient;
@@ -77,7 +76,8 @@ public class ElasticClient {
       String[] source,
       String searchId,
       ProgressListener progressListener,
-      String format) {
+      String format,
+      String filePath) {
     Promise<JsonObject> promise = Promise.promise();
 
     SearchRequest searchRequest =
@@ -100,7 +100,8 @@ public class ElasticClient {
 
                 long startTime = System.currentTimeMillis();
 
-                convertToGivenType(format, searchHits);
+                ConvertFactory convertFactory = new ConvertFactory(filePath, searchId, format);
+                convertFactory.createInstance().write(searchHits);
 
                 long endTime = System.currentTimeMillis();
                 LOGGER.debug("Time Taken in milliseconds: {} ", endTime - startTime);
@@ -156,26 +157,7 @@ public class ElasticClient {
     return promise.future();
   }
 
-  private void convertToGivenType(String format, List<Hit<ObjectNode>> searchHits) {
-    if(format.equals(HEADER_CSV))
-    {
-      convertToCSV(searchHits);
-    }
-    else if(format.equals(HEADER_PARQUET))
-    {
-      LOGGER.debug("Convert from Elastic response to parquet format");
-    }
-    else
-    {
-      LOGGER.debug("Get the elastic response in JSON format");
-    }
-  }
 
-  private void convertToCSV(List<Hit<ObjectNode>> searchHits) {
-    responseToCSV = new ConvertElasticResponseToCSV("something.csv");
-    responseToCSV.getHeader(searchHits);
-    responseToCSV.appendToFile(searchHits);
-  }
 
   private ScrollRequest nextScrollRequest(final String scrollId) {
     return ScrollRequest.of(

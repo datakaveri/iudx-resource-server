@@ -6,18 +6,20 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ConvertElasticResponseToCSV {
+public class ConvertElasticResponseToCSV implements Convert{
     private static final Logger LOGGER = LogManager.getLogger(ConvertElasticResponseToCSV.class);
-    String csvFileName;
+    private File csvFile;
 
-    public ConvertElasticResponseToCSV(String csvFileName) {
-        this.csvFileName = csvFileName;
+    public ConvertElasticResponseToCSV(File file) {
+        this.csvFile = file;
+        LOGGER.debug("File path : {} ", file.getAbsoluteFile());
     }
 
 
@@ -37,7 +39,8 @@ public class ConvertElasticResponseToCSV {
         for (Hit hit : searchHits) {
             Map<String, Object> map = new JsonFlatten((JsonNode) hit.source()).flatten();
             Set<String> header = map.keySet();
-            simpleFileWriter(header, csvFileName);
+            LOGGER.debug("Whats this csvFile hereee : {}", csvFile);
+            simpleFileWriter(header, csvFile);
             break;
         }
     }
@@ -45,7 +48,7 @@ public class ConvertElasticResponseToCSV {
     private void appendToCSVFile(Map<String, Object> map, Set<String> header) {
         FileWriter fileWriter;
         try {
-            fileWriter = new FileWriter(csvFileName, true);
+            fileWriter = new FileWriter(csvFile, true);
             StringBuilder stringBuilder = new StringBuilder();
 
 //      LOGGER.debug("map.entrySet() : " + map.entrySet());
@@ -73,10 +76,15 @@ public class ConvertElasticResponseToCSV {
 
 
     // for writing headers
-    private void simpleFileWriter(Set<String> header, String fileName) {
+    private void simpleFileWriter(Set<String> header, File file) {
         FileWriter fileWriter;
+        LOGGER.debug("Whats the file path here ? : {}" , file);
+        if(!file.exists())
+        {
+            createCSVFile(file);
+        }
         try {
-            fileWriter = new FileWriter(fileName);
+            fileWriter = new FileWriter(csvFile);
             StringBuilder stringBuilder = new StringBuilder();
             for (String obj : header) {
                 stringBuilder.append(obj + ",");
@@ -90,4 +98,22 @@ public class ConvertElasticResponseToCSV {
         }
     }
 
+    @Override
+    public void write(List<Hit<ObjectNode>> searchHits) {
+        this.getHeader(searchHits);
+        this.appendToFile(searchHits);
+    }
+
+    private void createCSVFile(File file)
+    {
+        try {
+            file.getParentFile().mkdirs();
+
+            LOGGER.debug("whats file here : " + file.getPath());
+
+            file.createNewFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
