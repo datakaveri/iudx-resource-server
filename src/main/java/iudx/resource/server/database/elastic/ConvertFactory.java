@@ -8,6 +8,7 @@ import static iudx.resource.server.apiserver.util.Constants.HEADER_PARQUET;
 public class ConvertFactory {
     private ConvertElasticResponseToCSV responseToCSV;
     private ConvertElasticResponseToParquet responseToParquet;
+    private ConvertElasticResponseToJSON responseToJSON;
     private String format;
     private File file;
 
@@ -16,6 +17,7 @@ public class ConvertFactory {
         file = new File(filePath + "/" + searchId + "-" + format + "." + format);
         responseToCSV = new ConvertElasticResponseToCSV(file);
         responseToParquet = new ConvertElasticResponseToParquet(file);
+        responseToJSON = new ConvertElasticResponseToJSON(file);
     }
 
     public Convert createInstance() {
@@ -27,7 +29,7 @@ public class ConvertFactory {
                 return responseToCSV;
             }
             default: {
-                throw new IllegalArgumentException("Parquet, CSV, JSON are allowed file formats");
+                return responseToJSON;
             }
         }
     }
