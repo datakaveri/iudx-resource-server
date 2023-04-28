@@ -117,7 +117,7 @@ public class AsyncServiceTest {
               }
             })
         .when(client)
-        .asyncScroll(any(File.class), any(), any(),any(), any(), any(), anyString());
+        .asyncScroll(any(File.class), any(), any(),any(), any(), any(), anyString(), anyString());
 
     Mockito.doAnswer(
             new Answer<AsyncResult<JsonObject>>() {

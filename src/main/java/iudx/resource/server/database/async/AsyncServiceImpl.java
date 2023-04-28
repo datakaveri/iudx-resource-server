@@ -375,7 +375,7 @@ public class AsyncServiceImpl implements AsyncService {
     }
 
     Future<JsonObject> asyncFuture =
-        client.asyncScroll(file, searchIndex, query, sourceFilters, searchId, progressListener, format);
+        client.asyncScroll(file, searchIndex, query, sourceFilters, searchId, progressListener, format, filePath);
     asyncFuture.onComplete(
         scrollHandler -> {
           if (scrollHandler.succeeded()) {
