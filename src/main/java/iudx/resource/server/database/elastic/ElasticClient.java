@@ -97,21 +97,19 @@ public class ElasticClient {
                 LOGGER.debug("Total documents to be downloaded : " + totalHits);
 
                 List<Hit<ObjectNode>> searchHits = response.hits().hits();
+                LOGGER.debug("Total records : {}", searchHits.size());
 
                 long startTime = System.currentTimeMillis();
 
-                ConvertFactory convertFactory = new ConvertFactory(filePath, searchId, format);
-                convertFactory.createInstance().write(searchHits);
+                ConvertElasticResponseFactory convertFactory = new ConvertElasticResponseFactory(format, file);
+                ConvertElasticResponse instance = convertFactory.createInstance();
 
-                long endTime = System.currentTimeMillis();
-                LOGGER.debug("Time Taken in milliseconds: {} ", endTime - startTime);
+
 
                 LOGGER.debug(file.getAbsolutePath());
 
-                FileWriter filew = new FileWriter(file);
                 int totaldocsDownloaded = 0;
-                filew.write('[');
-                boolean appendComma = false;
+                instance.start(searchHits);
                 int totalIterations = totalHits < 10000 ? 1 : (int) Math.ceil(totalHits / 10000.0);
                 double iterationCount = 0.0;
                 double progress;
@@ -127,14 +125,8 @@ public class ElasticClient {
                   // external (s3)
                   double finalProgress = progress * 0.9;
                   Future.future(handler -> progressListener.updateProgress(finalProgress));
-                  for (Hit<ObjectNode> sh : searchHits) {
-                    if (appendComma) {
-                      filew.write("," + sh.source().toString());
-                    } else {
-                      filew.write(sh.source().toString());
-                    }
-                    appendComma = true;
-                  }
+                  instance.write(searchHits);
+
                   ScrollRequest scrollRequest = nextScrollRequest(scrollId);
                   CompletableFuture<ScrollResponse<ObjectNode>> future =
                       asyncClient.scroll(scrollRequest, ObjectNode.class);
@@ -142,11 +134,12 @@ public class ElasticClient {
                   scrollId = scrollResponse.scrollId();
                   searchHits = scrollResponse.hits().hits();
                 }
-                filew.write(']');
-                filew.close();
+
+                instance.end();
                 promise.complete();
-              } catch (IOException exception) {
-                promise.fail("failed for some IO issues [file access]");
+                long endTime = System.currentTimeMillis();
+                LOGGER.debug("Time Taken in milliseconds: {} ", endTime - startTime);
+
               } catch (Exception exception) {
                 promise.fail("failed for some exception");
                 exception.printStackTrace();

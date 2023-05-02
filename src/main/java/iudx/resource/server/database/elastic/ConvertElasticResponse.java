@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.List;
 
-public interface Convert {
+public interface ConvertElasticResponse {
     void write(List<Hit<ObjectNode>> searchHits);
+    void start(List<Hit<ObjectNode>> searchHits);
+    void end();
 }

@@ -248,7 +248,11 @@ public class AsyncServiceImpl implements AsyncService {
   }
 
   private void process4NewRequestId(String searchId, String userId, JsonObject query, String format) {
-    File file = new File(filePath + "/" + searchId + ".json");
+    if (format == null)
+    {
+        format = "json";
+    }
+    File file = new File(filePath + "/" + searchId + "." + format);
     String objectId = UUID.randomUUID().toString();
     String id = query.getJsonArray(ID).getString(0);
 
