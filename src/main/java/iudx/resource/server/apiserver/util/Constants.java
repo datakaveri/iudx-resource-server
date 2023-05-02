@@ -122,7 +122,6 @@ public class Constants {
   // Header params
   public static final String HEADER_TOKEN = "token";
   public static final String HEADER_CSV = "csv";
-  public static final String HEADER_JSON = "json";
   public static final String HEADER_PARQUET = "parquet";
   public static final String HEADER_HOST = "Host";
   public static final String HEADER_ACCEPT = "Accept";
