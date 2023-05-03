@@ -28,7 +28,6 @@ public class Constants {
   public static String UNIQUE_ATTR_EX = "latest-data-unique-attributes";
   public static String UNIQUE_ATTR_EX_ROUTING_KEY = "unique-attribute";
   public static String UNIQUE_ATTR_Q = "rs-unique-attributes";
-  public static String ASYNC_QUERY_EX = "async-query";
   public static String ASYNC_QUERY_Q = "rs-async-query";
   // postgres queries
   public static String SELECT_REVOKE_TOKEN_SQL = "SELECT * FROM revoked_tokens";
