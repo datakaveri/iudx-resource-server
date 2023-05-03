@@ -1,6 +1,11 @@
 package iudx.resource.server.apiserver.management;
 
-import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
+import static iudx.resource.server.apiserver.util.Constants.JSON_ID;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.SUCCCESS;
+import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.cache.cachelmpl.CacheType.CATALOGUE_CACHE;
 import static iudx.resource.server.common.Constants.CREATE_INGESTION_SQL;
 import static iudx.resource.server.common.Constants.DELETE_INGESTION_SQL;
@@ -30,6 +35,7 @@ import org.apache.logging.log4j.Logger;
 public class ManagementApiImpl implements ManagementApi {
 
   private static final Logger LOGGER = LogManager.getLogger(ManagementApiImpl.class);
+
   /** {@inheritDoc} */
   @Override
   public Future<JsonObject> registerAdapter(
@@ -48,19 +54,17 @@ public class ManagementApiImpl implements ManagementApi {
         .get(cacheJson)
         .onSuccess(
             cacheServiceResult -> {
-              StringBuilder query =
-                  new StringBuilder(
-                      CREATE_INGESTION_SQL
-                          .replace(
-                              "$1",
-                              requestJson.getJsonArray("entities").getString(0)) /* exchange name */
-                          .replace("$2", cacheServiceResult.getString("id")) /* resource id */
-                          .replace("$3", cacheServiceResult.getString("name")) /* dataset name */
-                          .replace("$4", cacheServiceResult.toString()) /* dataset json */
-                          .replace("$5", requestJson.getString("userid"))); /* user id */
+              String query = CREATE_INGESTION_SQL
+                  .replace(
+                      "$1",
+                      requestJson.getJsonArray("entities").getString(0)) /* exchange name */
+                  .replace("$2", cacheServiceResult.getString("id")) /* resource id */
+                  .replace("$3", cacheServiceResult.getString("name")) /* dataset name */
+                  .replace("$4", cacheServiceResult.toString()) /* dataset json */
+                  .replace("$5", requestJson.getString("userid")); /* user id */
 
               postgresService.executeQuery(
-                  query.toString(),
+                  query,
                   pgHandler -> {
                     if (pgHandler.succeeded()) {
                       LOGGER.debug("Inserted in postgres.");
@@ -80,12 +84,10 @@ public class ManagementApiImpl implements ManagementApi {
                                 promise.fail(generateResponse(brokerResponse).toString());
                               }
                             } else {
-                              StringBuilder deleteQuery =
-                                  new StringBuilder(
-                                      DELETE_INGESTION_SQL.replace(
-                                          "$0", requestJson.getJsonArray("entities").getString(0)));
+                              String deleteQuery = DELETE_INGESTION_SQL.replace(
+                                  "$0", requestJson.getJsonArray("entities").getString(0));
                               postgresService.executeQuery(
-                                  deleteQuery.toString(),
+                                  deleteQuery,
                                   deletePgHandler -> {
                                     if (deletePgHandler.succeeded()) {
                                       LOGGER.debug("Deleted from postgres.");
@@ -209,6 +211,7 @@ public class ManagementApiImpl implements ManagementApi {
         });
     return promise.future();
   }
+
   /** {@inheritDoc} */
   @Override
   public Future<JsonObject> publishDataFromAdapter(JsonObject json, DataBrokerService databroker) {
@@ -238,10 +241,8 @@ public class ManagementApiImpl implements ManagementApi {
     LOGGER.debug("getAllAdapterDetailsForUser() started");
     Promise<JsonObject> promise = Promise.promise();
 
-    StringBuilder selectIngestionQuery =
-        new StringBuilder(SELECT_INGESTION_SQL.replace("$0", request.getString(PROVIDER_ID)));
     postgresService.executeQuery(
-        selectIngestionQuery.toString(),
+        SELECT_INGESTION_SQL.replace("$0", request.getString(PROVIDER_ID)),
         postgresServiceHandler -> {
           if (postgresServiceHandler.succeeded()) {
             JsonObject result = postgresServiceHandler.result();
