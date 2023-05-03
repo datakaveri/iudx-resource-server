@@ -3,25 +3,17 @@ package iudx.resource.server.apiserver;
 import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
 import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
 import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.RESET_PWD;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
 import static iudx.resource.server.common.ResponseUrn.INVALID_TOKEN_URN;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import iudx.resource.server.apiserver.handlers.AuthHandler;
-import iudx.resource.server.apiserver.management.ManagementApi;
 import iudx.resource.server.apiserver.response.ResponseType;
-import iudx.resource.server.common.Api;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
-import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
-import iudx.resource.server.metering.MeteringService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,10 +23,10 @@ public class ManagementRestApi {
 
   private final DataBrokerService rmqBrokerService;
 
-  ManagementRestApi(
-      DataBrokerService brokerService) {
+  ManagementRestApi(DataBrokerService brokerService) {
     this.rmqBrokerService = brokerService;
   }
+
   public void resetPassword(RoutingContext routingContext) {
     LOGGER.trace("Info: resetPassword method started");
 
