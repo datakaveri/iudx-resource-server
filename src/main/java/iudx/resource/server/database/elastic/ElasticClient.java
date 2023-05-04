@@ -1,6 +1,5 @@
 package iudx.resource.server.database.elastic;
 
-
 import static iudx.resource.server.database.archives.Constants.*;
 
 import co.elastic.clients.elasticsearch.ElasticsearchAsyncClient;
@@ -25,8 +24,6 @@ import io.vertx.core.json.JsonObject;
 import iudx.resource.server.database.archives.ResponseBuilder;
 import iudx.resource.server.database.async.ProgressListener;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.apache.http.HttpHost;
@@ -43,7 +40,6 @@ public class ElasticClient {
 
   private static final Logger LOGGER = LogManager.getLogger(ElasticClient.class);
   private final RestClient client;
-  private ConvertElasticResponseToCSV responseToCSV;
   ElasticsearchClient esClient;
   ElasticsearchAsyncClient asyncClient;
   private ResponseBuilder responseBuilder;
@@ -99,12 +95,11 @@ public class ElasticClient {
                 List<Hit<ObjectNode>> searchHits = response.hits().hits();
                 LOGGER.debug("Total records : {}", searchHits.size());
 
-                long startTime = System.currentTimeMillis();
+                final long startTime = System.currentTimeMillis();
 
-                ConvertElasticResponseFactory convertFactory = new ConvertElasticResponseFactory(format, file);
+                ConvertElasticResponseFactory convertFactory =
+                    new ConvertElasticResponseFactory(format, file);
                 ConvertElasticResponse instance = convertFactory.createInstance();
-
-
 
                 LOGGER.debug(file.getAbsolutePath());
 
@@ -135,9 +130,9 @@ public class ElasticClient {
                   searchHits = scrollResponse.hits().hits();
                 }
 
-                instance.append(searchHits,true);
+                instance.append(searchHits, true);
                 promise.complete();
-                long endTime = System.currentTimeMillis();
+                final long endTime = System.currentTimeMillis();
                 LOGGER.debug("Time Taken in milliseconds: {} ", endTime - startTime);
 
               } catch (Exception exception) {
@@ -149,8 +144,6 @@ public class ElasticClient {
             });
     return promise.future();
   }
-
-
 
   private ScrollRequest nextScrollRequest(final String scrollId) {
     return ScrollRequest.of(
