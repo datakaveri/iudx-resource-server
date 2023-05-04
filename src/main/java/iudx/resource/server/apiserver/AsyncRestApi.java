@@ -133,6 +133,12 @@ public class AsyncRestApi {
             JsonObject requestBody = new JsonObject();
             requestBody.put("ids", json.getJsonArray("id"));
 
+            if(routingContext.request().getHeader(HEADER_RESPONSE_FILE_FORMAT) != null)
+            {
+              json.put("format",routingContext.request().getHeader(HEADER_RESPONSE_FILE_FORMAT));
+            }
+
+
             Future<List<String>> filtersFuture =
                 catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
             filtersFuture.onComplete(
