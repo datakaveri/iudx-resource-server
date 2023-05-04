@@ -109,7 +109,7 @@ public class ElasticClient {
                 LOGGER.debug(file.getAbsolutePath());
 
                 int totaldocsDownloaded = 0;
-                instance.start(searchHits);
+                instance.write(searchHits);
                 int totalIterations = totalHits < 10000 ? 1 : (int) Math.ceil(totalHits / 10000.0);
                 double iterationCount = 0.0;
                 double progress;
@@ -125,7 +125,7 @@ public class ElasticClient {
                   // external (s3)
                   double finalProgress = progress * 0.9;
                   Future.future(handler -> progressListener.updateProgress(finalProgress));
-                  instance.write(searchHits);
+                  instance.append(searchHits);
 
                   ScrollRequest scrollRequest = nextScrollRequest(scrollId);
                   CompletableFuture<ScrollResponse<ObjectNode>> future =
@@ -135,7 +135,7 @@ public class ElasticClient {
                   searchHits = scrollResponse.hits().hits();
                 }
 
-                instance.end();
+                instance.append(searchHits,true);
                 promise.complete();
                 long endTime = System.currentTimeMillis();
                 LOGGER.debug("Time Taken in milliseconds: {} ", endTime - startTime);

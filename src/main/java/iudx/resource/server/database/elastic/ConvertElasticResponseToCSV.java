@@ -13,9 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ConvertElasticResponseToCSV implements ConvertElasticResponse {
+public class ConvertElasticResponseToCSV extends AbstractConvertElasticSearchResponse {
     private static final Logger LOGGER = LogManager.getLogger(ConvertElasticResponseToCSV.class);
     private File csvFile;
+    private FileWriter fileWriter;
 
 
     /**
@@ -23,7 +24,13 @@ public class ConvertElasticResponseToCSV implements ConvertElasticResponse {
      * @param file File to write csv records
      */
     public ConvertElasticResponseToCSV(File file) {
+        super(file);
         this.csvFile = file;
+        try {
+            this.fileWriter = new FileWriter(csvFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -57,9 +64,7 @@ public class ConvertElasticResponseToCSV implements ConvertElasticResponse {
      * @param header Set of headers
      */
     private void appendToCSVFile(Map<String, Object> map, Set<String> header) {
-        FileWriter fileWriter;
-        try {
-            fileWriter = new FileWriter(csvFile, true);
+
             StringBuilder stringBuilder = new StringBuilder();
 
             for (String field : header) {
@@ -73,11 +78,10 @@ public class ConvertElasticResponseToCSV implements ConvertElasticResponse {
 
 
             String row = stringBuilder.substring(0, stringBuilder.length() - 1);
+        try {
             fileWriter.append(row).append("\n");
-
-            fileWriter.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
         }
 
     }
@@ -88,37 +92,36 @@ public class ConvertElasticResponseToCSV implements ConvertElasticResponse {
      * @param header  Set of headers to be written
      */
     private void simpleFileWriter(Set<String> header) {
-        FileWriter fileWriter;
-        try {
-            fileWriter = new FileWriter(csvFile);
             StringBuilder stringBuilder = new StringBuilder();
             for (String obj : header) {
                 stringBuilder.append(obj + ",");
             }
             String data = stringBuilder.substring(0, stringBuilder.length() - 1);
+            try {
+                fileWriter.write(data + "\n");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+    @Override
+    public void write(List<Hit<ObjectNode>> searchHits) {
+            this.getHeader(searchHits);
+    }
+
+    @Override
+    public void append(List<Hit<ObjectNode>> searchHits, boolean isLastRecord) {
         try {
-            fileWriter.write(data + "\n");
             fileWriter.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
-    public void write(List<Hit<ObjectNode>> searchHits) {
+    public void append(List<Hit<ObjectNode>> searchHits) {
         this.flattenRecord(searchHits);
     }
 
-    @Override
-    public void start(List<Hit<ObjectNode>> searchHits) {
-        this.getHeader(searchHits);
-    }
 
-    @Override
-    public void end() {
-    }
 }

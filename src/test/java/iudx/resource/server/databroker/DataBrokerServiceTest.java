@@ -27,7 +27,6 @@ import static iudx.resource.server.databroker.util.Constants.USER_NAME;
 import static iudx.resource.server.databroker.util.Constants.VHOST;
 import static iudx.resource.server.databroker.util.Constants.VHOST_IUDX;
 import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.InputStream;

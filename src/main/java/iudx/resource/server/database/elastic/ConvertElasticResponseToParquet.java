@@ -24,11 +24,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-public class ConvertElasticResponseToParquet implements ConvertElasticResponse {
+public class ConvertElasticResponseToParquet extends AbstractConvertElasticSearchResponse {
     private File file;
     private static final Logger LOGGER = LogManager.getLogger(ConvertElasticResponseToParquet.class);
 
     public ConvertElasticResponseToParquet(File file) {
+        super(file);
         this.file = file;
     }
 
@@ -46,14 +47,18 @@ public class ConvertElasticResponseToParquet implements ConvertElasticResponse {
     }
 
     @Override
-    public void start(List<Hit<ObjectNode>> searchHits) {
+    public void append(List<Hit<ObjectNode>> searchHits, boolean isLastRecord) {
 
     }
 
     @Override
-    public void end() {
+    public void append(List<Hit<ObjectNode>> searchHits) {
 
     }
+
+
+
+
 
     private SchemaMapping getParquetSchema(Schema arrowSchema) {
         SchemaConverter schemaConverter = new SchemaConverter();
