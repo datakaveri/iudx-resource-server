@@ -1,8 +1,6 @@
 package iudx.resource.server.database.elastic;
 
 import co.elastic.clients.elasticsearch.core.search.Hit;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.vertx.core.json.JsonObject;
 import org.apache.arrow.vector.types.FloatingPointPrecision;
@@ -20,8 +18,6 @@ import org.apache.parquet.io.OutputFile;
 import org.apache.parquet.schema.MessageType;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.*;
 
 public class ConvertElasticResponseToParquet extends AbstractConvertElasticSearchResponse {
@@ -38,12 +34,14 @@ public class ConvertElasticResponseToParquet extends AbstractConvertElasticSearc
         Schema arrowSchema = this.getSchema(searchHits);
         SchemaMapping parquetSchema = this.getParquetSchema(arrowSchema);
         MessageType messageTypeParquetSchema = parquetSchema.getParquetSchema();
+
 //        LOGGER.debug("message type parquet schema {}", messageTypeParquetSchema);
 //        LOGGER.debug("Whats the parquet schema heree ? : {}",parquetSchema.toString());
 //        LOGGER.debug("\n\n\n\n");
 //        LOGGER.debug("What is the schema : {} ", parquetSchema.getChildren());
 //        LOGGER.debug("\n\n\n\n");
-        ParquetWriter parquetWriter = this.getParquetWriter(file, messageTypeParquetSchema);
+
+//        ParquetWriter parquetWriter = this.getParquetWriter(file, messageTypeParquetSchema);
     }
 
     @Override
@@ -65,7 +63,7 @@ public class ConvertElasticResponseToParquet extends AbstractConvertElasticSearc
         return schemaConverter.fromArrow(arrowSchema);
 
     }
-
+/*
     private ParquetWriter getParquetWriter(File file, MessageType parquetSchema) {
         Configuration configuration = new Configuration();
 //        LOGGER.debug("whats the file path : ");
@@ -84,6 +82,7 @@ public class ConvertElasticResponseToParquet extends AbstractConvertElasticSearc
 
         return null;
     }
+*/
 
     public Schema getSchema(List<Hit<ObjectNode>> searchHits) {
         for (Hit hit : searchHits) {

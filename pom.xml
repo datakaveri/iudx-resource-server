@@ -78,29 +78,14 @@
             <artifactId>vertx-service-proxy</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-service-discovery</artifactId>
-        </dependency>
-
-
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-jdbc-client</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.goterl</groupId>
-            <artifactId>lazysodium-java</artifactId>
-            <version>5.1.1</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.github.sisyphsu</groupId>
             <artifactId>dateparser</artifactId>
             <version>1.0.0</version>
         </dependency>
-
-        <!--Apache Arrow dependencies -->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-service-discovery</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.apache.arrow</groupId>
             <artifactId>arrow-vector</artifactId>
@@ -123,12 +108,17 @@
             <artifactId>parquet-arrow</artifactId>
             <version>1.13.0</version>
         </dependency>
+
         <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-core</artifactId>
-            <version>0.20.2</version>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-jdbc-client</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.goterl</groupId>
+            <artifactId>lazysodium-java</artifactId>
+            <version>5.1.1</version>
+        </dependency>
 
         <dependency>
             <groupId>net.java.dev.jna</groupId>
