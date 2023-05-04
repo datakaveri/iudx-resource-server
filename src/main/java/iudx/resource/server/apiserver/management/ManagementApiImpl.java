@@ -1,6 +1,11 @@
 package iudx.resource.server.apiserver.management;
 
-import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.util.Constants.JSON_DETAIL;
+import static iudx.resource.server.apiserver.util.Constants.JSON_ID;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
+import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
+import static iudx.resource.server.apiserver.util.Constants.SUCCCESS;
+import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.cache.cachelmpl.CacheType.CATALOGUE_CACHE;
 import static iudx.resource.server.common.Constants.CREATE_INGESTION_SQL;
 import static iudx.resource.server.common.Constants.DELETE_INGESTION_SQL;
@@ -33,257 +38,6 @@ public class ManagementApiImpl implements ManagementApi {
 
   /** {@inheritDoc} */
   @Override
-  public Future<JsonObject> createExchange(JsonObject json, DataBrokerService databroker) {
-    Promise<JsonObject> promise = Promise.promise();
-    LOGGER.info("data broker ::: " + databroker);
-    databroker.createExchange(
-        json,
-        Vhosts.IUDX_PROD.name(),
-        handler -> {
-          if (handler.succeeded()) {
-            JsonObject result = handler.result();
-            LOGGER.debug("Result from databroker verticle :: " + result);
-            if (!result.containsKey("type")) {
-              promise.complete(result);
-            } else {
-              promise.fail(result.toString());
-            }
-          } else if (handler.failed()) {
-            LOGGER.error(handler.cause());
-            promise.fail(handler.cause().getMessage());
-          }
-        });
-    return promise.future();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Future<JsonObject> deleteExchange(String exchangeid, DataBrokerService databroker) {
-    Promise<JsonObject> promise = Promise.promise();
-    JsonObject json = new JsonObject();
-    json.put(JSON_EXCHANGE_NAME, exchangeid);
-    databroker.deleteExchange(
-        json,
-        Vhosts.IUDX_PROD.name(),
-        handler -> {
-          if (handler.succeeded()) {
-            JsonObject result = handler.result();
-            LOGGER.debug("Result from databroker verticle :: " + result);
-            if (!result.containsKey("type")) {
-              promise.complete(result);
-            } else {
-              promise.fail(result.toString());
-            }
-          } else if (handler.failed()) {
-            LOGGER.error(handler.cause());
-            promise.fail(handler.cause().getMessage());
-          }
-        });
-    return promise.future();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Future<JsonObject> getExchangeDetails(String exchangeid, DataBrokerService databroker) {
-    Promise<JsonObject> promise = Promise.promise();
-    JsonObject json = new JsonObject();
-    json.put(JSON_EXCHANGE_NAME, exchangeid);
-    json.put("id", exchangeid);
-    databroker.listExchangeSubscribers(
-        json,
-        Vhosts.IUDX_PROD.name(),
-        handler -> {
-          if (handler.succeeded()) {
-            JsonObject result = handler.result();
-            LOGGER.debug("Result from databroker verticle :: " + result);
-            if (!result.containsKey(JSON_TYPE)) {
-              promise.complete(result);
-            } else {
-              promise.fail(result.toString());
-            }
-          } else if (handler.failed()) {
-            LOGGER.error(handler.cause());
-            promise.fail(handler.cause().getMessage());
-          }
-        });
-    return promise.future();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Future<JsonObject> createQueue(JsonObject json, DataBrokerService databroker) {
-    Promise<JsonObject> promise = Promise.promise();
-    databroker.createQueue(
-        json,
-        Vhosts.IUDX_PROD.name(),
-        handler -> {
-          if (handler.succeeded()) {
-            JsonObject result = handler.result();
-            LOGGER.debug("Result from databroker verticle :: " + result);
-            if (!result.containsKey(JSON_TYPE)) {
-              promise.complete(result);
-            } else {
-              promise.fail(result.toString());
-            }
-          } else if (handler.failed()) {
-            LOGGER.error(handler.cause());
-            promise.fail(handler.cause().getMessage());
-          }
-        });
-    return promise.future();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Future<JsonObject> deleteQueue(String queueId, DataBrokerService databroker) {
-    Promise<JsonObject> promise = Promise.promise();
-    JsonObject json = new JsonObject();
-    json.put(JSON_QUEUE_NAME, queueId);
-    databroker.deleteQueue(
-        json,
-        Vhosts.IUDX_PROD.name(),
-        handler -> {
-          if (handler.succeeded()) {
-            JsonObject result = handler.result();
-            LOGGER.debug("Result from databroker verticle :: " + result);
-            if (!result.containsKey(JSON_TYPE)) {
-              promise.complete(result);
-            } else {
-              promise.fail(result.toString());
-            }
-          } else {
-            LOGGER.error(handler.cause());
-            promise.fail(handler.cause().getMessage());
-          }
-        });
-    return promise.future();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Future<JsonObject> getQueueDetails(String queueId, DataBrokerService databroker) {
-    Promise<JsonObject> promise = Promise.promise();
-    JsonObject json = new JsonObject();
-    json.put(JSON_QUEUE_NAME, queueId);
-    databroker.listQueueSubscribers(
-        json,
-        Vhosts.IUDX_PROD.name(),
-        handler -> {
-          if (handler.succeeded()) {
-            JsonObject result = handler.result();
-            LOGGER.debug("Result from databroker verticle :: " + result);
-            if (!result.containsKey(JSON_TYPE)) {
-              promise.complete(result);
-            } else {
-              promise.fail(result.toString());
-            }
-          } else {
-            LOGGER.error(handler.cause());
-            promise.fail(handler.cause().getMessage());
-          }
-        });
-    return promise.future();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Future<JsonObject> bindQueue2Exchange(JsonObject json, DataBrokerService databroker) {
-    Promise<JsonObject> promise = Promise.promise();
-    databroker.bindQueue(
-        json,
-        Vhosts.IUDX_PROD.name(),
-        handler -> {
-          if (handler.succeeded()) {
-            JsonObject result = handler.result();
-            LOGGER.debug("Result from databroker verticle :: " + result);
-            if (!result.containsKey(JSON_TYPE)) {
-              promise.complete(result);
-            } else {
-              promise.fail(result.toString());
-            }
-          } else {
-            LOGGER.error(handler.cause());
-            promise.fail(handler.cause().getMessage());
-          }
-        });
-    return promise.future();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Future<JsonObject> unbindQueue2Exchange(JsonObject json, DataBrokerService databroker) {
-    Promise<JsonObject> promise = Promise.promise();
-    LOGGER.trace("unbind request :: " + json);
-    databroker.unbindQueue(
-        json,
-        Vhosts.IUDX_PROD.name(),
-        handler -> {
-          if (handler.succeeded()) {
-            JsonObject result = handler.result();
-            LOGGER.debug("Result from databroker verticle :: " + result);
-            if (!result.containsKey(JSON_TYPE)) {
-              promise.complete(result);
-            } else {
-              promise.fail(result.toString());
-            }
-          } else {
-            LOGGER.error(handler.cause());
-            promise.fail(handler.cause().getMessage());
-          }
-        });
-    return promise.future();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Future<JsonObject> createVhost(JsonObject json, DataBrokerService databroker) {
-    Promise<JsonObject> promise = Promise.promise();
-    databroker.createvHost(
-        json,
-        handler -> {
-          if (handler.succeeded()) {
-            JsonObject result = handler.result();
-            LOGGER.debug("Result from databroker verticle :: " + result);
-            if (!result.containsKey(JSON_TYPE)) {
-              promise.complete(result);
-            } else {
-              promise.fail(result.toString());
-            }
-          } else {
-            LOGGER.error(handler.cause());
-            promise.fail(handler.cause().getMessage());
-          }
-        });
-    return promise.future();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Future<JsonObject> deleteVhost(String vhostId, DataBrokerService databroker) {
-    Promise<JsonObject> promise = Promise.promise();
-    JsonObject json = new JsonObject();
-    json.put(JSON_VHOST, vhostId);
-    databroker.deletevHost(
-        json,
-        handler -> {
-          if (handler.succeeded()) {
-            JsonObject result = handler.result();
-            LOGGER.debug("Result from databroker verticle :: " + result);
-            if (!result.containsKey(JSON_TYPE)) {
-              promise.complete(result);
-            } else {
-              promise.fail(result.toString());
-            }
-          } else {
-            LOGGER.error(handler.cause());
-            promise.fail(handler.cause().getMessage());
-          }
-        });
-    return promise.future();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public Future<JsonObject> registerAdapter(
       JsonObject requestJson,
       DataBrokerService dataBroker,
@@ -300,19 +54,17 @@ public class ManagementApiImpl implements ManagementApi {
         .get(cacheJson)
         .onSuccess(
             cacheServiceResult -> {
-              StringBuilder query =
-                  new StringBuilder(
-                      CREATE_INGESTION_SQL
-                          .replace(
-                              "$1",
-                              requestJson.getJsonArray("entities").getString(0)) /* exchange name */
-                          .replace("$2", cacheServiceResult.getString("id")) /* resource id */
-                          .replace("$3", cacheServiceResult.getString("name")) /* dataset name */
-                          .replace("$4", cacheServiceResult.toString()) /* dataset json */
-                          .replace("$5", requestJson.getString("userid"))); /* user id */
+              String query = CREATE_INGESTION_SQL
+                  .replace(
+                      "$1",
+                      requestJson.getJsonArray("entities").getString(0)) /* exchange name */
+                  .replace("$2", cacheServiceResult.getString("id")) /* resource id */
+                  .replace("$3", cacheServiceResult.getString("name")) /* dataset name */
+                  .replace("$4", cacheServiceResult.toString()) /* dataset json */
+                  .replace("$5", requestJson.getString("userid")); /* user id */
 
               postgresService.executeQuery(
-                  query.toString(),
+                  query,
                   pgHandler -> {
                     if (pgHandler.succeeded()) {
                       LOGGER.debug("Inserted in postgres.");
@@ -332,12 +84,10 @@ public class ManagementApiImpl implements ManagementApi {
                                 promise.fail(generateResponse(brokerResponse).toString());
                               }
                             } else {
-                              StringBuilder deleteQuery =
-                                  new StringBuilder(
-                                      DELETE_INGESTION_SQL.replace(
-                                          "$0", requestJson.getJsonArray("entities").getString(0)));
+                              String deleteQuery = DELETE_INGESTION_SQL.replace(
+                                  "$0", requestJson.getJsonArray("entities").getString(0));
                               postgresService.executeQuery(
-                                  deleteQuery.toString(),
+                                  deleteQuery,
                                   deletePgHandler -> {
                                     if (deletePgHandler.succeeded()) {
                                       LOGGER.debug("Deleted from postgres.");
@@ -464,52 +214,6 @@ public class ManagementApiImpl implements ManagementApi {
 
   /** {@inheritDoc} */
   @Override
-  public Future<JsonObject> publishDownstreamIssues(JsonObject json, DataBrokerService databroker) {
-    Promise<JsonObject> promise = Promise.promise();
-    databroker.publishHeartbeat(
-        json,
-        Vhosts.IUDX_PROD.name(),
-        handler -> {
-          if (handler.succeeded()) {
-            JsonObject result = handler.result();
-            LOGGER.debug("Result from databroker verticle :: " + result);
-            if (result.getString(JSON_TYPE).equalsIgnoreCase(SUCCCESS)) {
-              promise.complete(result);
-            } else {
-              promise.fail(result.toString());
-            }
-          } else {
-            promise.fail(handler.cause().getMessage());
-          }
-        });
-    return promise.future();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Future<JsonObject> publishDataIssue(JsonObject json, DataBrokerService databroker) {
-    Promise<JsonObject> promise = Promise.promise();
-    databroker.publishHeartbeat(
-        json,
-        Vhosts.IUDX_PROD.name(),
-        handler -> {
-          if (handler.succeeded()) {
-            JsonObject result = handler.result();
-            LOGGER.debug("Result from databroker verticle :: " + result);
-            if (result.getString(JSON_TYPE).equalsIgnoreCase(SUCCCESS)) {
-              promise.complete(result);
-            } else {
-              promise.fail(result.toString());
-            }
-          } else {
-            promise.fail(handler.cause().getMessage());
-          }
-        });
-    return promise.future();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public Future<JsonObject> publishDataFromAdapter(JsonObject json, DataBrokerService databroker) {
     Promise<JsonObject> promise = Promise.promise();
     databroker.publishFromAdaptor(
@@ -537,10 +241,8 @@ public class ManagementApiImpl implements ManagementApi {
     LOGGER.debug("getAllAdapterDetailsForUser() started");
     Promise<JsonObject> promise = Promise.promise();
 
-    StringBuilder selectIngestionQuery =
-        new StringBuilder(SELECT_INGESTION_SQL.replace("$0", request.getString(PROVIDER_ID)));
     postgresService.executeQuery(
-        selectIngestionQuery.toString(),
+        SELECT_INGESTION_SQL.replace("$0", request.getString(PROVIDER_ID)),
         postgresServiceHandler -> {
           if (postgresServiceHandler.succeeded()) {
             JsonObject result = postgresServiceHandler.result();

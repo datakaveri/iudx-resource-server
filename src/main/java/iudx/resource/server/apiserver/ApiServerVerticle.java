@@ -338,14 +338,6 @@ public class ApiServerVerticle extends AbstractVerticle {
         .handler(AuthHandler.create(vertx, api))
         .handler(this::publishHeartbeat);
     router
-        .post(api.getIngestionPath() + "/downstreamissue")
-        .handler(AuthHandler.create(vertx, api))
-        .handler(this::publishDownstreamIssue);
-    router
-        .post(api.getIngestionPath() + "/dataissue")
-        .handler(AuthHandler.create(vertx, api))
-        .handler(this::publishDataIssue);
-    router
         .post(api.getIngestionPath() + "/entities")
         .handler(AuthHandler.create(vertx, api))
         .handler(this::publishDataFromAdapter);
@@ -447,20 +439,13 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     router.route(ADMIN + "/*").subRouter(new AdminRestApi(vertx, router, api).init());
 
-    // @Deprecated : will be removed in future
-    router.mountSubRouter(
-        IUDX_MANAGEMENT_URL,
-        new ManagementRestApi(
-                vertx, databroker, postgresService, meteringService, managementApi, api)
-            .init());
-
     router
         .post(dxApiBasePath + RESET_PWD)
         .handler(AuthHandler.create(vertx, api))
         .handler(
             handler -> {
               new ManagementRestApi(
-                      vertx, databroker, postgresService, meteringService, managementApi, api)
+                  databroker)
                   .resetPassword(handler);
             });
 
@@ -1435,83 +1420,6 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     } else {
       LOGGER.info("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
-    }
-  }
-
-  /**
-   * publish downstream issues to Rabbit MQ.
-   *
-   * @param routingContext routingContext Note: This is too frequent an operation to have info or
-   *     error level logs
-   */
-  public void publishDownstreamIssue(RoutingContext routingContext) {
-    LOGGER.trace("Info: publishDownStreamIssue method started;");
-    JsonObject requestJson = routingContext.body().asJsonObject();
-    HttpServerRequest request = routingContext.request();
-    HttpServerResponse response = routingContext.response();
-    String instanceId = request.getHeader(HEADER_HOST);
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/iudx/v1/adapter");
-    requestJson.put(JSON_INSTANCEID, instanceId);
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-
-      Future<JsonObject> brokerResult =
-          managementApi.publishDownstreamIssues(requestJson, databroker);
-      brokerResult.onComplete(
-          brokerResultHandler -> {
-            if (brokerResultHandler.succeeded()) {
-              LOGGER.info("Success: published downstream issue");
-              routingContext.data().put(RESPONSE_SIZE, 0);
-              Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(
-                  response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
-            } else {
-              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
-            }
-          });
-
-    } else {
-      LOGGER.error("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
-    }
-  }
-
-  /**
-   * publish data issue to Rabbit MQ.
-   *
-   * @param routingContext routingContext Note: All logs are debug level only
-   */
-  public void publishDataIssue(RoutingContext routingContext) {
-    LOGGER.trace("Info: publishDataIssue method started;");
-    JsonObject requestJson = routingContext.body().asJsonObject();
-    HttpServerRequest request = routingContext.request();
-    HttpServerResponse response = routingContext.response();
-    String instanceId = request.getHeader(HEADER_HOST);
-    JsonObject authenticationInfo = new JsonObject();
-    authenticationInfo.put(API_ENDPOINT, "/iudx/v1/adapter");
-    requestJson.put(JSON_INSTANCEID, instanceId);
-    if (request.headers().contains(HEADER_TOKEN)) {
-      authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
-
-      Future<JsonObject> brokerResult = managementApi.publishDataIssue(requestJson, databroker);
-      brokerResult.onComplete(
-          brokerResultHandler -> {
-            if (brokerResultHandler.succeeded()) {
-              LOGGER.debug("Success: publishing a data issue");
-              routingContext.data().put(RESPONSE_SIZE, 0);
-              Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(
-                  response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
-            } else {
-              LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
-            }
-          });
-
-    } else {
       handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
   }
