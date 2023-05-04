@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface ConvertElasticResponse {
     void write(List<Hit<ObjectNode>> searchHits);
-    void start(List<Hit<ObjectNode>> searchHits);
-    void end();
+    void append(List<Hit<ObjectNode>> searchHits, boolean isLastRecord);
+    void append(List<Hit<ObjectNode>> searchHits);
 }
