@@ -2,20 +2,9 @@ package iudx.resource.server.database.elastic;
 
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.vertx.core.json.JsonObject;
-import org.apache.arrow.vector.types.FloatingPointPrecision;
-import org.apache.arrow.vector.types.pojo.*;
-import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.parquet.arrow.schema.SchemaMapping;
-import org.apache.parquet.hadoop.ParquetFileWriter;
-import org.apache.parquet.hadoop.ParquetWriter;
-import org.apache.parquet.hadoop.api.WriteSupport;
-import org.apache.parquet.arrow.schema.SchemaConverter;
-import org.apache.parquet.hadoop.util.HadoopOutputFile;
-import org.apache.parquet.io.OutputFile;
-import org.apache.parquet.schema.MessageType;
+
 
 import java.io.File;
 import java.util.*;
@@ -31,9 +20,9 @@ public class ConvertElasticResponseToParquet extends AbstractConvertElasticSearc
 
     @Override
     public void write(List<Hit<ObjectNode>> searchHits) {
-        Schema arrowSchema = this.getSchema(searchHits);
-        SchemaMapping parquetSchema = this.getParquetSchema(arrowSchema);
-        MessageType messageTypeParquetSchema = parquetSchema.getParquetSchema();
+//        Schema arrowSchema = this.getSchema(searchHits);
+//        SchemaMapping parquetSchema = this.getParquetSchema(arrowSchema);
+//        MessageType messageTypeParquetSchema = parquetSchema.getParquetSchema();
 
 //        LOGGER.debug("message type parquet schema {}", messageTypeParquetSchema);
 //        LOGGER.debug("Whats the parquet schema heree ? : {}",parquetSchema.toString());
@@ -58,11 +47,12 @@ public class ConvertElasticResponseToParquet extends AbstractConvertElasticSearc
 
 
 
-    private SchemaMapping getParquetSchema(Schema arrowSchema) {
+/*    private SchemaMapping getParquetSchema(Schema arrowSchema) {
         SchemaConverter schemaConverter = new SchemaConverter();
         return schemaConverter.fromArrow(arrowSchema);
 
-    }
+    }*/
+
 /*
     private ParquetWriter getParquetWriter(File file, MessageType parquetSchema) {
         Configuration configuration = new Configuration();
@@ -84,7 +74,7 @@ public class ConvertElasticResponseToParquet extends AbstractConvertElasticSearc
     }
 */
 
-    public Schema getSchema(List<Hit<ObjectNode>> searchHits) {
+/*    public Schema getSchema(List<Hit<ObjectNode>> searchHits) {
         for (Hit hit : searchHits) {
             JsonObject jsonSource = new JsonObject(hit.source().toString());
             List<Field> fields = new ArrayList<>();
@@ -105,9 +95,9 @@ public class ConvertElasticResponseToParquet extends AbstractConvertElasticSearc
             return schema;
         }
         return null;
-    }
+    }*/
 
-    private FieldType getFieldType(Object value) {
+/*    private FieldType getFieldType(Object value) {
         FieldType fieldType;
         if(value instanceof Integer)
         {
@@ -134,7 +124,7 @@ public class ConvertElasticResponseToParquet extends AbstractConvertElasticSearc
             fieldType = new FieldType(true,new ArrowType.Binary(),null);
         }
         return fieldType;
-    }
+    }*/
 
 
 }
