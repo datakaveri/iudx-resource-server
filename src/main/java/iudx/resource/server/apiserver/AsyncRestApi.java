@@ -132,7 +132,7 @@ public class AsyncRestApi {
             LOGGER.debug("Info: IUDX json query;" + json);
             JsonObject requestBody = new JsonObject();
             requestBody.put("ids", json.getJsonArray("id"));
-            json.put("someKey", Math.random());
+
             Future<List<String>> filtersFuture =
                 catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
             filtersFuture.onComplete(
