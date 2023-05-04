@@ -74,6 +74,7 @@ public class TestAsyncQueryListener {
     object.put("searchId", "Dummy_unique-attribute");
     object.put("user", "Dummy_value");
     object.put("query", new JsonObject());
+    object.put("format","csv");
     Buffer buffer = Buffer.buffer(object.toString());
 
 
@@ -119,7 +120,7 @@ public class TestAsyncQueryListener {
     asyncQueryListener.start();
     verify(voidFuture, times(1)).onComplete(any());
     verify(clientStartAsyncResult).succeeded();
-    verify(asyncService).asyncSearch(anyString(), anyString(), any(), any(),anyString());
+    verify(asyncService).asyncSearch(anyString(), anyString(), anyString(), any(),anyString());
     verify(message).body();
     assertEquals(buffer, message.body());
     vertxTestContext.completeNow();
