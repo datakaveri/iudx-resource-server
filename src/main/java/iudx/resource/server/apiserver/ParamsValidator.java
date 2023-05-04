@@ -277,7 +277,7 @@ public class ParamsValidator {
         Coordinate[] coords = geom.getCoordinates();
         isValidNosCoords = coords.length < 11;
       }
-      isValid = geom.isValid() && (isPolygon ? isValidNosCoords : true);
+      isValid = geom.isValid() && (!isPolygon || isValidNosCoords);
     } catch (Exception ex) {
       throw new DxRuntimeException(
           HttpStatusCode.BAD_REQUEST.getValue(),

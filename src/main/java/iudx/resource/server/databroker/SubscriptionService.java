@@ -1076,12 +1076,6 @@ public class SubscriptionService {
                       LOGGER.debug("Info : " + subscriptionIdDb);
                     }
                   }
-                  if (!subscriptionId.equalsIgnoreCase(subscriptionIdDb)
-                      && subscriptionId == null) {
-                    LOGGER.debug("Info : Call Back ID not found");
-                    deleteCallbackSubscriptionResponse.put(ERROR, "Call Back ID not found");
-                    promise.fail(deleteCallbackSubscriptionResponse.toString());
-                  } else {
                     JsonObject publishjson = new JsonObject();
                     publishjson.put(SUBSCRIPTION_ID, subscriptionId);
                     publishjson.put(OPERATION, "delete");
@@ -1130,7 +1124,6 @@ public class SubscriptionService {
                                 promise.fail(deleteCallbackSubscriptionResponse.toString());
                               }
                             });
-                  }
                 }
               });
     } else {

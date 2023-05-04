@@ -1,31 +1,30 @@
 package iudx.resource.server.database.elastic;
 
-import java.io.File;
-
 import static iudx.resource.server.apiserver.util.Constants.HEADER_CSV;
 
-public class ConvertElasticResponseFactory  {
-    private AbstractConvertElasticSearchResponse responseToCSV;
-//    private AbstractConvertElasticSearchResponse responseToParquet;
-    private AbstractConvertElasticSearchResponse responseToJSON;
-    private String format;
+import java.io.File;
 
-    public ConvertElasticResponseFactory(String format, File file) {
-        this.format = format;
-        responseToCSV = new ConvertElasticResponseToCSV(file);
-//        responseToParquet = new ConvertElasticResponseToParquet(file);
-        responseToJSON = new ConvertElasticResponseToJSON(file);
+public class ConvertElasticResponseFactory {
+  private AbstractConvertElasticSearchResponse responseToCsv;
+  // private AbstractConvertElasticSearchResponse responseToParquet;
+  private AbstractConvertElasticSearchResponse responseToJson;
+  private String format;
+
+  public ConvertElasticResponseFactory(String format, File file) {
+    this.format = format;
+    responseToCsv = new ConvertElasticResponseToCsv(file);
+    // responseToParquet = new ConvertElasticResponseToParquet(file);
+    responseToJson = new ConvertElasticResponseToJson(file);
+  }
+
+  public ConvertElasticResponse createInstance() {
+    switch (format) {
+      case HEADER_CSV:
+        return responseToCsv;
+        //            case HEADER_PARQUET:
+        //                return responseToParquet;
+      default:
+        return responseToJson;
     }
-
-    public ConvertElasticResponse createInstance() {
-        switch (format) {
-            case HEADER_CSV:
-                return responseToCSV;
-//            case HEADER_PARQUET:
-//                return responseToParquet;
-            default:
-                return responseToJSON;
-        }
-    }
-
+  }
 }

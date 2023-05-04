@@ -125,12 +125,13 @@ public class AsyncServiceImpl implements AsyncService {
   }
 
   @Override
-  public AsyncService asyncSearch(String requestId, String sub, String searchId, JsonObject query, String format) {
+  public AsyncService asyncSearch(
+      String requestId, String sub, String searchId, JsonObject query, String format) {
     String id = query.getJsonArray(ID).getString(0);
     getRecord4RequestId(requestId)
         .onSuccess(
             handler -> {
-              process4ExistingRequestId(id, requestId, sub, searchId,handler,format);
+              process4ExistingRequestId(id, requestId, sub, searchId, handler, format);
             })
         .onFailure(
             handler -> {
@@ -247,10 +248,10 @@ public class AsyncServiceImpl implements AsyncService {
             });
   }
 
-  private void process4NewRequestId(String searchId, String userId, JsonObject query, String format) {
-    if (format == null)
-    {
-        format = "json";
+  private void process4NewRequestId(
+      String searchId, String userId, JsonObject query, String format) {
+    if (format == null) {
+      format = "json";
     }
     File file = new File(filePath + "/" + searchId + "." + format);
     String objectId = UUID.randomUUID().toString();
@@ -379,7 +380,8 @@ public class AsyncServiceImpl implements AsyncService {
     }
 
     Future<JsonObject> asyncFuture =
-        client.asyncScroll(file, searchIndex, query, sourceFilters, searchId, progressListener, format, filePath);
+        client.asyncScroll(
+            file, searchIndex, query, sourceFilters, searchId, progressListener, format, filePath);
     asyncFuture.onComplete(
         scrollHandler -> {
           if (scrollHandler.succeeded()) {
