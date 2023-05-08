@@ -4,10 +4,10 @@ import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.List;
 
-public interface ConvertElasticResponse {
+public interface ReformatElasticResponse {
   void write(List<Hit<ObjectNode>> searchHits);
 
-  void append(List<Hit<ObjectNode>> searchHits, boolean isLastRecord);
+  void finish();
 
   void append(List<Hit<ObjectNode>> searchHits);
 }

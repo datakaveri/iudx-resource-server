@@ -5,12 +5,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.File;
 import java.util.*;
 
-public class ConvertElasticResponseToParquet extends AbstractConvertElasticSearchResponse {
+public class ReformatElasticResponseToParquet extends AbstractReformatElasticSearchResponse {
   //    private File file;
   //    private static final Logger LOGGER =
   // LogManager.getLogger(ConvertElasticResponseToParquet.class);
 
-  public ConvertElasticResponseToParquet(File file) {
+  public ReformatElasticResponseToParquet(File file) {
     super(file);
     this.file = file;
   }
@@ -31,7 +31,7 @@ public class ConvertElasticResponseToParquet extends AbstractConvertElasticSearc
   }
 
   @Override
-  public void append(List<Hit<ObjectNode>> searchHits, boolean isLastRecord) {}
+  public void finish() {}
 
   @Override
   public void append(List<Hit<ObjectNode>> searchHits) {}
