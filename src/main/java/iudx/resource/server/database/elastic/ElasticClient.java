@@ -95,11 +95,9 @@ public class ElasticClient {
                 List<Hit<ObjectNode>> searchHits = response.hits().hits();
                 LOGGER.debug("Total records : {}", searchHits.size());
 
-                final long startTime = System.currentTimeMillis();
-
                 ConvertElasticResponseFactory convertFactory =
                     new ConvertElasticResponseFactory(format, file);
-                ConvertElasticResponse instance = convertFactory.createInstance();
+                ReformatElasticResponse instance = convertFactory.createInstance();
 
                 LOGGER.debug(file.getAbsolutePath());
 
@@ -130,10 +128,8 @@ public class ElasticClient {
                   searchHits = scrollResponse.hits().hits();
                 }
 
-                instance.append(searchHits, true);
+                instance.finish();
                 promise.complete();
-                final long endTime = System.currentTimeMillis();
-                LOGGER.debug("Time Taken in milliseconds: {} ", endTime - startTime);
 
               } catch (Exception exception) {
                 promise.fail("failed for some exception");

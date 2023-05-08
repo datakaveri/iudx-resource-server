@@ -7,17 +7,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-public class ConvertElasticResponseToJson extends AbstractConvertElasticSearchResponse {
+public class ReformatElasticResponseToJson extends AbstractReformatElasticSearchResponse {
   private final FileWriter fileWriter;
-  //    private static final Logger LOGGER =
-  // LogManager.getLogger(ConvertElasticResponseToJSON.class);
 
   /**
    * Writes ElasticSearch response batch response into a JSON File
    *
    * @param file File to write JSON response
    */
-  public ConvertElasticResponseToJson(File file) {
+  public ReformatElasticResponseToJson(File file) {
     super(file);
     try {
       this.fileWriter = new FileWriter(file);
@@ -36,16 +34,12 @@ public class ConvertElasticResponseToJson extends AbstractConvertElasticSearchRe
   }
 
   @Override
-  public void append(List<Hit<ObjectNode>> searchHits, boolean isLastRecord) {
-    if (isLastRecord) {
-      try {
-        fileWriter.write(']');
-        fileWriter.close();
-        //            long kb = file.length() / 1024;
-        //            LOGGER.debug("JSON File length in MB : {}", kb/ 1024);
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
+  public void finish() {
+    try {
+      fileWriter.write(']');
+      fileWriter.close();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 

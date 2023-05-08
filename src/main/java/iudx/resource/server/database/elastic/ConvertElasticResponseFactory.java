@@ -5,19 +5,19 @@ import static iudx.resource.server.apiserver.util.Constants.HEADER_CSV;
 import java.io.File;
 
 public class ConvertElasticResponseFactory {
-  private AbstractConvertElasticSearchResponse responseToCsv;
+  private AbstractReformatElasticSearchResponse responseToCsv;
   // private AbstractConvertElasticSearchResponse responseToParquet;
-  private AbstractConvertElasticSearchResponse responseToJson;
+  private AbstractReformatElasticSearchResponse responseToJson;
   private String format;
 
   public ConvertElasticResponseFactory(String format, File file) {
     this.format = format;
-    responseToCsv = new ConvertElasticResponseToCsv(file);
+    responseToCsv = new ReformatElasticResponseToCsv(file);
     // responseToParquet = new ConvertElasticResponseToParquet(file);
-    responseToJson = new ConvertElasticResponseToJson(file);
+    responseToJson = new ReformatElasticResponseToJson(file);
   }
 
-  public ConvertElasticResponse createInstance() {
+  public ReformatElasticResponse createInstance() {
     switch (format) {
       case HEADER_CSV:
         return responseToCsv;
