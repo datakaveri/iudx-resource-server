@@ -4,20 +4,20 @@ import static iudx.resource.server.apiserver.util.Constants.HEADER_CSV;
 
 import java.io.File;
 
-public class ConvertElasticResponseFactory {
-  private AbstractReformatElasticSearchResponse responseToCsv;
+public class EsResponseFormatterFactory {
+  private AbstractEsSearchResponseFormatter responseToCsv;
   // private AbstractConvertElasticSearchResponse responseToParquet;
-  private AbstractReformatElasticSearchResponse responseToJson;
+  private AbstractEsSearchResponseFormatter responseToJson;
   private String format;
 
-  public ConvertElasticResponseFactory(String format, File file) {
+  public EsResponseFormatterFactory(String format, File file) {
     this.format = format;
-    responseToCsv = new ReformatElasticResponseToCsv(file);
+    responseToCsv = new EsResponseFormatterToCsv(file);
     // responseToParquet = new ConvertElasticResponseToParquet(file);
-    responseToJson = new ReformatElasticResponseToJson(file);
+    responseToJson = new EsResponseFormatterToJson(file);
   }
 
-  public ReformatElasticResponse createInstance() {
+  public EsResponseFormatter createInstance() {
     switch (format) {
       case HEADER_CSV:
         return responseToCsv;

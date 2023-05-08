@@ -7,7 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-public class ReformatElasticResponseToJson extends AbstractReformatElasticSearchResponse {
+public class EsResponseFormatterToJson extends AbstractEsSearchResponseFormatter {
   private final FileWriter fileWriter;
 
   /**
@@ -15,7 +15,7 @@ public class ReformatElasticResponseToJson extends AbstractReformatElasticSearch
    *
    * @param file File to write JSON response
    */
-  public ReformatElasticResponseToJson(File file) {
+  public EsResponseFormatterToJson(File file) {
     super(file);
     try {
       this.fileWriter = new FileWriter(file);

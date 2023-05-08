@@ -5,12 +5,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.File;
 import java.util.*;
 
-public class ReformatElasticResponseToParquet extends AbstractReformatElasticSearchResponse {
+public class EsResponseFormatterToParquet extends AbstractEsSearchResponseFormatter {
   //    private File file;
   //    private static final Logger LOGGER =
   // LogManager.getLogger(ConvertElasticResponseToParquet.class);
 
-  public ReformatElasticResponseToParquet(File file) {
+  public EsResponseFormatterToParquet(File file) {
     super(file);
     this.file = file;
   }

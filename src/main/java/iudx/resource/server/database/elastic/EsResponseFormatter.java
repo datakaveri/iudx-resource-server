@@ -4,7 +4,7 @@ import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.List;
 
-public interface ReformatElasticResponse {
+public interface EsResponseFormatter {
   void write(List<Hit<ObjectNode>> searchHits);
 
   void finish();

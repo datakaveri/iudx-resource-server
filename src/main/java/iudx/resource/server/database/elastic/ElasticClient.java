@@ -95,9 +95,9 @@ public class ElasticClient {
                 List<Hit<ObjectNode>> searchHits = response.hits().hits();
                 LOGGER.debug("Total records : {}", searchHits.size());
 
-                ConvertElasticResponseFactory convertFactory =
-                    new ConvertElasticResponseFactory(format, file);
-                ReformatElasticResponse instance = convertFactory.createInstance();
+                EsResponseFormatterFactory convertFactory =
+                    new EsResponseFormatterFactory(format, file);
+                EsResponseFormatter instance = convertFactory.createInstance();
 
                 LOGGER.debug(file.getAbsolutePath());
 
