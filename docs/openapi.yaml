@@ -1880,7 +1880,12 @@ paths:
           schema:
             type: string
             maxLength: 512
-
+        - name: format
+          in: header
+          description: 'format in header could be added to get the response in required encoding through `/async/status` API'
+          schema:
+            type: string
+            enum:  ["json", "csv"]
       x-codeSamples:
         - lang: 'cURL'
           label: 'async search'
@@ -1894,6 +1899,13 @@ paths:
             curl --location --request GET 'https://example.com/ngsi-ld/v1/async/search?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=between&time=2020-10-10T14:20:00Z&endtime=2020-10-13T14:20:00Z' \
             --header 'token: <tokenValue>' \
             --header 'publicKey: <publicKeyValue>'
+
+        - lang: 'cURL'
+          label: 'get data in csv format'
+          source: |
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/async/search?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=between&time=2020-10-10T14:20:00Z&endtime=2020-10-13T14:20:00Z' \
+            --header 'token: <tokenValue>' \
+            --header 'format: csv'
 
       responses:
         201:
