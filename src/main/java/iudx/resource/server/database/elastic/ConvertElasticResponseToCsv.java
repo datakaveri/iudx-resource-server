@@ -13,7 +13,6 @@ import java.util.Set;
 public class ConvertElasticResponseToCsv extends AbstractConvertElasticSearchResponse {
   //    private static final Logger LOGGER =
   // LogManager.getLogger(ConvertElasticResponseToCSV.class);
-  private File csvFile;
   private FileWriter fileWriter;
 
   /**
@@ -24,9 +23,8 @@ public class ConvertElasticResponseToCsv extends AbstractConvertElasticSearchRes
    */
   public ConvertElasticResponseToCsv(File file) {
     super(file);
-    this.csvFile = file;
     try {
-      this.fileWriter = new FileWriter(csvFile);
+      this.fileWriter = new FileWriter(file);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -109,10 +107,12 @@ public class ConvertElasticResponseToCsv extends AbstractConvertElasticSearchRes
 
   @Override
   public void append(List<Hit<ObjectNode>> searchHits, boolean isLastRecord) {
-    try {
-      fileWriter.close();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    if (isLastRecord) {
+      try {
+        fileWriter.close();
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 
