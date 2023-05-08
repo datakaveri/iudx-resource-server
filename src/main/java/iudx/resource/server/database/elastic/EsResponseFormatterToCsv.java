@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ReformatElasticResponseToCsv extends AbstractReformatElasticSearchResponse {
+public class EsResponseFormatterToCsv extends AbstractEsSearchResponseFormatter {
   private FileWriter fileWriter;
 
   /**
@@ -19,7 +19,7 @@ public class ReformatElasticResponseToCsv extends AbstractReformatElasticSearchR
    *
    * @param file File to write csv records
    */
-  public ReformatElasticResponseToCsv(File file) {
+  public EsResponseFormatterToCsv(File file) {
     super(file);
     try {
       this.fileWriter = new FileWriter(file);
