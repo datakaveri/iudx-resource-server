@@ -1,7 +1,6 @@
 package iudx.resource.server.apiserver.validation.types;
 
-import static iudx.resource.server.apiserver.util.Constants.HEADER_CSV;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_PARQUET;
+import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.ResponseUrn.INVALID_HEADER_VALUE_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_ID_VALUE_URN;
 
@@ -36,7 +35,7 @@ public class ElasticSearchFileResponseTypeValidator implements Validator {
     } else if (!required && value.isEmpty()) {
       LOGGER.error("Validation error : The value of the header format is empty ");
       throw new DxRuntimeException(failureCode(), INVALID_HEADER_VALUE_URN, failureMessage());
-    } else if (value.equals(HEADER_CSV) || value.equals(HEADER_PARQUET)) {
+    } else if (value.equals(HEADER_CSV) || value.equals(HEADER_PARQUET) || value.equals(HEADER_JSON)) {
       return true;
     }
     LOGGER.error("Validation error : Invalid header format type");
