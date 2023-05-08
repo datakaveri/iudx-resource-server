@@ -67,6 +67,7 @@ public class ParamsValidator {
     validHeaders.add("User-Agent");
     validHeaders.add("Content-Type");
     validHeaders.add(HEADER_CSV);
+    validHeaders.add(HEADER_JSON);
     validHeaders.add(HEADER_PARQUET);
   }
 
