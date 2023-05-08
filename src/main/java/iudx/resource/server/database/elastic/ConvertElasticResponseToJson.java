@@ -37,13 +37,15 @@ public class ConvertElasticResponseToJson extends AbstractConvertElasticSearchRe
 
   @Override
   public void append(List<Hit<ObjectNode>> searchHits, boolean isLastRecord) {
-    try {
-      fileWriter.write(']');
-      fileWriter.close();
-      //            long kb = file.length() / 1024;
-      //            LOGGER.debug("JSON File length in MB : {}", kb/ 1024);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    if (isLastRecord) {
+      try {
+        fileWriter.write(']');
+        fileWriter.close();
+        //            long kb = file.length() / 1024;
+        //            LOGGER.debug("JSON File length in MB : {}", kb/ 1024);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 
