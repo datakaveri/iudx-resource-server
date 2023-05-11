@@ -47,11 +47,6 @@ public class JsonFlatten {
   public LinkedHashMap<String, Object> flatten() {
     flattenJson(root, null, json);
     for (String key : json.keySet()) {
-      if (key.contains("observationDateTime")) {
-        LocalDateTime localDateTime = DateParserUtils.parseDateTime(json.get(key).asText());
-        jsonObj.put(key, Timestamp.valueOf(localDateTime));
-        continue;
-      }
       if (json.get(key).isInt()) {
         jsonObj.put(key, json.get(key).asInt());
       }
