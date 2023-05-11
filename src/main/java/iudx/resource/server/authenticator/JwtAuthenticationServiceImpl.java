@@ -42,9 +42,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
   final String audience;
   final CacheService cache;
   final MeteringService meteringService;
-  final boolean isLimitsEnabled;
   final Api apis;
   final String catBasePath;
+  boolean isLimitsEnabled;
 
   JwtAuthenticationServiceImpl(
       Vertx vertx,
@@ -59,8 +59,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     this.port = config.getInteger("catServerPort");
     this.catBasePath = config.getString("dxCatalogueBasePath");
     this.path = catBasePath + CAT_SEARCH_PATH;
-    this.isLimitsEnabled =
-        config.getBoolean("enableLimits") != null ? config.getBoolean("enableLimits") : false;
+    if (config.getBoolean("enableLimits") != null  && config.getBoolean("enableLimits")) {
+      this.isLimitsEnabled = config.getBoolean("enableLimits");
+    }
     this.apis = apis;
     WebClientOptions options = new WebClientOptions();
     options.setTrustAll(true).setVerifyHost(false).setSsl(true);

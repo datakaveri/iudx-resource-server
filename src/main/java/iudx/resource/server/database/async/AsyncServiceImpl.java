@@ -125,19 +125,20 @@ public class AsyncServiceImpl implements AsyncService {
   }
 
   @Override
-  public AsyncService asyncSearch(String requestId, String sub, String searchId, JsonObject query) {
+  public AsyncService asyncSearch(
+      String requestId, String sub, String searchId, JsonObject query, String format) {
     String id = query.getJsonArray(ID).getString(0);
     getRecord4RequestId(requestId)
         .onSuccess(
             handler -> {
-              process4ExistingRequestId(id, requestId, sub, searchId, handler);
+              process4ExistingRequestId(id, requestId, sub, searchId, handler, format);
             })
         .onFailure(
             handler -> {
               updateQueryExecutionStatus(searchId, QueryProgress.IN_PROGRESS)
                   .onSuccess(
                       statusHandler -> {
-                        process4NewRequestId(searchId, sub, query);
+                        process4NewRequestId(searchId, sub, query, format);
                       })
                   .onFailure(
                       statusHandler -> {
@@ -216,7 +217,7 @@ public class AsyncServiceImpl implements AsyncService {
   }
 
   void process4ExistingRequestId(
-      String id, String requestId, String sub, String searchId, JsonArray record) {
+      String id, String requestId, String sub, String searchId, JsonArray record, String format) {
     String objectId = record.getJsonObject(0).getString(OBJECT_ID);
     String expiry = LocalDateTime.now().plusDays(1).toString();
     long fileSize = record.getJsonObject(0).getLong(SIZE_KEY);
@@ -247,8 +248,12 @@ public class AsyncServiceImpl implements AsyncService {
             });
   }
 
-  private void process4NewRequestId(String searchId, String userId, JsonObject query) {
-    File file = new File(filePath + "/" + searchId + ".json");
+  private void process4NewRequestId(
+      String searchId, String userId, JsonObject query, String format) {
+    if (format == null) {
+      format = "json";
+    }
+    File file = new File(filePath + "/" + searchId + "." + format);
     String objectId = UUID.randomUUID().toString();
     String id = query.getJsonArray(ID).getString(0);
 
@@ -259,6 +264,7 @@ public class AsyncServiceImpl implements AsyncService {
         query,
         searchId,
         progressListener,
+        format,
         scrollHandler -> {
           if (scrollHandler.succeeded()) {
             s3FileOpsHelper.s3Upload(
@@ -331,6 +337,7 @@ public class AsyncServiceImpl implements AsyncService {
       JsonObject request,
       String searchId,
       ProgressListener progressListener,
+      String format,
       Handler<AsyncResult<JsonObject>> handler) {
 
     Query query;
@@ -373,7 +380,8 @@ public class AsyncServiceImpl implements AsyncService {
     }
 
     Future<JsonObject> asyncFuture =
-        client.asyncScroll(file, searchIndex, query, sourceFilters, searchId, progressListener);
+        client.asyncScroll(
+            file, searchIndex, query, sourceFilters, searchId, progressListener, format, filePath);
     asyncFuture.onComplete(
         scrollHandler -> {
           if (scrollHandler.succeeded()) {

@@ -132,6 +132,11 @@ public class AsyncRestApi {
             LOGGER.debug("Info: IUDX json query;" + json);
             JsonObject requestBody = new JsonObject();
             requestBody.put("ids", json.getJsonArray("id"));
+
+            if (routingContext.request().getHeader(HEADER_RESPONSE_FILE_FORMAT) != null) {
+              json.put("format", routingContext.request().getHeader(HEADER_RESPONSE_FILE_FORMAT));
+            }
+
             Future<List<String>> filtersFuture =
                 catalogueService.getApplicableFilters(json.getJsonArray("id").getString(0));
             filtersFuture.onComplete(
@@ -158,6 +163,7 @@ public class AsyncRestApi {
         Hashing.sha256().hashString(json.toString(), StandardCharsets.UTF_8).toString();
 
     String searchId = UUID.randomUUID().toString();
+    String format = routingContext.request().getHeader(HEADER_RESPONSE_FILE_FORMAT);
 
     StringBuilder insertQuery =
         new StringBuilder(
@@ -175,6 +181,7 @@ public class AsyncRestApi {
             .put("searchId", searchId)
             .put("requestId", requestId)
             .put("user", sub)
+            .put(HEADER_RESPONSE_FILE_FORMAT, format)
             .put("query", json);
 
     postgresService.executeQuery(

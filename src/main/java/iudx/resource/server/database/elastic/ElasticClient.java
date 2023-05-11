@@ -24,8 +24,6 @@ import io.vertx.core.json.JsonObject;
 import iudx.resource.server.database.archives.ResponseBuilder;
 import iudx.resource.server.database.async.ProgressListener;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.apache.http.HttpHost;
@@ -73,7 +71,9 @@ public class ElasticClient {
       Query query,
       String[] source,
       String searchId,
-      ProgressListener progressListener) {
+      ProgressListener progressListener,
+      String format,
+      String filePath) {
     Promise<JsonObject> promise = Promise.promise();
 
     SearchRequest searchRequest =
@@ -93,13 +93,16 @@ public class ElasticClient {
                 LOGGER.debug("Total documents to be downloaded : " + totalHits);
 
                 List<Hit<ObjectNode>> searchHits = response.hits().hits();
+                LOGGER.debug("Total records : {}", searchHits.size());
+
+                EsResponseFormatterFactory convertFactory =
+                    new EsResponseFormatterFactory(format, file);
+                EsResponseFormatter instance = convertFactory.createInstance();
 
                 LOGGER.debug(file.getAbsolutePath());
 
-                FileWriter filew = new FileWriter(file);
                 int totaldocsDownloaded = 0;
-                filew.write('[');
-                boolean appendComma = false;
+                instance.write(searchHits);
                 int totalIterations = totalHits < 10000 ? 1 : (int) Math.ceil(totalHits / 10000.0);
                 double iterationCount = 0.0;
                 double progress;
@@ -115,14 +118,8 @@ public class ElasticClient {
                   // external (s3)
                   double finalProgress = progress * 0.9;
                   Future.future(handler -> progressListener.updateProgress(finalProgress));
-                  for (Hit<ObjectNode> sh : searchHits) {
-                    if (appendComma) {
-                      filew.write("," + sh.source().toString());
-                    } else {
-                      filew.write(sh.source().toString());
-                    }
-                    appendComma = true;
-                  }
+                  instance.append(searchHits);
+
                   ScrollRequest scrollRequest = nextScrollRequest(scrollId);
                   CompletableFuture<ScrollResponse<ObjectNode>> future =
                       asyncClient.scroll(scrollRequest, ObjectNode.class);
@@ -130,11 +127,10 @@ public class ElasticClient {
                   scrollId = scrollResponse.scrollId();
                   searchHits = scrollResponse.hits().hits();
                 }
-                filew.write(']');
-                filew.close();
+
+                instance.finish();
                 promise.complete();
-              } catch (IOException exception) {
-                promise.fail("failed for some IO issues [file access]");
+
               } catch (Exception exception) {
                 promise.fail("failed for some exception");
                 exception.printStackTrace();

@@ -66,6 +66,9 @@ public class ParamsValidator {
     validHeaders.add(HEADER_TOKEN);
     validHeaders.add("User-Agent");
     validHeaders.add("Content-Type");
+    validHeaders.add(HEADER_CSV);
+    validHeaders.add(HEADER_JSON);
+    validHeaders.add(HEADER_PARQUET);
   }
 
   private CatalogueService catalogueService;
@@ -275,7 +278,7 @@ public class ParamsValidator {
         Coordinate[] coords = geom.getCoordinates();
         isValidNosCoords = coords.length < 11;
       }
-      isValid = geom.isValid() && (isPolygon ? isValidNosCoords : true);
+      isValid = geom.isValid() && (!isPolygon || isValidNosCoords);
     } catch (Exception ex) {
       throw new DxRuntimeException(
           HttpStatusCode.BAD_REQUEST.getValue(),
