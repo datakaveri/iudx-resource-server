@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class EsResponseFormatterToJson extends AbstractEsSearchResponseFormatter {
-  private final FileWriter fileWriter;
+  FileWriter fileWriter;
 
   /**
    * Writes ElasticSearch response batch response into a JSON File

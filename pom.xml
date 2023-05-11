@@ -345,6 +345,8 @@
                         <exclude>**/*VertxProxyHandler.class</exclude>
                         <exclude>**/*Verticle.class</exclude>
                         <exclude>iudx/resource/server/database/postgres/PostgresService.class</exclude>
+                        <exclude>iudx/resource/server/database/elastic/AbstractEsSearchResponseFormatter.class</exclude>
+
 
                         <!-- class present in generated-sources -->
                         <exclude>**/JwtDataConverter.class</exclude>
@@ -355,10 +357,11 @@
                         <exclude>iudx/resource/server/apiserver/AsyncRestApi.class</exclude>
 
                         <!-- service proxy interfaces -->
-                        <!-- service proxy interfaces -->
                         <exclude>iudx/resource/server/database/archives/DatabaseService.class</exclude>
                         <exclude>iudx/resource/server/database/latest/LatestDataService.class</exclude>
                         <exclude>iudx/resource/server/encryption/EncryptionService.class</exclude>
+                        <exclude>iudx/resource/server/database/elastic/EsResponseFormatter.class</exclude>
+
 
                         <!-- deployment helper classes -->
                         <exclude>iudx/resource/server/deploy/*.class</exclude>
