@@ -48,7 +48,7 @@ public class TestEsResponseFormatterToCsv {
     {
         configuration = new Configuration();
         config = configuration.configLoader(8, Vertx.vertx());
-        String filePath = config.getString("filePath") + "/" + "dummy_file" + "." + "csv";
+        String filePath = config.getString("filePath") + "dummy_file" + "." + "csv";
         file = new File(filePath);
         EsResponseFormatterToCsv.jsonFlatten = mock(JsonFlatten.class);
         jsonFlatten = EsResponseFormatterToCsv.jsonFlatten;

@@ -32,7 +32,7 @@ public class TestEsResponseFormatterToJson {
     {
         Configuration configuration = new Configuration();
         JsonObject config = configuration.configLoader(8, Vertx.vertx());
-        String filePath = config.getString("filePath") + "/dummy_file" + ".json";
+        String filePath = config.getString("filePath") + "dummy_file" + ".json";
         File file = new File(filePath);
         responseFormatterToJson = new EsResponseFormatterToJson(file);
         responseFormatterToJson.fileWriter = mock(FileWriter.class);
