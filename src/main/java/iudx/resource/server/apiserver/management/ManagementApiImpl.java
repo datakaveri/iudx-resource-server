@@ -54,14 +54,15 @@ public class ManagementApiImpl implements ManagementApi {
         .get(cacheJson)
         .onSuccess(
             cacheServiceResult -> {
-              String query = CREATE_INGESTION_SQL
-                  .replace(
-                      "$1",
-                      requestJson.getJsonArray("entities").getString(0)) /* exchange name */
-                  .replace("$2", cacheServiceResult.getString("id")) /* resource id */
-                  .replace("$3", cacheServiceResult.getString("name")) /* dataset name */
-                  .replace("$4", cacheServiceResult.toString()) /* dataset json */
-                  .replace("$5", requestJson.getString("userid")); /* user id */
+              String query =
+                  CREATE_INGESTION_SQL
+                      .replace(
+                          "$1",
+                          requestJson.getJsonArray("entities").getString(0)) /* exchange name */
+                      .replace("$2", cacheServiceResult.getString("id")) /* resource id */
+                      .replace("$3", cacheServiceResult.getString("name")) /* dataset name */
+                      .replace("$4", cacheServiceResult.toString()) /* dataset json */
+                      .replace("$5", requestJson.getString("userid")); /* user id */
 
               postgresService.executeQuery(
                   query,
@@ -84,8 +85,9 @@ public class ManagementApiImpl implements ManagementApi {
                                 promise.fail(generateResponse(brokerResponse).toString());
                               }
                             } else {
-                              String deleteQuery = DELETE_INGESTION_SQL.replace(
-                                  "$0", requestJson.getJsonArray("entities").getString(0));
+                              String deleteQuery =
+                                  DELETE_INGESTION_SQL.replace(
+                                      "$0", requestJson.getJsonArray("entities").getString(0));
                               postgresService.executeQuery(
                                   deleteQuery,
                                   deletePgHandler -> {
