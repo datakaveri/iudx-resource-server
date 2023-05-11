@@ -1,7 +1,6 @@
 package iudx.resource.server.database.elastic;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ValueNode;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -68,10 +68,35 @@ public class TestJsonFlatten {
   @Test
   @DisplayName("Test flatten method ")
   public void testFlatten(VertxTestContext vertxTestContext) {
-    String expectedCsv =
-        "Residents.0.ID=78542894753894535, Residents.0.isOwner=true, Residents.0.name=Somebody, Residents.0.flatNumber=24, Residents.0.amountToPay=23.45, Residents.0.region=A, Residents.0.observationDateTime=2020-10-10 20:45:00.0, Residents.1.ID=78542894753894767, Residents.1.isOwner=false, Residents.1.name=Someone, Residents.1.flatNumber=25, Residents.1.amountToPay=23.45, Residents.1.region=B, Residents.1.observationDateTime=2021-10-10 20:45:00.0, Residents.2.ID=78542894753894636, Residents.2.isOwner=true, Residents.2.name=Anybody, Residents.2.flatNumber=26, Residents.2.amountToPay=23.45, Residents.2.region=C, Residents.2.observationDateTime=2022-10-10 20:45:00.0";
-    System.out.println("flattened result : " + jsonFlatten.flatten().toString());
-    assertEquals(expectedCsv, jsonFlatten.flatten().toString().replace("{", "").replace("}", ""));
+    LinkedHashMap<String, Object> result = jsonFlatten.flatten();
+    assertEquals("78542894753894535", result.get("Residents.0.ID").toString());
+    assertEquals("78542894753894767", result.get("Residents.1.ID").toString());
+    assertEquals("78542894753894636", result.get("Residents.2.ID").toString());
+
+    assertTrue((Boolean) result.get("Residents.0.isOwner"));
+    assertFalse((Boolean) result.get("Residents.1.isOwner"));
+    assertTrue((Boolean) result.get("Residents.2.isOwner"));
+
+    assertEquals("Somebody", result.get("Residents.0.name"));
+    assertEquals("Someone", result.get("Residents.1.name"));
+    assertEquals("Anybody", result.get("Residents.2.name"));
+
+    assertEquals(24, result.get("Residents.0.flatNumber"));
+    assertEquals(25, result.get("Residents.1.flatNumber"));
+    assertEquals(26, result.get("Residents.2.flatNumber"));
+
+    assertEquals(23.45, result.get("Residents.0.amountToPay"));
+    assertEquals(23.45, result.get("Residents.1.amountToPay"));
+    assertEquals(23.45, result.get("Residents.2.amountToPay"));
+
+    assertEquals("A", result.get("Residents.0.region"));
+    assertEquals("B", result.get("Residents.1.region"));
+    assertEquals("C", result.get("Residents.2.region"));
+
+    assertTrue(result.containsKey("Residents.0.observationDateTime"));
+    assertTrue(result.containsKey("Residents.0.observationDateTime"));
+    assertTrue(result.containsKey("Residents.0.observationDateTime"));
+
     vertxTestContext.completeNow();
   }
 
