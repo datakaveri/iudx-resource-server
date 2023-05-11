@@ -34,8 +34,8 @@ public class TestEsResponseFormatterFactory {
 
   static Stream<Arguments> values() {
     return Stream.of(
-        Arguments.of("csv", filePath + "/" + "dummy_file" + "." + "csv"),
-        Arguments.of("json", filePath + "/" + "dummy_file" + "." + "json"));
+        Arguments.of("csv", filePath +  "dummy_file" + "." + "csv"),
+        Arguments.of("json", filePath + "dummy_file" + "." + "json"));
   }
 
   @ParameterizedTest
