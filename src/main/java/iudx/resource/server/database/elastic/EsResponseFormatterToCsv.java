@@ -6,12 +6,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class EsResponseFormatterToCsv extends AbstractEsSearchResponseFormatter {
-  private FileWriter fileWriter;
+  static JsonFlatten jsonFlatten;
+  static LinkedHashMap<String, Object> map;
+  FileWriter fileWriter;
 
   /**
    * Converts JSON records from Elasticsearch batch response to CSV format and writes it into a CSV
@@ -35,7 +38,8 @@ public class EsResponseFormatterToCsv extends AbstractEsSearchResponseFormatter 
    */
   public void flattenRecord(List<Hit<ObjectNode>> searchHits) {
     for (Hit hit : searchHits) {
-      Map<String, Object> map = new JsonFlatten((JsonNode) hit.source()).flatten();
+      jsonFlatten = new JsonFlatten((JsonNode) hit.source());
+      map = jsonFlatten.flatten();
       Set<String> header = map.keySet();
       appendToCsvFile(map, header);
     }
@@ -48,7 +52,10 @@ public class EsResponseFormatterToCsv extends AbstractEsSearchResponseFormatter 
    */
   public void getHeader(List<Hit<ObjectNode>> searchHits) {
     Hit<ObjectNode> firstHit = searchHits.get(0);
-    Map<String, Object> map = new JsonFlatten((JsonNode) firstHit.source()).flatten();
+    if (jsonFlatten == null) {
+      jsonFlatten = new JsonFlatten((JsonNode) firstHit.source());
+    }
+    map = jsonFlatten.flatten();
     Set<String> header = map.keySet();
     simpleFileWriter(header);
   }
@@ -59,7 +66,7 @@ public class EsResponseFormatterToCsv extends AbstractEsSearchResponseFormatter 
    * @param map Data to be appended
    * @param header Set of headers
    */
-  private void appendToCsvFile(Map<String, Object> map, Set<String> header) {
+  public void appendToCsvFile(Map<String, Object> map, Set<String> header) {
 
     StringBuilder stringBuilder = new StringBuilder();
 
