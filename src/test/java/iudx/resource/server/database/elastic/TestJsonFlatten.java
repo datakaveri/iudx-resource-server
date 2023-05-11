@@ -70,6 +70,7 @@ public class TestJsonFlatten {
   public void testFlatten(VertxTestContext vertxTestContext) {
     String expectedCsv =
         "Residents.0.ID=78542894753894535, Residents.0.isOwner=true, Residents.0.name=Somebody, Residents.0.flatNumber=24, Residents.0.amountToPay=23.45, Residents.0.region=A, Residents.0.observationDateTime=2020-10-10 20:45:00.0, Residents.1.ID=78542894753894767, Residents.1.isOwner=false, Residents.1.name=Someone, Residents.1.flatNumber=25, Residents.1.amountToPay=23.45, Residents.1.region=B, Residents.1.observationDateTime=2021-10-10 20:45:00.0, Residents.2.ID=78542894753894636, Residents.2.isOwner=true, Residents.2.name=Anybody, Residents.2.flatNumber=26, Residents.2.amountToPay=23.45, Residents.2.region=C, Residents.2.observationDateTime=2022-10-10 20:45:00.0";
+    System.out.println("flattened result : " + jsonFlatten.flatten().toString());
     assertEquals(expectedCsv, jsonFlatten.flatten().toString().replace("{", "").replace("}", ""));
     vertxTestContext.completeNow();
   }
