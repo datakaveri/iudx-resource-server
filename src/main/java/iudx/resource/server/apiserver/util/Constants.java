@@ -89,6 +89,8 @@ public class Constants {
 
   public static final String MONTHLY_OVERVIEW = "/overview";
   public static final String SUMMARY_ENDPOINT = "/summary";
+  public static final String ONBOARDING = "/onboarding";
+  public static final String PROVIDER_ENDPOINT = "/provider";
 
   /** Accept Headers and CORS */
   public static final String MIME_APPLICATION_JSON = "application/json";
@@ -318,4 +320,7 @@ public class Constants {
   public static final String LIMITPARAM = "limit";
   public static final String OFFSETPARAM = "offset";
   public static final String TOTALHITS = "totalHits";
+  public static final String ONBOARDING_PROVIDER_WRITE_SQL = "INSERT INTO USER_TABLE(primaryKey,userid,role,status,payload) " +
+          "values('$1','$2','$3','$4','$5')";
+  public static final String SELECT_STATUS_SQL = "SELECT status from user_table WHERE userid = '$0'";
 }
