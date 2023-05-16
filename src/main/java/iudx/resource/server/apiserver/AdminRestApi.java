@@ -86,16 +86,22 @@ public final class AdminRestApi {
   private void getProviderAdmin(RoutingContext routingContext) {
     LOGGER.trace("getProviderAdmin() started");
     HttpServerRequest request = routingContext.request();
-    StringBuilder query = new StringBuilder("select * from usertable where role = 'provider' ");
+    StringBuilder query = new StringBuilder("select * from user_table where role = 'provider' ");
     LOGGER.debug("query = "+ query);
     HttpServerResponse response = routingContext.response();
     pgService.executeQuery(
         query.toString(),
         dbHandler -> {
           if (dbHandler.succeeded()) {
-            LOGGER.debug("Result = = "+ dbHandler.result());
-            handleSuccessResponse(
-                    response, ResponseType.Ok.getCode(), dbHandler.result().toString());
+            LOGGER.debug("Result = = "+ dbHandler.result().getJsonArray("result").size());
+            long resultSize = dbHandler.result().getJsonArray("result").size();
+            if(resultSize == 0){
+              handleSuccessResponse(
+                      response, ResponseType.NoContent.getCode(), dbHandler.result().toString());
+            } else {
+              handleSuccessResponse(
+                      response, ResponseType.Ok.getCode(), dbHandler.result().toString());
+            }
           } else {
             LOGGER.debug("Could not read from DB : " + dbHandler.cause());
             //handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
