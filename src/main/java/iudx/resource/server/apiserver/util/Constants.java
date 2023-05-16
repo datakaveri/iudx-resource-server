@@ -85,7 +85,10 @@ public class Constants {
   public static final String REVOKE_TOKEN_REGEX = "/admin/revokeToken" + "(.*)";
   public static final String RESOURCE_ATTRIBS = "/resourceattribute";
   public static final String UNIQUE_ATTR_REGEX = "/admin/resourceattribute";
+  public static final String PROVIDER_ADMIN_REGEX = "/admin/provider";
   public static final String ADMIN = "/admin";
+
+  public static final String PROVIDER_ADMIN = "/provider";
 
   public static final String MONTHLY_OVERVIEW = "/overview";
   public static final String SUMMARY_ENDPOINT = "/summary";

@@ -248,6 +248,8 @@ public class AuthHandler implements Handler<RoutingContext> {
       path = ADMIN + REVOKE_TOKEN;
     } else if (url.matches(UNIQUE_ATTR_REGEX)) {
       path = ADMIN + RESOURCE_ATTRIBS;
+    } else if (url.matches(PROVIDER_ADMIN_REGEX)) {
+      path = ADMIN + PROVIDER_ADMIN;
     } else if (url.matches(api.getIudxConsumerAuditUrl())) {
       path = api.getIudxConsumerAuditUrl();
     } else if (url.matches(api.getIudxProviderAuditUrl())) {

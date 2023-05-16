@@ -1,5 +1,6 @@
 package iudx.resource.server.authenticator;
 
+import static iudx.resource.server.apiserver.util.Constants.PROVIDER_ADMIN_REGEX;
 import static iudx.resource.server.authenticator.Constants.*;
 
 import io.vertx.core.AsyncResult;
@@ -88,6 +89,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             || endPoint.equalsIgnoreCase(apis.getIudxConsumerAuditUrl())
             || endPoint.equalsIgnoreCase("/admin/revokeToken")
             || endPoint.equalsIgnoreCase("/admin/resourceattribute")
+            || endPoint.equalsIgnoreCase(PROVIDER_ADMIN_REGEX)
             || endPoint.equalsIgnoreCase(apis.getIudxProviderAuditUrl())
             || endPoint.equalsIgnoreCase(apis.getIudxAsyncStatusApi())
             || endPoint.equalsIgnoreCase(apis.getIngestionPath())

@@ -21,6 +21,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import iudx.resource.server.apiserver.handlers.AuthHandler;
+import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.common.*;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
@@ -74,7 +75,42 @@ public final class AdminRestApi {
         .handler(AuthHandler.create(vertx, api))
         .handler(this::deleteUniqueAttribute);
 
+    router
+        .get(PROVIDER_ADMIN)
+        .handler(AuthHandler.create(vertx,api))
+        .handler(this::getProviderAdmin);
+
     return router;
+  }
+
+  private void getProviderAdmin(RoutingContext routingContext) {
+    LOGGER.trace("getProviderAdmin() started");
+    HttpServerRequest request = routingContext.request();
+    StringBuilder query = new StringBuilder("select * from usertable where role = 'provider' ");
+    LOGGER.debug("query = "+ query);
+    HttpServerResponse response = routingContext.response();
+    pgService.executeQuery(
+        query.toString(),
+        dbHandler -> {
+          if (dbHandler.succeeded()) {
+            LOGGER.debug("Result = = "+ dbHandler.result());
+            handleSuccessResponse(
+                    response, ResponseType.Ok.getCode(), dbHandler.result().toString());
+          } else {
+            LOGGER.debug("Could not read from DB : " + dbHandler.cause());
+            //handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+            //processBackendResponse(response,dbHandler.cause().getMessage());
+              LOGGER.error(dbHandler.cause());
+              try {
+                Response resp =
+                        objectMapper.readValue(dbHandler.cause().getMessage(), Response.class);
+                handleResponse(response, resp);
+              } catch (JsonProcessingException e) {
+                LOGGER.error("Failure message not in format [type,title,detail]");
+                handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+              }
+            }
+        });
   }
 
   private void handleRevokeTokenRequest(RoutingContext context) {
@@ -316,6 +352,10 @@ public final class AdminRestApi {
         .putHeader(CONTENT_TYPE, APPLICATION_JSON)
         .setStatusCode(statusCode.getValue())
         .end(generateResponse(statusCode, urn, message).toString());
+  }
+
+  private void handleSuccessResponse(HttpServerResponse response, int statusCode, String result) {
+    response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(statusCode).end(result);
   }
 
   private Future<Void> updateAuditTable(RoutingContext context) {
