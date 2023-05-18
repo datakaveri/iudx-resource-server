@@ -5,7 +5,7 @@ CREATE type status_type as ENUM
     'REVOKED'
 );
 
-CREATE TABLE IF NOT EXISTS user_table
+CREATE TABLE IF NOT EXISTS dx_user
 (
     _id uuid DEFAULT uuid_generate_v4 () NOT NULL,
     userid uuid NOT NULL,
@@ -17,14 +17,14 @@ CREATE TABLE IF NOT EXISTS user_table
     CONSTRAINT id_pk PRIMARY KEY (_id)
 );
 
-CREATE TRIGGER update_user_table_created BEFORE INSERT ON user_table FOR EACH ROW EXECUTE PROCEDURE update_created ();
-CREATE TRIGGER update_usr_table_modified BEFORE INSERT
+CREATE TRIGGER update_dx_user_created BEFORE INSERT ON dx_user FOR EACH ROW EXECUTE PROCEDURE update_created ();
+CREATE TRIGGER update_dx_usr_modified BEFORE INSERT
 OR UPDATE ON
-   user_table FOR EACH ROW EXECUTE PROCEDURE update_modified ();
+   dx_user FOR EACH ROW EXECUTE PROCEDURE update_modified ();
 
  ---
  -- grants
  ---
  GRANT USAGE ON SCHEMA ${flyway:defaultSchema} TO ${rsUser};
 
- GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE user_table TO ${rsUser};
+ GRANT SELECT,INSERT,UPDATE,DELETE ON TABLE dx_user TO ${rsUser};
