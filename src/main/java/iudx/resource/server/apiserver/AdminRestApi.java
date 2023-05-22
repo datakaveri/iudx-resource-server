@@ -104,7 +104,7 @@ public final class AdminRestApi {
     String role = request.getParam("role");
     StringBuilder query = null;
     if (role.equalsIgnoreCase("ALL")) {
-      query = new StringBuilder("select * from user_table");
+      query = new StringBuilder("select * from dx_user_table");
     } else if (role.equalsIgnoreCase("CONSUMER")
         || role.equalsIgnoreCase("PROVIDER")
         || role.equalsIgnoreCase("DELEGATE")) {
