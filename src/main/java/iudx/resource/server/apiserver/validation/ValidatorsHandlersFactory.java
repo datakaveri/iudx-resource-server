@@ -74,6 +74,8 @@ public class ValidatorsHandlersFactory {
       case OVERVIEW:
         validator = getOverviewValidator(parameters);
         break;
+      case PROVIDER_ONBOARDING:
+        validator = getPostOnboardingValidator(vertx,parameters,body,requestType);
       default:
         break;
     }
@@ -236,7 +238,21 @@ public class ValidatorsHandlersFactory {
 
     return validators;
   }
+  private List<Validator> getPostOnboardingValidator(
+          Vertx vertx,
+          final MultiMap parameters,
+          final JsonObject body,
+          final RequestType requestType) {
 
+    List<Validator> validators = new ArrayList<>();
+    // request body validators.
+    validators.addAll(getRequestSchemaValidator(vertx, body, requestType));
+
+    // optional header public key
+    validators.add(new HeaderKeyTypeValidation(parameters.get(HEADER_PUBLIC_KEY), false));
+
+    return validators;
+  }
   private List<Validator> getRequestSchemaValidator(
       Vertx vertx, JsonObject body, RequestType requestType) {
     List<Validator> validators = new ArrayList<>();
@@ -255,6 +271,7 @@ public class ValidatorsHandlersFactory {
 
     return validators;
   }
+
 
   private String loadJson(String filename) {
     String jsonStr = null;

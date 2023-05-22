@@ -90,7 +90,8 @@ public class Constants {
   public static final String MONTHLY_OVERVIEW = "/overview";
   public static final String SUMMARY_ENDPOINT = "/summary";
   public static final String ONBOARDING = "/onboarding";
-  public static final String PROVIDER_ENDPOINT = "/provider";
+  public static final String ONBOARDING_PROVIDER = "/provider";
+  public static final String ONBOARDING_PROVIDER_STATUS = "/provider/status";
 
   /** Accept Headers and CORS */
   public static final String MIME_APPLICATION_JSON = "application/json";
@@ -205,6 +206,7 @@ public class Constants {
   public static final String RESOURCE_GROUP = "resourceGroup";
   public static final String RESOURCE_NAME = "resourceName";
   public static final String USER_ID = "userid";
+  public static final String ROLE = "role";
   public static final String EXPIRY = "expiry";
   public static final String IID = "iid";
   public static final String API = "api";
@@ -320,7 +322,7 @@ public class Constants {
   public static final String LIMITPARAM = "limit";
   public static final String OFFSETPARAM = "offset";
   public static final String TOTALHITS = "totalHits";
-  public static final String ONBOARDING_PROVIDER_WRITE_SQL = "INSERT INTO USER_TABLE(primaryKey,userid,role,status,payload) " +
-          "values('$1','$2','$3','$4','$5')";
+  public static final String ONBOARDING_PROVIDER_WRITE_SQL = "INSERT INTO USER_TABLE(userid,role,status,request_json) " +
+          "values('$0','$1','$2','$3')";
   public static final String SELECT_STATUS_SQL = "SELECT status from user_table WHERE userid = '$0'";
 }

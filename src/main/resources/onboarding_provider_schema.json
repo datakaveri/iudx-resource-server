@@ -1,0 +1,84 @@
+{
+    "type": "object",
+    "default": {},
+    "required": [
+        "name",
+        "phone",
+        "organization",
+        "role"
+    ],
+    "additionalProperties": true,
+    "properties": {
+        "name": {
+            "$id": "#root/name",
+            "title": "Name",
+            "type": "string",
+            "default": "",
+            "pattern": "^[A-Za-z]{2,29}$"
+        },
+        "phone": {
+            "$id": "#root/phone",
+            "title": "Phone",
+            "type": "string",
+            "pattern" : "^[1-9]{1}[0-9]{9}"
+
+        },
+        "organization": {
+            "$id": "#root/organization",
+            "title": "Organization",
+            "type": "string",
+            "default": ""
+        },
+        "role": {
+            "$id": "#root/role",
+            "title": "Role",
+            "type": "string",
+            "default": "",
+            "enum":["Provider", "Delegate","Consumer"]
+        },
+        "CPU Requirements": {
+            "$id": "#root/CPURequirements",
+            "title": "CPU Requirements",
+            "type": "string",
+            "default": ""
+        },
+        "Disk Requirements": {
+            "$id": "#root/DiskRequirements",
+            "title": "Disk Requirements",
+            "type": "string",
+            "default": ""
+        },
+        "Publication Frequency": {
+            "$id": "#root/PublicationFrequency",
+            "title": "Publication Frequency",
+            "type": "array",
+            "default": [],
+            "items": {
+                "title": "A Schema",
+                "type": "string"
+            }
+        },
+        "Data Types": {
+            "$id": "#root/DataTypes",
+            "title": "Data Types",
+            "type": "array",
+            "default": [],
+            "items": {
+                "title": "A Schema",
+                "type": "string"
+            }
+        },
+        "comments": {
+            "$id": "#root/comments",
+            "title": "Comments",
+            "type": "string",
+            "default": ""
+        },
+        "purpose": {
+            "$id": "#root/purpose",
+            "title": "Purpose",
+            "type": "string",
+            "default": ""
+        }
+    }
+}

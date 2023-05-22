@@ -22,6 +22,8 @@ public class Api {
   private StringBuilder monthlyOverview;
   private StringBuilder summaryPath;
   private StringBuilder providerPath;
+  private StringBuilder providerOnboarding;
+  private StringBuilder providerOnboardingStatus;
 
   private Api(String dxApiBasePath) {
     this.dxApiBasePath = dxApiBasePath;
@@ -58,6 +60,8 @@ public class Api {
     monthlyOverview = new StringBuilder(dxApiBasePath).append(MONTHLY_OVERVIEW);
     summaryPath = new StringBuilder(dxApiBasePath).append(SUMMARY_ENDPOINT);
     providerPath = new StringBuilder(dxApiBasePath).append(ONBOARDING);
+    providerOnboarding = new StringBuilder(dxApiBasePath).append(ONBOARDING+ONBOARDING_PROVIDER);
+    providerOnboardingStatus = new StringBuilder(dxApiBasePath).append(ONBOARDING+STATUS);
   }
 
   public String getEntitiesUrl() {
@@ -119,7 +123,13 @@ public class Api {
   public String getSummaryPath() {
     return summaryPath.toString();
   }
-  public String getProviderPath() {
+  public String getOnboardingPath() {
     return providerPath.toString();
+  }
+  public String getProviderOnboarding() {
+    return providerOnboarding.toString();
+  }
+  public String getProviderOnboardingStatus() {
+    return providerOnboardingStatus.toString();
   }
 }

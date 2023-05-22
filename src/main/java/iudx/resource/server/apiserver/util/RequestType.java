@@ -9,7 +9,9 @@ public enum RequestType {
   POST_TEMPORAL("post_temporal_schema.json"),
   POST_ENTITIES("post_entities_schema.json"),
   SUBSCRIPTION("subscription_schema.json"),
-  OVERVIEW("overview");
+  OVERVIEW("overview"),
+  PROVIDER_ONBOARDING("onboarding_provider_schema.json");
+
 
   private String filename;
 
