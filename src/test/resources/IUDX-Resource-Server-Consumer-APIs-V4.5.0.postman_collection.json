@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "e19a06c5-cceb-409c-9aa1-9cb3cb33a3a0",
+		"_postman_id": "81af1bc3-5040-4cab-8af4-59429719bf99",
 		"name": "IUDX-Resource-Server-Consumer-APIs-V4.5.0",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "20457128"
 	},
 	"item": [
 		{
@@ -23576,6 +23577,110 @@
 								{
 									"key": "endtime",
 									"value": "2022-10-27T00:00:00Z"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Onboarding Admin",
+			"item": [
+				{
+					"name": "200 - (Success) List of all Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{adminToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/getRegistration?role=provider",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"getRegistration"
+							],
+							"query": [
+								{
+									"key": "role",
+									"value": "provider"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401- (Not Authorized) List of all Provider",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 401 (Not Authorized)\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Not Authorized\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "123",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/admin/getRegistration?role=provider",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"admin",
+								"getRegistration"
+							],
+							"query": [
+								{
+									"key": "role",
+									"value": "provider"
 								}
 							]
 						}

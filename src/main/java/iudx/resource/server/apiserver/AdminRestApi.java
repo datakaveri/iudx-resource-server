@@ -81,7 +81,7 @@ public final class AdminRestApi {
         .handler(AuthHandler.create(vertx, api))
         .handler(this::getRegistrationList);
 
-    router
+    /*router
         .delete(PROVIDER_DELETE_ADMIN)
         .handler(AuthHandler.create(vertx, api))
         .handler(this::deleteProviderAdmin);
@@ -89,14 +89,14 @@ public final class AdminRestApi {
     router
         .put(PROVIDER_UPDATE_ADMIN)
         .handler(AuthHandler.create(vertx, api))
-        .handler(this::updateProviderAdmin);
+        .handler(this::updateProviderAdmin);*/
 
     return router;
   }
 
-  private void updateProviderAdmin(RoutingContext routingContext) {}
+  /*private void updateProviderAdmin(RoutingContext routingContext) {}
 
-  private void deleteProviderAdmin(RoutingContext routingContext) {}
+  private void deleteProviderAdmin(RoutingContext routingContext) {}*/
 
   private void getRegistrationList(RoutingContext routingContext) {
     LOGGER.trace("getRegistrationList() started");
@@ -105,8 +105,12 @@ public final class AdminRestApi {
     StringBuilder query = null;
     if (role.equalsIgnoreCase("ALL")) {
       query = new StringBuilder("select * from user_table");
-    } else if (role.equalsIgnoreCase("CONSUMER") || role.equalsIgnoreCase("PROVIDER") || role.equalsIgnoreCase("DELEGATE")){
-      query = new StringBuilder("select * from dx_user_table where role = '$1' ".replace("$1", role.toUpperCase()));
+    } else if (role.equalsIgnoreCase("CONSUMER")
+        || role.equalsIgnoreCase("PROVIDER")
+        || role.equalsIgnoreCase("DELEGATE")) {
+      query =
+          new StringBuilder(
+              "select * from dx_user_table where role = '$1' ".replace("$1", role.toUpperCase()));
     }
 
     LOGGER.debug("query = " + query);

@@ -49,7 +49,7 @@ public class HandleResponse {
     try {
       JsonObject json = new JsonObject(failureMessage);
       int type = json.getInteger(JSON_TYPE);
-      HttpStatusCode status = HttpStatusCode.getByValue(type);
+      HttpStatusCode status = getByValue(type);
       String urnTitle = json.getString(JSON_TITLE);
       ResponseUrn urn;
       if (urnTitle != null) {
