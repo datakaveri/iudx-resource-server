@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS dx_user
 );
 
 CREATE TRIGGER update_dx_user_created BEFORE INSERT ON dx_user FOR EACH ROW EXECUTE PROCEDURE update_created ();
-CREATE TRIGGER update_dx_usr_modified BEFORE INSERT
+CREATE TRIGGER update_dx_user_modified BEFORE INSERT
 OR UPDATE ON
    dx_user FOR EACH ROW EXECUTE PROCEDURE update_modified ();
 
