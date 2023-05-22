@@ -4,12 +4,18 @@ CREATE type status_type as ENUM
     'APPROVED',
     'REVOKED'
 );
-
+CREATE type role_type as ENUM
+(
+    'ADMIN'
+    'PROVIDER',
+    'DELEGATE',
+    'CONSUMER'
+);
 CREATE TABLE IF NOT EXISTS dx_user
 (
     _id uuid DEFAULT uuid_generate_v4 () NOT NULL,
     userid uuid NOT NULL,
-    role varchar NOT NULL,
+    role role_type NOT NULL,
     status status_type NOT NULL,
     request_json json not null,
     created_at timestamp without time zone NOT NULL,
