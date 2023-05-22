@@ -249,7 +249,11 @@ public class AuthHandler implements Handler<RoutingContext> {
     } else if (url.matches(UNIQUE_ATTR_REGEX)) {
       path = ADMIN + RESOURCE_ATTRIBS;
     } else if (url.matches(PROVIDER_ADMIN_REGEX)) {
-      path = ADMIN + PROVIDER_ADMIN;
+      path = ADMIN + GET_REGISTRATION;
+    } else if (url.matches(PROVIDER_DELETE_ADMIN_REGEX)) {
+      path = ADMIN + PROVIDER_DELETE_ADMIN;
+    } else if (url.matches(PROVIDER_UPDATE_ADMIN_REGEX)) {
+      path = ADMIN + PROVIDER_UPDATE_ADMIN;
     } else if (url.matches(api.getIudxConsumerAuditUrl())) {
       path = api.getIudxConsumerAuditUrl();
     } else if (url.matches(api.getIudxProviderAuditUrl())) {

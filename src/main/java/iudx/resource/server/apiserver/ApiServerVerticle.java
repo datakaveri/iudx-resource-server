@@ -26,7 +26,6 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
@@ -51,8 +50,8 @@ import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.util.RequestType;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.common.Api;
+import iudx.resource.server.common.HandleResponse;
 import iudx.resource.server.common.HttpStatusCode;
-import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.archives.DatabaseService;
 import iudx.resource.server.database.latest.LatestDataService;
 import iudx.resource.server.database.postgres.PostgresService;
@@ -120,6 +119,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   private Api api;
   private LatestDataService latestDataService;
   private CacheService cacheService;
+  private HandleResponse handleResponseToReturn;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, reads the
@@ -445,9 +445,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         .handler(AuthHandler.create(vertx, api))
         .handler(
             handler -> {
-              new ManagementRestApi(
-                  databroker)
-                  .resetPassword(handler);
+              new ManagementRestApi(databroker).resetPassword(handler);
             });
 
     router
@@ -465,6 +463,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     /* Print the deployed endpoints */
     printDeployedEndpoints(router);
     LOGGER.info("API server deployed on :" + serverOptions.getPort());
+    handleResponseToReturn = new HandleResponse();
   }
 
   private void getMonthlyOverview(RoutingContext routingContext) {
@@ -479,10 +478,11 @@ public class ApiServerVerticle extends AbstractVerticle {
         handler -> {
           if (handler.succeeded()) {
             LOGGER.debug("Successful");
-            handleSuccessResponse(response, ResponseType.Ok.getCode(), handler.result().toString());
+            handleResponseToReturn.handleSuccessResponse(
+                response, ResponseType.Ok.getCode(), handler.result().toString());
           } else {
             LOGGER.error("Fail: Bad request");
-            processBackendResponse(response, handler.cause().getMessage());
+            handleResponseToReturn.processBackendResponse(response, handler.cause().getMessage());
           }
         });
   }
@@ -502,16 +502,16 @@ public class ApiServerVerticle extends AbstractVerticle {
             JsonObject jsonObject = (JsonObject) handler.result();
             String checkType = jsonObject.getString("type");
             if (checkType.equalsIgnoreCase(NO_CONTENT)) {
-              handleSuccessResponse(
+              handleResponseToReturn.handleSuccessResponse(
                   response, ResponseType.NoContent.getCode(), handler.result().toString());
             } else {
               LOGGER.debug("Successful");
-              handleSuccessResponse(
+              handleResponseToReturn.handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), handler.result().toString());
             }
           } else {
             LOGGER.error("Fail: Bad request");
-            processBackendResponse(response, handler.cause().getMessage());
+            handleResponseToReturn.processBackendResponse(response, handler.cause().getMessage());
           }
         });
   }
@@ -553,17 +553,17 @@ public class ApiServerVerticle extends AbstractVerticle {
             JsonObject jsonObject = (JsonObject) handler.result();
             String checkType = jsonObject.getString("type");
             if (checkType.equalsIgnoreCase(NO_CONTENT)) {
-              handleSuccessResponse(
+              handleResponseToReturn.handleSuccessResponse(
                   response, ResponseType.NoContent.getCode(), handler.result().toString());
             } else {
-              handleSuccessResponse(
+              handleResponseToReturn.handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), handler.result().toString());
             }
             promise.complete();
           } else {
             LOGGER.error("Fail msg " + handler.cause().getMessage());
             LOGGER.error("Table reading failed.");
-            processBackendResponse(response, handler.cause().getMessage());
+            handleResponseToReturn.processBackendResponse(response, handler.cause().getMessage());
             promise.complete();
           }
         });
@@ -601,17 +601,17 @@ public class ApiServerVerticle extends AbstractVerticle {
             JsonObject jsonObject = (JsonObject) handler.result();
             String checkType = jsonObject.getString("type");
             if (checkType.equalsIgnoreCase(NO_CONTENT)) {
-              handleSuccessResponse(
+              handleResponseToReturn.handleSuccessResponse(
                   response, ResponseType.NoContent.getCode(), handler.result().toString());
             } else {
-              handleSuccessResponse(
+              handleResponseToReturn.handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), handler.result().toString());
             }
             promise.complete();
           } else {
             LOGGER.error("Fail msg " + handler.cause().getMessage());
             LOGGER.error("Table reading failed.");
-            processBackendResponse(response, handler.cause().getMessage());
+            handleResponseToReturn.processBackendResponse(response, handler.cause().getMessage());
             promise.complete();
           }
         });
@@ -656,7 +656,7 @@ public class ApiServerVerticle extends AbstractVerticle {
             executeLatestSearchQuery(routingContext, json, response);
           } else {
             LOGGER.error("catalogue item/group doesn't have filters.");
-            handleResponse(
+            handleResponseToReturn.handleResponse(
                 response, BAD_REQUEST, INVALID_PARAM_URN, filtersHandler.cause().getMessage());
           }
         });
@@ -715,7 +715,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                     }
                   } else if (validationHandler.failed()) {
                     LOGGER.error("Fail: Validation failed");
-                    handleResponse(
+                    handleResponseToReturn.handleResponse(
                         response,
                         BAD_REQUEST,
                         INVALID_PARAM_URN,
@@ -724,7 +724,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 });
           } else if (validationHandler.failed()) {
             LOGGER.error("Fail: Validation failed");
-            handleResponse(
+            handleResponseToReturn.handleResponse(
                 response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
           }
         });
@@ -779,7 +779,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                 });
           } else if (validationHandler.failed()) {
             LOGGER.error("Fail: Bad request");
-            handleResponse(
+            handleResponseToReturn.handleResponse(
                 response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
           }
         });
@@ -800,7 +800,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           if (handler.succeeded()) {
             LOGGER.info("Success: Count Success");
             if (context.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-              handleSuccessResponse(
+              handleResponseToReturn.handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), handler.result().toString());
               context.data().put(RESPONSE_SIZE, response.bytesWritten());
               Future.future(fu -> updateAuditTable(context));
@@ -813,20 +813,21 @@ public class ApiServerVerticle extends AbstractVerticle {
                     if (encryptionHandler.succeeded()) {
                       JsonObject result = encryptionHandler.result();
                       handler.result().put("results", result);
-                      handleSuccessResponse(
+                      handleResponseToReturn.handleSuccessResponse(
                           response, ResponseType.Ok.getCode(), handler.result().encode());
                       context.data().put(RESPONSE_SIZE, response.bytesWritten());
                       Future.future(fu -> updateAuditTable(context));
                     } else {
                       LOGGER.error(
                           "Encryption not completed: " + encryptionHandler.cause().getMessage());
-                      processBackendResponse(response, encryptionHandler.cause().getMessage());
+                      handleResponseToReturn.processBackendResponse(
+                          response, encryptionHandler.cause().getMessage());
                     }
                   });
             }
           } else if (handler.failed()) {
             LOGGER.error("Fail: Count Fail");
-            processBackendResponse(response, handler.cause().getMessage());
+            handleResponseToReturn.processBackendResponse(response, handler.cause().getMessage());
           }
         });
   }
@@ -845,7 +846,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           if (handler.succeeded()) {
             LOGGER.info("Success: Search Success");
             if (context.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-              handleSuccessResponse(
+              handleResponseToReturn.handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), handler.result().toString());
               context.data().put(RESPONSE_SIZE, response.bytesWritten());
               Future.future(fu -> updateAuditTable(context));
@@ -858,19 +859,20 @@ public class ApiServerVerticle extends AbstractVerticle {
                     if (encryptionHandler.succeeded()) {
                       JsonObject result = encryptionHandler.result();
                       handler.result().put("results", result);
-                      handleSuccessResponse(
+                      handleResponseToReturn.handleSuccessResponse(
                           response, ResponseType.Ok.getCode(), handler.result().encode());
                       context.data().put(RESPONSE_SIZE, response.bytesWritten());
                       Future.future(fu -> updateAuditTable(context));
                     } else {
                       LOGGER.error("Encryption not completed");
-                      processBackendResponse(response, encryptionHandler.cause().getMessage());
+                      handleResponseToReturn.processBackendResponse(
+                          response, encryptionHandler.cause().getMessage());
                     }
                   });
             }
           } else if (handler.failed()) {
             LOGGER.error("Fail: Search Fail");
-            processBackendResponse(response, handler.cause().getMessage());
+            handleResponseToReturn.processBackendResponse(response, handler.cause().getMessage());
           }
         });
   }
@@ -883,7 +885,7 @@ public class ApiServerVerticle extends AbstractVerticle {
           if (handler.succeeded()) {
             LOGGER.info("Latest data search succeeded");
             if (context.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-              handleSuccessResponse(
+              handleResponseToReturn.handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), handler.result().toString());
               context.data().put(RESPONSE_SIZE, response.bytesWritten());
               Future.future(fu -> updateAuditTable(context));
@@ -896,19 +898,20 @@ public class ApiServerVerticle extends AbstractVerticle {
                     if (encryptionHandler.succeeded()) {
                       JsonObject result = encryptionHandler.result();
                       handler.result().put("results", result);
-                      handleSuccessResponse(
+                      handleResponseToReturn.handleSuccessResponse(
                           response, ResponseType.Ok.getCode(), handler.result().encode());
                       context.data().put(RESPONSE_SIZE, response.bytesWritten());
                       Future.future(fu -> updateAuditTable(context));
                     } else {
                       LOGGER.error("Encryption not completed");
-                      processBackendResponse(response, encryptionHandler.cause().getMessage());
+                      handleResponseToReturn.processBackendResponse(
+                          response, encryptionHandler.cause().getMessage());
                     }
                   });
             }
           } else {
             LOGGER.error("Fail: Search Fail");
-            processBackendResponse(response, handler.cause().getMessage());
+            handleResponseToReturn.processBackendResponse(response, handler.cause().getMessage());
           }
         });
   }
@@ -989,12 +992,13 @@ public class ApiServerVerticle extends AbstractVerticle {
                     }
                   } else {
                     LOGGER.error("catalogue item/group doesn't have filters.");
-                    handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, "faiuled");
+                    handleResponseToReturn.handleResponse(
+                        response, BAD_REQUEST, INVALID_PARAM_URN, "failed");
                   }
                 });
           } else if (validationHandler.failed()) {
             LOGGER.error("Fail: Bad request;");
-            handleResponse(
+            handleResponseToReturn.handleResponse(
                 response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
           }
         });
@@ -1028,11 +1032,12 @@ public class ApiServerVerticle extends AbstractVerticle {
             LOGGER.info("Success: Handle Subscription request;");
             routingContext.data().put(RESPONSE_SIZE, 0);
             Future.future(fu -> updateAuditTable(routingContext));
-            handleSuccessResponse(
+            handleResponseToReturn.handleSuccessResponse(
                 response, ResponseType.Created.getCode(), subHandler.result().toString());
           } else {
             LOGGER.error("Fail: Handle Subscription request;");
-            processBackendResponse(response, subHandler.cause().getMessage());
+            handleResponseToReturn.processBackendResponse(
+                response, subHandler.cause().getMessage());
           }
         });
   }
@@ -1067,16 +1072,18 @@ public class ApiServerVerticle extends AbstractVerticle {
               LOGGER.debug("Success: Appending subscription");
               routingContext.data().put(RESPONSE_SIZE, 0);
               Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(
+              handleResponseToReturn.handleSuccessResponse(
                   response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
             } else {
               LOGGER.error("Fail: Appending subscription");
-              processBackendResponse(response, subsRequestHandler.cause().getMessage());
+              handleResponseToReturn.processBackendResponse(
+                  response, subsRequestHandler.cause().getMessage());
             }
           });
     } else {
       LOGGER.error("Fail: Bad request");
-      handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_NAME);
+      handleResponseToReturn.handleResponse(
+          response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_NAME);
     }
   }
 
@@ -1110,16 +1117,18 @@ public class ApiServerVerticle extends AbstractVerticle {
               LOGGER.info("result : " + subsRequestHandler.result());
               routingContext.data().put(RESPONSE_SIZE, 0);
               Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(
+              handleResponseToReturn.handleSuccessResponse(
                   response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
             } else {
               LOGGER.error("Fail: Bad request");
-              processBackendResponse(response, subsRequestHandler.cause().getMessage());
+              handleResponseToReturn.processBackendResponse(
+                  response, subsRequestHandler.cause().getMessage());
             }
           });
     } else {
       LOGGER.error("Fail: Bad request");
-      handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_NAME);
+      handleResponseToReturn.handleResponse(
+          response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_NAME);
     }
   }
 
@@ -1160,18 +1169,19 @@ public class ApiServerVerticle extends AbstractVerticle {
                         LOGGER.info("Success: Getting subscription");
                         routingContext.data().put(RESPONSE_SIZE, 0);
                         Future.future(fu -> updateAuditTable(routingContext));
-                        handleSuccessResponse(
+                        handleResponseToReturn.handleSuccessResponse(
                             response, ResponseType.Ok.getCode(), subHandler.result().toString());
                       } else {
                         LOGGER.error("Fail: Bad request");
-                        processBackendResponse(response, subHandler.cause().getMessage());
+                        handleResponseToReturn.processBackendResponse(
+                            response, subHandler.cause().getMessage());
                       }
                     });
               })
           .onFailure(
               entityNameFailureHandler -> {
                 LOGGER.error("Fail: Bad request from DB ");
-                handleResponse(
+                handleResponseToReturn.handleResponse(
                     response,
                     NOT_FOUND,
                     RESOURCE_NOT_FOUND_URN,
@@ -1179,7 +1189,8 @@ public class ApiServerVerticle extends AbstractVerticle {
               });
     } else {
       LOGGER.error("Fail: Bad request");
-      handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_SUB_TYPE_NOT_FOUND);
+      handleResponseToReturn.handleResponse(
+          response, BAD_REQUEST, INVALID_PARAM_URN, MSG_SUB_TYPE_NOT_FOUND);
     }
   }
 
@@ -1203,11 +1214,12 @@ public class ApiServerVerticle extends AbstractVerticle {
             LOGGER.info("Success: Getting subscription queue");
             /* routingContext.data().put(RESPONSE_SIZE, 0);
             Future.future(fu -> updateAuditTable(routingContext));*/
-            handleSuccessResponse(
+            handleResponseToReturn.handleSuccessResponse(
                 response, ResponseType.Ok.getCode(), subHandler.result().toString());
           } else {
             LOGGER.error("Fail: Bad request");
-            processBackendResponse(response, subHandler.cause().getMessage());
+            handleResponseToReturn.processBackendResponse(
+                response, subHandler.cause().getMessage());
           }
         });
   }
@@ -1247,17 +1259,18 @@ public class ApiServerVerticle extends AbstractVerticle {
                       if (subHandler.succeeded()) {
                         routingContext.data().put(RESPONSE_SIZE, 0);
                         Future.future(fu -> updateAuditTable(routingContext));
-                        handleSuccessResponse(
+                        handleResponseToReturn.handleSuccessResponse(
                             response, ResponseType.Ok.getCode(), subHandler.result().toString());
                       } else {
-                        processBackendResponse(response, subHandler.cause().getMessage());
+                        handleResponseToReturn.processBackendResponse(
+                            response, subHandler.cause().getMessage());
                       }
                     });
               })
           .onFailure(
               entityNameFailureHandler -> {
                 LOGGER.error("ERROR: bad request from DB");
-                handleResponse(
+                handleResponseToReturn.handleResponse(
                     response,
                     NOT_FOUND,
                     RESOURCE_NOT_FOUND_URN,
@@ -1265,7 +1278,8 @@ public class ApiServerVerticle extends AbstractVerticle {
               });
 
     } else {
-      handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_SUB_TYPE_NOT_FOUND);
+      handleResponseToReturn.handleResponse(
+          response, BAD_REQUEST, INVALID_PARAM_URN, MSG_SUB_TYPE_NOT_FOUND);
     }
   }
 
@@ -1293,11 +1307,11 @@ public class ApiServerVerticle extends AbstractVerticle {
             LOGGER.info("Success: Registering adapter");
             routingContext.data().put(RESPONSE_SIZE, 0);
             Future.future(fu -> updateAuditTable(routingContext));
-            handleSuccessResponse(
+            handleResponseToReturn.handleSuccessResponse(
                 response, ResponseType.Created.getCode(), handler.result().toString());
           } else if (brokerResult.failed()) {
             LOGGER.error("Fail: Bad request" + handler.cause().getMessage());
-            processBackendResponse(response, handler.cause().getMessage());
+            handleResponseToReturn.processBackendResponse(response, handler.cause().getMessage());
           }
         });
   }
@@ -1338,11 +1352,12 @@ public class ApiServerVerticle extends AbstractVerticle {
             LOGGER.info("Success: Deleting adapter");
             routingContext.data().put(RESPONSE_SIZE, 0);
             Future.future(fu -> updateAuditTable(routingContext));
-            handleSuccessResponse(
+            handleResponseToReturn.handleSuccessResponse(
                 response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
           } else {
             LOGGER.error("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
-            processBackendResponse(response, brokerResultHandler.cause().getMessage());
+            handleResponseToReturn.processBackendResponse(
+                response, brokerResultHandler.cause().getMessage());
           }
         });
   }
@@ -1378,10 +1393,11 @@ public class ApiServerVerticle extends AbstractVerticle {
           if (brokerResultHandler.succeeded()) {
             routingContext.data().put(RESPONSE_SIZE, 0);
             Future.future(fu -> updateAuditTable(routingContext));
-            handleSuccessResponse(
+            handleResponseToReturn.handleSuccessResponse(
                 response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
           } else {
-            processBackendResponse(response, brokerResultHandler.cause().getMessage());
+            handleResponseToReturn.processBackendResponse(
+                response, brokerResultHandler.cause().getMessage());
           }
         });
   }
@@ -1411,17 +1427,18 @@ public class ApiServerVerticle extends AbstractVerticle {
               LOGGER.info("Success: Published heartbeat");
               routingContext.data().put(RESPONSE_SIZE, 0);
               Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(
+              handleResponseToReturn.handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
             } else {
               LOGGER.debug("Fail: Unauthorized;" + brokerResultHandler.cause().getMessage());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
+              handleResponseToReturn.processBackendResponse(
+                  response, brokerResultHandler.cause().getMessage());
             }
           });
 
     } else {
       LOGGER.info("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
+      handleResponseToReturn.handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
   }
 
@@ -1450,17 +1467,18 @@ public class ApiServerVerticle extends AbstractVerticle {
               LOGGER.debug("Success: publishing data from adapter");
               routingContext.data().put(RESPONSE_SIZE, 0);
               Future.future(fu -> updateAuditTable(routingContext));
-              handleSuccessResponse(
+              handleResponseToReturn.handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), brokerResultHandler.result().toString());
             } else {
               LOGGER.debug("Fail: Bad request;" + brokerResultHandler.cause().getMessage());
-              processBackendResponse(response, brokerResultHandler.cause().getMessage());
+              handleResponseToReturn.processBackendResponse(
+                  response, brokerResultHandler.cause().getMessage());
             }
           });
 
     } else {
       LOGGER.debug("Fail: Unauthorized");
-      handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
+      handleResponseToReturn.handleResponse(response, UNAUTHORIZED, MISSING_TOKEN_URN);
     }
   }
 
@@ -1480,66 +1498,19 @@ public class ApiServerVerticle extends AbstractVerticle {
           if (handler.succeeded()) {
             LOGGER.debug("Successful");
             if (handler.result().getJsonArray("result").isEmpty()) {
-              handleSuccessResponse(
+              handleResponseToReturn.handleSuccessResponse(
                   response, ResponseType.NoContent.getCode(), handler.result().toString());
             } else {
               /*routingContext.data().put(RESPONSE_SIZE, 0);
               Future.future(fu -> updateAuditTable(routingContext));*/
-              handleSuccessResponse(
+              handleResponseToReturn.handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), handler.result().toString());
             }
           } else {
             LOGGER.debug(handler.cause());
-            processBackendResponse(response, handler.cause().getMessage());
+            handleResponseToReturn.processBackendResponse(response, handler.cause().getMessage());
           }
         });
-  }
-
-  /**
-   * handle HTTP response.
-   *
-   * @param response HttpServerResponse object
-   * @param statusCode Http status code for response
-   * @param result String of response
-   */
-  private void handleSuccessResponse(HttpServerResponse response, int statusCode, String result) {
-    response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(statusCode).end(result);
-  }
-
-  private void processBackendResponse(HttpServerResponse response, String failureMessage) {
-    LOGGER.debug("Info : " + failureMessage);
-    try {
-      JsonObject json = new JsonObject(failureMessage);
-      int type = json.getInteger(JSON_TYPE);
-      HttpStatusCode status = HttpStatusCode.getByValue(type);
-      String urnTitle = json.getString(JSON_TITLE);
-      ResponseUrn urn;
-      if (urnTitle != null) {
-        urn = fromCode(urnTitle);
-      } else {
-        urn = fromCode(type + "");
-      }
-      // return urn in body
-      response
-          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-          .setStatusCode(type)
-          .end(generateResponse(status, urn).toString());
-    } catch (DecodeException ex) {
-      LOGGER.error("ERROR : Expecting Json from backend service [ jsonFormattingException ]");
-      handleResponse(response, BAD_REQUEST, BACKING_SERVICE_FORMAT_URN);
-    }
-  }
-
-  private void handleResponse(HttpServerResponse response, HttpStatusCode code, ResponseUrn urn) {
-    handleResponse(response, code, urn, code.getDescription());
-  }
-
-  private void handleResponse(
-      HttpServerResponse response, HttpStatusCode statusCode, ResponseUrn urn, String message) {
-    response
-        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-        .setStatusCode(statusCode.getValue())
-        .end(generateResponse(statusCode, urn, message).toString());
   }
 
   /**

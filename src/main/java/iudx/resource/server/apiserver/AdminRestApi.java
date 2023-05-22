@@ -1,6 +1,5 @@
 package iudx.resource.server.apiserver;
 
-import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.Constants.*;
 import static iudx.resource.server.common.HttpStatusCode.*;
@@ -43,6 +42,7 @@ public final class AdminRestApi {
   private final PostgresService pgService;
   private final MeteringService auditService;
   private final ObjectMapper objectMapper = new ObjectMapper();
+  public HandleResponse handleResponseToReturn;
   private Api api;
 
   AdminRestApi(Vertx vertx, Router router, Api api) {
@@ -52,6 +52,7 @@ public final class AdminRestApi {
     this.auditService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
     this.pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
     this.api = api;
+    handleResponseToReturn = new HandleResponse();
   }
 
   public Router init() {
@@ -76,46 +77,66 @@ public final class AdminRestApi {
         .handler(this::deleteUniqueAttribute);
 
     router
-        .get(PROVIDER_ADMIN)
-        .handler(AuthHandler.create(vertx,api))
-        .handler(this::getProviderAdmin);
+        .get(GET_REGISTRATION)
+        .handler(AuthHandler.create(vertx, api))
+        .handler(this::getRegistrationList);
+
+    router
+        .delete(PROVIDER_DELETE_ADMIN)
+        .handler(AuthHandler.create(vertx, api))
+        .handler(this::deleteProviderAdmin);
+
+    router
+        .put(PROVIDER_UPDATE_ADMIN)
+        .handler(AuthHandler.create(vertx, api))
+        .handler(this::updateProviderAdmin);
 
     return router;
   }
 
-  private void getProviderAdmin(RoutingContext routingContext) {
-    LOGGER.trace("getProviderAdmin() started");
+  private void updateProviderAdmin(RoutingContext routingContext) {}
+
+  private void deleteProviderAdmin(RoutingContext routingContext) {}
+
+  private void getRegistrationList(RoutingContext routingContext) {
+    LOGGER.trace("getRegistrationList() started");
     HttpServerRequest request = routingContext.request();
-    StringBuilder query = new StringBuilder("select * from user_table where role = 'provider' ");
-    LOGGER.debug("query = "+ query);
+    String role = request.getParam("role");
+    StringBuilder query = null;
+    if (role.equalsIgnoreCase("ALL")) {
+      query = new StringBuilder("select * from user_table");
+    } else if (role.equalsIgnoreCase("CONSUMER") || role.equalsIgnoreCase("PROVIDER") || role.equalsIgnoreCase("DELEGATE")){
+      query = new StringBuilder("select * from dx_user_table where role = '$1' ".replace("$1", role.toUpperCase()));
+    }
+
+    LOGGER.debug("query = " + query);
     HttpServerResponse response = routingContext.response();
+    assert query != null;
     pgService.executeQuery(
         query.toString(),
         dbHandler -> {
           if (dbHandler.succeeded()) {
-            LOGGER.debug("Result = = "+ dbHandler.result().getJsonArray("result").size());
+            LOGGER.trace("Result = = " + dbHandler.result().getJsonArray("result").size());
             long resultSize = dbHandler.result().getJsonArray("result").size();
-            if(resultSize == 0){
-              handleSuccessResponse(
-                      response, ResponseType.NoContent.getCode(), dbHandler.result().toString());
+            if (resultSize == 0) {
+              handleResponseToReturn.handleSuccessResponse(
+                  response, ResponseType.NoContent.getCode(), dbHandler.result().toString());
             } else {
-              handleSuccessResponse(
-                      response, ResponseType.Ok.getCode(), dbHandler.result().toString());
+              handleResponseToReturn.handleSuccessResponse(
+                  response, ResponseType.Ok.getCode(), dbHandler.result().toString());
             }
           } else {
             LOGGER.debug("Could not read from DB : " + dbHandler.cause());
-            //handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
-            //processBackendResponse(response,dbHandler.cause().getMessage());
-              LOGGER.error(dbHandler.cause());
-              try {
-                Response resp =
-                        objectMapper.readValue(dbHandler.cause().getMessage(), Response.class);
-                handleResponse(response, resp);
-              } catch (JsonProcessingException e) {
-                LOGGER.error("Failure message not in format [type,title,detail]");
-                handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
-              }
+            LOGGER.error(dbHandler.cause());
+            try {
+              Response resp =
+                  objectMapper.readValue(dbHandler.cause().getMessage(), Response.class);
+              handleResponseToReturn.handleResponse(response, resp);
+            } catch (JsonProcessingException e) {
+              LOGGER.error("Failure message not in format [type,title,detail]");
+              handleResponseToReturn.handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
             }
+          }
         });
   }
 
@@ -148,16 +169,16 @@ public final class AdminRestApi {
                 rmqHandler -> {
                   if (rmqHandler.succeeded()) {
                     Future.future(fu -> updateAuditTable(context));
-                    handleResponse(response, SUCCESS, SUCCESS_URN);
+                    handleResponseToReturn.handleResponse(response, SUCCESS, SUCCESS_URN);
                   } else {
                     LOGGER.error(rmqHandler.cause());
                     try {
                       Response resp =
                           objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
-                      handleResponse(response, resp);
+                      handleResponseToReturn.handleResponse(response, resp);
                     } catch (JsonProcessingException e) {
                       LOGGER.error("Failure message not in format [type,title,detail]");
-                      handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+                      handleResponseToReturn.handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
                     }
                   }
                 });
@@ -165,9 +186,9 @@ public final class AdminRestApi {
             try {
               Response resp =
                   objectMapper.readValue(pgHandler.cause().getMessage(), Response.class);
-              handleResponse(response, resp);
+              handleResponseToReturn.handleResponse(response, resp);
             } catch (JsonProcessingException e) {
-              handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+              handleResponseToReturn.handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
             }
           }
         });
@@ -182,7 +203,7 @@ public final class AdminRestApi {
     String attribute = requestBody.getString("attribute");
 
     if (id == null || attribute == null) {
-      handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+      handleResponseToReturn.handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
       return;
     }
 
@@ -206,15 +227,15 @@ public final class AdminRestApi {
                 rmqHandler -> {
                   if (rmqHandler.succeeded()) {
                     Future.future(fu -> updateAuditTable(context));
-                    handleResponse(response, SUCCESS, SUCCESS_URN);
+                    handleResponseToReturn.handleResponse(response, SUCCESS, SUCCESS_URN);
                   } else {
                     LOGGER.error(rmqHandler.cause());
                     try {
                       Response resp =
                           objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
-                      handleResponse(response, resp);
+                      handleResponseToReturn.handleResponse(response, resp);
                     } catch (JsonProcessingException e) {
-                      handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+                      handleResponseToReturn.handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
                     }
                   }
                 });
@@ -223,9 +244,9 @@ public final class AdminRestApi {
             try {
               Response resp =
                   objectMapper.readValue(pghandler.cause().getMessage(), Response.class);
-              handleResponse(response, resp);
+              handleResponseToReturn.handleResponse(response, resp);
             } catch (JsonProcessingException e) {
-              handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+              handleResponseToReturn.handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
             }
           }
         });
@@ -239,7 +260,7 @@ public final class AdminRestApi {
     String attribute = requestBody.getString("attribute");
 
     if (id == null || attribute == null) {
-      handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+      handleResponseToReturn.handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
       return;
     }
 
@@ -262,15 +283,15 @@ public final class AdminRestApi {
                 rmqHandler -> {
                   if (rmqHandler.succeeded()) {
                     Future.future(fu -> updateAuditTable(context));
-                    handleResponse(response, SUCCESS, SUCCESS_URN);
+                    handleResponseToReturn.handleResponse(response, SUCCESS, SUCCESS_URN);
                   } else {
                     LOGGER.error(rmqHandler.cause());
                     try {
                       Response resp =
                           objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
-                      handleResponse(response, resp);
+                      handleResponseToReturn.handleResponse(response, resp);
                     } catch (JsonProcessingException e) {
-                      handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+                      handleResponseToReturn.handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
                     }
                   }
                 });
@@ -279,9 +300,9 @@ public final class AdminRestApi {
             try {
               Response resp =
                   objectMapper.readValue(pghandler.cause().getMessage(), Response.class);
-              handleResponse(response, resp);
+              handleResponseToReturn.handleResponse(response, resp);
             } catch (JsonProcessingException e) {
-              handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+              handleResponseToReturn.handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
             }
           }
         });
@@ -312,15 +333,15 @@ public final class AdminRestApi {
                 rmqHandler -> {
                   if (rmqHandler.succeeded()) {
                     Future.future(fu -> updateAuditTable(context));
-                    handleResponse(response, SUCCESS, SUCCESS_URN);
+                    handleResponseToReturn.handleResponse(response, SUCCESS, SUCCESS_URN);
                   } else {
                     LOGGER.error(rmqHandler.cause());
                     try {
                       Response resp =
                           objectMapper.readValue(rmqHandler.cause().getMessage(), Response.class);
-                      handleResponse(response, resp);
+                      handleResponseToReturn.handleResponse(response, resp);
                     } catch (JsonProcessingException e) {
-                      handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+                      handleResponseToReturn.handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
                     }
                   }
                 });
@@ -329,39 +350,12 @@ public final class AdminRestApi {
             try {
               Response resp =
                   objectMapper.readValue(pghandler.cause().getMessage(), Response.class);
-              handleResponse(response, resp);
+              handleResponseToReturn.handleResponse(response, resp);
             } catch (JsonProcessingException e) {
-              handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+              handleResponseToReturn.handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
             }
           }
         });
-  }
-
-  private void handleResponse(HttpServerResponse response, Response respObject) {
-    ResponseUrn urn = fromCode(respObject.getType());
-    handleResponse(response, respObject, urn.getMessage());
-  }
-
-  private void handleResponse(HttpServerResponse response, Response respObject, String message) {
-    HttpStatusCode httpCode = getByValue(respObject.getStatus());
-    ResponseUrn urn = fromCode(respObject.getType());
-    handleResponse(response, httpCode, urn, message);
-  }
-
-  private void handleResponse(HttpServerResponse response, HttpStatusCode code, ResponseUrn urn) {
-    handleResponse(response, code, urn, code.getDescription());
-  }
-
-  private void handleResponse(
-      HttpServerResponse response, HttpStatusCode statusCode, ResponseUrn urn, String message) {
-    response
-        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-        .setStatusCode(statusCode.getValue())
-        .end(generateResponse(statusCode, urn, message).toString());
-  }
-
-  private void handleSuccessResponse(HttpServerResponse response, int statusCode, String result) {
-    response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(statusCode).end(result);
   }
 
   private Future<Void> updateAuditTable(RoutingContext context) {

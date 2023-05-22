@@ -35,6 +35,7 @@ import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.common.Api;
+import iudx.resource.server.common.HandleResponse;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.async.AsyncService;
@@ -61,6 +62,7 @@ public class AsyncRestApi {
   private final PostgresService postgresService;
   private final DataBrokerService databroker;
   private final CacheService cacheService;
+  public HandleResponse handleResponseToReturn;
   private AsyncService asyncService;
   private EncryptionService encryptionService;
   private Api api;
@@ -75,6 +77,7 @@ public class AsyncRestApi {
     this.postgresService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
     this.encryptionService = EncryptionService.createProxy(vertx, ENCRYPTION_SERVICE_ADDRESS);
     this.api = api;
+    handleResponseToReturn = new HandleResponse();
   }
 
   Router init() {
@@ -150,7 +153,7 @@ public class AsyncRestApi {
                 });
           } else if (validationHandler.failed()) {
             LOGGER.error("Fail: Bad request;");
-            handleResponse(
+            handleResponseToReturn.handleResponse(
                 response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
           }
         });
@@ -201,7 +204,7 @@ public class AsyncRestApi {
                     resultArray.add(new JsonObject().put("searchId", searchId));
                     response.put("result", resultArray);
                     if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-                      handleSuccessResponse(
+                      handleResponseToReturn.handleSuccessResponse(
                           routingContext.response(),
                           ResponseType.Created.getCode(),
                           response.toString());
@@ -214,7 +217,7 @@ public class AsyncRestApi {
                             if (encryptionHandler.succeeded()) {
                               JsonObject result = encryptionHandler.result();
                               response.put("result", result);
-                              handleSuccessResponse(
+                              handleResponseToReturn.handleSuccessResponse(
                                   routingContext.response(),
                                   ResponseType.Created.getCode(),
                                   response.encode());
@@ -255,7 +258,7 @@ public class AsyncRestApi {
           if (handler.succeeded()) {
             LOGGER.info("Success: Async status success");
             if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-              handleSuccessResponse(
+              handleResponseToReturn.handleSuccessResponse(
                   response, ResponseType.Ok.getCode(), handler.result().toString());
             } else {
               // Encryption
@@ -266,7 +269,7 @@ public class AsyncRestApi {
                     if (encryptionHandler.succeeded()) {
                       JsonObject result = encryptionHandler.result();
                       handler.result().put("results", result);
-                      handleSuccessResponse(
+                      handleResponseToReturn.handleSuccessResponse(
                           response, ResponseType.Ok.getCode(), handler.result().encode());
                     } else {
                       LOGGER.error(
@@ -313,10 +316,6 @@ public class AsyncRestApi {
     return promise.future();
   }
 
-  private void handleSuccessResponse(HttpServerResponse response, int statusCode, String result) {
-    response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(statusCode).end(result);
-  }
-
   private void processBackendResponse(HttpServerResponse response, String failureMessage) {
     LOGGER.debug("Info : " + failureMessage);
     try {
@@ -338,7 +337,7 @@ public class AsyncRestApi {
           .end(generateResponse(status, urn, detail).toString());
     } catch (DecodeException ex) {
       LOGGER.error("ERROR : Expecting Json from backend service [ jsonFormattingException ]");
-      handleResponse(response, BAD_REQUEST, BACKING_SERVICE_FORMAT_URN);
+      handleResponseToReturn.handleResponse(response, BAD_REQUEST, BACKING_SERVICE_FORMAT_URN);
     }
   }
 
@@ -362,18 +361,6 @@ public class AsyncRestApi {
           .end(generateResponse(BAD_REQUEST, INVALID_PARAM_URN).toString());
     }
     return Optional.of(queryParams);
-  }
-
-  private void handleResponse(HttpServerResponse response, HttpStatusCode code, ResponseUrn urn) {
-    handleResponse(response, code, urn, code.getDescription());
-  }
-
-  private void handleResponse(
-      HttpServerResponse response, HttpStatusCode statusCode, ResponseUrn urn, String message) {
-    response
-        .putHeader(CONTENT_TYPE, APPLICATION_JSON)
-        .setStatusCode(statusCode.getValue())
-        .end(generateResponse(statusCode, urn, message).toString());
   }
 
   private boolean isValidTemporalQuery(MultiMap params) {
