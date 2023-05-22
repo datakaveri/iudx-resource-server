@@ -6,7 +6,7 @@ CREATE type status_type as ENUM
 );
 CREATE type role_type as ENUM
 (
-    'ADMIN'
+    'ADMIN',
     'PROVIDER',
     'DELEGATE',
     'CONSUMER'
