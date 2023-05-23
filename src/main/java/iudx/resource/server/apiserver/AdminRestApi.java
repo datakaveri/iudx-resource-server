@@ -102,44 +102,66 @@ public final class AdminRestApi {
     LOGGER.trace("getRegistrationList() started");
     HttpServerRequest request = routingContext.request();
     String role = request.getParam("role");
-    StringBuilder query = null;
-    if (role.equalsIgnoreCase("ALL")) {
-      query = new StringBuilder("select * from dx_user_table");
-    } else if (role.equalsIgnoreCase("CONSUMER")
-        || role.equalsIgnoreCase("PROVIDER")
-        || role.equalsIgnoreCase("DELEGATE")) {
-      query =
-          new StringBuilder(
-              "select * from dx_user_table where role = '$1' ".replace("$1", role.toUpperCase()));
-    }
-
-    LOGGER.debug("query = " + query);
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+    String userid = authInfo.getString(USER_ID);
     HttpServerResponse response = routingContext.response();
-    assert query != null;
+    StringBuilder adminRoleQuery =
+        new StringBuilder("select role from dx_user where userid= '$0' ".replace("$0", userid));
     pgService.executeQuery(
-        query.toString(),
-        dbHandler -> {
-          if (dbHandler.succeeded()) {
-            LOGGER.trace("Result = = " + dbHandler.result().getJsonArray("result").size());
-            long resultSize = dbHandler.result().getJsonArray("result").size();
-            if (resultSize == 0) {
-              handleResponseToReturn.handleSuccessResponse(
-                  response, ResponseType.NoContent.getCode(), dbHandler.result().toString());
-            } else {
-              handleResponseToReturn.handleSuccessResponse(
-                  response, ResponseType.Ok.getCode(), dbHandler.result().toString());
+        adminRoleQuery.toString(),
+        roleHandler -> {
+          if (roleHandler.succeeded()) {
+            var jsonArray = roleHandler.result().getJsonArray("result");
+            var adminRole = jsonArray.getJsonObject(0).getString("role");
+            if (adminRole.equalsIgnoreCase("admin")) {
+              StringBuilder query = null;
+              if (role.equalsIgnoreCase("ALL")) {
+                query = new StringBuilder(STATUS_QUERY + " where role != 'ADMIN'");
+              } else if (role.equalsIgnoreCase("CONSUMER")
+                  || role.equalsIgnoreCase("PROVIDER")
+                  || role.equalsIgnoreCase("DELEGATE")) {
+                query =
+                    new StringBuilder(
+                        STATUS_QUERY + " where role = '$1' "
+                            .replace("$1", role.toUpperCase()));
+              }
+              LOGGER.debug("query = " + query);
+              assert query != null;
+              pgService.executeQuery(
+                  query.toString(),
+                  dbHandler -> {
+                    if (dbHandler.succeeded()) {
+                      LOGGER.trace(
+                          "Result = = " + dbHandler.result().getJsonArray("result").size());
+                      long resultSize = dbHandler.result().getJsonArray("result").size();
+                      if (resultSize == 0) {
+                        handleResponseToReturn.handleSuccessResponse(
+                            response,
+                            ResponseType.NoContent.getCode(),
+                            dbHandler.result().toString());
+                      } else {
+                        handleResponseToReturn.handleSuccessResponse(
+                            response, ResponseType.Ok.getCode(), dbHandler.result().toString());
+                      }
+                    } else {
+                      LOGGER.debug("Could not read from DB : " + dbHandler.cause());
+                      LOGGER.error(dbHandler.cause());
+                      try {
+                        Response resp =
+                            objectMapper.readValue(dbHandler.cause().getMessage(), Response.class);
+                        handleResponseToReturn.handleResponse(response, resp);
+                      } catch (JsonProcessingException e) {
+                        LOGGER.error("Failure message not in format [type,title,detail]");
+                        handleResponseToReturn.handleResponse(
+                            response, BAD_REQUEST, BAD_REQUEST_URN);
+                      }
+                    }
+                  });
             }
           } else {
-            LOGGER.debug("Could not read from DB : " + dbHandler.cause());
-            LOGGER.error(dbHandler.cause());
-            try {
-              Response resp =
-                  objectMapper.readValue(dbHandler.cause().getMessage(), Response.class);
-              handleResponseToReturn.handleResponse(response, resp);
-            } catch (JsonProcessingException e) {
-              LOGGER.error("Failure message not in format [type,title,detail]");
-              handleResponseToReturn.handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
-            }
+            LOGGER.error("Admin token is not used or role is not Admin");
+            handleResponseToReturn.handleResponse(
+                response, UNAUTHORIZED, UNAUTHORIZED_ENDPOINT_URN);
           }
         });
   }

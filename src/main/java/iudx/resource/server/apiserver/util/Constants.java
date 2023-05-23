@@ -91,6 +91,7 @@ public class Constants {
   public static final String ADMIN = "/admin";
 
   public static final String GET_REGISTRATION = "/getRegistration";
+  public static final String STATUS_QUERY = "select * from dx_user";
   public static final String PROVIDER_DELETE_ADMIN = "/provider/delete";
   public static final String PROVIDER_UPDATE_ADMIN = "/provider/update";
 
