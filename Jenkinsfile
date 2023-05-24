@@ -41,21 +41,21 @@ pipeline {
       }
       post{
       always {
-                      recordIssues(
-                        enabledForFailure: true,
-                        blameDisabled: true,
-                        forensicsDisabled: true,
-                        qualityGates: [[threshold:0, type: 'TOTAL', unstable: false]],
-                        tool: checkStyle(pattern: 'target/checkstyle-result.xml')
-                      )
-                      recordIssues(
-                        enabledForFailure: true,
-                      	blameDisabled: true,
-                        forensicsDisabled: true,
-                        qualityGates: [[threshold:5, type: 'TOTAL', unstable: false]],
-                        tool: pmdParser(pattern: 'target/pmd.xml')
-                      )
-                    }
+        recordIssues(
+          enabledForFailure: true,
+          blameDisabled: true,
+          forensicsDisabled: true,
+          qualityGates: [[threshold:0, type: 'TOTAL', unstable: false]],
+          tool: checkStyle(pattern: 'target/checkstyle-result.xml')
+        )
+        recordIssues(
+          enabledForFailure: true,
+          blameDisabled: true,
+          forensicsDisabled: true,
+          qualityGates: [[threshold:5, type: 'TOTAL', unstable: false]],
+          tool: pmdParser(pattern: 'target/pmd.xml')
+        )
+      }
         failure{
           script{
             sh 'docker compose -f docker-compose.test.yml down --remove-orphans'
@@ -207,7 +207,9 @@ pipeline {
   }
   post{
     always{
-      emailext recipientProviders: [buildUser(), developers()], to: 'kailash.adhikari@datakaveri.org'
+      script{
+        emailext recipientProviders: [buildUser(), developers()], to: 'kailash.adhikari@datakaveri.org'
+      }
     }
   }
 }
