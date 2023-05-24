@@ -206,10 +206,11 @@ pipeline {
     }
   }
   post{
-    always{
+    failure{
       script{
+        if (env.GIT_BRANCH == 'origin/master')
         emailext recipientProviders: [buildUser(), developers()], to: 'kailash.adhikari@datakaveri.org, $DEFAULT_RECIPIENTS', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', body: '''$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
-        Check console output at $BUILD_URL to view the results.'''
+Check console output at $BUILD_URL to view the results.'''
       }
     }
   }
