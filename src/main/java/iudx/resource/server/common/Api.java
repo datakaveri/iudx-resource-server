@@ -21,6 +21,7 @@ public class Api {
   private StringBuilder asyncPath;
   private StringBuilder monthlyOverview;
   private StringBuilder summaryPath;
+  private StringBuilder clientRegistration;
 
   private Api(String dxApiBasePath) {
     this.dxApiBasePath = dxApiBasePath;
@@ -56,6 +57,7 @@ public class Api {
     resetPassword = new StringBuilder(dxApiBasePath).append(RESET_PWD);
     monthlyOverview = new StringBuilder(dxApiBasePath).append(MONTHLY_OVERVIEW);
     summaryPath = new StringBuilder(dxApiBasePath).append(SUMMARY_ENDPOINT);
+    clientRegistration = new StringBuilder(dxApiBasePath).append(CLIENT_REGISTRATION);
   }
 
   public String getEntitiesUrl() {
@@ -116,5 +118,9 @@ public class Api {
 
   public String getSummaryPath() {
     return summaryPath.toString();
+  }
+
+  public String getClientRegistration() {
+    return clientRegistration.toString();
   }
 }

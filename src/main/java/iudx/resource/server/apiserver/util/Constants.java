@@ -89,6 +89,7 @@ public class Constants {
 
   public static final String MONTHLY_OVERVIEW = "/overview";
   public static final String SUMMARY_ENDPOINT = "/summary";
+  public static final String CLIENT_REGISTRATION = "/client/registration";
 
   /** Accept Headers and CORS */
   public static final String MIME_APPLICATION_JSON = "application/json";
