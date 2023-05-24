@@ -205,4 +205,9 @@ pipeline {
       }
     }
   }
+  post{
+    always{
+      emailext recipientProviders: [buildUser(), developers()], to: 'kailash.adhikari@datakaveri.org'
+    }
+  }
 }
