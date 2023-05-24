@@ -208,7 +208,7 @@ pipeline {
   post{
     always{
       script{
-        emailext recipientProviders: [buildUser(), developers()], to: 'kailash.adhikari@datakaveri.org'
+        emailext recipientProviders: [buildUser(), developers()], to: 'kailash.adhikari@datakaveri.org', cc: '$DEFAULT_RECIPIENTS'
       }
     }
   }
