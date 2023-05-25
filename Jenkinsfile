@@ -41,21 +41,21 @@ pipeline {
       }
       post{
       always {
-                      recordIssues(
-                        enabledForFailure: true,
-                        blameDisabled: true,
-                        forensicsDisabled: true,
-                        qualityGates: [[threshold:0, type: 'TOTAL', unstable: false]],
-                        tool: checkStyle(pattern: 'target/checkstyle-result.xml')
-                      )
-                      recordIssues(
-                        enabledForFailure: true,
-                      	blameDisabled: true,
-                        forensicsDisabled: true,
-                        qualityGates: [[threshold:5, type: 'TOTAL', unstable: false]],
-                        tool: pmdParser(pattern: 'target/pmd.xml')
-                      )
-                    }
+        recordIssues(
+          enabledForFailure: true,
+          blameDisabled: true,
+          forensicsDisabled: true,
+          qualityGates: [[threshold:0, type: 'TOTAL', unstable: false]],
+          tool: checkStyle(pattern: 'target/checkstyle-result.xml')
+        )
+        recordIssues(
+          enabledForFailure: true,
+          blameDisabled: true,
+          forensicsDisabled: true,
+          qualityGates: [[threshold:5, type: 'TOTAL', unstable: false]],
+          tool: pmdParser(pattern: 'target/pmd.xml')
+        )
+      }
         failure{
           script{
             sh 'docker compose -f docker-compose.test.yml down --remove-orphans'
@@ -202,6 +202,15 @@ pipeline {
             }
           }
         }
+      }
+    }
+  }
+  post{
+    failure{
+      script{
+        if (env.GIT_BRANCH == 'origin/master')
+        emailext recipientProviders: [buildUser(), developers()], to: '$RS_RECIPIENTS, $DEFAULT_RECIPIENTS', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', body: '''$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
+Check console output at $BUILD_URL to view the results.'''
       }
     }
   }
