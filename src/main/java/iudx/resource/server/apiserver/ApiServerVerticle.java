@@ -439,7 +439,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     router.route(api.getAsyncPath() + "/*").subRouter(new AsyncRestApi(vertx, router, api).init());
 
     router.route(ADMIN + "/*").subRouter(new AdminRestApi(vertx, router, api).init());
-    router.route(api.getOnboardingPath() + "/*").subRouter(new ProviderRestApi(vertx, router, api).init());
+    router.route(api.getUserRegPath() + "/*").subRouter(new UserRestApi(vertx, router, api).init());
 
     router
         .post(dxApiBasePath + RESET_PWD)

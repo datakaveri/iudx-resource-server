@@ -15,7 +15,7 @@ import io.vertx.ext.web.client.WebClientOptions;
 import iudx.resource.server.authenticator.authorization.AuthorizationContextFactory;
 import iudx.resource.server.authenticator.authorization.AuthorizationRequest;
 import iudx.resource.server.authenticator.authorization.AuthorizationStrategy;
-import iudx.resource.server.authenticator.authorization.IudxRole;
+import iudx.resource.server.common.IudxRole;
 import iudx.resource.server.authenticator.authorization.JwtAuthorization;
 import iudx.resource.server.authenticator.authorization.Method;
 import iudx.resource.server.authenticator.model.JwtData;

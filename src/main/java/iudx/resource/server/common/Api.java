@@ -21,7 +21,7 @@ public class Api {
   private StringBuilder asyncPath;
   private StringBuilder monthlyOverview;
   private StringBuilder summaryPath;
-  private StringBuilder providerPath;
+  private StringBuilder userRegPath;
   private StringBuilder providerOnboarding;
   private StringBuilder providerOnboardingStatus;
 
@@ -59,9 +59,9 @@ public class Api {
     resetPassword = new StringBuilder(dxApiBasePath).append(RESET_PWD);
     monthlyOverview = new StringBuilder(dxApiBasePath).append(MONTHLY_OVERVIEW);
     summaryPath = new StringBuilder(dxApiBasePath).append(SUMMARY_ENDPOINT);
-    providerPath = new StringBuilder(dxApiBasePath).append(ONBOARDING);
-    providerOnboarding = new StringBuilder(dxApiBasePath).append(ONBOARDING+ONBOARDING_PROVIDER);
-    providerOnboardingStatus = new StringBuilder(dxApiBasePath).append(ONBOARDING+STATUS);
+    userRegPath = new StringBuilder(dxApiBasePath).append(USER);
+    providerOnboarding = new StringBuilder(dxApiBasePath).append(USER + USER_REG);
+    providerOnboardingStatus = new StringBuilder(dxApiBasePath).append(USER +STATUS);
   }
 
   public String getEntitiesUrl() {
@@ -123,8 +123,8 @@ public class Api {
   public String getSummaryPath() {
     return summaryPath.toString();
   }
-  public String getOnboardingPath() {
-    return providerPath.toString();
+  public String getUserRegPath() {
+    return userRegPath.toString();
   }
   public String getProviderOnboarding() {
     return providerOnboarding.toString();

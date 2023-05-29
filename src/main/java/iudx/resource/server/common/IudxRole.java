@@ -1,4 +1,4 @@
-package iudx.resource.server.authenticator.authorization;
+package iudx.resource.server.common;
 
 import java.util.stream.Stream;
 

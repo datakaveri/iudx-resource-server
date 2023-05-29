@@ -1,6 +1,7 @@
 package iudx.resource.server.authenticator.authorization;
 
 import iudx.resource.server.common.Api;
+import iudx.resource.server.common.IudxRole;
 
 public class AuthorizationContextFactory {
 
