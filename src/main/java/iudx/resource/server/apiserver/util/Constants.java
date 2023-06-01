@@ -7,10 +7,6 @@ public class Constants {
 
   // date-time format
   public static final String APP_DATE_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss[.SSSSSS]'Z'";
-  public static final String APP_NAME_REGEX = "[a-zA-Z0-9._\\-]*$";
-
-  public static final String APP_TEST_NAME = "vasanth";
-  public static final String APP_TEST_CONSUMER = "vasanth@iudx.org";
   public static final String API_ENDPOINT = "apiEndpoint";
   public static final String API_METHOD = "method";
   public static final String ID = "id";
@@ -19,9 +15,6 @@ public class Constants {
           + "surat-itms-realtime-information/surat-itms-live-eta";
   public static final String RESPONSE_SIZE = "response_size";
   public static final String IDS = "ids";
-
-  // config
-  public static final String CONFIG_FILE = "config.properties";
 
   // NGSI-LD endpoints
   public static final String NGSILD_BASE_PATH = "/ngsi-ld/v1";
@@ -85,16 +78,20 @@ public class Constants {
   public static final String REVOKE_TOKEN_REGEX = "/admin/revokeToken" + "(.*)";
   public static final String RESOURCE_ATTRIBS = "/resourceattribute";
   public static final String UNIQUE_ATTR_REGEX = "/admin/resourceattribute";
-  public static final String PROVIDER_ADMIN_REGEX = "/admin/getRegistration";
-  public static final String PROVIDER_DELETE_ADMIN_REGEX = "/admin/provider/delete";
-  public static final String PROVIDER_UPDATE_ADMIN_REGEX = "/admin/provider/update";
+  public static final String USER_ADMIN_REGEX = "/admin/user";
+  public static final String ADMIN_ROLE_CHECK_QUERY =
+      "select role from dx_user where userid= '$0' ";
+  public static final String REVOKED_USER_TABLE =
+      "update dx_user set status = 'REVOKED' where userid = '$0' ";
+  public static final String UPDATE_APPROVAL =
+      "update dx_user set status = 'APPROVED' where userid = '$0' ";
+  public static final String REVOKED_RESOURCE_TABLE =
+      "update dx_resource set status = 'REVOKED' where providerid = '$0' ";
+  public static final String REVOKED_RESOURCE_GROUP_TABLE =
+      "update dx_resource_group set status = 'REVOKED' where providerid = '$0' ";
   public static final String ADMIN = "/admin";
-
-  public static final String GET_REGISTRATION = "/getRegistration";
+  public static final String USER = "/user";
   public static final String STATUS_QUERY = "select * from dx_user";
-  public static final String PROVIDER_DELETE_ADMIN = "/provider/delete";
-  public static final String PROVIDER_UPDATE_ADMIN = "/provider/update";
-
   public static final String MONTHLY_OVERVIEW = "/overview";
   public static final String SUMMARY_ENDPOINT = "/summary";
 
@@ -145,7 +142,6 @@ public class Constants {
   public static final String PUBLIC_TOKEN = "public";
   public static final String HEADER_PUBLIC_KEY = "publicKey";
   public static final String HEADER_RESPONSE_FILE_FORMAT = "format";
-
 
   // request/response params
   public static final String CONTENT_TYPE = "content-type";

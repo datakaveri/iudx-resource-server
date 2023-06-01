@@ -103,4 +103,42 @@ public final class PostgresServiceImpl implements PostgresService {
             });
     return this;
   }
+
+  @Override
+  public PostgresService executeTransaction(
+      List<String> queries, Handler<AsyncResult<JsonObject>> handler) {
+    Collector<Row, ?, List<JsonObject>> rowCollector =
+        Collectors.mapping(row -> row.toJson(), Collectors.toList());
+    client.withTransaction(
+        connection ->
+            connection
+                .query(queries.get(0))
+                .collecting(rowCollector)
+                .execute()
+                .flatMap(res -> connection.query(queries.get(1)).collecting(rowCollector).execute())
+                .flatMap(res -> connection.query(queries.get(2)).collecting(rowCollector).execute())
+                .map(rows -> rows.value())
+                .onSuccess(
+                    successHandler -> {
+                      JsonArray result = new JsonArray(successHandler);
+                      JsonObject responseJson =
+                          new JsonObject()
+                              .put("type", ResponseUrn.SUCCESS_URN.getUrn())
+                              .put("title", ResponseUrn.SUCCESS_URN.getMessage())
+                              .put("result", result);
+                      handler.handle(Future.succeededFuture(responseJson));
+                    })
+                .onFailure(
+                    failureHandler -> {
+                      LOGGER.debug(failureHandler);
+                      Response response =
+                          new Response.Builder()
+                              .withUrn(ResponseUrn.DB_ERROR_URN.getUrn())
+                              .withStatus(HttpStatus.SC_BAD_REQUEST)
+                              .withDetail(failureHandler.getLocalizedMessage())
+                              .build();
+                      handler.handle(Future.failedFuture(response.toString()));
+                    }));
+    return this;
+  }
 }

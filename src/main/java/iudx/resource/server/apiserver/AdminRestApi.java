@@ -29,6 +29,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -76,37 +80,133 @@ public final class AdminRestApi {
         .handler(AuthHandler.create(vertx, api))
         .handler(this::deleteUniqueAttribute);
 
-    router
-        .get(GET_REGISTRATION)
-        .handler(AuthHandler.create(vertx, api))
-        .handler(this::getRegistrationList);
+    router.get(USER).handler(AuthHandler.create(vertx, api)).handler(this::getUserList);
 
-    /*router
-        .delete(PROVIDER_DELETE_ADMIN)
-        .handler(AuthHandler.create(vertx, api))
-        .handler(this::deleteProviderAdmin);
+    router.delete(USER).handler(AuthHandler.create(vertx, api)).handler(this::deleteUser);
 
-    router
-        .put(PROVIDER_UPDATE_ADMIN)
-        .handler(AuthHandler.create(vertx, api))
-        .handler(this::updateProviderAdmin);*/
+    router.patch(USER).handler(AuthHandler.create(vertx, api)).handler(this::updateApproval);
 
     return router;
   }
 
-  /*private void updateProviderAdmin(RoutingContext routingContext) {}
+  private void updateApproval(RoutingContext routingContext) {
+    LOGGER.trace("updateApproval() started");
+    JsonObject requestBody = routingContext.body().asJsonObject();
+    String userid = requestBody.getString("user_id");
+    LOGGER.debug("userid = " + userid);
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+    String adminUserid = authInfo.getString(USER_ID);
+    HttpServerResponse response = routingContext.response();
+    StringBuilder adminRoleQuery =
+        new StringBuilder(ADMIN_ROLE_CHECK_QUERY.replace("$0", adminUserid));
+    pgService.executeQuery(
+        adminRoleQuery.toString(),
+        roleHandler -> {
+          if (roleHandler.succeeded()) {
+            var jsonArray = roleHandler.result().getJsonArray("result");
+            var adminRole = jsonArray.getJsonObject(0).getString("role");
+            if (adminRole.equalsIgnoreCase("ADMIN")) {
+              StringBuilder query1 = new StringBuilder(UPDATE_APPROVAL.replace("$0", userid));
+              //TODO: Onboarding second part of 4.5.5
+              JsonObject jsonObject = new JsonObject();
+              jsonObject.put("id", UUID.randomUUID());
+              jsonObject.put("resourceServer","rs_id");
+            //TODO: Catalogue pucho then final provider table update karna hai.
 
-  private void deleteProviderAdmin(RoutingContext routingContext) {}*/
+            } else {
+              LOGGER.error("Admin token is not used or role is not Admin");
+              handleResponseToReturn.handleResponse(
+                  response, UNAUTHORIZED, UNAUTHORIZED_ENDPOINT_URN);
+            }
+          } else {
+            LOGGER.debug("Could not read from DB : " + roleHandler.cause());
+            LOGGER.error(roleHandler.cause());
+            try {
+              Response resp =
+                  objectMapper.readValue(roleHandler.cause().getMessage(), Response.class);
+              handleResponseToReturn.handleResponse(response, resp);
+            } catch (JsonProcessingException e) {
+              LOGGER.error("Failure message not in format [type,title,detail]");
+              handleResponseToReturn.handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+            }
+          }
+        });
+  }
 
-  private void getRegistrationList(RoutingContext routingContext) {
+  private void deleteUser(RoutingContext routingContext) {
+    LOGGER.trace("deleteProvider() started");
+    JsonObject requestBody = routingContext.body().asJsonObject();
+    String userid = requestBody.getString("user_id");
+    LOGGER.debug("userid = " + userid);
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
+    String adminUserid = authInfo.getString(USER_ID);
+    HttpServerResponse response = routingContext.response();
+    StringBuilder adminRoleQuery =
+        new StringBuilder(ADMIN_ROLE_CHECK_QUERY.replace("$0", adminUserid));
+    pgService.executeQuery(
+        adminRoleQuery.toString(),
+        roleHandler -> {
+          if (roleHandler.succeeded()) {
+            var jsonArray = roleHandler.result().getJsonArray("result");
+            var adminRole = jsonArray.getJsonObject(0).getString("role");
+            if (adminRole.equalsIgnoreCase("ADMIN")) {
+              StringBuilder query1 = new StringBuilder(REVOKED_USER_TABLE.replace("$0", userid));
+              StringBuilder query2 =
+                  new StringBuilder(REVOKED_RESOURCE_TABLE.replace("$0", userid));
+              StringBuilder query3 =
+                  new StringBuilder(REVOKED_RESOURCE_GROUP_TABLE.replace("$0", userid));
+              List<String> queries = new ArrayList<String>();
+              queries.add(query1.toString());
+              queries.add(query2.toString());
+              queries.add(query3.toString());
+              LOGGER.debug(queries.get(0) + "  " + queries.get(1) + "  " + queries.get(2) + " ");
+              pgService.executeTransaction(
+                  queries,
+                  result -> {
+                    if (result.succeeded()) {
+                      handleResponseToReturn.handleResponse(response, SUCCESS, SUCCESS_URN);
+                    } else {
+                      LOGGER.debug("Could not read from DB : " + result.cause());
+                      LOGGER.error(result.cause());
+                      try {
+                        Response resp =
+                            objectMapper.readValue(result.cause().getMessage(), Response.class);
+                        handleResponseToReturn.handleResponse(response, resp);
+                      } catch (JsonProcessingException e) {
+                        LOGGER.error("Failure message not in format [type,title,detail]");
+                        handleResponseToReturn.handleResponse(
+                            response, BAD_REQUEST, BAD_REQUEST_URN);
+                      }
+                    }
+                  });
+            } else {
+              LOGGER.error("Admin token is not used or role is not Admin");
+              handleResponseToReturn.handleResponse(
+                  response, UNAUTHORIZED, UNAUTHORIZED_ENDPOINT_URN);
+            }
+          } else {
+            LOGGER.debug("Could not read from DB : " + roleHandler.cause());
+            LOGGER.error(roleHandler.cause());
+            try {
+              Response resp =
+                  objectMapper.readValue(roleHandler.cause().getMessage(), Response.class);
+              handleResponseToReturn.handleResponse(response, resp);
+            } catch (JsonProcessingException e) {
+              LOGGER.error("Failure message not in format [type,title,detail]");
+              handleResponseToReturn.handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+            }
+          }
+        });
+  }
+
+  private void getUserList(RoutingContext routingContext) {
     LOGGER.trace("getRegistrationList() started");
     HttpServerRequest request = routingContext.request();
     String role = request.getParam("role");
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     String userid = authInfo.getString(USER_ID);
     HttpServerResponse response = routingContext.response();
-    StringBuilder adminRoleQuery =
-        new StringBuilder("select role from dx_user where userid= '$0' ".replace("$0", userid));
+    StringBuilder adminRoleQuery = new StringBuilder(ADMIN_ROLE_CHECK_QUERY.replace("$0", userid));
     pgService.executeQuery(
         adminRoleQuery.toString(),
         roleHandler -> {
@@ -122,8 +222,7 @@ public final class AdminRestApi {
                   || role.equalsIgnoreCase("DELEGATE")) {
                 query =
                     new StringBuilder(
-                        STATUS_QUERY + " where role = '$1' "
-                            .replace("$1", role.toUpperCase()));
+                        STATUS_QUERY + " where role = '$1' ".replace("$1", role.toUpperCase()));
               }
               LOGGER.debug("query = " + query);
               assert query != null;
@@ -157,11 +256,22 @@ public final class AdminRestApi {
                       }
                     }
                   });
+            } else {
+              LOGGER.error("Admin token is not used or role is not Admin");
+              handleResponseToReturn.handleResponse(
+                  response, UNAUTHORIZED, UNAUTHORIZED_ENDPOINT_URN);
             }
           } else {
-            LOGGER.error("Admin token is not used or role is not Admin");
-            handleResponseToReturn.handleResponse(
-                response, UNAUTHORIZED, UNAUTHORIZED_ENDPOINT_URN);
+            LOGGER.debug("Could not read from DB : " + roleHandler.cause());
+            LOGGER.error(roleHandler.cause());
+            try {
+              Response resp =
+                  objectMapper.readValue(roleHandler.cause().getMessage(), Response.class);
+              handleResponseToReturn.handleResponse(response, resp);
+            } catch (JsonProcessingException e) {
+              LOGGER.error("Failure message not in format [type,title,detail]");
+              handleResponseToReturn.handleResponse(response, BAD_REQUEST, BAD_REQUEST_URN);
+            }
           }
         });
   }
