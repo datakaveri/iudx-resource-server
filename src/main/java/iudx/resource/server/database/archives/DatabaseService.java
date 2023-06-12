@@ -26,8 +26,8 @@ import iudx.resource.server.database.elastic.ElasticClient;
 public interface DatabaseService {
 
   @GenIgnore
-  static DatabaseService create(ElasticClient client, String timeLimit) {
-    return new DatabaseServiceImpl(client, timeLimit);
+  static DatabaseService create(ElasticClient client, String timeLimit, String tenantPrefix) {
+    return new DatabaseServiceImpl(client, timeLimit, tenantPrefix);
   }
 
   /**
