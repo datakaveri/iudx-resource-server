@@ -9,14 +9,25 @@ public class RedisCommandArgsBuilder {
 
   private static final Logger LOGGER = LogManager.getLogger(RedisCommandArgsBuilder.class);
 
-  public RedisArgs getRedisCommandArgs(String id, boolean isUniqueAttribueExist) {
+  public RedisArgs getRedisCommandArgs(String id, boolean isUniqueAttribueExist,
+      String tenantPrefix) {
     RedisArgs args = new RedisArgs();
 
     LOGGER.trace("In LatestSearch Redis");
 
-    String key = id.replace("-", "_")
-        .replaceAll("/", "_")
-        .replaceAll("\\.", "_");
+    String idKey = id.replace("-", "_").replaceAll("/", "_").replaceAll("\\.", "_");
+    /*
+     * example: key = iudx:
+     * suratmunicipal_org_6db486cb4f720e8585ba1f45a931c63c25dbbbda_rs_iudx_org_in_surat_itms_realtime_info_surat_itms_live_eta
+     * where "iudx" redis namespace and key is the other part
+     */
+    if (!tenantPrefix.equals("none"))
+      ;
+    {
+      String namespace = tenantPrefix.concat(":");
+      idKey = namespace.concat(idKey);
+    }
+    final String key = idKey;
 
     args.setKey(key);
 
