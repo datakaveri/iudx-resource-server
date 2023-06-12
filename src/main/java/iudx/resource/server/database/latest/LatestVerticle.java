@@ -31,7 +31,7 @@ public class LatestVerticle extends AbstractVerticle {
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
   private CacheService cacheService;
-
+  private String tenantPrefix;
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
    * service with the Event bus against an address, publishes the service with the service discovery
@@ -43,6 +43,7 @@ public class LatestVerticle extends AbstractVerticle {
   public void start() throws Exception {
 
     config().getJsonObject("attributeList");
+    tenantPrefix = config().getString(tenantPrefix);
     new RedisClient(vertx, config())
         .start()
         .onSuccess(
@@ -50,7 +51,7 @@ public class LatestVerticle extends AbstractVerticle {
               redisClient = handler;
               cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
               binder = new ServiceBinder(vertx);
-              latestData = new LatestDataServiceImpl(redisClient, cacheService);
+              latestData = new LatestDataServiceImpl(redisClient, cacheService, tenantPrefix);
               consumer =
                   binder
                       .setAddress(LATEST_SERVICE_ADDRESS)

@@ -33,12 +33,15 @@ public class LatestDataServiceImpl implements LatestDataService {
   RedisClient redisClient;
   JsonObject attributeList;
   private ResponseBuilder responseBuilder;
+  private String tenantPrefix;
   // private RedisAPI redisAPI;
   private RedisCommandArgsBuilder redisCmdBuilder = new RedisCommandArgsBuilder();
 
-  public LatestDataServiceImpl(RedisClient client, final CacheService cacheService) {
+  public LatestDataServiceImpl(RedisClient client, final CacheService cacheService,
+      String tenantPrefix) {
     this.redisClient = client;
     this.cache = cacheService;
+    this.tenantPrefix = tenantPrefix;
   }
 
   /**
@@ -97,7 +100,8 @@ public class LatestDataServiceImpl implements LatestDataService {
       final boolean isUniqueAttrRecordExist,
       Handler<AsyncResult<JsonObject>> handler) {
 
-    RedisArgs args = redisCmdBuilder.getRedisCommandArgs(id, isUniqueAttrRecordExist);
+    RedisArgs args =
+        redisCmdBuilder.getRedisCommandArgs(id, isUniqueAttrRecordExist, this.tenantPrefix);
 
     LOGGER.debug("key : " + args.getKey() + " path : " + args.getPath());
     JsonArray response = new JsonArray();
