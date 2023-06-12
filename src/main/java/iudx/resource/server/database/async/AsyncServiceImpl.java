@@ -64,10 +64,16 @@ public class AsyncServiceImpl implements AsyncService {
   private final Util util;
   private final Vertx vertx;
   private final MeteringService meteringService;
+  private ResponseBuilder responseBuilder;
+  private String filePath;
+  private String tenantPrefix;
 
-
-  public AsyncServiceImpl(Vertx vertx, ElasticClient client, PostgresService pgService,
-      S3FileOpsHelper s3FileOpsHelper, String timeLimit, String filePath) {
+  public AsyncServiceImpl(
+      Vertx vertx,
+      ElasticClient client,
+      PostgresService pgService,
+      S3FileOpsHelper s3FileOpsHelper,
+      String filePath, String tenantPrefix) {
     this.vertx = vertx;
     this.client = client;
     this.pgService = pgService;
@@ -76,6 +82,7 @@ public class AsyncServiceImpl implements AsyncService {
     this.filePath = filePath;
     this.util = new Util(pgService);
     this.meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
+    this.tenantPrefix = tenantPrefix;
   }
 
   @Override
@@ -310,6 +317,9 @@ public class AsyncServiceImpl implements AsyncService {
     List<String> splitId =
         new LinkedList<>(Arrays.asList(request.getJsonArray("id").getString(0).split("/")));
     splitId.remove(splitId.size() - 1);
+    if (!tenantPrefix.equals("null"))
+      splitId.add(0, tenantPrefix);
+
     final String searchIndex = String.join("__", splitId);
     LOGGER.debug("Index name: " + searchIndex);
 
