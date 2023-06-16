@@ -50,6 +50,7 @@ public class DatabaseServiceTest {
   private static String idClose;
   private static String temporalStartDate;
   private static String temporalEndDate;
+  private static String tenantPrefix;
   private static DatabaseServiceImpl databaseServiceImpl;
   @Mock
   private static ElasticClient elasticClient;
@@ -74,6 +75,7 @@ public class DatabaseServiceTest {
     user = dbConfig.getString("dbUser");
     password = dbConfig.getString("dbPassword");
     timeLimit = dbConfig.getString("timeLimit");
+    tenantPrefix = dbConfig.getString("tenantPrefix");
 
     idOpen = dbConfig.getString("testIdOpen");
     idClose = dbConfig.getString("testIdSecure");
@@ -81,14 +83,14 @@ public class DatabaseServiceTest {
     temporalEndDate = dbConfig.getString("temporalEndDate");
 
     client = new ElasticClient(databaseIP, databasePort, user, password);
-    dbService = new DatabaseServiceImpl(client, timeLimit);
+    dbService = new DatabaseServiceImpl(client, timeLimit, tenantPrefix);
     testContext.completeNow();
 
   }
 
   @BeforeEach
   public void intialize(VertxTestContext vertxTestContext) {
-    databaseServiceImpl = new DatabaseServiceImpl(elasticClient, timeLimit);
+    databaseServiceImpl = new DatabaseServiceImpl(elasticClient, timeLimit, tenantPrefix);
     vertxTestContext.completeNow();
   }
 
