@@ -134,7 +134,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     List<String> splitId = new LinkedList<>(Arrays.asList(id.split("/")));
     splitId.remove(splitId.size() - 1);
 
-    if (!this.tenantPrefix.equals("null"))
+    if (!this.tenantPrefix.equals("none"))
       splitId.add(0, this.tenantPrefix);
     /*
      * Example: searchIndex =

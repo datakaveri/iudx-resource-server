@@ -22,7 +22,6 @@ public class RedisCommandArgsBuilder {
      * where "iudx" redis namespace and key is the other part
      */
     if (!tenantPrefix.equals("none"))
-      ;
     {
       String namespace = tenantPrefix.concat(":");
       idKey = namespace.concat(idKey);
