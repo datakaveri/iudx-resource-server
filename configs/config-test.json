@@ -6,15 +6,14 @@
     "commonConfig" : {
         "dxApiBasePath" : "/ngsi-ld/v1",
         "dxCatalogueBasePath": "/iudx/cat/v1",
-        "dxAuthBasePath": "/auth/v1",
-        "tenantPrefix": "iudx"
+        "dxAuthBasePath": "/auth/v1"
     },
-
 	"clusterId": "iudx-rs-cluster",
 	"modules": [
 		{
 			"id": "iudx.resource.server.database.archives.DatabaseVerticle",
 			"isWorkerVerticle":false,
+			"tenantPrefix": "iudx",
 			"verticleInstances": 2,
 			"databaseIP": "",
 			"databasePort": 12345,
@@ -100,6 +99,7 @@
 		{
 			"id": "iudx.resource.server.database.latest.LatestVerticle",
 			"isWorkerVerticle":false,
+			"tenantPrefix": "iudx",
 			"verticleInstances": 2,
 			"redisMode": "",
 			"redisUsername": "",
@@ -137,6 +137,7 @@
 		{
 			"id": "iudx.resource.server.database.async.AsyncVerticle",
 			"isWorkerVerticle": true,
+			"tenantPrefix": "iudx",
 			"threadPoolName": "async-query-pool",
 			"threadPoolSize": 20,
 			"verticleInstances": 20,

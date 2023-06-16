@@ -355,7 +355,7 @@ public class AsyncServiceImpl implements AsyncService {
     List<String> splitId =
         new LinkedList<>(Arrays.asList(request.getJsonArray("id").getString(0).split("/")));
     splitId.remove(splitId.size() - 1);
-    if (!this.tenantPrefix.equals("null"))
+    if (!this.tenantPrefix.equals("none"))
       splitId.add(0, this.tenantPrefix);
     /*
      * Example: searchIndex =
