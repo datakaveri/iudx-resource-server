@@ -1319,7 +1319,11 @@ public class RabbitClient {
         .compose(
             dataIssueResult ->
                 bindQueue(QUEUE_ADAPTOR_LOGS, adaptorId, adaptorId + DOWNSTREAM_ISSUE, vhost))
-        .onSuccess(
+        .compose(
+                bindToAuditingQueueResult ->
+                bindQueue(QUEUE_AUDITING,adaptorId,topics,vhost)
+            )
+            .onSuccess(
             successHandler -> {
               JsonObject response = new JsonObject();
               response.mergeIn(
