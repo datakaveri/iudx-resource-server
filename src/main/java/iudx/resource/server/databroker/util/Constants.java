@@ -86,6 +86,7 @@ public class Constants {
       "Queue already exists with different properties";
   public static final String QUEUE_DATA = "database";
   public static final String QUEUE_ADAPTOR_LOGS = "adaptorLogs";
+  public static final String QUEUE_AUDITING = "auditing-queue";
   public static final String REDIS_LATEST = "redis-latest";
   public static final String QUEUE_LIST_ERROR = "Listing of Queue failed";
   public static final String QUEUE_DELETE_ERROR = "Deletion of Queue failed";
