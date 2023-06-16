@@ -24,7 +24,7 @@ public class RedisCommandArgsBuilderTest {
   @Test
   public void resourceLevelArgs() {
     String id = "asdas/asdasdas/adsasdasd/asdasda/asdasdas";
-    RedisArgs redisArgs = redisCmdArgsBuilder.getRedisCommandArgs(id, true);
+    RedisArgs redisArgs = redisCmdArgsBuilder.getRedisCommandArgs(id, true, "iudx");
 
     String key = id.replace("-", "_")
         .replaceAll("/", "_")
@@ -37,7 +37,7 @@ public class RedisCommandArgsBuilderTest {
   @Test
   public void groupLevelArgs() {
     String id = "asdas/asdasdas/adsasdasd/asdasda";
-    RedisArgs redisArgs = redisCmdArgsBuilder.getRedisCommandArgs(id, false);
+    RedisArgs redisArgs = redisCmdArgsBuilder.getRedisCommandArgs(id, false, "iudx");
 
     String key = id.replace("-", "_")
         .replaceAll("/", "_")
