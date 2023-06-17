@@ -64,7 +64,7 @@ public class AsyncVerticle extends AbstractVerticle {
     fileOpsHelper = new S3FileOpsHelper(clientRegion, bucketName);
     binder = new ServiceBinder(vertx);
     asyncService =
-        new AsyncServiceImpl(vertx, client, pgService, fileOpsHelper, filePath, tenantPrefix);
+        new AsyncServiceImpl(vertx, client, pgService, fileOpsHelper,timeLimit, filePath, tenantPrefix);
 
     consumer = binder.setAddress(ASYNC_SERVICE_ADDRESS).register(AsyncService.class, asyncService);
   }

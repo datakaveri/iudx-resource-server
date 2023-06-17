@@ -73,6 +73,7 @@ public class AsyncServiceImpl implements AsyncService {
       ElasticClient client,
       PostgresService pgService,
       S3FileOpsHelper s3FileOpsHelper,
+      String timeLimit,
       String filePath, String tenantPrefix) {
     this.vertx = vertx;
     this.client = client;
