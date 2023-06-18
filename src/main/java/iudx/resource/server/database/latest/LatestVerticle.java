@@ -43,7 +43,7 @@ public class LatestVerticle extends AbstractVerticle {
   public void start() throws Exception {
 
     config().getJsonObject("attributeList");
-    tenantPrefix = config().getString(tenantPrefix);
+    tenantPrefix = config().getString("tenantPrefix");
     new RedisClient(vertx, config())
         .start()
         .onSuccess(
