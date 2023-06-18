@@ -32,6 +32,7 @@ public class LatestVerticle extends AbstractVerticle {
   private MessageConsumer<JsonObject> consumer;
   private CacheService cacheService;
   private String tenantPrefix;
+
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
    * service with the Event bus against an address, publishes the service with the service discovery
