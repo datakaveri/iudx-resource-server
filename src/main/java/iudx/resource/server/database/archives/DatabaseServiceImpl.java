@@ -39,6 +39,7 @@ public class DatabaseServiceImpl implements DatabaseService {
   private ResponseBuilder responseBuilder;
   private String timeLimit;
   private String tenantPrefix;
+
   public DatabaseServiceImpl(ElasticClient client, String timeLimit, String tenantPrefix) {
     this.client = client;
     this.timeLimit = timeLimit;
@@ -134,8 +135,9 @@ public class DatabaseServiceImpl implements DatabaseService {
     List<String> splitId = new LinkedList<>(Arrays.asList(id.split("/")));
     splitId.remove(splitId.size() - 1);
 
-    if (!this.tenantPrefix.equals("none"))
+    if (!this.tenantPrefix.equals("none")) {
       splitId.add(0, this.tenantPrefix);
+    }
     /*
      * Example: searchIndex =
      * iudx__datakaveri.org__b8bd3e3f39615c8ec96722131ae95056b5938f2f__rs.iudx.io__pune-env-aqm

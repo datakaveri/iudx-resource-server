@@ -17,12 +17,11 @@ public class RedisCommandArgsBuilder {
 
     String idKey = id.replace("-", "_").replaceAll("/", "_").replaceAll("\\.", "_");
     /*
-     * example: key = iudx:
-     * suratmunicipal_org_6db486cb4f720e8585ba1f45a931c63c25dbbbda_rs_iudx_org_in_surat_itms_realtime_info_surat_itms_live_eta
+     * example: key =
+     * iudx:iisc_ac_in_89a36273d77dac4cf38114fca1bbe64392547f86_rs_iudx_io_pune_env_flood_FWR055
      * where "iudx" redis namespace and key is the other part
      */
-    if (!tenantPrefix.equals("none"))
-    {
+    if (!tenantPrefix.equals("none")) {
       String namespace = tenantPrefix.concat(":");
       idKey = namespace.concat(idKey);
     }
