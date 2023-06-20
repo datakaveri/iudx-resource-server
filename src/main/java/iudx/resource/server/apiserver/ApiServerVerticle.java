@@ -13,6 +13,8 @@ import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.HttpStatusCode.NOT_FOUND;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
 import static iudx.resource.server.common.ResponseUrn.*;
+import static iudx.resource.server.databroker.util.Constants.ENTITIES;
+import static iudx.resource.server.databroker.util.Constants.QUEUE_NAME;
 import static iudx.resource.server.metering.util.Constants.*;
 
 import io.netty.handler.codec.http.HttpConstants;
@@ -57,6 +59,7 @@ import iudx.resource.server.database.archives.DatabaseService;
 import iudx.resource.server.database.latest.LatestDataService;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
+import iudx.resource.server.databroker.util.Constants;
 import iudx.resource.server.encryption.EncryptionService;
 import iudx.resource.server.metering.MeteringService;
 import java.time.ZoneId;
@@ -1027,7 +1030,14 @@ public class ApiServerVerticle extends AbstractVerticle {
           if (subHandler.succeeded()) {
             LOGGER.info("Success: Handle Subscription request;");
             routingContext.data().put(RESPONSE_SIZE, 0);
-            Future.future(fu -> updateAuditTable(routingContext));
+
+            JsonObject message = new JsonObject()
+                    .put(JSON_EVENT_TYPE,EVENTTYPE_CREATED)
+                    .put(USER_ID,jsonObj.getString(USER_ID))
+                    .put(QUEUE_NAME,subHandler.result().getString(ID))
+                    .put("resource",jsonObj.getJsonArray(ENTITIES).getString(0));
+
+            Future.future(fu -> updateAuditTable(message));
             handleSuccessResponse(
                 response, ResponseType.Created.getCode(), subHandler.result().toString());
           } else {
@@ -1066,7 +1076,15 @@ public class ApiServerVerticle extends AbstractVerticle {
             if (subsRequestHandler.succeeded()) {
               LOGGER.debug("Success: Appending subscription");
               routingContext.data().put(RESPONSE_SIZE, 0);
-              Future.future(fu -> updateAuditTable(routingContext));
+
+              JsonObject message = new JsonObject()
+                      .put("resource", jsonObj.getJsonArray(ENTITIES).getString(0))
+                      .put(QUEUE_NAME, jsonObj.getString(SUBSCRIPTION_ID))
+                      .put(SUB_TYPE, jsonObj.getString(SUB_TYPE))
+                      .put(USER_ID, jsonObj.getString(USER_ID))
+                      .put(JSON_EVENT_TYPE, EVENTTYPE_APPEND);
+
+              Future.future(fu -> updateAuditTable(message));
               handleSuccessResponse(
                   response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
             } else {
@@ -1109,7 +1127,15 @@ public class ApiServerVerticle extends AbstractVerticle {
             if (subsRequestHandler.succeeded()) {
               LOGGER.info("result : " + subsRequestHandler.result());
               routingContext.data().put(RESPONSE_SIZE, 0);
-              Future.future(fu -> updateAuditTable(routingContext));
+
+              JsonObject message = new JsonObject()
+              .put("resource",jsonObj.getJsonArray(ENTITIES).getString(0))
+              .put(SUB_TYPE, subscriptionType)
+              .put(QUEUE_NAME, jsonObj.getString(SUBSCRIPTION_ID))
+              .put(USER_ID, jsonObj.getString(USER_ID))
+              .put(JSON_EVENT_TYPE, jsonObj.getString(EVENTTYPE_UPDATE));
+
+              Future.future(fu -> updateAuditTable(message));
               handleSuccessResponse(
                   response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
             } else {
@@ -1159,7 +1185,15 @@ public class ApiServerVerticle extends AbstractVerticle {
                       if (subHandler.succeeded()) {
                         LOGGER.info("Success: Getting subscription");
                         routingContext.data().put(RESPONSE_SIZE, 0);
-                        Future.future(fu -> updateAuditTable(routingContext));
+
+                        JsonObject message =
+                                new JsonObject()
+                                        .put(QUEUE_NAME, subsId)
+                                        .put(SUB_TYPE, subscriptionType)
+                                        .put(Constants.USER_ID, domain)
+                                        .put(JSON_EVENT_TYPE, EVENTTYPE_GET);
+
+                        Future.future(fu -> updateAuditTable(message));
                         handleSuccessResponse(
                             response, ResponseType.Ok.getCode(), subHandler.result().toString());
                       } else {
@@ -1246,7 +1280,13 @@ public class ApiServerVerticle extends AbstractVerticle {
                     subHandler -> {
                       if (subHandler.succeeded()) {
                         routingContext.data().put(RESPONSE_SIZE, 0);
-                        Future.future(fu -> updateAuditTable(routingContext));
+                        JsonObject message = new JsonObject()
+                                .put(QUEUE_NAME,jsonObj.getString(SUBSCRIPTION_ID))
+                                .put(USER_ID, jsonObj.getString(USER_ID))
+                                .put(SUB_TYPE, jsonObj.getString(SUB_TYPE))
+                                .put(JSON_EVENT_TYPE, EVENTTYPE_DELETED);
+
+                        Future.future(fu -> updateAuditTable(message));
                         handleSuccessResponse(
                             response, ResponseType.Ok.getCode(), subHandler.result().toString());
                       } else {
@@ -1612,6 +1652,28 @@ public class ApiServerVerticle extends AbstractVerticle {
     return promise.future();
   }
 
+  /**
+   * Sends the message from Subscription APIs to Auditing Server by sending messages to RMQ Exchange named
+   * auditing and by adding origin field in the message for subscription related further processing in the auditing server
+   * @param message JsonObject message to be sent to the exchange
+   * @return
+   */
+  private Future<Void> updateAuditTable(JsonObject message) {
+    message.put(ORIGIN, ORIGIN_SERVER_SUBSCRIPTION);
+    Promise<Void> promise = Promise.promise();
+    meteringService.insertMeteringValuesInRmq(
+            message,
+            handler -> {
+              if (handler.succeeded()) {
+                LOGGER.info("message published in RMQ.");
+                promise.complete();
+              } else {
+                LOGGER.error("failed to publish message in RMQ.");
+                promise.complete();
+              }
+            });
+    return promise.future();
+  }
   private Future<JsonObject> getEntityName(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
     String getEntityNameQuery = ENTITY_QUERY.replace("$0", request.getString(SUBSCRIPTION_ID));

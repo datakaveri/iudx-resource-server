@@ -209,6 +209,8 @@ public class Constants {
   public static final String ENCODED_KEY = "encodedKey";
   public static final String ENCODED_CIPHER_TEXT = "encodedCipherText";
   public static final String ENCRYPTED_DATA = "encryptedData";
+  public static final String JSON_EVENT_TYPE = "eventType";
+  public static final String JSON_RESOURCE = "resource";
 
   // searchtype
   public static final String JSON_SEARCH_TYPE = "searchType";
@@ -318,4 +320,9 @@ public class Constants {
   public static final String LIMITPARAM = "limit";
   public static final String OFFSETPARAM = "offset";
   public static final String TOTALHITS = "totalHits";
+  public static final String EVENTTYPE_CREATED = "SUBS_CREATED";
+  public static final String EVENTTYPE_DELETED = "SUBS_DELETED";
+  public static final String EVENTTYPE_APPEND = "SUBS_APPEND";
+  public static final String EVENTTYPE_UPDATE = "SUBS_UPDATED";
+  public static final String EVENTTYPE_GET = "SUBS_GET";
 }
