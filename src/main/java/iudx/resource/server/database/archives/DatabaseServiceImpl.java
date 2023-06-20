@@ -34,10 +34,12 @@ public class DatabaseServiceImpl implements DatabaseService {
   private final ElasticClient client;
   private QueryDecoder queryDecoder = new QueryDecoder();
   private String timeLimit;
+  private String tenantPrefix;
 
-  public DatabaseServiceImpl(ElasticClient client, String timeLimit) {
+  public DatabaseServiceImpl(ElasticClient client, String timeLimit, String tenantPrefix) {
     this.client = client;
     this.timeLimit = timeLimit;
+    this.tenantPrefix = tenantPrefix;
   }
 
   public int getOrDefault(JsonObject json, String key, int def) {
@@ -125,6 +127,14 @@ public class DatabaseServiceImpl implements DatabaseService {
   private String getIndex(String id) {
     List<String> splitId = new LinkedList<>(Arrays.asList(id.split("/")));
     splitId.remove(splitId.size() - 1);
+
+    if (!this.tenantPrefix.equals("none")) {
+      splitId.add(0, this.tenantPrefix);
+    }
+    /*
+     * Example: searchIndex =
+     * iudx__datakaveri.org__b8bd3e3f39615c8ec96722131ae95056b5938f2f__rs.iudx.io__pune-env-aqm
+     */
     final String searchIndex = String.join("__", splitId);
     LOGGER.debug("Index name: " + searchIndex);
     return searchIndex;
