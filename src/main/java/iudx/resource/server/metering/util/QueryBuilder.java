@@ -95,7 +95,7 @@ public class QueryBuilder {
     LOGGER.debug("zonedDateTimeUTC UTC = " + zonedDateTimeUtc);
     LocalDateTime utcTime = zonedDateTimeUtc.toLocalDateTime();
     LOGGER.debug("UTCtime =" + utcTime);
-    today = zonedDateTimeUtc.now().getDayOfMonth();
+    today = ZonedDateTime.now().getDayOfMonth();
 
     String timeYearBack =
         utcTime

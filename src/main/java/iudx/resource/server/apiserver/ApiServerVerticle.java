@@ -502,7 +502,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         authInfo,
         handler -> {
           if (handler.succeeded()) {
-            JsonObject jsonObject = (JsonObject) handler.result();
+            JsonObject jsonObject = handler.result();
             String checkType = jsonObject.getString("type");
             if (checkType.equalsIgnoreCase(NO_CONTENT)) {
               handleSuccessResponse(
@@ -553,7 +553,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         handler -> {
           if (handler.succeeded()) {
             LOGGER.debug("Table Reading Done.");
-            JsonObject jsonObject = (JsonObject) handler.result();
+            JsonObject jsonObject = handler.result();
             String checkType = jsonObject.getString("type");
             if (checkType.equalsIgnoreCase(NO_CONTENT)) {
               handleSuccessResponse(
@@ -601,7 +601,7 @@ public class ApiServerVerticle extends AbstractVerticle {
         handler -> {
           if (handler.succeeded()) {
             LOGGER.debug("Table Reading Done.");
-            JsonObject jsonObject = (JsonObject) handler.result();
+            JsonObject jsonObject = handler.result();
             String checkType = jsonObject.getString("type");
             if (checkType.equalsIgnoreCase(NO_CONTENT)) {
               handleSuccessResponse(
@@ -1557,7 +1557,7 @@ public class ApiServerVerticle extends AbstractVerticle {
       if (urnTitle != null) {
         urn = fromCode(urnTitle);
       } else {
-        urn = fromCode(type + "");
+        urn = fromCode(String.valueOf(type));
       }
       // return urn in body
       response
