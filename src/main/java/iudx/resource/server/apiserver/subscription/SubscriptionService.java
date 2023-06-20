@@ -4,7 +4,6 @@ import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
 import static iudx.resource.server.cache.cachelmpl.CacheType.CATALOGUE_CACHE;
 import static iudx.resource.server.databroker.util.Constants.*;
-import static iudx.resource.server.databroker.util.Constants.USER_ID;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import io.vertx.core.Future;
@@ -74,29 +73,6 @@ public class SubscriptionService {
                 JsonObject brokerResponse = response.getJsonArray("results").getJsonObject(0);
                 LOGGER.debug("brokerResponse: " + brokerResponse);
 
-                System.out.println();
-                System.out.println("Wots the JSON in create : " + json.encode());
-                System.out.println("Wots in broker response : " + response.encode());
-                System.out.println();
-                System.out.println();
-                JsonObject jsonObject =
-                    new JsonObject()
-                        .put(QUEUE_NAME, brokerResponse.getString("id"))
-                        .put(USER_ID, brokerResponse.getString("username"))
-                        .put("eventType", "SUBS_CREATED")
-                        .put("resource", json.getJsonArray(ENTITIES).getString(0));
-
-                databroker.publishMessage(
-                    jsonObject,
-                    AUDITING_EXCHANGE,
-                    "###",
-                    publishMessageHandler -> {
-                      if (publishMessageHandler.succeeded()) {
-                        LOGGER.trace("Published message to auditing server");
-                      } else {
-                        LOGGER.error("Failure : {}", publishMessageHandler.cause().getMessage());
-                      }
-                    });
                 JsonObject cacheJson =
                     new JsonObject()
                         .put("key", json.getJsonArray("entities").getString(0))
@@ -177,24 +153,6 @@ public class SubscriptionService {
                   .put(JSON_DETAIL, "Subscription not found for [queue,entity]");
               promise.fail(res.toString());
             } else {
-              JsonObject message =
-                  new JsonObject()
-                      .put("resource", json.getJsonArray(ENTITIES).getString(0))
-                      .put(SUB_TYPE, json.getString(SUB_TYPE))
-                      .put(QUEUE_NAME, json.getString(SUBSCRIPTION_ID))
-                      .put(USER_ID, json.getString(USER_ID))
-                      .put("eventType", "SUBS_UPDATED");
-              databroker.publishMessage(
-                  message,
-                  AUDITING_EXCHANGE,
-                  "###",
-                  publishMessageHandler -> {
-                    if (publishMessageHandler.succeeded()) {
-                      LOGGER.trace("Published message to auditing server");
-                    } else {
-                      LOGGER.error("Failure : {}", publishMessageHandler.cause().getMessage());
-                    }
-                  });
               StringBuilder updateQuery =
                   new StringBuilder(
                       UPDATE_SUB_SQL
@@ -261,25 +219,6 @@ public class SubscriptionService {
                 StringBuilder query =
                     new StringBuilder(
                         DELETE_SUB_SQL.replace("$1", json.getString(SUBSCRIPTION_ID)));
-
-                JsonObject jsonObject =
-                    new JsonObject()
-                        .put(QUEUE_NAME, json.getString(SUBSCRIPTION_ID))
-                        .put(USER_ID, json.getString(USER_ID))
-                        .put(SUB_TYPE, json.getString(SUB_TYPE))
-                        .put("eventType", "SUBS_DELETED");
-                databroker.publishMessage(
-                    jsonObject,
-                    AUDITING_EXCHANGE,
-                    "###",
-                    publishMessageHandler -> {
-                      if (publishMessageHandler.succeeded()) {
-                        LOGGER.trace("Published message to auditing server");
-                      } else {
-                        LOGGER.error("Failure : {}", publishMessageHandler.cause().getMessage());
-                      }
-                    });
-
                 LOGGER.debug(query);
                 pgService.executeQuery(
                     query.toString(),
@@ -322,27 +261,6 @@ public class SubscriptionService {
         .onComplete(
             handler -> {
               if (handler.succeeded()) {
-                String[] userId = json.getString(SUBSCRIPTION_ID).split("/");
-
-                JsonObject message =
-                    new JsonObject()
-                        .put(QUEUE_NAME, json.getString(SUBSCRIPTION_ID))
-                        .put(SUB_TYPE, json.getString(SUB_TYPE))
-                        .put(USER_ID, userId[0])
-                        .put("eventType", "SUBS_GET")
-                        .put(SUB_TYPE, json.getString(SUB_TYPE));
-                databroker.publishMessage(
-                    message,
-                    AUDITING_EXCHANGE,
-                    "###",
-                    publishMessageHandler -> {
-                      if (publishMessageHandler.succeeded()) {
-                        LOGGER.trace("Published message to auditing server");
-                      } else {
-                        LOGGER.error("Failure : {}", publishMessageHandler.cause().getMessage());
-                      }
-                    });
-
                 promise.complete(handler.result());
               } else {
                 JsonObject res = new JsonObject(handler.cause().getMessage());
@@ -400,26 +318,6 @@ public class SubscriptionService {
               if (handler.succeeded()) {
                 JsonObject response = handler.result();
                 JsonObject brokerSubResult = response.getJsonArray("results").getJsonObject(0);
-
-                JsonObject message =
-                    new JsonObject()
-                        .put("resource", json.getJsonArray(ENTITIES).getString(0))
-                        .put(QUEUE_NAME, json.getString(SUBSCRIPTION_ID))
-                        .put(SUB_TYPE, json.getString(SUB_TYPE))
-                        .put(USER_ID, json.getString(USER_ID))
-                        .put("eventType", "SUBS_APPEND");
-                databroker.publishMessage(
-                    message,
-                    AUDITING_EXCHANGE,
-                    "###",
-                    publishMessageHandler -> {
-                      if (publishMessageHandler.succeeded()) {
-                        LOGGER.trace("Published message to auditing server");
-                      } else {
-                        LOGGER.error("Failure : {}", publishMessageHandler.cause().getMessage());
-                      }
-                    });
-
                 StringBuilder query =
                     new StringBuilder(
                         APPEND_SUB_SQL
