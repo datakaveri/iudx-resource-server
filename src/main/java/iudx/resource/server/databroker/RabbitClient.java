@@ -31,12 +31,12 @@ public class RabbitClient {
 
   private static final Logger LOGGER = LogManager.getLogger(RabbitClient.class);
 
-  private RabbitMQClient client;
-  private RabbitWebClient webClient;
-  private PostgresClient pgSqlClient;
-  private String amqpUrl;
-  private int amqpPort;
-  private String vhost;
+  private final RabbitMQClient client;
+  private final RabbitWebClient webClient;
+  private final PostgresClient pgSqlClient;
+  private final String amqpUrl;
+  private final int amqpPort;
+  private final String vhost;
 
   public RabbitClient(
       Vertx vertx,
@@ -455,8 +455,7 @@ public class RabbitClient {
                     HttpResponse<Buffer> response = ar.result();
                     if (response != null && !response.equals(" ")) {
                       int status = response.statusCode();
-                      LOGGER.info(
-                          "Info : Binding " + rkey.toString() + "Success. Status is " + status);
+                      LOGGER.info("Info : Binding " + rkey + "Success. Status is " + status);
                       if (status == HttpStatus.SC_CREATED) {
                         finalResponse.put(EXCHANGE, exchangeName);
                         finalResponse.put(QUEUE, queueName);
@@ -1319,11 +1318,8 @@ public class RabbitClient {
         .compose(
             dataIssueResult ->
                 bindQueue(QUEUE_ADAPTOR_LOGS, adaptorId, adaptorId + DOWNSTREAM_ISSUE, vhost))
-        .compose(
-                bindToAuditingQueueResult ->
-                bindQueue(QUEUE_AUDITING,adaptorId,topics,vhost)
-            )
-            .onSuccess(
+        .compose(bindToAuditingQueueResult -> bindQueue(QUEUE_AUDITING, adaptorId, topics, vhost))
+        .onSuccess(
             successHandler -> {
               JsonObject response = new JsonObject();
               response.mergeIn(
@@ -1464,7 +1460,7 @@ public class RabbitClient {
       case ADD_READ:
       case ADD_WRITE:
         permission = new StringBuilder(permissionsJson.getString(type.permission));
-        LOGGER.debug("permissions : " + permission.toString());
+        LOGGER.debug("permissions : " + permission);
         if (permission.length() != 0 && permission.indexOf(".*") != -1) {
           permission.deleteCharAt(0).deleteCharAt(0);
         }

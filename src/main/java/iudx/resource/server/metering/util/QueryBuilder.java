@@ -21,15 +21,15 @@ public class QueryBuilder {
 
   public JsonObject buildMessageForRmq(JsonObject request) {
 
-    if(request.getString(ORIGIN) == null)
-    {
-      String primaryKey = UUID.randomUUID().toString().replace("-", "");
+    String primaryKey = UUID.randomUUID().toString().replace("-", "");
+    request.put(PRIMARY_KEY, primaryKey);
+
+    if (request.getString(ORIGIN) == null) {
       String userId = request.getString(USER_ID);
       String resourceId = request.getString(ID);
       String providerId =
-              resourceId.substring(0, resourceId.indexOf('/', resourceId.indexOf('/') + 1));
+          resourceId.substring(0, resourceId.indexOf('/', resourceId.indexOf('/') + 1));
 
-      request.put(PRIMARY_KEY, primaryKey);
       request.put(USER_ID, userId);
       request.put(PROVIDER_ID, providerId);
       request.put(ORIGIN, ORIGIN_SERVER);
