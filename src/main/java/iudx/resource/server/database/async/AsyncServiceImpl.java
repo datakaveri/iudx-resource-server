@@ -64,8 +64,6 @@ public class AsyncServiceImpl implements AsyncService {
   private final Util util;
   private final Vertx vertx;
   private final MeteringService meteringService;
-  private ResponseBuilder responseBuilder;
-  private String filePath;
   private String tenantPrefix;
 
   public AsyncServiceImpl(
