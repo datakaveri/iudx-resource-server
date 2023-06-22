@@ -14,7 +14,6 @@ import static iudx.resource.server.common.HttpStatusCode.NOT_FOUND;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
 import static iudx.resource.server.common.ResponseUrn.*;
 import static iudx.resource.server.databroker.util.Constants.ENTITIES;
-import static iudx.resource.server.databroker.util.Constants.QUEUE_NAME;
 import static iudx.resource.server.metering.util.Constants.*;
 
 import io.netty.handler.codec.http.HttpConstants;
@@ -1027,16 +1026,12 @@ public class ApiServerVerticle extends AbstractVerticle {
                 new JsonObject(subHandler.result().getJsonArray("results").getString(0));
             routingContext.data().put(RESPONSE_SIZE, 0);
 
-            JsonObject resultJson =
-                new JsonObject(subHandler.result().getJsonArray("results").getString(0));
-
             JsonObject message =
                 new JsonObject()
                     .put(JSON_EVENT_TYPE, EVENTTYPE_CREATED)
                     .put(USER_ID, jsonObj.getString(USER_ID))
-                    .put(QUEUE_NAME, object.getString(ID))
+                    .put(SUBSCRIPTION_ID, object.getString(ID))
                     .put(SUB_TYPE, subscriptionType)
-                    .put(SUBSCRIPTION_ID, resultJson.getString("id"))
                     .put("resource", jsonObj.getJsonArray(ENTITIES).getString(0));
 
             Future.future(fu -> updateAuditTable(message));
@@ -1082,10 +1077,10 @@ public class ApiServerVerticle extends AbstractVerticle {
               JsonObject message =
                   new JsonObject()
                       .put("resource", jsonObj.getJsonArray(ENTITIES).getString(0))
-                      .put(QUEUE_NAME, jsonObj.getString(SUBSCRIPTION_ID))
+                      .put(SUBSCRIPTION_ID, jsonObj.getString(SUBSCRIPTION_ID))
                       .put(SUB_TYPE, jsonObj.getString(SUB_TYPE))
                       .put(USER_ID, jsonObj.getString(USER_ID))
-                      .put(SUBSCRIPTION_ID,subsId)
+                      .put(SUBSCRIPTION_ID, subsId)
                       .put(JSON_EVENT_TYPE, EVENTTYPE_APPEND);
 
               Future.future(fu -> updateAuditTable(message));
@@ -1132,15 +1127,13 @@ public class ApiServerVerticle extends AbstractVerticle {
               LOGGER.info("result : " + subsRequestHandler.result());
               routingContext.data().put(RESPONSE_SIZE, 0);
 
-
-
               JsonObject message =
                   new JsonObject()
                       .put("resource", jsonObj.getJsonArray(ENTITIES).getString(0))
                       .put(SUB_TYPE, subscriptionType)
-                      .put(QUEUE_NAME, jsonObj.getString(SUBSCRIPTION_ID))
+                      .put(SUBSCRIPTION_ID, jsonObj.getString(SUBSCRIPTION_ID))
                       .put(USER_ID, jsonObj.getString(USER_ID))
-                      .put(SUBSCRIPTION_ID,subsId)
+                      .put(SUBSCRIPTION_ID, subsId)
                       .put(JSON_EVENT_TYPE, EVENTTYPE_UPDATE);
 
               Future.future(fu -> updateAuditTable(message));
@@ -1193,7 +1186,6 @@ public class ApiServerVerticle extends AbstractVerticle {
                       if (subHandler.succeeded()) {
                         LOGGER.info("Success: Getting subscription");
                         routingContext.data().put(RESPONSE_SIZE, 0);
-
 
                         Future.future(fu -> updateAuditTable(routingContext));
                         handleSuccessResponse(
@@ -1285,10 +1277,10 @@ public class ApiServerVerticle extends AbstractVerticle {
 
                         JsonObject message =
                             new JsonObject()
-                                .put(QUEUE_NAME, jsonObj.getString(SUBSCRIPTION_ID))
+                                .put(SUBSCRIPTION_ID, jsonObj.getString(SUBSCRIPTION_ID))
                                 .put(USER_ID, jsonObj.getString(USER_ID))
                                 .put(SUB_TYPE, jsonObj.getString(SUB_TYPE))
-                                .put(SUBSCRIPTION_ID,subsId)
+                                .put(SUBSCRIPTION_ID, subsId)
                                 .put(JSON_EVENT_TYPE, EVENTTYPE_DELETED);
 
                         Future.future(fu -> updateAuditTable(message));
