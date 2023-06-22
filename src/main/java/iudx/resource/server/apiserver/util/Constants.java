@@ -324,5 +324,4 @@ public class Constants {
   public static final String EVENTTYPE_DELETED = "SUBS_DELETED";
   public static final String EVENTTYPE_APPEND = "SUBS_APPEND";
   public static final String EVENTTYPE_UPDATE = "SUBS_UPDATED";
-  public static final String EVENTTYPE_GET = "SUBS_GET";
 }

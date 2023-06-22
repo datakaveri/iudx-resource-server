@@ -1027,12 +1027,16 @@ public class ApiServerVerticle extends AbstractVerticle {
                 new JsonObject(subHandler.result().getJsonArray("results").getString(0));
             routingContext.data().put(RESPONSE_SIZE, 0);
 
+            JsonObject resultJson =
+                new JsonObject(subHandler.result().getJsonArray("results").getString(0));
+
             JsonObject message =
                 new JsonObject()
                     .put(JSON_EVENT_TYPE, EVENTTYPE_CREATED)
                     .put(USER_ID, jsonObj.getString(USER_ID))
                     .put(QUEUE_NAME, object.getString(ID))
                     .put(SUB_TYPE, subscriptionType)
+                    .put(SUBSCRIPTION_ID, resultJson.getString("id"))
                     .put("resource", jsonObj.getJsonArray(ENTITIES).getString(0));
 
             Future.future(fu -> updateAuditTable(message));
@@ -1081,6 +1085,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                       .put(QUEUE_NAME, jsonObj.getString(SUBSCRIPTION_ID))
                       .put(SUB_TYPE, jsonObj.getString(SUB_TYPE))
                       .put(USER_ID, jsonObj.getString(USER_ID))
+                      .put(SUBSCRIPTION_ID,subsId)
                       .put(JSON_EVENT_TYPE, EVENTTYPE_APPEND);
 
               Future.future(fu -> updateAuditTable(message));
@@ -1127,12 +1132,15 @@ public class ApiServerVerticle extends AbstractVerticle {
               LOGGER.info("result : " + subsRequestHandler.result());
               routingContext.data().put(RESPONSE_SIZE, 0);
 
+
+
               JsonObject message =
                   new JsonObject()
                       .put("resource", jsonObj.getJsonArray(ENTITIES).getString(0))
                       .put(SUB_TYPE, subscriptionType)
                       .put(QUEUE_NAME, jsonObj.getString(SUBSCRIPTION_ID))
                       .put(USER_ID, jsonObj.getString(USER_ID))
+                      .put(SUBSCRIPTION_ID,subsId)
                       .put(JSON_EVENT_TYPE, EVENTTYPE_UPDATE);
 
               Future.future(fu -> updateAuditTable(message));
@@ -1186,14 +1194,8 @@ public class ApiServerVerticle extends AbstractVerticle {
                         LOGGER.info("Success: Getting subscription");
                         routingContext.data().put(RESPONSE_SIZE, 0);
 
-                        JsonObject message =
-                            new JsonObject()
-                                .put(QUEUE_NAME, subsId)
-                                .put(SUB_TYPE, subscriptionType)
-                                .put(USER_ID, domain)
-                                .put(JSON_EVENT_TYPE, EVENTTYPE_GET);
 
-                        Future.future(fu -> updateAuditTable(message));
+                        Future.future(fu -> updateAuditTable(routingContext));
                         handleSuccessResponse(
                             response, ResponseType.Ok.getCode(), subHandler.result().toString());
                       } else {
@@ -1280,11 +1282,13 @@ public class ApiServerVerticle extends AbstractVerticle {
                     subHandler -> {
                       if (subHandler.succeeded()) {
                         routingContext.data().put(RESPONSE_SIZE, 0);
+
                         JsonObject message =
                             new JsonObject()
                                 .put(QUEUE_NAME, jsonObj.getString(SUBSCRIPTION_ID))
                                 .put(USER_ID, jsonObj.getString(USER_ID))
                                 .put(SUB_TYPE, jsonObj.getString(SUB_TYPE))
+                                .put(SUBSCRIPTION_ID,subsId)
                                 .put(JSON_EVENT_TYPE, EVENTTYPE_DELETED);
 
                         Future.future(fu -> updateAuditTable(message));

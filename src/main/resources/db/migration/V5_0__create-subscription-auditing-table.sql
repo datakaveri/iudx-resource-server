@@ -1,14 +1,28 @@
-CREATE TABLE public.subscription_auditing (
-    id character varying NOT NULL,
-    "queueName" character varying NOT NULL,
-    "eventType" public.event_type NOT NULL,
-    "subscriptionType" public.sub_type NOT NULL,
-    "userId" uuid NOT NULL,
-    resource character varying
+CREATE type events_type AS ENUM
+(
+    'SUBS_CREATED',
+    'SUBS_DELETED',
+    'SUBS_APPEND',
+    'SUBS_UPDATED'
 );
 
-ALTER TABLE public.subscription_auditing OWNER TO iudx_rs_user;
 
-ALTER TABLE ONLY public.subscription_auditing
-    ADD CONSTRAINT subscription_auditing_pkey PRIMARY KEY (id);
+CREATE TABLE subscription_auditing (
+    subscription_id character varying NOT NULL,
+    event event_type NOT NULL,
+    subscription_type sub_type NOT NULL,
+    user_id uuid NOT NULL,
+    resource_id character varying,
+    created_at timestamp without time zone NOT NULL,
+    modified_at timestamp without time zone NOT NULL,
+);
+ALTER TABLE ONLY subscription_auditing
+    ADD CONSTRAINT subscription_auditing_pkey PRIMARY KEY (subscription_id,user_id);
 
+ALTER TABLE subscription_auditing OWNER TO iudx_rs_user;
+
+
+CREATE TRIGGER update_sa_created BEFORE INSERT ON subscription_auditing FOR EACH ROW EXECUTE PROCEDURE update_created ();
+CREATE TRIGGER update_sa_modified BEFORE INSERT
+OR UPDATE ON
+   subscription_auditing FOR EACH ROW EXECUTE PROCEDURE update_modified ();
