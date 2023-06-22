@@ -9,7 +9,7 @@ CREATE type events_type AS ENUM
 
 CREATE TABLE subscription_auditing (
     subscription_id character varying NOT NULL,
-    event event_type NOT NULL,
+    event_type events_type NOT NULL,
     subscription_type sub_type NOT NULL,
     user_id uuid NOT NULL,
     resource_id character varying,

@@ -1280,7 +1280,6 @@ public class ApiServerVerticle extends AbstractVerticle {
                                 .put(SUBSCRIPTION_ID, jsonObj.getString(SUBSCRIPTION_ID))
                                 .put(USER_ID, jsonObj.getString(USER_ID))
                                 .put(SUB_TYPE, jsonObj.getString(SUB_TYPE))
-                                .put(SUBSCRIPTION_ID, subsId)
                                 .put(JSON_EVENT_TYPE, EVENTTYPE_DELETED);
 
                         Future.future(fu -> updateAuditTable(message));
