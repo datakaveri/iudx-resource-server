@@ -46,13 +46,13 @@ public class MeteringServiceImpl implements MeteringService {
   JsonArray resultJsonArray;
   int loopi;
   private ResponseBuilder responseBuilder;
-  private PostgresService postgresService;
-  private CacheService cacheService;
+  private final PostgresService postgresService;
+  private final CacheService cacheService;
 
   public MeteringServiceImpl(Vertx vertxInstance, PostgresService postgresService) {
     this.vertx = vertxInstance;
     this.postgresService = postgresService;
-    this.rmqService = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
+    rmqService = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
 
     this.cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
   }

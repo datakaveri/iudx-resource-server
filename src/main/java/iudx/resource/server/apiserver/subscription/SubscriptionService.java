@@ -219,7 +219,6 @@ public class SubscriptionService {
                 StringBuilder query =
                     new StringBuilder(
                         DELETE_SUB_SQL.replace("$1", json.getString(SUBSCRIPTION_ID)));
-
                 LOGGER.debug(query);
                 pgService.executeQuery(
                     query.toString(),
