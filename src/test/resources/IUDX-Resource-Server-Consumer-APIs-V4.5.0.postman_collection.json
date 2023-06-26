@@ -23405,7 +23405,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/{{basePath}}/summary?starttime=2022-11-20T00:00:00Z&endtime=2023-01-27T00:00:00Z",
+							"raw": "{{base_url}}/{{basePath}}/summary?starttime=2022-11-20T00:00:00Z&endtime=2023-06-27T00:00:00Z",
 							"host": [
 								"{{base_url}}"
 							],
@@ -23420,7 +23420,7 @@
 								},
 								{
 									"key": "endtime",
-									"value": "2023-01-27T00:00:00Z"
+									"value": "2023-06-27T00:00:00Z"
 								}
 							]
 						}
