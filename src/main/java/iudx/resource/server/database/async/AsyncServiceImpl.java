@@ -64,10 +64,15 @@ public class AsyncServiceImpl implements AsyncService {
   private final Util util;
   private final Vertx vertx;
   private final MeteringService meteringService;
+  private String tenantPrefix;
 
-
-  public AsyncServiceImpl(Vertx vertx, ElasticClient client, PostgresService pgService,
-      S3FileOpsHelper s3FileOpsHelper, String timeLimit, String filePath) {
+  public AsyncServiceImpl(
+      Vertx vertx,
+      ElasticClient client,
+      PostgresService pgService,
+      S3FileOpsHelper s3FileOpsHelper,
+      String timeLimit,
+      String filePath, String tenantPrefix) {
     this.vertx = vertx;
     this.client = client;
     this.pgService = pgService;
@@ -76,6 +81,7 @@ public class AsyncServiceImpl implements AsyncService {
     this.filePath = filePath;
     this.util = new Util(pgService);
     this.meteringService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
+    this.tenantPrefix = tenantPrefix;
   }
 
   @Override
@@ -310,6 +316,13 @@ public class AsyncServiceImpl implements AsyncService {
     List<String> splitId =
         new LinkedList<>(Arrays.asList(request.getJsonArray("id").getString(0).split("/")));
     splitId.remove(splitId.size() - 1);
+    if (!this.tenantPrefix.equals("none")) {
+      splitId.add(0, this.tenantPrefix);
+    }
+    /*
+     * Example: searchIndex =
+     * iudx__datakaveri.org__b8bd3e3f39615c8ec96722131ae95056b5938f2f__rs.iudx.io__pune-env-aqm
+     */
     final String searchIndex = String.join("__", splitId);
     LOGGER.debug("Index name: " + searchIndex);
 

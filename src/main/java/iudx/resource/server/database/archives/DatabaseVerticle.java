@@ -30,6 +30,7 @@ public class DatabaseVerticle extends AbstractVerticle {
   private int databasePort;
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
+  private String tenantPrefix;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
@@ -47,10 +48,11 @@ public class DatabaseVerticle extends AbstractVerticle {
     user = config().getString("dbUser");
     password = config().getString("dbPassword");
     timeLimit = config().getString("timeLimit");
+    tenantPrefix = config().getString("tenantPrefix");
 
     client = new ElasticClient(databaseIP, databasePort, user, password); 
     binder = new ServiceBinder(vertx);
-    database = new DatabaseServiceImpl(client, timeLimit);
+    database = new DatabaseServiceImpl(client, timeLimit, tenantPrefix);
 
     consumer =
         binder.setAddress(DATABASE_SERVICE_ADDRESS)

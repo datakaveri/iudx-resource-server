@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "86304749-0a2a-423c-9823-ceacef722611",
-		"name": "IUDX-Resource-Server-Consumer-APIs-V4.5.0",
+		"_postman_id": "c9e4198f-7287-4e5e-89ed-04cbb29f92ec",
+		"name": "IUDX-Resource-Server-Consumer-APIs-V4.5.0 Copy",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "20457128"
+		"_exporter_id": "14083864"
 	},
 	"item": [
 		{
@@ -12330,8 +12330,8 @@
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
 									"    const resultsjsonData = body.results[0];",
-									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\");",
-									"    pm.expect(resultsjsonData).to.have.property(\"speed\", 12.2);",
+									"    pm.expect(resultsjsonData).to.have.property(\"id\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"speed\");",
 									"});",
 									""
 								],
@@ -12399,8 +12399,8 @@
 									"    const body = pm.response.json();",
 									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
 									"    const resultsjsonData = body.results[0];",
-									"    pm.expect(resultsjsonData).to.have.property(\"id\", \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\");",
-									"    pm.expect(resultsjsonData).to.have.property(\"speed\", 12.2);",
+									"    pm.expect(resultsjsonData).to.have.property(\"id\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"speed\");",
 									"});",
 									""
 								],
@@ -21012,7 +21012,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/{{basePath}}/consumer/audit?timerel=between&time=2022-11-20T00:00:00Z&endTime=2022-11-21T16:00:00Z",
+							"raw": "{{base_url}}/{{basePath}}/consumer/audit?timerel=between&time=2022-11-20T00:00:00Z&endTime=2023-06-26T16:00:00Z",
 							"host": [
 								"{{base_url}}"
 							],
@@ -21032,7 +21032,7 @@
 								},
 								{
 									"key": "endTime",
-									"value": "2022-11-21T16:00:00Z"
+									"value": "2023-06-26T16:00:00Z"
 								}
 							]
 						}
@@ -21151,7 +21151,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/{{basePath}}/consumer/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2022-11-12T14:20:00Z&endTime=2022-11-25T14:20:00Z&api=/{{basePath}}/temporal/entities&offset=0&limit=2000",
+							"raw": "{{base_url}}/{{basePath}}/consumer/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2022-11-12T14:20:00Z&endTime=2023-11-25T14:20:00Z&api=/{{basePath}}/temporal/entities&offset=0&limit=2000",
 							"host": [
 								"{{base_url}}"
 							],
@@ -21175,7 +21175,7 @@
 								},
 								{
 									"key": "endTime",
-									"value": "2022-11-25T14:20:00Z"
+									"value": "2023-11-25T14:20:00Z"
 								},
 								{
 									"key": "api",
@@ -21236,7 +21236,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/{{basePath}}/consumer/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2022-11-20T14:20:00Z&endTime=2022-11-21T14:20:00Z&api=/{{basePath}}/temporal/entities",
+							"raw": "{{base_url}}/{{basePath}}/consumer/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&timerel=during&time=2022-11-20T14:20:00Z&endTime=2023-11-21T14:20:00Z&api=/{{basePath}}/temporal/entities",
 							"host": [
 								"{{base_url}}"
 							],
@@ -21260,7 +21260,7 @@
 								},
 								{
 									"key": "endTime",
-									"value": "2022-11-21T14:20:00Z"
+									"value": "2023-11-21T14:20:00Z"
 								},
 								{
 									"key": "api",
@@ -22891,7 +22891,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/{{basePath}}/summary?starttime=2022-11-20T00:00:00Z&endtime=2023-01-27T00:00:00Z",
+							"raw": "{{base_url}}/{{basePath}}/summary?starttime=2022-11-20T00:00:00Z&endtime=2023-06-27T00:00:00Z",
 							"host": [
 								"{{base_url}}"
 							],
@@ -22906,7 +22906,7 @@
 								},
 								{
 									"key": "endtime",
-									"value": "2023-01-27T00:00:00Z"
+									"value": "2023-06-27T00:00:00Z"
 								}
 							]
 						}

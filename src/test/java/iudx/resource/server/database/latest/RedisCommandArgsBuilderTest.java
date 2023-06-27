@@ -24,12 +24,14 @@ public class RedisCommandArgsBuilderTest {
   @Test
   public void resourceLevelArgs() {
     String id = "asdas/asdasdas/adsasdasd/asdasda/asdasdas";
-    RedisArgs redisArgs = redisCmdArgsBuilder.getRedisCommandArgs(id, true);
+    String tenantPrefix = "iudx";
+    RedisArgs redisArgs = redisCmdArgsBuilder.getRedisCommandArgs(id, true, tenantPrefix);
 
-    String key = id.replace("-", "_")
+    String idKey = id.replace("-", "_")
         .replaceAll("/", "_")
         .replaceAll("\\.", "_");
-
+    String namespace = tenantPrefix.concat(":");
+    String key = namespace.concat(idKey);
     assertEquals(key, redisArgs.getKey());
     assertEquals(".", redisArgs.getPath());
   }
@@ -37,12 +39,14 @@ public class RedisCommandArgsBuilderTest {
   @Test
   public void groupLevelArgs() {
     String id = "asdas/asdasdas/adsasdasd/asdasda";
-    RedisArgs redisArgs = redisCmdArgsBuilder.getRedisCommandArgs(id, false);
+    String tenantPrefix = "iudx";
+    RedisArgs redisArgs = redisCmdArgsBuilder.getRedisCommandArgs(id, false, tenantPrefix);
 
-    String key = id.replace("-", "_")
+    String idKey = id.replace("-", "_")
         .replaceAll("/", "_")
         .replaceAll("\\.", "_");
-
+    String namespace = tenantPrefix.concat(":");
+    String key = namespace.concat(idKey);
     StringBuilder shaId = new StringBuilder(id).append("/").append(DEFAULT_ATTRIBUTE);
     String sha = DigestUtils.sha1Hex(shaId.toString());
 

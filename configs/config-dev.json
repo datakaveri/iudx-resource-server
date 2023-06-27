@@ -13,6 +13,7 @@
         {
             "id": "iudx.resource.server.database.archives.DatabaseVerticle",
             "isWorkerVerticle":false,
+	    "tenantPrefix": "iudx",
             "verticleInstances": 8,
             "databaseIP": "",
             "databasePort": 24034,
@@ -76,6 +77,7 @@
         {
            "id": "iudx.resource.server.database.latest.LatestVerticle",
            "isWorkerVerticle":false,
+	    "tenantPrefix": "iudx",
             "verticleInstances": 2,
             "redisMode": "",
             "redisUsername": "",
@@ -112,6 +114,7 @@
         {
             "id": "iudx.resource.server.database.async.AsyncVerticle",
             "isWorkerVerticle":true,
+	    "tenantPrefix": "iudx",
             "threadPoolName":"async-query-pool",
             "threadPoolSize":20,
             "verticleInstances": 20,

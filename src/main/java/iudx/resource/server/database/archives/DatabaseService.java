@@ -45,8 +45,8 @@ public interface DatabaseService {
   Future<JsonObject> count(JsonObject request);
 
   @GenIgnore
-  static DatabaseService create(ElasticClient client, String timeLimit) {
-    return new DatabaseServiceImpl(client, timeLimit);
+  static DatabaseService create(ElasticClient client, String timeLimit, String tenantPrefix) {
+    return new DatabaseServiceImpl(client, timeLimit, tenantPrefix);
   }
 
   /**

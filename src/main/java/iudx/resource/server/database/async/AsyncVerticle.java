@@ -38,6 +38,7 @@ public class AsyncVerticle extends AbstractVerticle {
   private String bucketName;
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
+  private String tenantPrefix;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
@@ -57,12 +58,14 @@ public class AsyncVerticle extends AbstractVerticle {
     filePath = config().getString("filePath");
     clientRegion = Regions.AP_SOUTH_1;
     bucketName = config().getString("bucketName");
+    tenantPrefix = config().getString("tenantPrefix");
 
     pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
     client = new ElasticClient(databaseIP, databasePort, user, password, filePath, pgService);
     fileOpsHelper = new S3FileOpsHelper(clientRegion, bucketName);
     binder = new ServiceBinder(vertx);
-    asyncService = new AsyncServiceImpl(vertx,client, pgService, fileOpsHelper, timeLimit, filePath);
+    asyncService =
+        new AsyncServiceImpl(vertx, client, pgService, fileOpsHelper,timeLimit, filePath, tenantPrefix);
 
     consumer = binder.setAddress(ASYNC_SERVICE_ADDRESS).register(AsyncService.class, asyncService);
   }

@@ -31,6 +31,7 @@ public class LatestVerticle extends AbstractVerticle {
   private static final Logger LOGGER = LogManager.getLogger(LatestVerticle.class);
   
   private CacheService cacheService;
+  private String tenantPrefix;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
@@ -43,19 +44,26 @@ public class LatestVerticle extends AbstractVerticle {
   @Override
   public void start() throws Exception {
 
-    attributeList = config().getJsonObject("attributeList");
-    new RedisClient(vertx, config()).start().onSuccess(handler -> {
-      
-      redisClient = handler;
-      cacheService=CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
-      binder = new ServiceBinder(vertx);
-      latestData = new LatestDataServiceImpl(redisClient, cacheService);
-      consumer = binder.setAddress(LATEST_SERVICE_ADDRESS)
-          .register(LatestDataService.class, latestData);
-      LOGGER.info("Latest verticle deployed.");
-    }).onFailure(handler -> {
-      LOGGER.error("failed to start redis client");
-    });
+    config().getJsonObject("attributeList");
+    tenantPrefix = config().getString("tenantPrefix");
+    new RedisClient(vertx, config())
+        .start()
+        .onSuccess(
+            handler -> {
+              redisClient = handler;
+              cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
+              binder = new ServiceBinder(vertx);
+              latestData = new LatestDataServiceImpl(redisClient, cacheService, tenantPrefix);
+              consumer =
+                  binder
+                      .setAddress(LATEST_SERVICE_ADDRESS)
+                      .register(LatestDataService.class, latestData);
+              LOGGER.info("Latest verticle deployed.");
+            })
+        .onFailure(
+            handler -> {
+              LOGGER.error("failed to start redis client");
+            });
   }
 
   @Override

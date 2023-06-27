@@ -32,7 +32,7 @@ public class LatestServiceTest {
   private static RedisClient client;
   private static Configuration config;
   private static JsonObject attributeList;
-
+  private static String tenantPrefix;
   private static RedisClient redisClient;
   private static LatestDataService latest;
   private static CacheService cacheService;
@@ -43,11 +43,12 @@ public class LatestServiceTest {
     vertxObj = vertx;
     config = new Configuration();
     JsonObject redisConfig = config.configLoader(5, vertx);
+    tenantPrefix = redisConfig.getString("tenantPrefix");
     attributeList = redisConfig.getJsonObject("attributeList");
     new RedisClient(vertx, redisConfig).start().onSuccess(handler -> {
       redisClient = handler;
       cacheService = Mockito.mock(CacheService.class);
-      latest = new LatestDataServiceImpl(redisClient, cacheService);
+      latest = new LatestDataServiceImpl(redisClient, cacheService, tenantPrefix);
 
       testContext.completeNow();
     }).onFailure(handler -> {
