@@ -108,25 +108,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
     }
     return this;
   }
-
-  @Override
-  public DataBrokerService getExchanges(
-      JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-    if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = webClient.getAllExchanges(request);
-      result.onComplete(
-          resultHandler -> {
-            if (resultHandler.succeeded()) {
-              LOGGER.debug("Successful exchanges searched");
-              handler.handle(Future.succeededFuture(resultHandler.result()));
-            } else {
-              LOGGER.error("getExchange resultHandler failed : " + resultHandler.cause());
-              handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
-            }
-          });
-    }
-    return this;
-  }
   /*
    * overridden method
    */

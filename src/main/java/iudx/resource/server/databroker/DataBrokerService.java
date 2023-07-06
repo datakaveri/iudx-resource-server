@@ -353,9 +353,6 @@ public interface DataBrokerService {
       JsonObject request, String vhost, Handler<AsyncResult<JsonObject>> handler);
 
   @Fluent
-  DataBrokerService getExchanges(JsonObject request, Handler<AsyncResult<JsonObject>> handler);
-
-  @Fluent
   DataBrokerService publishHeartbeat(
       JsonObject request, String vhost, Handler<AsyncResult<JsonObject>> handler);
 

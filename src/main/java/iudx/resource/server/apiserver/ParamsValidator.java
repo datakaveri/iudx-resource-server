@@ -47,7 +47,6 @@ public class ParamsValidator {
     validParams.add(NGSILDQUERY_TIMEPROPERTY);
     validParams.add(NGSILDQUERY_TIME);
     validParams.add(NGSILDQUERY_TIMEREL);
-    validParams.add(NGSILDQUERY_TIME);
     validParams.add(NGSILDQUERY_ENDTIME);
     validParams.add(NGSILDQUERY_ENTITIES);
     validParams.add(NGSILDQUERY_GEOQ);

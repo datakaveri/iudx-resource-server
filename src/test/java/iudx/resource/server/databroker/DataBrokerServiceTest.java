@@ -1211,19 +1211,6 @@ public class DataBrokerServiceTest {
       testContext.completeNow();
     });
   }
-  @Test
-  public void testGetExchanges(VertxTestContext vertxTestContext){
-    JsonObject expected = new JsonObject().put(PROVIDER_ID,"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86");
-    databroker.getExchanges(expected,handler->{
-      if (handler.succeeded()) {
-        assertTrue(handler.result().containsKey("Adapters"));
-        vertxTestContext.completeNow();
-      }
-      else {
-        vertxTestContext.failNow(handler.cause());
-      }
-    });
-  }
 }
 
 

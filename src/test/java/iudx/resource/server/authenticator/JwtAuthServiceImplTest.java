@@ -54,8 +54,6 @@ public class JwtAuthServiceImplTest {
   @Mock
   HttpResponse<Buffer> httpResponseMock;
 
-
-
   private static final Logger LOGGER = LogManager.getLogger(JwtAuthServiceImplTest.class);
   private static JsonObject authConfig;
   private static JwtAuthenticationServiceImpl jwtAuthenticationService;
@@ -67,9 +65,6 @@ public class JwtAuthServiceImplTest {
   private static CacheService cacheService;
   private static MeteringService meteringService;
   private static Api apis;
-
-
-
 
   @BeforeAll
   @DisplayName("Initialize Vertx and deploy Auth Verticle")
@@ -143,14 +138,9 @@ public class JwtAuthServiceImplTest {
     invalidIdJson.put("key", invalidId);
     when(cacheService.get(invalidIdJson)).thenReturn(Future.failedFuture("Failed future"));
     
-    
     LOGGER.info("Auth tests setup complete");
-
     testContext.completeNow();
-
-
   }
-
 
   @Test
   @DisplayName("Testing setup")
@@ -158,7 +148,6 @@ public class JwtAuthServiceImplTest {
     LOGGER.info("Default test is passing");
     testContext.completeNow();
   }
-
 
   @Test
   @DisplayName("success - allow access to all open endpoints")
@@ -175,8 +164,6 @@ public class JwtAuthServiceImplTest {
     jwtData.setIid("ri:foobar.iudx.io");
     jwtData.setRole("consumer");
     jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
-
-
 
     jwtAuthenticationService.validateAccess(jwtData, true, authInfo).onComplete(handler -> {
       if (handler.succeeded()) {
@@ -215,7 +202,6 @@ public class JwtAuthServiceImplTest {
     });
   }
 
-
   @Test
   @DisplayName("success - disallow access to closed endpoint for different id")
   public void disallow4ClosedEndpoint(VertxTestContext testContext) {
@@ -225,9 +211,7 @@ public class JwtAuthServiceImplTest {
     authInfo.put("id", invalidId);
     authInfo.put("apiEndpoint", apis.getEntitiesUrl());
     authInfo.put("method", Method.GET);
-
     JsonObject request = new JsonObject();
-
 
     jwtAuthenticationService.tokenInterospect(request, authInfo, handler -> {
       if (handler.succeeded()) {
@@ -238,14 +222,12 @@ public class JwtAuthServiceImplTest {
     });
   }
 
-
   @Test
   @DisplayName("success - allow consumer access to /entities endpoint")
   public void success4ConsumerTokenEntitiesAPI(VertxTestContext testContext) {
 
     JsonObject request = new JsonObject();
     JsonObject authInfo = new JsonObject();
-
     authInfo.put("token", JwtTokenHelper.closedConsumerApiToken);
     authInfo.put("id", closeId);
     authInfo.put("apiEndpoint", apis.getEntitiesUrl());
@@ -259,7 +241,6 @@ public class JwtAuthServiceImplTest {
       }
     });
   }
-
 
   @Test
   @DisplayName("success - allow consumer access to /subscription endpoint")
@@ -393,29 +374,6 @@ public class JwtAuthServiceImplTest {
       }
     });
   }
-
-  @Test
-  @DisplayName("success - provider role -> ingest access")
-  public void closeProviderTokenIngestAPI(VertxTestContext testContext) {
-
-    JsonObject request = new JsonObject();
-    JsonObject authInfo = new JsonObject();
-
-    authInfo.put("token", JwtTokenHelper.closedProviderIngestToken);
-    authInfo.put("id", closeId);
-    authInfo.put("apiEndpoint", apis.getIngestionPath());
-    authInfo.put("method", Method.POST);
-
-    jwtAuthenticationService.tokenInterospect(request, authInfo, handler -> {
-      if (handler.succeeded()) {
-        testContext.completeNow();
-      } else {
-        testContext.failNow(handler.cause());
-      }
-    });
-  }
-
-
 
   @Test
   @DisplayName("decode valid jwt")
@@ -872,9 +830,8 @@ public class JwtAuthServiceImplTest {
   {
 
     String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
-    String[] idComponents = id.split("/");
-    String groupId =(idComponents.length == 4)? id:String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
-    
+    JsonObject groupId = new JsonObject().put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
     JsonObject openResourceIdJson=new JsonObject();
     openResourceIdJson.put("type", CacheType.CATALOGUE_CACHE);
     openResourceIdJson.put("key", id);
@@ -882,7 +839,7 @@ public class JwtAuthServiceImplTest {
     
     JsonObject openGroupIdJson=openResourceIdJson.copy();
     openGroupIdJson.put("key", groupId);
-    when(cacheService.get(openGroupIdJson)).thenReturn(Future.succeededFuture(new JsonObject().put("accessPolicy", "OPEN")));
+    when(cacheService.get(any())).thenReturn(Future.succeededFuture(groupId)).thenReturn(Future.succeededFuture(new JsonObject().put("accessPolicy", "OPEN")));
 
     jwtAuthenticationService.isOpenResource(id).onComplete(handler -> {
       if (handler.succeeded()) {
@@ -983,9 +940,8 @@ public class JwtAuthServiceImplTest {
   {
 
     String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
-    String[] idComponents = id.split("/");
-    String groupId =(idComponents.length == 4)? id:String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
-    
+    JsonObject groupId = new JsonObject().put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
     JsonObject openResourceIdJson=new JsonObject();
     openResourceIdJson.put("type", CacheType.CATALOGUE_CACHE);
     openResourceIdJson.put("key", id);
@@ -993,7 +949,7 @@ public class JwtAuthServiceImplTest {
     
     JsonObject openGroupIdJson=openResourceIdJson.copy();
     openGroupIdJson.put("key", groupId);
-    when(cacheService.get(openGroupIdJson)).thenReturn(Future.succeededFuture(new JsonObject().put("accessPolicy", "OPEN")));
+    when(cacheService.get(any())).thenReturn(Future.succeededFuture(groupId)).thenReturn(Future.succeededFuture(new JsonObject().put("accessPolicy", "OPEN")));
 
     jwtAuthenticationService.isOpenResource(id).onComplete(handler -> {
       if (handler.succeeded()) {
@@ -1008,7 +964,6 @@ public class JwtAuthServiceImplTest {
   @DisplayName("Test No ACL at group and resource level")
   public void testNoACL(VertxTestContext vertxTestContext)
   {
-
     String id = "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053";
     String[] idComponents = id.split("/");
     String groupId =(idComponents.length == 4)? id:String.join("/", Arrays.copyOfRange(idComponents, 0, 4));

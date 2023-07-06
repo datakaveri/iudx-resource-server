@@ -1,5 +1,7 @@
 package iudx.resource.server.database.async;
 
+import static iudx.resource.server.database.archives.Constants.RESPONSE_ATTRS;
+import static iudx.resource.server.metering.util.Constants.SUCCESS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -9,6 +11,8 @@ import static org.mockito.Mockito.lenient;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import iudx.resource.server.cache.CacheService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeAll;
@@ -46,6 +50,7 @@ public class AsyncServiceTest {
   private static Configuration config;
   private static ElasticClient client;
   private static PostgresService pgService;
+  private static CacheService cacheSer;
   private static S3FileOpsHelper fileOpsHelper;
   private static Util util;
   private static File file;
@@ -64,6 +69,8 @@ public class AsyncServiceTest {
   private static String tenantPrefix;
   @Mock
   static PostgresService postgresService;
+  @Mock
+  static CacheService cacheService;
   @Mock
   Throwable throwable;
   @Mock
@@ -85,9 +92,10 @@ public class AsyncServiceTest {
     pgService = mock(PostgresService.class);
     fileOpsHelper = mock(S3FileOpsHelper.class);
     util = mock(Util.class);
+    cacheSer = mock(CacheService.class);
 
     asyncService =
-        new AsyncServiceImpl(vertx, client, pgService, fileOpsHelper, filePath, tenantPrefix);
+        new AsyncServiceImpl(vertx, client, pgService, fileOpsHelper, filePath, tenantPrefix,cacheSer);
     asyncServiceSpy = spy(asyncService);
 
 
@@ -151,11 +159,12 @@ public class AsyncServiceTest {
                 "id",
                 new JsonArray()
                     .add(
-                        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"))
+                        "83c2e5c2-3574-4e11-9530-2b1fbdfce832"))
             .put("time", "2020-10-10T14:20:00Z")
             .put("endtime", "2020-10-20T14:20:00Z")
             .put("timerel", "during")
-            .put("searchType", "temporalSearch")
+            .put("searchType", "temporalSearch").put("resourceGroup","83c2e5c2-3574-4e11-9530-2b1fbdfce83")
+                .put(RESPONSE_ATTRS,new JsonArray().add("attrs"))
             .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
 
     return query;
@@ -193,13 +202,112 @@ public class AsyncServiceTest {
         .getRecord4RequestId(any());
     doAnswer(Answer -> Future.succeededFuture()).when(asyncServiceSpy).executePgQuery(any());
 
-    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv");
+    JsonObject providerJson =
+            new JsonObject()
+                    .put("provider", "8b95ab80-2aaf-4636-a65e-7f2563d0d371")
+                    .put("id", "5b7556b5-0779-4c47-9cf2-3f209779aa22")
+                    .put("resourceGroup", "dummy_resource");
 
-    verify(asyncServiceSpy, times(2)).process4ExistingRequestId(any(),any(), any(), any(), any(), anyString());
-    verify(asyncServiceSpy, times(2)).executePgQuery(any());
-    verify(fileOpsHelper, times(2)).generatePreSignedUrl(anyLong(), any());
+    when(cacheSer.get(any())).thenReturn(Future.succeededFuture(providerJson));
+    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv");
     testContext.completeNow();
   }
+  @Test
+  @DisplayName("Failure case")
+  public void failureAsyncSearchForExistingRecordTest(VertxTestContext testContext) {
+
+    String requestId = "682a3a42aaa1c8adadea4cc9ea16d968993fc8eee4edfc299d00bccf28117965";
+    String sub = "15c7506f-c800-48d6-adeb-0542b03947c6";
+    String searchId = "18cc743b-59a4-4c26-9f54-e243986ed709";
+    JsonArray record = record();
+    JsonObject query = query();
+
+    doAnswer(Answer -> Future.failedFuture("failed"))
+            .when(asyncServiceSpy)
+            .getRecord4RequestId(any());
+
+    when(asyncResult1.succeeded()).thenReturn(true);
+    when(asyncResult1.result()).thenReturn(jsonObject);
+
+    when(client.asyncScroll(any(),anyString(),any(),any(),anyString(),any(),anyString(),anyString())).thenReturn(Future.failedFuture(""));
+
+    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv");
+
+    testContext.completeNow();
+  }
+
+  @Test
+  @DisplayName("success case")
+  public void successfulAsyncSearchForExistingRecordTest3(VertxTestContext testContext) {
+
+    String requestId = "682a3a42aaa1c8adadea4cc9ea16d968993fc8eee4edfc299d00bccf28117965";
+    String sub = "15c7506f-c800-48d6-adeb-0542b03947c6";
+    String searchId = "18cc743b-59a4-4c26-9f54-e243986ed709";
+    JsonArray record = record();
+    JsonObject query = query();
+
+    doAnswer(Answer -> Future.failedFuture("failed"))
+            .when(asyncServiceSpy)
+            .getRecord4RequestId(any());
+
+    when(asyncResult1.succeeded()).thenReturn(true);
+    when(asyncResult1.result()).thenReturn(jsonObject);
+
+    JsonObject jsonObject2= new JsonObject()
+            .put("_id", "4c030b19-4954-4e56-868a-c36d80a77902")
+            .put("search_id", "4b25aa92-47bb-4c91-98c0-47a1c7a51fbe")
+            .put("request_id", "efb0b92cd5b50d0a75a939ffa997c6e4fccdc62414ad0177a020eec98f69144e")
+            .put("status", "COMPLETE")
+            .put("s3_url", "https://example.com")
+            .put("expiry", "2022-03-02T16:08:38.495665")
+            .put("user_id", "15c7506f-c800-48d6-adeb-0542b03947c6")
+            .put("object_id", "b8a47206-364c-4580-8885-45205118db57")
+            .put("size", 0);
+    when(asyncResult2.succeeded()).thenReturn(true);
+    when(asyncResult2.result()).thenReturn(jsonObject2);
+    when(client.asyncScroll(any(),anyString(),any(),any(),anyString(),any(),anyString(),anyString())).thenReturn(Future.succeededFuture(jsonObject2));
+
+    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv");
+
+    verify(asyncServiceSpy, times(1)).executePgQuery(any());
+    testContext.completeNow();
+  }
+
+  @Test
+  @DisplayName("Failure case")
+  public void failAsyncSearchForExistingRecordTest4(VertxTestContext testContext) {
+
+    String requestId = "682a3a42aaa1c8adadea4cc9ea16d968993fc8eee4edfc299d00bccf28117965";
+    String sub = "15c7506f-c800-48d6-adeb-0542b03947c6";
+    String searchId = "18cc743b-59a4-4c26-9f54-e243986ed709";
+    JsonArray record = record();
+    JsonObject query = query();
+
+    doAnswer(Answer -> Future.failedFuture("failed"))
+            .when(asyncServiceSpy)
+            .getRecord4RequestId(any());
+
+    when(asyncResult1.succeeded()).thenReturn(true);
+    when(asyncResult1.result()).thenReturn(jsonObject);
+
+    JsonObject jsonObject2= new JsonObject()
+            .put("_id", "4c030b19-4954-4e56-868a-c36d80a77902")
+            .put("search_id", "4b25aa92-47bb-4c91-98c0-47a1c7a51fbe")
+            .put("request_id", "efb0b92cd5b50d0a75a939ffa997c6e4fccdc62414ad0177a020eec98f69144e")
+            .put("status", "COMPLETE")
+            .put("s3_url", "https://example.com")
+            .put("expiry", "2022-03-02T16:08:38.495665")
+            .put("user_id", "15c7506f-c800-48d6-adeb-0542b03947c6")
+            .put("object_id", "b8a47206-364c-4580-8885-45205118db57")
+            .put("size", 0);
+    when(asyncResult2.succeeded()).thenReturn(false);
+    when(client.asyncScroll(any(),anyString(),any(),any(),anyString(),any(),anyString(),anyString())).thenReturn(Future.succeededFuture(jsonObject2));
+
+    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv");
+
+    testContext.completeNow();
+  }
+
 
   @Test
   @DisplayName("fail - async search for existing request id")
@@ -380,7 +488,7 @@ public class AsyncServiceTest {
     }).when(postgresService).executeQuery(anyString(), any());
     when(jsonArray.isEmpty()).thenReturn(true);
     asyncService2 = new AsyncServiceImpl(Vertx.vertx(), client, postgresService, fileOpsHelper,
-        filePath, tenantPrefix);
+        filePath, tenantPrefix,cacheService);
     asyncService2.getRecord4RequestId("Dummy ID").onComplete(handler -> {
       if (handler.failed()) {
         assertEquals("Record doesn't exist in db for requestId.", handler.cause().getMessage());
@@ -396,7 +504,7 @@ public class AsyncServiceTest {
   @DisplayName("Test executePGQuery method : failure")
   public void testExecutePgQueryFailure(VertxTestContext vertxTestContext) {
     asyncService2 = new AsyncServiceImpl(Vertx.vertx(), client, postgresService, fileOpsHelper,
-        filePath, tenantPrefix);
+        filePath, tenantPrefix,cacheService);
     when(asyncResult2.succeeded()).thenReturn(false);
     when(asyncResult2.cause()).thenReturn(throwable);
     doAnswer(new Answer<AsyncResult<JsonObject>>() {
@@ -422,7 +530,7 @@ public class AsyncServiceTest {
   public void testScrollQueryWithInvalidQuery(VertxTestContext vertxTestContext) {
     ProgressListener progressListener = mock(ProgressListener.class);
     asyncService2 = new AsyncServiceImpl(Vertx.vertx(), client, postgresService, fileOpsHelper,
-        filePath, tenantPrefix);
+        filePath, tenantPrefix,cacheService);
     when(jsonObject.put(anyString(), anyBoolean())).thenReturn(jsonObject);
     asyncService2.scrollQuery(file, jsonObject, "Dummy SearchID", progressListener, "csv", handler -> {
       if (handler.succeeded()) {

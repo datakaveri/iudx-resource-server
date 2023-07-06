@@ -15,12 +15,12 @@ public class Constants {
   public static final String ENCRYPTION_SERVICE_ADDRESS = "iudx.rs.encryption.service";
   public static final String CREATE_INGESTION_SQL =
       "INSERT INTO "
-          + "adaptors_details(exchange_name,resource_id,dataset_name,dataset_details_json,user_id) "
-          + "VALUES('$1','$2','$3','$4','$5') ";
+          + "adaptors_details(exchange_name,resource_id,dataset_name,dataset_details_json,user_id,providerid) "
+          + "VALUES('$1','$2','$3','$4','$5','$6') ";
   public static final String DELETE_INGESTION_SQL =
       "DELETE from adaptors_details where exchange_name='$0';";
   public static final String SELECT_INGESTION_SQL =
-      "SELECT * from adaptors_details where resource_id like '$0%';";
+      "SELECT * from adaptors_details where providerid = '$0';";
   /* Broadcast exchanges and queues */
   public static String TOKEN_INVALID_EX = "invalid-sub";
   public static String TOKEN_INVALID_EX_ROUTING_KEY = "invalid-sub";

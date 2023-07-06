@@ -27,7 +27,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -59,7 +58,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     this.port = config.getInteger("catServerPort");
     this.catBasePath = config.getString("dxCatalogueBasePath");
     this.path = catBasePath + CAT_SEARCH_PATH;
-    if (config.getBoolean("enableLimits") != null  && config.getBoolean("enableLimits")) {
+    if (config.getBoolean("enableLimits") != null && config.getBoolean("enableLimits")) {
       this.isLimitsEnabled = config.getBoolean("enableLimits");
     }
     this.apis = apis;
@@ -123,7 +122,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             })
         .compose(
             openResourceHandler -> {
-              LOGGER.debug("isOpenResource messahe {}" + openResourceHandler);
+              LOGGER.debug("isOpenResource messahe {}", openResourceHandler);
               result.isOpen = openResourceHandler.equalsIgnoreCase("OPEN");
               if (result.isOpen && checkOpenEndPoints(endPoint)) {
                 JsonObject json = new JsonObject();
@@ -198,12 +197,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     cacheRequest.put("key", id);
     Future<JsonObject> resourceIdFuture = cache.get(cacheRequest);
 
-    String[] idComponents = id.split("/");
-    String groupId =
-        (idComponents.length == 4) ? id : String.join("/", Arrays.copyOfRange(idComponents, 0, 4));
-    JsonObject resourceGroupCacheRequest = cacheRequest.copy();
-    resourceGroupCacheRequest.put("key", groupId);
-    Future<JsonObject> groupIdFuture = cache.get(resourceGroupCacheRequest);
     Promise<String> promise = Promise.promise();
     resourceIdFuture.onComplete(
         isResourceExistHandler -> {
@@ -211,6 +204,10 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             promise.fail("Not Found  : " + id);
             return;
           } else {
+            String groupId = isResourceExistHandler.result().getString("resourceGroup");
+            JsonObject resourceGroupCacheRequest = cacheRequest.copy();
+            resourceGroupCacheRequest.put("key", groupId);
+            Future<JsonObject> groupIdFuture = cache.get(resourceGroupCacheRequest);
             groupIdFuture.onComplete(
                 groupCacheResultHandler -> {
                   if (groupCacheResultHandler.failed()) {

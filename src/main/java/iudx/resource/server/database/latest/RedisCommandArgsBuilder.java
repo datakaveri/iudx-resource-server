@@ -10,10 +10,8 @@ public class RedisCommandArgsBuilder {
 
   private static final Logger LOGGER = LogManager.getLogger(RedisCommandArgsBuilder.class);
 
-  public RedisArgs getRedisCommandArgs(String id, boolean isUniqueAttribueExist,
-      String tenantPrefix) {
-    RedisArgs args = new RedisArgs();
-
+  public RedisArgs getRedisCommandArgs(
+      String id, boolean isUniqueAttribueExist, String tenantPrefix) {
     LOGGER.trace("In LatestSearch Redis");
 
     String idKey = id.replace("-", "_").replaceAll("/", "_").replaceAll("\\.", "_");
@@ -22,6 +20,7 @@ public class RedisCommandArgsBuilder {
      * iudx:iisc_ac_in_89a36273d77dac4cf38114fca1bbe64392547f86_rs_iudx_io_pune_env_flood_FWR055
      * where "iudx" redis namespace and key is the other part
      */
+    RedisArgs args = new RedisArgs();
     if (!tenantPrefix.equals("none")) {
       String namespace = tenantPrefix.concat(":");
       idKey = namespace.concat(idKey);

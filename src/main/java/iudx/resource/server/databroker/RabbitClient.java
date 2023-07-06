@@ -2,7 +2,6 @@ package iudx.resource.server.databroker;
 
 import static iudx.resource.server.databroker.util.Constants.*;
 import static iudx.resource.server.databroker.util.Util.*;
-import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -191,35 +190,6 @@ public class RabbitClient {
     return promise.future();
   }
 
-  Future<JsonObject> getAllExchanges(JsonObject request) {
-    Promise<JsonObject> promise = Promise.promise();
-    if (request != null && !request.isEmpty()) {
-      String providerId = request.getString(PROVIDER_ID);
-      String url =
-          "/api/exchanges?page="
-              + encodeValue("1")
-              + "&page_size="
-              + encodeValue("100")
-              + "&"
-              + "name="
-              + encodeValue(providerId)
-              + "&use_regex=true&pagination=true";
-      JsonObject jsonObject = new JsonObject();
-      webClient
-          .requestAsyncs(REQUEST_GET, url)
-          .onComplete(
-              asyncResult -> {
-                if (asyncResult.succeeded()) {
-                  jsonObject.put("Adapters", asyncResult.result());
-                  promise.complete(jsonObject);
-                } else {
-                  promise.fail("getExchange_Error" + asyncResult.cause());
-                }
-              });
-    }
-    return promise.future();
-  }
-
   /**
    * The deleteExchange implements the delete exchange operation.
    *
@@ -368,7 +338,6 @@ public class RabbitClient {
                     }
                   }
                   promise.complete(finalResponse);
-                  LOGGER.info("Success : " + finalResponse);
                 } else {
                   LOGGER.error("Fail : Creation of Queue failed - ", ar.cause());
                   finalResponse.mergeIn(getResponseJson(500, FAILURE, QUEUE_CREATE_ERROR));

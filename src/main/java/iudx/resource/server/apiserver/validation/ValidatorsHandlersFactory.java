@@ -143,11 +143,7 @@ public class ValidatorsHandlersFactory {
   private List<Validator> getLatestRequestValidations(final MultiMap parameters) {
 
     List<Validator> validators = new ArrayList<>();
-    validators.add(new StringTypeValidator(parameters.get(DOMAIN), true, ID_DOMAIN_REGEX));
-    validators.add(new StringTypeValidator(parameters.get(USERSHA), true, ID_USERSHA_REGEX));
-    validators.add(new StringTypeValidator(parameters.get(RESOURCE_SERVER), true, ID_RS_REGEX));
-    validators.add(new StringTypeValidator(parameters.get(RESOURCE_GROUP), true, ID_RG_REGEX));
-    validators.add(new StringTypeValidator(parameters.get(RESOURCE_NAME), true, ID_RN_REGEX));
+    validators.add(new StringTypeValidator(parameters.get("*"), true, UUID_PATTERN));
 
     // optional header public key
     validators.add(new HeaderKeyTypeValidation(parameters.get(HEADER_PUBLIC_KEY), false));
@@ -179,7 +175,6 @@ public class ValidatorsHandlersFactory {
       final MultiMap parameters,
       final JsonObject body,
       final RequestType requestType) {
-
     List<Validator> validators = new ArrayList<>();
     // pagination optional fields
     validators.add(new PaginationLimitTypeValidator(parameters.get(NGSILDQUERY_SIZE), false));
@@ -222,7 +217,9 @@ public class ValidatorsHandlersFactory {
 
     // optional header public key
     validators.add(new HeaderKeyTypeValidation(parameters.get(HEADER_PUBLIC_KEY), false));
-    validators.add(new ElasticSearchFileResponseTypeValidator(parameters.get(HEADER_RESPONSE_FILE_FORMAT), false));
+    validators.add(
+        new ElasticSearchFileResponseTypeValidator(
+            parameters.get(HEADER_RESPONSE_FILE_FORMAT), false));
 
     return validators;
   }

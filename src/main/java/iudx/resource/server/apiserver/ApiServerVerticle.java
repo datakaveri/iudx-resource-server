@@ -48,6 +48,7 @@ import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.util.RequestType;
 import iudx.resource.server.cache.CacheService;
+import iudx.resource.server.cache.cachelmpl.CacheType;
 import iudx.resource.server.common.Api;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
@@ -217,8 +218,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     ValidationHandler latestValidationHandler = new ValidationHandler(vertx, RequestType.LATEST);
     router
-        .get(
-            api.getEntitiesUrl() + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
+        .get(api.getEntitiesUrl() + "/*")
         .handler(latestValidationHandler)
         .handler(AuthHandler.create(vertx, api))
         .handler(this::handleLatestEntitiesQuery)
@@ -310,25 +310,14 @@ public class ApiServerVerticle extends AbstractVerticle {
         .post(api.getIngestionPath())
         .handler(AuthHandler.create(vertx, api))
         .handler(this::registerAdapter);
-    router
-        .delete(
-            api.getIngestionPath()
-                + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
-        .handler(AuthHandler.create(vertx, api))
-        .handler(this::deleteAdapter);
-    router
-        .delete(api.getIngestionPath() + "/:domain/:userSha/:resourceServer/:resourceGroup")
-        .handler(AuthHandler.create(vertx, api))
-        .handler(this::deleteAdapter);
-    router
-        .get(
-            api.getIngestionPath()
-                + "/:domain/:userSha/:resourceServer/:resourceGroup/:resourceName")
-        .handler(AuthHandler.create(vertx, api))
-        .handler(this::getAdapterDetails);
 
     router
-        .get(api.getIngestionPath() + "/:domain/:userSha/:resourceServer/:resourceGroup")
+        .delete(api.getIngestionPath() + "/*")
+        .handler(AuthHandler.create(vertx, api))
+        .handler(this::deleteAdapter);
+
+    router
+        .get(api.getIngestionPath() + "/:UUID")
         .handler(AuthHandler.create(vertx, api))
         .handler(this::getAdapterDetails);
 
@@ -628,14 +617,9 @@ public class ApiServerVerticle extends AbstractVerticle {
           new RuntimeException("Query parameters are not allowed with latest query");
       routingContext.fail(ex);
     }
-    String domain = request.getParam(DOMAIN);
-    String userSha = request.getParam(USERSHA);
-    String resourceServer = request.getParam(RESOURCE_SERVER);
-    String resourceGroup = request.getParam(RESOURCE_GROUP);
-    String resourceName = request.getParam(RESOURCE_NAME);
+    Map<String, String> pathParams = routingContext.pathParams();
+    String id = pathParams.get("*");
 
-    String id =
-        domain + "/" + userSha + "/" + resourceServer + "/" + resourceGroup + "/" + resourceName;
     JsonObject json = new JsonObject();
 
     /* HTTP request instance/host details */
@@ -710,7 +694,6 @@ public class ApiServerVerticle extends AbstractVerticle {
                       executeSearchQuery(routingContext, json, response);
                     }
                   } else if (validationHandler.failed()) {
-                    LOGGER.error("Fail: Validation failed");
                     handleResponse(
                         response,
                         BAD_REQUEST,
@@ -719,7 +702,6 @@ public class ApiServerVerticle extends AbstractVerticle {
                   }
                 });
           } else if (validationHandler.failed()) {
-            LOGGER.error("Fail: Validation failed");
             handleResponse(
                 response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
           }
@@ -774,7 +756,6 @@ public class ApiServerVerticle extends AbstractVerticle {
                   }
                 });
           } else if (validationHandler.failed()) {
-            LOGGER.error("Fail: Bad request");
             handleResponse(
                 response, BAD_REQUEST, INVALID_PARAM_URN, validationHandler.cause().getMessage());
           }
@@ -789,7 +770,6 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   private void executeCountQuery(
       RoutingContext context, JsonObject json, HttpServerResponse response) {
-
     Future<JsonObject> countQueryDbFuture = database.count(json);
     countQueryDbFuture.onComplete(
         handler -> {
@@ -903,7 +883,6 @@ public class ApiServerVerticle extends AbstractVerticle {
                   });
             }
           } else {
-            LOGGER.error("Fail: Search Fail");
             processBackendResponse(response, handler.cause().getMessage());
           }
         });
@@ -1222,7 +1201,6 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     JsonObject jsonObj = new JsonObject();
     jsonObj.put(USER_ID, authInfo.getString(USER_ID));
-
     Future<JsonObject> subsReq =
         subsService.getAllSubscriptionQueueForUser(jsonObj, postgresService);
     subsReq.onComplete(
@@ -1345,23 +1323,12 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   public void deleteAdapter(RoutingContext routingContext) {
     LOGGER.trace("Info: deleteAdapter method starts;");
-    HttpServerRequest request = routingContext.request();
 
-    String domain = request.getParam(DOMAIN);
-    String usersha = request.getParam(USERSHA);
-    String resourceServer = request.getParam(RESOURCE_SERVER);
+    Map<String, String> pathParams = routingContext.pathParams();
+    String id = pathParams.get("*");
 
     StringBuilder adapterIdBuilder = new StringBuilder();
-    adapterIdBuilder.append(domain);
-    adapterIdBuilder.append("/").append(usersha);
-    adapterIdBuilder.append("/").append(resourceServer);
-    String resourceGroup = request.getParam(RESOURCE_GROUP);
-    adapterIdBuilder.append("/").append(resourceGroup);
-    String resourceName = request.getParam(RESOURCE_NAME);
-    if (resourceName != null) {
-      adapterIdBuilder.append("/").append(resourceName);
-    }
-
+    adapterIdBuilder.append(id);
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     String userId = authInfo.getString(USER_ID);
     Future<JsonObject> brokerResult =
@@ -1390,22 +1357,12 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   public void getAdapterDetails(RoutingContext routingContext) {
     LOGGER.trace("getAdapterDetails method starts");
-    HttpServerRequest request = routingContext.request();
-    String domain = request.getParam(DOMAIN);
-    String usersha = request.getParam(USERSHA);
-    String resourceServer = request.getParam(RESOURCE_SERVER);
+
+    Map<String, String> pathParams = routingContext.pathParams();
+    String id = pathParams.get("UUID");
 
     StringBuilder adapterIdBuilder = new StringBuilder();
-    adapterIdBuilder.append(domain);
-    adapterIdBuilder.append("/").append(usersha);
-    adapterIdBuilder.append("/").append(resourceServer);
-    String resourceGroup = request.getParam(RESOURCE_GROUP);
-    adapterIdBuilder.append("/").append(resourceGroup);
-    String resourceName = request.getParam(RESOURCE_NAME);
-    if (resourceName != null) {
-      adapterIdBuilder.append("/").append(resourceName);
-    }
-
+    adapterIdBuilder.append(id);
     Future<JsonObject> brokerResult =
         managementApi.getAdapterDetails(adapterIdBuilder.toString(), databroker);
     HttpServerResponse response = routingContext.response();
@@ -1506,29 +1463,44 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject jsonObj = new JsonObject();
 
     String iid = authInfo.getString(IID);
-    String providerId = iid.substring(0, iid.indexOf('/', iid.indexOf('/') + 1));
+    JsonObject cacheRequest = new JsonObject();
+    cacheRequest.put("type", CacheType.CATALOGUE_CACHE);
+    cacheRequest.put("key", iid);
 
-    jsonObj.put(PROVIDER_ID, providerId);
-    Future<JsonObject> allAdapterForUser =
-        managementApi.getAllAdapterDetailsForUser(jsonObj, postgresService);
-    allAdapterForUser.onComplete(
-        handler -> {
-          if (handler.succeeded()) {
-            LOGGER.debug("Successful");
-            if (handler.result().getJsonArray("result").isEmpty()) {
-              handleSuccessResponse(
-                  response, ResponseType.NoContent.getCode(), handler.result().toString());
-            } else {
-              /*routingContext.data().put(RESPONSE_SIZE, 0);
-              Future.future(fu -> updateAuditTable(routingContext));*/
-              handleSuccessResponse(
-                  response, ResponseType.Ok.getCode(), handler.result().toString());
-            }
-          } else {
-            LOGGER.debug(handler.cause());
-            processBackendResponse(response, handler.cause().getMessage());
-          }
-        });
+    cacheService
+        .get(cacheRequest)
+        .onComplete(
+            relHandler -> {
+              if (relHandler.succeeded()) {
+                String providerId = relHandler.result().getString("provider");
+                jsonObj.put(PROVIDER_ID, providerId);
+                Future<JsonObject> allAdapterForUser =
+                    managementApi.getAllAdapterDetailsForUser(jsonObj, postgresService);
+                allAdapterForUser.onComplete(
+                    handler -> {
+                      if (handler.succeeded()) {
+                        LOGGER.debug("Successful");
+                        if (handler.result().getJsonArray("result").isEmpty()) {
+                          handleSuccessResponse(
+                              response,
+                              ResponseType.NoContent.getCode(),
+                              handler.result().toString());
+                        } else {
+                          /*routingContext.data().put(RESPONSE_SIZE, 0);
+                          Future.future(fu -> updateAuditTable(routingContext));*/
+                          handleSuccessResponse(
+                              response, ResponseType.Ok.getCode(), handler.result().toString());
+                        }
+                      } else {
+                        LOGGER.debug(handler.cause());
+                        processBackendResponse(response, handler.cause().getMessage());
+                      }
+                    });
+
+              } else {
+                LOGGER.debug("Fail in get Adapters method and didn't get rel");
+              }
+            });
   }
 
   /**
@@ -1621,30 +1593,43 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   private Future<Void> updateAuditTable(RoutingContext context) {
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
-    JsonObject request = new JsonObject();
-
-    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
-    long time = zst.toInstant().toEpochMilli();
-    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
-
-    request.put(EPOCH_TIME, time);
-    request.put(ISO_TIME, isoTime);
-    request.put(USER_ID, authInfo.getValue(USER_ID));
-    request.put(ID, authInfo.getValue(ID));
-    request.put(API, authInfo.getValue(API_ENDPOINT));
-    request.put(RESPONSE_SIZE, context.data().get(RESPONSE_SIZE));
     Promise<Void> promise = Promise.promise();
-    meteringService.insertMeteringValuesInRmq(
-        request,
-        handler -> {
-          if (handler.succeeded()) {
-            LOGGER.info("message published in RMQ.");
-            promise.complete();
-          } else {
-            LOGGER.error("failed to publish message in RMQ.");
-            promise.complete();
-          }
-        });
+    JsonObject request = new JsonObject();
+    JsonObject cacheRequest = new JsonObject();
+    cacheRequest.put("type", CacheType.CATALOGUE_CACHE);
+    cacheRequest.put("key", authInfo.getValue(ID));
+    cacheService
+        .get(cacheRequest)
+        .onComplete(
+            relHandler -> {
+              if (relHandler.succeeded()) {
+                String providerId = relHandler.result().getString("provider");
+                ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+                long time = zst.toInstant().toEpochMilli();
+                String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+                request.put(EPOCH_TIME, time);
+                request.put(ISO_TIME, isoTime);
+                request.put(USER_ID, authInfo.getValue(USER_ID));
+                request.put(ID, authInfo.getValue(ID));
+                request.put(API, authInfo.getValue(API_ENDPOINT));
+                request.put(RESPONSE_SIZE, context.data().get(RESPONSE_SIZE));
+                request.put(PROVIDER_ID, providerId);
+                meteringService.insertMeteringValuesInRmq(
+                    request,
+                    handler -> {
+                      if (handler.succeeded()) {
+                        LOGGER.info("message published in RMQ.");
+                        promise.complete();
+                      } else {
+                        LOGGER.error("failed to publish message in RMQ.");
+                        promise.complete();
+                      }
+                    });
+              } else {
+                LOGGER.debug("Item not found and failed to call metering service");
+              }
+            });
+
     return promise.future();
   }
 

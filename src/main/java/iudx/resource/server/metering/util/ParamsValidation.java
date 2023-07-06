@@ -11,7 +11,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class ParamsValidation {
-
   private static final Logger LOGGER = LogManager.getLogger(ParamsValidation.class);
 
   public JsonObject paramsCheck(JsonObject request) {
@@ -38,11 +37,6 @@ public class ParamsValidation {
       LOGGER.debug("Info: " + USERID_NOT_FOUND);
       request.put(ERROR, USERID_NOT_FOUND);
       return request;
-    }
-    String iid = request.getString(IID);
-    String providerId = request.getString(PROVIDER_ID);
-    if (providerId != null && checkProviderId(iid, providerId)) {
-      return new JsonObject().put(ERROR, INVALID_PROVIDER_ID);
     }
 
     // since + is treated as space in uri
@@ -85,9 +79,5 @@ public class ParamsValidation {
 
   private long zonedDateTimeMinuteDifference(ZonedDateTime startTime, ZonedDateTime endTime) {
     return ChronoUnit.MINUTES.between(startTime, endTime);
-  }
-
-  private boolean checkProviderId(String iid, String providerId) {
-    return !iid.substring(0, iid.indexOf('/', iid.indexOf('/') + 1)).equals(providerId);
   }
 }

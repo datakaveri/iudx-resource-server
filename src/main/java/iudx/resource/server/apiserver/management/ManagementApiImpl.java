@@ -10,6 +10,7 @@ import static iudx.resource.server.cache.cachelmpl.CacheType.CATALOGUE_CACHE;
 import static iudx.resource.server.common.Constants.CREATE_INGESTION_SQL;
 import static iudx.resource.server.common.Constants.DELETE_INGESTION_SQL;
 import static iudx.resource.server.common.Constants.SELECT_INGESTION_SQL;
+import static iudx.resource.server.database.archives.Constants.ITEM_TYPES;
 import static iudx.resource.server.databroker.util.Constants.RESULTS;
 import static iudx.resource.server.databroker.util.Constants.TITLE;
 import static iudx.resource.server.databroker.util.Constants.TYPE;
@@ -25,6 +26,8 @@ import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.common.Vhosts;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -44,7 +47,7 @@ public class ManagementApiImpl implements ManagementApi {
       CacheService cacheService,
       PostgresService postgresService) {
     Promise<JsonObject> promise = Promise.promise();
-
+    LOGGER.info(" at 47 = " + requestJson);
     JsonObject cacheJson =
         new JsonObject()
             .put("key", requestJson.getJsonArray("entities").getString(0))
@@ -54,16 +57,30 @@ public class ManagementApiImpl implements ManagementApi {
         .get(cacheJson)
         .onSuccess(
             cacheServiceResult -> {
+              LOGGER.info(cacheServiceResult.getJsonArray("type").getList());
+              Set<String> type = new HashSet<String>(new JsonArray().getList());
+              type = new HashSet<String>(cacheServiceResult.getJsonArray("type").getList());
+              type.retainAll(ITEM_TYPES);
+              String itemTypes = type.toString().replaceAll("\\[", "").replaceAll("\\]", "");
+              LOGGER.debug("Info: itemType: {} ", itemTypes);
+
+              String resourceIdForIngestions;
+              if (itemTypes.equalsIgnoreCase("iudx:Resource")) {
+                resourceIdForIngestions = cacheServiceResult.getString("resourceGroup");
+              } else {
+                resourceIdForIngestions = cacheServiceResult.getString("id");
+              }
+
               String query =
                   CREATE_INGESTION_SQL
                       .replace(
                           "$1",
                           requestJson.getJsonArray("entities").getString(0)) /* exchange name */
-                      .replace("$2", cacheServiceResult.getString("id")) /* resource id */
+                      .replace("$2", resourceIdForIngestions) /* resource id */
                       .replace("$3", cacheServiceResult.getString("name")) /* dataset name */
                       .replace("$4", cacheServiceResult.toString()) /* dataset json */
-                      .replace("$5", requestJson.getString("userid")); /* user id */
-
+                      .replace("$5", requestJson.getString("userid")) /* user id */
+                      .replace("$6", cacheServiceResult.getString("provider")); /*provider*/
               postgresService.executeQuery(
                   query,
                   pgHandler -> {

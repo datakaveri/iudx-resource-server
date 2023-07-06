@@ -31,7 +31,6 @@ public class CatalogueCacheImpl implements IudxCache {
     this.catHost = config.getString("catServerHost");
     this.catPort = config.getInteger("catServerPort");
     this.catBasePath = config.getString("dxCatalogueBasePath");
-
     WebClientOptions options =
         new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true);
     if (catWebClient == null) {
@@ -94,8 +93,8 @@ public class CatalogueCacheImpl implements IudxCache {
         .addQueryParam("value", "[[ACTIVE]]")
         .addQueryParam(
             "filter",
-            "[id,provider,name,description,authControlGroup,accessPolicy,"
-                + "iudxResourceAPIs,instance]")
+            "[id,provider,name,description,authControlGroup,accessPolicy,type,"
+                + "iudxResourceAPIs,instance,resourceGroup]")
         .expect(ResponsePredicate.JSON)
         .send(
             catHandler -> {

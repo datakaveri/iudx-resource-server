@@ -89,34 +89,47 @@ public class CatalogueService {
   // }
 
   public Future<List<String>> getApplicableFilters(String id) {
-    String groupId = id.substring(0, id.lastIndexOf("/"));
-
-    JsonObject cacheRequest = new JsonObject();
-    cacheRequest.put("type", CacheType.CATALOGUE_CACHE);
-    cacheRequest.put("key", groupId);
-    Future<JsonObject> groupFilter = cacheService.get(cacheRequest);
-    JsonObject itemCacheRequest = cacheRequest.copy();
-    itemCacheRequest.put("key", id);
-    Future<JsonObject> itemFilters = cacheService.get(itemCacheRequest);
     Promise<List<String>> promise = Promise.promise();
-    List<String> filters = new ArrayList<String>();
-    CompositeFuture.all(List.of(groupFilter, itemFilters))
-        .onComplete(
-            ar -> {
-              if (ar.failed()) {
-                promise.fail("no filters available for : " + id);
-                return;
-              }
-              if (groupFilter.result().containsKey("iudxResourceAPIs")) {
-                filters.addAll(toList(groupFilter.result().getJsonArray("iudxResourceAPIs")));
-                promise.complete(filters);
-              }
+    JsonObject cacheRequests = new JsonObject();
+    cacheRequests.put("type", CacheType.CATALOGUE_CACHE);
+    cacheRequests.put("key", id);
+    Future<JsonObject> groupIdFuture = cacheService.get(cacheRequests);
+    groupIdFuture.onComplete(
+        grpId -> {
+          if (grpId.succeeded()) {
+            String groupId = grpId.result().getString("resourceGroup");
+            LOGGER.debug("groupId = " + groupId);
+            JsonObject cacheRequest = new JsonObject();
+            cacheRequest.put("type", CacheType.CATALOGUE_CACHE);
+            cacheRequest.put("key", groupId);
+            Future<JsonObject> groupFilter = cacheService.get(cacheRequest);
+            JsonObject itemCacheRequest = cacheRequest.copy();
+            itemCacheRequest.put("key", id);
+            Future<JsonObject> itemFilters = cacheService.get(itemCacheRequest);
+            List<String> filters = new ArrayList<String>();
+            CompositeFuture.all(List.of(groupFilter, itemFilters))
+                .onComplete(
+                    ar -> {
+                      if (ar.failed()) {
+                        promise.fail("no filters available for : " + id);
+                        return;
+                      }
+                      if (groupFilter.result().containsKey("iudxResourceAPIs")) {
+                        filters.addAll(
+                            toList(groupFilter.result().getJsonArray("iudxResourceAPIs")));
+                        promise.complete(filters);
+                      }
 
-              if (itemFilters.result().containsKey("iudxResourceAPIs")) {
-                filters.addAll(toList(itemFilters.result().getJsonArray("iudxResourceAPIs")));
-                promise.complete(filters);
-              }
-            });
+                      if (itemFilters.result().containsKey("iudxResourceAPIs")) {
+                        filters.addAll(
+                            toList(itemFilters.result().getJsonArray("iudxResourceAPIs")));
+                        promise.complete(filters);
+                      }
+                    });
+          } else {
+            LOGGER.debug("Failed : " + grpId.cause().getMessage());
+          }
+        });
     return promise.future();
   }
 

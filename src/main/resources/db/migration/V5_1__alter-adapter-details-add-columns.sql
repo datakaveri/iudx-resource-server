@@ -1,0 +1,1 @@
+ALTER TABLE adaptors_details ADD COLUMN providerid uuid;
