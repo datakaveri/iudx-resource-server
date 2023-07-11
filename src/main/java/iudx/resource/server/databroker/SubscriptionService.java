@@ -11,6 +11,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.common.Vhosts;
 import iudx.resource.server.databroker.util.PermissionOpType;
@@ -21,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 public class SubscriptionService {
   private static final Logger LOGGER = LogManager.getLogger(SubscriptionService.class);
+  CacheService cacheService;
   private String vhost;
   private int totalBindCount;
   private int totalBindSuccess;
@@ -29,15 +31,21 @@ public class SubscriptionService {
   private String amqpUrl;
   private int amqpPort;
 
-  SubscriptionService(RabbitClient rabbitClient, PostgresClient pgSqlClient, JsonObject config) {
+  SubscriptionService(
+      RabbitClient rabbitClient,
+      PostgresClient pgSqlClient,
+      JsonObject config,
+      CacheService cacheService) {
     this.rabbitClient = rabbitClient;
     this.pgSqlClient = pgSqlClient;
     this.vhost = config.getString(Vhosts.IUDX_PROD.value);
     this.amqpUrl = config.getString("brokerAmqpIp");
     this.amqpPort = config.getInteger("brokerAmqpPort");
+    this.cacheService = cacheService;
   }
 
   Future<JsonObject> registerStreamingSubscription(JsonObject request) {
+    LOGGER.debug("at 4444 = " + request);
     LOGGER.trace("Info : SubscriptionService#registerStreamingSubscription() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject registerStreamingSubscriptionResponse = new JsonObject();
@@ -92,14 +100,16 @@ public class SubscriptionService {
                             } else {
                               JsonArray array = new JsonArray();
                               String exchangeName;
-                              if (isGroupResource(routingKey)) {
+                              LOGGER.debug(" at 99 == " + requestjson);
+                              if (isGroupResource(request)) {
                                 exchangeName = routingKey;
                                 array.add(exchangeName + DATA_WILDCARD_ROUTINGKEY);
                               } else {
-                                exchangeName = routingKey;
+                                exchangeName = request.getString("resourcegroup");
                                 LOGGER.debug("exchange name  = {} ", exchangeName);
                                 array.add(exchangeName + "/." + routingKey);
                               }
+                              LOGGER.debug(" Exchange name at 103 == {}", exchangeName);
                               JsonObject json = new JsonObject();
                               json.put(EXCHANGE_NAME, exchangeName);
                               json.put(QUEUE_NAME, queueName);
@@ -309,23 +319,19 @@ public class SubscriptionService {
                                     } else {
                                       JsonArray array = new JsonArray();
                                       String exchangeName;
-                                      if (isGroupResource(routingKey)) {
+                                      if (isGroupResource(request)) {
                                         exchangeName = routingKey;
                                         array.add(exchangeName + DATA_WILDCARD_ROUTINGKEY);
                                       } else {
-                                        exchangeName =
-                                            routingKey.substring(0, routingKey.lastIndexOf("/"));
-                                        array.add(
-                                            exchangeName
-                                                + "/."
-                                                + routingKey.substring(
-                                                    routingKey.lastIndexOf("/") + 1));
+                                        exchangeName = request.getString("resourcegroup");
+                                        array.add(exchangeName + "/." + routingKey);
                                       }
+                                      LOGGER.debug("at 329 == " + exchangeName);
                                       JsonObject json = new JsonObject();
                                       json.put(EXCHANGE_NAME, exchangeName);
                                       json.put(QUEUE_NAME, queueName);
                                       json.put(ENTITIES, array);
-
+                                      LOGGER.debug("at 334 == " + array);
                                       Future<JsonObject> resultbind =
                                           rabbitClient.bindQueue(json, vhost);
                                       resultbind.onComplete(
@@ -498,13 +504,14 @@ public class SubscriptionService {
                     } else {
                       JsonArray array = new JsonArray();
                       String exchangeName;
-                      if (isGroupResource(routingKey)) {
+                      if (isGroupResource(request)) {
                         exchangeName = routingKey;
                         array.add(exchangeName + DATA_WILDCARD_ROUTINGKEY);
                       } else {
-                        exchangeName = routingKey;
+                        exchangeName = request.getString("resourcegroup");
                         array.add(exchangeName + "/." + routingKey);
                       }
+                      LOGGER.debug("514===" + array + "" + exchangeName);
                       JsonObject json = new JsonObject();
                       json.put(EXCHANGE_NAME, exchangeName);
                       json.put(QUEUE_NAME, queueName);
@@ -1180,7 +1187,7 @@ public class SubscriptionService {
     return promise.future();
   }
 
-  private boolean isGroupResource(String id) {
-    return id.split("/").length == 4;
+  private boolean isGroupResource(JsonObject jsonObject) {
+    return jsonObject.getString("type").equalsIgnoreCase("resourceGroup");
   }
 }

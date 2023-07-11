@@ -2,14 +2,9 @@ package iudx.resource.server.apiserver.service;
 
 import static org.mockito.Mockito.*;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.HttpRequest;
-import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.cache.CacheService;
@@ -28,6 +23,7 @@ public class CatalogueServiceTest {
   JsonObject config;
   CatalogueService catalogueService;
   @Mock CacheService cache;
+
   @BeforeEach
   public void setUp(VertxTestContext vertxTestContext) {
     config = new JsonObject();
@@ -70,11 +66,19 @@ public class CatalogueServiceTest {
     String id = "abcd/abcd/abcd";
     JsonObject cacheReply = new JsonObject();
     cacheReply.put("iudxResourceAPIs", new JsonArray());
-    JsonObject groupId =
-        new JsonObject().put("resourceGroup", "5b7556b5-0779-4c47-9cf2-3f209779aa22");
 
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
+
+    JsonObject jsonObject =
+        new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name", "dummy_name")
+            .put("resourceGroup", "5b7556b5-0779-4c47-9cf2-3f209779aa22");
     when(cache.get(any()))
-        .thenReturn(Future.succeededFuture(groupId))
+        .thenReturn(Future.succeededFuture(jsonObject))
         .thenReturn(Future.succeededFuture(cacheReply))
         .thenReturn(Future.succeededFuture(new JsonObject()));
     catalogueService
@@ -96,11 +100,19 @@ public class CatalogueServiceTest {
     String id = "abcd/abcd/abcd";
     JsonObject cacheReply = new JsonObject();
     cacheReply.put("iudxResourceAPIs", new JsonArray());
-    JsonObject groupId =
-        new JsonObject().put("resourceGroup", "5b7556b5-0779-4c47-9cf2-3f209779aa22");
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
+
+    JsonObject jsonObject =
+        new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name", "dummy_name")
+            .put("resourceGroup", "5b7556b5-0779-4c47-9cf2-3f209779aa22");
 
     when(cache.get(any()))
-        .thenReturn(Future.succeededFuture(groupId))
+        .thenReturn(Future.succeededFuture(jsonObject))
         .thenReturn(Future.succeededFuture(new JsonObject()))
         .thenReturn(Future.succeededFuture(cacheReply));
 
@@ -123,11 +135,18 @@ public class CatalogueServiceTest {
     String id = "abcd/abcd/abcd";
     JsonObject cacheReply = new JsonObject();
     cacheReply.put("iudxResourceAPIs", new JsonArray());
-    JsonObject groupId =
-        new JsonObject().put("resourceGroup", "5b7556b5-0779-4c47-9cf2-3f209779aa22");
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
+    JsonObject jsonObject =
+        new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name", "dummy_name")
+            .put("resourceGroup", "5b7556b5-0779-4c47-9cf2-3f209779aa22");
     when(cache.get(any()))
-        .thenReturn(Future.succeededFuture(groupId))
+        .thenReturn(Future.succeededFuture(jsonObject))
         .thenReturn(Future.succeededFuture(new JsonObject()))
         .thenReturn(Future.failedFuture("Failed"));
 
@@ -150,11 +169,19 @@ public class CatalogueServiceTest {
     String id = "abcd/abcd/abcd";
     JsonObject cacheReply = new JsonObject();
     cacheReply.put("iudxResourceAPIs", new JsonArray());
-    JsonObject groupId =
-        new JsonObject().put("resourceGroup", "5b7556b5-0779-4c47-9cf2-3f209779aa22");
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
+
+    JsonObject jsonObject =
+        new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name", "dummy_name")
+            .put("resourceGroup", "5b7556b5-0779-4c47-9cf2-3f209779aa22");
 
     when(cache.get(any()))
-        .thenReturn(Future.succeededFuture(groupId))
+        .thenReturn(Future.succeededFuture(jsonObject))
         .thenReturn(Future.failedFuture("failed"));
 
     catalogueService

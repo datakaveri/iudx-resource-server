@@ -8,11 +8,13 @@ import static iudx.resource.server.apiserver.util.Constants.ID;
 import static iudx.resource.server.apiserver.util.Constants.IID;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
+import static iudx.resource.server.cache.cachelmpl.CacheType.CATALOGUE_CACHE;
 import static iudx.resource.server.common.Constants.*;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.HttpStatusCode.NOT_FOUND;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
 import static iudx.resource.server.common.ResponseUrn.*;
+import static iudx.resource.server.database.archives.Constants.ITEM_TYPES;
 import static iudx.resource.server.databroker.util.Constants.ENTITIES;
 import static iudx.resource.server.metering.util.Constants.*;
 
@@ -48,7 +50,6 @@ import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
 import iudx.resource.server.apiserver.util.RequestType;
 import iudx.resource.server.cache.CacheService;
-import iudx.resource.server.cache.cachelmpl.CacheType;
 import iudx.resource.server.common.Api;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
@@ -66,6 +67,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -992,35 +994,57 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject jsonObj = requestBody.copy();
     jsonObj.put(USER_ID, authInfo.getString(USER_ID));
     jsonObj.put(JSON_INSTANCEID, instanceId);
-    LOGGER.debug("Info: json for subs :: ;" + jsonObj);
-    Future<JsonObject> subsReq =
-        subsService.createSubscription(
-            jsonObj, databroker, postgresService, authInfo, cacheService);
-    HttpServerResponse response = routingContext.response();
-    subsReq.onComplete(
-        subHandler -> {
-          if (subHandler.succeeded()) {
-            LOGGER.info("Success: Handle Subscription request;");
-            JsonObject object =
-                new JsonObject(subHandler.result().getJsonArray("results").getString(0));
-            routingContext.data().put(RESPONSE_SIZE, 0);
+    String entities = jsonObj.getJsonArray("entities").getString(0);
+    JsonObject cacheJson = new JsonObject().put("key", entities).put("type", CATALOGUE_CACHE);
+    cacheService
+        .get(cacheJson)
+        .onSuccess(
+            cacheServiceResult -> {
+              Set<String> type = new HashSet<String>(new JsonArray().getList());
+              type = new HashSet<String>(cacheServiceResult.getJsonArray("type").getList());
+              Set<String> hashSet =
+                  type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
+              hashSet.retainAll(ITEM_TYPES);
+              String itemTypes = hashSet.toString().replaceAll("\\[", "").replaceAll("\\]", "");
 
-            JsonObject message =
-                new JsonObject()
-                    .put(JSON_EVENT_TYPE, EVENTTYPE_CREATED)
-                    .put(USER_ID, jsonObj.getString(USER_ID))
-                    .put(SUBSCRIPTION_ID, object.getString(ID))
-                    .put(SUB_TYPE, subscriptionType)
-                    .put("resource", jsonObj.getJsonArray(ENTITIES).getString(0));
+              String resourceGroup;
+              if (!itemTypes.equalsIgnoreCase("Resource")) {
+                resourceGroup = cacheServiceResult.getString("id");
+              } else {
+                resourceGroup = cacheServiceResult.getString("resourceGroup");
+              }
+              jsonObj.put("type", itemTypes);
+              jsonObj.put("resourcegroup", resourceGroup);
 
-            Future.future(fu -> updateAuditTable(message));
-            handleSuccessResponse(
-                response, ResponseType.Created.getCode(), subHandler.result().toString());
-          } else {
-            LOGGER.error("Fail: Handle Subscription request;");
-            processBackendResponse(response, subHandler.cause().getMessage());
-          }
-        });
+              Future<JsonObject> subsReq =
+                  subsService.createSubscription(
+                      jsonObj, databroker, postgresService, authInfo, cacheService);
+              HttpServerResponse response = routingContext.response();
+              subsReq.onComplete(
+                  subHandler -> {
+                    if (subHandler.succeeded()) {
+                      LOGGER.info("Success: Handle Subscription request;");
+                      JsonObject object =
+                          new JsonObject(subHandler.result().getJsonArray("results").getString(0));
+                      routingContext.data().put(RESPONSE_SIZE, 0);
+
+                      JsonObject message =
+                          new JsonObject()
+                              .put(JSON_EVENT_TYPE, EVENTTYPE_CREATED)
+                              .put(USER_ID, jsonObj.getString(USER_ID))
+                              .put(SUBSCRIPTION_ID, object.getString(ID))
+                              .put(SUB_TYPE, subscriptionType)
+                              .put("resource", jsonObj.getJsonArray(ENTITIES).getString(0));
+
+                      Future.future(fu -> updateAuditTable(message));
+                      handleSuccessResponse(
+                          response, ResponseType.Created.getCode(), subHandler.result().toString());
+                    } else {
+                      LOGGER.error("Fail: Handle Subscription request;");
+                      processBackendResponse(response, subHandler.cause().getMessage());
+                    }
+                  });
+            });
   }
 
   /**
@@ -1031,7 +1055,6 @@ public class ApiServerVerticle extends AbstractVerticle {
   private void appendSubscription(RoutingContext routingContext) {
     LOGGER.trace("Info: appendSubscription method started");
     HttpServerRequest request = routingContext.request();
-    HttpServerResponse response = routingContext.response();
     String userid = request.getParam(USER_ID);
     String alias = request.getParam(JSON_ALIAS);
     String subsId = userid + "/" + alias;
@@ -1042,38 +1065,53 @@ public class ApiServerVerticle extends AbstractVerticle {
     String subscriptionType = SubsType.STREAMING.type;
     requestJson.put(SUB_TYPE, subscriptionType);
     JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
-    if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
-      JsonObject jsonObj = requestJson.copy();
-      jsonObj.put(USER_ID, authInfo.getString(USER_ID));
-      Future<JsonObject> subsReq =
-          subsService.appendSubscription(jsonObj, databroker, postgresService, authInfo);
-      subsReq.onComplete(
-          subsRequestHandler -> {
-            if (subsRequestHandler.succeeded()) {
-              LOGGER.debug("Success: Appending subscription");
-              routingContext.data().put(RESPONSE_SIZE, 0);
+    HttpServerResponse response = routingContext.response();
+    String entities = requestJson.getJsonArray("entities").getString(0);
+    JsonObject cacheJson = new JsonObject().put("key", entities).put("type", CATALOGUE_CACHE);
 
-              JsonObject message =
-                  new JsonObject()
-                      .put("resource", jsonObj.getJsonArray(ENTITIES).getString(0))
-                      .put(SUBSCRIPTION_ID, jsonObj.getString(SUBSCRIPTION_ID))
-                      .put(SUB_TYPE, jsonObj.getString(SUB_TYPE))
-                      .put(USER_ID, jsonObj.getString(USER_ID))
-                      .put(SUBSCRIPTION_ID, subsId)
-                      .put(JSON_EVENT_TYPE, EVENTTYPE_APPEND);
+    getCacheItem(cacheJson)
+        .onSuccess(
+            handler -> {
+              requestJson.mergeIn(handler);
+              if (requestJson.getString(JSON_NAME).equalsIgnoreCase(alias)) {
+                JsonObject jsonObj = requestJson.copy();
+                jsonObj.put(USER_ID, authInfo.getString(USER_ID));
+                Future<JsonObject> subsReq =
+                    subsService.appendSubscription(jsonObj, databroker, postgresService, authInfo);
+                subsReq.onComplete(
+                    subsRequestHandler -> {
+                      if (subsRequestHandler.succeeded()) {
+                        LOGGER.debug("Success: Appending subscription");
+                        routingContext.data().put(RESPONSE_SIZE, 0);
 
-              Future.future(fu -> updateAuditTable(message));
-              handleSuccessResponse(
-                  response, ResponseType.Created.getCode(), subsRequestHandler.result().toString());
-            } else {
-              LOGGER.error("Fail: Appending subscription");
-              processBackendResponse(response, subsRequestHandler.cause().getMessage());
-            }
-          });
-    } else {
-      LOGGER.error("Fail: Bad request");
-      handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_NAME);
-    }
+                        JsonObject message =
+                            new JsonObject()
+                                .put("resource", jsonObj.getJsonArray(ENTITIES).getString(0))
+                                .put(SUBSCRIPTION_ID, jsonObj.getString(SUBSCRIPTION_ID))
+                                .put(SUB_TYPE, jsonObj.getString(SUB_TYPE))
+                                .put(USER_ID, jsonObj.getString(USER_ID))
+                                .put(SUBSCRIPTION_ID, subsId)
+                                .put(JSON_EVENT_TYPE, EVENTTYPE_APPEND);
+
+                        Future.future(fu -> updateAuditTable(message));
+                        handleSuccessResponse(
+                            response,
+                            ResponseType.Created.getCode(),
+                            subsRequestHandler.result().toString());
+                      } else {
+                        LOGGER.error("Fail: Appending subscription");
+                        processBackendResponse(response, subsRequestHandler.cause().getMessage());
+                      }
+                    });
+              } else {
+                LOGGER.error("Fail: Bad request");
+                handleResponse(response, BAD_REQUEST, INVALID_PARAM_URN, MSG_INVALID_NAME);
+              }
+            })
+        .onFailure(
+            fail -> {
+              LOGGER.debug("fail");
+            });
   }
 
   /**
@@ -1360,11 +1398,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     Map<String, String> pathParams = routingContext.pathParams();
     String id = pathParams.get("UUID");
-
-    StringBuilder adapterIdBuilder = new StringBuilder();
-    adapterIdBuilder.append(id);
-    Future<JsonObject> brokerResult =
-        managementApi.getAdapterDetails(adapterIdBuilder.toString(), databroker);
+    Future<JsonObject> brokerResult = managementApi.getAdapterDetails(id, databroker);
     HttpServerResponse response = routingContext.response();
     brokerResult.onComplete(
         brokerResultHandler -> {
@@ -1464,7 +1498,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
     String iid = authInfo.getString(IID);
     JsonObject cacheRequest = new JsonObject();
-    cacheRequest.put("type", CacheType.CATALOGUE_CACHE);
+    cacheRequest.put("type", CATALOGUE_CACHE);
     cacheRequest.put("key", iid);
 
     cacheService
@@ -1596,7 +1630,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     Promise<Void> promise = Promise.promise();
     JsonObject request = new JsonObject();
     JsonObject cacheRequest = new JsonObject();
-    cacheRequest.put("type", CacheType.CATALOGUE_CACHE);
+    cacheRequest.put("type", CATALOGUE_CACHE);
     cacheRequest.put("key", authInfo.getValue(ID));
     cacheService
         .get(cacheRequest)
@@ -1679,6 +1713,39 @@ public class ApiServerVerticle extends AbstractVerticle {
             }
           }
         });
+    return promise.future();
+  }
+
+  private Future<JsonObject> getCacheItem(JsonObject cacheJson) {
+    Promise<JsonObject> promise = Promise.promise();
+    JsonObject cacheResult = new JsonObject();
+    cacheService
+        .get(cacheJson)
+        .onSuccess(
+            cacheServiceResult -> {
+              Set<String> type = new HashSet<String>(new JsonArray().getList());
+              type = new HashSet<String>(cacheServiceResult.getJsonArray("type").getList());
+              Set<String> hashSet =
+                  type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
+              hashSet.retainAll(ITEM_TYPES);
+              String itemTypes = hashSet.toString().replaceAll("\\[", "").replaceAll("\\]", "");
+
+              String resourceGroup;
+              if (!itemTypes.equalsIgnoreCase("Resource")) {
+                resourceGroup = cacheServiceResult.getString("id");
+              } else {
+                resourceGroup = cacheServiceResult.getString("resourceGroup");
+              }
+              cacheResult.put("type", itemTypes);
+              cacheResult.put("resourcegroup", resourceGroup);
+              promise.complete(cacheResult);
+            })
+        .onFailure(
+            fail -> {
+              LOGGER.debug("Failed");
+              promise.fail(fail.getMessage());
+            });
+
     return promise.future();
   }
 }

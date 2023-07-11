@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
 
+import iudx.resource.server.cache.CacheService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.*;
@@ -51,6 +52,7 @@ import io.vertx.rabbitmq.RabbitMQOptions;
 import io.vertx.sqlclient.PoolOptions;
 import iudx.resource.server.common.Vhosts;
 import iudx.resource.server.configuration.Configuration;
+import org.mockito.Mock;
 
 @Disabled
 @ExtendWith(VertxExtension.class)
@@ -103,6 +105,9 @@ public class DataBrokerServiceTest {
   private static String userid;
   private static String BROKER_PRODUCTION_DOMAIN;
   private static int BROKER_PRODUCTION_PORT;
+  @Mock
+  static
+  CacheService cacheService;
 
   private static final Logger LOGGER = LogManager.getLogger(DataBrokerServiceTest.class);
 
@@ -228,7 +233,7 @@ public class DataBrokerServiceTest {
     rabbitMQWebClient = new RabbitWebClient(vertx, webConfig, propObj);
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
     rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient, pgClient, brokerConfig);
-    databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, brokerConfig);
+    databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, brokerConfig,cacheService);
 
     userid = UUID.randomUUID().toString();
 

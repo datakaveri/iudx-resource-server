@@ -58,6 +58,7 @@ public class CoordinatesTypeValidatorTest {
     return Stream.of(
         Arguments.of("", true),
         Arguments.of("  ", true),
+        Arguments.of("21", true),
         Arguments.of("[21.1784567787,72.834]", true),
         Arguments.of("[21.17,72.83467867874564]", true),
         Arguments.of("[21.178,72.834,23.5678]", true),

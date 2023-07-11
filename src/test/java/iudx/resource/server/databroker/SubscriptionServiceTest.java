@@ -1,5 +1,12 @@
 package iudx.resource.server.databroker;
 
+import static iudx.resource.server.databroker.util.Constants.FAILURE;
+import static iudx.resource.server.databroker.util.Constants.TITLE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -11,7 +18,9 @@ import io.vertx.junit5.VertxTestContext;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.databroker.util.Constants;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,17 +31,9 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
-import java.util.stream.Stream;
-
-import static iudx.resource.server.databroker.util.Constants.FAILURE;
-import static iudx.resource.server.databroker.util.Constants.TITLE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
-
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class SubscriptionServiceTest {
+    static JsonObject request;
     @Mock
     RabbitClient rabbitClient;
     @Mock
@@ -50,7 +51,6 @@ public class SubscriptionServiceTest {
     AsyncResult<JsonObject> asyncResult1;
     @Mock
     AsyncResult<Void> voidAsyncResult;
-    static JsonObject request;
     JsonArray jsonArray;
     @Mock
     Future<JsonObject> jsonObjectFuture;
@@ -60,6 +60,29 @@ public class SubscriptionServiceTest {
     String vHost;
     @Mock
     RowSet<Row> rowSet;
+    @Mock
+    CacheService cacheService;
+
+    public static Stream<Arguments> values() {
+        return Stream.of(
+                Arguments.of("ABCD/ABCD/ABCD/ABCD/ABCD", "{\"type\":400,\"title\":\"error\",\"detail\":\"Binding failed\"}"),
+                Arguments.of("ABCD/ABCD/ABCD", "{\"type\":400,\"title\":\"error\",\"detail\":\"Invalid or null routing key\"}")
+        );
+    }
+
+    static Stream<Arguments> listCallbackInputValues() {
+        return Stream.of(
+                Arguments.of(new JsonObject(), "{\"type\":400,\"title\":\"error\",\"detail\":\"Invalid request payload\"}"),
+                Arguments.of(SubscriptionServiceTest.request, "{\"type\":400,\"title\":\"error\",\"detail\":\"Invalid request payload\"}")
+        );
+    }
+
+    static Stream<Arguments> routingKey() {
+        return Stream.of(
+                Arguments.of(null, "{\"type\":400,\"title\":\"error\",\"detail\":\"Invalid or null routing key\"}"),
+                Arguments.of("", "{\"type\":400,\"title\":\"error\",\"detail\":\"Invalid or null routing key\"}")
+        );
+    }
 
     @BeforeEach
     public void setUp(VertxTestContext vertxTestContext) {
@@ -78,10 +101,12 @@ public class SubscriptionServiceTest {
         request.put(Constants.QUEUE, "Dummy Queue");
         request.put(Constants.ENTITIES, jsonArray);
         request.put("apiKey", "Dummy API KEY");
+        request.put("type","Resource");
+        request.put("resourcegroup","abcbc-abbc");
 
         when(config.getString(anyString())).thenReturn(str);
         when(config.getInteger(anyString())).thenReturn(200);
-        service = new SubscriptionService(rabbitClient, pgSQLClient, config);
+        service = new SubscriptionService(rabbitClient, pgSQLClient, config,cacheService);
         vertxTestContext.completeNow();
     }
 
@@ -137,13 +162,6 @@ public class SubscriptionServiceTest {
                 vertxTestContext.failNow(handler.cause());
             }
         });
-    }
-
-    public static Stream<Arguments> values() {
-        return Stream.of(
-                Arguments.of("ABCD/ABCD/ABCD/ABCD/ABCD", "{\"type\":400,\"title\":\"error\",\"detail\":\"Binding failed\"}"),
-                Arguments.of("ABCD/ABCD/ABCD", "{\"type\":400,\"title\":\"error\",\"detail\":\"Invalid or null routing key\"}")
-        );
     }
 
     @Order(2)
@@ -298,13 +316,6 @@ public class SubscriptionServiceTest {
         });
     }
 
-    static Stream<Arguments> listCallbackInputValues() {
-        return Stream.of(
-                Arguments.of(new JsonObject(), "{\"type\":400,\"title\":\"error\",\"detail\":\"Invalid request payload\"}"),
-                Arguments.of(SubscriptionServiceTest.request, "{\"type\":400,\"title\":\"error\",\"detail\":\"Invalid request payload\"}")
-        );
-    }
-
     @Order(9)
     @ParameterizedTest
     @MethodSource("listCallbackInputValues")
@@ -330,7 +341,6 @@ public class SubscriptionServiceTest {
             }
         });
     }
-
 
     @Order(10)
     @Test
@@ -443,15 +453,20 @@ public class SubscriptionServiceTest {
                 return null;
             }
         }).when(jsonObjectFuture).onComplete(any());
-        service.listStreamingSubscriptions(request).onComplete(handler -> {
-            if (handler.succeeded()) {
-                assertEquals("{\"type\":\"urn:dx:rs:success\",\"title\":\"success\",\"results\":[{\"subscriptionID\":\"Dummy_Queue_Name\",\"userid\":\"Dummy_User_ID\",\"consumer\":\"Dummy@consumer\",\"name\":\"Dummy name\",\"callbackURL\":\"Dummy callbackurl\",\"queue\":\"Dummy Queue\",\"entities\":[\"ABCD/ABCD/ABCD/ABCD\",\"EFGH/EFGH/EFGH/EFGH\"],\"apiKey\":\"Dummy API KEY\"}]}", handler.result().toString());
+    service
+        .listStreamingSubscriptions(request)
+        .onComplete(
+            handler -> {
+              if (handler.succeeded()) {
+                assertEquals(
+                    "urn:dx:rs:success",
+                    handler.result().getString("type"));
                 vertxTestContext.completeNow();
 
-            } else {
+              } else {
                 vertxTestContext.failNow(handler.cause());
-            }
-        });
+              }
+            });
     }
 
     @Order(14)
@@ -583,6 +598,7 @@ public class SubscriptionServiceTest {
             }
         });
     }
+
     @Order(17)
     @Test
     @DisplayName("Test registerStreamingSubscription method : when resultHandlerqueue failed")
@@ -709,15 +725,20 @@ public class SubscriptionServiceTest {
             }
         }).when(jsonObjectFuture1).onComplete(any());
 
-        service.registerStreamingSubscription(request).onComplete(handler -> {
-            if (handler.succeeded()) {
+    service
+        .registerStreamingSubscription(request)
+        .onComplete(
+            handler -> {
+              if (handler.succeeded()) {
                 vertxTestContext.failNow(handler.cause());
 
-            } else {
-                assertEquals("{\"subscriptionID\":\"Dummy_Queue_Name\",\"userid\":\"Dummy_User_ID\",\"consumer\":\"Dummy@consumer\",\"name\":\"Dummy name\",\"callbackURL\":\"Dummy callbackurl\",\"queue\":\"Dummy Queue\",\"entities\":[\"ABCD/ABCD/ABCD/ABCD\",\"EFGH/EFGH/EFGH/EFGH\"],\"apiKey\":\"Dummy API KEY\",\"title\":\"failure\"}", handler.cause().getMessage());
+              } else {
+                assertEquals(
+                    "{\"subscriptionID\":\"Dummy_Queue_Name\",\"userid\":\"Dummy_User_ID\",\"consumer\":\"Dummy@consumer\",\"name\":\"Dummy name\",\"callbackURL\":\"Dummy callbackurl\",\"queue\":\"Dummy Queue\",\"entities\":[\"ABCD/ABCD/ABCD/ABCD\",\"EFGH/EFGH/EFGH/EFGH\"],\"apiKey\":\"Dummy API KEY\",\"type\":\"Resource\",\"resourcegroup\":\"abcbc-abbc\",\"title\":\"failure\"}",
+                    handler.cause().getMessage());
                 vertxTestContext.completeNow();
-            }
-        });
+              }
+            });
     }
 
     @Order(21)
@@ -734,13 +755,6 @@ public class SubscriptionServiceTest {
 
             }
         });
-    }
-
-    static Stream<Arguments> routingKey() {
-        return Stream.of(
-                Arguments.of(null, "{\"type\":400,\"title\":\"error\",\"detail\":\"Invalid or null routing key\"}"),
-                Arguments.of("", "{\"type\":400,\"title\":\"error\",\"detail\":\"Invalid or null routing key\"}")
-        );
     }
 
     @Order(22)

@@ -9,10 +9,10 @@ public class Constants {
   public static final String ID = "id";
   public static final String PROD_INSTANCE = "production";
   public static final String TEST_INSTANCE = "test";
-  public static final String ITEM_TYPE_RESOURCE = "iudx:Resource";
-  public static final String ITEM_TYPE_RESOURCE_GROUP = "iudx:ResourceGroup";
-  public static final String ITEM_TYPE_RESOURCE_SERVER = "iudx:ResourceServer";
-  public static final String ITEM_TYPE_PROVIDER = "iudx:Provider";
+  public static final String ITEM_TYPE_RESOURCE = "Resource";
+  public static final String ITEM_TYPE_RESOURCE_GROUP = "ResourceGroup";
+  public static final String ITEM_TYPE_RESOURCE_SERVER = "ResourceServer";
+  public static final String ITEM_TYPE_PROVIDER = "Provider";
   public static final ArrayList<String> ITEM_TYPES =
       new ArrayList<String>(
           Arrays.asList(

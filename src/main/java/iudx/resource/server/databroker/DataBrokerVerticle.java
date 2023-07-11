@@ -162,11 +162,9 @@ public class DataBrokerVerticle extends AbstractVerticle {
     rabbitWebClient = new RabbitWebClient(vertx, webConfig, propObj);
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
     rabbitClient = new RabbitClient(vertx, config, rabbitWebClient, pgClient, config());
-
-    binder = new ServiceBinder(vertx);
-    databroker = new DataBrokerServiceImpl(rabbitClient, pgClient, config());
-
     cache = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
+    binder = new ServiceBinder(vertx);
+    databroker = new DataBrokerServiceImpl(rabbitClient, pgClient, config(), cache);
     asyncService = AsyncService.createProxy(vertx, ASYNC_SERVICE_ADDRESS);
 
     String internalVhost = config().getString(Vhosts.IUDX_INTERNAL.value);

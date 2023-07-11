@@ -46,6 +46,7 @@ import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.encryption.EncryptionService;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -184,14 +185,16 @@ public class AsyncRestApi {
             successHandler -> {
               Set<String> type = new HashSet<String>(new JsonArray().getList());
               type = new HashSet<String>(successHandler.getJsonArray("type").getList());
-              type.retainAll(ITEM_TYPES);
-              String itemTypes = type.toString().replaceAll("\\[", "").replaceAll("\\]", "");
-              LOGGER.debug("Info: itemType: " + itemTypes);
+              Set<String> hashSet =
+                  type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
+              hashSet.retainAll(ITEM_TYPES);
+              String itemTypes = hashSet.toString().replaceAll("\\[", "").replaceAll("\\]", "");
+              LOGGER.debug("Info: itemType: {}", itemTypes);
               String groupId;
-              if (itemTypes.equalsIgnoreCase("iudx:Resource")) {
-                groupId = successHandler.getString("resourceGroup");
-              } else {
+              if (!itemTypes.equalsIgnoreCase("Resource")) {
                 groupId = resourceId;
+              } else {
+                groupId = successHandler.getString("resourceGroup");
               }
               json.put("resourceGroup", groupId);
               JsonObject rmqQueryMessage =

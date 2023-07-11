@@ -15,6 +15,7 @@ import iudx.resource.server.database.elastic.ElasticClient;
 import iudx.resource.server.database.elastic.QueryDecoder;
 import iudx.resource.server.database.elastic.exception.EsQueryException;
 import java.util.*;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -188,10 +189,12 @@ public class DatabaseServiceImpl implements DatabaseService {
         itemType -> {
           Set<String> type = new HashSet<String>(new JsonArray().getList());
           type = new HashSet<String>(itemType.getJsonArray("type").getList());
-          type.retainAll(ITEM_TYPES);
-          String itemTypes = type.toString().replaceAll("\\[", "").replaceAll("\\]", "");
+          Set<String> hashSet = type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
+          hashSet.retainAll(ITEM_TYPES);
+          String itemTypes = hashSet.toString().replaceAll("\\[", "").replaceAll("\\]", "");
+
           LOGGER.debug("Info: itemType: {}", itemTypes);
-          if (!itemTypes.equalsIgnoreCase("iudx:Resource")) {
+          if (!itemTypes.equalsIgnoreCase("Resource")) {
             LOGGER.error("Malformed ID: " + request.getJsonArray(ID).getString(0));
             promise.fail(new EsQueryException(ResponseUrn.BAD_REQUEST_URN, MALFORMED_ID));
           } else {

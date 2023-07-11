@@ -1,15 +1,20 @@
 package iudx.resource.server.apiserver.service;
 
 import static iudx.resource.server.apiserver.util.Util.toList;
+import static iudx.resource.server.database.archives.Constants.*;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.cache.cachelmpl.CacheType;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -97,7 +102,20 @@ public class CatalogueService {
     groupIdFuture.onComplete(
         grpId -> {
           if (grpId.succeeded()) {
-            String groupId = grpId.result().getString("resourceGroup");
+            Set<String> type = new HashSet<String>(new JsonArray().getList());
+            type = new HashSet<String>(grpId.result().getJsonArray("type").getList());
+            Set<String> hashSet =
+                type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
+            hashSet.retainAll(ITEM_TYPES);
+            String itemTypes = hashSet.toString().replaceAll("\\[", "").replaceAll("\\]", "");
+            LOGGER.debug("Info: itemType: {}", itemTypes);
+            String groupId;
+            if (!itemTypes.equalsIgnoreCase("Resource")) {
+              groupId = id;
+            } else {
+              groupId = grpId.result().getString("resourceGroup");
+            }
+
             LOGGER.debug("groupId = " + groupId);
             JsonObject cacheRequest = new JsonObject();
             cacheRequest.put("type", CacheType.CATALOGUE_CACHE);

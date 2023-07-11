@@ -1,12 +1,14 @@
 package iudx.resource.server.authenticator;
 
 import static iudx.resource.server.authenticator.Constants.*;
+import static iudx.resource.server.database.archives.Constants.ITEM_TYPES;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
@@ -27,6 +29,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -204,7 +209,20 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             promise.fail("Not Found  : " + id);
             return;
           } else {
-            String groupId = isResourceExistHandler.result().getString("resourceGroup");
+            Set<String> type = new HashSet<String>(new JsonArray().getList());
+            type =
+                new HashSet<String>(isResourceExistHandler.result().getJsonArray("type").getList());
+            Set<String> hashSet =
+                type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
+            hashSet.retainAll(ITEM_TYPES);
+            String itemTypes = hashSet.toString().replaceAll("\\[", "").replaceAll("\\]", "");
+            LOGGER.debug("Info: itemType: {}", itemTypes);
+            String groupId;
+            if (!itemTypes.equalsIgnoreCase("Resource")) {
+              groupId = id;
+            } else {
+              groupId = isResourceExistHandler.result().getString("resourceGroup");
+            }
             JsonObject resourceGroupCacheRequest = cacheRequest.copy();
             resourceGroupCacheRequest.put("key", groupId);
             Future<JsonObject> groupIdFuture = cache.get(resourceGroupCacheRequest);
