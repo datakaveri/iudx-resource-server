@@ -215,7 +215,7 @@ public class AsyncServiceTest {
     asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv");
     testContext.completeNow();
   }
-  @Test
+  //@Test
   @DisplayName("Failure case")
   public void failureAsyncSearchForExistingRecordTest(VertxTestContext testContext) {
 
@@ -275,7 +275,7 @@ public class AsyncServiceTest {
     verify(asyncServiceSpy, times(1)).executePgQuery(any());
     testContext.completeNow();
   }
-  //@Test
+  @Test
   @DisplayName("fail - async search for existing request id")
   public void failAsyncSearchForExistingRecordTest(VertxTestContext testContext) {
     String requestId = "682a3a42aaa1c8adadea4cc9ea16d968993fc8eee4edfc299d00bccf28117965";
