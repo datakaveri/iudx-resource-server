@@ -268,10 +268,9 @@ public class JwtAuthServiceImplTest {
     revokedTokenRequest.put("type", CacheType.REVOKED_CLIENT);
     revokedTokenRequest.put("key", jwtData.getSub());
 
-    when(cacheService.get(revokedTokenRequest)).thenReturn(Future.succeededFuture(new JsonObject().put("value", LocalDateTime.now().minusDays(1).toString())));
+    when(cacheService.get(revokedTokenRequest)).thenReturn(Future.succeededFuture(new JsonObject().put("value","2021-09-09T18:22:37")));
 
-    when(cacheService.get(any())).thenReturn(Future.succeededFuture(jsonObject));//.thenReturn(Future.succeededFuture(new JsonObject().put("accessPolicy","OPEN")));
-
+    when(cacheService.get(any())).thenReturn(Future.succeededFuture(jsonObject));
     jwtAuthenticationService.tokenInterospect(request, authInfo, handler -> {
       if (handler.succeeded()) {
         testContext.completeNow();
@@ -319,9 +318,9 @@ public class JwtAuthServiceImplTest {
     revokedTokenRequest.put("type", CacheType.REVOKED_CLIENT);
     revokedTokenRequest.put("key", jwtData.getSub());
 
-    when(cacheService.get(revokedTokenRequest)).thenReturn(Future.succeededFuture(new JsonObject().put("value", LocalDateTime.now().minusDays(1).toString())));
+    when(cacheService.get(revokedTokenRequest)).thenReturn(Future.succeededFuture(new JsonObject().put("value", "2021-09-09T18:40:01")));
 
-    when(cacheService.get(any())).thenReturn(Future.succeededFuture(jsonObject));//.thenReturn(Future.succeededFuture(new JsonObject().put("accessPolicy","OPEN")));
+    when(cacheService.get(any())).thenReturn(Future.succeededFuture(jsonObject));
     jwtAuthenticationService.tokenInterospect(request, authInfo, handler -> {
       if (handler.succeeded()) {
         testContext.completeNow();
@@ -369,7 +368,7 @@ public class JwtAuthServiceImplTest {
     revokedTokenRequest.put("type", CacheType.REVOKED_CLIENT);
     revokedTokenRequest.put("key", jwtData.getSub());
 
-    when(cacheService.get(revokedTokenRequest)).thenReturn(Future.succeededFuture(new JsonObject().put("value", LocalDateTime.now().minusDays(1).toString())));
+    when(cacheService.get(revokedTokenRequest)).thenReturn(Future.succeededFuture(new JsonObject().put("value", "2021-09-09T18:40:01")));
 
     when(cacheService.get(any())).thenReturn(Future.succeededFuture(jsonObject));
     jwtAuthenticationService.tokenInterospect(request, authInfo, handler -> {
@@ -419,7 +418,7 @@ public class JwtAuthServiceImplTest {
     revokedTokenRequest.put("type", CacheType.REVOKED_CLIENT);
     revokedTokenRequest.put("key", jwtData.getSub());
 
-    when(cacheService.get(revokedTokenRequest)).thenReturn(Future.succeededFuture(new JsonObject().put("value", LocalDateTime.now().minusDays(1).toString())));
+    when(cacheService.get(revokedTokenRequest)).thenReturn(Future.succeededFuture(new JsonObject().put("value", "2021-09-09T18:30:39")));
     when(cacheService.get(any())).thenReturn(Future.succeededFuture(jsonObject));
     jwtAuthenticationService.tokenInterospect(request, authInfo, handler -> {
       if (handler.succeeded()) {
@@ -468,7 +467,7 @@ public class JwtAuthServiceImplTest {
     revokedTokenRequest.put("type", CacheType.REVOKED_CLIENT);
     revokedTokenRequest.put("key", jwtData.getSub());
 
-    when(cacheService.get(revokedTokenRequest)).thenReturn(Future.succeededFuture(new JsonObject().put("value", LocalDateTime.now().minusDays(1).toString())));
+    when(cacheService.get(revokedTokenRequest)).thenReturn(Future.succeededFuture(new JsonObject().put("value", "2021-09-09T18:22:37")));
     when(cacheService.get(any())).thenReturn(Future.succeededFuture(jsonObject));
     jwtAuthenticationService.tokenInterospect(request, authInfo, handler -> {
       if (handler.succeeded()) {

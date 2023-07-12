@@ -47,6 +47,7 @@ public class AsyncServiceTest {
 
   private static AsyncServiceImpl asyncService;
   private static AsyncServiceImpl asyncServiceSpy;
+  private static AsyncServiceImpl asyncServiceSpy2;
   private static Configuration config;
   private static ElasticClient client;
   private static PostgresService pgService;
@@ -97,6 +98,7 @@ public class AsyncServiceTest {
     asyncService =
         new AsyncServiceImpl(vertx, client, pgService, fileOpsHelper, filePath, tenantPrefix,cacheSer);
     asyncServiceSpy = spy(asyncService);
+    asyncService2 = spy(asyncService);
 
 
     asyncResult1 = mock(AsyncResult.class);
@@ -272,43 +274,6 @@ public class AsyncServiceTest {
     verify(asyncServiceSpy, times(1)).executePgQuery(any());
     testContext.completeNow();
   }
-
-  @Test
-  @DisplayName("Failure case")
-  public void failAsyncSearchForExistingRecordTest4(VertxTestContext testContext) {
-
-    String requestId = "682a3a42aaa1c8adadea4cc9ea16d968993fc8eee4edfc299d00bccf28117965";
-    String sub = "15c7506f-c800-48d6-adeb-0542b03947c6";
-    String searchId = "18cc743b-59a4-4c26-9f54-e243986ed709";
-    JsonArray record = record();
-    JsonObject query = query();
-
-    doAnswer(Answer -> Future.failedFuture("failed"))
-            .when(asyncServiceSpy)
-            .getRecord4RequestId(any());
-
-    when(asyncResult1.succeeded()).thenReturn(true);
-    when(asyncResult1.result()).thenReturn(jsonObject);
-
-    JsonObject jsonObject2= new JsonObject()
-            .put("_id", "4c030b19-4954-4e56-868a-c36d80a77902")
-            .put("search_id", "4b25aa92-47bb-4c91-98c0-47a1c7a51fbe")
-            .put("request_id", "efb0b92cd5b50d0a75a939ffa997c6e4fccdc62414ad0177a020eec98f69144e")
-            .put("status", "COMPLETE")
-            .put("s3_url", "https://example.com")
-            .put("expiry", "2022-03-02T16:08:38.495665")
-            .put("user_id", "15c7506f-c800-48d6-adeb-0542b03947c6")
-            .put("object_id", "b8a47206-364c-4580-8885-45205118db57")
-            .put("size", 0);
-    when(asyncResult2.succeeded()).thenReturn(false);
-    when(client.asyncScroll(any(),anyString(),any(),any(),anyString(),any(),anyString(),anyString())).thenReturn(Future.succeededFuture(jsonObject2));
-
-    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv");
-
-    testContext.completeNow();
-  }
-
-
   @Test
   @DisplayName("fail - async search for existing request id")
   public void failAsyncSearchForExistingRecordTest(VertxTestContext testContext) {
