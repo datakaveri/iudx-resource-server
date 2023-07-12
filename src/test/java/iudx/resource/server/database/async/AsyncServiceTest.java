@@ -84,6 +84,7 @@ public class AsyncServiceTest {
   static void init(Vertx vertx, VertxTestContext testContext) throws MalformedURLException {
     config = new Configuration();
     asyncConfig = config.configLoader(8, vertx);
+    asyncConfig.put("tenantPrefix","iudx");
     timeLimit = asyncConfig.getString("timeLimit");
     filePath = asyncConfig.getString("filePath");
     tenantPrefix = asyncConfig.getString("tenantPrefix");
