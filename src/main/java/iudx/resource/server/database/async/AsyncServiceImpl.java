@@ -351,7 +351,7 @@ public class AsyncServiceImpl implements AsyncService {
       handler.handle(Future.failedFuture(responseBuilder.getResponse().toString()));
       return this;
     }
-
+    LOGGER.info("tenant {}",tenantPrefix);
     StringBuilder tenantBuilder = new StringBuilder(tenantPrefix);
     final String searchIndex;
     String resourceGroup = request.getString("resourceGroup");
