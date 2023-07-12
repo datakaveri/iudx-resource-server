@@ -57,22 +57,21 @@ public class ManagementApiImpl implements ManagementApi {
         .get(cacheJson)
         .onSuccess(
             cacheServiceResult -> {
-              Set<String> type = new HashSet<String>(new JsonArray().getList());
-              type = new HashSet<String>(cacheServiceResult.getJsonArray("type").getList());
-              Set<String> hashSet =
+              Set<String> type =
+                  new HashSet<String>(cacheServiceResult.getJsonArray("type").getList());
+              Set<String> itemTypeSet =
                   type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
-              hashSet.retainAll(ITEM_TYPES);
-              String itemTypes = hashSet.toString().replaceAll("\\[", "").replaceAll("\\]", "");
-
-              LOGGER.debug("Info: itemType: {}", itemTypes);
+              itemTypeSet.retainAll(ITEM_TYPES);
 
               String resourceIdForIngestions;
-              if (!itemTypes.equalsIgnoreCase("Resource")) {
+              if (!itemTypeSet.contains("Resource")) {
                 resourceIdForIngestions = cacheServiceResult.getString("id");
               } else {
                 resourceIdForIngestions = cacheServiceResult.getString("resourceGroup");
               }
-              requestJson.put("resourceGroup", resourceIdForIngestions).put("types", itemTypes);
+              requestJson
+                  .put("resourceGroup", resourceIdForIngestions)
+                  .put("types", itemTypeSet.iterator().next());
               String query =
                   CREATE_INGESTION_SQL
                       .replace(

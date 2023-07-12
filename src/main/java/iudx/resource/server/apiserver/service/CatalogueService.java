@@ -6,7 +6,6 @@ import static iudx.resource.server.database.archives.Constants.*;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.cache.cachelmpl.CacheType;
@@ -102,15 +101,13 @@ public class CatalogueService {
     groupIdFuture.onComplete(
         grpId -> {
           if (grpId.succeeded()) {
-            Set<String> type = new HashSet<String>(new JsonArray().getList());
-            type = new HashSet<String>(grpId.result().getJsonArray("type").getList());
-            Set<String> hashSet =
+            Set<String> type = new HashSet<String>(grpId.result().getJsonArray("type").getList());
+            Set<String> itemTypeSet =
                 type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
-            hashSet.retainAll(ITEM_TYPES);
-            String itemTypes = hashSet.toString().replaceAll("\\[", "").replaceAll("\\]", "");
-            LOGGER.debug("Info: itemType: {}", itemTypes);
+            itemTypeSet.retainAll(ITEM_TYPES);
+
             String groupId;
-            if (!itemTypes.equalsIgnoreCase("Resource")) {
+            if (!itemTypeSet.contains("Resource")) {
               groupId = id;
             } else {
               groupId = grpId.result().getString("resourceGroup");

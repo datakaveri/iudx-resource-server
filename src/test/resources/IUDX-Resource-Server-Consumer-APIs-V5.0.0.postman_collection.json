@@ -65,7 +65,7 @@
 					"response": []
 				},
 				{
-					"name": "Get Secure Resource Token",
+					"name": "Get Secure Resource Token RL",
 					"event": [
 						{
 							"listen": "test",
@@ -114,6 +114,76 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"itemId\": \"83c2e5c2-3574-4e11-9530-2b1fbdfce832\", \n  \"itemType\": \"resource\",\n  \"role\": \"consumer\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://{{auth-url}}/{{dxAuthBasePath}}/token",
+							"protocol": "https",
+							"host": [
+								"{{auth-url}}"
+							],
+							"path": [
+								"{{dxAuthBasePath}}",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Secure Resource Token RG",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"secureResourceTokenRG\", jsonData.results.accessToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "clientId",
+								"value": "{{clientID}}",
+								"type": "text"
+							},
+							{
+								"key": "clientSecret",
+								"value": "{{clientSecret}}",
+								"type": "text"
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemId\": \"8b95ab80-2aaf-4636-a65e-7f2563d0d371\", \n  \"itemType\": \"resource_group\",\n  \"role\": \"consumer\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -17128,7 +17198,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{delegateToken}}"
+								"value": "{{secureResourceToken}}"
 							},
 							{
 								"key": "options",
@@ -17139,6 +17209,73 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"name\": \"RS-integration-test-alias-RL\",\r\n    \"type\": \"subscription\",\r\n    \"entities\": [\"83c2e5c2-3574-4e11-9530-2b1fbdfce832\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/subscription",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"subscription"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "201 (created) - create a streaming subscription RG",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 201 (created)\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    const results = body.results[0];",
+									"    pm.expect(results).to.have.property(\"id\");",
+									"    pm.expect(results).to.have.property(\"username\");",
+									"    pm.globals.set(\"subscriptionIDRG\",body.results[0].id);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"type": "text",
+								"value": "{{secureResourceTokenRG}}"
+							},
+							{
+								"key": "options",
+								"type": "text",
+								"value": "streaming"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"RS-integration-test-alias-RL1\",\r\n    \"type\": \"subscription\",\r\n    \"entities\": [\"8b95ab80-2aaf-4636-a65e-7f2563d0d371\"]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -17252,7 +17389,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{delegateToken}}"
+								"value": "{{secureResourceToken}}"
 							},
 							{
 								"key": "options",
@@ -17319,7 +17456,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{delegateToken}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							},
 							{
@@ -17346,6 +17483,75 @@
 								"{{basePath}}",
 								"subscription",
 								"{{subscriptionID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) - Get streaming subscription RG",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    const results = body.results[0];",
+									"     pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(results).to.have.property(\"entities\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceTokenRG}}",
+								"type": "text"
+							},
+							{
+								"key": "options",
+								"value": "streaming",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/subscription/{{subscriptionIDRG}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"subscription",
+								"{{subscriptionIDRG}}"
 							]
 						}
 					},
@@ -17515,7 +17721,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{delegateTokenRG}}",
+								"value": "{{secureResourceTokenRG}}",
 								"type": "text"
 							},
 							{
@@ -17772,7 +17978,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{delegateTokenRG}}",
+								"value": "{{secureResourceTokenRG}}",
 								"type": "text"
 							},
 							{
@@ -17933,7 +18139,7 @@
 					"response": []
 				},
 				{
-					"name": "200 (success) - Delete a subscription",
+					"name": "200 (success) - Delete a subscription RG",
 					"event": [
 						{
 							"listen": "test",
@@ -17972,7 +18178,64 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{delegateTokenRG}}"
+								"value": "{{secureResourceTokenRG}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/subscription/{{subscriptionIDRG}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"subscription",
+								"{{subscriptionIDRG}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) - Delete a subscription RL",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:rs:success\");",
+									"    pm.expect(body).to.have.property(\"title\", \"success\");",
+									"    pm.expect(body).to.have.property(\"detail\", \"Subscription deleted Successfully\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "options",
+								"type": "text",
+								"value": "streaming"
+							},
+							{
+								"key": "token",
+								"type": "text",
+								"value": "{{secureResourceToken}}"
 							}
 						],
 						"url": {

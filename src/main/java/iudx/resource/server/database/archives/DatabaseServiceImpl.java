@@ -6,7 +6,6 @@ import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch.core.search.SourceConfig;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.cache.cachelmpl.CacheType;
@@ -187,14 +186,12 @@ public class DatabaseServiceImpl implements DatabaseService {
     Future<JsonObject> getItemType = cacheService.get(cacheRequest);
     getItemType.onSuccess(
         itemType -> {
-          Set<String> type = new HashSet<String>(new JsonArray().getList());
-          type = new HashSet<String>(itemType.getJsonArray("type").getList());
-          Set<String> hashSet = type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
-          hashSet.retainAll(ITEM_TYPES);
-          String itemTypes = hashSet.toString().replaceAll("\\[", "").replaceAll("\\]", "");
+          Set<String> type = new HashSet<String>(itemType.getJsonArray("type").getList());
+          Set<String> itemTypeSet =
+              type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
+          itemTypeSet.retainAll(ITEM_TYPES);
 
-          LOGGER.debug("Info: itemType: {}", itemTypes);
-          if (!itemTypes.equalsIgnoreCase("Resource")) {
+          if (!itemTypeSet.contains("Resource")) {
             LOGGER.error("Malformed ID: " + request.getJsonArray(ID).getString(0));
             promise.fail(new EsQueryException(ResponseUrn.BAD_REQUEST_URN, MALFORMED_ID));
           } else {

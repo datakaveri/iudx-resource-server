@@ -996,30 +996,29 @@ public class ApiServerVerticle extends AbstractVerticle {
     jsonObj.put(JSON_INSTANCEID, instanceId);
     String entities = jsonObj.getJsonArray("entities").getString(0);
     JsonObject cacheJson = new JsonObject().put("key", entities).put("type", CATALOGUE_CACHE);
+    HttpServerResponse response = routingContext.response();
     cacheService
         .get(cacheJson)
         .onSuccess(
             cacheServiceResult -> {
-              Set<String> type = new HashSet<String>(new JsonArray().getList());
-              type = new HashSet<String>(cacheServiceResult.getJsonArray("type").getList());
-              Set<String> hashSet =
+              Set<String> type =
+                  new HashSet<String>(cacheServiceResult.getJsonArray("type").getList());
+              Set<String> itemTypeSet =
                   type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
-              hashSet.retainAll(ITEM_TYPES);
-              String itemTypes = hashSet.toString().replaceAll("\\[", "").replaceAll("\\]", "");
+              itemTypeSet.retainAll(ITEM_TYPES);
 
               String resourceGroup;
-              if (!itemTypes.equalsIgnoreCase("Resource")) {
+              if (!itemTypeSet.contains("Resource")) {
                 resourceGroup = cacheServiceResult.getString("id");
               } else {
                 resourceGroup = cacheServiceResult.getString("resourceGroup");
               }
-              jsonObj.put("type", itemTypes);
+              jsonObj.put("type", itemTypeSet.iterator().next());
               jsonObj.put("resourcegroup", resourceGroup);
 
               Future<JsonObject> subsReq =
                   subsService.createSubscription(
                       jsonObj, databroker, postgresService, authInfo, cacheService);
-              HttpServerResponse response = routingContext.response();
               subsReq.onComplete(
                   subHandler -> {
                     if (subHandler.succeeded()) {
@@ -1044,6 +1043,11 @@ public class ApiServerVerticle extends AbstractVerticle {
                       processBackendResponse(response, subHandler.cause().getMessage());
                     }
                   });
+            })
+        .onFailure(
+            failure -> {
+              LOGGER.error(failure.getMessage());
+              processBackendResponse(response, failure.getMessage());
             });
   }
 
@@ -1723,20 +1727,18 @@ public class ApiServerVerticle extends AbstractVerticle {
         .get(cacheJson)
         .onSuccess(
             cacheServiceResult -> {
-              Set<String> type = new HashSet<String>(new JsonArray().getList());
-              type = new HashSet<String>(cacheServiceResult.getJsonArray("type").getList());
-              Set<String> hashSet =
+              Set<String> type =
+                  new HashSet<String>(cacheServiceResult.getJsonArray("type").getList());
+              Set<String> itemTypeSet =
                   type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
-              hashSet.retainAll(ITEM_TYPES);
-              String itemTypes = hashSet.toString().replaceAll("\\[", "").replaceAll("\\]", "");
-
+              itemTypeSet.retainAll(ITEM_TYPES);
               String resourceGroup;
-              if (!itemTypes.equalsIgnoreCase("Resource")) {
+              if (!itemTypeSet.contains("Resource")) {
                 resourceGroup = cacheServiceResult.getString("id");
               } else {
                 resourceGroup = cacheServiceResult.getString("resourceGroup");
               }
-              cacheResult.put("type", itemTypes);
+              cacheResult.put("type", itemTypeSet.iterator().next());
               cacheResult.put("resourcegroup", resourceGroup);
               promise.complete(cacheResult);
             })

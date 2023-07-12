@@ -45,7 +45,6 @@ public class SubscriptionService {
   }
 
   Future<JsonObject> registerStreamingSubscription(JsonObject request) {
-    LOGGER.debug("at 4444 = " + request);
     LOGGER.trace("Info : SubscriptionService#registerStreamingSubscription() started");
     Promise<JsonObject> promise = Promise.promise();
     JsonObject registerStreamingSubscriptionResponse = new JsonObject();
@@ -100,7 +99,6 @@ public class SubscriptionService {
                             } else {
                               JsonArray array = new JsonArray();
                               String exchangeName;
-                              LOGGER.debug(" at 99 == " + requestjson);
                               if (isGroupResource(request)) {
                                 exchangeName = routingKey;
                                 array.add(exchangeName + DATA_WILDCARD_ROUTINGKEY);
@@ -109,7 +107,7 @@ public class SubscriptionService {
                                 LOGGER.debug("exchange name  = {} ", exchangeName);
                                 array.add(exchangeName + "/." + routingKey);
                               }
-                              LOGGER.debug(" Exchange name at 103 == {}", exchangeName);
+                              LOGGER.debug(" Exchange name = {}", exchangeName);
                               JsonObject json = new JsonObject();
                               json.put(EXCHANGE_NAME, exchangeName);
                               json.put(QUEUE_NAME, queueName);
@@ -326,12 +324,10 @@ public class SubscriptionService {
                                         exchangeName = request.getString("resourcegroup");
                                         array.add(exchangeName + "/." + routingKey);
                                       }
-                                      LOGGER.debug("at 329 == " + exchangeName);
                                       JsonObject json = new JsonObject();
                                       json.put(EXCHANGE_NAME, exchangeName);
                                       json.put(QUEUE_NAME, queueName);
                                       json.put(ENTITIES, array);
-                                      LOGGER.debug("at 334 == " + array);
                                       Future<JsonObject> resultbind =
                                           rabbitClient.bindQueue(json, vhost);
                                       resultbind.onComplete(
@@ -511,7 +507,6 @@ public class SubscriptionService {
                         exchangeName = request.getString("resourcegroup");
                         array.add(exchangeName + "/." + routingKey);
                       }
-                      LOGGER.debug("514===" + array + "" + exchangeName);
                       JsonObject json = new JsonObject();
                       json.put(EXCHANGE_NAME, exchangeName);
                       json.put(QUEUE_NAME, queueName);

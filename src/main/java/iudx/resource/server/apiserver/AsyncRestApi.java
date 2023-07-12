@@ -183,15 +183,13 @@ public class AsyncRestApi {
         .get(cacheRequest)
         .onSuccess(
             successHandler -> {
-              Set<String> type = new HashSet<String>(new JsonArray().getList());
-              type = new HashSet<String>(successHandler.getJsonArray("type").getList());
-              Set<String> hashSet =
+              Set<String> type = new HashSet<String>(successHandler.getJsonArray("type").getList());
+              Set<String> itemTypeSet =
                   type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
-              hashSet.retainAll(ITEM_TYPES);
-              String itemTypes = hashSet.toString().replaceAll("\\[", "").replaceAll("\\]", "");
-              LOGGER.debug("Info: itemType: {}", itemTypes);
+              itemTypeSet.retainAll(ITEM_TYPES);
+
               String groupId;
-              if (!itemTypes.equalsIgnoreCase("Resource")) {
+              if (!itemTypeSet.contains("Resource")) {
                 groupId = resourceId;
               } else {
                 groupId = successHandler.getString("resourceGroup");

@@ -8,7 +8,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
@@ -209,16 +208,13 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             promise.fail("Not Found  : " + id);
             return;
           } else {
-            Set<String> type = new HashSet<String>(new JsonArray().getList());
-            type =
+            Set<String> type =
                 new HashSet<String>(isResourceExistHandler.result().getJsonArray("type").getList());
-            Set<String> hashSet =
+            Set<String> itemTypeSet =
                 type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
-            hashSet.retainAll(ITEM_TYPES);
-            String itemTypes = hashSet.toString().replaceAll("\\[", "").replaceAll("\\]", "");
-            LOGGER.debug("Info: itemType: {}", itemTypes);
+            itemTypeSet.retainAll(ITEM_TYPES);
             String groupId;
-            if (!itemTypes.equalsIgnoreCase("Resource")) {
+            if (!itemTypeSet.contains("Resource")) {
               groupId = id;
             } else {
               groupId = isResourceExistHandler.result().getString("resourceGroup");

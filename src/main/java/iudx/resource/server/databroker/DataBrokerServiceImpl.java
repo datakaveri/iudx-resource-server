@@ -182,7 +182,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   @Override
   public DataBrokerService registerStreamingSubscription(
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-    LOGGER.debug(" at 179 === " + request);
     if (request != null && !request.isEmpty()) {
       Future<JsonObject> result = subscriptionService.registerStreamingSubscription(request);
       result.onComplete(
