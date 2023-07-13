@@ -39,7 +39,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;q=speed%3E64&amp;options=count</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&amp;q=speed%3E64&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -71,7 +71,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;q=speed%3E64&amp;offset=0&amp;limit=10</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&amp;q=speed%3E64&amp;offset=0&amp;limit=10</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -103,7 +103,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=near;maxdistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;attrs=trip_id,trip_direction,route_id&amp;offset=0&amp;limit=10</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&amp;geoproperty=location&amp;georel=near;maxdistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;attrs=trip_id,trip_direction,route_id&amp;offset=0&amp;limit=10</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -135,7 +135,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=within&amp;geometry=bbox&amp;coordinates=[[72.8296,21.2],[72.8297,21.15]]&amp;offset=0&amp;limit=10</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&amp;geoproperty=location&amp;georel=within&amp;geometry=bbox&amp;coordinates=[[72.8296,21.2],[72.8297,21.15]]&amp;offset=0&amp;limit=10</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -167,7 +167,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=within&amp;geometry=bbox&amp;coordinates=[[72.8296,21.2],[72.8297,21.15]]&amp;options=count</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&amp;geoproperty=location&amp;georel=within&amp;geometry=bbox&amp;coordinates=[[72.8296,21.2],[72.8297,21.15]]&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -197,7 +197,7 @@
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{     &quot;type&quot;: &quot;Query&quot;,     &quot;entities&quot;: [         {             &quot;id&quot;: &quot;iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&quot;         }     ],     &quot;geoQ&quot;: {         &quot;geometry&quot;: &quot;Point&quot;,         &quot;coordinates&quot;: [21.178,72.834],         &quot;georel&quot;: &quot;near;maxDistance=100&quot;,         &quot;geoproperty&quot;: &quot;location&quot;     },     &quot;options&quot;:&quot;count&quot; }</stringProp>
+                <stringProp name="Argument.value">{     &quot;type&quot;: &quot;Query&quot;,     &quot;entities&quot;: [         {             &quot;id&quot;: &quot;83c2e5c2-3574-4e11-9530-2b1fbdfce832&quot;         }     ],     &quot;geoQ&quot;: {         &quot;geometry&quot;: &quot;Point&quot;,         &quot;coordinates&quot;: [21.178,72.834],         &quot;georel&quot;: &quot;near;maxDistance=100&quot;,         &quot;geoproperty&quot;: &quot;location&quot;     },     &quot;options&quot;:&quot;count&quot; }</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
             </collectionProp>
@@ -242,7 +242,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=near;maxdistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;offset=0&amp;limit=10</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&amp;geoproperty=location&amp;georel=near;maxdistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;offset=0&amp;limit=10</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -274,7 +274,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=near;maxDistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;options=count</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&amp;geoproperty=location&amp;georel=near;maxDistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -304,7 +304,7 @@
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{     &quot;type&quot;: &quot;Query&quot;,     &quot;entities&quot;: [         {             &quot;id&quot;: &quot;iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&quot;         }     ],     &quot;geoQ&quot;: {         &quot;geometry&quot;: &quot;Point&quot;,         &quot;coordinates&quot;: [21.178,72.834],         &quot;georel&quot;: &quot;near;maxDistance=10&quot;,         &quot;geoproperty&quot;: &quot;location&quot;     } }</stringProp>
+                <stringProp name="Argument.value">{     &quot;type&quot;: &quot;Query&quot;,     &quot;entities&quot;: [         {             &quot;id&quot;: &quot;83c2e5c2-3574-4e11-9530-2b1fbdfce832&quot;         }     ],     &quot;geoQ&quot;: {         &quot;geometry&quot;: &quot;Point&quot;,         &quot;coordinates&quot;: [21.178,72.834],         &quot;georel&quot;: &quot;near;maxDistance=10&quot;,         &quot;geoproperty&quot;: &quot;location&quot;     } }</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
             </collectionProp>
@@ -349,7 +349,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=intersects&amp;geometry=linestring&amp;coordinates=[[72.842,21.2],[72.923,20.8]]&amp;offset=0&amp;limit=10</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&amp;geoproperty=location&amp;georel=intersects&amp;geometry=linestring&amp;coordinates=[[72.842,21.2],[72.923,20.8]]&amp;offset=0&amp;limit=10</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -381,7 +381,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=within&amp;geometry=Polygon&amp;coordinates=[[[72.76,21.15],[72.76,21.13],[72.78,21.13],[72.78,21.15],[72.76,21.15]]]&amp;offset=0&amp;limit=10</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&amp;geoproperty=location&amp;georel=within&amp;geometry=Polygon&amp;coordinates=[[[72.76,21.15],[72.76,21.13],[72.78,21.13],[72.78,21.15],[72.76,21.15]]]&amp;offset=0&amp;limit=10</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -413,7 +413,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=within&amp;geometry=Polygon&amp;coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]&amp;options=count</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&amp;geoproperty=location&amp;georel=within&amp;geometry=Polygon&amp;coordinates=[[[72.719,21],[72.842,21.2],[72.923,20.8],[72.74,20.34],[72.9,20.1],[72.67,20],[72.719,21]]]&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -445,7 +445,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities/83c2e5c2-3574-4e11-9530-2b1fbdfce832</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -477,7 +477,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=near;maxDistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;timerel=before&amp;time=2020-10-19T14:00:00Z&amp;options=count</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&amp;geoproperty=location&amp;georel=near;maxDistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;timerel=before&amp;time=2020-10-19T14:00:00Z&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -509,7 +509,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;geoproperty=location&amp;georel=near;maxDistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;timerel=before&amp;time=2020-10-19T14:00:00Z&amp;attrs=id,location,speed&amp;offset=0&amp;limit=10</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&amp;geoproperty=location&amp;georel=near;maxDistance=10&amp;geometry=Point&amp;coordinates=[21.178,72.834]&amp;timerel=before&amp;time=2020-10-19T14:00:00Z&amp;attrs=id,location,speed&amp;offset=0&amp;limit=10</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -541,7 +541,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;timerel=during&amp;time=2020-10-19T14:20:00Z&amp;endtime=2020-10-19T14:25:00Z&amp;options=count</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&amp;timerel=during&amp;time=2020-10-19T14:20:00Z&amp;endtime=2020-10-19T14:25:00Z&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -573,7 +573,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/entities/b58da193-23d9-43eb-b98a-a103d4b6103c</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -605,7 +605,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&amp;timerel=during&amp;time=2020-10-18T14:20:00Z&amp;endtime=2020-10-19T14:20:00Z</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=b58da193-23d9-43eb-b98a-a103d4b6103c&amp;timerel=during&amp;time=2020-10-18T14:20:00Z&amp;endtime=2020-10-19T14:20:00Z</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -637,7 +637,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055&amp;timerel=during&amp;time=2020-10-18T14:20:00Z&amp;endtime=2020-10-19T14:20:00Z&amp;options=count</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=b58da193-23d9-43eb-b98a-a103d4b6103c&amp;timerel=during&amp;time=2020-10-18T14:20:00Z&amp;endtime=2020-10-19T14:20:00Z&amp;options=count</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -669,7 +669,7 @@
           <stringProp name="HTTPSampler.port">8443</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta&amp;timerel=during&amp;time=2020-10-19T14:20:00Z&amp;endtime=2020-10-19T14:25:00Z</stringProp>
+          <stringProp name="HTTPSampler.path">/ngsi-ld/v1/temporal/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&amp;timerel=during&amp;time=2020-10-19T14:20:00Z&amp;endtime=2020-10-19T14:25:00Z</stringProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
