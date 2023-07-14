@@ -65,7 +65,7 @@ public class LatestServiceTest {
   @DisplayName("Testing Latest Data at resource level- flood")
   void searchLatestResourceflood(VertxTestContext testContext) {
     String id =
-        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055";
+        "b58da193-23d9-43eb-b98a-a103d4b6103c";
     JsonObject request =
         new JsonObject()
             .put("id", new JsonArray().add(id))
@@ -129,7 +129,7 @@ public class LatestServiceTest {
   @DisplayName("Testing Latest Data at resource level- itms")
   void searchLatestResourceItms(VertxTestContext testContext) {
     String id =
-"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta";
+"83c2e5c2-3574-4e11-9530-2b1fbdfce832";
     JsonObject request =
         new JsonObject()
             .put("id", new JsonArray().add(id))
