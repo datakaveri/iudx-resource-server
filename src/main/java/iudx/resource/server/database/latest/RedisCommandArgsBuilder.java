@@ -14,7 +14,7 @@ public class RedisCommandArgsBuilder {
       String id, boolean isUniqueAttribueExist, String tenantPrefix) {
     LOGGER.trace("In LatestSearch Redis");
 
-    String idKey = id.replace("-", "_").replaceAll("/", "_").replaceAll("\\.", "_");
+    String idKey = id;
     /*
      * example: key =
      * iudx:iisc_ac_in_89a36273d77dac4cf38114fca1bbe64392547f86_rs_iudx_io_pune_env_flood_FWR055
