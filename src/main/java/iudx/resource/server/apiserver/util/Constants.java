@@ -275,7 +275,7 @@ public class Constants {
 
     public static final Pattern ID_DOMAIN_REGEX = Pattern.compile("^[a-zA-Z0-9.]{4,100}$");
     public static final Pattern ID_USERSHA_REGEX = Pattern.compile("^[a-zA-Z0-9.]{4,100}$");
-    public static final Pattern ID_RS_REGEX = Pattern.compile("^[a-zA-Z.]{4,100}$");
+    public static final Pattern ID_RS_REGEX = Pattern.compile("^[a-zA-Z.-]{4,100}$");
     public static final Pattern ID_RG_REGEX = Pattern.compile("^[a-zA-Z-_.]{4,100}$");
     public static final Pattern ID_RN_REGEX = Pattern.compile("^[a-zA-Z0-9-_.]{4,100}$");
 
