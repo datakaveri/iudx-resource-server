@@ -258,7 +258,7 @@ public class Constants {
     public static final int VALIDATION_ID_MAX_LEN = 512;
     public static final Pattern VALIDATION_ID_PATTERN =
             Pattern.compile(
-                    "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z.]{4,100}/{1}[a-zA-Z-_.]{4,100}/{1}[a-zA-Z0-9-_.]{4,100}$");
+                    "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z.-]{4,100}/{1}[a-zA-Z-_.]{4,100}/{1}[a-zA-Z0-9-_.]{4,100}$");
     public static final int VALIDATION_MAX_ATTRS = 5;
     public static final int VALIDATION_MAX_DAYS_INTERVAL_ALLOWED = 10;
     public static final int VALIDATION_MAX_DAYS_INTERVAL_ALLOWED_FOR_ASYNC = 365;
