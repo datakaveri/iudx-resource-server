@@ -23642,7 +23642,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{openResourceToken}}",
+								"value": "{{adminToken}}",
 								"type": "text"
 							}
 						],
