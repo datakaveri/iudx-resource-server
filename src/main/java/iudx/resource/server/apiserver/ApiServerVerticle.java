@@ -145,6 +145,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     public void start() throws Exception {
 
         Set<String> allowedHeaders = new HashSet<>();
+	allowedHeaders.add("Authorization");
         allowedHeaders.add(HEADER_ACCEPT);
         allowedHeaders.add(HEADER_TOKEN);
         allowedHeaders.add(HEADER_CONTENT_LENGTH);
