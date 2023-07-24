@@ -71,6 +71,7 @@ public class LatestServiceTest {
             .put("id", new JsonArray().add(id))
             .put("searchType", "latestSearch");
 
+
 //    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
 //    when(asyncResult.succeeded()).thenReturn(false);
 
@@ -128,7 +129,7 @@ public class LatestServiceTest {
   @DisplayName("Testing Latest Data at resource level- itms")
   void searchLatestResourceItms(VertxTestContext testContext) {
     String id =
-        "suratmunicipal.org/6db486cb4f720e8585ba1f45a931c63c25dbbbda/rs.iudx.org.in/surat-itms-realtime-info/surat-itms-live-eta";
+"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta";
     JsonObject request =
         new JsonObject()
             .put("id", new JsonArray().add(id))

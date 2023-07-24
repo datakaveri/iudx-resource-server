@@ -21,16 +21,19 @@ public class QueryBuilder {
 
   public JsonObject buildMessageForRmq(JsonObject request) {
 
-    String primaryKey = UUID.randomUUID().toString().replace("-", "");
-    String userId = request.getString(USER_ID);
-    String resourceId = request.getString(ID);
-    String providerId =
-        resourceId.substring(0, resourceId.indexOf('/', resourceId.indexOf('/') + 1));
+    if (request.getString(ORIGIN) == null) {
+      String primaryKey = UUID.randomUUID().toString().replace("-", "");
+      request.put(PRIMARY_KEY, primaryKey);
+      String userId = request.getString(USER_ID);
+      String resourceId = request.getString(ID);
+      String providerId =
+          resourceId.substring(0, resourceId.indexOf('/', resourceId.indexOf('/') + 1));
 
-    request.put(PRIMARY_KEY, primaryKey);
-    request.put(USER_ID, userId);
-    request.put(PROVIDER_ID, providerId);
-    request.put(ORIGIN, ORIGIN_SERVER);
+      request.put(USER_ID, userId);
+      request.put(PROVIDER_ID, providerId);
+      request.put(ORIGIN, ORIGIN_SERVER);
+    }
+
     LOGGER.trace("Info: Request " + request);
     return request;
   }
@@ -91,7 +94,7 @@ public class QueryBuilder {
     LOGGER.debug("zonedDateTimeUTC UTC = " + zonedDateTimeUtc);
     LocalDateTime utcTime = zonedDateTimeUtc.toLocalDateTime();
     LOGGER.debug("UTCtime =" + utcTime);
-    today = zonedDateTimeUtc.now().getDayOfMonth();
+    today = ZonedDateTime.now().getDayOfMonth();
 
     String timeYearBack =
         utcTime

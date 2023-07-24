@@ -40,6 +40,7 @@ public class Constants {
   public static final String EPOCH_TIME = "epochTime";
   public static final String ISO_TIME = "isoTime";
   public static final String ORIGIN = "origin";
+  public static final String ORIGIN_SERVER_SUBSCRIPTION = "rs-server-subscriptions";
   public static final String ORIGIN_SERVER = "rs-server";
   public static final String RS_DATABASE_TABLE_NAME = "auditing_rs";
   public static final String LATEST_ID = "latestId";

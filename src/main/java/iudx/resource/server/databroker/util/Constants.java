@@ -79,6 +79,7 @@ public class Constants {
   public static final String PORT = "port";
 
   public static final String QUEUE = "queue";
+  public static final String AUDITING_EXCHANGE = "auditing";
   public static final String QUEUE_BIND_ERROR = "error in queue binding with adaptor";
   public static final String QUEUE_DOES_NOT_EXISTS = "Queue does not exist";
   public static final String QUEUE_ALREADY_EXISTS = "Queue already exists";
