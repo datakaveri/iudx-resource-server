@@ -25,15 +25,9 @@ public class QueryBuilder {
       String primaryKey = UUID.randomUUID().toString().replace("-", "");
       request.put(PRIMARY_KEY, primaryKey);
       String userId = request.getString(USER_ID);
-      String resourceId = request.getString(ID);
-      String providerId =
-          resourceId.substring(0, resourceId.indexOf('/', resourceId.indexOf('/') + 1));
-
       request.put(USER_ID, userId);
-      request.put(PROVIDER_ID, providerId);
       request.put(ORIGIN, ORIGIN_SERVER);
     }
-
     LOGGER.trace("Info: Request " + request);
     return request;
   }
@@ -94,8 +88,7 @@ public class QueryBuilder {
     LOGGER.debug("zonedDateTimeUTC UTC = " + zonedDateTimeUtc);
     LocalDateTime utcTime = zonedDateTimeUtc.toLocalDateTime();
     LOGGER.debug("UTCtime =" + utcTime);
-    today = ZonedDateTime.now().getDayOfMonth();
-
+    today = zonedDateTimeUtc.getDayOfMonth();
     String timeYearBack =
         utcTime
             .minusYears(1)
@@ -134,10 +127,8 @@ public class QueryBuilder {
                     .replace("$3", endTime)
                     .replace("$4", userId));
       } else if (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate")) {
-        String resourceId = request.getString(IID);
-        String providerId =
-            resourceId.substring(0, resourceId.indexOf('/', resourceId.indexOf('/') + 1));
-        LOGGER.debug("Provider =" + providerId);
+        String providerId = request.getString("providerid");
+        LOGGER.debug("Provider = {}", providerId);
         monthQuery =
             new StringBuilder(
                 OVERVIEW_QUERY
@@ -172,10 +163,8 @@ public class QueryBuilder {
                     .replace("$3", utcTime.toString())
                     .replace("$4", userId));
       } else if (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate")) {
-        String resourceId = request.getString(IID);
-        String providerId =
-            resourceId.substring(0, resourceId.indexOf('/', resourceId.indexOf('/') + 1));
-        LOGGER.debug("Provider =" + providerId);
+        String providerId = request.getString("providerid");
+        LOGGER.debug("Provider = {}", providerId);
         monthQuery =
             new StringBuilder(
                 OVERVIEW_QUERY
@@ -202,9 +191,8 @@ public class QueryBuilder {
       summaryQuery.append(
           " and time between '$2' AND '$3' ".replace("$2", startTime).replace("$3", endTime));
       if (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate")) {
-        String resourceId = request.getString(IID);
-        String providerId =
-            resourceId.substring(0, resourceId.indexOf('/', resourceId.indexOf('/') + 1));
+        String providerId = request.getString("providerid");
+        LOGGER.debug("Provider = {}", providerId);
         summaryQuery.append(PROVIDERID_SUMMARY.replace("$8", providerId));
       }
       if (role.equalsIgnoreCase("consumer")) {
@@ -213,9 +201,8 @@ public class QueryBuilder {
       }
     } else {
       if (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate")) {
-        String resourceId = request.getString(IID);
-        String providerId =
-            resourceId.substring(0, resourceId.indexOf('/', resourceId.indexOf('/') + 1));
+        String providerId = request.getString("providerid");
+        LOGGER.debug("Provider = {}", providerId);
         summaryQuery.append(PROVIDERID_SUMMARY.replace("$8", providerId));
       }
       if (role.equalsIgnoreCase("consumer")) {

@@ -14,6 +14,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rabbitmq.RabbitMQClient;
+import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.common.Response;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.common.Vhosts;
@@ -40,13 +41,20 @@ public class DataBrokerServiceImpl implements DataBrokerService {
   static SubscriptionService subscriptionService;
   JsonObject finalResponse =
       Util.getResponseJson(BAD_REQUEST_CODE, BAD_REQUEST_DATA, BAD_REQUEST_DATA);
+  CacheService cacheService;
   private JsonObject config;
   private RabbitClient webClient;
 
-  public DataBrokerServiceImpl(RabbitClient webClient, PostgresClient pgClient, JsonObject config) {
+  public DataBrokerServiceImpl(
+      RabbitClient webClient,
+      PostgresClient pgClient,
+      JsonObject config,
+      CacheService cacheService) {
     this.webClient = webClient;
     this.config = config;
-    this.subscriptionService = new SubscriptionService(this.webClient, pgClient, config);
+    this.subscriptionService =
+        new SubscriptionService(this.webClient, pgClient, config, cacheService);
+    this.cacheService = cacheService;
   }
 
   /**
@@ -101,25 +109,6 @@ public class DataBrokerServiceImpl implements DataBrokerService {
               handler.handle(Future.succeededFuture(resultHandler.result()));
             }
             if (resultHandler.failed()) {
-              LOGGER.error("getExchange resultHandler failed : " + resultHandler.cause());
-              handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
-            }
-          });
-    }
-    return this;
-  }
-
-  @Override
-  public DataBrokerService getExchanges(
-      JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
-    if (request != null && !request.isEmpty()) {
-      Future<JsonObject> result = webClient.getAllExchanges(request);
-      result.onComplete(
-          resultHandler -> {
-            if (resultHandler.succeeded()) {
-              LOGGER.debug("Successful exchanges searched");
-              handler.handle(Future.succeededFuture(resultHandler.result()));
-            } else {
               LOGGER.error("getExchange resultHandler failed : " + resultHandler.cause());
               handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
             }

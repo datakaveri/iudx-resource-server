@@ -7,13 +7,14 @@ import co.elastic.clients.elasticsearch.core.search.SourceConfig;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.cache.CacheService;
+import iudx.resource.server.cache.cachelmpl.CacheType;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.database.elastic.ElasticClient;
 import iudx.resource.server.database.elastic.QueryDecoder;
 import iudx.resource.server.database.elastic.exception.EsQueryException;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,15 +32,18 @@ import org.apache.logging.log4j.Logger;
 public class DatabaseServiceImpl implements DatabaseService {
 
   private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceImpl.class);
-  private final ElasticClient client;
+  static ElasticClient client;
+  static CacheService cacheService;
   private QueryDecoder queryDecoder = new QueryDecoder();
   private String timeLimit;
   private String tenantPrefix;
 
-  public DatabaseServiceImpl(ElasticClient client, String timeLimit, String tenantPrefix) {
+  public DatabaseServiceImpl(
+      ElasticClient client, String timeLimit, String tenantPrefix, CacheService cacheService) {
     this.client = client;
     this.timeLimit = timeLimit;
     this.tenantPrefix = tenantPrefix;
+    this.cacheService = cacheService;
   }
 
   public int getOrDefault(JsonObject json, String key, int def) {
@@ -53,11 +57,9 @@ public class DatabaseServiceImpl implements DatabaseService {
   @Override
   public Future<JsonObject> search(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
-
     request.put(TIME_LIMIT, timeLimit);
     try {
       Future<JsonObject> validationFuture = checkQuery(request);
-
       validationFuture
           .onFailure(
               handler -> {
@@ -65,18 +67,22 @@ public class DatabaseServiceImpl implements DatabaseService {
               })
           .onSuccess(
               handler -> {
-                String id = request.getJsonArray(ID).getString(0);
-                final String searchIndex = getIndex(id);
-
+                String resourceGroup = handler.getString("resourceGroup");
+                StringBuilder tenantBuilder = new StringBuilder(tenantPrefix);
+                final String searchIndex;
+                if (!this.tenantPrefix.equals("none")) {
+                  searchIndex = String.valueOf(tenantBuilder.append("__").append(resourceGroup));
+                } else {
+                  searchIndex = resourceGroup;
+                }
+                // String searchIndex = tenantBuilder;
                 final int sizeKeyValue = getOrDefault(request, PARAM_SIZE, DEFAULT_SIZE_VALUE);
                 final int fromKeyValue = getOrDefault(request, PARAM_FROM, DEFAULT_FROM_VALUE);
 
                 Query query = queryDecoder.getQuery(request);
                 LOGGER.info("query : " + query.toString());
-
                 CountResultPlaceholder countPlaceHolder = new CountResultPlaceholder();
                 Future<JsonObject> countFuture = client.asyncCount(searchIndex, query);
-
                 countFuture
                     .compose(
                         countQueryHandler -> {
@@ -124,22 +130,6 @@ public class DatabaseServiceImpl implements DatabaseService {
     return promise.future();
   }
 
-  private String getIndex(String id) {
-    List<String> splitId = new LinkedList<>(Arrays.asList(id.split("/")));
-    splitId.remove(splitId.size() - 1);
-
-    if (!this.tenantPrefix.equals("none")) {
-      splitId.add(0, this.tenantPrefix);
-    }
-    /*
-     * Example: searchIndex =
-     * iudx__datakaveri.org__b8bd3e3f39615c8ec96722131ae95056b5938f2f__rs.iudx.io__pune-env-aqm
-     */
-    final String searchIndex = String.join("__", splitId);
-    LOGGER.debug("Index name: " + searchIndex);
-    return searchIndex;
-  }
-
   @Override
   public Future<JsonObject> count(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
@@ -158,10 +148,14 @@ public class DatabaseServiceImpl implements DatabaseService {
                 if (searchType.matches(RESPONSE_FILTER_REGEX)) {
                   throw new EsQueryException("Count is not supported with filtering");
                 }
-
-                String id = request.getJsonArray(ID).getString(0);
-                final String searchIndex = getIndex(id);
-
+                final String searchIndex;
+                String resourceGroup = handler.getString("resourceGroup");
+                StringBuilder tenantBuilder = new StringBuilder(tenantPrefix);
+                if (!this.tenantPrefix.equals("none")) {
+                  searchIndex = String.valueOf(tenantBuilder.append("__").append(resourceGroup));
+                } else {
+                  searchIndex = resourceGroup;
+                }
                 Query query = queryDecoder.getQuery(request);
                 LOGGER.info("query : " + query.toString());
                 Future<JsonObject> countFuture = client.asyncCount(searchIndex, query);
@@ -186,21 +180,25 @@ public class DatabaseServiceImpl implements DatabaseService {
 
   public Future<JsonObject> checkQuery(JsonObject request) {
     Promise<JsonObject> promise = Promise.promise();
-    if (!request.containsKey(ID)) {
-      LOGGER.debug("Info: " + ID_NOT_FOUND);
-      promise.fail(new EsQueryException(ResponseUrn.BAD_REQUEST_URN, ID_NOT_FOUND));
-    } else if (request.getJsonArray(ID).isEmpty()) {
-      LOGGER.debug("Info: " + EMPTY_RESOURCE_ID);
-      promise.fail(new EsQueryException(ResponseUrn.BAD_REQUEST_URN, EMPTY_RESOURCE_ID));
-    } else if (!request.containsKey(SEARCH_TYPE)) {
-      LOGGER.debug("Info: " + SEARCHTYPE_NOT_FOUND);
-      promise.fail(new EsQueryException(ResponseUrn.BAD_REQUEST_URN, SEARCHTYPE_NOT_FOUND));
-    } else if (request.getJsonArray(ID).getString(0).split("/").length != 5) {
-      LOGGER.error("Malformed ID: " + request.getJsonArray(ID).getString(0));
-      promise.fail(new EsQueryException(ResponseUrn.BAD_REQUEST_URN, MALFORMED_ID));
-    } else {
-      promise.complete();
-    }
+    JsonObject cacheRequest = new JsonObject();
+    cacheRequest.put("type", CacheType.CATALOGUE_CACHE);
+    cacheRequest.put("key", request.getJsonArray(ID).getString(0));
+    Future<JsonObject> getItemType = cacheService.get(cacheRequest);
+    getItemType.onSuccess(
+        itemType -> {
+          Set<String> type = new HashSet<String>(itemType.getJsonArray("type").getList());
+          Set<String> itemTypeSet =
+              type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
+          itemTypeSet.retainAll(ITEM_TYPES);
+
+          if (!itemTypeSet.contains("Resource")) {
+            LOGGER.error("Malformed ID: " + request.getJsonArray(ID).getString(0));
+            promise.fail(new EsQueryException(ResponseUrn.BAD_REQUEST_URN, MALFORMED_ID));
+          } else {
+            promise.complete(itemType);
+          }
+        });
+
     return promise.future();
   }
 

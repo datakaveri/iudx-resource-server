@@ -1,11 +1,13 @@
 package iudx.resource.server.database.archives;
 
+import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
 import static iudx.resource.server.common.Constants.DATABASE_SERVICE_ADDRESS;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceBinder;
+import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.database.elastic.ElasticClient;
 
 /**
@@ -31,6 +33,7 @@ public class DatabaseVerticle extends AbstractVerticle {
   private ServiceBinder binder;
   private MessageConsumer<JsonObject> consumer;
   private String tenantPrefix;
+  private CacheService cacheService;
 
   /**
    * This method is used to start the Verticle. It deploys a verticle in a cluster, registers the
@@ -48,10 +51,10 @@ public class DatabaseVerticle extends AbstractVerticle {
     password = config().getString("dbPassword");
     timeLimit = config().getString("timeLimit");
     tenantPrefix = config().getString("tenantPrefix");
-
+    cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
     client = new ElasticClient(databaseIp, databasePort, user, password);
     binder = new ServiceBinder(vertx);
-    database = new DatabaseServiceImpl(client, timeLimit, tenantPrefix);
+    database = new DatabaseServiceImpl(client, timeLimit, tenantPrefix, cacheService);
 
     consumer =
         binder.setAddress(DATABASE_SERVICE_ADDRESS).register(DatabaseService.class, database);

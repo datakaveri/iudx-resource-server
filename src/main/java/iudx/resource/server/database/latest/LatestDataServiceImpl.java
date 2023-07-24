@@ -37,8 +37,8 @@ public class LatestDataServiceImpl implements LatestDataService {
   // private RedisAPI redisAPI;
   private RedisCommandArgsBuilder redisCmdBuilder = new RedisCommandArgsBuilder();
 
-  public LatestDataServiceImpl(RedisClient client, final CacheService cacheService,
-      String tenantPrefix) {
+  public LatestDataServiceImpl(
+      RedisClient client, final CacheService cacheService, String tenantPrefix) {
     this.redisClient = client;
     this.cache = cacheService;
     this.tenantPrefix = tenantPrefix;

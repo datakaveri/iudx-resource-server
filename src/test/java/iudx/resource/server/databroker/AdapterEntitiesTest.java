@@ -12,6 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.UUID;
+
+import iudx.resource.server.cache.CacheService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.*;
@@ -32,6 +34,8 @@ import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.common.Vhosts;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.databroker.util.Constants;
+import org.mockito.Mock;
+
 @ExtendWith(VertxExtension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AdapterEntitiesTest {
@@ -77,6 +81,7 @@ public class AdapterEntitiesTest {
   private static RabbitWebClient rabbitMQWebClient;
   private static PostgresClient pgClient;
   private static Configuration appConfig;
+  @Mock static CacheService cacheService;
 
   private static final Logger LOGGER = LogManager.getLogger(AdapterEntitiesTest.class);
 
@@ -176,7 +181,7 @@ public class AdapterEntitiesTest {
     rabbitMQWebClient = new RabbitWebClient(vertx, webConfig, propObj);
     pgClient = new PostgresClient(vertx, connectOptions, poolOptions);
     rabbitMQStreamingClient = new RabbitClient(vertx, config, rabbitMQWebClient, pgClient, brokerConfig);
-    databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, brokerConfig);
+    databroker = new DataBrokerServiceImpl(rabbitMQStreamingClient, pgClient, brokerConfig,cacheService);
 
     resourceGroup = brokerConfig.getString("testResourceGroup");
     resourceServer = brokerConfig.getString("testResourceServer");

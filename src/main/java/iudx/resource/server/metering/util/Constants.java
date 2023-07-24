@@ -12,8 +12,6 @@ public class Constants {
   public static final String TIME_RELATION = "timeRelation";
   public static final String DURING = "during";
   public static final String BETWEEN = "between";
-  public static final String CONSUMER = "consumer";
-  public static final String WHERE = "where";
 
   /* Errors */
   public static final String SUCCESS = "Success";
@@ -43,20 +41,15 @@ public class Constants {
   public static final String ORIGIN_SERVER_SUBSCRIPTION = "rs-server-subscriptions";
   public static final String ORIGIN_SERVER = "rs-server";
   public static final String RS_DATABASE_TABLE_NAME = "auditing_rs";
-  public static final String LATEST_ID = "latestId";
-  public static final String LAST_ID = "lastId";
 
   /* Metering Service Constants*/
   public static final String TIME_RELATION_NOT_FOUND = "Time relation not found.";
   public static final String TIME_NOT_FOUND = "Time interval not found.";
   public static final String USERID_NOT_FOUND = "User Id not found.";
   public static final String INVALID_DATE_TIME = "invalid date-time";
-  public static final String INVALID_PROVIDER_ID = "invalid provider id.";
   public static final String INVALID_PROVIDER_REQUIRED = "provider id required.";
   public static final String INVALID_DATE_DIFFERENCE =
       "Difference between dates cannot be less than 1 Minute.";
-  public static final String RESPONSE_LIMIT_EXCEED = "Requested time range exceeds response limit";
-  public static final String RESOURCE_QUERY = " and resourceId='$4'";
 
   public static final String CONSUMERID_TIME_INTERVAL_COUNT_QUERY =
       "SELECT count(*) FROM $0 where time between '$1' and '$2' and userid='$3'";
@@ -101,8 +94,7 @@ public class Constants {
   public static final String GROUPBY =
       "\n" + "   GROUP  BY 1\n" + "   ) t USING (day)\n" + "ORDER  BY day";
   public static final String SUMMARY_QUERY_FOR_METERING =
-      "select resourceid,count(*) from auditing_rs "
-          + "where (resourceid like '%/%/%/%' or resourceid like '%/%/%/%/%') ";
+      "select resourceid,count(*) from auditing_rs " + "where (resourceid like '%-%-%-%-%' ) ";
   public static final String GROUPBY_RESOURCEID = " group by resourceid";
   public static final String USERID_SUMMARY = " and userid = '$9' ";
   public static final String PROVIDERID_SUMMARY = " and providerid = '$8' ";

@@ -6,6 +6,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.database.elastic.ElasticClient;
 
 /**
@@ -26,8 +27,9 @@ import iudx.resource.server.database.elastic.ElasticClient;
 public interface DatabaseService {
 
   @GenIgnore
-  static DatabaseService create(ElasticClient client, String timeLimit, String tenantPrefix) {
-    return new DatabaseServiceImpl(client, timeLimit, tenantPrefix);
+  static DatabaseService create(
+      ElasticClient client, String timeLimit, String tenantPrefix, CacheService cacheService) {
+    return new DatabaseServiceImpl(client, timeLimit, tenantPrefix, cacheService);
   }
 
   /**

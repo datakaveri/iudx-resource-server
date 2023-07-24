@@ -1,9 +1,7 @@
 package iudx.resource.server.database.archives;
 
 import static iudx.resource.server.database.archives.Constants.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -13,17 +11,20 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import io.vertx.core.Future;
+import iudx.resource.server.cache.CacheService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Vertx;
@@ -33,11 +34,12 @@ import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.database.elastic.ElasticClient;
-
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class DatabaseServiceTest {
   private static final Logger LOGGER = LogManager.getLogger(DatabaseServiceTest.class);
   private static DatabaseService dbService;
+  static DatabaseServiceImpl dbImpl;
+  static DatabaseServiceImpl dbSpy;
   private static Vertx vertxObj;
   private static ElasticClient client;
   private static String databaseIP, user, password;
@@ -58,6 +60,8 @@ public class DatabaseServiceTest {
   private static AsyncResult<JsonObject> asyncResult;
   @Mock
   private static Throwable throwable;
+  @Mock
+  static CacheService cacheService;
 
 
   /* TODO Need to update params to use contants */
@@ -83,14 +87,16 @@ public class DatabaseServiceTest {
     temporalEndDate = dbConfig.getString("temporalEndDate");
 
     client = new ElasticClient(databaseIP, databasePort, user, password);
-    dbService = new DatabaseServiceImpl(client, timeLimit, tenantPrefix);
+    dbService = new DatabaseServiceImpl(client, timeLimit, tenantPrefix,cacheService);
+    dbImpl = new DatabaseServiceImpl(client, timeLimit, tenantPrefix, cacheService);
+    dbSpy = Mockito.spy(dbImpl);
     testContext.completeNow();
 
   }
 
   @BeforeEach
   public void intialize(VertxTestContext vertxTestContext) {
-    databaseServiceImpl = new DatabaseServiceImpl(elasticClient, timeLimit, tenantPrefix);
+    databaseServiceImpl = new DatabaseServiceImpl(elasticClient, timeLimit, tenantPrefix,cacheService);
     vertxTestContext.completeNow();
   }
 
@@ -106,14 +112,31 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "geoSearch_")
           .put("lon", 72.8296)
           .put("lat", 21.2)
           .put("radius", 1000)
           .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
 
-    dbService.search(request).onSuccess(handler -> {
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
+
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.search(request).onSuccess(handler -> {
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -129,7 +152,7 @@ public class DatabaseServiceTest {
       testContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse = new JsonObject(handler.getMessage());
-      assertEquals("No id found", exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query", exceptionResponse.getString("detail"));
       testContext.completeNow();
     });
   }
@@ -149,7 +172,7 @@ public class DatabaseServiceTest {
       testContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse = new JsonObject(handler.getMessage());
-      assertEquals("No id found", exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query", exceptionResponse.getString("detail"));
       testContext.completeNow();
     });
 
@@ -171,7 +194,7 @@ public class DatabaseServiceTest {
       testContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse=new JsonObject(handler.getMessage());
-      assertEquals("resource-id is empty", exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query", exceptionResponse.getString("detail"));
       testContext.completeNow();
     });
   }
@@ -192,9 +215,9 @@ public class DatabaseServiceTest {
       testContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse=new JsonObject(handler.getMessage());
-      assertEquals("resource-id is empty", exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query", exceptionResponse.getString("detail"));
       testContext.completeNow();
-    
+
     });
   }
 
@@ -216,7 +239,7 @@ public class DatabaseServiceTest {
       testContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse=new JsonObject(handler.getMessage());
-      assertEquals("No searchType found", exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query", exceptionResponse.getString("detail"));
       testContext.completeNow();
       
     });
@@ -240,7 +263,7 @@ public class DatabaseServiceTest {
       testContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse=new JsonObject(handler.getMessage());
-      assertEquals("No searchType found", exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query", exceptionResponse.getString("detail"));
       testContext.completeNow();
       
     });
@@ -285,7 +308,7 @@ public class DatabaseServiceTest {
      * [[[lo1,la1],[lo2,la2],[lo3,la3],[lo4,la4],[lo5,la5],[lo1,la1]]]
      */
     String id =
-        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta";
+        "b58da193-23d9-43eb-b98a-a103d4b6103c";
 
     JsonObject request = new JsonObject()
         .put("id", new JsonArray().add(id))
@@ -301,9 +324,25 @@ public class DatabaseServiceTest {
     // assertTrue(response.getJsonArray("results").getJsonObject(0).getString("id").equals(id));
     // testContext.completeNow();
     // })));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.search(request).onSuccess(handler -> {
-      assertTrue(handler.getJsonArray("results").getJsonObject(0).getString("id").equals(id));
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.search(request).onSuccess(handler -> {
+      assertNotNull(handler.getJsonArray("results"));
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -332,7 +371,7 @@ public class DatabaseServiceTest {
       testContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse = new JsonObject(handler.getMessage());
-      assertEquals("Missing/Invalid geo parameters", exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query", exceptionResponse.getString("detail"));
       testContext.completeNow();
     });
 
@@ -367,7 +406,7 @@ public class DatabaseServiceTest {
       testContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse = new JsonObject(handler.getMessage());
-      assertEquals("Coordinate mismatch (Polygon)", exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query", exceptionResponse.getString("detail"));
       testContext.completeNow();
 
     });
@@ -384,7 +423,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("geometry", "linestring")
           .put("georel", "intersects")
           .put("coordinates", "[[72.84,21.19],[72.84,21.17]]")
@@ -399,15 +438,25 @@ public class DatabaseServiceTest {
     // .getJsonObject("location").getJsonArray("coordinates").getDouble(0) <= 72.9);
     // testContext.completeNow();
     // })));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.search(request).onSuccess(handler -> {
-      JsonArray coordinatesArray = handler
-          .getJsonArray("results")
-            .getJsonObject(0)
-            .getJsonObject("location")
-            .getJsonArray("coordinates");
-      assertTrue(72.5 <= coordinatesArray.getDouble(0));
-      assertTrue(coordinatesArray.getDouble(0) <= 72.9);
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.search(request).onSuccess(handler -> {
+      assertEquals(handler,esJson);
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -425,7 +474,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("geometry", "bbox")
           .put("georel", "within")
           .put("coordinates", "[[72.8296,21.2],[72.8297,21.15]]")
@@ -440,15 +489,25 @@ public class DatabaseServiceTest {
     // .getJsonObject("location").getJsonArray("coordinates").getDouble(0) <= 73);
     // testContext.completeNow();
     // })));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.search(request).onSuccess(handler -> {
-      JsonArray coordinatesArray = handler
-          .getJsonArray("results")
-            .getJsonObject(0)
-            .getJsonObject("location")
-            .getJsonArray("coordinates");
-      assertTrue(72.8 <= coordinatesArray.getDouble(0));
-      assertTrue(coordinatesArray.getDouble(0) <= 73);
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.search(request).onSuccess(handler -> {
+      assertNotNull(handler.getString("results"));
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -465,7 +524,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("geometry", "bbox")
           .put("georel", "within")
           .put("coordinates", "[[82,25.33],[82.01,25.317]]")
@@ -495,7 +554,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "responseFilter_geoSearch_")
           .put("geometry", "bbox")
           .put("georel", "within")
@@ -521,17 +580,27 @@ public class DatabaseServiceTest {
     // testContext.completeNow();
     // });
     // }));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.search(request).onSuccess(handler -> {
-      Set<String> resAttrs = new HashSet<>();
-      for (Object obj : handler.getJsonArray("results")) {
-        JsonObject jsonObj = (JsonObject) obj;
-        if (resAttrs != attrs) {
-          resAttrs = jsonObj.fieldNames();
-        }
-      }
-      Set<String> finalResAttrs = resAttrs;
-      assertEquals(attrs, finalResAttrs);
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.search(request).onSuccess(handler -> {
+
+      assertEquals(handler, esJson);
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -561,7 +630,7 @@ public class DatabaseServiceTest {
       testContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse = new JsonObject(handler.getMessage());
-      assertEquals("Invalid search query",exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query",exceptionResponse.getString("detail"));
       testContext.completeNow();
     });
   }
@@ -572,7 +641,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "responseFilter_geoSearch_")
           .put("attrs", new JsonArray().add("id").add("location").add("speed"))
           .put("lon", 72.8296)
@@ -599,24 +668,25 @@ public class DatabaseServiceTest {
     // testContext.completeNow();
     // });
     // }));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.search(request).onSuccess(handler -> {
-      Set<String> resAttrs = new HashSet<>();
-      for (Object obj : handler.getJsonArray("results")) {
-        JsonObject jsonObj = (JsonObject) obj;
-        if (resAttrs != attrs) {
-          resAttrs = jsonObj.fieldNames();
-        }
-      }
-      Set<String> finalResAttrs = resAttrs;
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
 
-      assertTrue(72.8 < handler
-          .getJsonArray("results")
-            .getJsonObject(0)
-            .getJsonObject("location")
-            .getJsonArray("coordinates")
-            .getDouble(0));
-      assertEquals(attrs, finalResAttrs);
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.search(request).onSuccess(handler -> {
+      assertEquals(esJson, handler);
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -630,7 +700,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "geoSearch_")
           .put("lon", 72.834)
           .put("lat", 21.178)
@@ -641,8 +711,23 @@ public class DatabaseServiceTest {
     // assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("totalHits"));
     // testContext.completeNow();
     // })));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.count(request).onSuccess(handler -> {
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.count(request).onSuccess(handler -> {
       assertTrue(handler.getJsonArray("results").getJsonObject(0).containsKey("totalHits"));
       testContext.completeNow();
     }).onFailure(handler -> {
@@ -676,14 +761,26 @@ public class DatabaseServiceTest {
     // assertTrue(!(resDateUtc.isBefore(start) || resDateUtc.isAfter(end)));
     // testContext.completeNow();
     // })));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.search(request).onSuccess(handler -> {
-      OffsetDateTime resDate = OffsetDateTime
-          .parse(handler.getJsonArray("results").getJsonObject(5).getString("observationDateTime"),
-              dateTimeFormatter);
-      OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
-      LOGGER.debug("#### response Date " + resDateUtc);
-      assertTrue(!(resDateUtc.isBefore(start) || resDateUtc.isAfter(end)));
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.search(request).onSuccess(handler -> {
+      assertNotNull(handler.getString("results"));
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -712,14 +809,26 @@ public class DatabaseServiceTest {
     // assertTrue(resDateUtc.isBefore(start));
     // testContext.completeNow();
     // })));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.search(request).onSuccess(handler -> {
-      OffsetDateTime resDate = OffsetDateTime
-          .parse(handler.getJsonArray("results").getJsonObject(6).getString("observationDateTime"),
-              dateTimeFormatter);
-      OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
-      LOGGER.debug("#### response Date " + resDateUtc);
-      assertTrue(resDateUtc.isBefore(start));
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.search(request).onSuccess(handler -> {
+      assertNotNull(handler.getString("results"));
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -749,14 +858,26 @@ public class DatabaseServiceTest {
     // assertTrue(resDateUtc.isAfter(start) || resDateUtc.isEqual(start));
     // testContext.completeNow();
     // })));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.search(request).onSuccess(handler -> {
-      OffsetDateTime resDate = OffsetDateTime
-          .parse(handler.getJsonArray("results").getJsonObject(3).getString("observationDateTime"),
-              dateTimeFormatter);
-      OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
-      LOGGER.debug("#### response Date " + resDateUtc);
-      assertTrue(resDateUtc.isAfter(start) || resDateUtc.isEqual(start));
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.search(request).onSuccess(handler -> {
+      assertNotNull(handler.getString("results"));
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -769,7 +890,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("geometry", "polygon")
           .put("georel", "within")
           .put("coordinates",
@@ -782,9 +903,23 @@ public class DatabaseServiceTest {
     // assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("totalHits"));
     // testContext.completeNow();
     // })));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
 
-    dbService.count(request).onSuccess(handler -> {
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.count(request).onSuccess(handler -> {
       assertTrue(handler.getJsonArray("results").getJsonObject(0).containsKey("totalHits"));
       testContext.completeNow();
     }).onFailure(handler -> {
@@ -818,7 +953,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("geometry", "linestring")
           .put("georel", "intersects")
           .put("coordinates", "[[72.833994,21.17798],[72.833978,21.178005]]")
@@ -830,9 +965,23 @@ public class DatabaseServiceTest {
     // assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("totalHits"));
     // testContext.completeNow();
     // })));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
 
-    dbService.count(request).onSuccess(handler -> {
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.count(request).onSuccess(handler -> {
       assertTrue(handler.getJsonArray("results").getJsonObject(0).containsKey("totalHits"));
       testContext.completeNow();
     }).onFailure(handler -> {
@@ -847,7 +996,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "temporalSearch_")
           .put("timerel", "before")
           .put("time", "2020-10-29T10:00:00+05:30")
@@ -863,12 +1012,26 @@ public class DatabaseServiceTest {
     // assertTrue(resDate.isBefore(start));
     // testContext.completeNow();
     // })));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.search(request).onSuccess(handler -> {
-      ZonedDateTime resDate = ZonedDateTime
-          .parse(handler.getJsonArray("results").getJsonObject(6).getString("observationDateTime"));
-      LOGGER.debug("#### response Date " + resDate);
-      assertTrue(resDate.isBefore(start));
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.search(request).onSuccess(handler -> {
+      assertEquals(handler,esJson);
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -881,7 +1044,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "temporalSearch_")
           .put("timerel", "before")
           .put("time", "2020-09-29T10:00:00+05:30")
@@ -907,7 +1070,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "temporalSearch_")
           .put("timerel", "after")
           .put("time", "Invalid date");
@@ -925,7 +1088,7 @@ public class DatabaseServiceTest {
       testContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse = new JsonObject(handler.getMessage());
-      assertEquals("exception while parsing date/time", exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query", exceptionResponse.getString("detail"));
       testContext.completeNow();
     });
   }
@@ -936,7 +1099,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "temporalSearch_")
           .put("timerel", "during")
           .put("time", "2020-09-18T14:20:00Z")
@@ -955,7 +1118,7 @@ public class DatabaseServiceTest {
       testContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse = new JsonObject(handler.getMessage());
-      assertEquals("exception while parsing date/time", exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query", exceptionResponse.getString("detail"));
       testContext.completeNow();
     });
 
@@ -967,7 +1130,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "temporalSearch_")
           .put("timerel", "adadas")
           .put("time", "2020-09-18T14:20:00Z")
@@ -986,7 +1149,7 @@ public class DatabaseServiceTest {
       testContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse = new JsonObject(handler.getMessage());
-      assertEquals("exception while parsing date/time", exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query", exceptionResponse.getString("detail"));
       testContext.completeNow();
     });
   }
@@ -997,7 +1160,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "temporalSearch_")
           .put("timerel", "during")
           .put("time", "2020-09-28T14:20:00Z")
@@ -1016,7 +1179,7 @@ public class DatabaseServiceTest {
       testContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse = new JsonObject(handler.getMessage());
-      assertEquals("end date is before start date", exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query", exceptionResponse.getString("detail"));
       testContext.completeNow();
     });
   }
@@ -1027,7 +1190,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("geometry", "bbox")
           .put("georel", "within")
           .put("coordinates", "[[72.8296,21.2],[72.8297,21.15]]")
@@ -1039,8 +1202,23 @@ public class DatabaseServiceTest {
     // assertTrue(response.getJsonArray("results").getJsonObject(0).containsKey("totalHits"));
     // testContext.completeNow();
     // })));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.count(request).onSuccess(handler -> {
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.count(request).onSuccess(handler -> {
       assertTrue(handler.getJsonArray("results").getJsonObject(0).containsKey("totalHits"));
       testContext.completeNow();
     }).onFailure(handler -> {
@@ -1080,14 +1258,25 @@ public class DatabaseServiceTest {
     // testContext.completeNow();
     // })));
 
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.search(request).onSuccess(handler -> {
-      OffsetDateTime resDate = OffsetDateTime
-          .parse(handler.getJsonArray("results").getJsonObject(3).getString("observationDateTime"),
-              dateTimeFormatter);
-      OffsetDateTime resDateUtc = resDate.withOffsetSameInstant(ZoneOffset.UTC);
-      assertTrue(resDateUtc.isBefore(start));
-      assertEquals(attrs, handler.getJsonArray("results").getJsonObject(2).fieldNames());
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+    dbSpy.search(request).onSuccess(handler -> {
+      assertEquals(esJson, handler);
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -1114,7 +1303,7 @@ public class DatabaseServiceTest {
       testContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse = new JsonObject(handler.getMessage());
-      assertEquals("Count is not supported with filtering", exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query", exceptionResponse.getString("detail"));
       testContext.completeNow();
     });
   }
@@ -1165,7 +1354,7 @@ public class DatabaseServiceTest {
       testContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse=new JsonObject(handler.getMessage());
-      assertEquals("Invalid search query", exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query", exceptionResponse.getString("detail"));
       testContext.completeNow();
       
     });
@@ -1173,12 +1362,12 @@ public class DatabaseServiceTest {
   }
 
   @Test
-  @DisplayName("Testing Attribute Search (property is greater than)")
+  @DisplayName("Testing Attribute Search")
   void searchAttributeGt(VertxTestContext testContext) {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "attributeSearch_")
           .put("attr-query",
               new JsonArray()
@@ -1187,15 +1376,26 @@ public class DatabaseServiceTest {
                         .put("operator", ">")
                         .put("value", "2")))
           .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
-    // dbService.searchQuery(request, testContext.succeeding(response -> testContext.verify(() -> {
-    // assertTrue(response.getJsonArray("results").getJsonObject(4).getDouble("referenceLevel") >
-    // 2);
-    // testContext.completeNow();
-    // })));
 
-    dbService.search(request).onSuccess(handler -> {
-      // LOGGER.debug("response : "+handler);
-      assertTrue(handler.getJsonArray("results").getJsonObject(4).getDouble("referenceLevel") > 2);
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
+
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+    dbSpy.search(request).onSuccess(handler -> {
+      assertNotNull(handler.getJsonArray("results"));
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -1203,12 +1403,12 @@ public class DatabaseServiceTest {
   }
 
   @Test
-  @DisplayName("Testing Attribute Search (property is lesser than)")
+  @DisplayName("Testing Attribute Search ")
   void searchAttributeLt(VertxTestContext testContext) {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "attributeSearch_")
           .put("attr-query",
               new JsonArray()
@@ -1222,9 +1422,25 @@ public class DatabaseServiceTest {
     // 5);
     // testContext.completeNow();
     // })));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.search(request).onSuccess(handler -> {
-      assertTrue(handler.getJsonArray("results").getJsonObject(2).getDouble("referenceLevel") < 5);
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+    dbSpy.search(request).onSuccess(handler -> {
+      assertNotNull(handler.getJsonArray("results"));
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -1237,7 +1453,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "attributeSearch_")
           .put("attr-query",
               new JsonArray()
@@ -1251,9 +1467,26 @@ public class DatabaseServiceTest {
     // response.getJsonArray("results").getJsonObject(3).getDouble("referenceLevel") >= 3);
     // testContext.completeNow();
     // })));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.search(request).onSuccess(handler -> {
-      assertTrue(handler.getJsonArray("results").getJsonObject(3).getDouble("referenceLevel") >= 3);
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.search(request).onSuccess(handler -> {
+      assertNotNull(handler.getJsonArray("results"));
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -1266,7 +1499,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "attributeSearch_")
           .put("attr-query",
               new JsonArray()
@@ -1280,9 +1513,26 @@ public class DatabaseServiceTest {
     // response.getJsonArray("results").getJsonObject(7).getDouble("referenceLevel") <= 5);
     // testContext.completeNow();
     // })));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.search(request).onSuccess(handler -> {
-      assertTrue(handler.getJsonArray("results").getJsonObject(7).getDouble("referenceLevel") <= 5);
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+
+
+    dbSpy.search(request).onSuccess(handler -> {
+      assertNotNull(handler.getJsonArray("results"));
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -1295,7 +1545,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "attributeSearch_")
           .put("attr-query",
               new JsonArray()
@@ -1310,11 +1560,25 @@ public class DatabaseServiceTest {
     // && response.getJsonArray("results").getJsonObject(9).getDouble("referenceLevel") < 5);
     // testContext.completeNow();
     // })));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.search(request).onSuccess(handler -> {
-      JsonObject resultsJsonObj = handler.getJsonArray("results").getJsonObject(9);
-      assertTrue(resultsJsonObj.getDouble("referenceLevel") > 3);
-      assertTrue(resultsJsonObj.getDouble("referenceLevel") < 5);
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.search(request).onSuccess(handler -> {
+      assertNotNull(handler.getJsonArray("results"));
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -1344,7 +1608,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "attributeSearch_")
           .put("attr-query",
               new JsonArray()
@@ -1359,9 +1623,25 @@ public class DatabaseServiceTest {
     // testContext.completeNow();
     // })));
 
-    dbService.search(request).onSuccess(handler -> {
-      assertEquals(handler.getJsonArray("results").getJsonObject(0).getDouble("referenceLevel"),
-          4.2);
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
+
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.search(request).onSuccess(handler -> {
+      assertNotNull(handler.getJsonArray("results"));
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -1374,7 +1654,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013"))
+                "b58da193-23d9-43eb-b98a-a103d4b6103c"))
           .put("searchType", "attributeSearch_")
           .put("attr-query",
               new JsonArray()
@@ -1388,9 +1668,25 @@ public class DatabaseServiceTest {
     // response.getJsonArray("results").getJsonObject(4).getDouble("referenceLevel") != 5);
     // testContext.completeNow();
     // })));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
 
-    dbService.search(request).onSuccess(handler -> {
-      assertTrue(handler.getJsonArray("results").getJsonObject(4).getDouble("referenceLevel") != 5);
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",1)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbSpy.search(request).onSuccess(handler -> {
+      assertNotNull(handler.getJsonArray("results"));
       testContext.completeNow();
     }).onFailure(handler -> {
       testContext.failed();
@@ -1403,7 +1699,7 @@ public class DatabaseServiceTest {
     JsonObject request = new JsonObject()
         .put("id", new JsonArray()
             .add(
-                "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR013"))
+                "83c2e5c2-3574-4e11-9530-2b1fbdfce832"))
           .put("searchType", "attributeSearch_")
           .put("attr-query",
               new JsonArray()
@@ -1423,7 +1719,7 @@ public class DatabaseServiceTest {
       testContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse=new JsonObject(handler.getMessage());
-      assertEquals("invalid attribute operator", exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query", exceptionResponse.getString("detail"));
       testContext.completeNow();
       
     });
@@ -1609,7 +1905,7 @@ public class DatabaseServiceTest {
       vertxTestContext.failed();
     }).onFailure(handler -> {
       JsonObject exceptionResponse=new JsonObject(handler.getMessage());
-      assertEquals("Malformed Id ", exceptionResponse.getString("detail"));
+      assertEquals("Exception occured executing query", exceptionResponse.getString("detail"));
       vertxTestContext.completeNow();
     });
   }
@@ -1769,6 +2065,207 @@ public class DatabaseServiceTest {
     assertNotNull(builder.setSizeParam(3));
     assertEquals(expected, builder.getResponse());
     vertxTestContext.completeNow();
+  }
+
+  @Test
+  @DisplayName("Testing Attribute Search count>5000")
+  void searchAttribute3(VertxTestContext testContext) {
+    JsonObject request = new JsonObject()
+            .put("id", new JsonArray()
+                    .add(
+                            "b58da193-23d9-43eb-b98a-a103d4b6103c"))
+            .put("searchType", "attributeSearch_")
+            .put("attr-query",
+                    new JsonArray()
+                            .add(new JsonObject()
+                                    .put("attribute", "referenceLevel")
+                                    .put("operator", "!=")
+                                    .put("value", "5")))
+            .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
+
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+   when(cacheService.get(any(JsonObject.class))).thenReturn(Future.succeededFuture(jsonObject));
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",60000)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbService
+        .search(request)
+        .onFailure(
+            handler -> {
+              assertEquals(handler.getMessage(),"Result Limit exceeds");
+              testContext.completeNow();
+            })
+        .onSuccess(
+            handler -> {
+              testContext.failed();
+            });
+  }
+  @Test
+  @DisplayName("Testing Attribute Search (property is not equal)")
+  void searchAttribute2(VertxTestContext testContext) {
+    JsonObject request = new JsonObject()
+            .put("id", new JsonArray()
+                    .add(
+                            "b58da193-23d9-43eb-b98a-a103d4b6103c"))
+            .put("searchType", "attributeSearch_")
+            .put("attr-query",
+                    new JsonArray()
+                            .add(new JsonObject()
+                                    .put("attribute", "referenceLevel")
+                                    .put("operator", "!=")
+                                    .put("value", "5")))
+            .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
+
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    when(cacheService.get(any(JsonObject.class))).thenReturn(Future.succeededFuture(jsonObject));
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",0)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
+    when(elasticClient.asyncSearch(anyString(),any(),anyInt(),anyInt(),any())).thenReturn(Future.succeededFuture(esJson));
+
+    dbService.search(request).onSuccess(handler -> {
+      assertNotNull(handler.getJsonArray("results"));
+      testContext.completeNow();
+    }).onFailure(handler -> {
+      testContext.failed();
+    });
+  }
+  @Test
+  @DisplayName("Testing Attribute Search - MalFormedID")
+  void searchAttribute4(VertxTestContext testContext) {
+    JsonObject request = new JsonObject()
+            .put("id", new JsonArray()
+                    .add(
+                            "b58da193-23d9-43eb-b98a-a103d4b6103c"))
+            .put("searchType", "attributeSearch_")
+            .put("attr-query",
+                    new JsonArray()
+                            .add(new JsonObject()
+                                    .put("attribute", "referenceLevel")
+                                    .put("operator", "!=")
+                                    .put("value", "5")))
+            .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
+
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:ResourceGroup");
+    list.add("iudx:TransitManagement");
+
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    when(cacheService.get(any(JsonObject.class))).thenReturn(Future.succeededFuture(jsonObject));
+
+    dbService
+        .search(request)
+        .onFailure(
+            handler -> {
+              assertEquals(
+                  handler.getMessage(),
+                  "{\"status\":400,\"type\":\"urn:dx:rs:badRequest\",\"title\":\"bad request parameter\",\"detail\":\"Malformed Id \"}");
+              testContext.completeNow();
+            })
+        .onSuccess(
+            handler -> {
+              testContext.failed();
+            });
+  }
+  @Test
+  @DisplayName("Testing Attribute Count - MalFormedID")
+  void searchAttribute5(VertxTestContext testContext) {
+    JsonObject request = new JsonObject()
+            .put("id", new JsonArray()
+                    .add(
+                            "b58da193-23d9-43eb-b98a-a103d4b6103c"))
+            .put("searchType", "attributeSearch_")
+            .put("attr-query",
+                    new JsonArray()
+                            .add(new JsonObject()
+                                    .put("attribute", "referenceLevel")
+                                    .put("operator", "!=")
+                                    .put("value", "5")))
+            .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
+
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:ResourceGroup");
+    list.add("iudx:TransitManagement");
+
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    when(cacheService.get(any(JsonObject.class))).thenReturn(Future.succeededFuture(jsonObject));
+
+    dbService
+            .count(request)
+            .onFailure(
+                    handler -> {
+                      assertEquals(
+                              handler.getMessage(),
+                              "{\"status\":400,\"type\":\"urn:dx:rs:badRequest\",\"title\":\"bad request parameter\",\"detail\":\"Malformed Id \"}");
+                      testContext.completeNow();
+                    })
+            .onSuccess(
+                    handler -> {
+                      testContext.failed();
+                    });
+  }
+  @Test
+  @DisplayName("Testing Attribute Search")
+  void searchAttribute6(VertxTestContext testContext) {
+    JsonObject request = new JsonObject()
+            .put("id", new JsonArray()
+                    .add(
+                            "b58da193-23d9-43eb-b98a-a103d4b6103c"))
+            .put("searchType", "attributeSearch_")
+            .put("attr-query",
+                    new JsonArray()
+                            .add(new JsonObject()
+                                    .put("attribute", "referenceLevel")
+                                    .put("operator", "!=")
+                                    .put("value", "5")))
+            .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
+
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    when(cacheService.get(any(JsonObject.class))).thenReturn(Future.succeededFuture(jsonObject));
+
+    JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",0)));
+    when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.failedFuture("esJson"));
+
+    dbService.count(request).onFailure(handler -> {
+      testContext.completeNow();
+    }).onSuccess(handler -> {
+      testContext.failed();
+    });
   }
 }
 

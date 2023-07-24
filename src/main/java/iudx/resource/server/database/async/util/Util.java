@@ -63,7 +63,7 @@ public class Util {
       LOGGER.debug("Info: " + SEARCHTYPE_NOT_FOUND);
       return false;
     }
-    if (query.getJsonArray(ID).getString(0).split("/").length != 5) {
+    if (query.getJsonArray(ID).getString(0).split("-").length != 5) {
       LOGGER.error("Malformed ID: " + query.getJsonArray(ID).getString(0));
       return false;
     }

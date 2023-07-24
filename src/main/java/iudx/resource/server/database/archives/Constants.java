@@ -1,12 +1,25 @@
 package iudx.resource.server.database.archives;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class Constants {
   /* General Purpose */
   public static final String SEARCH_TYPE = "searchType";
   public static final String ID = "id";
-  public static final String RESOURCE_ID_KEY = "id";
   public static final String PROD_INSTANCE = "production";
   public static final String TEST_INSTANCE = "test";
+  public static final String ITEM_TYPE_RESOURCE = "Resource";
+  public static final String ITEM_TYPE_RESOURCE_GROUP = "ResourceGroup";
+  public static final String ITEM_TYPE_RESOURCE_SERVER = "ResourceServer";
+  public static final String ITEM_TYPE_PROVIDER = "Provider";
+  public static final ArrayList<String> ITEM_TYPES =
+      new ArrayList<String>(
+          Arrays.asList(
+              ITEM_TYPE_RESOURCE,
+              ITEM_TYPE_RESOURCE_GROUP,
+              ITEM_TYPE_RESOURCE_SERVER,
+              ITEM_TYPE_PROVIDER));
   /* Database */
   public static final String GEO_KEY = "location";
   public static final String GEO_CIRCLE = "circle";
@@ -17,37 +30,13 @@ public class Constants {
   public static final String GEO_SHAPE_KEY = "geo_shape";
   public static final String GEO_RADIUS = "radius";
   public static final String SHAPE_KEY = "shape";
-  public static final String QUERY_KEY = "query";
-  public static final String FILTER_KEY = "filter";
-  public static final String BOOL_KEY = "bool";
-  public static final String VARANASI_TEST_SEARCH_INDEX = "varanasi/_search";
-  public static final String VARANASI_TEST_COUNT_INDEX = "varanasi/_count";
-  public static final String LATEST_RESOURCE_INDEX = "latest/_mget";
-  public static final String SOURCE_FILTER_KEY = "_source";
-  public static final String RANGE_KEY = "range";
-  public static final String TERM_KEY = "term";
-  public static final String TERMS_KEY = "terms";
-  public static final String FILTER_PATH = "filter_path";
   public static final String FILTER_PATH_VAL = "took,hits.hits._source";
   public static final String FILTER_PATH_VAL_LATEST = "docs._source";
   public static final String SIZE_KEY = "size";
-  public static final String GREATER_THAN = "gt";
-  public static final String LESS_THAN = "lt";
-  public static final String GREATER_THAN_EQ = "gte";
-  public static final String LESS_THAN_EQ = "lte";
-  public static final String MUST_NOT = "must_not";
-  public static final String REQUEST_GET = "GET";
-  public static final String HITS = "hits";
   public static final String SEARCH_KEY = "search";
   public static final String ERROR = "Error";
   public static final String COUNT = "count";
   public static final String TOTAL_HITS = "totalHits";
-  public static final String DOC_ID = "_id";
-  public static final String DOCS_KEY = "docs";
-  public static final String SEARCH_REQ_PARAM = "/_search";
-  public static final String COUNT_REQ_PARAM = "/_count";
-  public static final String COUNT_REQ_PARAM_WITHOUT_FILTER = "/_search?search_type=count";
-  public static final String TIME_FIELD_DB = "observationDateTime";
   public static final String FROM_KEY = "from";
   /* Request Params */
   /* Temporal */

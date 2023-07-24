@@ -11,6 +11,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.common.Vhosts;
 import iudx.resource.server.databroker.util.PermissionOpType;
@@ -21,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 public class SubscriptionService {
   private static final Logger LOGGER = LogManager.getLogger(SubscriptionService.class);
+  CacheService cacheService;
   private String vhost;
   private int totalBindCount;
   private int totalBindSuccess;
@@ -29,12 +31,17 @@ public class SubscriptionService {
   private String amqpUrl;
   private int amqpPort;
 
-  SubscriptionService(RabbitClient rabbitClient, PostgresClient pgSqlClient, JsonObject config) {
+  SubscriptionService(
+      RabbitClient rabbitClient,
+      PostgresClient pgSqlClient,
+      JsonObject config,
+      CacheService cacheService) {
     this.rabbitClient = rabbitClient;
     this.pgSqlClient = pgSqlClient;
     this.vhost = config.getString(Vhosts.IUDX_PROD.value);
     this.amqpUrl = config.getString("brokerAmqpIp");
     this.amqpPort = config.getInteger("brokerAmqpPort");
+    this.cacheService = cacheService;
   }
 
   Future<JsonObject> registerStreamingSubscription(JsonObject request) {
@@ -45,13 +52,13 @@ public class SubscriptionService {
     if (request != null && !request.isEmpty()) {
       String userid = request.getString(USER_ID);
       String queueName = userid + "/" + request.getString("name");
+      LOGGER.debug("queue name is databrokeer subscription  = {}", queueName);
       Future<JsonObject> resultCreateUser = rabbitClient.createUserIfNotExist(userid, VHOST_IUDX);
       resultCreateUser.onComplete(
           resultCreateUserhandler -> {
             if (resultCreateUserhandler.succeeded()) {
               JsonObject result = resultCreateUserhandler.result();
               LOGGER.debug("success :: createUserIfNotExist " + result);
-
               JsonArray entitites = request.getJsonArray(ENTITIES);
               LOGGER.debug("Info : Request Access for " + entitites);
               LOGGER.debug("Info : No of bindings to do : " + entitites.size());
@@ -64,15 +71,12 @@ public class SubscriptionService {
               resultqueue.onComplete(
                   resultHandlerqueue -> {
                     if (resultHandlerqueue.succeeded()) {
-                      LOGGER.debug("success :: Create Queue " + resultHandlerqueue.result());
                       JsonObject createQueueResponse = (JsonObject) resultHandlerqueue.result();
                       if (createQueueResponse.containsKey(TITLE)
                           && createQueueResponse.getString(TITLE).equalsIgnoreCase(FAILURE)) {
                         LOGGER.error("failed ::" + resultHandlerqueue.cause());
                         promise.fail(createQueueResponse.toString());
                       } else {
-                        LOGGER.debug("Success : Success Queue Created");
-
                         for (Object currentEntity : entitites) {
                           String routingKey = (String) currentEntity;
                           LOGGER.debug("Info : routingKey is " + routingKey);
@@ -95,16 +99,15 @@ public class SubscriptionService {
                             } else {
                               JsonArray array = new JsonArray();
                               String exchangeName;
-                              if (isGroupResource(routingKey)) {
+                              if (isGroupResource(request)) {
                                 exchangeName = routingKey;
                                 array.add(exchangeName + DATA_WILDCARD_ROUTINGKEY);
                               } else {
-                                exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
-                                array.add(
-                                    exchangeName
-                                        + "/."
-                                        + routingKey.substring(routingKey.lastIndexOf("/") + 1));
+                                exchangeName = request.getString("resourcegroup");
+                                LOGGER.debug("exchange name  = {} ", exchangeName);
+                                array.add(exchangeName + "/." + routingKey);
                               }
+                              LOGGER.debug(" Exchange name = {}", exchangeName);
                               JsonObject json = new JsonObject();
                               json.put(EXCHANGE_NAME, exchangeName);
                               json.put(QUEUE_NAME, queueName);
@@ -314,23 +317,17 @@ public class SubscriptionService {
                                     } else {
                                       JsonArray array = new JsonArray();
                                       String exchangeName;
-                                      if (isGroupResource(routingKey)) {
+                                      if (isGroupResource(request)) {
                                         exchangeName = routingKey;
                                         array.add(exchangeName + DATA_WILDCARD_ROUTINGKEY);
                                       } else {
-                                        exchangeName =
-                                            routingKey.substring(0, routingKey.lastIndexOf("/"));
-                                        array.add(
-                                            exchangeName
-                                                + "/."
-                                                + routingKey.substring(
-                                                    routingKey.lastIndexOf("/") + 1));
+                                        exchangeName = request.getString("resourcegroup");
+                                        array.add(exchangeName + "/." + routingKey);
                                       }
                                       JsonObject json = new JsonObject();
                                       json.put(EXCHANGE_NAME, exchangeName);
                                       json.put(QUEUE_NAME, queueName);
                                       json.put(ENTITIES, array);
-
                                       Future<JsonObject> resultbind =
                                           rabbitClient.bindQueue(json, vhost);
                                       resultbind.onComplete(
@@ -503,15 +500,12 @@ public class SubscriptionService {
                     } else {
                       JsonArray array = new JsonArray();
                       String exchangeName;
-                      if (isGroupResource(routingKey)) {
+                      if (isGroupResource(request)) {
                         exchangeName = routingKey;
                         array.add(exchangeName + DATA_WILDCARD_ROUTINGKEY);
                       } else {
-                        exchangeName = routingKey.substring(0, routingKey.lastIndexOf("/"));
-                        array.add(
-                            exchangeName
-                                + "/."
-                                + routingKey.substring(routingKey.lastIndexOf("/") + 1));
+                        exchangeName = request.getString("resourcegroup");
+                        array.add(exchangeName + "/." + routingKey);
                       }
                       JsonObject json = new JsonObject();
                       json.put(EXCHANGE_NAME, exchangeName);
@@ -1076,54 +1070,54 @@ public class SubscriptionService {
                       LOGGER.debug("Info : " + subscriptionIdDb);
                     }
                   }
-                    JsonObject publishjson = new JsonObject();
-                    publishjson.put(SUBSCRIPTION_ID, subscriptionId);
-                    publishjson.put(OPERATION, "delete");
-                    String deleteQuery = DELETE_CALLBACK.replace("$1", subscriptionId);
-                    pgSqlClient
-                        .executeAsync(deleteQuery)
-                        .onComplete(
-                            ar -> {
-                              if (ar.succeeded()) {
-                                String exchangename = "callback.notification";
-                                String routingkey = "delete";
-                                JsonObject jsonpg = new JsonObject();
-                                jsonpg.put("body", publishjson.toString());
-                                Buffer messageBuffer = Buffer.buffer(jsonpg.toString());
-                                rabbitClient
-                                    .getRabbitmqClient()
-                                    .basicPublish(
-                                        exchangename,
-                                        routingkey,
-                                        messageBuffer,
-                                        resultHandler -> {
-                                          if (resultHandler.succeeded()) {
-                                            deleteCallbackSubscriptionResponse.put(
-                                                SUBSCRIPTION_ID, subscriptionId);
-                                            LOGGER.debug("Info : Message published to queue");
-                                          } else {
-                                            LOGGER.debug("Info : Message published failed");
-                                            deleteCallbackSubscriptionResponse
-                                                .clear()
-                                                .mergeIn(
-                                                    getResponseJson(
-                                                        INTERNAL_ERROR_CODE,
-                                                        ERROR,
-                                                        MSG_PUBLISH_FAILED));
-                                            promise.tryFail(
-                                                deleteCallbackSubscriptionResponse.toString());
-                                          }
-                                          promise.tryComplete(deleteCallbackSubscriptionResponse);
-                                        });
-                              } else {
-                                LOGGER.error("failed ::" + ar.cause().getMessage());
-                                deleteCallbackSubscriptionResponse.put(ERROR, "delete failed");
-                                deleteCallbackSubscriptionResponse
-                                    .clear()
-                                    .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, FAILURE));
-                                promise.fail(deleteCallbackSubscriptionResponse.toString());
-                              }
-                            });
+                  JsonObject publishjson = new JsonObject();
+                  publishjson.put(SUBSCRIPTION_ID, subscriptionId);
+                  publishjson.put(OPERATION, "delete");
+                  String deleteQuery = DELETE_CALLBACK.replace("$1", subscriptionId);
+                  pgSqlClient
+                      .executeAsync(deleteQuery)
+                      .onComplete(
+                          ar -> {
+                            if (ar.succeeded()) {
+                              String exchangename = "callback.notification";
+                              String routingkey = "delete";
+                              JsonObject jsonpg = new JsonObject();
+                              jsonpg.put("body", publishjson.toString());
+                              Buffer messageBuffer = Buffer.buffer(jsonpg.toString());
+                              rabbitClient
+                                  .getRabbitmqClient()
+                                  .basicPublish(
+                                      exchangename,
+                                      routingkey,
+                                      messageBuffer,
+                                      resultHandler -> {
+                                        if (resultHandler.succeeded()) {
+                                          deleteCallbackSubscriptionResponse.put(
+                                              SUBSCRIPTION_ID, subscriptionId);
+                                          LOGGER.debug("Info : Message published to queue");
+                                        } else {
+                                          LOGGER.debug("Info : Message published failed");
+                                          deleteCallbackSubscriptionResponse
+                                              .clear()
+                                              .mergeIn(
+                                                  getResponseJson(
+                                                      INTERNAL_ERROR_CODE,
+                                                      ERROR,
+                                                      MSG_PUBLISH_FAILED));
+                                          promise.tryFail(
+                                              deleteCallbackSubscriptionResponse.toString());
+                                        }
+                                        promise.tryComplete(deleteCallbackSubscriptionResponse);
+                                      });
+                            } else {
+                              LOGGER.error("failed ::" + ar.cause().getMessage());
+                              deleteCallbackSubscriptionResponse.put(ERROR, "delete failed");
+                              deleteCallbackSubscriptionResponse
+                                  .clear()
+                                  .mergeIn(getResponseJson(INTERNAL_ERROR_CODE, ERROR, FAILURE));
+                              promise.fail(deleteCallbackSubscriptionResponse.toString());
+                            }
+                          });
                 }
               });
     } else {
@@ -1188,7 +1182,7 @@ public class SubscriptionService {
     return promise.future();
   }
 
-  private boolean isGroupResource(String id) {
-    return id.split("/").length == 4;
+  private boolean isGroupResource(JsonObject jsonObject) {
+    return jsonObject.getString("type").equalsIgnoreCase("resourceGroup");
   }
 }

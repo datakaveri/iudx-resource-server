@@ -25,6 +25,9 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
@@ -57,7 +60,7 @@ public class ManagementApiImplTest {
         json = new JsonObject();
 
         json.put("Dummy key", "Dummy value");
-        json.put("entities",jsonArray.add("iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta"));
+        json.put("entities",jsonArray.add("b58da193-23d9-43eb-b98a-a103d4b6103c"));
         json.put(USER_ID,"dummy user");
         managementApi = new ManagementApiImpl();
         vertxTestContext.completeNow();
@@ -72,9 +75,6 @@ public class ManagementApiImplTest {
         expectedJSON.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
         expectedJSON.put(TITLE, "Success");
         expectedJSON.put(RESULTS, new JsonArray().add(json));
-
-        when(mockJsonObject.getString("id")).thenReturn("dummy_id");
-        when(mockJsonObject.getString("name")).thenReturn("dummy_name");
         when(asyncResult.succeeded()).thenReturn(true);
         doAnswer(new Answer<AsyncResult<JsonObject>>() {
             @Override
@@ -84,8 +84,19 @@ public class ManagementApiImplTest {
             }
         }).when(postgresService).executeQuery(anyString(), any());
 
+        List<String> list = new ArrayList<String>();
+        list.add("iudx:ResourceGroup");
+        list.add("iudx:TransitManagement");
 
-        when(cacheService.get(any())).thenReturn(Future.succeededFuture(mockJsonObject));
+JsonObject jsonObject = new JsonObject()
+        .put("id", "8b95ab80-2aaf-4636-a65e-7f2563d0d371")
+        .put("type", list)
+        .put("name","dummy_name")
+        .put("provider","dummy_provider")
+        .put("resourceGroup","dummy_resource");
+
+        when(cacheService.get(any())).thenReturn(Future.succeededFuture(jsonObject));
+
         doAnswer(new Answer<AsyncResult<JsonObject>>() {
             @Override
             public AsyncResult<JsonObject> answer(InvocationOnMock arg2) throws Throwable {
@@ -113,6 +124,16 @@ public class ManagementApiImplTest {
     @DisplayName("Test registerAdapter method for Cache Failure")
     public void testRegisterAdapterFailureForCache(VertxTestContext vertxTestContext)
     {
+        List<String> list = new ArrayList<String>();
+        list.add("iudx:ResourceGroup");
+        list.add("iudx:TransitManagement");
+
+        JsonObject jsonObject = new JsonObject()
+                .put("id", "8b95ab80-2aaf-4636-a65e-7f2563d0d371")
+                .put("type", list)
+                .put("name","dummy_name")
+
+                .put("resourceGroup","dummy_resource");
         when(cacheService.get(any())).thenReturn(Future.failedFuture("Failed."));
 
         managementApi.registerAdapter(json,dataBrokerService,cacheService,postgresService).onComplete(handler -> {
@@ -132,9 +153,17 @@ public class ManagementApiImplTest {
     @DisplayName("Test registerAdapter method for Postgres Failure")
     public void testRegisterAdapterFailureForPostgres(VertxTestContext vertxTestContext)
     {
-        when(mockJsonObject.getString("id")).thenReturn("dummy_id");
-        when(mockJsonObject.getString("name")).thenReturn("dummy_name");
-        when(cacheService.get(any())).thenReturn(Future.succeededFuture(mockJsonObject));
+        List<String> list = new ArrayList<String>();
+        list.add("iudx:ResourceGroup");
+        list.add("iudx:TransitManagement");
+
+        JsonObject jsonObject = new JsonObject()
+                .put("id", "8b95ab80-2aaf-4636-a65e-7f2563d0d371")
+                .put("type", list)
+                .put("name","dummy_name")
+                .put("provider","dummy_provider")
+                .put("resourceGroup","dummy_resource");
+        when(cacheService.get(any())).thenReturn(Future.succeededFuture(jsonObject));
         doAnswer(new Answer<AsyncResult<JsonObject>>() {
             @Override
             public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
@@ -164,8 +193,6 @@ public class ManagementApiImplTest {
         when(asyncResultForBroker.cause()).thenReturn(throwable);
         when(throwable.getMessage()).thenReturn("Dummy throwable message");
 
-        when(mockJsonObject.getString("id")).thenReturn("dummy_id");
-        when(mockJsonObject.getString("name")).thenReturn("dummy_name");
         when(asyncResult.succeeded()).thenReturn(true);
         doAnswer(new Answer<AsyncResult<JsonObject>>() {
             @Override
@@ -174,9 +201,18 @@ public class ManagementApiImplTest {
                 return null;
             }
         }).when(postgresService).executeQuery(anyString(), any());
+        List<String> list = new ArrayList<String>();
+        list.add("iudx:ResourceGroup");
+        list.add("iudx:TransitManagement");
 
+        JsonObject jsonObject = new JsonObject()
+                .put("id", "8b95ab80-2aaf-4636-a65e-7f2563d0d371")
+                .put("type", list)
+                .put("name","dummy_name")
+                .put("provider","dummy_provider")
+                .put("resourceGroup","dummy_resource");
 
-        when(cacheService.get(any())).thenReturn(Future.succeededFuture(mockJsonObject));
+        when(cacheService.get(any())).thenReturn(Future.succeededFuture(jsonObject));
         doAnswer(new Answer<AsyncResult<JsonObject>>() {
             @Override
             public AsyncResult<JsonObject> answer(InvocationOnMock arg2) throws Throwable {

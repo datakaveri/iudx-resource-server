@@ -38,7 +38,6 @@ public class ValidationHandlerTest {
   RoutingContext routingContext;
   @Mock
   HttpServerRequest httpServerRequest;
-
   ValidationHandler validationHandler;
 
   public static Stream<Arguments> data() {
@@ -64,7 +63,7 @@ public class ValidationHandlerTest {
     //path params
     Map<String, String> stringMap = new HashMap<>();
     stringMap.put("id",
-        "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta");
+        "b58da193-23d9-43eb-b98a-a103d4b6103c");
     
     //parameters
     MultiMap parameters = MultiMap.caseInsensitiveMultiMap();
@@ -73,11 +72,7 @@ public class ValidationHandlerTest {
     parameters.add("searchId", UUID.randomUUID().toString());
     
     //for latest
-    parameters.add(DOMAIN, "iisc.ac.in");
-    parameters.add(USERSHA,"89a36273d77dac4cf38114fca1bbe64392547f86");
-    parameters.add(RESOURCE_SERVER, "rs.iudx.io");
-    parameters.add(RESOURCE_GROUP, "surat-itms-realtime-information");
-    parameters.add(RESOURCE_NAME, "surat-itms-live-eta");
+    parameters.add("*","b58da193-23d9-43eb-b98a-a103d4b6103c");
     
     //headers
     MultiMap header = MultiMap.caseInsensitiveMultiMap();
@@ -118,7 +113,7 @@ public class ValidationHandlerTest {
         + "    \"type\": \"Query\",\n"
         + "    \"entities\": [\n"
         + "        {\n"
-        + "            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n"
+        + "            \"id\": \"b58da193-23d9-43eb-b98a-a103d4b6103c\"\n"
         + "        }\n"
         + "    ],\n"
         + "    \"geoQ\": {\n"
@@ -143,7 +138,7 @@ public class ValidationHandlerTest {
         + "    \"type\": \"Query\",\n"
         + "    \"entities\": [\n"
         + "        {\n"
-        + "            \"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"\n"
+        + "            \"id\": \"b58da193-23d9-43eb-b98a-a103d4b6103c\"\n"
         + "        }\n"
         + "    ],\n"
         + "    \"geoQ\": {\n"
@@ -159,7 +154,7 @@ public class ValidationHandlerTest {
     return new JsonObject("{\n"
         + "    \"name\": \"integration-test-alias-RL\",\n"
         + "    \"type\": \"subscription\",\n"
-        + "    \"entities\": [\"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"]\n"
+        + "    \"entities\": [\"b58da193-23d9-43eb-b98a-a103d4b6103c\"]\n"
         + "}");
   }
 }

@@ -10,6 +10,7 @@ import static iudx.resource.server.cache.cachelmpl.CacheType.CATALOGUE_CACHE;
 import static iudx.resource.server.common.Constants.CREATE_INGESTION_SQL;
 import static iudx.resource.server.common.Constants.DELETE_INGESTION_SQL;
 import static iudx.resource.server.common.Constants.SELECT_INGESTION_SQL;
+import static iudx.resource.server.database.archives.Constants.ITEM_TYPES;
 import static iudx.resource.server.databroker.util.Constants.RESULTS;
 import static iudx.resource.server.databroker.util.Constants.TITLE;
 import static iudx.resource.server.databroker.util.Constants.TYPE;
@@ -25,6 +26,9 @@ import iudx.resource.server.common.ResponseUrn;
 import iudx.resource.server.common.Vhosts;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -44,7 +48,6 @@ public class ManagementApiImpl implements ManagementApi {
       CacheService cacheService,
       PostgresService postgresService) {
     Promise<JsonObject> promise = Promise.promise();
-
     JsonObject cacheJson =
         new JsonObject()
             .put("key", requestJson.getJsonArray("entities").getString(0))
@@ -54,6 +57,21 @@ public class ManagementApiImpl implements ManagementApi {
         .get(cacheJson)
         .onSuccess(
             cacheServiceResult -> {
+              Set<String> type =
+                  new HashSet<String>(cacheServiceResult.getJsonArray("type").getList());
+              Set<String> itemTypeSet =
+                  type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
+              itemTypeSet.retainAll(ITEM_TYPES);
+
+              String resourceIdForIngestions;
+              if (!itemTypeSet.contains("Resource")) {
+                resourceIdForIngestions = cacheServiceResult.getString("id");
+              } else {
+                resourceIdForIngestions = cacheServiceResult.getString("resourceGroup");
+              }
+              requestJson
+                  .put("resourceGroup", resourceIdForIngestions)
+                  .put("types", itemTypeSet.iterator().next());
               String query =
                   CREATE_INGESTION_SQL
                       .replace(
@@ -62,8 +80,8 @@ public class ManagementApiImpl implements ManagementApi {
                       .replace("$2", cacheServiceResult.getString("id")) /* resource id */
                       .replace("$3", cacheServiceResult.getString("name")) /* dataset name */
                       .replace("$4", cacheServiceResult.toString()) /* dataset json */
-                      .replace("$5", requestJson.getString("userid")); /* user id */
-
+                      .replace("$5", requestJson.getString("userid")) /* user id */
+                      .replace("$6", cacheServiceResult.getString("provider")); /*provider*/
               postgresService.executeQuery(
                   query,
                   pgHandler -> {

@@ -71,6 +71,8 @@ public class RabbitMQClientTest {
     JsonArray jsonArray;
     String vHost;
     JsonObject expected;
+    @Mock
+    RabbitClient.AdaptorResultContainer adaptorResultContainer;
 
     @BeforeEach
     public void setUp(VertxTestContext vertxTestContext) {
@@ -1198,7 +1200,15 @@ public class RabbitMQClientTest {
                 return null;
             }
         }).when(httpResponseFuture).onComplete(any());
-        rabbitClient.queueBinding("Dummy/adaptorID/abcd/abcd", vHost).onComplete(handler -> {
+        adaptorResultContainer.adaptorId="dummy_adapterid";
+        adaptorResultContainer.type="resource";
+        adaptorResultContainer.id="dummy_id";
+        adaptorResultContainer.resourceServer="dummy_server";
+        adaptorResultContainer.userid="dummy_userid";
+        adaptorResultContainer.vhost="Dummy vHost";
+        adaptorResultContainer.isExchnageCreated=true;
+        adaptorResultContainer.apiKey="dummy api";
+        rabbitClient.queueBinding(adaptorResultContainer, vHost).onComplete(handler -> {
             if (handler.failed()) {
                 expected.put("type", 500);
                 expected.put("title", "error");
