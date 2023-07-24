@@ -146,7 +146,9 @@ public class DatabaseServiceImpl implements DatabaseService {
               handler -> {
                 String searchType = request.getString(SEARCH_TYPE);
                 if (searchType.matches(RESPONSE_FILTER_REGEX)) {
-                  throw new EsQueryException("Count is not supported with filtering");
+                  promise.fail(
+                      new EsQueryException(
+                          ResponseUrn.BAD_REQUEST_URN, "Count is not supported with filtering"));
                 }
                 final String searchIndex;
                 String resourceGroup = handler.getString("resourceGroup");

@@ -346,7 +346,7 @@ public class MeteringServiceImpl implements MeteringService {
           jsonArray.getJsonObject(loopi).getString("resourceid"),
           Integer.valueOf(jsonArray.getJsonObject(loopi).getString("count")));
 
-      list.add(cacheService.get(jsonObject));
+      list.add(cacheService.get(jsonObject).recover(f -> Future.succeededFuture(null)));
     }
 
     CompositeFuture.join(list)

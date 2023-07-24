@@ -189,7 +189,7 @@ public class QueryBuilder {
     StringBuilder summaryQuery = new StringBuilder(SUMMARY_QUERY_FOR_METERING);
     if (startTime != null && endTime != null) {
       summaryQuery.append(
-          " and time between '$2' AND '$3' ".replace("$2", startTime).replace("$3", endTime));
+          " where time between '$2' AND '$3' ".replace("$2", startTime).replace("$3", endTime));
       if (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate")) {
         String providerId = request.getString("providerid");
         LOGGER.debug("Provider = {}", providerId);
