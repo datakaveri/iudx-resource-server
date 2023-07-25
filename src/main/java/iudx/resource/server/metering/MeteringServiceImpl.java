@@ -188,7 +188,7 @@ public class MeteringServiceImpl implements MeteringService {
     }
 
     String role = request.getString(ROLE);
-    if (role.equalsIgnoreCase("admin")) {
+    if (role.equalsIgnoreCase("admin") || role.equalsIgnoreCase("consumer")) {
       queryOverview = queryBuilder.buildMonthlyOverview(request);
       LOGGER.debug("query Overview =" + queryOverview);
 
@@ -203,7 +203,7 @@ public class MeteringServiceImpl implements MeteringService {
               handler.handle(Future.failedFuture(handlers.cause().getMessage()));
             }
           });
-    } else {
+    } else if (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate")) {
       String resourceId = request.getString(IID);
       JsonObject jsonObject =
           new JsonObject().put("type", CacheType.CATALOGUE_CACHE).put("key", resourceId);
@@ -255,7 +255,7 @@ public class MeteringServiceImpl implements MeteringService {
     }
 
     String role = request.getString(ROLE);
-    if (role.equalsIgnoreCase("admin")) {
+    if (role.equalsIgnoreCase("admin") || role.equalsIgnoreCase("consumer")) {
       summaryOverview = queryBuilder.buildSummaryOverview(request);
       LOGGER.debug("summary query =" + summaryOverview);
       Future<JsonObject> result = executeQueryDatabaseOperation(summaryOverview);
@@ -283,7 +283,7 @@ public class MeteringServiceImpl implements MeteringService {
               handler.handle(Future.failedFuture(handlers.cause().getMessage()));
             }
           });
-    } else {
+    } else if (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate")) {
       String resourceId = request.getString(IID);
       JsonObject jsonObject =
           new JsonObject().put("type", CacheType.CATALOGUE_CACHE).put("key", resourceId);

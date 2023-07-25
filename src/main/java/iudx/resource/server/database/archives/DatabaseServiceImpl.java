@@ -97,7 +97,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                             json.put("type", 413);
                             json.put("title", ResponseUrn.PAYLOAD_TOO_LARGE_URN.getUrn());
                             json.put("details", ResponseUrn.PAYLOAD_TOO_LARGE_URN.getMessage());
-                            return Future.failedFuture("Result Limit exceeds");
+                            return Future.failedFuture(json.toString());
                           }
                           countPlaceHolder.setCount(count);
                           SourceConfig sourceFilter = queryDecoder.getSourceConfigFilters(request);
@@ -149,6 +149,7 @@ public class DatabaseServiceImpl implements DatabaseService {
                   promise.fail(
                       new EsQueryException(
                           ResponseUrn.BAD_REQUEST_URN, "Count is not supported with filtering"));
+                  return;
                 }
                 final String searchIndex;
                 String resourceGroup = handler.getString("resourceGroup");

@@ -97,5 +97,7 @@ public class Constants {
       "select resourceid,count(*) from auditing_rs ";
   public static final String GROUPBY_RESOURCEID = " group by resourceid";
   public static final String USERID_SUMMARY = " and userid = '$9' ";
+  public static final String USERID_SUMMARY_WITHOUT_TIME = " userid = '$9' ";
   public static final String PROVIDERID_SUMMARY = " and providerid = '$8' ";
+  public static final String PROVIDERID_SUMMARY_WITHOUT_TIME = " providerid = '$8' ";
 }

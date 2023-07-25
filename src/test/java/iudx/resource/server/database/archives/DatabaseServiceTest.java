@@ -2101,7 +2101,9 @@ public class DatabaseServiceTest {
         .search(request)
         .onFailure(
             handler -> {
-              assertEquals(handler.getMessage(),"Result Limit exceeds");
+              assertEquals(
+                  handler.getMessage(),
+                  "{\"type\":413,\"title\":\"urn:dx:rs:payloadTooLarge\",\"details\":\"Response size exceeds limit\"}");
               testContext.completeNow();
             })
         .onSuccess(
