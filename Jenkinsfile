@@ -74,7 +74,7 @@ pipeline {
       steps{
         script{
           sh 'scp Jmeter/ResourceServer.jmx jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Jmeter/'
-          sh 'scp src/test/resources/IUDX-Resource-Server-Consumer-APIs-V4.5.0.postman_collection.json jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Newman/'
+          sh 'scp src/test/resources/IUDX-Resource-Server-Consumer-APIs-V5.0.0.postman_collection.json jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Newman/'
           sh 'docker compose -f docker-compose.test.yml up -d perfTest'
           sh 'sleep 120'
         }
@@ -117,7 +117,7 @@ pipeline {
           script{
             startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0'])
             sh 'curl http://127.0.0.1:8090/JSON/pscan/action/disableScanners/?ids=10096'
-            sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V4.5.0.postman_collection.json -e /home/ubuntu/configs/rs-postman-env.json -n 2 --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html --reporter-htmlextra-skipSensitiveData'
+            sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V5.0.0.postman_collection.json -e /home/ubuntu/configs/rs-postman-env.json -n 2 --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html --reporter-htmlextra-skipSensitiveData'
             runZapAttack()
           }
         }
@@ -185,7 +185,7 @@ pipeline {
           steps {
             node('built-in') {
               script{
-                sh 'newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V4.5.0.postman_collection.json -e /home/ubuntu/configs/cd/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/cd-report.html --reporter-htmlextra-skipSensitiveData'
+                sh 'newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V5.0.0.postman_collection.json -e /home/ubuntu/configs/cd/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/cd-report.html --reporter-htmlextra-skipSensitiveData'
               }
             }
           }

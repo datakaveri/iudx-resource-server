@@ -35,17 +35,12 @@ import iudx.resource.server.configuration.Configuration;
 
 @ExtendWith(VertxExtension.class)
 public class ValidatorTest {
-
   private static JsonObject config;
   private static Configuration configuration;
-
   JsonObject json = new JsonObject(
-      "{\"type\": \"Query\",\"entities\": [{\"id\": \"iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta\"}],\"geoQ\": {\"geometry\": \"Point\",\"coordinates\": [21.178,72.834],\"georel\": \"near;maxDistance=1000\",\"geoproperty\": \"location\"},\"temporalQ\": {\"timerel\": \"during\",\"time\": \"2020-10-18T14:20:00Z\",\"endtime\": \"2020-10-19T14:20:00Z\",\"timeProperty\": \"observationDateTime\"},\"q\":\"speed>30.0\",\"attrs\":\"id,speed\"}");
-
+      "{\"type\": \"Query\",\"entities\": [{\"id\": \"b58da193-23d9-43eb-b98a-a103d4b6103c\"}],\"geoQ\": {\"geometry\": \"Point\",\"coordinates\": [21.178,72.834],\"georel\": \"near;maxDistance=1000\",\"geoproperty\": \"location\"},\"temporalQ\": {\"timerel\": \"during\",\"time\": \"2020-10-18T14:20:00Z\",\"endtime\": \"2020-10-19T14:20:00Z\",\"timeProperty\": \"observationDateTime\"},\"q\":\"speed>30.0\",\"attrs\":\"id,speed\"}");
   private CatalogueService catalogueServiceMock;
   private ParamsValidator validator;
-
-
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
 

@@ -75,7 +75,6 @@ public class ElasticClient {
       String format,
       String filePath) {
     Promise<JsonObject> promise = Promise.promise();
-
     SearchRequest searchRequest =
         SearchRequest.of(
             e -> e.index(index).query(query).size(10000).scroll(scr -> scr.time("5m")));
@@ -172,7 +171,6 @@ public class ElasticClient {
                     .from(from)
                     .source(sourceFilterConfig)
                     .timeout("180s"));
-
     asyncClient
         .search(searchRequest, ObjectNode.class)
         .whenCompleteAsync(
@@ -217,7 +215,6 @@ public class ElasticClient {
   public Future<JsonObject> asyncCount(String index, Query query) {
     Promise<JsonObject> promise = Promise.promise();
     CountRequest countRequest = CountRequest.of(e -> e.index(index).query(query));
-
     asyncClient
         .count(countRequest)
         .whenCompleteAsync(

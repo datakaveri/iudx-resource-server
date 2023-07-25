@@ -21,23 +21,20 @@ import iudx.resource.server.apiserver.validation.types.IdTypeValidator;
 
 @ExtendWith(VertxExtension.class)
 public class IdTypeValidatorTest {
-
   private IdTypeValidator idTypeValidator;
-
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
     testContext.completeNow();
   }
 
-
   static Stream<Arguments> allowedValues() {
     // Add any valid value which will pass successfully.
     return Stream.of(
         Arguments.of(
-            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/surat-itms-realtime-information/surat-itms-live-eta",
+            "b58da193-23d9-43eb-b98a-a103d4b6103c",
             true),
         Arguments.of(
-            "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055",
+            "b58da193-23d9-43eb-b98a-a103d4b6103c",
             true),
         Arguments.of(null, false));
   }

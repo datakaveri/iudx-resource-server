@@ -69,8 +69,6 @@ public class AuthHandler implements Handler<RoutingContext> {
         new JsonObject().put(API_ENDPOINT, path).put(HEADER_TOKEN, token).put(API_METHOD, method);
 
     LOGGER.debug("Info :" + context.request().path());
-    LOGGER.debug("Info :" + context.request().path().split("/").length);
-
     String id = getId(context, path, method);
     authInfo.put(ID, id);
 
@@ -164,18 +162,8 @@ public class AuthHandler implements Handler<RoutingContext> {
     Map<String, String> pathParams = context.pathParams();
     LOGGER.debug("path params :" + pathParams);
     if (pathParams != null && !pathParams.isEmpty()) {
-      if (pathParams.containsKey(DOMAIN)
-          && pathParams.containsKey(USERSHA)
-          && pathParams.containsKey(RESOURCE_SERVER)
-          && pathParams.containsKey(RESOURCE_GROUP)) {
-        id = new StringBuilder();
-        id.append(pathParams.get(DOMAIN));
-        id.append("/").append(pathParams.get(USERSHA));
-        id.append("/").append(pathParams.get(RESOURCE_SERVER));
-        id.append("/").append(pathParams.get(RESOURCE_GROUP));
-        if (pathParams.containsKey(RESOURCE_NAME)) {
-          id.append("/").append(pathParams.get(RESOURCE_NAME));
-        }
+      if (pathParams.containsKey("*")) {
+        id = new StringBuilder(pathParams.get("*"));
         LOGGER.debug("id :" + id);
       } else if (pathParams.containsKey(USER_ID) && pathParams.containsKey(JSON_ALIAS)) {
         id = new StringBuilder();

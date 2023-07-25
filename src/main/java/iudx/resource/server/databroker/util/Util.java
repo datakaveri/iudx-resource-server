@@ -100,8 +100,4 @@ public class Util {
     json.put(DETAIL, detail);
     return json;
   }
-
-  public static boolean isGroupId(String id) {
-    return id.split("/").length == 4;
-  }
 }

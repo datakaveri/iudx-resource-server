@@ -138,7 +138,6 @@ public class Constants {
   public static final String HEADER_PUBLIC_KEY = "publicKey";
   public static final String HEADER_RESPONSE_FILE_FORMAT = "format";
 
-
   // request/response params
   public static final String CONTENT_TYPE = "content-type";
   public static final String APPLICATION_JSON = "application/json";
@@ -184,17 +183,6 @@ public class Constants {
   public static final String DOMAIN = "domain";
   public static final String USERSHA = "userSha";
   public static final String JSON_ALIAS = "alias";
-  public static final String JSON_STREAMING_TYPE = "streaming";
-  public static final String JSON_EXCHANGE = "exchange";
-  public static final String JSON_QUEUE = "queue";
-  public static final String JSON_USERNAME = "username";
-  public static final String JSON_APIKEY = "apiKey";
-  public static final String JSON_STATUS = "status";
-  public static final String JSON_STATUS_HEARTBEAT = "heartbeat";
-  public static final String JSON_STATUS_SERVERISSUE = "Server Issue";
-  public static final String JSON_STATUS_DATAISSUE = "Server Issue";
-  public static final String JSON_STREAMING_NAME = "test-streaming-name";
-  public static final String JSON_SUBS_ID = "subscriptionID";
   public static final String JSON_COUNT = "Count";
   public static final String JSON_URL = "url";
   public static final String JSON_METHOD = "method";
@@ -257,9 +245,7 @@ public class Constants {
   public static final int VALIDATION_ID_MIN_LEN = 0;
   public static final int VALIDATION_ID_MAX_LEN = 512;
   public static final Pattern VALIDATION_ID_PATTERN =
-      Pattern.compile(
-          "^[a-zA-Z0-9.]{4,100}/{1}[a-zA-Z0-9.]{4,100}/{1}"
-              + "[a-zA-Z.]{4,100}/{1}[a-zA-Z-_.]{4,100}/{1}[a-zA-Z0-9-_.]{4,100}$");
+      Pattern.compile("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
   public static final int VALIDATION_MAX_ATTRS = 5;
   public static final int VALIDATION_MAX_DAYS_INTERVAL_ALLOWED = 10;
   public static final int VALIDATION_MAX_DAYS_INTERVAL_ALLOWED_FOR_ASYNC = 365;
@@ -301,7 +287,7 @@ public class Constants {
 
   public static final String APPEND_SUB_SQL =
       "INSERT INTO subscriptions(_id,_type,queue_name,entity,expiry) "
-          + "VALUES('$1','$2','$3','$4','$5')";
+          + "VALUES('$1','$2','$3','$4','$5') ON CONFLICT(queue_name,entity) DO NOTHING";
 
   public static final String DELETE_SUB_SQL = "DELETE FROM subscriptions where queue_name='$1'";
 
@@ -316,7 +302,7 @@ public class Constants {
       "SELECT queue_name as queueName,entity,dataset_json as catItem "
           + "FROM subscriptions WHERE user_id ='$1'";
   public static final String ENTITY_QUERY =
-      "select entity from subscriptions where queue_name='$0';";
+      "select entity from subscriptions where queue_name='$0'";
   public static final String LIMITPARAM = "limit";
   public static final String OFFSETPARAM = "offset";
   public static final String TOTALHITS = "totalHits";

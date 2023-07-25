@@ -1,13 +1,13 @@
 package iudx.resource.server.database.async;
 
-import static iudx.resource.server.common.Constants.ASYNC_SERVICE_ADDRESS;
-import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
+import static iudx.resource.server.common.Constants.*;
 
 import com.amazonaws.regions.Regions;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ServiceBinder;
+import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.database.async.util.S3FileOpsHelper;
 import iudx.resource.server.database.elastic.ElasticClient;
 import iudx.resource.server.database.postgres.PostgresService;
@@ -37,6 +37,7 @@ public class AsyncVerticle extends AbstractVerticle {
   private String filePath;
   private String bucketName;
   private ServiceBinder binder;
+  private CacheService cacheService;
   private MessageConsumer<JsonObject> consumer;
   private String tenantPrefix;
 
@@ -60,11 +61,14 @@ public class AsyncVerticle extends AbstractVerticle {
     tenantPrefix = config().getString("tenantPrefix");
 
     pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
+    cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
     client = new ElasticClient(databaseIp, databasePort, user, password);
     fileOpsHelper = new S3FileOpsHelper(clientRegion, bucketName);
+
     binder = new ServiceBinder(vertx);
     asyncService =
-        new AsyncServiceImpl(vertx, client, pgService, fileOpsHelper, filePath, tenantPrefix);
+        new AsyncServiceImpl(
+            vertx, client, pgService, fileOpsHelper, filePath, tenantPrefix, cacheService);
 
     consumer = binder.setAddress(ASYNC_SERVICE_ADDRESS).register(AsyncService.class, asyncService);
   }

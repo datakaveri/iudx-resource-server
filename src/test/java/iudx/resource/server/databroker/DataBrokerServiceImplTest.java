@@ -10,6 +10,7 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.rabbitmq.RabbitMQClient;
+import iudx.resource.server.cache.CacheService;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,6 +49,8 @@ public class DataBrokerServiceImplTest {
     AsyncResult<Void> asyncResult1;
     DataBrokerServiceImpl databrokerSpy;
     JsonObject expected;
+    @Mock
+    CacheService cacheService;
 
     @BeforeEach
     public void setUp(VertxTestContext vertxTestContext) {
@@ -62,7 +65,7 @@ public class DataBrokerServiceImplTest {
         request.put("type", HttpStatus.SC_OK);
         throwableMessage = "Dummy failure message";
         when(config.getString(anyString())).thenReturn("internalVhost");
-        databroker = new DataBrokerServiceImpl(webClient, pgClient, config);
+        databroker = new DataBrokerServiceImpl(webClient, pgClient, config,cacheService);
         databrokerSpy = spy(databroker);
         vertxTestContext.completeNow();
     }

@@ -109,6 +109,7 @@ public class RabbitClientTest {
         request.put("userName","Dummy userName");
         request.put("password","Dummy password");
         request.put("entities",jsonArray);
+        request.put("types","resource");
         rabbitClient = new RabbitClient(vertxObj, rabbitConfigs, webClient, pgSQLClient, configs);
         rabbitWebClient = new RabbitWebClient(vertxObj,webClientOptions,request);
         postgresClient = new PostgresClient(vertxObj,pgConnectOptions,poolOptions);

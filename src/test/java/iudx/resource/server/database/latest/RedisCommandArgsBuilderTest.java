@@ -27,9 +27,7 @@ public class RedisCommandArgsBuilderTest {
     String tenantPrefix = "iudx";
     RedisArgs redisArgs = redisCmdArgsBuilder.getRedisCommandArgs(id, true, tenantPrefix);
 
-    String idKey = id.replace("-", "_")
-        .replaceAll("/", "_")
-        .replaceAll("\\.", "_");
+    String idKey = id;
     String namespace = tenantPrefix.concat(":");
     String key = namespace.concat(idKey);
     assertEquals(key, redisArgs.getKey());
@@ -42,9 +40,7 @@ public class RedisCommandArgsBuilderTest {
     String tenantPrefix = "iudx";
     RedisArgs redisArgs = redisCmdArgsBuilder.getRedisCommandArgs(id, false, tenantPrefix);
 
-    String idKey = id.replace("-", "_")
-        .replaceAll("/", "_")
-        .replaceAll("\\.", "_");
+    String idKey = id;
     String namespace = tenantPrefix.concat(":");
     String key = namespace.concat(idKey);
     StringBuilder shaId = new StringBuilder(id).append("/").append(DEFAULT_ATTRIBUTE);

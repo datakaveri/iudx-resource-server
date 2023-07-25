@@ -2,7 +2,6 @@ package iudx.resource.server.databroker;
 
 import static iudx.resource.server.databroker.util.Constants.*;
 import static iudx.resource.server.databroker.util.Util.*;
-import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -191,35 +190,6 @@ public class RabbitClient {
     return promise.future();
   }
 
-  Future<JsonObject> getAllExchanges(JsonObject request) {
-    Promise<JsonObject> promise = Promise.promise();
-    if (request != null && !request.isEmpty()) {
-      String providerId = request.getString(PROVIDER_ID);
-      String url =
-          "/api/exchanges?page="
-              + encodeValue("1")
-              + "&page_size="
-              + encodeValue("100")
-              + "&"
-              + "name="
-              + encodeValue(providerId)
-              + "&use_regex=true&pagination=true";
-      JsonObject jsonObject = new JsonObject();
-      webClient
-          .requestAsyncs(REQUEST_GET, url)
-          .onComplete(
-              asyncResult -> {
-                if (asyncResult.succeeded()) {
-                  jsonObject.put("Adapters", asyncResult.result());
-                  promise.complete(jsonObject);
-                } else {
-                  promise.fail("getExchange_Error" + asyncResult.cause());
-                }
-              });
-    }
-    return promise.future();
-  }
-
   /**
    * The deleteExchange implements the delete exchange operation.
    *
@@ -368,7 +338,6 @@ public class RabbitClient {
                     }
                   }
                   promise.complete(finalResponse);
-                  LOGGER.info("Success : " + finalResponse);
                 } else {
                   LOGGER.error("Fail : Creation of Queue failed - ", ar.cause());
                   finalResponse.mergeIn(getResponseJson(500, FAILURE, QUEUE_CREATE_ERROR));
@@ -768,6 +737,7 @@ public class RabbitClient {
     requestParams.userid = request.getString(USER_ID);
 
     requestParams.adaptorId = id;
+    requestParams.type = request.getString("types");
     if (isValidId.test(requestParams.adaptorId)) {
       if (requestParams.adaptorId != null
           && !requestParams.adaptorId.isEmpty()
@@ -799,7 +769,7 @@ public class RabbitClient {
             .compose(
                 userPermissionsResult -> {
                   LOGGER.debug("Success : user permissions set.");
-                  return queueBinding(requestParams.adaptorId, vhost);
+                  return queueBinding(requestParams, vhost);
                 })
             .onSuccess(
                 success -> {
@@ -1293,38 +1263,55 @@ public class RabbitClient {
   /**
    * Helper method which bind registered exchange with predefined queues
    *
-   * @param adaptorId which is a String object
+   * @param adaptorResultContainer which is a AdaptorResultContainer class
    * @return response which is a Future object of promise of Json type
    */
-  Future<JsonObject> queueBinding(String adaptorId, String vhost) {
+  Future<JsonObject> queueBinding(AdaptorResultContainer adaptorResultContainer, String vhost) {
     LOGGER.trace("RabbitClient#queueBinding() method started");
     Promise<JsonObject> promise = Promise.promise();
     String topics;
 
-    if (isGroupId(adaptorId)) {
-      topics = adaptorId + DATA_WILDCARD_ROUTINGKEY;
+    if (adaptorResultContainer.type.equalsIgnoreCase("resourceGroup")) {
+      topics = adaptorResultContainer.adaptorId + DATA_WILDCARD_ROUTINGKEY;
     } else {
-      topics = adaptorId;
+      topics = adaptorResultContainer.adaptorId;
     }
-
-    bindQueue(QUEUE_DATA, adaptorId, topics, vhost)
-        .compose(databaseResult -> bindQueue(REDIS_LATEST, adaptorId, topics, vhost))
+    bindQueue(QUEUE_DATA, adaptorResultContainer.adaptorId, topics, vhost)
+        .compose(
+            databaseResult ->
+                bindQueue(REDIS_LATEST, adaptorResultContainer.adaptorId, topics, vhost))
         .compose(
             queueDataResult ->
-                bindQueue(QUEUE_ADAPTOR_LOGS, adaptorId, adaptorId + HEARTBEAT, vhost))
+                bindQueue(
+                    QUEUE_ADAPTOR_LOGS,
+                    adaptorResultContainer.adaptorId,
+                    adaptorResultContainer.adaptorId + HEARTBEAT,
+                    vhost))
         .compose(
             heartBeatResult ->
-                bindQueue(QUEUE_ADAPTOR_LOGS, adaptorId, adaptorId + DATA_ISSUE, vhost))
+                bindQueue(
+                    QUEUE_ADAPTOR_LOGS,
+                    adaptorResultContainer.adaptorId,
+                    adaptorResultContainer.adaptorId + DATA_ISSUE,
+                    vhost))
         .compose(
             dataIssueResult ->
-                bindQueue(QUEUE_ADAPTOR_LOGS, adaptorId, adaptorId + DOWNSTREAM_ISSUE, vhost))
-        .compose(bindToAuditingQueueResult -> bindQueue(QUEUE_AUDITING, adaptorId, topics, vhost))
+                bindQueue(
+                    QUEUE_ADAPTOR_LOGS,
+                    adaptorResultContainer.adaptorId,
+                    adaptorResultContainer.adaptorId + DOWNSTREAM_ISSUE,
+                    vhost))
+        .compose(
+            bindToAuditingQueueResult ->
+                bindQueue(QUEUE_AUDITING, adaptorResultContainer.adaptorId, topics, vhost))
         .onSuccess(
             successHandler -> {
               JsonObject response = new JsonObject();
               response.mergeIn(
                   getResponseJson(
-                      SUCCESS_CODE, "Queue_Database", QUEUE_DATA + " queue bound to " + adaptorId));
+                      SUCCESS_CODE,
+                      "Queue_Database",
+                      QUEUE_DATA + " queue bound to " + adaptorResultContainer.adaptorId));
               LOGGER.debug("Success : " + response);
               promise.complete(response);
             })
@@ -1489,7 +1476,7 @@ public class RabbitClient {
     return permissionsJson;
   }
 
-  private class AdaptorResultContainer {
+  public class AdaptorResultContainer {
     public String apiKey;
     public String id;
     public String resourceServer;
@@ -1497,5 +1484,6 @@ public class RabbitClient {
     public String adaptorId;
     public String vhost;
     public boolean isExchnageCreated;
+    public String type;
   }
 }

@@ -2,13 +2,15 @@ package iudx.resource.server.apiserver;
 
 import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
 import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.apiserver.util.Constants.ID;
+import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.common.Constants.*;
 import static iudx.resource.server.common.HttpStatusCode.*;
+import static iudx.resource.server.common.HttpStatusCode.SUCCESS;
 import static iudx.resource.server.common.ResponseUrn.*;
 import static iudx.resource.server.database.postgres.Constants.*;
-import static iudx.resource.server.metering.util.Constants.EPOCH_TIME;
-import static iudx.resource.server.metering.util.Constants.ISO_TIME;
-import static iudx.resource.server.metering.util.Constants.USER_ID;
+import static iudx.resource.server.metering.util.Constants.*;
+import static iudx.resource.server.metering.util.Constants.API;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,6 +23,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import iudx.resource.server.apiserver.handlers.AuthHandler;
+import iudx.resource.server.cache.CacheService;
+import iudx.resource.server.cache.cachelmpl.CacheType;
 import iudx.resource.server.common.*;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
@@ -42,6 +46,7 @@ public final class AdminRestApi {
   private final PostgresService pgService;
   private final MeteringService auditService;
   private final ObjectMapper objectMapper = new ObjectMapper();
+  private final CacheService cacheService;
   private Api api;
 
   AdminRestApi(Vertx vertx, Router router, Api api) {
@@ -51,6 +56,7 @@ public final class AdminRestApi {
     this.auditService = MeteringService.createProxy(vertx, METERING_SERVICE_ADDRESS);
     this.pgService = PostgresService.createProxy(vertx, PG_SERVICE_ADDRESS);
     this.api = api;
+    cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
   }
 
   public Router init() {
@@ -322,35 +328,47 @@ public final class AdminRestApi {
     JsonObject authInfo = (JsonObject) context.data().get("authInfo");
 
     JsonObject request = new JsonObject();
-    ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
-    long time = zst.toInstant().toEpochMilli();
-
-    request.put(USER_ID, authInfo.getString(USER_ID));
     if (authInfo.containsKey(ID) && authInfo.getString(ID) != null) {
       request.put(ID, authInfo.getValue(ID));
     } else {
       request.put(ID, RESOURCE_ID_DEFAULT);
     }
-    String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
-    request.put(EPOCH_TIME, time);
-    request.put(ISO_TIME, isoTime);
-    request.put(API, authInfo.getValue(API_ENDPOINT));
-    request.put(RESPONSE_SIZE, 0);
-
-    LOGGER.debug("request : " + request.encode());
+    JsonObject cacheRequest = new JsonObject();
+    cacheRequest.put("type", CacheType.CATALOGUE_CACHE);
+    cacheRequest.put("key", request.getValue(ID));
     Promise<Void> promise = Promise.promise();
-    auditService.insertMeteringValuesInRmq(
-        request,
-        handler -> {
-          if (handler.succeeded()) {
-            LOGGER.info("message published in RMQ.");
-            promise.complete();
-          } else {
-            LOGGER.error("failed to publish message in RMQ.");
-            promise.complete();
-          }
-        });
+    cacheService
+        .get(cacheRequest)
+        .onComplete(
+            relHandler -> {
+              if (relHandler.succeeded()) {
+                String providerId = relHandler.result().getString("provider");
+                request.put(PROVIDER_ID, providerId);
+                request.put(USER_ID, authInfo.getString(USER_ID));
+                ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+                long time = zst.toInstant().toEpochMilli();
 
+                String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+                request.put(EPOCH_TIME, time);
+                request.put(ISO_TIME, isoTime);
+                request.put(API, authInfo.getValue(API_ENDPOINT));
+                request.put(RESPONSE_SIZE, 0);
+                LOGGER.debug("request : " + request.encode());
+                auditService.insertMeteringValuesInRmq(
+                    request,
+                    handler -> {
+                      if (handler.succeeded()) {
+                        LOGGER.info("message published in RMQ.");
+                        promise.complete();
+                      } else {
+                        LOGGER.error("failed to publish message in RMQ.");
+                        promise.complete();
+                      }
+                    });
+              } else {
+                LOGGER.debug("Item not found and failed to call metering service");
+              }
+            });
     return promise.future();
   }
 }

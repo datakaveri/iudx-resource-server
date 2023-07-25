@@ -1,8 +1,10 @@
 package iudx.resource.server.metering;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.authenticator.Constants.ROLE;
 import static iudx.resource.server.common.Constants.*;
 import static iudx.resource.server.metering.util.Constants.*;
+import static iudx.resource.server.metering.util.Constants.IID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,6 +38,8 @@ public class MeteringServiceImpl implements MeteringService {
   private final ParamsValidation validation = new ParamsValidation();
   private final DateValidation dateValidation = new DateValidation();
   private final ObjectMapper objectMapper = new ObjectMapper();
+  private final PostgresService postgresService;
+  private final CacheService cacheService;
   String queryPg;
   String queryCount;
   String queryOverview;
@@ -46,15 +50,13 @@ public class MeteringServiceImpl implements MeteringService {
   JsonArray resultJsonArray;
   int loopi;
   private ResponseBuilder responseBuilder;
-  private final PostgresService postgresService;
-  private final CacheService cacheService;
 
-  public MeteringServiceImpl(Vertx vertxInstance, PostgresService postgresService) {
+  public MeteringServiceImpl(
+      Vertx vertxInstance, PostgresService postgresService, CacheService cacheService) {
     this.vertx = vertxInstance;
     this.postgresService = postgresService;
-    rmqService = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
-
-    this.cacheService = CacheService.createProxy(vertx, CACHE_SERVICE_ADDRESS);
+    this.rmqService = DataBrokerService.createProxy(vertx, BROKER_SERVICE_ADDRESS);
+    this.cacheService = cacheService;
   }
 
   @Override
@@ -62,7 +64,6 @@ public class MeteringServiceImpl implements MeteringService {
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
 
     LOGGER.trace("Info: Read Query" + request.toString());
-
     validationCheck = validation.paramsCheck(request);
 
     if (validationCheck != null && validationCheck.containsKey(ERROR)) {
@@ -185,20 +186,52 @@ public class MeteringServiceImpl implements MeteringService {
         return this;
       }
     }
-    queryOverview = queryBuilder.buildMonthlyOverview(request);
-    LOGGER.debug("query Overview =" + queryOverview);
 
-    Future<JsonObject> result = executeQueryDatabaseOperation(queryOverview);
-    result.onComplete(
-        handlers -> {
-          if (handlers.succeeded()) {
-            LOGGER.debug("Count return Successfully");
-            handler.handle(Future.succeededFuture(handlers.result()));
-          } else {
-            LOGGER.debug("Could not read from DB : " + handlers.cause());
-            handler.handle(Future.failedFuture(handlers.cause().getMessage()));
-          }
-        });
+    String role = request.getString(ROLE);
+    if (role.equalsIgnoreCase("admin")) {
+      queryOverview = queryBuilder.buildMonthlyOverview(request);
+      LOGGER.debug("query Overview =" + queryOverview);
+
+      Future<JsonObject> result = executeQueryDatabaseOperation(queryOverview);
+      result.onComplete(
+          handlers -> {
+            if (handlers.succeeded()) {
+              LOGGER.debug("Count return Successfully");
+              handler.handle(Future.succeededFuture(handlers.result()));
+            } else {
+              LOGGER.debug("Could not read from DB : " + handlers.cause());
+              handler.handle(Future.failedFuture(handlers.cause().getMessage()));
+            }
+          });
+    } else {
+      String resourceId = request.getString(IID);
+      JsonObject jsonObject =
+          new JsonObject().put("type", CacheType.CATALOGUE_CACHE).put("key", resourceId);
+
+      cacheService
+          .get(jsonObject)
+          .onSuccess(
+              providerHandler -> {
+                String providerId = providerHandler.getString("provider");
+                request.put("providerid", providerId);
+
+                queryOverview = queryBuilder.buildMonthlyOverview(request);
+                LOGGER.debug("query Overview =" + queryOverview);
+
+                Future<JsonObject> result = executeQueryDatabaseOperation(queryOverview);
+                result.onComplete(
+                    handlers -> {
+                      if (handlers.succeeded()) {
+                        LOGGER.debug("Count return Successfully");
+                        handler.handle(Future.succeededFuture(handlers.result()));
+                      } else {
+                        LOGGER.debug("Could not read from DB : " + handlers.cause());
+                        handler.handle(Future.failedFuture(handlers.cause().getMessage()));
+                      }
+                    });
+              })
+          .onFailure(fail -> LOGGER.debug(fail.getMessage()));
+    }
     return this;
   }
 
@@ -220,34 +253,81 @@ public class MeteringServiceImpl implements MeteringService {
         return this;
       }
     }
-    summaryOverview = queryBuilder.buildSummaryOverview(request);
-    LOGGER.debug("summary query =" + summaryOverview);
-    Future<JsonObject> result = executeQueryDatabaseOperation(summaryOverview);
-    result.onComplete(
-        handlers -> {
-          if (handlers.succeeded()) {
-            jsonArray = handlers.result().getJsonArray("result");
-            if (jsonArray.size() == 0) {
-              responseBuilder =
-                  new ResponseBuilder().setTypeAndTitle(204).setMessage("NO ID Present");
-              handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
-            }
-            cacheCall(jsonArray)
-                .onSuccess(
-                    resultHandler -> {
-                      JsonObject resultJson =
-                          new JsonObject()
-                              .put("type", "urn:dx:dm:Success")
-                              .put("title", "Success")
-                              .put("results", resultHandler);
-                      handler.handle(Future.succeededFuture(resultJson));
-                    });
-          } else {
-            LOGGER.debug("Could not read from DB : " + handlers.cause());
-            handler.handle(Future.failedFuture(handlers.cause().getMessage()));
-          }
-        });
 
+    String role = request.getString(ROLE);
+    if (role.equalsIgnoreCase("admin")) {
+      summaryOverview = queryBuilder.buildSummaryOverview(request);
+      LOGGER.debug("summary query =" + summaryOverview);
+      Future<JsonObject> result = executeQueryDatabaseOperation(summaryOverview);
+      result.onComplete(
+          handlers -> {
+            if (handlers.succeeded()) {
+              jsonArray = handlers.result().getJsonArray("result");
+              if (jsonArray.size() == 0) {
+                responseBuilder =
+                    new ResponseBuilder().setTypeAndTitle(204).setMessage("NO ID Present");
+                handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+              }
+              cacheCall(jsonArray)
+                  .onSuccess(
+                      resultHandler -> {
+                        JsonObject resultJson =
+                            new JsonObject()
+                                .put("type", "urn:dx:dm:Success")
+                                .put("title", "Success")
+                                .put("results", resultHandler);
+                        handler.handle(Future.succeededFuture(resultJson));
+                      });
+            } else {
+              LOGGER.debug("Could not read from DB : " + handlers.cause());
+              handler.handle(Future.failedFuture(handlers.cause().getMessage()));
+            }
+          });
+    } else {
+      String resourceId = request.getString(IID);
+      JsonObject jsonObject =
+          new JsonObject().put("type", CacheType.CATALOGUE_CACHE).put("key", resourceId);
+      cacheService
+          .get(jsonObject)
+          .onSuccess(
+              providerHandler -> {
+                String providerId = providerHandler.getString("provider");
+                request.put("providerid", providerId);
+                summaryOverview = queryBuilder.buildSummaryOverview(request);
+                LOGGER.debug("summary query =" + summaryOverview);
+                Future<JsonObject> result = executeQueryDatabaseOperation(summaryOverview);
+                result.onComplete(
+                    handlers -> {
+                      if (handlers.succeeded()) {
+                        jsonArray = handlers.result().getJsonArray("result");
+                        if (jsonArray.size() == 0) {
+                          responseBuilder =
+                              new ResponseBuilder()
+                                  .setTypeAndTitle(204)
+                                  .setMessage("NO ID Present");
+                          handler.handle(Future.succeededFuture(responseBuilder.getResponse()));
+                        }
+                        cacheCall(jsonArray)
+                            .onSuccess(
+                                resultHandler -> {
+                                  JsonObject resultJson =
+                                      new JsonObject()
+                                          .put("type", "urn:dx:dm:Success")
+                                          .put("title", "Success")
+                                          .put("results", resultHandler);
+                                  handler.handle(Future.succeededFuture(resultJson));
+                                });
+                      } else {
+                        LOGGER.debug("Could not read from DB : " + handlers.cause());
+                        handler.handle(Future.failedFuture(handlers.cause().getMessage()));
+                      }
+                    });
+              })
+          .onFailure(
+              fail -> {
+                LOGGER.debug(fail.getMessage());
+              });
+    }
     return this;
   }
 
@@ -284,7 +364,6 @@ public class MeteringServiceImpl implements MeteringService {
                         .put("publisher_id", result.getString("provider"))
                         .put("city", result.getString("instance"))
                         .put("count", resourceCount.get(result.getString("id")));
-
                 resultJsonArray.add(outputFormat);
               }
               promise.complete(resultJsonArray);
@@ -298,6 +377,7 @@ public class MeteringServiceImpl implements MeteringService {
       JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
 
     JsonObject writeMessage = queryBuilder.buildMessageForRmq(request);
+    LOGGER.debug("write message =  {}", writeMessage);
 
     rmqService.publishMessage(
         writeMessage,

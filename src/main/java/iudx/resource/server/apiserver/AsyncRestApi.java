@@ -9,6 +9,7 @@ import static iudx.resource.server.common.Constants.*;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
 import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
+import static iudx.resource.server.database.archives.Constants.ITEM_TYPES;
 import static iudx.resource.server.database.postgres.Constants.INSERT_S3_PENDING_SQL;
 
 import com.google.common.hash.Hashing;
@@ -34,6 +35,7 @@ import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
 import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.cache.CacheService;
+import iudx.resource.server.cache.cachelmpl.CacheType;
 import iudx.resource.server.common.Api;
 import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
@@ -43,10 +45,8 @@ import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.databroker.DataBrokerService;
 import iudx.resource.server.encryption.EncryptionService;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -158,7 +158,6 @@ public class AsyncRestApi {
 
   private void executeAsyncUrlSearch(RoutingContext routingContext, JsonObject json) {
     String sub = ((JsonObject) routingContext.data().get("authInfo")).getString(USER_ID);
-
     String requestId =
         Hashing.sha256().hashString(json.toString(), StandardCharsets.UTF_8).toString();
 
@@ -176,67 +175,93 @@ public class AsyncRestApi {
                 .replace("$6", String.valueOf(0.0))
                 .replace("$7", json.toString()));
 
-    JsonObject rmqQueryMessage =
-        new JsonObject()
-            .put("searchId", searchId)
-            .put("requestId", requestId)
-            .put("user", sub)
-            .put(HEADER_RESPONSE_FILE_FORMAT, format)
-            .put("query", json);
+    String resourceId = json.getJsonArray("id").getString(0);
+    JsonObject cacheRequest = new JsonObject();
+    cacheRequest.put("type", CacheType.CATALOGUE_CACHE);
+    cacheRequest.put("key", resourceId);
+    cacheService
+        .get(cacheRequest)
+        .onSuccess(
+            successHandler -> {
+              Set<String> type = new HashSet<String>(successHandler.getJsonArray("type").getList());
+              Set<String> itemTypeSet =
+                  type.stream().map(e -> e.split(":")[1]).collect(Collectors.toSet());
+              itemTypeSet.retainAll(ITEM_TYPES);
 
-    postgresService.executeQuery(
-        insertQuery.toString(),
-        pgInsertHandler -> {
-          if (pgInsertHandler.succeeded()) {
-            databroker.publishMessage(
-                rmqQueryMessage,
-                "async-query",
-                "#",
-                rmqPublishHandler -> {
-                  if (rmqPublishHandler.succeeded()) {
-                    JsonObject response = new JsonObject();
-                    response.put(JSON_TYPE, ResponseUrn.SUCCESS_URN.getUrn());
-                    response.put(JSON_TITLE, "query submitted successfully");
-                    JsonArray resultArray = new JsonArray();
-                    resultArray.add(new JsonObject().put("searchId", searchId));
-                    response.put("result", resultArray);
-                    if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
-                      handleSuccessResponse(
-                          routingContext.response(),
-                          ResponseType.Created.getCode(),
-                          response.toString());
-                    } else {
-                      // Encryption
-                      Future<JsonObject> future =
-                          encryption(routingContext, response.getJsonArray("result").toString());
-                      future.onComplete(
-                          encryptionHandler -> {
-                            if (encryptionHandler.succeeded()) {
-                              JsonObject result = encryptionHandler.result();
-                              response.put("result", result);
-                              handleSuccessResponse(
-                                  routingContext.response(),
-                                  ResponseType.Created.getCode(),
-                                  response.encode());
+              String groupId;
+              if (!itemTypeSet.contains("Resource")) {
+                groupId = resourceId;
+              } else {
+                groupId = successHandler.getString("resourceGroup");
+              }
+              json.put("resourceGroup", groupId);
+              JsonObject rmqQueryMessage =
+                  new JsonObject()
+                      .put("searchId", searchId)
+                      .put("requestId", requestId)
+                      .put("user", sub)
+                      .put(HEADER_RESPONSE_FILE_FORMAT, format)
+                      .put("query", json);
+
+              postgresService.executeQuery(
+                  insertQuery.toString(),
+                  pgInsertHandler -> {
+                    if (pgInsertHandler.succeeded()) {
+                      databroker.publishMessage(
+                          rmqQueryMessage,
+                          "async-query",
+                          "#",
+                          rmqPublishHandler -> {
+                            if (rmqPublishHandler.succeeded()) {
+                              JsonObject response = new JsonObject();
+                              response.put(JSON_TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+                              response.put(JSON_TITLE, "query submitted successfully");
+                              JsonArray resultArray = new JsonArray();
+                              resultArray.add(new JsonObject().put("searchId", searchId));
+                              response.put("result", resultArray);
+                              if (routingContext.request().getHeader(HEADER_PUBLIC_KEY) == null) {
+                                handleSuccessResponse(
+                                    routingContext.response(),
+                                    ResponseType.Created.getCode(),
+                                    response.toString());
+                              } else {
+                                // Encryption
+                                Future<JsonObject> future =
+                                    encryption(
+                                        routingContext, response.getJsonArray("result").toString());
+                                future.onComplete(
+                                    encryptionHandler -> {
+                                      if (encryptionHandler.succeeded()) {
+                                        JsonObject result = encryptionHandler.result();
+                                        response.put("result", result);
+                                        handleSuccessResponse(
+                                            routingContext.response(),
+                                            ResponseType.Created.getCode(),
+                                            response.encode());
+                                      } else {
+                                        LOGGER.error(
+                                            "Encryption not completed: "
+                                                + encryptionHandler.cause().getMessage());
+                                        processBackendResponse(
+                                            routingContext.response(),
+                                            encryptionHandler.cause().getMessage());
+                                      }
+                                    });
+                              }
+
                             } else {
-                              LOGGER.error(
-                                  "Encryption not completed: "
-                                      + encryptionHandler.cause().getMessage());
-                              processBackendResponse(
-                                  routingContext.response(),
-                                  encryptionHandler.cause().getMessage());
+                              LOGGER.error("message published failed", rmqPublishHandler);
                             }
                           });
+                    } else {
+                      LOGGER.error("message save to postgres failed", pgInsertHandler);
                     }
-
-                  } else {
-                    LOGGER.error("message published failed", rmqPublishHandler);
-                  }
-                });
-          } else {
-            LOGGER.error("message save to postgres failed", pgInsertHandler);
-          }
-        });
+                  });
+            })
+        .onFailure(
+            failureHandler -> {
+              LOGGER.error("Failed to fetch groupid");
+            });
   }
 
   private void handleAsyncStatusRequest(RoutingContext routingContext) {
