@@ -1274,7 +1274,7 @@ public class RabbitClient {
     if (adaptorResultContainer.type.equalsIgnoreCase("resourceGroup")) {
       topics = adaptorResultContainer.adaptorId + DATA_WILDCARD_ROUTINGKEY;
     } else {
-      topics = adaptorResultContainer.adaptorId;
+      topics = adaptorResultContainer.id + "/." + adaptorResultContainer.adaptorId;
     }
     bindQueue(QUEUE_DATA, adaptorResultContainer.adaptorId, topics, vhost)
         .compose(
