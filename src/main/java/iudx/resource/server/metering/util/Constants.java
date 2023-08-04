@@ -94,8 +94,10 @@ public class Constants {
   public static final String GROUPBY =
       "\n" + "   GROUP  BY 1\n" + "   ) t USING (day)\n" + "ORDER  BY day";
   public static final String SUMMARY_QUERY_FOR_METERING =
-      "select resourceid,count(*) from auditing_rs " + "where (resourceid like '%-%-%-%-%' ) ";
+      "select resourceid,count(*) from auditing_rs ";
   public static final String GROUPBY_RESOURCEID = " group by resourceid";
   public static final String USERID_SUMMARY = " and userid = '$9' ";
+  public static final String USERID_SUMMARY_WITHOUT_TIME = " userid = '$9' ";
   public static final String PROVIDERID_SUMMARY = " and providerid = '$8' ";
+  public static final String PROVIDERID_SUMMARY_WITHOUT_TIME = " providerid = '$8' ";
 }

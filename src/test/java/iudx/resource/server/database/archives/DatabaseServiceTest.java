@@ -2096,12 +2096,14 @@ public class DatabaseServiceTest {
 
     JsonObject esJson = new JsonObject().put("type","urn:dx:rs:success").put("title","Success").put("results", new JsonArray().add(new JsonObject().put("totalHits",60000)));
     when(elasticClient.asyncCount(anyString(),any())).thenReturn(Future.succeededFuture(esJson));
-
+JsonObject expectedJson = new JsonObject().put("type",413).put("title","urn:dx:rs:payloadTooLarge").put("details","Response size exceeds limit");
     dbService
         .search(request)
         .onFailure(
             handler -> {
-              assertEquals(handler.getMessage(),"Result Limit exceeds");
+              assertEquals(
+                  handler.getMessage(),
+                  expectedJson.toString());
               testContext.completeNow();
             })
         .onSuccess(

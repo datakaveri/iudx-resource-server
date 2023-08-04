@@ -189,7 +189,7 @@ public class QueryBuilder {
     StringBuilder summaryQuery = new StringBuilder(SUMMARY_QUERY_FOR_METERING);
     if (startTime != null && endTime != null) {
       summaryQuery.append(
-          " and time between '$2' AND '$3' ".replace("$2", startTime).replace("$3", endTime));
+          " where time between '$2' AND '$3' ".replace("$2", startTime).replace("$3", endTime));
       if (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate")) {
         String providerId = request.getString("providerid");
         LOGGER.debug("Provider = {}", providerId);
@@ -203,11 +203,13 @@ public class QueryBuilder {
       if (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate")) {
         String providerId = request.getString("providerid");
         LOGGER.debug("Provider = {}", providerId);
-        summaryQuery.append(PROVIDERID_SUMMARY.replace("$8", providerId));
+        summaryQuery.append(" where ");
+        summaryQuery.append(PROVIDERID_SUMMARY_WITHOUT_TIME.replace("$8", providerId));
       }
       if (role.equalsIgnoreCase("consumer")) {
         String userid = request.getString(USER_ID);
-        summaryQuery.append(USERID_SUMMARY.replace("$9", userid));
+        summaryQuery.append(" where ");
+        summaryQuery.append(USERID_SUMMARY_WITHOUT_TIME.replace("$9", userid));
       }
     }
     summaryQuery.append(GROUPBY_RESOURCEID);
