@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS auditing_acl_apd
 (
    id varchar NOT NULL,
    userid uuid NOT NULL,
-   endpoint uuid NOT NULL,
+   endpoint varchar NOT NULL,
    method varchar NOT NULL,
    body JSON NOT NULL,
    size numeric NOT NULL,
