@@ -10,6 +10,7 @@ import static iudx.resource.server.database.async.util.Constants.USER_ID;
 import static iudx.resource.server.database.postgres.Constants.*;
 import static iudx.resource.server.metering.util.Constants.*;
 import static iudx.resource.server.metering.util.Constants.API;
+import static iudx.resource.server.metering.util.Constants.TYPE_KEY;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import io.vertx.core.AsyncResult;
@@ -413,11 +414,19 @@ public class AsyncServiceImpl implements AsyncService {
         .onComplete(
             relHandler -> {
               if (relHandler.succeeded()) {
-                LOGGER.info(relHandler.result());
-                String providerId = relHandler.result().getString("provider");
+                JsonObject cacheResult = relHandler.result();
+                String providerId = cacheResult.getString("provider");
+                String type =
+                    cacheResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" : "RESOURCE_GROUP";
+                String resourceGroup =
+                    cacheResult.containsKey(RESOURCE_GROUP)
+                        ? cacheResult.getString(RESOURCE_GROUP)
+                        : cacheResult.getString(ID);
                 ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
                 long time = zst.toInstant().toEpochMilli();
                 String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+                request.put(RESOURCE_GROUP, resourceGroup);
+                request.put(TYPE_KEY, type);
                 request.put(EPOCH_TIME, time);
                 request.put(ISO_TIME, isoTime);
                 request.put(Constants.USER_ID, userId);
