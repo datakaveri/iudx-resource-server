@@ -1641,10 +1641,19 @@ public class ApiServerVerticle extends AbstractVerticle {
         .onComplete(
             relHandler -> {
               if (relHandler.succeeded()) {
-                String providerId = relHandler.result().getString("provider");
+                JsonObject cacheResult = relHandler.result();
+                String providerId = cacheResult.getString("provider");
+                String type =
+                    cacheResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" : "RESOURCE_GROUP";
+                String resourceGroup =
+                    cacheResult.containsKey(RESOURCE_GROUP)
+                        ? cacheResult.getString(RESOURCE_GROUP)
+                        : cacheResult.getString(ID);
                 ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
                 long time = zst.toInstant().toEpochMilli();
                 String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+                request.put(RESOURCE_GROUP, resourceGroup);
+                request.put(TYPE_KEY, type);
                 request.put(EPOCH_TIME, time);
                 request.put(ISO_TIME, isoTime);
                 request.put(USER_ID, authInfo.getValue(USER_ID));
