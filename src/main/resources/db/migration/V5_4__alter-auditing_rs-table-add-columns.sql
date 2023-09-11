@@ -1,0 +1,1 @@
+ALTER TABLE auditing_rs ADD COLUMN delegator_id uuid;

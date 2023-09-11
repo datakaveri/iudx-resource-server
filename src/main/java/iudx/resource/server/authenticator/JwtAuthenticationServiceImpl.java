@@ -154,6 +154,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
                             ZoneId.systemDefault())
                         .toString());
                 jsonResponse.put(ROLE, result.jwtData.getRole());
+                jsonResponse.put(DRL, result.jwtData.getDrl());
+                jsonResponse.put(DID, result.jwtData.getDid());
                 return Future.succeededFuture(jsonResponse);
               } else {
                 return validateAccess(result.jwtData, result.isOpen, authenticationInfo);
@@ -275,6 +277,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       jsonResponse.put(JSON_IID, jwtId);
       jsonResponse.put(JSON_USERID, jwtData.getSub());
       jsonResponse.put(ROLE, jwtData.getRole());
+      jsonResponse.put(DRL, jwtData.getDrl());
+      jsonResponse.put(DID, jwtData.getDid());
       jsonResponse.put(
           JSON_EXPIRY,
           LocalDateTime.ofInstant(
@@ -378,6 +382,8 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     jsonResponse.put(JSON_USERID, jwtData.getSub());
     jsonResponse.put(JSON_IID, jwtId);
     jsonResponse.put(ROLE, jwtData.getRole());
+    jsonResponse.put(DRL, jwtData.getDrl());
+    jsonResponse.put(DID, jwtData.getDid());
     jsonResponse.put(
         JSON_EXPIRY,
         LocalDateTime.ofInstant(

@@ -75,6 +75,9 @@ public class TestAsyncQueryListener {
     object.put("user", "Dummy_value");
     object.put("query", new JsonObject());
     object.put("format","csv");
+    object.put("role","comsumer");
+    object.put("drl","");
+    object.put("did","");
     Buffer buffer = Buffer.buffer(object.toString());
 
 
@@ -120,7 +123,7 @@ public class TestAsyncQueryListener {
     asyncQueryListener.start();
     verify(voidFuture, times(1)).onComplete(any());
     verify(clientStartAsyncResult).succeeded();
-    verify(asyncService).asyncSearch(anyString(), anyString(), anyString(), any(),anyString());
+    verify(asyncService).asyncSearch(anyString(), anyString(), anyString(), any(),anyString(),anyString(),anyString(),anyString());
     verify(message).body();
     assertEquals(buffer, message.body());
     vertxTestContext.completeNow();
@@ -189,5 +192,71 @@ public class TestAsyncQueryListener {
     verify(voidFuture).onComplete(any());
     assertFalse(voidFuture.succeeded());
     vertxTestContext.completeNow();
+  }
+
+  @Test
+  @DisplayName("Test start method : Success")
+  public void test_start_success3(VertxTestContext vertxTestContext) {
+
+
+    JsonObject object = new JsonObject();
+    object.put("requestId", "dummy_key");
+    object.put("searchId", "Dummy_unique-attribute");
+    object.put("user", "Dummy_value");
+    object.put("query", new JsonObject());
+    object.put("format","csv");
+    object.put("role","delegate");
+    object.put("drl","dummydrl");
+    object.put("did","dummydid");
+    Buffer buffer = Buffer.buffer(object.toString());
+
+
+    Future<Void> voidFuture=mock(Future.class);
+    AsyncResult<Void> clientStartAsyncResult = mock(AsyncResult.class);
+    AsyncResult<RabbitMQConsumer> consumerASyncResult = mock(AsyncResult.class);
+    RabbitMQConsumer rmqConsumer = mock(RabbitMQConsumer.class);
+    RabbitMQMessage message = mock(RabbitMQMessage.class);
+
+
+    when(asyncQueryListener.client.start()).thenReturn(voidFuture);
+    when(clientStartAsyncResult.succeeded()).thenReturn(true);
+    when(consumerASyncResult.succeeded()).thenReturn(true);
+    when(consumerASyncResult.result()).thenReturn(rmqConsumer);
+    when(message.body()).thenReturn(buffer);
+
+
+
+    doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
+      @Override
+      public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
+        ((Handler<AsyncResult<Void>>) arg0.getArgument(0)).handle(clientStartAsyncResult);
+        return null;
+      }
+    }).when(voidFuture).onComplete(any());
+
+    doAnswer(new Answer<AsyncResult<RabbitMQConsumer>>() {
+      @Override
+      public AsyncResult<RabbitMQConsumer> answer(InvocationOnMock arg0) throws Throwable {
+        ((Handler<AsyncResult<RabbitMQConsumer>>) arg0.getArgument(2)).handle(consumerASyncResult);
+        return null;
+      }
+    }).when(asyncQueryListener.client).basicConsumer(anyString(), any(), any());
+
+    doAnswer(new Answer<RabbitMQMessage>() {
+      @Override
+      public RabbitMQMessage answer(InvocationOnMock arg0) throws Throwable {
+        ((Handler<RabbitMQMessage>) arg0.getArgument(0)).handle(message);
+        return null;
+      }
+    }).when(rmqConsumer).handler(any());
+
+    asyncQueryListener.start();
+    verify(voidFuture, times(1)).onComplete(any());
+    verify(clientStartAsyncResult).succeeded();
+    verify(asyncService).asyncSearch(anyString(), anyString(), anyString(), any(),anyString(),anyString(),anyString(),anyString());
+    verify(message).body();
+    assertEquals(buffer, message.body());
+    vertxTestContext.completeNow();
+
   }
 }

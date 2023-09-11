@@ -41,6 +41,7 @@ public class Constants {
   public static final String ORIGIN_SERVER_SUBSCRIPTION = "rs-server-subscriptions";
   public static final String ORIGIN_SERVER = "rs-server";
   public static final String RS_DATABASE_TABLE_NAME = "auditing_rs";
+  public static final String DELEGATOR_ID = "delegatorId";
 
   /* Metering Service Constants*/
   public static final String TIME_RELATION_NOT_FOUND = "Time relation not found.";

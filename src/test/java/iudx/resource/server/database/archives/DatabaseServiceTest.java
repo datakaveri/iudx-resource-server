@@ -2269,6 +2269,120 @@ JsonObject expectedJson = new JsonObject().put("type",413).put("title","urn:dx:r
       testContext.failed();
     });
   }
+
+  @Test
+  @DisplayName("Testing Temporal Queries (During)")
+  void searchDuringTemporalFailed(VertxTestContext testContext) throws ParseException {
+    JsonObject request = new JsonObject()
+            .put("id", new JsonArray().add(idOpen))
+            .put("searchType", "temporalSearch_")
+            .put("timerel", "during")
+            .put("time", temporalStartDate)
+            .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
+
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
+    OffsetDateTime start = OffsetDateTime.parse(temporalStartDate, dateTimeFormatter);
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
+
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+    dbSpy.search(request).onSuccess(handler -> {
+      testContext.failNow("Failed");
+    }).onFailure(handler -> {
+      assertEquals("{\"status\":400,\"type\":\"urn:dx:rs:badRequest\",\"title\":\"bad request parameter\",\"detail\":\"No endDate[required mandatory field] provided for query\"}",handler.getMessage());
+      LOGGER.info(handler.getMessage());
+      testContext.completeNow();
+    });
+  }
+
+  @Test
+  @DisplayName("Testing Temporal Queries (During)")
+  void searchDuringTemporalFailed2(VertxTestContext testContext) throws ParseException {
+    JsonObject request = new JsonObject()
+            .put("id", new JsonArray().add(idOpen))
+            .put("searchType", "temporalSearch_")
+            .put("timerel", "during")
+            .put("time", temporalStartDate)
+            .put("endtime", "2020-09-15T14:20:00Z")
+            .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
+
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
+    OffsetDateTime start = OffsetDateTime.parse(temporalStartDate, dateTimeFormatter);
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
+
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+    dbSpy
+        .search(request)
+        .onSuccess(
+            handler -> {
+              testContext.failNow("Failed");
+            })
+        .onFailure(
+            handler -> {
+              assertEquals(
+                  "{\"status\":400,\"type\":\"urn:dx:rs:badRequest\",\"title\":\"bad request parameter\",\"detail\":\"end date is before start date\"}",
+                  handler.getMessage());
+              LOGGER.info(handler.getMessage());
+              testContext.completeNow();
+            });
+  }
+  @Test
+  @DisplayName("Testing Temporal Queries (During)")
+  void searchDuringTemporalFailed3(VertxTestContext testContext) throws ParseException {
+    JsonObject request = new JsonObject()
+            .put("id", new JsonArray().add(idOpen))
+            .put("searchType", "temporalSearch_")
+            .put("timerel", "during")
+            .put("time", "2020-0915T14:20:00Z")
+            .put("endtime", "2020-09-15T14:20:00Z")
+            .put("applicableFilters", new JsonArray().add("ATTR").add("TEMPORAL").add("SPATIAL"));
+
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXXXX");
+    OffsetDateTime start = OffsetDateTime.parse(temporalStartDate, dateTimeFormatter);
+    List<String> list = new ArrayList<String>();
+    list.add("iudx:Resource");
+    list.add("iudx:TransitManagement");
+
+    JsonObject jsonObject = new JsonObject()
+            .put("id", "b58da193-23d9-43eb-b98a-a103d4b6103c")
+            .put("type", list)
+            .put("name","dummy_name")
+            .put("resourceGroup","5b7556b5-0779-4c47-9cf2-3f209779aa22");
+
+    doAnswer(Answer -> Future.succeededFuture(jsonObject))
+            .when(dbSpy).checkQuery(any());
+    dbSpy
+        .search(request)
+        .onSuccess(
+            handler -> {
+              testContext.failNow("Failed");
+            })
+        .onFailure(
+            handler -> {
+              assertEquals(
+                  "{\"status\":400,\"type\":\"urn:dx:rs:badRequest\",\"title\":\"bad request parameter\",\"detail\":\"exception while parsing date/time\"}",
+                  handler.getMessage());
+              LOGGER.info(handler.getMessage());
+              testContext.completeNow();
+            });
+  }
 }
 
 

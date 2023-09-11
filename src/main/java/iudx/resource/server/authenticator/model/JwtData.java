@@ -15,6 +15,24 @@ public final class JwtData {
   private String iid;
   private String role;
   private JsonObject cons;
+  private String drl;
+  private String did;
+
+  public String getDrl() {
+    return drl;
+  }
+
+  public void setDrl(String drl) {
+    this.drl = drl;
+  }
+
+  public String getDid() {
+    return did;
+  }
+
+  public void setDid(String did) {
+    this.did = did;
+  }
 
   public JwtData() {
     super();
@@ -123,6 +141,10 @@ public final class JwtData {
         + role
         + ", cons="
         + cons
+        + ", drl="
+        + drl
+        + ", did="
+        + did
         + "]";
   }
 }

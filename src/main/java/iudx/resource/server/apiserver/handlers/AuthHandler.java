@@ -93,6 +93,8 @@ public class AuthHandler implements Handler<RoutingContext> {
             authInfo.put(USER_ID, authHandler.result().getValue(USER_ID));
             authInfo.put(EXPIRY, authHandler.result().getValue(EXPIRY));
             authInfo.put(ROLE, authHandler.result().getValue(ROLE));
+            authInfo.put(DID, authHandler.result().getValue(DID));
+            authInfo.put(DRL, authHandler.result().getValue(DRL));
             context.data().put(this.authInfo, authInfo);
           } else {
             processAuthFailure(context, authHandler.cause().getMessage());

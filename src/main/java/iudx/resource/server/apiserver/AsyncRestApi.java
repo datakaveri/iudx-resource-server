@@ -5,6 +5,7 @@ import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Constants.ENCRYPTED_DATA;
 import static iudx.resource.server.apiserver.util.RequestType.ASYNC_SEARCH;
 import static iudx.resource.server.apiserver.util.RequestType.ASYNC_STATUS;
+import static iudx.resource.server.authenticator.Constants.ROLE;
 import static iudx.resource.server.common.Constants.*;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
@@ -158,6 +159,7 @@ public class AsyncRestApi {
 
   private void executeAsyncUrlSearch(RoutingContext routingContext, JsonObject json) {
     String sub = ((JsonObject) routingContext.data().get("authInfo")).getString(USER_ID);
+    JsonObject authInfo = (JsonObject) routingContext.data().get("authInfo");
     String requestId =
         Hashing.sha256().hashString(json.toString(), StandardCharsets.UTF_8).toString();
 
@@ -201,7 +203,10 @@ public class AsyncRestApi {
                       .put("requestId", requestId)
                       .put("user", sub)
                       .put(HEADER_RESPONSE_FILE_FORMAT, format)
-                      .put("query", json);
+                      .put("query", json)
+                      .put(ROLE, authInfo.getString(ROLE))
+                      .put(DRL, authInfo.getString(DRL))
+                      .put(DID, authInfo.getString(DID));
 
               postgresService.executeQuery(
                   insertQuery.toString(),
