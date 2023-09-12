@@ -212,7 +212,7 @@ public class AsyncServiceTest {
                     .put("resourceGroup", "dummy_resource");
 
     when(cacheSer.get(any())).thenReturn(Future.succeededFuture(providerJson));
-    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv");
+    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv","consumer","","");
     testContext.completeNow();
   }
   //@Test
@@ -234,7 +234,7 @@ public class AsyncServiceTest {
 
     when(client.asyncScroll(any(),anyString(),any(),any(),anyString(),any(),anyString(),anyString())).thenReturn(Future.failedFuture(""));
 
-    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv");
+    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv","consumer","","");
 
     testContext.completeNow();
   }
@@ -270,7 +270,7 @@ public class AsyncServiceTest {
     when(asyncResult2.result()).thenReturn(jsonObject2);
     when(client.asyncScroll(any(),anyString(),any(),any(),anyString(),any(),anyString(),anyString())).thenReturn(Future.succeededFuture(jsonObject2));
 
-    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv");
+    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv","consumer","","");
 
     verify(asyncServiceSpy, times(1)).executePgQuery(any());
     testContext.completeNow();
@@ -289,7 +289,7 @@ public class AsyncServiceTest {
         .getRecord4RequestId(any());
     doAnswer(Answer -> Future.failedFuture("fail")).when(asyncServiceSpy).executePgQuery(any());
 
-    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv");
+    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv","consumer","","");
     testContext.completeNow();
   }
 
@@ -307,7 +307,7 @@ public class AsyncServiceTest {
 
     when(asyncResult1.succeeded()).thenReturn(false);
 
-    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv");
+    asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv","consumer","","");
     testContext.completeNow();
   }
 
@@ -561,5 +561,29 @@ public class AsyncServiceTest {
 //  asyncServiceSpy.asyncSearch(requestId, sub, searchId, query);
 //  testContext.completeNow();
 //}
+@Test
+@DisplayName("success - async search for existing request id")
+public void successfulAsyncSearchForExistingRecordTest2(VertxTestContext testContext) {
 
+  String requestId = "682a3a42aaa1c8adadea4cc9ea16d968993fc8eee4edfc299d00bccf28117965";
+  String sub = "15c7506f-c800-48d6-adeb-0542b03947c6";
+  String searchId = "18cc743b-59a4-4c26-9f54-e243986ed709";
+  JsonArray record = record();
+  JsonObject query = query();
+
+  doAnswer(Answer -> Future.succeededFuture(record))
+          .when(asyncServiceSpy)
+          .getRecord4RequestId(any());
+  doAnswer(Answer -> Future.succeededFuture()).when(asyncServiceSpy).executePgQuery(any());
+
+  JsonObject providerJson =
+          new JsonObject()
+                  .put("provider", "8b95ab80-2aaf-4636-a65e-7f2563d0d371")
+                  .put("id", "5b7556b5-0779-4c47-9cf2-3f209779aa22")
+                  .put("resourceGroup", "dummy_resource");
+
+  when(cacheSer.get(any())).thenReturn(Future.succeededFuture(providerJson));
+  asyncServiceSpy.asyncSearch(requestId, sub, searchId, query, "csv","delegate","dummy","dummy");
+  testContext.completeNow();
+}
 }

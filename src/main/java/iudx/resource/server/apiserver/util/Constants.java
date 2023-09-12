@@ -194,6 +194,8 @@ public class Constants {
   public static final String EXPIRY = "expiry";
   public static final String IID = "iid";
   public static final String API = "api";
+  public static final String DRL = "drl";
+  public static final String DID = "did";
   public static final String ENCODED_KEY = "encodedKey";
   public static final String ENCODED_CIPHER_TEXT = "encodedCipherText";
   public static final String ENCRYPTED_DATA = "encryptedData";

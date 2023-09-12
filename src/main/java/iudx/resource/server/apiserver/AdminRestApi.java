@@ -4,6 +4,7 @@ import static iudx.resource.server.apiserver.response.ResponseUtil.generateRespo
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Constants.ID;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
+import static iudx.resource.server.authenticator.Constants.ROLE;
 import static iudx.resource.server.common.Constants.*;
 import static iudx.resource.server.common.HttpStatusCode.*;
 import static iudx.resource.server.common.HttpStatusCode.SUCCESS;
@@ -343,7 +344,6 @@ public final class AdminRestApi {
             relHandler -> {
               if (relHandler.succeeded()) {
                 JsonObject cacheResult = relHandler.result();
-                String providerId = cacheResult.getString("provider");
                 String type =
                     cacheResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" : "RESOURCE_GROUP";
                 String resourceGroup =
@@ -351,6 +351,14 @@ public final class AdminRestApi {
                         ? cacheResult.getString(RESOURCE_GROUP)
                         : cacheResult.getString(ID);
                 ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+                String role = authInfo.getString(ROLE);
+                String drl = authInfo.getString(DRL);
+                if (role.equalsIgnoreCase("delegate") && drl != null) {
+                  request.put(DELEGATOR_ID, authInfo.getString(DID));
+                } else {
+                  request.put(DELEGATOR_ID, authInfo.getString(USER_ID));
+                }
+                String providerId = cacheResult.getString("provider");
                 long time = zst.toInstant().toEpochMilli();
                 String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
                 request.put(RESOURCE_GROUP, resourceGroup);
@@ -360,6 +368,7 @@ public final class AdminRestApi {
                 request.put(ISO_TIME, isoTime);
                 request.put(API, authInfo.getValue(API_ENDPOINT));
                 request.put(RESPONSE_SIZE, 0);
+                request.put(USER_ID, authInfo.getValue(USER_ID));
                 LOGGER.debug("request : " + request.encode());
                 auditService.insertMeteringValuesInRmq(
                     request,
