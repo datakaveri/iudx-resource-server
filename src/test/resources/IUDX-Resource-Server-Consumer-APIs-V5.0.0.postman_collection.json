@@ -97,93 +97,11 @@
 								"key": "clientSecret",
 								"value": "{{clientSecret}}",
 								"type": "text"
-							},
-							{
-								"key": "",
-								"value": "",
-								"type": "text",
-								"disabled": true
-							},
-							{
-								"key": "",
-								"value": "",
-								"type": "text",
-								"disabled": true
 							}
 						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"itemId\": \"83c2e5c2-3574-4e11-9530-2b1fbdfce832\", \n  \"itemType\": \"resource\",\n  \"role\": \"consumer\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "https://{{auth-url}}/{{dxAuthBasePath}}/token",
-							"protocol": "https",
-							"host": [
-								"{{auth-url}}"
-							],
-							"path": [
-								"{{dxAuthBasePath}}",
-								"token"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Secure Resource Token RG",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"response is 200 (OK)\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"var jsonData = JSON.parse(responseBody);",
-									"postman.setEnvironmentVariable(\"secureResourceTokenRG\", jsonData.results.accessToken);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "clientId",
-								"value": "{{clientID}}",
-								"type": "text"
-							},
-							{
-								"key": "clientSecret",
-								"value": "{{clientSecret}}",
-								"type": "text"
-							},
-							{
-								"key": "",
-								"value": "",
-								"type": "text",
-								"disabled": true
-							},
-							{
-								"key": "",
-								"value": "",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"itemId\": \"8b95ab80-2aaf-4636-a65e-7f2563d0d371\", \n  \"itemType\": \"resource_group\",\n  \"role\": \"consumer\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -260,6 +178,11 @@
 								"key": "clientSecret",
 								"value": "{{clientSecret}}",
 								"type": "default"
+							},
+							{
+								"key": "delegationId",
+								"value": "1ed36da7-9f40-44c3-9f63-daf9cb175fdc",
+								"type": "text"
 							}
 						],
 						"body": {
@@ -272,95 +195,10 @@
 							}
 						},
 						"url": {
-							"raw": "https://authvertx.iudx.io/{{dxAuthBasePath}}/token",
+							"raw": "https://{{auth-url}}/{{dxAuthBasePath}}/token",
 							"protocol": "https",
 							"host": [
-								"authvertx",
-								"iudx",
-								"io"
-							],
-							"path": [
-								"{{dxAuthBasePath}}",
-								"token"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Adaptor Token Resource Group",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"response is 200 (OK)\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const responseJson=pm.response.json();",
-									"postman.setEnvironmentVariable(\"adaptorTokenRG\", responseJson.results.accessToken);",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "grant_type",
-									"value": "authorization_code_with_pkce",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "queryParams",
-									"type": "string"
-								},
-								{
-									"key": "challengeAlgorithm",
-									"value": "S256",
-									"type": "string"
-								},
-								{
-									"key": "client_authentication",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "clientId",
-								"value": "{{clientID}}",
-								"type": "default"
-							},
-							{
-								"key": "clientSecret",
-								"value": "{{clientSecret}}",
-								"type": "default"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"itemId\": \"935f2045-f5c6-4c76-b14a-c29a88589bf3\",\n  \"itemType\": \"resource_group\",\n  \"role\": \"delegate\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "https://authvertx.iudx.io/{{dxAuthBasePath}}/token",
-							"protocol": "https",
-							"host": [
-								"authvertx",
-								"iudx",
-								"io"
+								"{{auth-url}}"
 							],
 							"path": [
 								"{{dxAuthBasePath}}",
@@ -426,6 +264,11 @@
 								"key": "clientSecret",
 								"value": "{{clientSecret}}",
 								"type": "default"
+							},
+							{
+								"key": "delegationId",
+								"value": "1ed36da7-9f40-44c3-9f63-daf9cb175fdc",
+								"type": "text"
 							}
 						],
 						"body": {
@@ -438,95 +281,10 @@
 							}
 						},
 						"url": {
-							"raw": "https://authvertx.iudx.io/{{dxAuthBasePath}}/token",
+							"raw": "https://{{auth-url}}/{{dxAuthBasePath}}/token",
 							"protocol": "https",
 							"host": [
-								"authvertx",
-								"iudx",
-								"io"
-							],
-							"path": [
-								"{{dxAuthBasePath}}",
-								"token"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Delegate Token Resource Group",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"response is 200 (OK)\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const responseJson=pm.response.json();",
-									"postman.setEnvironmentVariable(\"delegateTokenRG\", responseJson.results.accessToken);",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "oauth2",
-							"oauth2": [
-								{
-									"key": "grant_type",
-									"value": "authorization_code_with_pkce",
-									"type": "string"
-								},
-								{
-									"key": "addTokenTo",
-									"value": "queryParams",
-									"type": "string"
-								},
-								{
-									"key": "challengeAlgorithm",
-									"value": "S256",
-									"type": "string"
-								},
-								{
-									"key": "client_authentication",
-									"value": "header",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "clientId",
-								"value": "{{clientID}}",
-								"type": "default"
-							},
-							{
-								"key": "clientSecret",
-								"value": "{{clientSecret}}",
-								"type": "default"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"itemId\": \"8b95ab80-2aaf-4636-a65e-7f2563d0d371\",\n  \"itemType\": \"resource_group\",\n  \"role\": \"delegate\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "https://authvertx.iudx.io/{{dxAuthBasePath}}/token",
-							"protocol": "https",
-							"host": [
-								"authvertx",
-								"iudx",
-								"io"
+								"{{auth-url}}"
 							],
 							"path": [
 								"{{dxAuthBasePath}}",
@@ -578,10 +336,63 @@
 							}
 						},
 						"url": {
-							"raw": "https://authvertx.iudx.io/auth/v1/token",
+							"raw": "https://{{auth-url}}/auth/v1/token",
 							"protocol": "https",
 							"host": [
-								"authvertx",
+								"{{auth-url}}"
+							],
+							"path": [
+								"auth",
+								"v1",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Provider Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"providerToken\", jsonData.results.accessToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "clientId",
+								"value": "3f4ab725-16db-4029-8ea8-5b753eed8258"
+							},
+							{
+								"key": "clientSecret",
+								"value": "c8ce645cdc68cd99d421bc289311325014bd6379"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"itemId\": \"rs.iudx.io\",\n    \"itemType\": \"resource_server\",\n    \"role\": \"provider\"\n}"
+						},
+						"url": {
+							"raw": "https://auth-five.iudx.io/auth/v1/token",
+							"protocol": "https",
+							"host": [
+								"auth-five",
 								"iudx",
 								"io"
 							],
@@ -17229,73 +17040,6 @@
 					"response": []
 				},
 				{
-					"name": "201 (created) - create a streaming subscription RG",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test the response code",
-									"pm.test(\"response is 201 (created)\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    const results = body.results[0];",
-									"    pm.expect(results).to.have.property(\"id\");",
-									"    pm.expect(results).to.have.property(\"username\");",
-									"    pm.globals.set(\"subscriptionIDRG\",body.results[0].id);",
-									"});",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "token",
-								"type": "text",
-								"value": "{{secureResourceTokenRG}}"
-							},
-							{
-								"key": "options",
-								"type": "text",
-								"value": "streaming"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"RS-integration-test-alias-RL1\",\r\n    \"type\": \"subscription\",\r\n    \"entities\": [\"8b95ab80-2aaf-4636-a65e-7f2563d0d371\"]\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/{{basePath}}/subscription",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"{{basePath}}",
-								"subscription"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "401 (not authorized) create a streaming subscription",
 					"event": [
 						{
@@ -17489,75 +17233,6 @@
 					"response": []
 				},
 				{
-					"name": "200 (success) - Get streaming subscription RG",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"response is 200 (OK)\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    const results = body.results[0];",
-									"     pm.expect(body).to.have.property(\"results\");",
-									"    pm.expect(results).to.have.property(\"entities\");",
-									"});",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "token",
-								"value": "{{secureResourceTokenRG}}",
-								"type": "text"
-							},
-							{
-								"key": "options",
-								"value": "streaming",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/{{basePath}}/subscription/{{subscriptionIDRG}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"{{basePath}}",
-								"subscription",
-								"{{subscriptionIDRG}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "401 (not authorized) - Get streaming subscription",
 					"event": [
 						{
@@ -17721,7 +17396,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{secureResourceTokenRG}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							},
 							{
@@ -17732,7 +17407,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"RS-integration-test-alias-RL\",\n    \"type\": \"subscription\",\n    \"entities\": [\"8b95ab80-2aaf-4636-a65e-7f2563d0d371\"]\n}",
+							"raw": "{\n    \"name\": \"RS-integration-test-alias-RL\",\n    \"type\": \"subscription\",\n    \"entities\": [\"83c2e5c2-3574-4e11-9530-2b1fbdfce832\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -17786,7 +17461,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{delegateTokenRG}}"
+								"value": "{{secureResourceToken}}"
 							},
 							{
 								"key": "options",
@@ -17796,7 +17471,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"integration-test-alias-invalid\",\n    \"type\": \"subscription\",\n    \"entities\": [\"8b95ab80-2aaf-4636-a65e-7f2563d0d371\"]\n}",
+							"raw": "{\n    \"name\": \"integration-test-alias-invalid\",\n    \"type\": \"subscription\",\n    \"entities\": [\"83c2e5c2-3574-4e11-9530-2b1fbdfce832\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -17860,7 +17535,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"integration-test-alias\",\n    \"type\": \"subscription\",\n    \"entities\": [\"8b95ab80-2aaf-4636-a65e-7f2563d0d371\"]\n}",
+							"raw": "{\n    \"name\": \"integration-test-alias\",\n    \"type\": \"subscription\",\n    \"entities\": [\"83c2e5c2-3574-4e11-9530-2b1fbdfce832\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -17978,7 +17653,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{secureResourceTokenRG}}",
+								"value": "{{secureResourceToken}}",
 								"type": "text"
 							},
 							{
@@ -17989,7 +17664,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"RS-integration-test-alias-RL\",\n    \"type\": \"subscription\",\n    \"entities\": [\"8b95ab80-2aaf-4636-a65e-7f2563d0d371\"]\n}",
+							"raw": "{\n    \"name\": \"RS-integration-test-alias-RL\",\n    \"type\": \"subscription\",\n    \"entities\": [\"83c2e5c2-3574-4e11-9530-2b1fbdfce832\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -18043,7 +17718,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{delegateTokenRG}}"
+								"value": "{{secureResourceToken}}"
 							},
 							{
 								"key": "options",
@@ -18053,7 +17728,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"integration-test-alias-invalid\",\n    \"type\": \"subscription\",\n    \"entities\": [\"8b95ab80-2aaf-4636-a65e-7f2563d0d371\"]\n}",
+							"raw": "{\n    \"name\": \"integration-test-alias-invalid\",\n    \"type\": \"subscription\",\n    \"entities\": [\"83c2e5c2-3574-4e11-9530-2b1fbdfce832\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -18133,63 +17808,6 @@
 								"{{basePath}}",
 								"subscription",
 								"{{subscriptionID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "200 (success) - Delete a subscription RG",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test the response code",
-									"pm.test(\"response is 200 (OK)\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"// Test the response header",
-									"pm.test(\"Check response header\", function () {",
-									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
-									"});",
-									"",
-									"// Test the response",
-									"pm.test(\"Check response body\", function () {    ",
-									"    const body = pm.response.json();",
-									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:rs:success\");",
-									"    pm.expect(body).to.have.property(\"title\", \"success\");",
-									"    pm.expect(body).to.have.property(\"detail\", \"Subscription deleted Successfully\");",
-									"});",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "options",
-								"type": "text",
-								"value": "streaming"
-							},
-							{
-								"key": "token",
-								"type": "text",
-								"value": "{{secureResourceTokenRG}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/{{basePath}}/subscription/{{subscriptionIDRG}}",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"{{basePath}}",
-								"subscription",
-								"{{subscriptionIDRG}}"
 							]
 						}
 					},
@@ -18345,7 +17963,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{delegateTokenRG}}"
+								"value": "{{delegateToken}}"
 							}
 						],
 						"url": {
@@ -20146,7 +19764,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{adaptorTokenRG}}",
+								"value": "{{providerToken}}",
 								"type": "text"
 							}
 						],
@@ -20253,7 +19871,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{adaptorTokenRG}}"
+								"value": "{{providerToken}}"
 							}
 						],
 						"body": {
@@ -20472,7 +20090,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{adaptorTokenRG}}"
+								"value": "{{providerToken}}"
 							}
 						],
 						"url": {
@@ -20522,7 +20140,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{adaptorTokenRG}}"
+								"value": "{{providerToken}}"
 							}
 						],
 						"url": {
@@ -20624,7 +20242,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{adaptorTokenRG}}",
+								"value": "{{providerToken}}",
 								"type": "text"
 							}
 						],
@@ -20675,7 +20293,7 @@
 							{
 								"key": "token",
 								"type": "text",
-								"value": "{{adaptorTokenRG}}"
+								"value": "{{providerToken}}"
 							}
 						],
 						"url": {
@@ -21897,7 +21515,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/{{basePath}}/provider/audit?timerel=during&time=2023-06-05T14:20:00Z&endTime=2023-07-05T14:20:00Z&api=/{{basePath}}/entityOperations/query&consumer=15c7506f-c800-48d6-adeb-0542b03947c6&offset=0&limit=2000",
+							"raw": "{{base_url}}/{{basePath}}/provider/audit?timerel=during&time=2023-06-05T14:20:00Z&endTime=2023-07-05T14:20:00Z&api=/{{basePath}}/entityOperations/query&providerID=b2c27f3f-2524-4a84-816e-91f9ab23f837&consumer=15c7506f-c800-48d6-adeb-0542b03947c6&offset=0&limit=2000",
 							"host": [
 								"{{base_url}}"
 							],
@@ -21930,8 +21548,7 @@
 								},
 								{
 									"key": "providerID",
-									"value": "b2c27f3f-2524-4a84-816e-91f9ab23f837",
-									"disabled": true
+									"value": "b2c27f3f-2524-4a84-816e-91f9ab23f837"
 								},
 								{
 									"key": "consumer",
