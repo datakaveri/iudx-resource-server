@@ -873,8 +873,6 @@ public class MeteringServiceTest {
             .put("id", "5b7556b5-0779-4c47-9cf2-3f209779aa22")
             .put("resourceGroup", "dummy_resource");
 
-    when(cacheService.get(any())).thenReturn(Future.succeededFuture(providerJson));
-
     meteringService = new MeteringServiceImpl(vertxObj, postgresService, cacheService);
     when(asyncResult.succeeded()).thenReturn(true);
     when(asyncResult.result()).thenReturn(expected);
@@ -994,8 +992,6 @@ public class MeteringServiceTest {
             .put("id", "5b7556b5-0779-4c47-9cf2-3f209779aa22")
             .put("resourceGroup", "dummy_resource");
 
-    when(cacheService.get(any())).thenReturn(Future.succeededFuture(providerJson));
-
     meteringService = new MeteringServiceImpl(vertxObj, postgresService, cacheService);
     when(asyncResult.succeeded()).thenReturn(true);
     when(asyncResult.result()).thenReturn(expected);
@@ -1095,8 +1091,6 @@ public class MeteringServiceTest {
             .put("id", "5b7556b5-0779-4c47-9cf2-3f209779aa22")
             .put("resourceGroup", "dummy_resource");
 
-    when(cacheService.get(any())).thenReturn(Future.succeededFuture(providerJson));
-
     meteringService = new MeteringServiceImpl(vertxObj, postgresService, cacheService);
 
     MeteringServiceImpl spyMeteringService = Mockito.spy(meteringService);
@@ -1164,8 +1158,6 @@ public class MeteringServiceTest {
             .put("provider", "8b95ab80-2aaf-4636-a65e-7f2563d0d371")
             .put("id", "5b7556b5-0779-4c47-9cf2-3f209779aa22")
             .put("resourceGroup", "dummy_resource");
-
-    when(cacheService.get(any())).thenReturn(Future.succeededFuture(providerJson));
 
     meteringService = new MeteringServiceImpl(vertxObj, postgresService, cacheService);
     MeteringServiceImpl spyMeteringService = Mockito.spy(meteringService);
@@ -1265,8 +1257,6 @@ public class MeteringServiceTest {
             .put("provider", "8b95ab80-2aaf-4636-a65e-7f2563d0d371")
             .put("id", "5b7556b5-0779-4c47-9cf2-3f209779aa22")
             .put("resourceGroup", "dummy_resource");
-
-    when(cacheService.get(any())).thenReturn(Future.succeededFuture(providerJson));
 
     meteringService = new MeteringServiceImpl(vertxObj, postgresService, cacheService);
 

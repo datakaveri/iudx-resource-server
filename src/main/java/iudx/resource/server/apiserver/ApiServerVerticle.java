@@ -8,6 +8,7 @@ import static iudx.resource.server.apiserver.util.Constants.ID;
 import static iudx.resource.server.apiserver.util.Constants.IID;
 import static iudx.resource.server.apiserver.util.Constants.USER_ID;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
+import static iudx.resource.server.authenticator.Constants.ROLE;
 import static iudx.resource.server.cache.cachelmpl.CacheType.CATALOGUE_CACHE;
 import static iudx.resource.server.common.Constants.*;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
@@ -1641,10 +1642,27 @@ public class ApiServerVerticle extends AbstractVerticle {
         .onComplete(
             relHandler -> {
               if (relHandler.succeeded()) {
-                String providerId = relHandler.result().getString("provider");
+                JsonObject cacheResult = relHandler.result();
+
+                String type =
+                    cacheResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" : "RESOURCE_GROUP";
+                String resourceGroup =
+                    cacheResult.containsKey(RESOURCE_GROUP)
+                        ? cacheResult.getString(RESOURCE_GROUP)
+                        : cacheResult.getString(ID);
                 ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+                String role = authInfo.getString(ROLE);
+                String drl = authInfo.getString(DRL);
+                if (role.equalsIgnoreCase("delegate") && drl != null) {
+                  request.put(DELEGATOR_ID, authInfo.getString(DID));
+                } else {
+                  request.put(DELEGATOR_ID, authInfo.getString(USER_ID));
+                }
+                String providerId = cacheResult.getString("provider");
                 long time = zst.toInstant().toEpochMilli();
                 String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+                request.put(RESOURCE_GROUP, resourceGroup);
+                request.put(TYPE_KEY, type);
                 request.put(EPOCH_TIME, time);
                 request.put(ISO_TIME, isoTime);
                 request.put(USER_ID, authInfo.getValue(USER_ID));

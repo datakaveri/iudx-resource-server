@@ -346,7 +346,7 @@
                         <exclude>**/*Verticle.class</exclude>
                         <exclude>iudx/resource/server/database/postgres/PostgresService.class</exclude>
                         <exclude>iudx/resource/server/database/elastic/AbstractEsSearchResponseFormatter.class</exclude>
-
+                        <exclude>iudx/resource/server/callback/CallbackService.class</exclude>
 
                         <!-- class present in generated-sources -->
                         <exclude>**/JwtDataConverter.class</exclude>

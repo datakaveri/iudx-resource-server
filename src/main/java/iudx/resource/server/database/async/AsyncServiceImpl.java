@@ -10,6 +10,7 @@ import static iudx.resource.server.database.async.util.Constants.USER_ID;
 import static iudx.resource.server.database.postgres.Constants.*;
 import static iudx.resource.server.metering.util.Constants.*;
 import static iudx.resource.server.metering.util.Constants.API;
+import static iudx.resource.server.metering.util.Constants.TYPE_KEY;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import io.vertx.core.AsyncResult;
@@ -131,19 +132,27 @@ public class AsyncServiceImpl implements AsyncService {
 
   @Override
   public AsyncService asyncSearch(
-      String requestId, String sub, String searchId, JsonObject query, String format) {
+      String requestId,
+      String sub,
+      String searchId,
+      JsonObject query,
+      String format,
+      String role,
+      String drl,
+      String did) {
     String id = query.getJsonArray(ID).getString(0);
     getRecord4RequestId(requestId)
         .onSuccess(
             handler -> {
-              process4ExistingRequestId(id, requestId, sub, searchId, handler, format);
+              process4ExistingRequestId(
+                  id, requestId, sub, searchId, handler, format, role, drl, did);
             })
         .onFailure(
             handler -> {
               updateQueryExecutionStatus(searchId, QueryProgress.IN_PROGRESS)
                   .onSuccess(
                       statusHandler -> {
-                        process4NewRequestId(searchId, sub, query, format);
+                        process4NewRequestId(searchId, sub, query, format, role, drl, did);
                       })
                   .onFailure(
                       statusHandler -> {
@@ -221,7 +230,15 @@ public class AsyncServiceImpl implements AsyncService {
   }
 
   void process4ExistingRequestId(
-      String id, String requestId, String sub, String searchId, JsonArray record, String format) {
+      String id,
+      String requestId,
+      String sub,
+      String searchId,
+      JsonArray record,
+      String format,
+      String role,
+      String drl,
+      String did) {
     String objectId = record.getJsonObject(0).getString(OBJECT_ID);
     String expiry = LocalDateTime.now().plusDays(1).toString();
     long fileSize = record.getJsonObject(0).getLong(SIZE_KEY);
@@ -243,7 +260,7 @@ public class AsyncServiceImpl implements AsyncService {
         .onSuccess(
             handler -> {
               LOGGER.info("Query completed with existing requestId & objectId");
-              Future.future(fu -> updateAuditTable(id, sub, fileSize));
+              Future.future(fu -> updateAuditTable(id, sub, fileSize, role, drl, did));
             })
         .onFailure(
             handler -> {
@@ -252,7 +269,13 @@ public class AsyncServiceImpl implements AsyncService {
   }
 
   private void process4NewRequestId(
-      String searchId, String userId, JsonObject query, String format) {
+      String searchId,
+      String userId,
+      JsonObject query,
+      String format,
+      String role,
+      String drl,
+      String did) {
     if (format == null) {
       format = "json";
     }
@@ -296,7 +319,8 @@ public class AsyncServiceImpl implements AsyncService {
                         .onSuccess(
                             recordUpdateHandler -> {
                               LOGGER.debug("updated status in postgres");
-                              Future.future(fu -> updateAuditTable(id, userId, fileSize));
+                              Future.future(
+                                  fu -> updateAuditTable(id, userId, fileSize, role, drl, did));
                               try {
                                 vertx.fileSystem().deleteBlocking(filePath + "/" + file.getName());
                               } catch (Exception ex) {
@@ -402,7 +426,8 @@ public class AsyncServiceImpl implements AsyncService {
     return this;
   }
 
-  private Future<Void> updateAuditTable(String id, String userId, long fileSize) {
+  private Future<Void> updateAuditTable(
+      String id, String userId, long fileSize, String role, String drl, String did) {
     Promise<Void> promise = Promise.promise();
     JsonObject request = new JsonObject();
     JsonObject cacheRequests = new JsonObject();
@@ -413,11 +438,25 @@ public class AsyncServiceImpl implements AsyncService {
         .onComplete(
             relHandler -> {
               if (relHandler.succeeded()) {
-                LOGGER.info(relHandler.result());
-                String providerId = relHandler.result().getString("provider");
+                JsonObject cacheResult = relHandler.result();
+
+                String type =
+                    cacheResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" : "RESOURCE_GROUP";
+                String resourceGroup =
+                    cacheResult.containsKey(RESOURCE_GROUP)
+                        ? cacheResult.getString(RESOURCE_GROUP)
+                        : cacheResult.getString(ID);
                 ZonedDateTime zst = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+                if (role.equalsIgnoreCase("delegate") && drl != null) {
+                  request.put(DELEGATOR_ID, did);
+                } else {
+                  request.put(DELEGATOR_ID, userId);
+                }
+                String providerId = cacheResult.getString("provider");
                 long time = zst.toInstant().toEpochMilli();
                 String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+                request.put(RESOURCE_GROUP, resourceGroup);
+                request.put(TYPE_KEY, type);
                 request.put(EPOCH_TIME, time);
                 request.put(ISO_TIME, isoTime);
                 request.put(Constants.USER_ID, userId);

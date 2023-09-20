@@ -14,7 +14,7 @@ consumes:
 
 info:
   title: "Data exchange Resource Server APIs"
-  version: 4.5.0
+  version: 5.0.0
   description: |
     # Introduction
     The Resource Server is DXs'(Data exchange) data store which allows publication, subscription and discovery of data.
@@ -176,7 +176,8 @@ paths:
           required: true
           schema:
             type: string
-            maxLength: 512
+            format: uuid
+            maxLength: 36
 
       responses:
         200:
@@ -213,13 +214,13 @@ paths:
         - lang: 'cURL'
           label: 'get latest data'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/entities/UUID' \
             --header 'token: <tokenValue>'
 
         - lang: 'cURL'
           label: 'get encrypted data'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/entities/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/entities/UUID' \
             --header 'token: <tokenValue>' \
             --header 'publicKey: <publicKeyValue>'
 
@@ -250,7 +251,8 @@ paths:
           required: true
           schema:
             type: string
-            maxLength: 512
+            format: uuid
+            maxLength: 36
 
         - name: geoproperty
           in: query
@@ -348,51 +350,51 @@ paths:
         - lang: 'cURL'
           label: 'search by attribute'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&q=referenceLevel>15.0' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/entities?id=UUID&q=referenceLevel>15.0' \
             --header 'token: <tokenValue>'
         - lang: 'cURL'
           label: 'get encrypted data'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&q=referenceLevel>15.0' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/entities?id=UUID&q=referenceLevel>15.0' \
             --header 'token: <tokenValue>'\
             --header 'publicKey: <publicKeyValues>'
 
         - lang: 'cURL'
           label: 'search by circle'
           source: |
-            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxdistance=10&geometry=Point&coordinates=[21.178,72.834]&offset=0&limit=10' \
+            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=UUID&geoproperty=location&georel=near;maxdistance=10&geometry=Point&coordinates=[21.178,72.834]&offset=0&limit=10' \
             --header 'token: <tokenValue>'
 
         - lang: 'cURL'
           label: 'search by polygon'
           source: |
-            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.76,21.15],[72.76,21.13],[72.78,21.13],[72.78,21.15],[72.76,21.15]]]' \
+            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=UUID&geoproperty=location&georel=within&geometry=Polygon&coordinates=[[[72.76,21.15],[72.76,21.13],[72.78,21.13],[72.78,21.15],[72.76,21.15]]]' \
             --header 'token: <tokenValue>'
 
         - lang: 'cURL'
           label: 'search by bbox'
           source: |
-            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,21.2],[72.8297,21.15]]' \
+            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=UUID&geoproperty=location&georel=within&geometry=bbox&coordinates=[[72.8296,21.2],[72.8297,21.15]]' \
             --header 'token: <tokenValue>'
 
         - lang: 'cURL'
           label: 'search by linestring'
           source: |
-            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.84,21.19],[72.84,21.17]]' \
+            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=UUID&geoproperty=location&georel=intersects&geometry=linestring&coordinates=[[72.84,21.19],[72.84,21.17]]' \
             --header 'token: <tokenValue>'
 
 
         - lang: 'cURL'
           label: 'search by attribute and filter'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&q=referenceLevel>15.0&attrs=id,currentLevel,referenceLevel' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/entities?id=UUID&q=referenceLevel>15.0&attrs=id,currentLevel,referenceLevel' \
             --header 'token: <tokenValue>'
 
 
         - lang: 'cURL'
           label: 'count by circle'
           source: |
-            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&options=count' \
+            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/entities?id=UUID&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&options=count' \
             --header 'token: <tokenValue>'
 
 
@@ -483,7 +485,8 @@ paths:
           required: true
           schema:
             type: string
-            maxLength: 512
+            format: uuid
+            maxLength: 36
 
         - name: timerel
           in: query
@@ -599,50 +602,50 @@ paths:
         - lang: 'cURL'
           label: 'search by between'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=during&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=UUID&timerel=during&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z' \
             --header 'token: <tokenValue>'
 
         - lang: 'cURL'
           label: 'get encrypted data'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=during&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=UUID&timerel=during&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z' \
             --header 'token: <tokenValue>' \
             --header 'publicKey: <publicKeyValue>'
 
         - lang: 'cURL'
           label: 'search by before'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=before&time=2020-10-19T12:00:00Z' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=UUID&timerel=before&time=2020-10-19T12:00:00Z' \
             --header 'token: <tokenValue>'
 
         - lang: 'cURL'
           label: 'search by after'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=after&time=2020-10-18T14:20:01Z' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=UUID&timerel=after&time=2020-10-18T14:20:01Z' \
             --header 'token: <tokenValue>'
 
         - lang: 'cURL'
           label: 'search by between and filter'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=between&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z&attrs=id,currentLevel,referenceLevel' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=UUID&timerel=between&time=2020-10-18T14:20:00Z&endtime=2020-10-19T14:20:00Z&attrs=id,currentLevel,referenceLevel' \
             --header 'token: <tokenValue>'        
 
         - lang: 'cURL'
           label: 'count by after'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=after&time=2020-10-18T14:20:01Z&options=count' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=UUID&timerel=after&time=2020-10-18T14:20:01Z&options=count' \
             --header 'token: <tokenValue>'
 
         - lang: 'cURL'
           label: 'complex search'
           source: |
-            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-10-19T14:00:00Z&attrs=id,location,speed' \
+            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=UUID&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-10-19T14:00:00Z&attrs=id,location,speed' \
             --header 'token: <tokenValue>'
 
         - lang: 'cURL'
           label: 'complex count'
           source: |
-            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-10-19T14:00:00Z&options=count' \
+            curl --location -g --request GET 'https://example.com/ngsi-ld/v1/temporal/entities?id=UUID&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-10-19T14:00:00Z&options=count' \
             --header 'token: <tokenValue>'
 
 
@@ -761,7 +764,7 @@ paths:
             example:
               type: Query
               entities:
-                - id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta
+                - id: UUID
               geoQ:
                 geometry: Point
                 coordinates: [ 21.178,72.834 ]
@@ -909,7 +912,7 @@ paths:
                 "type": "Query",
                 "entities": [
                   {
-                    "id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta"
+                    "id": "UUID"
                   }
                 ],
                 "geoQ": {
@@ -1185,7 +1188,8 @@ paths:
           style: simple
           schema:
             type: string
-            maxLength: 512
+            format: uuid
+            maxLength: 36
       responses:
         200:
           content:
@@ -1219,7 +1223,7 @@ paths:
         - lang: 'cURL'
           label: 'ingestion by id'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/ingestion/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/rs-adaptor-test/adaptor-test-resource' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/ingestion/UUID' \
             --header 'token: <tokenValue>'
 
       description: |
@@ -1252,7 +1256,8 @@ paths:
           style: simple
           schema:
             type: string
-            maxLength: 512
+            format: uuid
+            maxLength: 36
       responses:
         200:
           description: 'Successful query'
@@ -1286,7 +1291,7 @@ paths:
         - lang: 'cURL'
           label: 'ingestion by id'
           source: |
-            curl --location --request DELETE 'https://example.com/ngsi-ld/v1/ingestion/iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/rs-adaptor-test/adaptor-test-resource' \
+            curl --location --request DELETE 'https://example.com/ngsi-ld/v1/ingestion/UUID' \
             --header 'token: <tokenValue>'
 
       description: |
@@ -1447,7 +1452,8 @@ paths:
           style: simple
           schema:
             type: string
-            maxLength: 512
+            format: uuid
+            maxLength: 36
 
       responses:
         200:
@@ -1483,7 +1489,7 @@ paths:
         - lang: 'cURL'
           label: 'subscription by id'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/subscription/iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d' \
+            curl --location --request GET 'https://example.iudx.io/ngsi-ld/v1/subscription/fd47486b-XXX7-4XXX-ac1e-082e4d37a66c/RS-integration-test-alias-RL009' \
             --header 'token: <tokenValue>' \
             --header 'options: streaming'
 
@@ -1526,14 +1532,15 @@ paths:
           style: simple
           schema:
             type: string
-            maxLength: 512
+            format: uuid
+            maxLength: 36
 
 
       x-codeSamples:
         - lang: 'cURL'
           label: 'subscription by id'
           source: |
-            curl --location --request PATCH 'https://example.com/ngsi-ld/v1/subscription/iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d' \
+            curl --location --request PATCH 'https://example.iudx.io/ngsi-ld/v1/subscription/fd47486b-XXXX-XXX8-XXXX-082e4d37a66c/RS-integration-test-alias-RL009' \
             --header 'token: <tokenValue>' \
             --header 'options: streaming' \
             --header 'Content-Type: application/json' \
@@ -1614,13 +1621,14 @@ paths:
           style: simple
           schema:
             type: string
-            maxLength: 512
+            format: uuid
+            maxLength: 36
 
       x-codeSamples:
         - lang: 'cURL'
           label: 'subscription by id'
           source: |
-            curl --location --request PUT 'https://example.com/ngsi-ld/v1/subscription/iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d' \
+            curl --location --request PUT 'https://example.iudx.io/ngsi-ld/v1/subscription/fd47486b-XX97-4XXX-XX1e-082e4d37a66c/RS-integration-test-alias-RL009'  \
             --header 'token: <tokenValue>' \
             --header 'options: streaming' \
             --header 'Content-Type: application/json' \
@@ -1702,7 +1710,8 @@ paths:
           style: simple
           schema:
             type: string
-            maxLength: 512
+            format: uuid
+            maxLength: 36
 
       responses:
         200:
@@ -1736,7 +1745,7 @@ paths:
         - lang: 'cURL'
           label: 'subscription by id'
           source: |
-            curl --location --request DELETE 'https://example.com/ngsi-ld/v1/subscription/iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d' \
+            curl --location --request DELETE 'https://example.iudx.io/ngsi-ld/v1/subscription/fd4XXXb-XX97-4248-XXXX-082e4XXX7a66c/RS-integration-test-alias-RL009' \
             --header 'options: streaming' \
             --header 'token: <tokenValue>'
 
@@ -1824,7 +1833,8 @@ paths:
           required: true
           schema:
             type: string
-            maxLength: 512
+            format: uuid
+            maxLength: 36
         - name: timerel
           in: query
           description: 'The temporal relation type of <b>timerel</b> to be performed.'
@@ -1890,20 +1900,20 @@ paths:
         - lang: 'cURL'
           label: 'async search'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/async/search?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=between&time=2020-10-10T14:20:00Z&endtime=2020-10-13T14:20:00Z' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/async/search?id=UUID&timerel=between&time=2020-10-10T14:20:00Z&endtime=2020-10-13T14:20:00Z' \
             --header 'token: <tokenValue>'
 
         - lang: 'cURL'
           label: 'get encrypted data'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/async/search?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=between&time=2020-10-10T14:20:00Z&endtime=2020-10-13T14:20:00Z' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/async/search?id=UUID&timerel=between&time=2020-10-10T14:20:00Z&endtime=2020-10-13T14:20:00Z' \
             --header 'token: <tokenValue>' \
             --header 'publicKey: <publicKeyValue>'
 
         - lang: 'cURL'
           label: 'get data in csv format'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/async/search?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=between&time=2020-10-10T14:20:00Z&endtime=2020-10-13T14:20:00Z' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/async/search?id=UUID&timerel=between&time=2020-10-10T14:20:00Z&endtime=2020-10-13T14:20:00Z' \
             --header 'token: <tokenValue>' \
             --header 'format: csv'
 
@@ -2033,7 +2043,8 @@ paths:
           description: 'id of the resource in catalogue'
           schema:
             type: string
-            maxLength: 512
+            format: uuid
+            maxLength: 36
         - name: api
           in: query
           description: 'Valid DX(Data exchange) with api [`/entities`, `/temporal/entities`, `/entityOperation/Query`, `/temporal/entityOperation/Query`] having base path as prefix appended to api'
@@ -2074,7 +2085,7 @@ paths:
         - lang: 'cURL'
           label: 'get data read query'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/consumer/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055&timerel=during&time=2022-11-12T14:20:00Z&endTime=2022-11-25T14:20:00Z&api=/ngsi-ld/v1/temporal/entities&offset=0&limit=2000' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/consumer/audit?id=UUID&timerel=during&time=2022-11-12T14:20:00Z&endTime=2022-11-25T14:20:00Z&api=/ngsi-ld/v1/temporal/entities&offset=0&limit=2000' \
             --header 'token: <tokenValue>'
 
         - lang: 'cURL'
@@ -2142,7 +2153,8 @@ paths:
           description: 'id of the resource in catalogue'
           schema:
             type: string
-            maxLength: 512
+            format: uuid
+            maxLength: 36
         - name: api
           in: query
           description: 'Valid DX(Data exchange) api [`/entities`, `/temporal/entities`, `/entityOperation/Query`, `/temporal/entityOperation/Query`] having base path as prefix appended to api'
@@ -2194,7 +2206,7 @@ paths:
         - lang: 'cURL'
           label: 'get data read query'
           source: |
-            curl --location --request GET 'https://example.com/ngsi-ld/v1/provider/audit?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta&timerel=during&time=2022-11-24T14:20:00Z&endTime=2022-11-28T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86&consumer=15c7506f-c800-48d6-adeb-0542b03947c6&offset=0&limit=2000' \
+            curl --location --request GET 'https://example.com/ngsi-ld/v1/provider/audit?id=UUID&timerel=during&time=2022-11-24T14:20:00Z&endTime=2022-11-28T14:20:00Z&api=/ngsi-ld/v1/entityOperations/query&providerID=UUID&consumer=15c7506f-c800-48d6-adeb-0542b03947c6&offset=0&limit=2000' \
             --header 'token: <tokenValue>'
 
         - lang: 'cURL'
@@ -2449,7 +2461,7 @@ paths:
             schema:
               $ref: '#/components/schemas/unique-attribute'
             example:
-              id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta
+              id: UUID
               attribute: license_plate
         required: true
       responses:
@@ -2507,7 +2519,7 @@ paths:
             schema:
               $ref: '#/components/schemas/unique-attribute'
             example:
-              id: iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta
+              id: UUID
               attribute: license_plate
         required: true
       responses:
@@ -2566,7 +2578,7 @@ paths:
         - lang: 'cURL'
           label: 'delete unique attribute'
           source: |
-            curl --location --request DELETE 'https://example.com/admin/resourceattribute?id=iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta' \
+            curl --location --request DELETE 'https://example.com/admin/resourceattribute?id=UUID' \
             --header 'token: <tokenValue>'
 
       responses:
@@ -2627,7 +2639,7 @@ components:
         name: alias-name-of-application
         type: subscription
         entities:
-          - iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta
+          - UUID
     appendstreamingsubscriptionrequest:
       title: appendstreamingsubscriptionrequest
       required:
@@ -2656,7 +2668,7 @@ components:
         name: alias-name-of-application
         type: subscription
         entities:
-          - iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information
+          - UUID
     updatestreamingsubscriptionrequest:
       title: updatestreamingsubscriptionrequest
       required:
@@ -2685,7 +2697,7 @@ components:
         name: alias-name-of-application
         type: subscription
         entities:
-          - iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information
+          - UUID
     geospatial-circlerequest:
       title: geospatial-circlerequest
       required:
@@ -3152,7 +3164,7 @@ components:
             type: string
       example:
         entities:
-          - iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/alias-name-of-application
+          - UUID
 
     entityresponse:
       title: entityresponse
@@ -3190,7 +3202,7 @@ components:
               ],
               "type": "Point"
             },
-            "id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/surat-itms-realtime-information/surat-itms-live-eta"
+            "id": "UUID"
           }
         ]
         limit: 5000
@@ -3221,11 +3233,12 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-          { "username": "iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d",
-            "apiKey": "123456",
-            "id": "iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application",
+          {
+            "username": "fd47486b-XXXX-4248-ac1e-082e4d37a66c",
+            "apiKey": "Use the apiKey returned on registration, if lost please use /resetPassword API",
+            "id": "UUID",
             "URL": "databroker.iudx.io",
-            "port": "24567",
+            "port": 24567,
             "vHost": "IUDX"
           }
         ]
@@ -3253,15 +3266,13 @@ components:
         results: [
           {
             "database": [
-              "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/rs-adaptor-test/adaptor-test-resource"
-            ],
-            "adaptorLogs": [
-              "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/rs-adaptor-test/adaptor-test-resource.dataIssue",
-              "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/rs-adaptor-test/adaptor-test-resource.downstreamIssue",
-              "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/rs-adaptor-test/adaptor-test-resource.heartbeat"
+              "UUID/.*"
             ],
             "redis-latest": [
-              "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/rs-adaptor-test/adaptor-test-resource"
+              "UUID/.*"
+            ],
+            "auditing-queue": [
+              "UUID/.*"
             ]
           }
         ]
@@ -3306,11 +3317,12 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-          { "username": "iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d",
-            "apiKey": "123456",
-            "id": "iudx.io/3ae88e7ba006938ffc38203d326b1711b892226d/alias-name-of-application",
+          {
+            "username": "fd47486b-XXXX-XXXX-ac1e-082e4d37a66c",
+            "apiKey": "Use the apiKey returned on registration, if lost please use /resetPassword API",
+            "id": "fd47486b-XXXX-XXXX-ac1e-082e4d37a66c/RS-integration-test-alias-RL009",
             "URL": "databroker.iudx.io",
-            "port": "24567",
+            "port": 24567,
             "vHost": "IUDX"
           }
         ]
@@ -3336,7 +3348,7 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-          { "entities": [ "iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/surat-itms/.*" ]
+          { "entities": [ "UUID/.*" ]
           }
         ]
 
@@ -3359,7 +3371,7 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-          { "entities": [ "iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/surat-itms/.*" ]
+          { "entities": [ "UUID" ]
           }
         ]
 
@@ -3382,7 +3394,7 @@ components:
         type: urn:dx:rs:success,
         title: success,
         results: [
-          { "entities": [ "iudx.io/aa9d66a000d94a78895de8d4c0b3a67f3450e531/example.com/surat-itms/.*" ]
+          { "entities": [ "UUID" ]
           }
         ]
 
@@ -3516,9 +3528,9 @@ components:
             "api": "/{basePath}/entities",
             "userid": "15c7506f-c800-48d6-adeb-0542b03947c6",
             "epochtime": 1669385581658,
-            "resourceid": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055",
+            "resourceid": "UUID",
             "isotime": "2022-11-25T19:43:01+05:30[Asia/Kolkata]",
-            "providerid": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86",
+            "providerid": "UUID",
             "size": 456,
             "time": "2022-11-25T14:13:01"
           }
@@ -3545,10 +3557,10 @@ components:
         title: success
         results: [
           {
-            "resourceid": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/example.com/pune-env-flood/FWR055",
+            "resourceid": "UUID",
             "resource_label": "description",
             "publisher": "pune-env-flood",
-            "publisher_id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86",
+            "publisher_id": "UUID",
             "city": "pune",
             "count": 19
           }
@@ -3714,16 +3726,23 @@ components:
         type: urn:dx:rs:success
         title: success
         results: [
-          {"queueName": "15c7506f-c800-48d6-adeb-0542b03947c6/integration-test-alias-RL-OPEN",
-           "entity": "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood","catItem": {
-            "id": "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood",
-            "description": "Flood level sensors in Pune city.",
-            "label": "Environment",
-            "provider": "datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b",
-            "name": "pune-env-flood",
-            "accessPolicy": "OPEN"
+          {
+            "queuename": "fd47486b-XXXX-XXXX-ac1e-082e4d37a66c/RS-integration-test-alias-RL",
+            "entity": "UUID",
+            "catitem": {
+              "name": "surat-itms-live-eta",
+              "provider": "UUID",
+              "type": [
+                "iudx:Resource",
+                "iudx:TransitManagement"
+              ],
+              "description": "Realtime bus position information from Surat city public transit buses.",
+              "resourceGroup": "UUID",
+              "id": "UUID",
+              "instance": "surat"
+            }
           }
-          }]
+        ]
 
     allexchange:
       title: Response
@@ -3747,20 +3766,26 @@ components:
         title: success
         results:  [
           {
-            "_id": "eff324fa-ee59-48fe-ada5-e1c2d0efb5c2",
-            "exchange_name": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/rs-adaptor-test/adaptor-test-resource",
-            "resource_id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/rs-adaptor-test/adaptor-test-resource",
-            "dataset_name": "adaptor-test-resource",
+            "_id": "3a7a9b7d-da3c-45b3-9ccc-44c9a19d7b26",
+            "exchange_name": "UUID",
+            "resource_id": "UUID",
+            "dataset_name": "FWR055",
             "dataset_details_json": {
-              "id": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/rs-adaptor-test/adaptor-test-resource",
-              "name": "adaptor-test-resource",
-              "instance": "surat",
-              "provider": "iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86",
-              "description": "RS Adaptor Test Resource"
+              "id": "UUID",
+              "name": "FWR055",
+              "type": [
+                "iudx:Resource",
+                "iudx:EnvFlood"
+              ],
+              "instance": "pune",
+              "provider": "UUID",
+              "description": "Flood Sensor Data with respect to water level/flow",
+              "resourceGroup": "UUID"
             },
-            "user_id": "12345-0000-6789",
-            "created_at": "2023-03-09T12:47:07.538342",
-            "modified_at": "2023-03-09T12:47:07.538342"
+            "user_id": "fd47486b-3497-4248-ac1e-082e4d37a66c",
+            "created_at": "2023-07-14T06:22:09.336142",
+            "modified_at": "2023-07-14T06:22:09.336142",
+            "providerid": "b2c27f3f-2524-4a84-816e-91f9ab23f837"
           }
         ]
 
