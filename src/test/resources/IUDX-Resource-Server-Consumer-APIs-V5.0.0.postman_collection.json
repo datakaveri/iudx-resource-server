@@ -17588,7 +17588,7 @@
 						"header": [
 							{
 								"key": "token",
-								"value": "{{delegateTokenRG}}",
+								"value": "{{openResourceToken}}",
 								"type": "text"
 							},
 							{

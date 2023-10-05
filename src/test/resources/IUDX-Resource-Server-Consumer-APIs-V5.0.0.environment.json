@@ -1,6 +1,6 @@
 {
-	"id": "7a0cad31-9c0a-415d-8204-564ef5a1c973",
-	"name": "RS Environment rs.iudx.io",
+	"id": "089959d3-8228-477b-8700-141717b1d6b2",
+	"name": "RS Environment",
 	"values": [
 		{
 			"key": "basePath",
@@ -31,19 +31,7 @@
 			"enabled": true
 		},
 		{
-			"key": "delegateTokenRG",
-			"value": "",
-			"type": "default",
-			"enabled": true
-		},
-		{
 			"key": "adaptorToken",
-			"value": "",
-			"type": "default",
-			"enabled": true
-		},
-		{
-			"key": "adaptorTokenRG",
 			"value": "",
 			"type": "default",
 			"enabled": true
@@ -84,24 +72,6 @@
 			"enabled": true
 		},
 		{
-			"key": "secureRGToken",
-			"value": "",
-			"type": "any",
-			"enabled": true
-		},
-		{
-			"key": "delegateToken-RG",
-			"value": "",
-			"type": "any",
-			"enabled": true
-		},
-		{
-			"key": "secureResourceTokenRG",
-			"value": "",
-			"type": "default",
-			"enabled": true
-		},
-		{
 			"key": "providerToken",
 			"value": "",
 			"type": "default",
@@ -127,6 +97,6 @@
 		}
 	],
 	"_postman_variable_scope": "environment",
-	"_postman_exported_at": "2023-10-05T07:43:21.269Z",
+	"_postman_exported_at": "2023-10-05T08:12:09.009Z",
 	"_postman_exported_using": "Postman/9.31.29"
 }
