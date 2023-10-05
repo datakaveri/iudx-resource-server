@@ -181,7 +181,7 @@
 							},
 							{
 								"key": "delegationId",
-								"value": "1ed36da7-9f40-44c3-9f63-daf9cb175fdc",
+								"value": "{{delegationId}}",
 								"type": "text"
 							}
 						],
@@ -267,7 +267,7 @@
 							},
 							{
 								"key": "delegationId",
-								"value": "1ed36da7-9f40-44c3-9f63-daf9cb175fdc",
+								"value": "{{delegationId}}",
 								"type": "text"
 							}
 						],
@@ -373,11 +373,11 @@
 						"header": [
 							{
 								"key": "clientId",
-								"value": "3f4ab725-16db-4029-8ea8-5b753eed8258"
+								"value": "{{providerClientId}}"
 							},
 							{
 								"key": "clientSecret",
-								"value": "c8ce645cdc68cd99d421bc289311325014bd6379"
+								"value": "{{providerClientSecret}}"
 							},
 							{
 								"key": "Content-Type",

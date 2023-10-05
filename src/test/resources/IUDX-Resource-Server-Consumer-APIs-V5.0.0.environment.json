@@ -1,6 +1,6 @@
 {
-	"id": "635c01b5-0c59-4c1c-a119-90869b229783",
-	"name": "RS Environment UUID",
+	"id": "7a0cad31-9c0a-415d-8204-564ef5a1c973",
+	"name": "RS Environment rs.iudx.io",
 	"values": [
 		{
 			"key": "basePath",
@@ -10,11 +10,6 @@
 		{
 			"key": "base_url",
 			"value": "https://rs.iudx.io",
-			"enabled": true
-		},
-		{
-			"key": "dxAuthBasePath",
-			"value": "auth/v1",
 			"enabled": true
 		},
 		{
@@ -54,12 +49,6 @@
 			"enabled": true
 		},
 		{
-			"key": "adminToken",
-			"value": "",
-			"type": "default",
-			"enabled": true
-		},
-		{
 			"key": "clientID",
 			"value": "",
 			"type": "default",
@@ -83,6 +72,18 @@
 			"enabled": true
 		},
 		{
+			"key": "adminToken",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "dxAuthBasePath",
+			"value": "auth/v1",
+			"type": "default",
+			"enabled": true
+		},
+		{
 			"key": "secureRGToken",
 			"value": "",
 			"type": "any",
@@ -99,9 +100,33 @@
 			"value": "",
 			"type": "default",
 			"enabled": true
+		},
+		{
+			"key": "providerToken",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "delegationId",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "providerClientId",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "providerClientSecret",
+			"value": "",
+			"type": "default",
+			"enabled": true
 		}
 	],
 	"_postman_variable_scope": "environment",
-	"_postman_exported_at": "2023-07-12T07:45:33.473Z",
+	"_postman_exported_at": "2023-10-05T07:43:21.269Z",
 	"_postman_exported_using": "Postman/9.31.29"
 }
