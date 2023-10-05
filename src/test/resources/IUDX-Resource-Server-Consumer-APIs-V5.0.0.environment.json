@@ -1,6 +1,6 @@
 {
-	"id": "635c01b5-0c59-4c1c-a119-90869b229783",
-	"name": "RS Environment UUID",
+	"id": "089959d3-8228-477b-8700-141717b1d6b2",
+	"name": "RS Environment",
 	"values": [
 		{
 			"key": "basePath",
@@ -10,11 +10,6 @@
 		{
 			"key": "base_url",
 			"value": "https://rs.iudx.io",
-			"enabled": true
-		},
-		{
-			"key": "dxAuthBasePath",
-			"value": "auth/v1",
 			"enabled": true
 		},
 		{
@@ -36,38 +31,20 @@
 			"enabled": true
 		},
 		{
-			"key": "delegateTokenRG",
-			"value": "",
-			"type": "default",
-			"enabled": true
-		},
-		{
 			"key": "adaptorToken",
 			"value": "",
 			"type": "default",
 			"enabled": true
 		},
 		{
-			"key": "adaptorTokenRG",
-			"value": "",
-			"type": "default",
-			"enabled": true
-		},
-		{
-			"key": "adminToken",
-			"value": "",
-			"type": "default",
-			"enabled": true
-		},
-		{
 			"key": "clientID",
-			"value": "",
+			"value": "bb0c11ce-a275-40c5-8ccf-8da20c6b7660",
 			"type": "default",
 			"enabled": true
 		},
 		{
 			"key": "clientSecret",
-			"value": "",
+			"value": "f3615492a11affebc46fba42af4cb59a63aedb2e",
 			"type": "default",
 			"enabled": true
 		},
@@ -83,25 +60,43 @@
 			"enabled": true
 		},
 		{
-			"key": "secureRGToken",
+			"key": "adminToken",
 			"value": "",
-			"type": "any",
+			"type": "default",
 			"enabled": true
 		},
 		{
-			"key": "delegateToken-RG",
-			"value": "",
-			"type": "any",
+			"key": "dxAuthBasePath",
+			"value": "auth/v1",
+			"type": "default",
 			"enabled": true
 		},
 		{
-			"key": "secureResourceTokenRG",
+			"key": "providerToken",
 			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "delegationId",
+			"value": "1ed36da7-9f40-44c3-9f63-daf9cb175fdc",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "providerClientId",
+			"value": "3f4ab725-16db-4029-8ea8-5b753eed8258",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "providerClientSecret",
+			"value": "794a12b87c1db30fe0e78357b01c4dc08b786d4e",
 			"type": "default",
 			"enabled": true
 		}
 	],
 	"_postman_variable_scope": "environment",
-	"_postman_exported_at": "2023-07-12T07:45:33.473Z",
+	"_postman_exported_at": "2023-10-05T09:52:06.806Z",
 	"_postman_exported_using": "Postman/9.31.29"
 }
