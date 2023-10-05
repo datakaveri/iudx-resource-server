@@ -1024,8 +1024,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                   subHandler -> {
                     if (subHandler.succeeded()) {
                       LOGGER.info("Success: Handle Subscription request;");
-                      JsonObject object =
-                          new JsonObject(subHandler.result().getJsonArray("results").getString(0));
+                      JsonObject object =subHandler.result().getJsonArray("results").getJsonObject(0);
                       routingContext.data().put(RESPONSE_SIZE, 0);
 
                       JsonObject message =
