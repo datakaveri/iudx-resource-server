@@ -389,12 +389,10 @@
 							"raw": "{\n    \"itemId\": \"rs.iudx.io\",\n    \"itemType\": \"resource_server\",\n    \"role\": \"provider\"\n}"
 						},
 						"url": {
-							"raw": "https://auth-five.iudx.io/auth/v1/token",
+							"raw": "https://{{auth-url}}/auth/v1/token",
 							"protocol": "https",
 							"host": [
-								"auth-five",
-								"iudx",
-								"io"
+								"{{auth-url}}"
 							],
 							"path": [
 								"auth",
