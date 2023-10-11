@@ -93,7 +93,7 @@ public class CatalogueCacheImpl implements IudxCache {
         .addQueryParam("value", "[[ACTIVE]]")
         .addQueryParam(
             "filter",
-            "[id,provider,name,description,authControlGroup,accessPolicy,type,"
+            "[id,provider,name,description,label,accessPolicy,type,"
                 + "iudxResourceAPIs,instance,resourceGroup]")
         .expect(ResponsePredicate.JSON)
         .send(
