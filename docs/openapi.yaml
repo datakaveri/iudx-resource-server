@@ -3737,6 +3737,7 @@ components:
                 "iudx:TransitManagement"
               ],
               "description": "Realtime bus position information from Surat city public transit buses.",
+              "label": "Surat Transit Realtime Position-UUID",
               "resourceGroup": "UUID",
               "id": "UUID",
               "instance": "surat"

@@ -107,8 +107,6 @@ public class SubscriptionService {
                                   promise.fail(generateResponse(res).toString());
                                 }
                               });
-
-                          LOGGER.debug("cache result" + cacheResult);
                         });
               } else {
                 JsonObject res = new JsonObject(handler.cause().getMessage());
