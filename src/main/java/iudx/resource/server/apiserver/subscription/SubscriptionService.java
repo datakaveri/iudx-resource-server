@@ -2,8 +2,11 @@ package iudx.resource.server.apiserver.subscription;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
+import static iudx.resource.server.authenticator.Constants.ROLE;
 import static iudx.resource.server.cache.cachelmpl.CacheType.CATALOGUE_CACHE;
 import static iudx.resource.server.databroker.util.Constants.*;
+import static iudx.resource.server.metering.util.Constants.DELEGATOR_ID;
+import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import io.vertx.core.Future;
@@ -82,6 +85,18 @@ public class SubscriptionService {
                     .onSuccess(
                         cacheResult -> {
                           LOGGER.debug("cacheResult: " + cacheResult);
+
+                          String role = authInfo.getString(ROLE);
+                          String drl = authInfo.getString(DRL);
+                          String delegatorId;
+                          if (role.equalsIgnoreCase("delegate") && drl != null) {
+                            delegatorId = authInfo.getString(DID);
+                          } else {
+                            delegatorId = authInfo.getString("userid");
+                          }
+                          String type =
+                              cacheResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" :
+                                  "RESOURCE_GROUP";
                           StringBuilder query =
                               new StringBuilder(
                                   CREATE_SUB_SQL
@@ -92,7 +107,11 @@ public class SubscriptionService {
                                       .replace("$5", authInfo.getString("expiry"))
                                       .replace("$6", cacheResult.getString("name"))
                                       .replace("$7", cacheResult.toString())
-                                      .replace("$8", authInfo.getString("userid")));
+                                      .replace("$8", authInfo.getString("userid"))
+                                      .replace("$9", cacheResult.getString(RESOURCE_GROUP))
+                                      .replace("$a", cacheResult.getString("provider"))
+                                      .replace("$b", delegatorId)
+                                      .replace("$c", type));
 
                           LOGGER.debug("query: " + query);
                           pgService.executeQuery(
@@ -301,7 +320,8 @@ public class SubscriptionService {
       JsonObject json,
       DataBrokerService databroker,
       PostgresService pgService,
-      JsonObject authInfo) {
+      JsonObject authInfo,
+      CacheService cacheService) {
     LOGGER.info("appendSubscription() method started");
     Promise<JsonObject> promise = Promise.promise();
     SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
@@ -316,34 +336,65 @@ public class SubscriptionService {
               if (handler.succeeded()) {
                 JsonObject response = handler.result();
                 JsonObject brokerSubResult = response.getJsonArray("results").getJsonObject(0);
-                StringBuilder query =
-                    new StringBuilder(
-                        APPEND_SUB_SQL
-                            .replace("$1", json.getString(SUBSCRIPTION_ID))
-                            .replace("$2", subType.type)
-                            .replace("$3", json.getString(SUBSCRIPTION_ID))
-                            .replace("$4", json.getJsonArray("entities").getString(0))
-                            .replace("$5", authInfo.getString("expiry")));
+                JsonObject cacheJson =
+                    new JsonObject()
+                        .put("key", json.getJsonArray("entities").getString(0))
+                        .put("type", CATALOGUE_CACHE);
+                cacheService
+                    .get(cacheJson).onSuccess(
+                        cacheResult -> {
+                          String role = authInfo.getString(ROLE);
+                          String drl = authInfo.getString(DRL);
+                          String delegatorId;
+                          if (role.equalsIgnoreCase("delegate") && drl != null) {
+                            delegatorId = authInfo.getString(DID);
+                          } else {
+                            delegatorId = authInfo.getString("userid");
+                          }
+                          String type =
+                              cacheResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" : "RESOURCE_GROUP";
 
-                LOGGER.debug(query);
-                pgService.executeQuery(
-                    query.toString(),
-                    pgHandler -> {
-                      if (pgHandler.succeeded()) {
-                        promise.complete(brokerSubResult);
-                      } else {
-                        // TODO : rollback mechanism in case of pg error [to unbind/delete created
-                        // sub]
-                        JsonObject res = new JsonObject(pgHandler.cause().getMessage());
-                        promise.fail(generateResponse(res).toString());
-                      }
-                    });
+                          StringBuilder query =
+                              new StringBuilder(
+                                  APPEND_SUB_SQL
+                                      .replace("$1", json.getString(SUBSCRIPTION_ID))
+                                      .replace("$2", subType.type)
+                                      .replace("$3", json.getString(SUBSCRIPTION_ID))
+                                      .replace("$4", json.getJsonArray("entities").getString(0))
+                                      .replace("$5", authInfo.getString("expiry"))
+                                      .replace("$6", cacheResult.getString("name"))
+                                      .replace("$7", cacheResult.toString())
+                                      .replace("$8", authInfo.getString("userid"))
+                                      .replace("$9", cacheResult.getString(RESOURCE_GROUP))
+                                      .replace("$a", cacheResult.getString("provider"))
+                                      .replace("$b", delegatorId)
+                                      .replace("$c", type));
+                          LOGGER.debug(query);
+                          pgService.executeQuery(
+                              query.toString(),
+                              pgHandler -> {
+                                if (pgHandler.succeeded()) {
+                                  promise.complete(brokerSubResult);
+                                } else {
+                                  // TODO : rollback mechanism in case of pg error [to unbind/delete created
+                                  // sub]
+                                  JsonObject res = new JsonObject(pgHandler.cause().getMessage());
+                                  promise.fail(generateResponse(res).toString());
+                                }
+                              });
+
+                        })
+                    .onFailure(
+                        failed -> LOGGER.error(failed.getCause()
+                        ));
               } else {
                 JsonObject res = new JsonObject(handler.cause().getMessage());
                 promise.fail(generateResponse(res).toString());
               }
             });
+
     return promise.future();
+
   }
 
   private JsonObject generateResponse(JsonObject response) {
