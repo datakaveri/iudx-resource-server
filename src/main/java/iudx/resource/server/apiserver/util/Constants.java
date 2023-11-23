@@ -280,16 +280,19 @@ public class Constants {
 
   // subscriptions queries
   public static final String CREATE_SUB_SQL =
-      "INSERT INTO "
-          + "subscriptions(_id,_type,queue_name,entity,expiry,dataset_name,dataset_json,user_id) "
-          + "VALUES('$1','$2','$3','$4','$5','$6','$7','$8')";
+      "INSERT INTO subscriptions"
+          + "(_id,_type,queue_name,entity,expiry,dataset_name,dataset_json,user_id,"
+          + "resource_group,provider_id,delegator_id,item_type) "
+          + "VALUES('$1','$2','$3','$4','$5','$6','$7','$8','$9','$a','$b','$c')";
 
   public static final String UPDATE_SUB_SQL =
       "UPDATE subscriptions SET expiry='$1' where queue_name='$2' and entity='$3'";
 
   public static final String APPEND_SUB_SQL =
-      "INSERT INTO subscriptions(_id,_type,queue_name,entity,expiry) "
-          + "VALUES('$1','$2','$3','$4','$5') ON CONFLICT(queue_name,entity) DO NOTHING";
+      "INSERT INTO subscriptions(_id,_type,queue_name,entity,expiry,dataset_name,dataset_json,user_id,"
+          + "resource_group,provider_id,delegator_id,item_type) "
+          + "VALUES('$1','$2','$3','$4','$5','$6','$7','$8','$9','$a','$b','$c') "
+          + "ON CONFLICT(queue_name,entity) DO NOTHING";
 
   public static final String DELETE_SUB_SQL = "DELETE FROM subscriptions where queue_name='$1'";
 

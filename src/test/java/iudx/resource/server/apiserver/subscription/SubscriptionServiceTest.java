@@ -390,8 +390,8 @@ public class SubscriptionServiceTest {
                 return null;
             }
         }).when(pgService).executeQuery(anyString(), any());
-
-        service.appendSubscription(json, databroker, pgService, authInfo).onComplete(handler -> {
+        when(cacheService.get(any())).thenReturn(Future.succeededFuture(json));
+        service.appendSubscription(json, databroker, pgService, authInfo,cacheService).onComplete(handler -> {
             if (handler.succeeded()) {
                 assertEquals(json, handler.result());
                 vertxTestContext.completeNow();
@@ -420,7 +420,7 @@ public class SubscriptionServiceTest {
             }
         }).when(jsonObjectFuture).onComplete(any());
 
-        service.appendSubscription(json, databroker, pgService, authInfo).onComplete(handler -> {
+        service.appendSubscription(json, databroker, pgService, authInfo,cacheService).onComplete(handler -> {
             if (handler.failed()) {
                 String throwable = "io.vertx.core.impl.NoStackTraceThrowable: ";
                 String expected = throwable + "{\"type\":400,\"title\":\"Bad Request\",\"detail\":\"Dummy detail\"}";
