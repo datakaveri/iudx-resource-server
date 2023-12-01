@@ -117,7 +117,7 @@ pipeline {
           script{
             startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0'])
             sh 'curl http://127.0.0.1:8090/JSON/pscan/action/disableScanners/?ids=10096'
-            sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V5.0.0.postman_collection.json -e /home/ubuntu/configs/rs-postman-env.json -n 2 --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html --reporter-htmlextra-skipSensitiveData'
+            sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V5.0.0.postman_collection.json -e /home/ubuntu/configs/5.0.0/rs-postman-env.json -n 2 --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html --reporter-htmlextra-skipSensitiveData'
             runZapAttack()
           }
         }
@@ -153,53 +153,15 @@ pipeline {
             triggeredBy cause: 'UserIdCause'
           }
           expression {
-            return env.GIT_BRANCH == 'origin/master';
+            return env.GIT_BRANCH == 'origin/5.0.0';
           }
         }
       }
-      stages {
-        stage('Push Images') {
-          steps {
-            script {
-              docker.withRegistry( registryUri, registryCredential ) {
-                devImage.push("5.0.0-alpha-${env.GIT_HASH}")
-                deplImage.push("5.0.0-alpha-${env.GIT_HASH}")
-              }
-            }
-          }
-        }
-        stage('Docker Swarm deployment') {
-          steps {
-            script {
-              sh "ssh azureuser@docker-swarm 'docker service update rs_rs --image ghcr.io/datakaveri/rs-depl:5.0.0-alpha-${env.GIT_HASH}'"
-              sh 'sleep 10'
-            }
-          }
-          post{
-            failure{
-              error "Failed to deploy image in Docker Swarm"
-            }
-          }          
-        }
-        stage('Integration test on swarm deployment') {
-          steps {
-            node('built-in') {
-              script{
-                sh 'newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V5.0.0.postman_collection.json -e /home/ubuntu/configs/cd/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/cd-report.html --reporter-htmlextra-skipSensitiveData'
-              }
-            }
-          }
-          post{
-            always{
-              node('built-in') {
-                script{
-                  publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'cd-report.html', reportTitles: '', reportName: 'Docker-Swarm Integration Test Report'])
-                }
-              }
-            }
-            failure{
-              error "Test failure. Stopping pipeline execution!"
-            }
+      steps {
+        script {
+          docker.withRegistry( registryUri, registryCredential ) {
+            devImage.push("5.0.0-${env.GIT_HASH}")
+            deplImage.push("5.0.0-${env.GIT_HASH}")
           }
         }
       }
@@ -208,7 +170,7 @@ pipeline {
   post{
     failure{
       script{
-        if (env.GIT_BRANCH == 'origin/master')
+        if (env.GIT_BRANCH == 'origin/5.0.0')
         emailext recipientProviders: [buildUser(), developers()], to: '$RS_RECIPIENTS, $DEFAULT_RECIPIENTS', subject: '$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS!', body: '''$PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
 Check console output at $BUILD_URL to view the results.'''
       }
