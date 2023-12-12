@@ -20,8 +20,8 @@ import static org.hamcrest.Matchers.is;
  * and include positive and negative cases for different parameters and conditions.
  */
 @ExtendWith(RestAssuredConfiguration.class)
-public class SpacialSearchAPIsIT {
-    private static final Logger LOGGER = LogManager.getLogger(SpacialSearchAPIsIT.class);
+public class SpatialSearchAPIsIT {
+    private static final Logger LOGGER = LogManager.getLogger(SpatialSearchAPIsIT.class);
 
     @Test
     @DisplayName("testing get Geo query (circle) - 200")
