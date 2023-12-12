@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static io.restassured.RestAssured.*;
-import static iudx.resource.server.authenticator.JwtTokenHelper.publicKeyValue;
 import static iudx.resource.server.authenticator.JwtTokenHelper.secureResourceToken;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
