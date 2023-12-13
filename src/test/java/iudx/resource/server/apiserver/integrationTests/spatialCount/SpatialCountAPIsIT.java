@@ -22,7 +22,7 @@ import static org.hamcrest.Matchers.is;
  */
 @ExtendWith(RestAssuredConfiguration.class)
 public class SpatialCountAPIsIT {
-    private static final Logger LOGGER = LogManager.getLogger(SpatialSearchAPIsIT.class);
+    private static final Logger LOGGER = LogManager.getLogger(SpatialCountAPIsIT.class);
 
     @Test
     @DisplayName("testing get Geo query (circle) - 200")
