@@ -29,7 +29,7 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
         String testHost = config.getString("host");
 
         if (testHost != null) {
-            baseURI = "http://"+testHost;
+            baseURI = "https://"+testHost;
         } else {
             baseURI = "http://localhost";
         }
