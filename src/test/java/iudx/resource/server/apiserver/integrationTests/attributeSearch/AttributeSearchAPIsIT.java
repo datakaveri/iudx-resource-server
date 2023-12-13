@@ -24,7 +24,7 @@ import static org.hamcrest.Matchers.is;
  */
 @ExtendWith(RestAssuredConfiguration.class)
 public class AttributeSearchAPIsIT{
-    private static final Logger LOGGER = LogManager.getLogger(SpatialCountAPIsIT.class);
+    private static final Logger LOGGER = LogManager.getLogger(AttributeSearchAPIsIT.class);
 
     @Test
     @DisplayName("testing get attribute search  - 200 (success) attribute >")
