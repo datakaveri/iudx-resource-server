@@ -7,6 +7,7 @@ import iudx.resource.server.apiserver.integrationTests.RestAssuredConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -24,6 +25,7 @@ public class AdaptorResourceLevelAPIsIT {
     private static final Logger LOGGER = LogManager.getLogger(AdaptorResourceLevelAPIsIT.class);
 
     @Test
+    @Order(1)
     @DisplayName("testing adaptor resource level  - 201 (Created Successfully) Register Adaptor")
     void PostIngestionRegisterAdaptor() {
         JsonObject requestBody = new JsonObject()
@@ -44,6 +46,7 @@ public class AdaptorResourceLevelAPIsIT {
     }
 
     @Test
+    @Order(2)
     @DisplayName("testing adaptor resource level  - 409 (Already exist) Register Adaptor")
     void PostIngestionRegisterAdaptor409() {
         JsonObject requestBody = new JsonObject()
@@ -64,6 +67,7 @@ public class AdaptorResourceLevelAPIsIT {
     }
 
     @Test
+    @Order(3)
     @DisplayName("testing adaptor resource level  - 401 (Not Authorized) Register Adaptor")
     void PostIngestionRegisterAdaptorUnAuth() {
         JsonObject requestBody = new JsonObject()
@@ -84,6 +88,7 @@ public class AdaptorResourceLevelAPIsIT {
     }
 
     @Test
+    @Order(4)
     @DisplayName("testing adaptor resource level  - 200 (Success) Get adaptor details")
     void GetIngestionAdaptor() {
         String adapter_id_RL= "695e222b-3fae-4325-8db0-3e29d01c4fc0";
@@ -103,6 +108,7 @@ public class AdaptorResourceLevelAPIsIT {
     }
 
     @Test
+    @Order(5)
     @DisplayName("testing adaptor resource level  - 404 (Not Found) Get adaptor details")
     void GetIngestionAdaptorNotFound() {
         String adapter_id_RL= "123";
@@ -123,6 +129,7 @@ public class AdaptorResourceLevelAPIsIT {
     }
 
     @Test
+    @Order(6)
     @DisplayName("testing adaptor resource level  - 401 (Not Authorized) Get adaptor details")
     void GetIngestionAdaptorUnAuth() {
         String adapter_id_RL= "695e222b-3fae-4325-8db0-3e29d01c4fc0";
@@ -142,6 +149,7 @@ public class AdaptorResourceLevelAPIsIT {
     }
 
     @Test
+    @Order(7)
     @DisplayName("testing adaptor resource level  - 401 (Not Authorized) Delete adaptor")
     void DeleteIngestionAdaptorUnAuth() {
         String adapter_id_RL= "695e222b-3fae-4325-8db0-3e29d01c4fc0";
@@ -161,6 +169,7 @@ public class AdaptorResourceLevelAPIsIT {
     }
 
     @Test
+    @Order(8)
     @DisplayName("testing adaptor resource level  - 200 (Success) Delete adaptor")
     void DeleteIngestionAdaptor() {
         String adapter_id_RL= "695e222b-3fae-4325-8db0-3e29d01c4fc0";
@@ -180,6 +189,7 @@ public class AdaptorResourceLevelAPIsIT {
     }
 
     @Test
+    @Order(9)
     @DisplayName("testing adaptor resource level  - 404 (Not Found) Delete adaptor")
     void DeleteIngestionAdaptorNotFound() {
         String adapter_id_RL= "695e222b-3fae-4325-8db0-3e29d01c4fc0";
