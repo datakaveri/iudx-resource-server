@@ -7,8 +7,8 @@ import io.vertx.core.json.JsonObject;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.common.HttpStatusCode;
 import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -22,10 +22,6 @@ public final class QtypeValidator implements Validator {
   public QtypeValidator(final String value, final boolean required) {
     this.value = value;
     this.required = required;
-  }
-
-  private boolean isValidAttribute() {
-    return true;
   }
 
   private boolean isValidOperator(final String value) {
@@ -53,35 +49,31 @@ public final class QtypeValidator implements Validator {
   }
 
   public boolean isValidAttributeValue(final String value) {
-    return VALIDATION_Q_ATTR_PATTERN.matches(value);
+    Matcher matcher = VALIDATION_Q_ATTR_PATTERN.matcher(value);
+    LOGGER.debug("value,{},{}", value, VALIDATION_Q_ATTR_PATTERN.matcher(value).matches());
+    return VALIDATION_Q_ATTR_PATTERN.matcher(value).matches();
   }
 
-  JsonObject getQueryTerms(final String queryTerms) throws Exception {
+  JsonObject getQueryTerms(final String queryTerms) {
     JsonObject json = new JsonObject();
-    int length = queryTerms.length();
-    List<Character> allowedSpecialCharacter = Arrays.asList('>', '=', '<', '!');
-    int startIndex = 0;
-    boolean specialCharFound = false;
-    for (int i = 0; i < length; i++) {
-      Character c = queryTerms.charAt(i);
-      if (!(Character.isLetter(c) || Character.isDigit(c)) && !specialCharFound) {
-        if (allowedSpecialCharacter.contains(c)) {
-          json.put(JSON_ATTRIBUTE, queryTerms.substring(startIndex, i));
-          startIndex = i;
-          specialCharFound = true;
-        } else {
-          LOGGER.error("Ignore " + c.toString());
-          throw new DxRuntimeException(
-              failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
-        }
-      } else {
-        if (specialCharFound && (Character.isLetter(c) || Character.isDigit(c))) {
-          json.put(JSON_OPERATOR, queryTerms.substring(startIndex, i));
-          json.put(JSON_VALUE, queryTerms.substring(i));
-          break;
-        }
-      }
+
+    String[] attributeQueryTerms =
+        queryTerms.split("((?=>)|(?<=>)|(?=<)|(?<=<)|(?==)|(?<==)|(?=!)|(?<=!))");
+    LOGGER.debug(Arrays.stream(attributeQueryTerms).collect(Collectors.toList()));
+    LOGGER.debug(attributeQueryTerms.length);
+    if (attributeQueryTerms.length == 3) {
+      json.put(JSON_OPERATOR, attributeQueryTerms[1]).put(JSON_VALUE, attributeQueryTerms[2]);
+    } else if (attributeQueryTerms.length == 4) {
+      json.put(JSON_OPERATOR, attributeQueryTerms[1].concat(attributeQueryTerms[2]))
+          .put(JSON_VALUE, attributeQueryTerms[3]);
+    } else {
+      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
     }
+
+    json.put(JSON_ATTRIBUTE, attributeQueryTerms[0]);
+
+    LOGGER.debug(json);
+
     return json;
   }
 
@@ -111,7 +103,7 @@ public final class QtypeValidator implements Validator {
       LOGGER.error("Validation error : Operator not allowed.");
       throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
     }
-    if (!isValidAttribute()) {
+    if (!isValidAttributeValue(qjson.getString(JSON_ATTRIBUTE))) {
       LOGGER.error("Validation error : Not a valid attribute in <<q>> query");
       throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
     }
