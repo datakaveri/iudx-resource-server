@@ -211,7 +211,7 @@ public class ValidatorsHandlersFactory {
     validators.add(new DistanceTypeValidator(parameters.get("maxDistance"), false, true));
     validators.add(new CoordinatesTypeValidator(parameters.get(NGSILDQUERY_COORDINATES), false));
     // temporal fields
-    validators.add(new TimeRelTypeValidator(parameters.get(NGSILDQUERY_TIMEREL), false));
+    validators.add(new TimeRelTypeValidator(parameters.get(NGSILDQUERY_TIMEREL), false, true));
     validators.add(new DateTypeValidator(parameters.get(NGSILDQUERY_TIME), false));
     validators.add(new DateTypeValidator(parameters.get(NGSILDQUERY_ENDTIME), false));
 
