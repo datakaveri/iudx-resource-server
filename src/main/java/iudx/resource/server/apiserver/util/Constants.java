@@ -276,7 +276,9 @@ public class Constants {
   public static final List<String> VALIDATION_ALLOWED_TEMPORAL_REL =
       List.of("after", "before", "during", "between");
 
-  public static final String VALIDATION_Q_ATTR_PATTERN = "^[a-zA-Z0-9_]{1,100}+$";
+  public static final List<String> VALIDATION_ALLOWED_TEMPORAL_REL_ASYNC = List.of("during", "between");
+
+  public static final Pattern VALIDATION_Q_ATTR_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{1,100}$");
 
   // subscriptions queries
   public static final String CREATE_SUB_SQL =
