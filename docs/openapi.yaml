@@ -181,7 +181,7 @@ paths:
 
       responses:
         200:
-          description: 'Successful query'
+          description: 'Successful retrieval of latest data'
           content:
             application/json:
               schema:
@@ -193,15 +193,17 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/standardBadRequestErrorResponse"
-          description: 'Bad query'
+                "$ref": "#/components/schemas/invalidParamBadRequestErrorResponse"
+          description: 'Bad query - Empty response | Missing/Invalid temporal parameters | Missing/Invalid geo parameters | Count is not supported with filtering'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         404:
           content:
@@ -317,7 +319,7 @@ paths:
 
       responses:
         200:
-          description: 'Successful query'
+          description: 'Successful retrieval of spatial entity data'
           content:
             application/json:
               schema:
@@ -329,15 +331,18 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/standardBadRequestErrorResponse"
-          description: 'Bad query'
+                "$ref": "#/components/schemas/entitiesInvalidParamBadRequestErrorResponse"
+          description: 'Bad query - Empty response | Missing/Invalid temporal parameters | Missing/Invalid geo parameters | Count is not supported with filtering'
+
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         404:
           content:
@@ -569,7 +574,7 @@ paths:
 
       responses:
         200:
-          description: 'Successful query'
+          description: 'Successful retrieval of temporal entity data'
           content:
             application/json:
               schema:
@@ -581,15 +586,19 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/standardBadRequestErrorResponse"
-          description: 'Bad query'
+                oneOf:
+                  - $ref: '#/components/schemas/invalidParamsErrorResponse'
+                  - $ref: '#/components/schemas/invalidDateFormatErrorResponse'
+          description: 'Bad query - Empty response | Missing/Invalid temporal parameters | Missing/Invalid geo parameters | Count is not supported with filtering'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         404:
           content:
@@ -774,7 +783,7 @@ paths:
 
       responses:
         200:
-          description: 'Successful query'
+          description: 'Successful complex search query'
           content:
             application/json:
               schema:
@@ -786,15 +795,17 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/standardBadRequestErrorResponse"
-          description: 'Bad query'
+                "$ref": "#/components/schemas/invalidPayloadFormatErrorResponse"
+          description: 'Bad query- Empty response | Missing/Invalid temporal parameters | Missing/Invalid geo parameters | Count is not supported with filtering'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         404:
           content:
@@ -935,7 +946,7 @@ paths:
 
       responses:
         200:
-          description: 'Successful query'
+          description: 'Successful complex search query'
           content:
             application/json:
               schema:
@@ -947,15 +958,17 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/standardBadRequestErrorResponse"
-          description: 'Bad query'
+                "$ref": "#/components/schemas/invalidPayloadFormatErrorResponse"
+          description: 'Bad query - Empty response | Missing/Invalid temporal parameters | Missing/Invalid geo parameters | Count is not supported with filtering'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         404:
           content:
@@ -1056,32 +1069,21 @@ paths:
             pattern: '^[a-zA-Z0-9\/\@\.]*$'
       responses:
         200:
-          description: 'success'
+          description: 'Successfully retrieving list of all adapter exchanges'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/allexchange'
-
-        400:
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
-          description: 'Bad query'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
-        404:
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
-          description: 'Resource not found'
       x-codeSamples:
         - lang: 'cURL'
           label: 'ingestion'
@@ -1122,39 +1124,35 @@ paths:
         required: true
       responses:
         201:
-          description: 'Successful query'
+          description: 'Successful registration of ingestion adapter'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/registeradapter'
 
-        400:
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
-          description: 'Bad query'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         404:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
-          description: 'Resource Not Found'
+          description: 'Adapter Not Found'
 
         409:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardResourceAlreadyExistErrorResponse"
-          description: 'Resource Already Exist'
+          description: 'Adapter Already Exists'
 
       description: |
         Ingestion API allows a provider to register an ingestion adapter with DX(Data exchange) Resource Server. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
@@ -1196,28 +1194,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/retrieveadapter'
-          description: 'Successful query'
-
-        400:
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
-          description: 'Bad query'
+          description: 'Successful retrieval of ingestion adapter'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         404:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
-          description: 'Resource not found'
+                "$ref": "#/components/schemas/generalResourceNotFoundErrorResponse"
+          description: 'Adapter not found'
 
       x-codeSamples:
         - lang: 'cURL'
@@ -1260,32 +1253,27 @@ paths:
             maxLength: 36
       responses:
         200:
-          description: 'Successful query'
+          description: 'Successful deletion of ingestion adapter'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/deleteadapter'
-
-        400:
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
-          description: 'Bad query'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         404:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
-          description: 'Resource not found'
+                "$ref": "#/components/schemas/generalResourceNotFoundErrorResponse"
+          description: 'Adapter not found'
 
       x-codeSamples:
         - lang: 'cURL'
@@ -1320,7 +1308,7 @@ paths:
             pattern: '^[a-zA-Z0-9\/\@\.]*$'
       responses:
         200:
-          description: 'success'
+          description: 'Successfully retrieving list of all subscription queues'
           content:
             application/json:
               schema:
@@ -1331,7 +1319,9 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponseAllQueueAndExcahnge"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
       description: |
         This API could be used by a consumer to get the list of all the data subscription under the given user. The API could be used by the subscriber by providing the user access token.
       x-codeSamples:
@@ -1385,7 +1375,7 @@ paths:
         required: true
       responses:
         201:
-          description: 'Successful query'
+          description: 'Successful creation of streaming subscription'
           content:
             application/json:
               schema:
@@ -1394,18 +1384,25 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
-          description: 'Bad query'
+                "$ref": "#/components/schemas/invalidPayloadFormatErrorResponse"
+          description: 'Bad query - Missing/Invalid parameters'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         409:
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/generalResourceAlreadyExistErrorResponse"
           description: 'Conflict: Same Subscription request was previously sent'
+
 
       description: |
         Register Subscription API allows a subscriber to register an streaming subscription with DX(Data exchange) Resource Server. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
@@ -1457,31 +1454,27 @@ paths:
 
       responses:
         200:
-          description: 'Successful query'
+          description: 'Successful retrieval of streaming subscription'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/retrievestreaming'
-        400:
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
-          description: 'Bad query'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         404:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
-          description: 'Resource not found'
+                "$ref": "#/components/schemas/resourceNotFoundErrorResponse"
+          description: 'Subscription details not found'
 
       deprecated: false
 
@@ -1555,7 +1548,7 @@ paths:
         required: true
       responses:
         201:
-          description: 'Successful query'
+          description: 'Successful appending of streaming subscription'
           content:
             application/json:
               schema:
@@ -1564,22 +1557,24 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
-          description: 'Bad query'
+                "$ref": "#/components/schemas/subscriptionInvalidParamBadRequestErrorResponse"
+          description: 'Bad query - Missing/Invalid parameters'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         404:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
-          description: 'Resource not found'
+          description: 'Subscription details not found'
 
       description: |
         Append Subscription API allows a subscriber to add a new stream to the list of `entities` subscribed. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
@@ -1643,7 +1638,7 @@ paths:
         required: true
       responses:
         201:
-          description: 'Successful query'
+          description: 'Successful updation of streaming subscription'
           content:
             application/json:
               schema:
@@ -1652,22 +1647,24 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
-          description: 'Bad query'
+                "$ref": "#/components/schemas/subscriptionInvalidParamBadRequestErrorResponse"
+          description: 'Bad query - Missing/Invalid parameters'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         404:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
-          description: 'Resource not found'
+          description: 'Subscription details not found'
 
       description: |
         Update Subscription API allows a subscriber to replace the list of `entities` subscribed. Based on the input provided, the API validates the access control of the user with DX(Data exchange) Auth server to allow or deny access to the API. 
@@ -1715,31 +1712,27 @@ paths:
 
       responses:
         200:
-          description: 'Successful query'
+          description: 'Successful deletion of streaming subscription'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/deletestreaming'
-        400:
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
-          description: 'Bad query'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         404:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
-          description: 'Resource not found'
+                "$ref": "#/components/schemas/resourceNotFoundErrorResponse"
+          description: 'Subscription details not found'
 
       x-codeSamples:
         - lang: 'cURL'
@@ -1784,31 +1777,27 @@ paths:
 
       responses:
         200:
-          description: 'Successful query'
+          description: 'User password reset successfully'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/resetpassword'
-        400:
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
-          description: 'Bad query'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         404:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
-          description: 'Resource not found'
+                "$ref": "#/components/schemas/generalResourceNotFoundErrorResponse"
+          description: 'Password not found'
 
   /async/search:
     get:
@@ -1918,8 +1907,8 @@ paths:
             --header 'format: csv'
 
       responses:
-        201:
-          description: 'query submitted successfully'
+        200:
+          description: 'Async search success'
           content:
             application/json:
               schema:
@@ -1928,15 +1917,17 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
-          description: 'Bad query'
+                "$ref": "#/components/schemas/asyncBadRequestErrorResponse"
+          description: 'Bad query - Missing/Invalid parameters'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         404:
           content:
@@ -1986,7 +1977,7 @@ paths:
 
       responses:
         200:
-          description: 'search status'
+          description: 'Async search status success'
           content:
             application/json:
               schema:
@@ -1997,22 +1988,19 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
-          description: 'Bad query'
+                oneOf:
+                  - $ref: '#/components/schemas/asyncSearchStatusInvalidParamResponse'
+                  - $ref: '#/components/schemas/asyncSearchStatusIncorrectSearchIdResponse'
+          description: 'Bad query - Incorrect Search Id | Not a UUID'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
-
-        404:
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
-          description: 'Resource not found'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
   /consumer/audit:
     get:
@@ -2097,31 +2085,34 @@ paths:
 
       responses:
         200:
-          description: 'search status'
+          description: 'Consumer search success'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/meteringApiResponse'
+                oneOf:
+                  - $ref: '#/components/schemas/meteringApiResponse'
+                  - $ref: '#/components/schemas/getTotalAPICallsMade'
+                  - $ref: '#/components/schemas/getDataCountQuery'
+
+        204:
+          description: 'Empty Response'
+
         400:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
-          description: 'Bad query'
+                "$ref": "#/components/schemas/asyncBadRequestErrorResponse"
+          description: 'Bad query - Missing/Invalid parameters'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
-        404:
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
-          description: 'Resource not found'
       description: Consumer API can be used by a user to get detailed audit summary of all the APIs from DX Resource Server when the user provides the required query parameters. This API could also give the total number of requests made to all the APIs from DX Resource Server when the `option` is query parameter is count.
 
   /provider/audit:
@@ -2218,31 +2209,33 @@ paths:
 
       responses:
         200:
-          description: 'search status'
+          description: 'Provider search success'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/meteringApiResponse'
+                oneOf:
+                  - $ref: '#/components/schemas/meteringApiResponse'
+                  - $ref: '#/components/schemas/getDataCountQuery'
+
+        204:
+          description: 'Empty Response'
+
         400:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/adapterBadRequestErrorResponse"
-          description: 'Bad query'
+                "$ref": "#/components/schemas/asyncBadRequestErrorResponse"
+          description: 'Bad query - Missing/Invalid parameters'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
-        404:
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
-          description: 'Resource not found'
       description: A provider could use `/provider/audit` API to get the detailed summary of the resources with the APIs associated with provider. The count query gives the sum total of calls by the provider to the DX Resource Server when the user provides `count` in the options.
 
   /summary:
@@ -2282,7 +2275,7 @@ paths:
 
       responses:
         200:
-          description: 'summary details'
+          description: 'Summary details fetched successfully'
           content:
             application/json:
               schema:
@@ -2292,14 +2285,16 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/summaryBadRequestErrorResponse"
-          description: 'Bad query'
+          description: 'Bad request'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/summaryInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         204:
           description: 'Empty Response'
@@ -2343,7 +2338,7 @@ paths:
 
       responses:
         200:
-          description: 'overview details'
+          description: 'Overview details fetched successfully'
           content:
             application/json:
               schema:
@@ -2353,14 +2348,16 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/summaryBadRequestErrorResponse"
-          description: 'Bad query'
+          description: 'Bad request'
 
         401:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/summaryInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
       description: Overview API is used to get count based on month. Without parameter it will return last 12 months count data. This responds the number of times the API requests are made from DX Resource Server within the given time frame when the user specifies `starttime` and `endtime`.
 
@@ -2404,7 +2401,7 @@ paths:
         required: true
       responses:
         200:
-          description: 'api success response'
+          description: 'Token revoked successfully'
           content:
             application/json:
               schema:
@@ -2421,7 +2418,9 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
       description: Revoke token API used by admin user to revoke token of user in certain cases. It removes the authorization to access the resource by removing the admin user's permission to access the token.
 
   /admin/resourceattribute:
@@ -2466,7 +2465,7 @@ paths:
         required: true
       responses:
         200:
-          description: 'api success response'
+          description: 'Unique attribute created successfully'
           content:
             application/json:
               schema:
@@ -2483,7 +2482,9 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
       description: This API is used by admin user to create unique attribute for a resource by mentioning its resource `id` and the unique attribute in payload to the DX(Data exchange). If the unique attribute for the resource is already created, it would respond with a bad request.
 
     put:
@@ -2524,7 +2525,7 @@ paths:
         required: true
       responses:
         200:
-          description: 'api success response'
+          description: 'Unique attribute updated successfully'
           content:
             application/json:
               schema:
@@ -2541,14 +2542,16 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
         404:
           content:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
-          description: 'Resource not found'
+          description: 'Attribute not found'
       description: The `resourceattribute` API is used by admin user to update unique attribute for a resource in DX(Data exchange) by providing it's resource `id` and the unique attribute.
 
     delete:
@@ -2583,7 +2586,7 @@ paths:
 
       responses:
         200:
-          description: 'api success response'
+          description: 'Unique Attribute deleted successfully'
           content:
             application/json:
               schema:
@@ -2600,7 +2603,9 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardInvalidTokenErrorResponse"
-          description: 'Unauthorized'
+          description: |-
+            - Unauthorized - `token` invalid/expired
+            - Unauthorized - `clientId` & `clientSecret` invalid/not match
 
 
         404:
@@ -2608,7 +2613,7 @@ paths:
             application/json:
               schema:
                 "$ref": "#/components/schemas/standardResourceNotFoundErrorResponse"
-          description: 'Resource not found'
+          description: 'Attribute not found'
       description: The `resourceattribute` API is used by admin user to delete unique attribute for a resource in DX(Data exchange). The user could provide the resource `id` to delete the unique attribute.
 
 components:
@@ -3205,9 +3210,6 @@ components:
             "id": "UUID"
           }
         ]
-        limit: 5000
-        offset: 0
-        totalHits: 9091
 
     registeradapter:
       title: registeradapter
@@ -3271,7 +3273,7 @@ components:
             "redis-latest": [
               "UUID/.*"
             ],
-            "auditing-queue": [
+            "subscriptions-monitoring": [
               "UUID/.*"
             ]
           }
@@ -3289,7 +3291,7 @@ components:
           type: string
       example:
         type: urn:dx:rs:success
-        title: success
+        title: Success
         detail: Adapter deleted
 
     createstreaming:
@@ -3411,7 +3413,7 @@ components:
       example:
         type: urn:dx:rs:success
         title: success
-        detail: Subscription deleted
+        detail: Subscription deleted Successfully
 
     resetpassword:
       title: resetpassword
@@ -3506,8 +3508,53 @@ components:
             "userId": "aefvsdfsdf-exvsf-cezxcwscs-adasd"
           }
         ]
+
+    getTotalAPICallsMade:
+      title: get Total API Calls Made
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          description: An array of objects
+          type: array
+          items:
+            type: object
+      example:
+        type: urn:dx:rs:success
+        title: Success
+        results: [
+          {
+            "total": 54
+          }
+        ]
+
+    getDataCountQuery:
+      title: get Data Count Query
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        results:
+          description: An array of objects
+          type: array
+          items:
+            type: object
+      example:
+        type: urn:dx:rs:success
+        title: Success
+        results: [
+          {
+            "total": 1963
+          }
+        ]
+
     meteringApiResponse:
-      title: meteringresponse
+      title: get Data Read Query
       type: object
       properties:
         type:
@@ -3635,6 +3682,132 @@ components:
         title: Success
         detail: Success
 
+    invalidParamBadRequestErrorResponse:
+      title: invalidParamBadRequestErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:invalidParameterValue
+        title: Bad Request
+        detail: Bad Request
+
+    subscriptionInvalidParamBadRequestErrorResponse:
+      title: subscriptionInvalidParamBadRequestErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:invalidParameter
+        title: Bad Request
+        detail: Invalid Name
+
+    entitiesInvalidParamBadRequestErrorResponse:
+      title: entitiesInvalidParamBadRequestErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:invalidParameterValue
+        title: Bad Request
+        detail: Bad query
+
+    asyncSearchStatusInvalidParamResponse:
+      title: asyncSearchStatusInvalidParamResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:invalidParameterValue
+        title: Bad Request
+        detail: Bad Request
+
+    asyncSearchStatusIncorrectSearchIdResponse:
+      title: asyncSearchStatusIncorrectSearchIdResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:general
+        title: Bad Request
+        detail: "Fail: Incorrect search ID"
+
+    invalidPayloadFormatErrorResponse:
+      title: invalidPayloadFormatErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:invalidPayloadFormat
+        title: Bad Request
+        detail: Bad Request
+
+    invalidParamsErrorResponse:
+      title: invalidParamsErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:invalidTemporalRelationParam
+        title: Bad Request
+        detail: Bad Request
+
+    invalidDateFormatErrorResponse:
+      title: invalidDateFormatErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:invalidAttributeValue
+        title: Bad Request
+        detail: Bad Request
+
+    asyncBadRequestErrorResponse:
+      title: asyncBadRequestErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:badRequest
+        title: Bad Request
+        detail: Bad Request
+
     standardBadRequestErrorResponse:
       title: standardBadRequestErrorResponse
       properties:
@@ -3660,8 +3833,8 @@ components:
           type: string
       example:
         type: urn:dx:rs:invalidAuthorizationToken
-        title: Invalid credentials
-        detail: Invalid credentials
+        title: Not Authorized
+        detail: Not Authorized
 
     summaryInvalidTokenErrorResponse:
       title: standardInvalidTokenErrorResponse
@@ -3677,6 +3850,20 @@ components:
         title: Not Authorized
         detail: Not Authorized
 
+    generalResourceNotFoundErrorResponse:
+      title: generalResourceNotFoundErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:general
+        title: Not Found
+        detail: Not Found
+
     standardResourceNotFoundErrorResponse:
       title: standardResourceNotFoundErrorResponse
       properties:
@@ -3689,7 +3876,35 @@ components:
       example:
         type: urn:dx:rs:resourceNotFound
         title: Not Found
+        detail: Not Found
+
+    resourceNotFoundErrorResponse:
+      title: resourceNotFoundErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:resourceNotFound
+        title: Not Found
         detail: Resource Not Found
+
+    generalResourceAlreadyExistErrorResponse:
+      title: generalResourceAlreadyExistErrorResponse
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+      example:
+        type: urn:dx:rs:general
+        title: Conflict
+        detail: Conflict
 
     standardResourceAlreadyExistErrorResponse:
       title: standardResourceAlreadyExistErrorResponse
@@ -3738,6 +3953,7 @@ components:
               ],
               "description": "Realtime bus position information from Surat city public transit buses.",
               "label": "Surat Transit Realtime Position-UUID",
+              "accessPolicy": "SECURE",
               "resourceGroup": "UUID",
               "id": "UUID",
               "instance": "surat"
@@ -3778,10 +3994,12 @@ components:
                 "iudx:Resource",
                 "iudx:EnvFlood"
               ],
+              "label": "RS Adaptor Test Resource Group",
               "instance": "pune",
               "provider": "UUID",
               "description": "Flood Sensor Data with respect to water level/flow",
-              "resourceGroup": "UUID"
+              "resourceGroup": "UUID",
+              "accessPolicy": "SECURE"
             },
             "user_id": "fd47486b-3497-4248-ac1e-082e4d37a66c",
             "created_at": "2023-07-14T06:22:09.336142",
@@ -3818,6 +4036,7 @@ components:
         type: urn:dx:rs:badRequest
         title: Bad Request Data
         detail: Missing/Invalid parameters
+
     summaryBadRequestErrorResponse:
       title: adapterBadRequestErrorResponse
       properties:
