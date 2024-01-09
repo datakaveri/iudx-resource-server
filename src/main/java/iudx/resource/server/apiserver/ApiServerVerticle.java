@@ -1,57 +1,7 @@
 package iudx.resource.server.apiserver;
 
 import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
-import static iudx.resource.server.apiserver.util.Constants.ADMIN;
-import static iudx.resource.server.apiserver.util.Constants.API;
-import static iudx.resource.server.apiserver.util.Constants.API_ENDPOINT;
-import static iudx.resource.server.apiserver.util.Constants.APPLICATION_JSON;
-import static iudx.resource.server.apiserver.util.Constants.CONTENT_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.DID;
-import static iudx.resource.server.apiserver.util.Constants.DRL;
-import static iudx.resource.server.apiserver.util.Constants.ENCODED_CIPHER_TEXT;
-import static iudx.resource.server.apiserver.util.Constants.ENCODED_KEY;
-import static iudx.resource.server.apiserver.util.Constants.ENCRYPTED_DATA;
-import static iudx.resource.server.apiserver.util.Constants.ENDT;
-import static iudx.resource.server.apiserver.util.Constants.ENTITY_QUERY;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_ACCEPT;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_ALLOW_ORIGIN;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_LENGTH;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_CONTENT_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_HOST;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_OPTIONS;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_ORIGIN;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_PUBLIC_KEY;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_REFERER;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_RESPONSE_FILE_FORMAT;
-import static iudx.resource.server.apiserver.util.Constants.HEADER_TOKEN;
-import static iudx.resource.server.apiserver.util.Constants.ID;
-import static iudx.resource.server.apiserver.util.Constants.IID;
-import static iudx.resource.server.apiserver.util.Constants.IUDXQUERY_OPTIONS;
-import static iudx.resource.server.apiserver.util.Constants.JSON_ALIAS;
-import static iudx.resource.server.apiserver.util.Constants.JSON_CONSUMER;
-import static iudx.resource.server.apiserver.util.Constants.JSON_COUNT;
-import static iudx.resource.server.apiserver.util.Constants.JSON_ID;
-import static iudx.resource.server.apiserver.util.Constants.JSON_INSTANCEID;
-import static iudx.resource.server.apiserver.util.Constants.JSON_NAME;
-import static iudx.resource.server.apiserver.util.Constants.JSON_SEARCH_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TITLE;
-import static iudx.resource.server.apiserver.util.Constants.JSON_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.LIMITPARAM;
-import static iudx.resource.server.apiserver.util.Constants.MIME_APPLICATION_JSON;
-import static iudx.resource.server.apiserver.util.Constants.MIME_TEXT_HTML;
-import static iudx.resource.server.apiserver.util.Constants.MSG_INVALID_NAME;
-import static iudx.resource.server.apiserver.util.Constants.MSG_SUB_TYPE_NOT_FOUND;
-import static iudx.resource.server.apiserver.util.Constants.NO_CONTENT;
-import static iudx.resource.server.apiserver.util.Constants.OFFSETPARAM;
-import static iudx.resource.server.apiserver.util.Constants.RESET_PWD;
-import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
-import static iudx.resource.server.apiserver.util.Constants.RESPONSE_SIZE;
-import static iudx.resource.server.apiserver.util.Constants.ROUTE_DOC;
-import static iudx.resource.server.apiserver.util.Constants.ROUTE_STATIC_SPEC;
-import static iudx.resource.server.apiserver.util.Constants.STARTT;
-import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
-import static iudx.resource.server.apiserver.util.Constants.SUB_TYPE;
-import static iudx.resource.server.apiserver.util.Constants.USER_ID;
+import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
 import static iudx.resource.server.authenticator.Constants.ROLE;
 import static iudx.resource.server.cache.cachelmpl.CacheType.CATALOGUE_CACHE;
@@ -153,9 +103,7 @@ public class ApiServerVerticle extends AbstractVerticle {
 
   private static final Logger LOGGER = LogManager.getLogger(ApiServerVerticle.class);
 
-  /**
-   * Service addresses
-   */
+  /** Service addresses */
   private static final String DATABASE_SERVICE_ADDRESS = "iudx.rs.database.service";
 
   private static final String BROKER_SERVICE_ADDRESS = "iudx.rs.broker.service";
@@ -828,7 +776,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * Execute a count query in DB
    *
-   * @param json     valid json query
+   * @param json valid json query
    * @param response HttpServerResponse
    */
   private void executeCountQuery(
@@ -873,7 +821,7 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * Execute a search query in DB
    *
-   * @param json     valid json query
+   * @param json valid json query
    * @param response HttpServerResponse
    */
   private void executeSearchQuery(
@@ -1131,8 +1079,8 @@ public class ApiServerVerticle extends AbstractVerticle {
                 JsonObject jsonObj = requestJson.copy();
                 jsonObj.put(USER_ID, authInfo.getString(USER_ID));
                 Future<JsonObject> subsReq =
-                    subsService.appendSubscription(jsonObj, databroker, postgresService, authInfo,
-                        cacheService);
+                    subsService.appendSubscription(
+                        jsonObj, databroker, postgresService, authInfo, cacheService);
                 subsReq.onComplete(
                     subsRequestHandler -> {
                       if (subsRequestHandler.succeeded()) {
@@ -1140,13 +1088,13 @@ public class ApiServerVerticle extends AbstractVerticle {
                         routingContext.data().put(RESPONSE_SIZE, 0);
 
                         /*JsonObject message =
-                            new JsonObject()
-                                .put("resource", jsonObj.getJsonArray(ENTITIES).getString(0))
-                                .put(SUBSCRIPTION_ID, jsonObj.getString(SUBSCRIPTION_ID))
-                                .put(SUB_TYPE, jsonObj.getString(SUB_TYPE))
-                                .put(USER_ID, jsonObj.getString(USER_ID))
-                                .put(SUBSCRIPTION_ID, subsId)
-                                .put(JSON_EVENT_TYPE, EVENTTYPE_APPEND);*/
+                        new JsonObject()
+                            .put("resource", jsonObj.getJsonArray(ENTITIES).getString(0))
+                            .put(SUBSCRIPTION_ID, jsonObj.getString(SUBSCRIPTION_ID))
+                            .put(SUB_TYPE, jsonObj.getString(SUB_TYPE))
+                            .put(USER_ID, jsonObj.getString(USER_ID))
+                            .put(SUBSCRIPTION_ID, subsId)
+                            .put(JSON_EVENT_TYPE, EVENTTYPE_APPEND);*/
 
                         Future.future(fu -> updateAuditTable(routingContext));
                         handleSuccessResponse(
@@ -1454,7 +1402,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * publish heartbeat details to Rabbit MQ.
    *
    * @param routingContext routingContext Note: This is too frequent an operation to have info or
-   *                       error level logs
+   *     error level logs
    */
   public void publishHeartbeat(RoutingContext routingContext) {
     LOGGER.trace("Info: publishHeartbeat method starts;");
@@ -1577,9 +1525,9 @@ public class ApiServerVerticle extends AbstractVerticle {
   /**
    * handle HTTP response.
    *
-   * @param response   HttpServerResponse object
+   * @param response HttpServerResponse object
    * @param statusCode Http status code for response
-   * @param result     String of response
+   * @param result String of response
    */
   private void handleSuccessResponse(HttpServerResponse response, int statusCode, String result) {
     response.putHeader(CONTENT_TYPE, APPLICATION_JSON).setStatusCode(statusCode).end(result);
@@ -1626,7 +1574,7 @@ public class ApiServerVerticle extends AbstractVerticle {
    * part of the parameter</i>.
    *
    * @param routingContext RoutingContext Object
-   * @param response       HttpServerResponse
+   * @param response HttpServerResponse
    * @return Optional Optional of Map
    */
   private Optional<MultiMap> getQueryParams(
@@ -1693,6 +1641,9 @@ public class ApiServerVerticle extends AbstractVerticle {
                 String providerId = cacheResult.getString("provider");
                 long time = zst.toInstant().toEpochMilli();
                 String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
+                if (authInfo.getString(API_ENDPOINT).contains("/ngsi-ld/v1/subscription")) {
+                  request.put(EVENT, "subscriptions");
+                }
                 request.put(RESOURCE_GROUP, resourceGroup);
                 request.put(TYPE_KEY, type);
                 request.put(EPOCH_TIME, time);
