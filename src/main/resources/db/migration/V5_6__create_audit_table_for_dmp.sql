@@ -21,7 +21,7 @@ ALTER TABLE auditing_dmp OWNER TO ${flyway:user}
 -- Triggers
 --
 CREATE TRIGGER update_auditing_dmp_created BEFORE INSERT ON auditing_dmp FOR EACH ROW EXECUTE PROCEDURE update_created();
-CREATE TRIGGER update_auditing_dmp_modified BEFORE INSERT OR UPDATE ON auditing_dmp FOR EACH ROW EXECUTE update_modified();
+CREATE TRIGGER update_auditing_dmp_modified BEFORE INSERT OR UPDATE ON auditing_dmp FOR EACH ROW EXECUTE procedure update_modified();
 
 --
 -- Index
