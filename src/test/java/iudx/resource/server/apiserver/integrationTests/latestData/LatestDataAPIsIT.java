@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static io.restassured.RestAssured.given;
-import static iudx.resource.server.authenticator.JwtTokenHelper.openResourceToken;
-import static iudx.resource.server.authenticator.JwtTokenHelper.secureResourceToken;
+import static iudx.resource.server.authenticator.TokensForITs.openResourceToken;
+import static iudx.resource.server.authenticator.TokensForITs.secureResourceToken;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
@@ -38,8 +38,6 @@ public class LatestDataAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -58,8 +56,6 @@ public class LatestDataAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -76,8 +72,6 @@ public class LatestDataAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -93,8 +87,6 @@ public class LatestDataAPIsIT {
                 .body("title", equalTo("Not Found"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -111,7 +103,5 @@ public class LatestDataAPIsIT {
                 .body("title", equalTo("Not Authorized"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 }

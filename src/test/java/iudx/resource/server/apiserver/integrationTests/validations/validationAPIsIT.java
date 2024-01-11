@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static io.restassured.RestAssured.*;
-import static iudx.resource.server.authenticator.JwtTokenHelper.*;
+import static iudx.resource.server.authenticator.TokensForITs.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
@@ -22,14 +22,11 @@ import static org.hamcrest.Matchers.is;
 @ExtendWith(RestAssuredConfiguration.class)
 public class validationAPIsIT {
     private static final Logger LOGGER = LogManager.getLogger(validationAPIsIT.class);
+    String id = "83c2e5c2-3574-4e11-9530-2b1fbdfce832";
 
     @Test
     @DisplayName("testing validations  - 400 (Bad Request) invalid length")
     void GetEntityInvalidIDLen() {
-
-        LOGGER.debug(baseURI);
-        LOGGER.debug(basePath);
-
         Response response = given()
                 .header("token", openResourceToken)
                 .contentType("application/json")
@@ -40,15 +37,13 @@ public class validationAPIsIT {
                 .body("title", equalTo("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing validations  - 400 (Bad Request) invalid geo property")
     void GetEntityInvGeoProperty() {
         Response response = given()
-                .param("id","83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id",id)
                 .param("geoproperty", "place")
                 .param("georel", "near;maxdistance=10")
                 .param("geometry", "Point")
@@ -62,15 +57,13 @@ public class validationAPIsIT {
                 .body("title", equalTo("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing validations  - 400 (Bad Request) Empty geo property")
     void GetEntityEmptyGeoProperty() {
         Response response = given()
-                .param("id","83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id",id)
                 .param("geoproperty", "")
                 .param("georel", "near;maxdistance=10")
                 .param("geometry", "Point")
@@ -84,19 +77,17 @@ public class validationAPIsIT {
                 .body("title", equalTo("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing validations  - 400 (Bad Request) Missing geo property")
     void GetEntityMissingGeoProperty() {
         Response response = given()
-                .param("id","83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id",id)
                 .param("georel", "near;maxdistance=10")
                 .param("geometry", "Point")
                 .param("coordinates", "[21.178,72.834]")
-                .header("token", delegateToken)
+                .header("token", secureResourceToken)
                 .contentType("application/json")
                 .when()
                 .get("/entities")
@@ -105,15 +96,13 @@ public class validationAPIsIT {
                 .body("title", equalTo("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing validations  - 400 (Bad Request) invalid georel")
     void GetEntityInvGeoRel() {
         Response response = given()
-                .param("id","83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id",id)
                 .param("geoproperty", "location")
                 .param("georel", "beyond")
                 .param("geometry", "Point")
@@ -128,15 +117,13 @@ public class validationAPIsIT {
                 .body("type", equalTo("urn:dx:rs:invalidGeoRel"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing validations  - 400 (Bad Request) Empty georel")
     void GetEntityEmptyGeoRel() {
         Response response = given()
-                .param("id","83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id",id)
                 .param("geoproperty", "place")
                 .param("geometry", "Point")
                 .param("coordinates", "[21.178,72.834]")
@@ -150,15 +137,13 @@ public class validationAPIsIT {
                 .body("type", equalTo("urn:dx:rs:invalidGeoValue"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing validations  - 400 (Bad Request) invalid max distance")
     void GetEntityInvMaxDist() {
         Response response = given()
-                .param("id","83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id",id)
                 .param("geoproperty", "location")
                 .param("georel", "near;maxdistance=10000000")
                 .param("geometry", "ellipse")
@@ -173,15 +158,13 @@ public class validationAPIsIT {
                 .body("type", equalTo("urn:dx:rs:invalidGeoValue"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing validations  - 400 (Bad Request) invalid geometry")
     void GetEntityInvGeometry() {
         Response response = given()
-                .param("id","83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id",id)
                 .param("geoproperty", "location")
                 .param("georel", "near;maxdistance=100")
                 .param("geometry", "ellipse")
@@ -196,15 +179,13 @@ public class validationAPIsIT {
                 .body("type", equalTo("urn:dx:rs:invalidGeoValue"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing validations  - 400 (Bad Request) empty geometry")
     void GetEntityEmptyGeometry() {
         Response response = given()
-                .param("id","83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id",id)
                 .param("geoproperty", "location")
                 .param("georel", "near;maxdistance=100")
                 .param("geometry", "")
@@ -219,15 +200,13 @@ public class validationAPIsIT {
                 .body("type", equalTo("urn:dx:rs:invalidGeoValue"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing validations  - 400 (Bad Request) invalid coordinate format for points")
     void GetEntityInvCoordinatesFormat() {
         Response response = given()
-                .param("id","83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id",id)
                 .param("geoproperty", "location")
                 .param("georel", "near;maxdistance=100")
                 .param("geometry", "Point")
@@ -242,15 +221,13 @@ public class validationAPIsIT {
                 .body("type", equalTo("urn:dx:rs:invalidGeoValue"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing validations  - 400 (Bad Request) invalid coordinate precision format>6")
     void GetEntityInvCoordinatesPrecisionFormat() {
         Response response = given()
-                .param("id","83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id",id)
                 .param("geoproperty", "location")
                 .param("georel", "near;maxdistance=100")
                 .param("geometry", "Point")
@@ -265,15 +242,13 @@ public class validationAPIsIT {
                 .body("type", equalTo("urn:dx:rs:invalidGeoValue"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing validations  - 400 (Bad Request) invalid options param value")
     void GetEntityInvOptionsVal() {
         Response response = given()
-                .param("id","83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id",id)
                 .param("geoproperty", "location")
                 .param("georel", "near;maxdistance=100")
                 .param("geometry", "Point")
@@ -289,15 +264,13 @@ public class validationAPIsIT {
                 .body("type", equalTo("urn:dx:rs:invalidParamameterValue"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing validations  - 400 (Bad Request) empty options param value")
     void GetEntityEmptyOptionsVal() {
         Response response = given()
-                .param("id","83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id",id)
                 .param("geoproperty", "location")
                 .param("georel", "near;maxdistance=100")
                 .param("geometry", "Point")
@@ -313,8 +286,6 @@ public class validationAPIsIT {
                 .body("type", equalTo("urn:dx:rs:invalidParamameterValue"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -335,8 +306,6 @@ public class validationAPIsIT {
                 .body("type", equalTo("urn:dx:rs:invalidTemporalRelationParam"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -356,8 +325,6 @@ public class validationAPIsIT {
                 .body("type", equalTo("urn:dx:rs:invalidTemporalParam"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -378,8 +345,6 @@ public class validationAPIsIT {
                 .body("type", equalTo("urn:dx:rs:invalidTemporalRelationParam"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -399,8 +364,6 @@ public class validationAPIsIT {
                 .body("type", equalTo("urn:dx:rs:invalidParamameterValue"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -420,8 +383,6 @@ public class validationAPIsIT {
                 .body("type", equalTo("urn:dx:rs:invalidAttributeValue"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -441,8 +402,6 @@ public class validationAPIsIT {
                 .body("type", equalTo("urn:dx:rs:invalidAttributeValue"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -450,7 +409,7 @@ public class validationAPIsIT {
     void CreateEntityInvGeoProperty() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Point")
                         .put("coordinates", new JsonArray().add(21.178).add(72.834))
@@ -470,8 +429,6 @@ public class validationAPIsIT {
                 .body("type",is("urn:dx:rs:invalidPayloadFormat"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -479,7 +436,7 @@ public class validationAPIsIT {
     void CreateEntityEmptyGeoProperty() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Point")
                         .put("coordinates", new JsonArray().add(21.178).add(72.834))
@@ -497,8 +454,6 @@ public class validationAPIsIT {
                 .body("type",is("urn:dx:rs:invalidGeoParam"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -506,7 +461,7 @@ public class validationAPIsIT {
     void CreateEntityInvGeometry() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "ellipse")
                         .put("coordinates", new JsonArray().add(21.178).add(72.834))
@@ -525,8 +480,6 @@ public class validationAPIsIT {
                 .body("type",is("urn:dx:rs:invalidPayloadFormat"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -534,7 +487,7 @@ public class validationAPIsIT {
     void CreateEntityInvTimerel() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Point")
                         .put("coordinates", new JsonArray().add(21.178).add(72.834))
@@ -560,8 +513,6 @@ public class validationAPIsIT {
                 .body("type",is("urn:dx:rs:invalidPayloadFormat"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -569,7 +520,7 @@ public class validationAPIsIT {
     void CreateEntityInvNoOfPoints() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Point")
                         .put("coordinates", new JsonArray().add(21.178).add(72.834).add(34.3189))
@@ -595,8 +546,6 @@ public class validationAPIsIT {
                 .body("type",is("urn:dx:rs:invalidPayloadFormat"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -604,7 +553,7 @@ public class validationAPIsIT {
     void CreateEntityInvGeoLocation() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Polygon")
                         .put("coordinates", new JsonArray().add(new JsonArray()
@@ -631,8 +580,6 @@ public class validationAPIsIT {
                 .body("type",is("urn:dx:rs:invalidPayloadFormat"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -663,7 +610,5 @@ public class validationAPIsIT {
                 .body("title", equalTo("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 }

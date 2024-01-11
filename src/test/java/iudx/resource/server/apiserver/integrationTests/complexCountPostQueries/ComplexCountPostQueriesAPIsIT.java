@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static io.restassured.RestAssured.given;
-import static iudx.resource.server.authenticator.JwtTokenHelper.openResourceToken;
-import static iudx.resource.server.authenticator.JwtTokenHelper.secureResourceToken;
+import static iudx.resource.server.authenticator.TokensForITs.openResourceToken;
+import static iudx.resource.server.authenticator.TokensForITs.secureResourceToken;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
@@ -25,13 +25,14 @@ import static org.hamcrest.Matchers.is;
 @ExtendWith(RestAssuredConfiguration.class)
 public class ComplexCountPostQueriesAPIsIT {
     private static final Logger LOGGER = LogManager.getLogger(ComplexCountPostQueriesAPIsIT.class);
+    String id = "83c2e5c2-3574-4e11-9530-2b1fbdfce832";
 
     @Test
     @DisplayName("testing Complex count post query - 200 (success)- Geo Query(Circle)")
     void ComplexCountGeoQCircle() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Point")
                         .put("coordinates", new JsonArray().add(21.178).add(72.834))
@@ -51,8 +52,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -60,7 +59,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexCountGeoQVthOptionalEncry() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Point")
                         .put("coordinates", new JsonArray().add(21.178).add(72.834))
@@ -82,8 +81,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -91,7 +88,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexCountGeoQCircleEmptyResp() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Point")
                         .put("coordinates", new JsonArray().add(31.178).add(72.834))
@@ -109,8 +106,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .statusCode(204)
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -118,7 +113,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexCountGeoQCircleInvParams() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQuery", new JsonObject()
                         .put("geometry", "Point")
                         .put("coordinates", new JsonArray().add(21.178).add(72.834))
@@ -137,8 +132,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -165,8 +158,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Not Found"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -174,7 +165,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexCountGeoQCircleUnAuth() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Point")
                         .put("coordinates", new JsonArray().add(21.178).add(72.834))
@@ -193,8 +184,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Not Authorized"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -202,7 +191,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexCountTemporalBtw() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("temporalQ", new JsonObject()
                         .put("timerel", "between")
                         .put("time", "2020-10-19T14:20:00Z")
@@ -222,8 +211,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -231,7 +218,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexCountTemporalBtwEmptyResp() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("temporalQ", new JsonObject()
                         .put("timerel", "between")
                         .put("time", "2021-12-01T14:20:00Z")
@@ -249,8 +236,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .statusCode(204)
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -258,7 +243,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexCountTemporalBtwInvParams() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("temporalQ", new JsonObject()
                         .put("timerelation", "between")
                         .put("time", "2020-10-19T14:20:00Z")
@@ -277,8 +262,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -305,8 +288,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Not Found"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -314,7 +295,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexCountTemporalBtwUnAuth() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("temporalQ", new JsonObject()
                         .put("timerel", "between")
                         .put("time", "2020-10-19T14:20:00Z")
@@ -333,8 +314,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Not Authorized"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -342,7 +321,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexCountTemporalBtwInvDateFormat() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("temporalQ", new JsonObject()
                         .put("timerel", "between")
                         .put("time", "2020-09-18Z14:20:00Z")
@@ -361,8 +340,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -389,8 +366,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -398,7 +373,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexCountTemporalBeforeInvParams() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("temporalQ", new JsonObject()
                         .put("timerelation", "before")
                         .put("time", "2020-10-19T14:20:00Z")
@@ -416,8 +391,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -443,8 +416,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Not Found"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -452,7 +423,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexCountTemporalBeforeUnAuth() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("temporalQ", new JsonObject()
                         .put("timerel", "before")
                         .put("time", "2020-10-19T14:20:00Z")
@@ -470,8 +441,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Not Authorized"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -479,7 +448,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexCountTemporalBeforeInvDateFormat() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("temporalQ", new JsonObject()
                         .put("timerel", "between")
                         .put("time", "2020-09-18Z14:20:00Z")
@@ -497,8 +466,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
 
@@ -507,7 +474,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexGeoCircleTempBetAttr1RespFilter() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Point")
                         .put("coordinates", new JsonArray().add(21.178).add(72.834))
@@ -533,8 +500,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -542,7 +507,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexGeoCircleTempBetAttr1RespFilterEmpResp() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Point")
                         .put("coordinates", new JsonArray().add(21.178).add(72.834))
@@ -566,8 +531,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .statusCode(204)
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -575,7 +538,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexGeoCircleTempBetAttr1RespFilterInvParams() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Point")
                         .put("coordinates", new JsonArray().add(21.178).add(72.834))
@@ -600,8 +563,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -633,8 +594,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .statusCode(404)
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -642,7 +601,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexGeoCircleTempBetAttr1RespFilterUnAuth() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Point")
                         .put("coordinates", new JsonArray().add(21.178).add(72.834))
@@ -667,8 +626,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Not Authorized"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -676,7 +633,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexGeoQPolygon() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Polygon")
                         .put("coordinates", new JsonArray().add(
@@ -702,8 +659,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -711,7 +666,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexGeoQPolygonEmptyResp() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Polygon")
                         .put("coordinates", new JsonArray().add(new JsonArray()
@@ -737,8 +692,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .statusCode(204)
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -746,7 +699,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexGeoQPolygonInvParams() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Polygon")
                         .put("coordinates", new JsonArray().add(
@@ -771,8 +724,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -804,8 +755,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Not Found"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -813,7 +762,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexGeoQPolygonUnAuth() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "Polygon")
                         .put("coordinates", new JsonArray().add(
@@ -838,8 +787,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Not Authorized"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -847,7 +794,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexGeoQBbox() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "bbox")
                         .put("coordinates", new JsonArray()
@@ -870,8 +817,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -879,7 +824,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexGeoQBboxEmptyResp() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "bbox")
                         .put("coordinates", new JsonArray()
@@ -900,8 +845,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .statusCode(204)
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -909,7 +852,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexGeoQBboxInvParams() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "bbox")
                         .put("coordinates", new JsonArray()
@@ -931,8 +874,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -962,8 +903,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Not Found"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -971,7 +910,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexGeoQBboxUnAuth() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "bbox")
                         .put("coordinates", new JsonArray()
@@ -993,8 +932,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Not Authorized"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -1002,7 +939,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexGeoQLineString() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "linestring")
                         .put("coordinates", new JsonArray()
@@ -1025,8 +962,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -1034,7 +969,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexGeoQLineStringEmptyResp() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "linestring")
                         .put("coordinates", new JsonArray()
@@ -1058,8 +993,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .statusCode(204)
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -1067,7 +1000,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexGeoQLineStringInvParams() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "linestring")
                         .put("coordinates", new JsonArray()
@@ -1089,8 +1022,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -1123,8 +1054,6 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Not Found"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -1132,7 +1061,7 @@ public class ComplexCountPostQueriesAPIsIT {
     void ComplexGeoQLineStringUnAuth() {
         JsonObject requestBody = new JsonObject()
                 .put("type", "Query")
-                .put("entities", new JsonArray().add(new JsonObject().put("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")))
+                .put("entities", new JsonArray().add(new JsonObject().put("id", id)))
                 .put("geoQ", new JsonObject()
                         .put("geometry", "linestring")
                         .put("coordinates", new JsonArray()
@@ -1154,7 +1083,5 @@ public class ComplexCountPostQueriesAPIsIT {
                 .body("title", equalTo("Not Authorized"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 }

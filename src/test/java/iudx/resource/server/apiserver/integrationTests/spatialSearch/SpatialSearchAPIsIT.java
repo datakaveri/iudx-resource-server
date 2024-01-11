@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static io.restassured.RestAssured.*;
-import static iudx.resource.server.authenticator.JwtTokenHelper.secureResourceToken;
+import static iudx.resource.server.authenticator.TokensForITs.secureResourceToken;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.is;
 @ExtendWith(RestAssuredConfiguration.class)
 public class SpatialSearchAPIsIT {
     private static final Logger LOGGER = LogManager.getLogger(SpatialSearchAPIsIT.class);
+    String id = "83c2e5c2-3574-4e11-9530-2b1fbdfce832";
 
     @Test
     @DisplayName("testing get Geo query (circle) - 200")
@@ -30,7 +31,7 @@ public class SpatialSearchAPIsIT {
         LOGGER.debug(basePath);
 
         Response response = given()
-                .queryParam("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .queryParam("id", id)
                 .queryParam("geoproperty", "location")
                 .queryParam("georel", "near;maxdistance=10")
                 .queryParam("geometry", "Point")
@@ -47,15 +48,13 @@ public class SpatialSearchAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing get Geo query (circle) with optional encryption - 200")
     void GetGeoQueryCircle2() {
         Response response = given()
-                .param("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id", id)
                 .param("geoproperty", "location")
                 .param("georel", "near;maxdistance=10")
                 .param("geometry", "Point")
@@ -74,15 +73,13 @@ public class SpatialSearchAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing get Geo query (circle) - 204 Empty Response")
     void GetGeoQueryCircleEmptyResp() {
         Response response = given()
-                .param("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id", id)
                 .param("geoproperty", "location")
                 .param("georel", "near;maxdistance=1")
                 .param("geometry", "Point")
@@ -95,15 +92,13 @@ public class SpatialSearchAPIsIT {
                 .statusCode(204)
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing get Geo query (circle) - 400 Invalid Params")
     void GetGeoQueryCircleInvParams() {
         Response response = given()
-                .param("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id", id)
                 .param("geoproperty", "location")
                 .param("georelation", "near;maxdistance=10")
                 .param("geometry", "Point")
@@ -118,15 +113,13 @@ public class SpatialSearchAPIsIT {
                 .body("title", is("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing get Geo query (circle) - 401 Invalid Credentials")
     void GetGeoQueryCircleInvCredentials() {
         Response response = given()
-                .param("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id", id)
                 .param("geoproperty", "location")
                 .param("georel", "near;maxdistance=10")
                 .param("geometry", "Point")
@@ -141,8 +134,6 @@ public class SpatialSearchAPIsIT {
                 .body("title", is("Not Authorized"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -164,15 +155,13 @@ public class SpatialSearchAPIsIT {
                 .body("title", is("Not Found"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing get Geo query (polygon) - 200")
     void GetGeoQueryPolygon() {
         Response response = given()
-                .param("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id", id)
                 .param("geoproperty", "location")
                 .param("georel", "within")
                 .param("geometry", "Polygon")
@@ -187,15 +176,13 @@ public class SpatialSearchAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing get Geo query (polygon) - 204 Empty Response")
     void GetGeoQueryPolygonEmptyResp() {
         Response response = given()
-                .param("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id", id)
                 .param("geoproperty", "location")
                 .param("georel", "within")
                 .param("geometry", "Polygon")
@@ -208,15 +195,13 @@ public class SpatialSearchAPIsIT {
                 .statusCode(204)
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing get Geo query (polygon) - 400 Invalid Params")
     void GetGeoQueryPolygonInvParams() {
         Response response = given()
-                .param("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id", id)
                 .param("geoproperty", "location")
                 .param("georelation", "within")
                 .param("geometry", "Polygon")
@@ -230,15 +215,13 @@ public class SpatialSearchAPIsIT {
                 .body("title", is("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing get Geo query (polygon) - 401 Invalid Credentials")
     void GetGeoQueryPolygonInvCredentials() {
         Response response = given()
-                .param("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id", id)
                 .param("geoproperty", "location")
                 .param("georel", "within")
                 .param("geometry", "Polygon")
@@ -252,8 +235,6 @@ public class SpatialSearchAPIsIT {
                 .body("title", equalTo("Not Authorized"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -274,15 +255,13 @@ public class SpatialSearchAPIsIT {
                 .body("title", equalTo("Not Found"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing get Geo query (bbox) - 200")
     void GetGeoQueryBbox() {
         Response response = given()
-                .param("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id", id)
                 .param("geoproperty", "location")
                 .param("georel", "within")
                 .param("geometry", "bbox")
@@ -297,15 +276,13 @@ public class SpatialSearchAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing get Geo query (bbox) - 204 Empty Response")
     void GetGeoQueryBbox204() {
         Response response = given()
-                .param("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id", id)
                 .param("geoproperty", "location")
                 .param("georel", "within")
                 .param("geometry", "bbox")
@@ -318,15 +295,13 @@ public class SpatialSearchAPIsIT {
                 .statusCode(204)
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing get Geo query (bbox) - 400 Invalid Params")
     void GetGeoQueryBboxInvParams() {
         Response response = given()
-                .param("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id", id)
                 .param("geoproperty", "location")
                 .param("georelation", "within")
                 .param("geometry", "bbox")
@@ -340,14 +315,12 @@ public class SpatialSearchAPIsIT {
                 .body("title", is("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
     @Test
     @DisplayName("testing get Geo query (bbox) - 401 Invalid Credentials")
     void GetGeoQueryBboxInvCredentials() {
         Response response = given()
-                .param("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id", id)
                 .param("geoproperty", "location")
                 .param("georel", "within")
                 .param("geometry", "bbox")
@@ -361,8 +334,6 @@ public class SpatialSearchAPIsIT {
                 .body("title",is("Not Authorized"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -383,15 +354,13 @@ public class SpatialSearchAPIsIT {
                 .body("title", is("Not Found"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing get Geo query (Line String) - 200 Success")
     void GetGeoQueryLineString() {
         Response response = given()
-                .param("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id", id)
                 .param("geoproperty", "location")
                 .param("georel", "intersects")
                 .param("geometry", "linestring")
@@ -406,15 +375,13 @@ public class SpatialSearchAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing get Geo query (Line String) - 204 Empty Response")
     void GetGeoQueryLineStringEmptyResp() {
         Response response = given()
-                .param("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id", id)
                 .param("geoproperty", "location")
                 .param("georel", "intersects")
                 .param("geometry", "linestring")
@@ -427,15 +394,13 @@ public class SpatialSearchAPIsIT {
                 .statusCode(204)
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing get Geo query (Line String) - 400 Invalid Params")
     void GetGeoQueryLineStringInvParams() {
         Response response = given()
-                .param("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id", id)
                 .param("geoproperty", "location")
                 .param("georelation", "intersects")
                 .param("geometry", "linestring")
@@ -449,15 +414,13 @@ public class SpatialSearchAPIsIT {
                 .body("title", equalTo("Bad Request"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
     @DisplayName("testing get Geo query (Line String) - 401 Invalid Credentials")
     void GetGeoQueryLineStringInvCredentials() {
         Response response = given()
-                .param("id", "83c2e5c2-3574-4e11-9530-2b1fbdfce832")
+                .param("id", id)
                 .param("geoproperty", "location")
                 .param("georel", "intersects")
                 .param("geometry", "linestring")
@@ -471,8 +434,6 @@ public class SpatialSearchAPIsIT {
                 .body("title", is("Not Authorized"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -493,7 +454,5 @@ public class SpatialSearchAPIsIT {
                 .body("title", is("Not Found"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 }

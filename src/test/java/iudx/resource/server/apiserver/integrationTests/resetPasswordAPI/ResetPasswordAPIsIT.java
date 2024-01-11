@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static io.restassured.RestAssured.given;
-import static iudx.resource.server.authenticator.JwtTokenHelper.secureResourceToken;
+import static iudx.resource.server.authenticator.TokensForITs.secureResourceToken;
 import static org.hamcrest.Matchers.equalTo;
 
 /**
@@ -35,8 +35,6 @@ public class ResetPasswordAPIsIT {
                 .body("title", equalTo("Successfully changed the password"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -52,8 +50,6 @@ public class ResetPasswordAPIsIT {
                 .body("title", equalTo("Not Found"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -69,7 +65,5 @@ public class ResetPasswordAPIsIT {
                 .body("title", equalTo("Not Authorized"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 }

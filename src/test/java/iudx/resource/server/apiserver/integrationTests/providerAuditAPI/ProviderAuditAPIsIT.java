@@ -10,7 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import static io.restassured.RestAssured.basePath;
 import static io.restassured.RestAssured.given;
-import static iudx.resource.server.authenticator.JwtTokenHelper.delegateToken;
+import static iudx.resource.server.authenticator.TokensForITs.providerToken;
 import static org.hamcrest.Matchers.equalTo;
 
 /**
@@ -35,7 +35,7 @@ public class ProviderAuditAPIsIT {
                 .param("consumer", "15c7506f-c800-48d6-adeb-0542b03947c6")
                 .param("offset",0)
                 .param("limit", 2000)
-                .header("token", delegateToken)
+                .header("token", providerToken)
                 .contentType("application/json")
                 .when()
                 .get("/provider/audit")
@@ -44,8 +44,6 @@ public class ProviderAuditAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -67,8 +65,6 @@ public class ProviderAuditAPIsIT {
                 .body("title", equalTo("Not Authorized"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -81,7 +77,7 @@ public class ProviderAuditAPIsIT {
                 .param("endTime", "2023-07-05T14:20:00Z")
                 .param("api","/"+basePath+"/entityOperations/query")
                 .param("providerID","b2c27f3f-2524-4a84-816e-91f9ab23f837")
-                .header("token", delegateToken)
+                .header("token", providerToken)
                 .header("options", "count")
                 .contentType("application/json")
                 .when()
@@ -91,8 +87,6 @@ public class ProviderAuditAPIsIT {
                 .body("title", equalTo("Success"))
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -105,7 +99,7 @@ public class ProviderAuditAPIsIT {
                 .param("endTime", "2020-11-24T14:20:00Z")
                 .param("api","/"+basePath+"/entityOperations/query")
                 .param("providerID","b2c27f3f-2524-4a84-816e-91f9ab23f837")
-                .header("token", delegateToken)
+                .header("token", providerToken)
                 .header("options", "count")
                 .contentType("application/json")
                 .when()
@@ -114,8 +108,6 @@ public class ProviderAuditAPIsIT {
                 .statusCode(204)
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 
     @Test
@@ -128,7 +120,7 @@ public class ProviderAuditAPIsIT {
                 .param("endTime", "2020-11-02T14:20:00Z")
                 .param("api","/"+basePath+"/entityOperations/query")
                 .param("providerID","b2c27f3f-2524-4a84-816e-91f9ab23f837")
-                .header("token", delegateToken)
+                .header("token", providerToken)
                 .header("options", "count")
                 .contentType("application/json")
                 .when()
@@ -137,7 +129,5 @@ public class ProviderAuditAPIsIT {
                 .statusCode(400)
                 .extract()
                 .response();
-        //Log the entire response details
-        LOGGER.debug("Response details:\n" + response.prettyPrint());
     }
 }
