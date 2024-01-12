@@ -330,7 +330,11 @@ public class SubscriptionService {
                     query.toString(),
                     pgHandler -> {
                       if (pgHandler.succeeded()) {
-                        promise.complete(brokerSubResult);
+                          JsonObject responses = new JsonObject();
+                          responses.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+                          responses.put(TITLE, "success");
+                          responses.put("results", brokerSubResult);
+                          promise.complete(responses);
                       } else {
                         // TODO : rollback mechanism in case of pg error [to unbind/delete created
                         // sub]
