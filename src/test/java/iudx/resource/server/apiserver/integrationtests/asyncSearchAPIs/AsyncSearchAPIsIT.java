@@ -1,4 +1,4 @@
-package iudx.resource.server.apiserver.integrationtests.AsyncSearchAPIs;
+package iudx.resource.server.apiserver.integrationtests.asyncSearchAPIs;
 
 import iudx.resource.server.apiserver.integrationtests.RestAssuredConfiguration;
 import org.junit.jupiter.api.DisplayName;
@@ -6,11 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static io.restassured.RestAssured.given;
-import static iudx.resource.server.authenticator.JwtTokenHelper.openResourceToken;
+
+import static iudx.resource.server.authenticator.TokensForITs.openResourceToken;
 import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(RestAssuredConfiguration.class)
-public class asyncSearchAPIsIT {
+public class AsyncSearchAPIsIT {
     String asyncSearchId="b58da193-23d9-43eb-b98a-a103d4b6103c";
     String searchId="59fef571-274e-4b74-acec-9008cc4caa8e";
     String timerel="between";

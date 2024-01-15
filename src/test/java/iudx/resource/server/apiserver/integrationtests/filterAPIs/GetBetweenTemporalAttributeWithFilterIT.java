@@ -1,4 +1,4 @@
-package iudx.resource.server.apiserver.integrationtests.FilterAPIs;
+package iudx.resource.server.apiserver.integrationtests.filterAPIs;
 
 import iudx.resource.server.apiserver.integrationtests.RestAssuredConfiguration;
 import org.junit.jupiter.api.DisplayName;
@@ -6,13 +6,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static io.restassured.RestAssured.given;
-import static iudx.resource.server.authenticator.JwtTokenHelper.openResourceToken;
+
+import static iudx.resource.server.authenticator.TokensForITs.openResourceToken;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 
 @ExtendWith(RestAssuredConfiguration.class)
-public class getBetweenTemporalAttributeWithFilterIT {
+public class GetBetweenTemporalAttributeWithFilterIT {
     String filterId="b58da193-23d9-43eb-b98a-a103d4b6103c";
     String timerel="between";
     String time="2020-10-18T14:20:00Z";

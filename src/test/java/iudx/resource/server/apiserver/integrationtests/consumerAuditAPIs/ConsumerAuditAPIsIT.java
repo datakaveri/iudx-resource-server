@@ -1,4 +1,4 @@
-package iudx.resource.server.apiserver.integrationtests.ConsumerAuditAPIs;
+package iudx.resource.server.apiserver.integrationtests.consumerAuditAPIs;
 
 import iudx.resource.server.apiserver.integrationtests.RestAssuredConfiguration;
 import org.junit.jupiter.api.DisplayName;
@@ -6,11 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static io.restassured.RestAssured.given;
-import static iudx.resource.server.authenticator.JwtTokenHelper.secureResourceToken;
+
+import static iudx.resource.server.authenticator.TokensForITs.secureResourceToken;
 import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(RestAssuredConfiguration.class)
-public class consumerAuditAPIsIT {
+public class ConsumerAuditAPIsIT {
     String consumerAuditId="b58da193-23d9-43eb-b98a-a103d4b6103c";
     String timerel="between";
     String time="2023-06-20T00:00:00Z";

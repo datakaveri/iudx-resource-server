@@ -1,4 +1,4 @@
-package iudx.resource.server.apiserver.integrationtests.ComplexSearchAPIs;
+package iudx.resource.server.apiserver.integrationtests.complexSearchAPIs;
 
 import iudx.resource.server.apiserver.integrationtests.RestAssuredConfiguration;
 import org.junit.jupiter.api.DisplayName;
@@ -6,12 +6,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static io.restassured.RestAssured.given;
-import static iudx.resource.server.authenticator.JwtTokenHelper.secureResourceToken;
+
+import static iudx.resource.server.authenticator.TokensForITs.secureResourceToken;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(RestAssuredConfiguration.class)
-public class complexSearchAPIsIT {
+public class ComplexSearchAPIsIT {
     String complexId="83c2e5c2-3574-4e11-9530-2b1fbdfce832";
     String geoproperty = "location";
     String georel = "near;maxDistance=10";

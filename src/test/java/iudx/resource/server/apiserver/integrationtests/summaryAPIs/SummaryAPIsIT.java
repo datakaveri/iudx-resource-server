@@ -1,16 +1,19 @@
-package iudx.resource.server.apiserver.integrationtests.SummaryAPIs;
+package iudx.resource.server.apiserver.integrationtests.summaryAPIs;
 
 import iudx.resource.server.apiserver.integrationtests.RestAssuredConfiguration;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static io.restassured.RestAssured.given;
-import static iudx.resource.server.authenticator.JwtTokenHelper.*;
+
+
+import static iudx.resource.server.authenticator.TokensForITs.*;
 import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(RestAssuredConfiguration.class)
-public class summaryAPIsIT {
+public class SummaryAPIsIT {
     @Test
     @DisplayName("200 - (Success)ForAllSubscriptionQueue")
     public void getAllSubscriptionQueueSuccessTest(){
@@ -263,6 +266,15 @@ public class summaryAPIsIT {
                 .statusCode(204)
                 .log().body()
                 .extract().response();
+    }
+    @AfterEach
+    public void tearDown() {
+        // Introduce a delay
+        try {
+            Thread.sleep(1000); // 1 second delay
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 }

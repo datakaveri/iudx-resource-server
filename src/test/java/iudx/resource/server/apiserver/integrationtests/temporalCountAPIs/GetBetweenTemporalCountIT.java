@@ -1,4 +1,4 @@
-package iudx.resource.server.apiserver.integrationtests.TemporalCountAPIs;
+package iudx.resource.server.apiserver.integrationtests.temporalCountAPIs;
 
 import iudx.resource.server.apiserver.integrationtests.RestAssuredConfiguration;
 import org.junit.jupiter.api.DisplayName;
@@ -6,13 +6,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static io.restassured.RestAssured.given;
-import static iudx.resource.server.authenticator.JwtTokenHelper.openResourceToken;
+
+import static iudx.resource.server.authenticator.TokensForITs.openResourceToken;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(RestAssuredConfiguration.class)
-public class getBetweenTemporalCountIT {
+public class GetBetweenTemporalCountIT {
     String temporalId="b58da193-23d9-43eb-b98a-a103d4b6103c";
     @Test
     @DisplayName("200 (success) temporal (between)")
