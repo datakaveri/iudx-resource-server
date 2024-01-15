@@ -5,6 +5,8 @@ import iudx.resource.server.configuration.Configuration;
 import io.restassured.RestAssured;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.authenticator.TokenSetup;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
@@ -19,6 +21,7 @@ import static iudx.resource.server.authenticator.TokensForITs.*;
  * ), proxy host (<code>intTestProxyHost</code>) and proxy port (<code>intTestProxyPort</code>).
  */
 public class RestAssuredConfiguration implements BeforeAllCallback {
+    private static final Logger LOGGER = LogManager.getLogger(RestAssuredConfiguration.class);
 
     @Override
     public void beforeAll(ExtensionContext context) {
@@ -53,13 +56,13 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
             proxy(proxyHost, Integer.parseInt(proxyPort));
         }
 
-        System.out.println("setting up the tokens");
+        LOGGER.debug("setting up the tokens");
         TokenSetup.setupTokens(authEndpoint, providerClientId, providerClientSecret, consumerClientId, consumerClientSecret, delegationId);
 
         // Wait for tokens to be available before proceeding
         waitForTokens();
 
-        // System.out.println("done with setting up the tokens");
+        // LOGGER.debug("done with setting up the tokens");
 
         enableLoggingOfRequestAndResponseIfValidationFails();
     }
@@ -69,7 +72,7 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
 
         // Keep trying to get tokens until they are available or max attempts are reached
         while ((secureResourceToken == null || adminToken == null || providerToken == null || openResourceToken==null || delegateToken==null || adaptorToken==null) && attempt < maxAttempts) {
-            System.out.println("Waiting for tokens to be available. Attempt: " + (attempt + 1));
+            LOGGER.debug("Waiting for tokens to be available. Attempt: " + (attempt + 1));
             // Introduce a delay between attempts
             try {
                 Thread.sleep(1000); // Adjust the delay as needed
@@ -83,7 +86,7 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
             // Log an error or throw an exception if tokens are still not available
             throw new RuntimeException("Failed to retrieve tokens after multiple attempts.");
         } else {
-            System.out.println("Tokens are now available. Proceeding with RestAssured configuration.");
+            LOGGER.debug("Tokens are now available. Proceeding with RestAssured configuration.");
         }
     }
 }
