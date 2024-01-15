@@ -79,9 +79,6 @@ public class TokenSetup {
                 .onFailure(throwable -> {
                     throwable.printStackTrace();
                     promise.fail(throwable);
-                })
-                .onComplete(result -> {
-                    webClient.close();
                 });
 
         return promise.future();
@@ -126,9 +123,6 @@ public class TokenSetup {
                 .onFailure(throwable -> {
                     throwable.printStackTrace();
                     promise.fail(throwable);
-                })
-                .onComplete(result -> {
-                    webClient.close();
                 });
 
         return promise.future();
