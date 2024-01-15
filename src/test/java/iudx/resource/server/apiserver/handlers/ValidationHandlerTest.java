@@ -67,8 +67,9 @@ public class ValidationHandlerTest {
     
     //parameters
     MultiMap parameters = MultiMap.caseInsensitiveMultiMap();
-    parameters.add("timerel", "before");
+    parameters.add("timerel", "during");
     parameters.add("time", "2020-10-18T14:20:00Z");
+    parameters.add("endtime", "2021-09-18T14:20:00Z");
     parameters.add("searchId", UUID.randomUUID().toString());
     
     //for latest

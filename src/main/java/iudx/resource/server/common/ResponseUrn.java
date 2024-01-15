@@ -34,7 +34,7 @@ public enum ResponseUrn {
   INVALID_ID_VALUE_URN("urn:dx:rs:invalidIdValue", "Invalid id"),
   INVALID_PAYLOAD_FORMAT_URN(
       "urn:dx:rs:invalidPayloadFormat", "Invalid json format in post request [schema mismatch]"),
-  INVALID_PARAM_VALUE_URN("urn:dx:rs:invalidParamameterValue", "Invalid parameter value passed"),
+  INVALID_PARAM_VALUE_URN("urn:dx:rs:invalidParameterValue", "Invalid parameter value passed"),
   BAD_REQUEST_URN("urn:dx:rs:badRequest", "bad request parameter"),
   INVALID_HEADER_VALUE_URN("urn:dx:rs:invalidHeaderValue", "Invalid header value"),
   DB_ERROR_URN("urn:dx:rs:DatabaseError", "Database error"),

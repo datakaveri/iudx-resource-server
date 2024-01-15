@@ -14,10 +14,19 @@ public final class TimeRelTypeValidator implements Validator {
 
   private final String value;
   private final boolean required;
+  private final boolean isAsyncQuery;
+
 
   public TimeRelTypeValidator(final String value, final boolean required) {
     this.value = value;
     this.required = required;
+    this.isAsyncQuery = false;
+  }
+
+  public TimeRelTypeValidator(final String value, final boolean required, final boolean isAsyncQuery) {
+    this.value = value;
+    this.required = required;
+    this.isAsyncQuery = isAsyncQuery;
   }
 
   @Override
@@ -36,8 +45,12 @@ public final class TimeRelTypeValidator implements Validator {
             failureCode(), INVALID_TEMPORAL_REL_URN, failureMessage(value));
       }
     }
-    if (!VALIDATION_ALLOWED_TEMPORAL_REL.contains(value)) {
-      LOGGER.error("Validation error : Value " + value + " " + "is not allowed");
+    if(isAsyncQuery && (!VALIDATION_ALLOWED_TEMPORAL_REL_ASYNC.contains(value))) {
+      LOGGER.error("Validation error : Value " + value + " " + "is not allowed for async temporal queries");
+      throw new DxRuntimeException(failureCode(), INVALID_TEMPORAL_REL_URN, failureMessage(value));
+    }
+    if (!isAsyncQuery && (!VALIDATION_ALLOWED_TEMPORAL_REL.contains(value))) {
+      LOGGER.error("Validation error : Value " + value + " " + "is not allowed for temporal queries");
       throw new DxRuntimeException(failureCode(), INVALID_TEMPORAL_REL_URN, failureMessage(value));
     }
     return true;
