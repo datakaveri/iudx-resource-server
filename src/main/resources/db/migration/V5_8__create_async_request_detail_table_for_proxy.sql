@@ -14,13 +14,16 @@ CREATE TABLE IF NOT EXISTS async_request_detail
 
 GRANT USAGE ON SCHEMA ${flyway:defaultSchema} TO ${rsUser};
 
+--
+-- Trigger
+--
 CREATE TRIGGER async_request_detail_created BEFORE INSERT
   ON async_request_detail FOR EACH ROW EXECUTE PROCEDURE update_created ();
 
 ---
 -- index
 ---
-  CREATE INDEX async_request_search_id_index ON auditing_acl_apd USING HASH (search_id);
+  CREATE INDEX async_request_search_id_index ON async_request_detail USING HASH (search_id);
 ---
 -- grants
 ---

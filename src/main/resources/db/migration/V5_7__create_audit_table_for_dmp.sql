@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS auditing_dmp
    modified_at timestamp without time zone NOT NULL
 );
 
-ALTER TABLE auditing_dmp OWNER TO ${flyway:user}
+GRANT USAGE ON SCHEMA ${flyway:defaultSchema} TO ${rsUser};
 
 --
 -- Triggers
