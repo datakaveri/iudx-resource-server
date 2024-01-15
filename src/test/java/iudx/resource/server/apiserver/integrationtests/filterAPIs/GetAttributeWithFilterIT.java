@@ -30,7 +30,7 @@ public class GetAttributeWithFilterIT {
                 .get("/entities")
                 .then()
                 .statusCode(200)
-                .log().body()
+               // .log().body()
                 .body("title", equalTo("Success"))
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("results[0]", notNullValue())
@@ -51,7 +51,7 @@ public class GetAttributeWithFilterIT {
                 .get("/entities")
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("title", equalTo("Success"))
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("results[0]", notNullValue())
@@ -71,8 +71,8 @@ public class GetAttributeWithFilterIT {
                 .when()
                 .get("/entities")
                 .then()
-                .statusCode(204)
-                .log().body();
+                .statusCode(204);
+                //.log().body();
     }
     @Test
     @DisplayName("400 (invalid params)attribute > with filter")
@@ -87,7 +87,7 @@ public class GetAttributeWithFilterIT {
                 .get("/entities")
                 .then()
                 .statusCode(400)
-                .log().body()
+                //.log().body()
                 .body("title", equalTo("Bad Request"))
                 .body("type", equalTo("urn:dx:rs:invalidParamameter"));
     }
@@ -104,7 +104,7 @@ public class GetAttributeWithFilterIT {
                 .get("/entities")
                 .then()
                 .statusCode(400)
-                .log().body()
+               // .log().body()
                 .body("title", equalTo("Bad Request"))
                 .body("type", equalTo("urn:dx:rs:invalidParamameterValue"));
     }
@@ -122,7 +122,7 @@ public class GetAttributeWithFilterIT {
                 .get("/entities")
                 .then()
                 .statusCode(404)
-                .log().body()
+                //.log().body()
                 .body("title", equalTo("Not Found"))
                 .body("type", equalTo("urn:dx:rs:resourceNotFound"));
     }
@@ -139,7 +139,7 @@ public class GetAttributeWithFilterIT {
                 .get("/entities")
                 .then()
                 .statusCode(401)
-                .log().body()
+                //.log().body()
                 .body("title", equalTo("Not Authorized"))
                 .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"));
     }

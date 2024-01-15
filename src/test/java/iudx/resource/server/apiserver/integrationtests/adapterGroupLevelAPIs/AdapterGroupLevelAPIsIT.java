@@ -34,7 +34,7 @@ public class AdapterGroupLevelAPIsIT {
                 .post("/ingestion")
                 .then()
                 .statusCode(201)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("Success"))
                 .body("results", notNullValue())
@@ -56,7 +56,7 @@ public class AdapterGroupLevelAPIsIT {
                 .post("/ingestion")
                 .then()
                 .statusCode(409)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:resourceAlreadyExist"))
                 .body("title", equalTo("Conflict"));
     }
@@ -75,7 +75,7 @@ public class AdapterGroupLevelAPIsIT {
                 .post("/ingestion")
                 .then()
                 .statusCode(401)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"))
                 .body("title", equalTo("Not Authorized"));
     }
@@ -93,7 +93,7 @@ public class AdapterGroupLevelAPIsIT {
                 .get("/ingestion/{adapter_id_GL}")
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("Success"))
                 .extract().response();
@@ -110,7 +110,7 @@ public class AdapterGroupLevelAPIsIT {
                 .get("/ingestion/{nonExisting_adapter_id_GL}")
                 .then()
                 .statusCode(404)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:general"))
                 .body("title", equalTo("Not Found"))
                 .extract().response();
@@ -128,7 +128,7 @@ public class AdapterGroupLevelAPIsIT {
                 .get("/ingestion/{adapter_id_GL}")
                 .then()
                 .statusCode(401)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"))
                 .body("title", equalTo("Not Authorized"))
                 .extract().response();
@@ -147,7 +147,7 @@ public class AdapterGroupLevelAPIsIT {
                 .delete("/ingestion/{adapter_id_GL}")
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("Success"))
                 .extract().response();
@@ -164,7 +164,7 @@ public class AdapterGroupLevelAPIsIT {
                 .delete("/ingestion/{invalid_adapter_id_GL}")
                 .then()
                 .statusCode(404)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:general"))
                 .body("title", equalTo("Not Found"))
                 .extract().response();
@@ -181,7 +181,7 @@ public class AdapterGroupLevelAPIsIT {
                 .delete("/ingestion/{adapter_id_GL}")
                 .then()
                 .statusCode(401)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"))
                 .body("title", equalTo("Not Authorized"))
                 .extract().response();

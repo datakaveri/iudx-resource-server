@@ -18,7 +18,7 @@ public class ConsumerAuditAPIsIT {
     String endTime="2023-06-21T16:00:00Z";
     String options="count";
     String api="/ngsi-ld/v1/temporal/entities";
-
+    String invalidToken="abcd";
     @Test
     @DisplayName("200 (success) Get total API calls made")
     public void getConsumerAuditTotalAPICallsTest(){
@@ -33,7 +33,7 @@ public class ConsumerAuditAPIsIT {
                 .get("/consumer/audit")
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("Success"))
                 .extract().response();
@@ -41,7 +41,7 @@ public class ConsumerAuditAPIsIT {
     @Test
     @DisplayName("401 (not authorized) Get total API calls made")
     public void getConsumerAuditTotalAPICallsWithInvalidTokenTest(){
-        String invalidToken="abcd";
+
         given()
                 .queryParam("timerel", timerel)
                 .queryParam("time", time)
@@ -53,7 +53,7 @@ public class ConsumerAuditAPIsIT {
                 .get("/consumer/audit")
                 .then()
                 .statusCode(401)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"))
                 .body("title", equalTo("Not Authorized"))
                 .extract().response();
@@ -75,9 +75,31 @@ public class ConsumerAuditAPIsIT {
                 .get("/consumer/audit")
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("Success"))
+                .extract().response();
+    }
+    @Test
+    @DisplayName("401 (not authorised) Get Data Read Query")
+    public void getConsumerAuditDataReadQueryWithInvalidTokenTest(){
+        given()
+                .queryParam("id",consumerAuditId)
+                .queryParam("timerel", "during")
+                .queryParam("time", time)
+                .queryParam("endTime", endTime)
+                .queryParam("api",api)
+                .queryParam("offset",0)
+                .queryParam("limit",2000)
+                .header("Content-Type", "application/json")
+                .header("token", invalidToken)
+                .when()
+                .get("/consumer/audit")
+                .then()
+                .statusCode(401)
+                //.log().body()
+                .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"))
+                .body("title", equalTo("Not Authorized"))
                 .extract().response();
     }
     @Test
@@ -96,7 +118,7 @@ public class ConsumerAuditAPIsIT {
                 .get("/consumer/audit")
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("Success"))
                 .extract().response();
@@ -115,8 +137,8 @@ public class ConsumerAuditAPIsIT {
                 .when()
                 .get("/consumer/audit")
                 .then()
-                .statusCode(204)
-                .log().body();
+                .statusCode(204);
+                //.log().body();
     }
     @Test
     @DisplayName("400 (failure) Get Data Read Query")
@@ -134,7 +156,7 @@ public class ConsumerAuditAPIsIT {
                 .get("/consumer/audit")
                 .then()
                 .statusCode(400)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:badRequest"))
                 .body("title", equalTo("Bad Request"))
                 .extract().response();

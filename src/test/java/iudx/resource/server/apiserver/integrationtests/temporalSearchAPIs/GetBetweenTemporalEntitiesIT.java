@@ -28,7 +28,7 @@ public class GetBetweenTemporalEntitiesIT {
                 .get("/temporal/entities")
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("title", equalTo("Success"))
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("results[0].id", notNullValue());
@@ -47,7 +47,7 @@ public class GetBetweenTemporalEntitiesIT {
                 .get("/temporal/entities")
                 .then()
                 .statusCode(200)
-                .log().body()
+               // .log().body()
                 .body("title", equalTo("Success"))
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("results[0].id", notNullValue());
@@ -64,8 +64,8 @@ public class GetBetweenTemporalEntitiesIT {
                 .when()
                 .get("/temporal/entities")
                 .then()
-                .statusCode(204)
-                .log().body();
+                .statusCode(204);
+                //.log().body()
     }
     @Test
     @DisplayName("400 (invalid params) temporal (between)")
@@ -81,7 +81,7 @@ public class GetBetweenTemporalEntitiesIT {
                 .get("/temporal/entities")
                 .then()
                 .statusCode(400)
-                .log().body()
+                //.log().body()
                 .body("title", equalTo("Bad Request"))
                 .body("type", equalTo("urn:dx:rs:invalidTemporalRelationParam"));
     }
@@ -99,7 +99,7 @@ public class GetBetweenTemporalEntitiesIT {
                 .get("/temporal/entities")
                 .then()
                 .statusCode(400)
-                .log().body()
+                //.log().body()
                 .body("title", equalTo("Bad Request"))
                 .body("type", equalTo("urn:dx:rs:invalidAttributeValue"));
     }
@@ -118,7 +118,7 @@ public class GetBetweenTemporalEntitiesIT {
                 .get("/temporal/entities")
                 .then()
                 .statusCode(404)
-                .log().body()
+                //.log().body()
                 .body("title", equalTo("Not Found"))
                 .body("type", equalTo("urn:dx:rs:resourceNotFound"));
     }
@@ -136,7 +136,7 @@ public class GetBetweenTemporalEntitiesIT {
                 .get("/temporal/entities")
                 .then()
                 .statusCode(401)
-                .log().body()
+                //.log().body()
                 .body("title", equalTo("Not Authorized"))
                 .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"));
     }

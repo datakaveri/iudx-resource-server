@@ -44,7 +44,7 @@ public class StreamingSubscriptionAPIsIT {
 
         response.then()
                 .statusCode(201)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("success"))
                 .body("results[0].id", containsString('/' + appName));
@@ -69,7 +69,7 @@ public class StreamingSubscriptionAPIsIT {
                 .post("/subscription")
                 .then()
                 .statusCode(400)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:invalidPayloadFormat"))
                 .body("title", equalTo("Bad Request"));
     }
@@ -90,7 +90,7 @@ public class StreamingSubscriptionAPIsIT {
                 .post("/subscription")
                 .then()
                 .statusCode(401)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"))
                 .body("title", equalTo("Not Authorized"));
     }
@@ -111,7 +111,7 @@ public class StreamingSubscriptionAPIsIT {
                 .post("/subscription")
                 .then()
                 .statusCode(409)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:general"))
                 .body("title", equalTo("Conflict"));
     }
@@ -133,8 +133,8 @@ public class StreamingSubscriptionAPIsIT {
                 .when()
                 .patch("/subscription/"+subscriptionID)
                 .then()
-                .statusCode(201)
-                .log().body();
+                .statusCode(201);
+                //.log().body();
     }
     @Test
     @Order(6)
@@ -153,7 +153,7 @@ public class StreamingSubscriptionAPIsIT {
                 .patch("/subscription/"+subscriptionID)
                 .then()
                 .statusCode(400)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:invalidParamameter"))
                 .body("title", equalTo("Bad Request"));
     }
@@ -174,7 +174,7 @@ public class StreamingSubscriptionAPIsIT {
                 .patch("/subscription/"+subscriptionID)
                 .then()
                 .statusCode(401)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"))
                 .body("title", equalTo("Not Authorized"));
     }
@@ -194,7 +194,7 @@ public class StreamingSubscriptionAPIsIT {
                 .when()
                 .patch("/subscription/"+subscriptionID)
                 .then()
-                .log().body()
+                //.log().body()
                 .statusCode(404)
                 .body("type", equalTo("urn:dx:rs:resourceNotFound"))
                 .body("title", equalTo("Not Found"));
@@ -218,7 +218,7 @@ public class StreamingSubscriptionAPIsIT {
                 .put("/subscription/"+subscriptionID)
                 .then()
                 .statusCode(201)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("success"));
     }
@@ -239,7 +239,7 @@ public class StreamingSubscriptionAPIsIT {
                 .put("/subscription/"+subscriptionID)
                 .then()
                 .statusCode(400)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:invalidParamameter"))
                 .body("title", equalTo("Bad Request"));
     }
@@ -260,7 +260,7 @@ public class StreamingSubscriptionAPIsIT {
                 .patch("/subscription/"+subscriptionID)
                 .then()
                 .statusCode(401)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"))
                 .body("title", equalTo("Not Authorized"));
     }
@@ -280,7 +280,7 @@ public class StreamingSubscriptionAPIsIT {
                 .when()
                 .patch("/subscription/"+subscriptionID)
                 .then()
-                .log().body()
+                //.log().body()
                 .statusCode(404)
                 .body("type", equalTo("urn:dx:rs:resourceNotFound"))
                 .body("title", equalTo("Not Found"));
@@ -299,7 +299,7 @@ public class StreamingSubscriptionAPIsIT {
                 .get("/subscription/"+subscriptionID)
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("success"));
     }
@@ -315,7 +315,7 @@ public class StreamingSubscriptionAPIsIT {
                 .get("/subscription/"+subscriptionID)
                 .then()
                 .statusCode(401)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"))
                 .body("title", equalTo("Not Authorized"));
     }
@@ -331,7 +331,7 @@ public class StreamingSubscriptionAPIsIT {
                 .when()
                 .get("/subscription/"+nonExistingId)
                 .then()
-                .log().body()
+                //.log().body()
                 .statusCode(404)
 
                 .body("type", equalTo("urn:dx:rs:resourceNotFound"))
@@ -352,7 +352,7 @@ public class StreamingSubscriptionAPIsIT {
                 .delete("/subscription/"+subscriptionID)
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("success"));
     }
@@ -368,7 +368,7 @@ public class StreamingSubscriptionAPIsIT {
                 .delete("/subscription/"+subscriptionID)
                 .then()
                 .statusCode(401)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"))
                 .body("title", equalTo("Not Authorized"));
     }
@@ -384,7 +384,7 @@ public class StreamingSubscriptionAPIsIT {
                 .when()
                 .delete("/subscription/"+nonExistingId)
                 .then()
-                .log().body()
+                //.log().body()
                 .statusCode(404)
                 .body("type", equalTo("urn:dx:rs:resourceNotFound"))
                 .body("title", equalTo("Not Found"));

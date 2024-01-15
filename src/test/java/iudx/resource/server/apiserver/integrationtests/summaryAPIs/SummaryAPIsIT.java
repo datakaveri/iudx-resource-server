@@ -24,7 +24,7 @@ public class SummaryAPIsIT {
                 .get("/subscription")
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("Success"))
                 .extract().response();
@@ -39,7 +39,7 @@ public class SummaryAPIsIT {
                 .get("/ingestion")
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("Success"))
                 .extract().response();
@@ -55,7 +55,7 @@ public class SummaryAPIsIT {
                 .get("/subscription")
                 .then()
                 .statusCode(401)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"))
                 .body("title", equalTo("Not Authorized"))
                 .extract().response();
@@ -70,7 +70,7 @@ public class SummaryAPIsIT {
                 .get("/ingestion")
                 .then()
                 .statusCode(401)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"))
                 .body("title", equalTo("Not Authorized"))
                 .extract().response();
@@ -85,7 +85,7 @@ public class SummaryAPIsIT {
                 .get("/overview")
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("Success"))
                 .extract().response();
@@ -101,7 +101,7 @@ public class SummaryAPIsIT {
                 .get("/overview")
                 .then()
                 .statusCode(401)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"))
                 .body("title", equalTo("Not Authorized"))
                 .extract().response();
@@ -118,7 +118,7 @@ public class SummaryAPIsIT {
                 .get("/overview")
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("Success"))
                 .extract().response();
@@ -135,7 +135,7 @@ public class SummaryAPIsIT {
                 .get("/overview")
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("Success"))
                 .extract().response();
@@ -151,7 +151,7 @@ public class SummaryAPIsIT {
                 .get("/overview")
                 .then()
                 .statusCode(400)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:backend"))
                 .body("title", equalTo("Bad Request"))
                 .extract().response();
@@ -168,7 +168,7 @@ public class SummaryAPIsIT {
                 .get("/overview")
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("Success"))
                 .extract().response();
@@ -183,7 +183,7 @@ public class SummaryAPIsIT {
                 .get("/overview")
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("Success"))
                 .extract().response();
@@ -198,7 +198,7 @@ public class SummaryAPIsIT {
                 .get("/overview")
                 .then()
                 .statusCode(200)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:success"))
                 .body("title", equalTo("Success"))
                 .extract().response();
@@ -215,7 +215,7 @@ public class SummaryAPIsIT {
                 .get("/summary")
                 .then()
                 .statusCode(200)
-                .log().body()
+               // .log().body()
                 .body("type", equalTo("urn:dx:dm:Success"))
                 .body("title", equalTo("Success"))
                 .extract().response();
@@ -231,7 +231,7 @@ public class SummaryAPIsIT {
                 .get("/summary")
                 .then()
                 .statusCode(401)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"))
                 .body("title", equalTo("Not Authorized"))
                 .extract().response();
@@ -247,7 +247,7 @@ public class SummaryAPIsIT {
                 .get("/summary")
                 .then()
                 .statusCode(400)
-                .log().body()
+                //.log().body()
                 .body("type", equalTo("urn:dx:rs:backend"))
                 .body("title", equalTo("Bad Request"))
                 .extract().response();
@@ -264,7 +264,7 @@ public class SummaryAPIsIT {
                 .get("/summary")
                 .then()
                 .statusCode(204)
-                .log().body()
+                //.log().body()
                 .extract().response();
     }
     @AfterEach
