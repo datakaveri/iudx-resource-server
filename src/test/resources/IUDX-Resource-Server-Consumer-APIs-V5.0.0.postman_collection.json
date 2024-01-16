@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "1e242c76-0800-47be-a499-5caad292c700",
+		"_postman_id": "d21d595f-bd0e-4c8a-ae7a-f3ba412abd4b",
 		"name": "IUDX-Resource-Server-Consumer-APIs-V5.0.0",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "20457128"
+		"_exporter_id": "29500919"
 	},
 	"item": [
 		{
@@ -11267,6 +11267,57 @@
 					"response": []
 				},
 				{
+					"name": "400 (Bad Request) Get Latest data (Open Resource)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 400 (Bad request)\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Bad Request\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"type": "text",
+								"value": "{{openResourceToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/entities/b58da193-23d9-43eb-b98a-a103d4b6103c/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"entities",
+								"b58da193-23d9-43eb-b98a-a103d4b6103c",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "404 (not found) Get Latest data",
 					"event": [
 						{
@@ -17038,6 +17089,69 @@
 					"response": []
 				},
 				{
+					"name": "400 (bad query) - create a streaming subscription RL",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 400 (Bad Request Data)\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Bad Request\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"type": "text",
+								"value": "{{secureResourceToken}}"
+							},
+							{
+								"key": "options",
+								"type": "text",
+								"value": "streaming"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"RS-integration-test-alias-RL\",\r\n    \"types\": \"subscription\",\r\n    \"entities\": [\"83c2e5c2-3574-4e11-9530-2b1fbdfce832\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/subscription",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"subscription"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "401 (not authorized) create a streaming subscription",
 					"event": [
 						{
@@ -17663,6 +17777,70 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\n    \"name\": \"RS-integration-test-alias-RL\",\n    \"type\": \"subscription\",\n    \"entities\": [\"83c2e5c2-3574-4e11-9530-2b1fbdfce832\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/subscription/{{subscriptionID}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"subscription",
+								"{{subscriptionID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "404 (Not Found) - Update streaming subscription",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 404 (Not Found)\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Not Found\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							},
+							{
+								"key": "options",
+								"value": "streaming",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"RS-integration-test-alias-RL\",\n    \"type\": \"subscription\",\n    \"entities\": [\"91317385-e2a9-40bb-a3a0-0286d9da18d1\"]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -19838,6 +20016,113 @@
 					]
 				},
 				{
+					"name": "404 (Not Found) - Register adaptor (GL)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 404 (Not Found)\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Not Found\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{providerToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"entities\": [\r\n        \"8776e1e8-0649-46a5-b202-f9dacec226c3\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/ingestion",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"ingestion"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "register adapter",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "token",
+										"value": "auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/9c86739bbb0f653aeed1d78d18d64841",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"resourceGroup\":\"surat-itms\",\r\n    \"resourceServer\":\"rs.iudx.io\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/{{basePath}}/adapter/register",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{basePath}}",
+										"adapter",
+										"register"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								},
+								{
+									"key": "content-length",
+									"value": "225"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"username\": \"datakaveri.org/3ae88e7ba006938ffc38203d326b1711b892226d\",\n    \"apiKey\": \"123456\",\n    \"id\": \"rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms\",\n    \"URL\": \"databroker.iudx.io\",\n    \"port\": \"5671\",\n    \"vHost\": \"IUDX\"\n}"
+						}
+					]
+				},
+				{
 					"name": "409 (already exist) - Register adaptor",
 					"event": [
 						{
@@ -20410,6 +20695,113 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"entities\": [\r\n        \"695e222b-3fae-4325-8db0-3e29d01c4fc0\"\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/ingestion",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"ingestion"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "register adapter",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "token",
+										"value": "auth.iudx.org.in/vasanth.rajaraman@datakaveri.org/9c86739bbb0f653aeed1d78d18d64841",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"resourceGroup\":\"surat-itms\",\r\n    \"resourceServer\":\"rs.iudx.io\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/{{basePath}}/adapter/register",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{basePath}}",
+										"adapter",
+										"register"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								},
+								{
+									"key": "content-length",
+									"value": "225"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"username\": \"datakaveri.org/3ae88e7ba006938ffc38203d326b1711b892226d\",\n    \"apiKey\": \"123456\",\n    \"id\": \"rbccps.org/aa9d66a000d94a78895de8d4c0b3a67f3450e531/rs.iudx.io/surat-itms\",\n    \"URL\": \"databroker.iudx.io\",\n    \"port\": \"5671\",\n    \"vHost\": \"IUDX\"\n}"
+						}
+					]
+				},
+				{
+					"name": "404 (Not Found) - Register adapter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 404 (Not Found)\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Not Found\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{adaptorToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"entities\": [\r\n        \"8b6b277e-72d4-4e4f-b083-a3fb5add58a1\"\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -21182,6 +21574,92 @@
 							{
 								"key": "token",
 								"value": "{{secureResourceToken}}",
+								"type": "text"
+							},
+							{
+								"key": "options",
+								"value": "count",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/consumer/audit?id=b58da193-23d9-43eb-b98a-a103d4b6103c&timerel=during&time=2023-06-12T14:20:00Z&endTime=2023-07-05T14:20:00Z&api=/{{basePath}}/temporal/entities&offset=0&limit=2000",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"consumer",
+								"audit"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "b58da193-23d9-43eb-b98a-a103d4b6103c"
+								},
+								{
+									"key": "timerel",
+									"value": "during"
+								},
+								{
+									"key": "time",
+									"value": "2023-06-12T14:20:00Z"
+								},
+								{
+									"key": "endTime",
+									"value": "2023-07-05T14:20:00Z"
+								},
+								{
+									"key": "api",
+									"value": "/{{basePath}}/temporal/entities"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "2000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (not authorised) Get Data Read Query",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 401 (Not Authorized)\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Not Authorized\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "abc",
 								"type": "text"
 							},
 							{
@@ -22142,7 +22620,7 @@
 							"script": {
 								"exec": [
 									"// Test the response code\r",
-									"pm.test(\"response is 401 (Not Authorized)\", function () {\r",
+									"pm.test(\"response is 400 (Bad request)\", function () {\r",
 									"    pm.response.to.have.status(400);\r",
 									"});\r",
 									"\r",
@@ -22381,6 +22859,183 @@
 							{
 								"key": "token",
 								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/async/status?searchID={{searchID}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"async",
+								"status"
+							],
+							"query": [
+								{
+									"key": "searchID",
+									"value": "{{searchID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (Invalid Param) Async Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code\r",
+									"pm.test(\"response is 200 (OK)\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Test the response header\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"// Test the response\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:rs:success\");\r",
+									"    pm.expect(body).to.have.property(\"title\", \"Success\");\r",
+									"    pm.expect(body).to.have.property(\"results\");\r",
+									"    const resultsjsonData = body.results[0];\r",
+									"     pm.expect(resultsjsonData).to.have.property(\"status\");\r",
+									"    const status = resultsjsonData.status;\r",
+									"    pm.expect(status).to.be.oneOf(['IN_PROGRESS','COMPLETE','ERROR','SUBMITTED']);\r",
+									"    if(status === 'ready') {\r",
+									"        pm.expect(resultsjsonData).to.have.property(\"file-download-url\");\r",
+									"    }\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/async/status?searchID={{searchID}}-123",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"async",
+								"status"
+							],
+							"query": [
+								{
+									"key": "searchID",
+									"value": "{{searchID}}-123"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (Incorrect search ID) Async Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code\r",
+									"pm.test(\"response is 400 (Bad request)\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"// Test the response header\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"// Test the response\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"title\", \"Bad Request\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{openResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/async/status?searchID=64ed16b6-3ac3-44da-9215-5a3817303fea",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"async",
+								"status"
+							],
+							"query": [
+								{
+									"key": "searchID",
+									"value": "64ed16b6-3ac3-44da-9215-5a3817303fea"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "401 (Not Authorised) Async Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code\r",
+									"pm.test(\"response is 401 (Not Authorized)\", function () {\r",
+									"    pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"// Test the response header\r",
+									"pm.test(\"Check response header\", function () {\r",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");\r",
+									"});\r",
+									"\r",
+									"// Test the response\r",
+									"pm.test(\"Check response body\", function () {    \r",
+									"    const body = pm.response.json();\r",
+									"    pm.expect(body).to.have.property(\"title\", \"Not Authorized\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "abc",
 								"type": "text"
 							}
 						],
