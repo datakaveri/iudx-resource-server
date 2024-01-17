@@ -22,15 +22,14 @@ import static iudx.resource.server.authenticator.TokensForITs.*;
  */
 public class RestAssuredConfiguration implements BeforeAllCallback {
     private static final Logger LOGGER = LogManager.getLogger(RestAssuredConfiguration.class);
+  private static Configuration configuration;
 
     @Override
     public void beforeAll(ExtensionContext context) {
         Vertx vertx = Vertx.vertx();
-        JsonObject config = Configuration.configLoader(3, vertx);
-        String testHost = config.getString("host");
-
-        JsonObject config2 = Configuration.configLoader(1, vertx);
-        String authServerHost = config2.getString("authServerHost");
+        configuration = new Configuration();
+        JsonObject config = configuration.configLoader(1, vertx);
+        String authServerHost = config.getString("authServerHost");
 
         boolean testOnDepl = Boolean.parseBoolean(System.getProperty("intTestDepl"));
         if (testOnDepl) {
@@ -61,11 +60,11 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
         String proxyHost = System.getProperty("intTestProxyHost");
         String proxyPort = System.getProperty("intTestProxyPort");
 
-        JsonObject providerCredentials = config2.getJsonObject("clientCredentials").getJsonObject("provider");
+        JsonObject providerCredentials = config.getJsonObject("clientCredentials").getJsonObject("provider");
         String providerClientId = providerCredentials.getString("clientID");
         String providerClientSecret = providerCredentials.getString("clientSecret");
 
-        JsonObject consumerCredentials = config2.getJsonObject("clientCredentials").getJsonObject("consumer");
+        JsonObject consumerCredentials = config.getJsonObject("clientCredentials").getJsonObject("consumer");
         String consumerClientId = consumerCredentials.getString("clientID");
         String consumerClientSecret = consumerCredentials.getString("clientSecret");
         String delegationId = consumerCredentials.getString("delegationId");
