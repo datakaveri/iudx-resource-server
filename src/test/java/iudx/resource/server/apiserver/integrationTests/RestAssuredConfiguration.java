@@ -32,10 +32,27 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
         JsonObject config2 = Configuration.configLoader(1, vertx);
         String authServerHost = config2.getString("authServerHost");
 
-        if (testHost != null) {
-            baseURI = "https://"+testHost;
+        boolean testOnDepl = Boolean.parseBoolean(System.getProperty("intTestDepl"));
+        if (testOnDepl) {
+          String testHost = "rs.iudx.io";
+          baseURI = "https://" + testHost;
+          port = 443;
         } else {
+          String testHost = System.getProperty("intTestHost");
+
+          if (testHost != null) {
+            baseURI = "http://" + testHost;
+          } else {
             baseURI = "http://localhost";
+          }
+
+          String testPort = System.getProperty("intTestPort");
+
+          if (testPort != null) {
+            port = Integer.parseInt(testPort);
+          } else {
+            port = 8080;
+          }
         }
 
         basePath = "ngsi-ld/v1";
@@ -66,6 +83,7 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
 
         enableLoggingOfRequestAndResponseIfValidationFails();
     }
+
     private void waitForTokens() {
         int maxAttempts = 5;
         int attempt = 0;

@@ -119,6 +119,7 @@ pipeline {
           }
         }
         script{
+            sh 'scp /home/ubuntu/configs/rs-config-test.json ./configs/config-test.json'
             sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8080'
         }
         node('built-in') {
@@ -193,7 +194,7 @@ pipeline {
         stage('Integration test on swarm deployment') {
           steps {
               script{
-                sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestHost=rs.iudx.io -DintTestPort=80'
+                sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestDepl=true'
               }
           }
           post{
