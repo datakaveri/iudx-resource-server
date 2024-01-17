@@ -393,7 +393,8 @@ public class SubscriptionServiceTest {
         when(cacheService.get(any())).thenReturn(Future.succeededFuture(json));
         service.appendSubscription(json, databroker, pgService, authInfo,cacheService).onComplete(handler -> {
             if (handler.succeeded()) {
-                assertEquals(json, handler.result());
+                assertEquals("success", handler.result().getString("title"));
+                assertEquals("urn:dx:rs:success", handler.result().getString("type"));
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());

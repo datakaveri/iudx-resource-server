@@ -5,8 +5,6 @@ import static iudx.resource.server.apiserver.util.Constants.SUBSCRIPTION_ID;
 import static iudx.resource.server.authenticator.Constants.ROLE;
 import static iudx.resource.server.cache.cachelmpl.CacheType.CATALOGUE_CACHE;
 import static iudx.resource.server.databroker.util.Constants.*;
-import static iudx.resource.server.metering.util.Constants.DELEGATOR_ID;
-import static iudx.resource.server.metering.util.Constants.PROVIDER_ID;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import io.vertx.core.Future;
@@ -95,8 +93,9 @@ public class SubscriptionService {
                             delegatorId = authInfo.getString("userid");
                           }
                           String type =
-                              cacheResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" :
-                                  "RESOURCE_GROUP";
+                              cacheResult.containsKey(RESOURCE_GROUP)
+                                  ? "RESOURCE"
+                                  : "RESOURCE_GROUP";
                           StringBuilder query =
                               new StringBuilder(
                                   CREATE_SUB_SQL
@@ -341,7 +340,8 @@ public class SubscriptionService {
                         .put("key", json.getJsonArray("entities").getString(0))
                         .put("type", CATALOGUE_CACHE);
                 cacheService
-                    .get(cacheJson).onSuccess(
+                    .get(cacheJson)
+                    .onSuccess(
                         cacheResult -> {
                           String role = authInfo.getString(ROLE);
                           String drl = authInfo.getString(DRL);
@@ -352,7 +352,9 @@ public class SubscriptionService {
                             delegatorId = authInfo.getString("userid");
                           }
                           String type =
-                              cacheResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" : "RESOURCE_GROUP";
+                              cacheResult.containsKey(RESOURCE_GROUP)
+                                  ? "RESOURCE"
+                                  : "RESOURCE_GROUP";
 
                           StringBuilder query =
                               new StringBuilder(
@@ -374,19 +376,21 @@ public class SubscriptionService {
                               query.toString(),
                               pgHandler -> {
                                 if (pgHandler.succeeded()) {
-                                  promise.complete(brokerSubResult);
+                                  JsonObject responses = new JsonObject();
+                                  responses.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+                                  responses.put(TITLE, "success");
+                                  responses.put("results", brokerSubResult);
+                                  promise.complete(responses);
                                 } else {
-                                  // TODO : rollback mechanism in case of pg error [to unbind/delete created
+                                  // TODO : rollback mechanism in case of pg error [to unbind/delete
+                                  // created
                                   // sub]
                                   JsonObject res = new JsonObject(pgHandler.cause().getMessage());
                                   promise.fail(generateResponse(res).toString());
                                 }
                               });
-
                         })
-                    .onFailure(
-                        failed -> LOGGER.error(failed.getCause()
-                        ));
+                    .onFailure(failed -> LOGGER.error(failed.getCause()));
               } else {
                 JsonObject res = new JsonObject(handler.cause().getMessage());
                 promise.fail(generateResponse(res).toString());
@@ -394,7 +398,6 @@ public class SubscriptionService {
             });
 
     return promise.future();
-
   }
 
   private JsonObject generateResponse(JsonObject response) {

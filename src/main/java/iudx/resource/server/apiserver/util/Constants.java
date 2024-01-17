@@ -10,7 +10,7 @@ public class Constants {
   public static final String APP_NAME_REGEX = "[a-zA-Z0-9._\\-]*$";
 
   public static final String APP_TEST_NAME = "vasanth";
-  public static final String APP_TEST_CONSUMER = "vasanth@iudx.org";
+  public static final String EVENT = "event";
   public static final String API_ENDPOINT = "apiEndpoint";
   public static final String API_METHOD = "method";
   public static final String ID = "id";
@@ -74,6 +74,7 @@ public class Constants {
       IUDX_MANAGEMENT_URL + "/user/resetPassword";
   public static final String RESET_URL_REGEX = IUDX_MANAGEMENT_RESET_PWD + "(.*)";
   public static final String RESET_PWD = "/user/resetPassword";
+
   /** API Documentation endpoint */
   public static final String ROUTE_STATIC_SPEC = "/apis/spec";
 
@@ -276,7 +277,8 @@ public class Constants {
   public static final List<String> VALIDATION_ALLOWED_TEMPORAL_REL =
       List.of("after", "before", "during", "between");
 
-  public static final List<String> VALIDATION_ALLOWED_TEMPORAL_REL_ASYNC = List.of("during", "between");
+  public static final List<String> VALIDATION_ALLOWED_TEMPORAL_REL_ASYNC =
+      List.of("during", "between");
 
   public static final Pattern VALIDATION_Q_ATTR_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{1,100}$");
 
