@@ -36,13 +36,14 @@ public class TokenSetup {
         });
     }
 
-    private static Future<String> fetchToken(String userType, String authEndpoint, String clientID, String clientSecret) {
+    private static Future<String> fetchToken(String userType, String authHost, String clientID, String clientSecret) {
         Promise<String> promise = Promise.promise();
         JsonObject jsonPayload = getPayload(userType);
         // Create a WebClient to make the HTTP request
-        webClient = WebClient.create(Vertx.vertx(), new WebClientOptions().setSsl(true));
+        webClient = WebClient.create(Vertx.vertx(),
+            new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true));
 
-        webClient.postAbs(authEndpoint)
+        webClient.post(443,authHost,"/auth/v1/token")
                 .putHeader("Content-Type", "application/json")
                 .putHeader("clientID", clientID)
                 .putHeader("clientSecret", clientSecret)
@@ -85,13 +86,14 @@ public class TokenSetup {
     }
 
 
-    private static Future<String> fetchToken(String userType, String authEndpoint, String clientID, String clientSecret, String delegationId) {
+    private static Future<String> fetchToken(String userType, String authHost, String clientID, String clientSecret, String delegationId) {
         Promise<String> promise = Promise.promise();
         JsonObject jsonPayload = getPayload(userType);
         // Create a WebClient to make the HTTP request for fetching delegate and adaptor tokens
-        webClient = WebClient.create(Vertx.vertx(), new WebClientOptions().setSsl(true));
+        webClient = WebClient.create(Vertx.vertx(),
+            new WebClientOptions().setTrustAll(true).setVerifyHost(false).setSsl(true));
 
-        webClient.postAbs(authEndpoint)
+        webClient.post(443,authHost,"/auth/v1/token")
                 .putHeader("Content-Type", "application/json")
                 .putHeader("clientID", clientID)
                 .putHeader("clientSecret", clientSecret)

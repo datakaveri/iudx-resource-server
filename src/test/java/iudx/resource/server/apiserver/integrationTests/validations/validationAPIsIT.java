@@ -261,7 +261,7 @@ public class validationAPIsIT {
                 .then()
                 .statusCode(400)
                 .body("title", equalTo("Bad Request"))
-                .body("type", equalTo("urn:dx:rs:invalidParamameterValue"))
+                .body("type", equalTo("urn:dx:rs:invalidParameterValue"))
                 .extract()
                 .response();
     }
@@ -283,7 +283,7 @@ public class validationAPIsIT {
                 .then()
                 .statusCode(400)
                 .body("title", equalTo("Bad Request"))
-                .body("type", equalTo("urn:dx:rs:invalidParamameterValue"))
+                .body("type", equalTo("urn:dx:rs:invalidParameterValue"))
                 .extract()
                 .response();
     }
@@ -361,7 +361,7 @@ public class validationAPIsIT {
                 .then()
                 .statusCode(400)
                 .body("title", equalTo("Bad Request"))
-                .body("type", equalTo("urn:dx:rs:invalidParamameterValue"))
+                .body("type", equalTo("urn:dx:rs:invalidTemporalRelationParam"))
                 .extract()
                 .response();
     }

@@ -57,20 +57,25 @@ public final class QtypeValidator implements Validator {
   JsonObject getQueryTerms(final String queryTerms) {
     JsonObject json = new JsonObject();
 
-    String[] attributeQueryTerms =
-        queryTerms.split("((?=>)|(?<=>)|(?=<)|(?<=<)|(?==)|(?<==)|(?=!)|(?<=!))");
-    LOGGER.debug(Arrays.stream(attributeQueryTerms).collect(Collectors.toList()));
-    LOGGER.debug(attributeQueryTerms.length);
-    if (attributeQueryTerms.length == 3) {
-      json.put(JSON_OPERATOR, attributeQueryTerms[1]).put(JSON_VALUE, attributeQueryTerms[2]);
-    } else if (attributeQueryTerms.length == 4) {
-      json.put(JSON_OPERATOR, attributeQueryTerms[1].concat(attributeQueryTerms[2]))
-          .put(JSON_VALUE, attributeQueryTerms[3]);
-    } else {
-      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
-    }
+    String[] attributes = queryTerms.split(";");
+    LOGGER.debug(attributes);
 
-    json.put(JSON_ATTRIBUTE, attributeQueryTerms[0]);
+    for (String attr : attributes) {
+
+      String[] attributeQueryTerms =
+          attr.split("((?=>)|(?<=>)|(?=<)|(?<=<)|(?==)|(?<==)|(?=!)|(?<=!))");
+      LOGGER.debug(Arrays.stream(attributeQueryTerms).collect(Collectors.toList()));
+      LOGGER.debug(attributeQueryTerms.length);
+      if (attributeQueryTerms.length == 3) {
+        json.put(JSON_OPERATOR, attributeQueryTerms[1]).put(JSON_VALUE, attributeQueryTerms[2]);
+      } else if (attributeQueryTerms.length == 4) {
+        json.put(JSON_OPERATOR, attributeQueryTerms[1].concat(attributeQueryTerms[2]))
+            .put(JSON_VALUE, attributeQueryTerms[3]);
+      } else {
+        throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
+      }
+      json.put(JSON_ATTRIBUTE, attributeQueryTerms[0]);
+    }
 
     LOGGER.debug(json);
 

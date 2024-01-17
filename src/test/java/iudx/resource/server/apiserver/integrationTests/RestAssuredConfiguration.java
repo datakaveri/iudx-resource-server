@@ -50,13 +50,11 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
           if (testPort != null) {
             port = Integer.parseInt(testPort);
           } else {
-            port = 8080;
+            port = 8081;
           }
         }
 
         basePath = "ngsi-ld/v1";
-        String dxAuthBasePath = "auth/v1";
-        String authEndpoint = "https://"+ authServerHost + "/" + dxAuthBasePath +  "/token";
         String proxyHost = System.getProperty("intTestProxyHost");
         String proxyPort = System.getProperty("intTestProxyPort");
 
@@ -73,7 +71,7 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
         }
 
         LOGGER.debug("setting up the tokens");
-        TokenSetup.setupTokens(authEndpoint, providerClientId, providerClientSecret, consumerClientId, consumerClientSecret, delegationId);
+        TokenSetup.setupTokens(authServerHost, providerClientId, providerClientSecret, consumerClientId, consumerClientSecret, delegationId);
 
         // Wait for tokens to be available before proceeding
         waitForTokens();
