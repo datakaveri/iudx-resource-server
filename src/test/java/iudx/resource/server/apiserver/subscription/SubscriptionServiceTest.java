@@ -393,7 +393,8 @@ public class SubscriptionServiceTest {
 
         service.appendSubscription(json, databroker, pgService, authInfo).onComplete(handler -> {
             if (handler.succeeded()) {
-                assertEquals(json, handler.result());
+                assertEquals("success", handler.result().getString("title"));
+                assertEquals("urn:dx:rs:success", handler.result().getString("type"));
                 vertxTestContext.completeNow();
             } else {
                 vertxTestContext.failNow(handler.cause());
