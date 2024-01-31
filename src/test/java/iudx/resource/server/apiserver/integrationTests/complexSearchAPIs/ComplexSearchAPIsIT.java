@@ -1,6 +1,6 @@
-package iudx.resource.server.apiserver.integrationtests.complexSearchAPIs;
+package iudx.resource.server.apiserver.integrationTests.complexSearchAPIs;
 
-import iudx.resource.server.apiserver.integrationtests.RestAssuredConfiguration;
+import iudx.resource.server.apiserver.integrationTests.RestAssuredConfiguration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

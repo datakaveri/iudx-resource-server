@@ -1,6 +1,6 @@
-package iudx.resource.server.apiserver.integrationtests.summaryAPIs;
+package iudx.resource.server.apiserver.integrationTests.summaryAPIs;
 
-import iudx.resource.server.apiserver.integrationtests.RestAssuredConfiguration;
+import iudx.resource.server.apiserver.integrationTests.RestAssuredConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,8 +1,8 @@
-package iudx.resource.server.apiserver.integrationtests.subscriptionAPIs;
+package iudx.resource.server.apiserver.integrationTests.subscriptionAPIs;
 import io.restassured.response.Response;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import iudx.resource.server.apiserver.integrationtests.RestAssuredConfiguration;
+import iudx.resource.server.apiserver.integrationTests.RestAssuredConfiguration;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import static io.restassured.RestAssured.*;

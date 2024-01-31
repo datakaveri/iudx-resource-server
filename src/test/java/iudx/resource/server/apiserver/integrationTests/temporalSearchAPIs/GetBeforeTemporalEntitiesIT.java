@@ -1,6 +1,6 @@
-package iudx.resource.server.apiserver.integrationtests.temporalCountAPIs;
+package iudx.resource.server.apiserver.integrationTests.temporalSearchAPIs;
 
-import iudx.resource.server.apiserver.integrationtests.RestAssuredConfiguration;
+import iudx.resource.server.apiserver.integrationTests.RestAssuredConfiguration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,54 +10,49 @@ import static io.restassured.RestAssured.given;
 import static iudx.resource.server.authenticator.TokensForITs.openResourceToken;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 
 @ExtendWith(RestAssuredConfiguration.class)
-public class GetBeforeTemporalCountIT {
+public class GetBeforeTemporalEntitiesIT {
     String temporalId="b58da193-23d9-43eb-b98a-a103d4b6103c";
     @Test
     @DisplayName("200 (success) temporal (before)")
-    public void getTemporalCountTest(){
+    public void getTemporalEntityTest(){
         given()
                 .queryParam("id",temporalId)
                 .queryParam("timerel", "before")
                 .queryParam("time", "2020-10-19T12:00:00Z")
-                .queryParam("options","count")
                 .header("Content-Type", "application/json")
                 .header("token", openResourceToken)
                 .when()
                 .get("/temporal/entities")
                 .then()
                 .statusCode(200)
-               // .log().body()
+                //.log().body()
                 .body("title", equalTo("Success"))
                 .body("type", equalTo("urn:dx:rs:success"))
-                .body("results[0]", notNullValue())
-                .body("results[0].totalHits", is(notNullValue()));
+                .body("results[0].id", notNullValue());
     }
     @Test
     @DisplayName("204 (Empty Response) temporal (before)")
-    public void getTemporalCountWithEmptyResponseTest(){
+    public void getTemporalEntityWithEmptyResponseTest(){
         given()
                 .queryParam("id",temporalId)
                 .queryParam("timerel", "before")
-                .queryParam("time", "2020-01-19T12:00:00Z")
-                .queryParam("options","count")
+                .queryParam("time", "2020-01-19T14:20:00Z")
                 .header("token", openResourceToken)
                 .when()
                 .get("/temporal/entities")
                 .then()
                 .statusCode(204);
-               // .log().body();
+                //.log().body()
     }
     @Test
     @DisplayName("400 (Invalid params) temporal (before)")
-    public void getTemporalCountWithInvalidParamsTest(){
+    public void getTemporalEntityWithInvalidParamsTest(){
         given()
                 .queryParam("id",temporalId)
                 .queryParam("timerel", "before")
-                .queryParam("timeattribute", "2020-09-19T12:00:00Z")
-                .queryParam("options","count")
+                .queryParam("timea", "2020-09-19T14:20:00Z")
                 .header("Content-Type", "application/json")
                 .header("token", openResourceToken)
                 .when()
@@ -70,12 +65,11 @@ public class GetBeforeTemporalCountIT {
     }
     @Test
     @DisplayName("400 (invalid date format) temporal (before)")
-    public void getTemporalCountWithInvalidDateFormatTest(){
+    public void getTemporalEntityWithInvalidDateFormatTest(){
         given()
                 .queryParam("id",temporalId)
                 .queryParam("timerel", "before")
-                .queryParam("time", "2020-09-19XX12:00:00Z")
-                .queryParam("options","count")
+                .queryParam("time", "2020-09-19X14:20:00Z")
                 .header("Content-Type", "application/json")
                 .header("token", openResourceToken)
                 .when()
@@ -88,13 +82,12 @@ public class GetBeforeTemporalCountIT {
     }
     @Test
     @DisplayName("404 (not found) temporal (before)")
-    public void temporalCountNotFoundTest(){
-        String nonExistingTemporalId="b58da193-23d9-43eb-b98a-a103d4b6107c";
+    public void temporalEntityNotFoundTest(){
+        String nonExistingTemporalId="b58da193-23d9-43eb-b98a-a103d4b6102c";
         given()
                 .queryParam("id",nonExistingTemporalId)
                 .queryParam("timerel", "before")
-                .queryParam("time", "2020-09-19T12:00:00Z")
-                .queryParam("options","count")
+                .queryParam("time", "2020-09-19T14:20:00Z")
                 .header("Content-Type", "application/json")
                 .header("token", openResourceToken)
                 .when()
@@ -107,12 +100,11 @@ public class GetBeforeTemporalCountIT {
     }
     @Test
     @DisplayName("401(invalid credentials) temporal (before)")
-    public void getTemporalCountWithInvalidCredentialsTest(){
+    public void getTemporalEntityWithInvalidCredentialsTest(){
         given()
                 .queryParam("id",temporalId)
                 .queryParam("timerel", "before")
-                .queryParam("time", "2020-09-19T12:00:00Z")
-                .queryParam("options","count")
+                .queryParam("time", "2020-10-19T14:20:00Z")
                 .header("Content-Type", "application/json")
                 .header("token", "abc")
                 .when()

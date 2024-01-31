@@ -1,6 +1,6 @@
-package iudx.resource.server.apiserver.integrationtests.temporalCountAPIs;
+package iudx.resource.server.apiserver.integrationTests.temporalCountAPIs;
 
-import iudx.resource.server.apiserver.integrationtests.RestAssuredConfiguration;
+import iudx.resource.server.apiserver.integrationTests.RestAssuredConfiguration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
