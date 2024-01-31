@@ -74,7 +74,6 @@ pipeline {
       steps{
         script{
           sh 'scp Jmeter/ResourceServer.jmx jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Jmeter/'
-          sh 'scp src/test/resources/IUDX-Resource-Server-Consumer-APIs-V5.0.0.postman_collection.json jenkins@jenkins-master:/var/lib/jenkins/iudx/rs/Newman/'
           sh 'docker compose -f docker-compose.test.yml up -d perfTest'
           sh 'sleep 120'
         }
@@ -115,18 +114,29 @@ pipeline {
       steps{
         node('built-in') {
           script{
-            startZap ([host: 'localhost', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0'])
-            sh 'curl http://127.0.0.1:8090/JSON/pscan/action/disableScanners/?ids=10096'
-            sh 'HTTP_PROXY=\'127.0.0.1:8090\' newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V5.0.0.postman_collection.json -e /home/ubuntu/configs/rs-postman-env.json -n 2 --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/report.html --reporter-htmlextra-skipSensitiveData'
-            runZapAttack()
+            startZap ([host: '0.0.0.0', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0'])
+            sh 'curl http://0.0.0.0:8090/JSON/pscan/action/disableScanners/?ids=10096'
           }
         }
+        script{
+            sh 'scp /home/ubuntu/configs/rs-config-test.json ./configs/config-test.json'
+            sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8080'
+        }
+        node('built-in') {
+          script{
+            runZapAttack()
+            }
+        }
+
       }
       post{
         always{
+           xunit (
+             thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
+             tools: [ JUnit(pattern: 'target/failsafe-reports/*.xml') ]
+             )
           node('built-in') {
             script{
-              publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'report.html', reportTitles: '', reportName: 'Integration Test Report'])
               archiveZap failHighAlerts: 1, failMediumAlerts: 1, failLowAlerts: 1
             }
           }
@@ -183,19 +193,16 @@ pipeline {
         }
         stage('Integration test on swarm deployment') {
           steps {
-            node('built-in') {
               script{
-                sh 'newman run /var/lib/jenkins/iudx/rs/Newman/IUDX-Resource-Server-Consumer-APIs-V5.0.0.postman_collection.json -e /home/ubuntu/configs/cd/rs-postman-env.json --insecure -r htmlextra --reporter-htmlextra-export /var/lib/jenkins/iudx/rs/Newman/report/cd-report.html --reporter-htmlextra-skipSensitiveData'
+                sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestDepl=true'
               }
-            }
           }
           post{
             always{
-              node('built-in') {
-                script{
-                  publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: '/var/lib/jenkins/iudx/rs/Newman/report/', reportFiles: 'cd-report.html', reportTitles: '', reportName: 'Docker-Swarm Integration Test Report'])
-                }
-              }
+             xunit (
+               thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
+               tools: [ JUnit(pattern: 'target/failsafe-reports/*.xml') ]
+               )
             }
             failure{
               error "Test failure. Stopping pipeline execution!"
