@@ -143,6 +143,4 @@ public class GetAttributeWithFilterIT {
                 .body("title", equalTo("Not Authorized"))
                 .body("type", equalTo("urn:dx:rs:invalidAuthorizationToken"));
     }
-
-
 }
