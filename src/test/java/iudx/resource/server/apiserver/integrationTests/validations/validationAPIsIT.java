@@ -349,7 +349,7 @@ public class validationAPIsIT {
 
     @Test
     @DisplayName("testing validations  - 400 (Bad Request) invalid operator in <q> query")
-    void GetTemporalEntityInvOperator() {
+    void GetEntityInvOperator() {
         Response response = given()
                 .param("id","b58da193-23d9-43eb-b98a-a103d4b6103c")
                 .param("q", "referenceLevel>/15.0")
@@ -357,18 +357,18 @@ public class validationAPIsIT {
                 .header("token", openResourceToken)
                 .contentType("application/json")
                 .when()
-                .get("/temporal/entities")
+                .get("/entities")
                 .then()
                 .statusCode(400)
                 .body("title", equalTo("Bad Request"))
-                .body("type", equalTo("urn:dx:rs:invalidTemporalRelationParam"))
+                .body("type", equalTo("urn:dx:rs:invalidAttributeParam"))
                 .extract()
                 .response();
     }
 
     @Test
     @DisplayName("testing validations  - 400 (Bad Request) invalid number of attributes")
-    void GetTemporalEntityInvAttributes() {
+    void GetEntityInvAttributes() {
         Response response = given()
                 .param("id","b58da193-23d9-43eb-b98a-a103d4b6103c")
                 .param("q", "referenceLevel>15.0")
@@ -376,7 +376,7 @@ public class validationAPIsIT {
                 .header("token", openResourceToken)
                 .contentType("application/json")
                 .when()
-                .get("/temporal/entities")
+                .get("/entities")
                 .then()
                 .statusCode(400)
                 .body("title", equalTo("Bad Request"))
@@ -395,7 +395,7 @@ public class validationAPIsIT {
                 .header("token", openResourceToken)
                 .contentType("application/json")
                 .when()
-                .get("/temporal/entities")
+                .get("/entities")
                 .then()
                 .statusCode(400)
                 .body("title", equalTo("Bad Request"))

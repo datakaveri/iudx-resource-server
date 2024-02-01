@@ -106,7 +106,7 @@ public class GetAttributeWithFilterIT {
                 .statusCode(400)
                 // .log().body()
                 .body("title", equalTo("Bad Request"))
-                .body("type", equalTo("urn:dx:rs:invalidParamameterValue"));
+                .body("type", equalTo("urn:dx:rs:invalidParameterValue"));
     }
     @Test
     @DisplayName("404 (not found)attribute > with filter")

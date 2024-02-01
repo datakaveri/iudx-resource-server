@@ -182,7 +182,7 @@ public class AsyncSearchAPIsIT {
                 .then()
                 .statusCode(400)
                 //.log().body()
-                .body("type", equalTo("urn:dx:rs:invalidParamameterValue"))
+                .body("type", equalTo("urn:dx:rs:invalidParameterValue"))
                 .body("title", equalTo("Bad Request"))
                 .extract().response();
     }
