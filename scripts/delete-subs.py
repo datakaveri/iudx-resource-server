@@ -56,14 +56,6 @@ class DeleteSubscription:
         logging.debug("unbinding done for queue - %s from exchange - %s with routing key - %s",queue,exchange,routing_key)
         return
 
-    #function to extract exchange name from entity column of DB
-    def getExchangeFromName(self,entity):
-        exchange=entity
-        idComponetsList=entity.split("/")
-        if(len(idComponetsList)==5):
-            exchange=entity.rsplit('/', 1)[0]
-        return exchange
-
     #main function executed every [scheduledTime] minutes.
     def run(self):
         logging.info("starting delete script")
@@ -89,8 +81,8 @@ class DeleteSubscription:
             logging.debug("nothing to delete")
         else:
             for row in records:
-                queue=row[0] 
-                exchange=self.getExchangeFromName(row[1])
+                queue=row['queue_name']
+                exchange=row['resource_group']
                 queue_name.append(queue)
                 logging.debug("deleting queue : %s to exchange : %s binding",queue,exchange)
                 self.call_rabbitmq_api(dataBrokerHost, dataBrokerPort, dataBrokerUser, dataBrokerPassword,dataBrokerVhost,quote(exchange,safe=''),quote(queue,safe=''))
