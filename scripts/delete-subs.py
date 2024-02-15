@@ -23,7 +23,7 @@ class DeleteSubscription:
         logging.debug("fetching records from DB")
         cur = pgConnection.cursor()
         #query to get all the queues and exchange present
-        postgreSQL_select_query="Select queue_name,entity from subscriptions where expiry < timestamp %s"
+        postgreSQL_select_query="Select queue_name,resource_group from subscriptions where expiry < timestamp %s"
         # Execute a query
         time=datetime.now(tz=timezone.utc)
         selectSql=cur.mogrify(postgreSQL_select_query,(time,))
@@ -33,7 +33,7 @@ class DeleteSubscription:
         logging.debug(records)
         logging.debug("fetched records from DB")
         return records
-    
+
     #function to get list of binding between a queue and an exchange
     def call_rabbitmq_api(self,dataBrokerHost, dataBrokerPort, dataBrokerUser, dataBrokerPassword,dataBrokerVhost, exchange, queue):
         url = 'https://%s:%s/api/bindings/%s/e/%s/q/%s' % (dataBrokerHost, dataBrokerPort,dataBrokerVhost,exchange,queue)
@@ -55,14 +55,6 @@ class DeleteSubscription:
         r=requests.delete(url,auth=(dataBrokerUser,dataBrokerPassword))
         logging.debug("unbinding done for queue - %s from exchange - %s with routing key - %s",queue,exchange,routing_key)
         return
-
-    #function to extract exchange name from entity column of DB
-    def getExchangeFromName(self,entity):
-        exchange=entity
-        idComponetsList=entity.split("/")
-        if(len(idComponetsList)==5):
-            exchange=entity.rsplit('/', 1)[0]
-        return exchange
 
     #main function executed every [scheduledTime] minutes.
     def run(self):
@@ -89,8 +81,8 @@ class DeleteSubscription:
             logging.debug("nothing to delete")
         else:
             for row in records:
-                queue=row[0] 
-                exchange=self.getExchangeFromName(row[1])
+                queue=row[0]
+                exchange=row[1]
                 queue_name.append(queue)
                 logging.debug("deleting queue : %s to exchange : %s binding",queue,exchange)
                 self.call_rabbitmq_api(dataBrokerHost, dataBrokerPort, dataBrokerUser, dataBrokerPassword,dataBrokerVhost,quote(exchange,safe=''),quote(queue,safe=''))
@@ -153,6 +145,3 @@ while True:
     # is pending to run or not
     schedule.run_pending()
     time.sleep(5)
-    
-    
-    
