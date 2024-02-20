@@ -697,15 +697,7 @@ public class RabbitClient {
                                 oroutingKeys.add(rkeys);
                               }
                             });
-                        if (oroutingKeys != null && !oroutingKeys.isEmpty()) {
-                          finalResponse.put(ENTITIES, oroutingKeys);
-                        } else {
-                          finalResponse
-                              .clear()
-                              .mergeIn(
-                                  getResponseJson(
-                                      HttpStatus.SC_NOT_FOUND, FAILURE, QUEUE_DOES_NOT_EXISTS));
-                        }
+                        finalResponse.put(ENTITIES, oroutingKeys);
                       }
                     } else if (status == HttpStatus.SC_NOT_FOUND) {
                       finalResponse
