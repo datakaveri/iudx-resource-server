@@ -8,6 +8,7 @@ import iudx.resource.server.authenticator.TokenSetup;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 import static io.restassured.RestAssured.*;
@@ -29,11 +30,12 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
         Vertx vertx = Vertx.vertx();
         configuration = new Configuration();
         JsonObject config = configuration.configLoader(1, vertx);
+        JsonObject config2 = configuration.configLoader(3, vertx);
         String authServerHost = config.getString("authServerHost");
 
         boolean testOnDepl = Boolean.parseBoolean(System.getProperty("intTestDepl"));
         if (testOnDepl) {
-          String testHost = "rs.iudx.io";
+          String testHost = config2.getString("host");
           baseURI = "https://" + testHost;
           port = 443;
         } else {
