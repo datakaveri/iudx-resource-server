@@ -23,10 +23,10 @@
         <maven-checkstyle-plugin-google.version>3.3.1</maven-checkstyle-plugin-google.version>
         <maven-surefire-report-plugin.version>3.2.5</maven-surefire-report-plugin.version>
         <junit-jupiter.params>5.10.2</junit-jupiter.params>
-        <testcontainer.params>1.19.5</testcontainer.params>
-        <testcontainer-postgres.version>1.19.5</testcontainer-postgres.version>
+        <testcontainer.params>1.19.6</testcontainer.params>
+        <testcontainer-postgres.version>1.19.6</testcontainer-postgres.version>
         <jts2geojson.version>0.18.1</jts2geojson.version>
-        <elasticsearch-rest-client.version>8.12.1</elasticsearch-rest-client.version>
+        <elasticsearch-rest-client.version>8.12.2</elasticsearch-rest-client.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <exec.mainClass>iudx.resource.server.deploy.Deployer</exec.mainClass>
         <exec.mainClassDev>iudx.resource.server.deploy.DeployerDev </exec.mainClassDev>
@@ -60,7 +60,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.1</version>
+            <version>42.7.2</version>
         </dependency>
         <dependency>
             <groupId>com.ongres.scram</groupId>
@@ -270,13 +270,13 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
-            <version>1.12.661</version>
+            <version>1.12.667</version>
         </dependency>
         <!-- HLC transition dependency  -->
         <dependency>
             <groupId>co.elastic.clients</groupId>
             <artifactId>elasticsearch-java</artifactId>
-            <version>8.12.1</version>
+            <version>8.12.2</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
