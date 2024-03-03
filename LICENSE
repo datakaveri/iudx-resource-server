@@ -201,3 +201,25 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 
+[END OF BASE LICENSE INFORMATION]
+====================================================
+IUDX OVERALL LICENSE INFORMATION
+====================================================
+A. Introduction
+------------
+Most of the developments follow Apache license. You will find a LICENSE file which provides all the information related the license.
+However each project repositories may be using various different modules or other internal repositories. As a practice, the community decided to add all the related dependent license information also within the LINCESE file. Please note that it is a best practice approach and please report if you find any module license in the master section in such LICENSE file.
+
+B. All Licenses
+------------
+B.1) This repo : Apache License Version 2.0 (for the compliance the license information is added at the top of this file)
+B.2) All related modules:
+[If you notice, any link broken or suggestions, please report through an issue to the corresponding repository]
+<Module / Repository > - <License Information>
+
+//FIXME
+
+
+C. License Remarks (if nothing to be added, please add "No Remarks")
+-------------------------------------------------------------------
+//FIXME
