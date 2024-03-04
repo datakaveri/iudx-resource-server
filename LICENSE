@@ -215,11 +215,19 @@ B. All Licenses
 B.1) This repo : Apache License Version 2.0 (for the compliance the license information is added at the top of this file)
 B.2) All related modules:
 [If you notice, any link broken or suggestions, please report through an issue to the corresponding repository]
-<Module / Repository > - <License Information>
-
-//FIXME
-
+<Module / Repository >  <License Information>
+Elastic Search Server   Server Side Public License VERSION 1, ELASTIC-LICENSE-2.0,
+                        Apache License Version 2.0
+Elastic Search Client   Apache License Version 2.0
+Immudb                  Business Source License 1.1
+Immudb Client           Apache License Version 2.0
+Postgres                PostgreSQL Licence
+Postgres Client         BSD 2-Clause "Simplified" License
+Redis Client            Apache License Version 2.0
+RabbitMQ Client         Apache License Version 2.0
+Zookeeper               Hazelcast Community License Agreement, Version 1.0
+AWS S3 Client           Apache License Version 2.0
 
 C. License Remarks (if nothing to be added, please add "No Remarks")
 -------------------------------------------------------------------
-//FIXME
+No Remarks
