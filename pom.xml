@@ -14,7 +14,7 @@
         <apache-log4j2.version>	2.23.0</apache-log4j2.version>
         <lmax-disruptor.version>4.0.0</lmax-disruptor.version>
         <jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
-        <checkstyle.version>10.13.0</checkstyle.version>
+        <checkstyle.version>10.14.0</checkstyle.version>
         <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
         <maven-shade-plugin.version>3.5.2</maven-shade-plugin.version>
         <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
@@ -23,8 +23,8 @@
         <maven-checkstyle-plugin-google.version>3.3.1</maven-checkstyle-plugin-google.version>
         <maven-surefire-report-plugin.version>3.2.5</maven-surefire-report-plugin.version>
         <junit-jupiter.params>5.10.2</junit-jupiter.params>
-        <testcontainer.params>1.19.6</testcontainer.params>
-        <testcontainer-postgres.version>1.19.6</testcontainer-postgres.version>
+        <testcontainer.params>1.19.7</testcontainer.params>
+        <testcontainer-postgres.version>1.19.7</testcontainer-postgres.version>
         <jts2geojson.version>0.18.1</jts2geojson.version>
         <elasticsearch-rest-client.version>8.12.2</elasticsearch-rest-client.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -186,7 +186,8 @@
         <!--  slf4j to log4j2 bridge adapter, needed for 'io.netty' logs  -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+            <version>${apache-log4j2.version}</version>
         </dependency>
         <!-- LMAX Disruptor for enabling Asynchronous log4j2 Logging   -->
         <dependency>
@@ -264,13 +265,13 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.10.0</version>
+            <version>5.11.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
-            <version>1.12.667</version>
+            <version>1.12.673</version>
         </dependency>
         <!-- HLC transition dependency  -->
         <dependency>
@@ -313,7 +314,7 @@
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
-                <version>10.8.1</version>
+                <version>10.9.0</version>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
