@@ -3582,8 +3582,8 @@ components:
             "time": "2022-11-25T14:13:01"
           }
         ]
-        limit: "2000"
-        offset: "0"
+        limit: 2000
+        offset: 0
         totalHits: 568
 
     summaryApiResponse:

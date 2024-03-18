@@ -1624,8 +1624,6 @@ public class ApiServerVerticle extends AbstractVerticle {
               if (relHandler.succeeded()) {
                 JsonObject cacheResult = relHandler.result();
 
-                String type =
-                    cacheResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" : "RESOURCE_GROUP";
                 String resourceGroup =
                     cacheResult.containsKey(RESOURCE_GROUP)
                         ? cacheResult.getString(RESOURCE_GROUP)
@@ -1638,12 +1636,14 @@ public class ApiServerVerticle extends AbstractVerticle {
                 } else {
                   request.put(DELEGATOR_ID, authInfo.getString(USER_ID));
                 }
-                String providerId = cacheResult.getString("provider");
-                long time = zst.toInstant().toEpochMilli();
-                String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
                 if (authInfo.getString(API_ENDPOINT).contains("/ngsi-ld/v1/subscription")) {
                   request.put(EVENT, "subscriptions");
                 }
+                String type =
+                        cacheResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" : "RESOURCE_GROUP";
+                long time = zst.toInstant().toEpochMilli();
+                String providerId = cacheResult.getString("provider");
+                String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
                 request.put(RESOURCE_GROUP, resourceGroup);
                 request.put(TYPE_KEY, type);
                 request.put(EPOCH_TIME, time);
