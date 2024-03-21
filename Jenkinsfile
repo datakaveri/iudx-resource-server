@@ -132,6 +132,7 @@ pipeline {
       post{
         always{
            xunit (
+             checksName: 'integTests', skipPublishingChecks: false,
              thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
              tools: [ JUnit(pattern: 'target/failsafe-reports/*.xml') ]
              )
