@@ -48,7 +48,6 @@ import iudx.resource.server.apiserver.management.ManagementApiImpl;
 import iudx.resource.server.apiserver.query.NgsildQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
-import iudx.resource.server.apiserver.response.ResponseUtil;
 import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
@@ -472,7 +471,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     if (!VALIDATION_ID_PATTERN.matcher(iid).matches()
         && (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate"))) {
       JsonObject jsonResponse =
-          ResponseUtil.generateResponse(UNAUTHORIZED, UNAUTHORIZED_RESOURCE_URN, "Not Authorized");
+          generateResponse(UNAUTHORIZED, UNAUTHORIZED_RESOURCE_URN, "Not Authorized");
       response
           .putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(401)
@@ -508,7 +507,7 @@ public class ApiServerVerticle extends AbstractVerticle {
     if (!VALIDATION_ID_PATTERN.matcher(iid).matches()
         && (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate"))) {
       JsonObject jsonResponse =
-          ResponseUtil.generateResponse(UNAUTHORIZED, UNAUTHORIZED_RESOURCE_URN, "Not Authorized");
+          generateResponse(UNAUTHORIZED, UNAUTHORIZED_RESOURCE_URN, "Not Authorized");
       response
           .putHeader(CONTENT_TYPE, APPLICATION_JSON)
           .setStatusCode(401)
@@ -1665,7 +1664,7 @@ public class ApiServerVerticle extends AbstractVerticle {
                   request.put(EVENT, "subscriptions");
                 }
                 String type =
-                        cacheResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" : "RESOURCE_GROUP";
+                    cacheResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" : "RESOURCE_GROUP";
                 long time = zst.toInstant().toEpochMilli();
                 String providerId = cacheResult.getString("provider");
                 String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
