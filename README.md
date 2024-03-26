@@ -59,7 +59,7 @@ Find the installations of the above along with the configurations to modify the 
 
 
 ### Maven based
-1. Install java 13 and maven
+1. Install java 11 and maven
 2. Use the maven exec plugin based starter to start the server 
    `mvn clean compile exec:java@resource-server`
    
@@ -121,7 +121,7 @@ $ java $RS_JAVA_OPTS -jar target/iudx.resource.server-dev-0.0.1-SNAPSHOT-fat.jar
 3. Reports are stored in `./target/`
 
 ### Integration tests
-Integration tests are through Postman/Newman whose script can be found from [here](./src/test/resources/IUDX-Resource-Server-Release-v2.0.postman_collection.json).
+Integration tests are through Postman/Newman whose script can be found from [here](https://github.com/datakaveri/iudx-resource-server/tree/master/src/test/resources).
 1. Install prerequisites 
    - [postman](https://www.postman.com/) + [newman](https://www.npmjs.com/package/newman)
    - [newman reporter-htmlextra](https://www.npmjs.com/package/newman-reporter-htmlextra)

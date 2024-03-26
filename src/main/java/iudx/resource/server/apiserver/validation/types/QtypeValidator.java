@@ -49,7 +49,6 @@ public final class QtypeValidator implements Validator {
   }
 
   public boolean isValidAttributeValue(final String value) {
-    Matcher matcher = VALIDATION_Q_ATTR_PATTERN.matcher(value);
     LOGGER.debug("value,{},{}", value, VALIDATION_Q_ATTR_PATTERN.matcher(value).matches());
     return VALIDATION_Q_ATTR_PATTERN.matcher(value).matches();
   }
