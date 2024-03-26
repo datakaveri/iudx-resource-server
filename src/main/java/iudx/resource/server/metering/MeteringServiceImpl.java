@@ -350,6 +350,7 @@ public class MeteringServiceImpl implements MeteringService {
           .onFailure(
               fail -> {
                 LOGGER.debug(fail.getMessage());
+                handler.handle(Future.failedFuture(fail.getMessage()));
               });
     }
     return this;
