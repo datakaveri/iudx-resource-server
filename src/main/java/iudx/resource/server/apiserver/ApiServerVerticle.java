@@ -10,13 +10,7 @@ import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.HttpStatusCode.NOT_FOUND;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
-import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
-import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
-import static iudx.resource.server.common.ResponseUrn.INVALID_TEMPORAL_PARAM_URN;
-import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN_URN;
-import static iudx.resource.server.common.ResponseUrn.RESOURCE_NOT_FOUND_URN;
-import static iudx.resource.server.common.ResponseUrn.YET_NOT_IMPLEMENTED_URN;
-import static iudx.resource.server.common.ResponseUrn.fromCode;
+import static iudx.resource.server.common.ResponseUrn.*;
 import static iudx.resource.server.database.archives.Constants.ITEM_TYPES;
 import static iudx.resource.server.metering.util.Constants.DELEGATOR_ID;
 import static iudx.resource.server.metering.util.Constants.EPOCH_TIME;
@@ -54,6 +48,7 @@ import iudx.resource.server.apiserver.management.ManagementApiImpl;
 import iudx.resource.server.apiserver.query.NgsildQueryParams;
 import iudx.resource.server.apiserver.query.QueryMapper;
 import iudx.resource.server.apiserver.response.ResponseType;
+import iudx.resource.server.apiserver.response.ResponseUtil;
 import iudx.resource.server.apiserver.service.CatalogueService;
 import iudx.resource.server.apiserver.subscription.SubsType;
 import iudx.resource.server.apiserver.subscription.SubscriptionService;
@@ -470,6 +465,21 @@ public class ApiServerVerticle extends AbstractVerticle {
     authInfo.put(STARTT, request.getParam(STARTT));
     authInfo.put(ENDT, request.getParam(ENDT));
     HttpServerResponse response = routingContext.response();
+
+    String iid = authInfo.getString("iid");
+    String role = authInfo.getString("role");
+
+    if (!VALIDATION_ID_PATTERN.matcher(iid).matches()
+        && (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate"))) {
+      JsonObject jsonResponse =
+          ResponseUtil.generateResponse(UNAUTHORIZED, UNAUTHORIZED_RESOURCE_URN, "Not Authorized");
+      response
+          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(401)
+          .end(jsonResponse.toString());
+      return;
+    }
+
     meteringService.monthlyOverview(
         authInfo,
         handler -> {
@@ -491,6 +501,21 @@ public class ApiServerVerticle extends AbstractVerticle {
     authInfo.put(ENDT, request.getParam(ENDT));
     LOGGER.debug("auth info = " + authInfo);
     HttpServerResponse response = routingContext.response();
+
+    String iid = authInfo.getString("iid");
+    String role = authInfo.getString("role");
+
+    if (!VALIDATION_ID_PATTERN.matcher(iid).matches()
+        && (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate"))) {
+      JsonObject jsonResponse =
+          ResponseUtil.generateResponse(UNAUTHORIZED, UNAUTHORIZED_RESOURCE_URN, "Not Authorized");
+      response
+          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(401)
+          .end(jsonResponse.toString());
+      return;
+    }
+
     meteringService.summaryOverview(
         authInfo,
         handler -> {
