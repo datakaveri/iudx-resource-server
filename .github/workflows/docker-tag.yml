@@ -48,7 +48,7 @@ jobs:
         then
          git checkout -b rs-5.5.0-automatic-updates/$newtag5_5_0
 
-         # Uses sed to find and replace $oldtag4_5_0 with $newtag4_5_0 in Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml file
+         # Uses sed to find and replace $oldtag5_5_0 with $newtag5_5_0 in Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml file
          sed -i s/$oldtag5_5_0/$newtag5_5_0/g Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml
          
          # Exports the current version of the application from K8s-deployment/Charts/resource-server/Chart.yaml file
