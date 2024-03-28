@@ -1,4 +1,4 @@
-# This github workflow will automatically update docker image tags of rs-depl in the datakaveri/iudx-deployment repository files, whenever docker image is pushed to ghcr.io/datakaveri/rs-depl .Based on tag it will update  5.5.0 stable branch (if its 5.5.0-)
+# This github workflow will automatically update docker image tags of rs-depl in the datakaveri/iudx-deployment repository files, whenever docker image is pushed to ghcr.io/datakaveri/rs-depl .Based on tag it will update  master/latest branch (if its 5.5.1-alpha-) or 5.5.0 stable branch (if its 5.5.0-)
 
 name: Update RS docker image tags
 
@@ -31,7 +31,11 @@ jobs:
 
         # Get the latest version of 5.5.0 tags from the container registry using GitHub API
         export newtag5_5_0=$(head -n1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/rs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 5.5.0 | grep -v alpha | sed -e 's/^"//' -e 's/"$//'))
+        export newtag5_5_1=`(head -n1 <(curl -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/orgs/datakaveri/packages/container/rs-depl/versions | jq ' .[].metadata.container.tags[0]'  | grep 5.5.1 | sed -e 's/^"//' -e 's/"$//'))`
+
         # Get the old tags from the YAML files
+        export oldtag5_5_1=`yq -r .services.rs.image Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml | cut -d : -f 2`
+        git checkout 5.5.0
         export oldtag5_5_0=$(yq -r .services.rs.image Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml | cut -d : -f 2)
         
         # Set Git user
@@ -67,3 +71,31 @@ jobs:
          gh pr create -R datakaveri/iudx-deployment --base 5.5.0 --fill 
         fi
 
+        if [ "$newtag5_5_1" != "$oldtag5_5_1" ]
+        then
+         git checkout master
+         git checkout -b rs-automatic-updates/$newtag5.5.1
+
+
+         # Uses sed to find and replace $oldtag5.5.1 with $newtag5.5.1 in Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml file
+         sed -i s/$oldtag5.5.1/$newtag5.5.1/g Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml
+         
+         # Exports the current version of the application from K8s-deployment/Charts/resource-server/Chart.yaml file
+
+         export oldappversion=`yq -r .version K8s-deployment/Charts/resource-server/Chart.yaml`
+         
+         # Uses awk to increment the version number in K8s-deployment/Charts/resource-server/Chart.yaml file
+         export newappversion=`yq -r .version K8s-deployment/Charts/resource-server/Chart.yaml | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}' `
+         
+         # Uses sed to find and replace $oldappversion with $newappversion in K8s-deployment/Charts/resource-server/Chart.yaml and K8s-deployment/Charts/resource-server/values.yaml files
+         sed -i s/$oldappversion/$newappversion/g K8s-deployment/Charts/resource-server/Chart.yaml
+         sed -i s/$oldtag5.5.1/$newtag5.5.1/g K8s-deployment/Charts/resource-server/values.yaml
+         git add Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml K8s-deployment/Charts/resource-server/values.yaml K8s-deployment/Charts/resource-server/Chart.yaml
+         git commit --allow-empty -m "updated rs docker image tag to $newtag5.5.1"
+         git push --set-upstream origin rs-automatic-updates/$newtag5.5.1
+
+         
+         # Creates a new pull request on the datakaveri/iudx-deployment repository with the base branch master
+
+         gh pr create -R datakaveri/iudx-deployment --base master --fill 
+        fi
