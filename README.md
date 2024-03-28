@@ -1,3 +1,4 @@
+
 [![Build Status](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520RS%2520%28master%29%2520pipeline%2F)](https://jenkins.iudx.io/job/iudx%20RS%20(master)%20pipeline/lastBuild/)
 [![Jenkins Coverage](https://img.shields.io/jenkins/coverage/jacoco?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520RS%2520%28master%29%2520pipeline%2F)](https://jenkins.iudx.io/job/iudx%20RS%20(master)%20pipeline/lastBuild/jacoco/)
 [![Unit Tests](https://img.shields.io/jenkins/tests?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520RS%2520%28master%29%2520pipeline%2F&label=unit%20tests)](https://jenkins.iudx.io/job/iudx%20RS%20(master)%20pipeline/lastBuild/testReport/)
@@ -112,24 +113,20 @@ $ export RS_JAVA_OPTS="-Xmx1024m"
 $ java $RS_JAVA_OPTS -jar target/iudx.resource.server-dev-0.0.1-SNAPSHOT-fat.jar ...
 ```
 
-### Testing
 
-### Unit tests
-1. Run the server through either docker, maven or redeployer
-2. Run the unit tests and generate a surefire report 
-   `mvn clean test-compile surefire:test surefire-report:report`
+### Testing  
+  
+### Unit tests  
+1. Run the tests using `mvn clean test checkstyle:checkstyle pmd:pmd`  
+2. Reports are stored in `./target/`  
+  
+  
+### Integration tests  
+Integration tests are through Rest Assured  
+1. Run the server through either docker, maven or redeployer  
+2. Run the integration tests `mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestHost=local  
+host -DintTestPort=8080`  
 3. Reports are stored in `./target/`
-
-### Integration tests
-Integration tests are through Postman/Newman whose script can be found from [here](https://github.com/datakaveri/iudx-resource-server/tree/master/src/test/resources).
-1. Install prerequisites 
-   - [postman](https://www.postman.com/) + [newman](https://www.npmjs.com/package/newman)
-   - [newman reporter-htmlextra](https://www.npmjs.com/package/newman-reporter-htmlextra)
-2. Example Postman environment can be found [here](./configs/postman-env.json)
-3. Run the server through either docker, maven or redeployer
-4. Run the integration tests and generate the newman report 
-   `newman run <postman-collection-path> -e <postman-environment> --insecure -r htmlextra --reporter-htmlextra-export .`
-5. Reports are stored in `./target/`
 
 ### Encryption
 All the count and search APIs have a feature to get encrypted data.
