@@ -60,7 +60,7 @@ jobs:
          
          # Uses sed to find and replace $oldappversion with $newappversion in K8s-deployment/Charts/resource-server/Chart.yaml and K8s-deployment/Charts/resource-server/values.yaml files
          sed -i s/$oldappversion/$newappversion/g K8s-deployment/Charts/resource-server/Chart.yaml
-         sed -i s/$oldtag4_5_0/$newtag4_5_0/g K8s-deployment/Charts/resource-server/values.yaml
+         sed -i s/$oldtag5_5_0/$newtag5_5_0/g K8s-deployment/Charts/resource-server/values.yaml
          git add Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml K8s-deployment/Charts/resource-server/values.yaml K8s-deployment/Charts/resource-server/Chart.yaml
          git commit --allow-empty -m "updated rs docker image tag to $newtag5_5_0"
          git push --set-upstream origin rs-5.5.0-automatic-updates/$newtag5_5_0
@@ -74,11 +74,11 @@ jobs:
         if [ "$newtag5_5_1" != "$oldtag5_5_1" ]
         then
          git checkout master
-         git checkout -b rs-automatic-updates/$newtag5.5.1
+         git checkout -b rs-automatic-updates/$newtag5_5_1
 
 
-         # Uses sed to find and replace $oldtag5.5.1 with $newtag5.5.1 in Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml file
-         sed -i s/$oldtag5.5.1/$newtag5.5.1/g Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml
+         # Uses sed to find and replace $oldtag5_5_1 with $newtag5_5_1 in Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml file
+         sed -i s/$oldtag5_5_1/$newtag5_5_1/g Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml
          
          # Exports the current version of the application from K8s-deployment/Charts/resource-server/Chart.yaml file
 
@@ -89,10 +89,10 @@ jobs:
          
          # Uses sed to find and replace $oldappversion with $newappversion in K8s-deployment/Charts/resource-server/Chart.yaml and K8s-deployment/Charts/resource-server/values.yaml files
          sed -i s/$oldappversion/$newappversion/g K8s-deployment/Charts/resource-server/Chart.yaml
-         sed -i s/$oldtag5.5.1/$newtag5.5.1/g K8s-deployment/Charts/resource-server/values.yaml
+         sed -i s/$oldtag5_5_1/$newtag5_5_1/g K8s-deployment/Charts/resource-server/values.yaml
          git add Docker-Swarm-deployment/single-node/resource-server/rs-stack.yaml K8s-deployment/Charts/resource-server/values.yaml K8s-deployment/Charts/resource-server/Chart.yaml
-         git commit --allow-empty -m "updated rs docker image tag to $newtag5.5.1"
-         git push --set-upstream origin rs-automatic-updates/$newtag5.5.1
+         git commit --allow-empty -m "updated rs docker image tag to $newtag5_5_1"
+         git push --set-upstream origin rs-automatic-updates/$newtag5_5_1
 
          
          # Creates a new pull request on the datakaveri/iudx-deployment repository with the base branch master
