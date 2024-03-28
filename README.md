@@ -25,6 +25,7 @@ The consumers can access data from the resource server using HTTPs and AMQPs.
 - Search and count APIs for searching through available data: Support for Spatial (Circle, Polygon, Bbox, Linestring), Temporal (Before, during, After) and Attribute searches
 - Adaptor registration endpoints and streaming endpoints for data ingestion
 - Integration with authorization server (token introspection) to serve private data as per the access control policies set by the provider
+- End to End encryption supported using certificate
 - Secure data access over TLS
 - Scalable, service mesh architecture based implementation using open source components: Vert.X API framework, Elasticsearch/Logstash for database and RabbitMQ for data broker.
 - Hazelcast and Zookeeper based cluster management and service discovery
