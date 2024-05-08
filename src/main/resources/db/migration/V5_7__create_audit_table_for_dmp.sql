@@ -5,7 +5,7 @@
 
 CREATE TABLE IF NOT EXISTS auditing_dmp
 (
-   _id uuid DEFAULT uuid_generate_v4 () NOT NULL PRIMARY KEY,
+   _id varchar NOT NULL PRIMARY KEY,
    user_id uuid NOT NULL,
    api varchar NOT NULL,
    method varchar NOT NULL,
