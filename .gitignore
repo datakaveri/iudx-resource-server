@@ -3,6 +3,8 @@
 ### IUDX ###
 config.properties
 /configs/
+configs/config-test.json
+configs/config-dev.json
 
 
 ### STS ###
