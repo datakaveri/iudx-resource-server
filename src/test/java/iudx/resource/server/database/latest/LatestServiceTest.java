@@ -42,7 +42,7 @@ public class LatestServiceTest {
   static void init(Vertx vertx, VertxTestContext testContext) {
     vertxObj = vertx;
     config = new Configuration();
-    JsonObject redisConfig = config.configLoader(5, vertx);
+    JsonObject redisConfig = config.configLoader(4, vertx);
     tenantPrefix = redisConfig.getString("tenantPrefix");
     attributeList = redisConfig.getJsonObject("attributeList");
     new RedisClient(vertx, redisConfig).start().onSuccess(handler -> {

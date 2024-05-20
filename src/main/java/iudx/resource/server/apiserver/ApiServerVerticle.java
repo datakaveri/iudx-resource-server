@@ -10,13 +10,7 @@ import static iudx.resource.server.common.Constants.PG_SERVICE_ADDRESS;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
 import static iudx.resource.server.common.HttpStatusCode.NOT_FOUND;
 import static iudx.resource.server.common.HttpStatusCode.UNAUTHORIZED;
-import static iudx.resource.server.common.ResponseUrn.BACKING_SERVICE_FORMAT_URN;
-import static iudx.resource.server.common.ResponseUrn.INVALID_PARAM_URN;
-import static iudx.resource.server.common.ResponseUrn.INVALID_TEMPORAL_PARAM_URN;
-import static iudx.resource.server.common.ResponseUrn.MISSING_TOKEN_URN;
-import static iudx.resource.server.common.ResponseUrn.RESOURCE_NOT_FOUND_URN;
-import static iudx.resource.server.common.ResponseUrn.YET_NOT_IMPLEMENTED_URN;
-import static iudx.resource.server.common.ResponseUrn.fromCode;
+import static iudx.resource.server.common.ResponseUrn.*;
 import static iudx.resource.server.database.archives.Constants.ITEM_TYPES;
 import static iudx.resource.server.metering.util.Constants.DELEGATOR_ID;
 import static iudx.resource.server.metering.util.Constants.EPOCH_TIME;
@@ -470,6 +464,21 @@ public class ApiServerVerticle extends AbstractVerticle {
     authInfo.put(STARTT, request.getParam(STARTT));
     authInfo.put(ENDT, request.getParam(ENDT));
     HttpServerResponse response = routingContext.response();
+
+    String iid = authInfo.getString("iid");
+    String role = authInfo.getString("role");
+
+    if (!VALIDATION_ID_PATTERN.matcher(iid).matches()
+        && (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate"))) {
+      JsonObject jsonResponse =
+          generateResponse(UNAUTHORIZED, UNAUTHORIZED_RESOURCE_URN, "Not Authorized");
+      response
+          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(401)
+          .end(jsonResponse.toString());
+      return;
+    }
+
     meteringService.monthlyOverview(
         authInfo,
         handler -> {
@@ -491,6 +500,21 @@ public class ApiServerVerticle extends AbstractVerticle {
     authInfo.put(ENDT, request.getParam(ENDT));
     LOGGER.debug("auth info = " + authInfo);
     HttpServerResponse response = routingContext.response();
+
+    String iid = authInfo.getString("iid");
+    String role = authInfo.getString("role");
+
+    if (!VALIDATION_ID_PATTERN.matcher(iid).matches()
+        && (role.equalsIgnoreCase("provider") || role.equalsIgnoreCase("delegate"))) {
+      JsonObject jsonResponse =
+          generateResponse(UNAUTHORIZED, UNAUTHORIZED_RESOURCE_URN, "Not Authorized");
+      response
+          .putHeader(CONTENT_TYPE, APPLICATION_JSON)
+          .setStatusCode(401)
+          .end(jsonResponse.toString());
+      return;
+    }
+
     meteringService.summaryOverview(
         authInfo,
         handler -> {
@@ -1624,8 +1648,6 @@ public class ApiServerVerticle extends AbstractVerticle {
               if (relHandler.succeeded()) {
                 JsonObject cacheResult = relHandler.result();
 
-                String type =
-                    cacheResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" : "RESOURCE_GROUP";
                 String resourceGroup =
                     cacheResult.containsKey(RESOURCE_GROUP)
                         ? cacheResult.getString(RESOURCE_GROUP)
@@ -1638,12 +1660,14 @@ public class ApiServerVerticle extends AbstractVerticle {
                 } else {
                   request.put(DELEGATOR_ID, authInfo.getString(USER_ID));
                 }
-                String providerId = cacheResult.getString("provider");
-                long time = zst.toInstant().toEpochMilli();
-                String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
                 if (authInfo.getString(API_ENDPOINT).contains("/ngsi-ld/v1/subscription")) {
                   request.put(EVENT, "subscriptions");
                 }
+                String type =
+                    cacheResult.containsKey(RESOURCE_GROUP) ? "RESOURCE" : "RESOURCE_GROUP";
+                long time = zst.toInstant().toEpochMilli();
+                String providerId = cacheResult.getString("provider");
+                String isoTime = zst.truncatedTo(ChronoUnit.SECONDS).toString();
                 request.put(RESOURCE_GROUP, resourceGroup);
                 request.put(TYPE_KEY, type);
                 request.put(EPOCH_TIME, time);

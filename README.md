@@ -1,3 +1,4 @@
+
 [![Build Status](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520RS%2520%28master%29%2520pipeline%2F)](https://jenkins.iudx.io/job/iudx%20RS%20(master)%20pipeline/lastBuild/)
 [![Jenkins Coverage](https://img.shields.io/jenkins/coverage/jacoco?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520RS%2520%28master%29%2520pipeline%2F)](https://jenkins.iudx.io/job/iudx%20RS%20(master)%20pipeline/lastBuild/jacoco/)
 [![Unit Tests](https://img.shields.io/jenkins/tests?jobUrl=https%3A%2F%2Fjenkins.iudx.io%2Fjob%2Fiudx%2520RS%2520%28master%29%2520pipeline%2F&label=unit%20tests)](https://jenkins.iudx.io/job/iudx%20RS%20(master)%20pipeline/lastBuild/testReport/)
@@ -25,6 +26,7 @@ The consumers can access data from the resource server using HTTPs and AMQPs.
 - Search and count APIs for searching through available data: Support for Spatial (Circle, Polygon, Bbox, Linestring), Temporal (Before, during, After) and Attribute searches
 - Adaptor registration endpoints and streaming endpoints for data ingestion
 - Integration with authorization server (token introspection) to serve private data as per the access control policies set by the provider
+- End to End encryption supported using certificate
 - Secure data access over TLS
 - Scalable, service mesh architecture based implementation using open source components: Vert.X API framework, Elasticsearch/Logstash for database and RabbitMQ for data broker.
 - Hazelcast and Zookeeper based cluster management and service discovery
@@ -59,7 +61,7 @@ Find the installations of the above along with the configurations to modify the 
 
 
 ### Maven based
-1. Install java 13 and maven
+1. Install java 11 and maven
 2. Use the maven exec plugin based starter to start the server 
    `mvn clean compile exec:java@resource-server`
    
@@ -112,24 +114,20 @@ $ export RS_JAVA_OPTS="-Xmx1024m"
 $ java $RS_JAVA_OPTS -jar target/iudx.resource.server-dev-0.0.1-SNAPSHOT-fat.jar ...
 ```
 
-### Testing
 
-### Unit tests
-1. Run the server through either docker, maven or redeployer
-2. Run the unit tests and generate a surefire report 
-   `mvn clean test-compile surefire:test surefire-report:report`
+### Testing  
+  
+### Unit tests  
+1. Run the tests using `mvn clean test checkstyle:checkstyle pmd:pmd`  
+2. Reports are stored in `./target/`  
+  
+  
+### Integration tests  
+Integration tests are through Rest Assured  
+1. Run the server through either docker, maven or redeployer  
+2. Run the integration tests `mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestHost=local  
+host -DintTestPort=8080`  
 3. Reports are stored in `./target/`
-
-### Integration tests
-Integration tests are through Postman/Newman whose script can be found from [here](./src/test/resources/IUDX-Resource-Server-Release-v2.0.postman_collection.json).
-1. Install prerequisites 
-   - [postman](https://www.postman.com/) + [newman](https://www.npmjs.com/package/newman)
-   - [newman reporter-htmlextra](https://www.npmjs.com/package/newman-reporter-htmlextra)
-2. Example Postman environment can be found [here](./configs/postman-env.json)
-3. Run the server through either docker, maven or redeployer
-4. Run the integration tests and generate the newman report 
-   `newman run <postman-collection-path> -e <postman-environment> --insecure -r htmlextra --reporter-htmlextra-export .`
-5. Reports are stored in `./target/`
 
 ### Encryption
 All the count and search APIs have a feature to get encrypted data.
@@ -145,4 +143,4 @@ We follow Git Merge based workflow
 3. Commit to your fork and raise a Pull Request with upstream
 
 ## License
-[MIT](./LICENSE.txt)
+[View License](./LICENSE)

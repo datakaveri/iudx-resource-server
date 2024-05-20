@@ -135,19 +135,43 @@ public class MeteringServiceImpl implements MeteringService {
 
   private void readMethod(JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
     ReadQueryBuilder readQueryBuilder = new ReadQueryBuilder();
-    String limit;
-    String offset;
-    if (request.getString(LIMITPARAM) == null) {
-      limit = "2000";
-      request.put(LIMITPARAM, limit);
+    String offset = request.getString(OFFSETPARAM);
+    String limit = request.getString(LIMITPARAM);
+    int limitInt;
+    int offsetInt;
+    if (limit == null) {
+      limitInt = 2000;
+      request.put(LIMITPARAM, limitInt);
     } else {
       limit = request.getString(LIMITPARAM);
+      try {
+        limitInt = Integer.parseInt(limit);
+        if (limitInt < 0) {
+          LOGGER.error("Fail msg " + "Negative Limit Value");
+          handler.handle(Future.failedFuture("Negative Limit Value"));
+          return;
+        }
+      } catch (Exception e) {
+        handler.handle(Future.failedFuture(e.getMessage()));
+        return;
+      }
     }
-    if (request.getString(OFFSETPARAM) == null) {
-      offset = "0";
-      request.put(OFFSETPARAM, offset);
+    if (offset == null) {
+      offsetInt = 0;
+      request.put(OFFSETPARAM, offsetInt);
     } else {
       offset = request.getString(OFFSETPARAM);
+      try {
+        offsetInt = Integer.parseInt(offset);
+        if (offsetInt < 0) {
+          LOGGER.error("Fail msg " + "Negative Offset Value");
+          handler.handle(Future.failedFuture("Negative offset Value"));
+          return;
+        }
+      } catch (Exception e) {
+        handler.handle(Future.failedFuture(e.getMessage()));
+        return;
+      }
     }
     queryPg = readQueryBuilder.getQuery(request);
     LOGGER.debug("read query = " + queryPg);
@@ -157,8 +181,8 @@ public class MeteringServiceImpl implements MeteringService {
           if (readHandler.succeeded()) {
             LOGGER.info("Read Completed successfully");
             JsonObject resultJsonObject = readHandler.result();
-            resultJsonObject.put(LIMITPARAM, limit);
-            resultJsonObject.put(OFFSETPARAM, offset);
+            resultJsonObject.put(LIMITPARAM, limitInt);
+            resultJsonObject.put(OFFSETPARAM, offsetInt);
             resultJsonObject.put(TOTALHITS, request.getLong(TOTALHITS));
             handler.handle(Future.succeededFuture(resultJsonObject));
           } else {
@@ -326,6 +350,7 @@ public class MeteringServiceImpl implements MeteringService {
           .onFailure(
               fail -> {
                 LOGGER.debug(fail.getMessage());
+                handler.handle(Future.failedFuture(fail.getMessage()));
               });
     }
     return this;

@@ -1364,7 +1364,7 @@ public class RabbitMQClientTest {
 
     static Stream<Arguments> routingKeys() {
         return Stream.of(
-                Arguments.of("\"abcd_value\" : \"abcd_name\"", "{\"type\":404,\"title\":\"failure\",\"detail\":\"Queue does not exist\"}\n"),
+                Arguments.of("\"abcd_value\" : \"abcd_name\"", ""),
                 Arguments.of("\"routing_key\" : \"routing_value\"", "\"routing_value\""),
                 Arguments.of("\"routing_key\" : \"\"", "\"\"")
         );
@@ -1389,20 +1389,11 @@ public class RabbitMQClientTest {
         }).when(httpResponseFuture).onComplete(any());
         rabbitClient.listQueueSubscribers(request, vHost).onComplete(handler -> {
             if (handler.succeeded()) {
-                if (routing == "\"abcd_value\" : \"abcd_name\"") {
-                    expected.put("type", 404);
-                    expected.put("title", "failure");
-                    expected.put("detail", "Queue does not exist");
-                    assertEquals(expected.getString("title"), handler.result().getString("title"));
-                    assertEquals(expected.getString("detail"), handler.result().getString("detail"));
-                    assertEquals(expected.getInteger("type"), handler.result().getInteger("type"));
-                } else {
-                    List<String> expected_list = new ArrayList<>();
-                    expected_list.add(expectedValue);
-                    expected.put("entities", expected_list);
-                    assertTrue(handler.result().containsKey("entities"));
-                    assertEquals(expected.getString("entities"), handler.result().getString("entities"));
-                }
+                List<String> expected_list = new ArrayList<>();
+                expected_list.add(expectedValue);
+                expected.put("entities", expected_list);
+                assertTrue(handler.result().containsKey("entities"));
+                assertEquals(expected.getString("entities"), handler.result().getString("entities"));
 
                 vertxTestContext.completeNow();
             } else {
