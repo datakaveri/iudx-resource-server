@@ -119,6 +119,7 @@ pipeline {
           }
         }
         script{
+            sh 'mkdir configs'
             sh 'scp /home/ubuntu/configs/rs-config-test.json ./configs/config-test.json'
             sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8080'
         }
