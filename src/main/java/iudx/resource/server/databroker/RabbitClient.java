@@ -1377,8 +1377,6 @@ public class RabbitClient {
 
                 JsonObject updatedPermission =
                     getUpdatedPermission(existingPermissions, type, resourceId);
-
-                LOGGER.debug("updated permission json :" + updatedPermission);
                 webClient
                     .requestAsync(REQUEST_PUT, url, updatedPermission)
                     .onComplete(
@@ -1433,13 +1431,11 @@ public class RabbitClient {
 
   private JsonObject getUpdatedPermission(
       JsonObject permissionsJson, PermissionOpType type, String resourceId) {
-    LOGGER.debug("existing permissions : " + permissionsJson);
     StringBuilder permission;
     switch (type) {
       case ADD_READ:
       case ADD_WRITE:
         permission = new StringBuilder(permissionsJson.getString(type.permission));
-        LOGGER.debug("permissions : " + permission);
         if (permission.length() != 0 && permission.indexOf(".*") != -1) {
           permission.deleteCharAt(0).deleteCharAt(0);
         }
