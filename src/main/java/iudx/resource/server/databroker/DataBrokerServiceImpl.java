@@ -1,12 +1,5 @@
 package iudx.resource.server.databroker;
 
-import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_CODE;
-import static iudx.resource.server.databroker.util.Constants.BAD_REQUEST_DATA;
-import static iudx.resource.server.databroker.util.Constants.ID;
-import static iudx.resource.server.databroker.util.Constants.STATUS;
-import static iudx.resource.server.databroker.util.Constants.TYPE;
-import static iudx.resource.server.databroker.util.Constants.USER_ID;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -23,6 +16,8 @@ import java.util.Map;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import static iudx.resource.server.databroker.util.Constants.*;
 
 /**
  * The Data Broker Service Implementation.
@@ -837,8 +832,9 @@ public class DataBrokerServiceImpl implements DataBrokerService {
             })
         .onSuccess(
             successHandler -> {
-              response.put("type", ResponseUrn.SUCCESS_URN.getUrn());
-              response.put("title", "Successfully changed the password");
+              response.put(TYPE, ResponseUrn.SUCCESS_URN.getUrn());
+              response.put(TITLE, SUCCESS);
+              response.put(DETAIL, "Successfully changed the password");
               JsonArray result =
                   new JsonArray()
                       .add(new JsonObject().put("username", userid).put("apiKey", password));
