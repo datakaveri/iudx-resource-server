@@ -3437,7 +3437,7 @@ components:
             type: object
       example:
         type: urn:dx:rs:success
-        title: Successfull
+        title: successfull
         detail: Successfully changed the password
         results: [
           { "username": "asasdasd-asdasd-aada-d23342",
