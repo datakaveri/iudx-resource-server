@@ -119,10 +119,27 @@ public class SubscriptionService {
                                 if (pgHandler.succeeded()) {
                                   promise.complete(response);
                                 } else {
-                                  // TODO : rollback mechanism in case of pg error [to unbind/delete
-                                  // created sub]
-                                  JsonObject res = new JsonObject(pgHandler.cause().getMessage());
-                                  promise.fail(generateResponse(res).toString());
+                                  JsonObject deleteJson = new JsonObject();
+                                  deleteJson
+                                      .put("instanceID", json.getString("instanceID"))
+                                      .put("subscriptionType", json.getString("subscriptionType"));
+                                  deleteJson.put("userid", authInfo.getString("userid"));
+                                  deleteJson.put("subscriptionID", brokerResponse.getString("id"));
+                                  deleteSubscription(deleteJson, databroker, pgService)
+                                      .onComplete(
+                                          handlers -> {
+                                            if (handlers.succeeded()) {
+                                              LOGGER.info("subscription rolled back successfully");
+                                            } else {
+                                              LOGGER.error("subscription rolled back failed");
+                                            }
+                                            JsonObject res =
+                                                new JsonObject(pgHandler.cause().getMessage());
+                                            LOGGER.debug(
+                                                "pgHandler.cause().getMessage "
+                                                    + pgHandler.cause().getMessage());
+                                            promise.fail(generateResponse(res).toString());
+                                          });
                                 }
                               });
                         });
@@ -382,11 +399,27 @@ public class SubscriptionService {
                                   responses.put("results", brokerSubResult);
                                   promise.complete(responses);
                                 } else {
-                                  // TODO : rollback mechanism in case of pg error [to unbind/delete
-                                  // created
-                                  // sub]
-                                  JsonObject res = new JsonObject(pgHandler.cause().getMessage());
-                                  promise.fail(generateResponse(res).toString());
+                                  JsonObject deleteJson = new JsonObject();
+                                  deleteJson
+                                      .put("instanceID", json.getString("instanceID"))
+                                      .put("subscriptionType", subType);
+                                  deleteJson.put("userid", authInfo.getString("userid"));
+                                  deleteJson.put("subscriptionID", json.getString(SUBSCRIPTION_ID));
+                                  deleteSubscription(deleteJson, databroker, pgService)
+                                      .onComplete(
+                                          handlers -> {
+                                            if (handlers.succeeded()) {
+                                              LOGGER.info("subscription rolled back successfully");
+                                            } else {
+                                              LOGGER.error("subscription rolled back failed");
+                                            }
+                                            JsonObject res =
+                                                new JsonObject(pgHandler.cause().getMessage());
+                                            LOGGER.debug(
+                                                "pgHandler.cause().getMessage "
+                                                    + pgHandler.cause().getMessage());
+                                            promise.fail(generateResponse(res).toString());
+                                          });
                                 }
                               });
                         })
@@ -402,7 +435,12 @@ public class SubscriptionService {
 
   private JsonObject generateResponse(JsonObject response) {
     JsonObject finalResponse = new JsonObject();
-    int type = response.getInteger(JSON_TYPE);
+    int type;
+    try {
+      type = response.getInteger(JSON_TYPE);
+    } catch (Exception e) {
+      type = response.getInteger("status");
+    }
     switch (type) {
       case 400:
         finalResponse
