@@ -416,21 +416,15 @@ public class SubscriptionService {
                                           handlers -> {
                                             if (handlers.succeeded()) {
                                               LOGGER.info("subscription rolled back successfully");
-                                              JsonObject res =
-                                                  new JsonObject(pgHandler.cause().getMessage());
-                                              LOGGER.debug(
-                                                  "pgHandler.cause().getMessage "
-                                                      + pgHandler.cause().getMessage());
-                                              promise.fail(generateResponse(res).toString());
                                             } else {
                                               LOGGER.error("subscription rolled back failed");
-                                              JsonObject res =
-                                                  new JsonObject(pgHandler.cause().getMessage());
-                                              LOGGER.debug(
-                                                  "pgHandler.cause().getMessage "
-                                                      + pgHandler.cause().getMessage());
-                                              promise.fail(generateResponse(res).toString());
                                             }
+                                            JsonObject res =
+                                                new JsonObject(pgHandler.cause().getMessage());
+                                            LOGGER.debug(
+                                                "pgHandler.cause().getMessage "
+                                                    + pgHandler.cause().getMessage());
+                                            promise.fail(generateResponse(res).toString());
                                           });
                                 }
                               });
