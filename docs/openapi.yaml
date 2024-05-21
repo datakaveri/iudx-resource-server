@@ -3428,6 +3428,8 @@ components:
           type: string
         title:
           type: string
+        description:
+          type: string
         results:
           description: An array of objects
           type: array
@@ -3435,7 +3437,8 @@ components:
             type: object
       example:
         type: urn:dx:rs:success
-        title: Successfully changed the password
+        title: Successfull
+        detail: Successfully changed the password
         results: [
           { "username": "asasdasd-asdasd-aada-d23342",
             "apiKey": "asass8a7s"
