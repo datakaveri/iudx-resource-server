@@ -28,12 +28,31 @@ The Resource Server also connects with various DX dependencies namely
 - Authorization Server : used to download the certificate for token decoding
 - Catalogue Server : used to download the list of resources, access policies and query types supported on a resource.
 - Auditing Server : used to store metering related data.
+
+## Create configs files
+
+Make a copy of sample configs directory and add appropriate values to all files.
+
+```console
+ cp -r example-configs/* .
+```
+
+```
+# configs directory after generation of configs files
+configs/
+├── config-dev.json
+└── config-test.json
+├── keystore.jks
+└── keystore.p12
+```
+
+
 ## Setting up ELK for IUDX Resource Server
 - Refer to the docker files available [here](https://github.com/datakaveri/iudx-deployment/blob/master/Docker-Swarm-deployment/single-node/elk) to setup ELK stack
 
 **Note** : Access to HTTP APIs for search functionality should be configured with TLS and RBAC privileges
 
-In order to connect to the appropriate Elasticsearch database, required information such as databaseIP,databasePort etc. should be updated in the DatabaseVerticle and AsyncVerticle modules available in [config-example.json](configs/config-example.json).
+In order to connect to the appropriate Elasticsearch database, required information such as databaseIP,databasePort etc. should be updated in the DatabaseVerticle and AsyncVerticle modules available in [config-example.json](example-configs/config-dev.json).
 
 **DatabaseVerticle**
 ```
@@ -73,7 +92,7 @@ In order to connect to the appropriate Elasticsearch database, required informat
 
 **Note** : PostgresQL database should be configured with a RBAC user having CRUD privileges
 
-In order to connect to the appropriate Postgres database, required information such as databaseIP,databasePort etc. should be updated in the PostgresVerticle and DataBrokerVerticle modules available in [config-example.json](configs/config-example.json).
+In order to connect to the appropriate Postgres database, required information such as databaseIP,databasePort etc. should be updated in the PostgresVerticle and DataBrokerVerticle modules available in [config-example.json](example-configs/config-dev.json).
 
 **PostgresVerticle**
 ```
@@ -290,7 +309,7 @@ CREATE TABLE IF NOT EXISTS auditing_cat
 - Refer to the docker files available [here](https://github.com/datakaveri/iudx-deployment/blob/master/Docker-Swarm-deployment/single-node/databroker) to setup RMQ.
 
 
-In order to connect to the appropriate RabbitMQ instance, required information such as dataBrokerIP,dataBrokerPort etc. should be updated in the DataBrokerVerticle module available in [config-example.json](configs/config-example.json).
+In order to connect to the appropriate RabbitMQ instance, required information such as dataBrokerIP,dataBrokerPort etc. should be updated in the DataBrokerVerticle module available in [config-example.json](example-configs/config-dev.json).
 
 **DataBrokerVerticle**
 ```
@@ -330,7 +349,7 @@ In order to connect to the appropriate RabbitMQ instance, required information s
 - Refer to the docker files available [here](https://github.com/datakaveri/iudx-deployment/blob/master/Docker-Swarm-deployment/single-node/redis)
 
 
-In order to connect to the appropriate Redis instance, required information such as redisHost,redisPort etc. should be updated in the LatestVerticle module available in [config-example.json](configs/config-example.json).
+In order to connect to the appropriate Redis instance, required information such as redisHost,redisPort etc. should be updated in the LatestVerticle module available in [config-example.json](example-configs/config-dev.json).
 
 **LatestVerticle**
 ```
@@ -356,7 +375,7 @@ In order to connect to AWS S3,
 - Create AWS account
 - From the AWS Console, create a new user with permission set to `AmazonS3FullAccess`.
 - Download the credentials `AWS_ACCESS_KEY_ID` , `AWS_SECRET_ACCESS_KEY` and add them to the environment variables
-- Create a new s3 bucket and add it's name to the AsyncVerticle module available in [config-example.json](configs/config-example.json)
+- Create a new s3 bucket and add it's name to the AsyncVerticle module available in [config-example.json](example-configs/config-dev.json)
 - 
 
 
@@ -379,7 +398,7 @@ In order to connect to AWS S3,
 
 ## Connecting with DX Catalogue Server
 
-In order to connect to the DX catalogue server, required information such as catServerHost,catServerPort etc. should be updated in the AuthenticationVerticle and ApiServerVerticle modules availabe in [config-example.json](configs/config-example.json).
+In order to connect to the DX catalogue server, required information such as catServerHost,catServerPort etc. should be updated in the AuthenticationVerticle and ApiServerVerticle modules availabe in [config-example.json](example-configs/config-dev.json).
 
 **AuthenticationVerticle**
 ```
@@ -414,7 +433,7 @@ In order to connect to the DX catalogue server, required information such as cat
 
 ## Connecting with DX Authorization Server
 
-In order to connect to the DX authentication server, required information such as authServerHost should be updated in the AuthenticationVerticle module availabe in [config-example.json](configs/config-example.json).
+In order to connect to the DX authentication server, required information such as authServerHost should be updated in the AuthenticationVerticle module availabe in [config-example.json](example-configs/config-dev.json).
 
 **AuthenticationVerticle**
 ```
