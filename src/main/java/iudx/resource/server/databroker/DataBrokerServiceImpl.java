@@ -834,7 +834,7 @@ public class DataBrokerServiceImpl implements DataBrokerService {
         .onSuccess(
             successHandler -> {
               response.put("type", ResponseUrn.SUCCESS_URN.getUrn());
-              response.put(TITLE, "successfull");
+              response.put(TITLE, "successful");
               response.put(DETAIL, "Successfully changed the password");
               JsonArray result =
                   new JsonArray()

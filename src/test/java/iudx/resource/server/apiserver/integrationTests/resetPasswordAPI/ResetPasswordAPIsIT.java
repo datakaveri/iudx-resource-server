@@ -32,7 +32,7 @@ public class ResetPasswordAPIsIT {
                 .post("/user/resetPassword")
                 .then()
                 .statusCode(200)
-                .body("title", equalTo("successfull"))
+                .body("title", equalTo("successful"))
                 .body("detail", equalTo("Successfully changed the password"))
                 .extract()
                 .response();
