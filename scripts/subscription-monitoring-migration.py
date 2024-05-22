@@ -32,10 +32,9 @@ conn = psycopg2.connect(host=postgresHost, database=postgresDatabaseName, user=p
 cur = conn.cursor()
 
 # get rows from column "exchange_name" from "adaptors_details" table
-exchanges = cur.execute("SELECT exchange_name FROM adaptors_details;")
+cur.execute("SELECT exchange_name FROM adaptors_details;")
 rows = cur.fetchall()
 count = len(rows)
-conn.commit()
 conn.close()
 
 print(f'Total number of exchanges found: {count}')
@@ -54,10 +53,9 @@ for exchange in rows:
     channel= connection.channel()
     channel.exchange_declare(dataBrokerExchange, durable=True, exchange_type="topic")
     channel.queue_declare(dataBrokerQueue)
-    channel.queue_bind(exchange=dataBrokerExchange, queue="subscriptions-monitoring", routing_key=f"{dataBrokerExchange}/.*")
+    channel.queue_bind(exchange=dataBrokerExchange, queue=dataBrokerQueue, routing_key=f"{dataBrokerExchange}/.*")
     print(f'"{dataBrokerExchange}" is bound with queue "{dataBrokerQueue}"\n')
-    channel = connection.channel()
-
+    connection.close()
 print("✅ Executed script successfully ")
 
 
