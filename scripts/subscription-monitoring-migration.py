@@ -52,7 +52,7 @@ for exchange in rows:
     connection = pika.BlockingConnection(pika.URLParameters(f'amqps://{dataBrokerUserName}:{encoded_pass}@{dataBrokerHost}:{dataBrokerPort}/{vhost}'))
     channel= connection.channel()
     channel.exchange_declare(dataBrokerExchange, durable=True, exchange_type="topic")
-    channel.queue_declare(dataBrokerQueue)
+    # channel.queue_declare(dataBrokerQueue)
     channel.queue_bind(exchange=dataBrokerExchange, queue=dataBrokerQueue, routing_key=f"{dataBrokerExchange}/.*")
     print(f'"{dataBrokerExchange}" is bound with queue "{dataBrokerQueue}"\n')
     connection.close()
