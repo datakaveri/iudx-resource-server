@@ -1,2 +1,2 @@
 ALTER TABLE auditing_rs
-ADD PRIMARY KEY (id);
+ADD CONSTRAINT auditing_rs_pkey PRIMARY KEY (id);
