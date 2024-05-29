@@ -1,0 +1,2 @@
+ALTER TABLE auditing_rs
+ADD PRIMARY KEY (id);
