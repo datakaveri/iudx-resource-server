@@ -278,7 +278,7 @@ public class SubscriptionServiceTest {
     @Test
     @DisplayName("Test deleteSubscription method: Failure ")
     public void testDeleteSubscriptionFailure(VertxTestContext vertxTestContext) {
-        when(json.getString(anyString())).thenReturn("STREAMING");
+        lenient().when(json.getString(anyString())).thenReturn("STREAMING");
         service = new SubscriptionService();
         service.subscription = mock(Subscription.class);
         when(service.subscription.delete(any())).thenReturn(jsonObjectFuture);
@@ -310,7 +310,7 @@ public class SubscriptionServiceTest {
     @Test
     @DisplayName("Test getSubscription method : Success")
     public void testGetSubscriptionSuccess(VertxTestContext vertxTestContext) {
-        when(json.getString(anyString())).thenReturn("STREAMING");
+        lenient().when(json.getString(anyString())).thenReturn("STREAMING");
         when(asyncResult.succeeded()).thenReturn(true);
         when(asyncResult.result()).thenReturn(json);
         service = new SubscriptionService();
@@ -336,7 +336,7 @@ public class SubscriptionServiceTest {
     @Test
     @DisplayName("Test getSubscription method : Failure")
     public void testGetSubscriptionFailure(VertxTestContext vertxTestContext) {
-        when(json.getString(anyString())).thenReturn("STREAMING");
+        lenient().when(json.getString(anyString())).thenReturn("STREAMING");
         when(asyncResult.succeeded()).thenReturn(false);
         when(asyncResult.cause()).thenReturn(throwable);
         service = new SubscriptionService();
