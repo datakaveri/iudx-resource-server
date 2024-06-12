@@ -29,19 +29,12 @@ public class SubscriptionService {
   /**
    * get the context of subscription according to the type passed in message body.
    *
-   * @param type type of subscription either <strong>streaming</strong> or <strong>callback</strong>
    * @param databroker databroker verticle object
    * @return an object of Subscription class
    */
-  private Subscription getSubscriptionContext(SubsType type, DataBrokerService databroker) {
-    LOGGER.info("getSubscriptionContext() method started");
-    if (type != null && type.equals(SubsType.CALLBACK)) {
-      LOGGER.info("callback subscription context");
-      return new CallbackSubscription(databroker);
-    } else {
-      LOGGER.info("streaming subscription context");
-      return new StreamingSubscription(databroker);
-    }
+  private Subscription getSubscriptionContext(DataBrokerService databroker) {
+    LOGGER.info("streaming subscription context");
+    return new StreamingSubscription(databroker);
   }
 
   /**
@@ -62,7 +55,7 @@ public class SubscriptionService {
     Promise<JsonObject> promise = Promise.promise();
     SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
     if (subscription == null) {
-      subscription = getSubscriptionContext(subType, databroker);
+      subscription = getSubscriptionContext(databroker);
     }
     assertNotNull(subscription);
     subscription
@@ -239,9 +232,8 @@ public class SubscriptionService {
       JsonObject json, DataBrokerService databroker, PostgresService pgService) {
     LOGGER.info("deleteSubscription() method started");
     Promise<JsonObject> promise = Promise.promise();
-    SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
     if (subscription == null) {
-      subscription = getSubscriptionContext(subType, databroker);
+      subscription = getSubscriptionContext(databroker);
     }
     assertNotNull(subscription);
     subscription
@@ -284,9 +276,8 @@ public class SubscriptionService {
       JsonObject json, DataBrokerService databroker, PostgresService pgService) {
     LOGGER.info("getSubscription() method started");
     Promise<JsonObject> promise = Promise.promise();
-    SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
     if (subscription == null) {
-      subscription = getSubscriptionContext(subType, databroker);
+      subscription = getSubscriptionContext(databroker);
     }
     assertNotNull(subscription);
     subscription
@@ -342,7 +333,7 @@ public class SubscriptionService {
     Promise<JsonObject> promise = Promise.promise();
     SubsType subType = SubsType.valueOf(json.getString(SUB_TYPE));
     if (subscription == null) {
-      subscription = getSubscriptionContext(subType, databroker);
+      subscription = getSubscriptionContext(databroker);
     }
     assertNotNull(subscription);
     subscription
