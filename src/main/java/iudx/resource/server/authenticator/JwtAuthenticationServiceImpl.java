@@ -271,22 +271,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     Promise<JsonObject> promise = Promise.promise();
     String jwtId = jwtData.getIid().split(":")[1];
 
-    if (openResource && checkOpenEndPoints(authInfo.getString("apiEndpoint"))) {
+    if (!isLimitsEnabled && openResource && checkOpenEndPoints(authInfo.getString("apiEndpoint"))) {
       LOGGER.info("User access is allowed.");
-      JsonObject jsonResponse = new JsonObject();
-      jsonResponse.put(JSON_IID, jwtId);
-      jsonResponse.put(JSON_USERID, jwtData.getSub());
-      jsonResponse.put(ROLE, jwtData.getRole());
-      jsonResponse.put(DRL, jwtData.getDrl());
-      jsonResponse.put(DID, jwtData.getDid());
-      jsonResponse.put(
-          JSON_EXPIRY,
-          LocalDateTime.ofInstant(
-                  Instant.ofEpochSecond(Long.parseLong(jwtData.getExp().toString())),
-                  ZoneId.systemDefault())
-              .toString());
-
-      return Future.succeededFuture(jsonResponse);
+      return Future.succeededFuture(createValidateAccessSuccessResponse(jwtData));
     }
 
     Method method = Method.valueOf(authInfo.getString("method"));
@@ -305,26 +292,25 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     OffsetDateTime endDateTime = startDateTime.withHour(00).withMinute(00).withSecond(00);
 
     JsonObject meteringCountRequest = new JsonObject();
-    meteringCountRequest.put("timeRelation", "during");
     meteringCountRequest.put("startTime", endDateTime.toString());
     meteringCountRequest.put("endTime", startDateTime.toString());
     meteringCountRequest.put("userid", jwtData.getSub());
-    meteringCountRequest.put("endPoint", "/consumer/audit");
-    meteringCountRequest.put("options", "count");
 
     LOGGER.debug("metering request : " + meteringCountRequest);
     if (isLimitsEnabled) {
-      meteringService.executeReadQuery(
+
+      meteringService.getConsumedData(
           meteringCountRequest,
           meteringCountHandler -> {
             if (meteringCountHandler.succeeded()) {
-              JsonObject consumedApiCount = new JsonObject();
-              LOGGER.info("metering response : " + meteringCountHandler.result());
               JsonObject meteringResponse = meteringCountHandler.result();
-              consumedApiCount.put(
-                  "api",
-                  meteringResponse.getJsonArray("results").getJsonObject(0).getInteger("total"));
-              if (jwtAuthStrategy.isAuthorized(authRequest, jwtData, consumedApiCount)) {
+              LOGGER.debug("metering response :{} ", meteringResponse);
+
+              JsonObject consumedData;
+              consumedData = meteringResponse.getJsonArray("result").getJsonObject(0);
+
+              LOGGER.debug("consumedData: {}", consumedData);
+              if (jwtAuthStrategy.isAuthorized(authRequest, jwtData, consumedData)) {
                 LOGGER.info("User access is allowed.");
                 promise.complete(createValidateAccessSuccessResponse(jwtData));
               } else {
@@ -335,23 +321,9 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             } else {
               LOGGER.error("failed to get metering response");
               String failureMessage = meteringCountHandler.cause().getMessage();
-              JsonObject failureJson = new JsonObject(failureMessage);
-              int failureCode = failureJson.getInteger("type");
-              if (failureCode == 204) {
-                JsonObject consumedApiCount = new JsonObject();
-                consumedApiCount.put("api", 0);
-                if (jwtAuthStrategy.isAuthorized(authRequest, jwtData, consumedApiCount)) {
-                  LOGGER.info("User access is allowed.");
-                  promise.complete(createValidateAccessSuccessResponse(jwtData));
-                } else {
-                  LOGGER.error("failed - no access provided to endpoint");
-                  JsonObject result = new JsonObject().put("401", "no access provided to endpoint");
-                  promise.fail(result.toString());
-                }
-              }
-
-              //          JsonObject result = new JsonObject().put("401", "Access limit exceeds");
-              //          promise.fail(result.toString());
+              LOGGER.error("metering: {}", failureMessage);
+              JsonObject result = new JsonObject().put("401", "no access provided to endpoint");
+              promise.fail(result.toString());
             }
           });
     } else {

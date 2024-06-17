@@ -407,7 +407,7 @@ public class MeteringServiceImpl implements MeteringService {
     rmqService.publishMessage(
         writeMessage,
         EXCHANGE_NAME,
-        ROUTING_KEY,
+        "###",
         rmqHandler -> {
           if (rmqHandler.succeeded()) {
             handler.handle(Future.succeededFuture());
@@ -425,6 +425,25 @@ public class MeteringServiceImpl implements MeteringService {
             }
           }
         });
+    return this;
+  }
+
+  @Override
+  public MeteringService getConsumedData(
+      JsonObject request, Handler<AsyncResult<JsonObject>> handler) {
+    String query = queryBuilder.getConsumedDataQuery(request);
+    LOGGER.info("getConsumedData query: {}", query);
+    executeQueryDatabaseOperation(query)
+        .onSuccess(
+            successHandler -> {
+              handler.handle(Future.succeededFuture(successHandler));
+            })
+        .onFailure(
+            failureHandler -> {
+              LOGGER.error("getConsumedData failed : {}", failureHandler);
+              handler.handle(Future.failedFuture(failureHandler.getMessage()));
+            });
+
     return this;
   }
 
