@@ -13,6 +13,7 @@ import static iudx.resource.server.metering.util.Constants.API;
 import static iudx.resource.server.metering.util.Constants.TYPE_KEY;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch.core.search.SourceConfig;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -57,6 +58,7 @@ public class AsyncServiceImpl implements AsyncService {
   private ResponseBuilder responseBuilder;
   private String filePath;
   private String tenantPrefix;
+  private QueryDecoder queryDecoder = new QueryDecoder();
 
   public AsyncServiceImpl(
       Vertx vertx,
@@ -391,7 +393,8 @@ public class AsyncServiceImpl implements AsyncService {
     LOGGER.info("Index name: " + searchIndex);
 
     try {
-      query = new QueryDecoder().getQuery(request, true);
+      LOGGER.debug("line 396: " + request);
+      query = queryDecoder.getQuery(request, true);
     } catch (Exception e) {
       LOGGER.error(e);
       e.printStackTrace();
@@ -403,18 +406,10 @@ public class AsyncServiceImpl implements AsyncService {
     LOGGER.debug("Info: index: " + searchIndex);
     LOGGER.debug("Info: Query constructed: " + query.toString());
 
-    String[] sourceFilters = null;
-    if (request.containsKey(RESPONSE_ATTRS)) {
-      JsonArray responseFilters = request.getJsonArray(RESPONSE_ATTRS);
-      sourceFilters = new String[responseFilters.size()];
-      for (int i = 0; i < sourceFilters.length; i++) {
-        sourceFilters[i] = responseFilters.getString(i);
-        LOGGER.debug(sourceFilters[i]);
-      }
-    }
+    SourceConfig sourceFilter = queryDecoder.getSourceConfigFilters(request);
     Future<JsonObject> asyncFuture =
         client.asyncScroll(
-            file, searchIndex, query, sourceFilters, searchId, progressListener, format, filePath);
+            file, searchIndex, query, sourceFilter, searchId, progressListener, format, filePath);
     asyncFuture.onComplete(
         scrollHandler -> {
           if (scrollHandler.succeeded()) {

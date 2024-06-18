@@ -1,6 +1,7 @@
 package iudx.resource.server.apiserver.handlers;
 
 import static iudx.resource.server.apiserver.util.Constants.*;
+import static iudx.resource.server.authenticator.Constants.ACCESSIBLE_ATTRS;
 import static iudx.resource.server.authenticator.Constants.ROLE;
 import static iudx.resource.server.common.Constants.*;
 import static iudx.resource.server.common.ResponseUrn.*;
@@ -95,6 +96,7 @@ public class AuthHandler implements Handler<RoutingContext> {
             authInfo.put(ROLE, authHandler.result().getValue(ROLE));
             authInfo.put(DID, authHandler.result().getValue(DID));
             authInfo.put(DRL, authHandler.result().getValue(DRL));
+            authInfo.put(ACCESSIBLE_ATTRS, authHandler.result().getValue(ACCESSIBLE_ATTRS));
             context.data().put(this.authInfo, authInfo);
           } else {
             processAuthFailure(context, authHandler.cause().getMessage());

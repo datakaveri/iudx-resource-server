@@ -3,6 +3,7 @@ package iudx.resource.server.apiserver;
 import static iudx.resource.server.apiserver.response.ResponseUtil.generateResponse;
 import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Util.errorResponse;
+import static iudx.resource.server.authenticator.Constants.ACCESSIBLE_ATTRS;
 import static iudx.resource.server.authenticator.Constants.ROLE;
 import static iudx.resource.server.cache.cachelmpl.CacheType.CATALOGUE_CACHE;
 import static iudx.resource.server.common.Constants.CACHE_SERVICE_ADDRESS;
@@ -850,6 +851,10 @@ public class ApiServerVerticle extends AbstractVerticle {
    */
   private void executeSearchQuery(
       RoutingContext context, JsonObject json, HttpServerResponse response) {
+    JsonObject authInfo = (JsonObject) context.data().get("authInfo");
+    JsonArray accessibleAttrs = authInfo.getJsonArray(ACCESSIBLE_ATTRS, new JsonArray());
+    json.put(ACCESSIBLE_ATTRS, accessibleAttrs);
+
     Future<JsonObject> searchDbFuture = database.search(json);
     searchDbFuture.onComplete(
         handler -> {

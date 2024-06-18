@@ -43,7 +43,9 @@ public enum ResponseUrn {
   BACKING_SERVICE_FORMAT_URN(
       "urn:dx:rs:backend", "format error from backing service [cat,auth etc.]"),
   SCHEMA_READ_ERROR_URN("urn:dx:rs:readError", "Fail to read file"),
-  YET_NOT_IMPLEMENTED_URN("urn:dx:rs:general", "urn yet not implemented in backend verticle.");
+  YET_NOT_IMPLEMENTED_URN("urn:dx:rs:general", "urn yet not implemented in backend verticle."),
+  UNAUTHORIZED_ATTRS_URN(
+      "urn:dx:rs:unauthorizedAttributes", "user unauthorized to access given attributes");
 
   private final String urn;
   private final String message;

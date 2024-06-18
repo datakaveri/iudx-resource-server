@@ -8,6 +8,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
@@ -156,6 +157,12 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
                 jsonResponse.put(ROLE, result.jwtData.getRole());
                 jsonResponse.put(DRL, result.jwtData.getDrl());
                 jsonResponse.put(DID, result.jwtData.getDid());
+                JsonArray accessibleAttrs = result.jwtData.getCons().getJsonArray("attrs");
+                if (accessibleAttrs == null || accessibleAttrs.isEmpty()) {
+                  jsonResponse.put(ACCESSIBLE_ATTRS, new JsonArray());
+                } else {
+                  jsonResponse.put(ACCESSIBLE_ATTRS, accessibleAttrs);
+                }
                 return Future.succeededFuture(jsonResponse);
               } else {
                 return validateAccess(result.jwtData, result.isOpen, authenticationInfo);
@@ -362,6 +369,12 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
                 Instant.ofEpochSecond(Long.parseLong(jwtData.getExp().toString())),
                 ZoneId.systemDefault())
             .toString());
+    JsonArray accessibleAttrs = jwtData.getCons().getJsonArray("attrs");
+    if (accessibleAttrs == null || accessibleAttrs.isEmpty()) {
+      jsonResponse.put(ACCESSIBLE_ATTRS, new JsonArray());
+    } else {
+      jsonResponse.put(ACCESSIBLE_ATTRS, accessibleAttrs);
+    }
     return jsonResponse;
   }
 
