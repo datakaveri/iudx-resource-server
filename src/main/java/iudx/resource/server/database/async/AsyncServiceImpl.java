@@ -393,7 +393,6 @@ public class AsyncServiceImpl implements AsyncService {
     LOGGER.info("Index name: " + searchIndex);
 
     try {
-      LOGGER.debug("line 396: " + request);
       query = queryDecoder.getQuery(request, true);
     } catch (Exception e) {
       LOGGER.error(e);

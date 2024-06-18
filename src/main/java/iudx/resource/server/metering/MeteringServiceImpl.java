@@ -407,7 +407,7 @@ public class MeteringServiceImpl implements MeteringService {
     rmqService.publishMessage(
         writeMessage,
         EXCHANGE_NAME,
-        "###",
+        ROUTING_KEY,
         rmqHandler -> {
           if (rmqHandler.succeeded()) {
             handler.handle(Future.succeededFuture());

@@ -1,5 +1,7 @@
 package iudx.resource.server.metering.util;
 
+import java.util.List;
+
 public class Constants {
 
   public static final String ID = "id";
@@ -106,5 +108,7 @@ public class Constants {
       "SELECT COALESCE(api_count, 0) AS api_count,COALESCE(consumed_data, 0) AS consumed_data FROM (SELECT COUNT(*) "
           + "AS api_count,SUM(size) AS consumed_data FROM auditing_rs "
           + "WHERE userid = '$1' AND time BETWEEN '$2' AND '$3' "
-          + "AND api NOT IN ('/ngsi-ld/v1/ingestion', '/iudx/v1/delete','/iudx/v1/upload'))";
+          + "AND api NOT IN (%s))";
+  public static List<String> ENDPOINT_EXCLUSION_lIST =
+      List.of("/ngsi-ld/v1/ingestion", "/iudx/v1/delete", "/iudx/v1/upload");
 }

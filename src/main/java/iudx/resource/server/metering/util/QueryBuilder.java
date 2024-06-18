@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -226,6 +227,12 @@ public class QueryBuilder {
                 .replace("$2", request.getString("startTime"))
                 .replace("$3", request.getString("endTime")));
 
-    return query.toString();
+    return String.format(query.toString(), buildExclusionQueryPart());
+  }
+
+  public String buildExclusionQueryPart() {
+    return ENDPOINT_EXCLUSION_lIST.stream()
+        .map(endpoint -> "'" + endpoint + "'")
+        .collect(Collectors.joining(", "));
   }
 }
