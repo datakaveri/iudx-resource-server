@@ -72,6 +72,7 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     // async access list
     List<AuthorizationRequest> asyncAccessList = new ArrayList<>();
     asyncAccessList.add(new AuthorizationRequest(POST, api.getIudxAsyncSearchApi()));
+    asyncAccessList.add(new AuthorizationRequest(GET, api.getIudxAsyncStatusApi()));
     consumerAuthorizationRules.put(IudxAccess.ASYNC.getAccess(), asyncAccessList);
   }
 
@@ -79,7 +80,7 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
   public boolean isAuthorized(AuthorizationRequest authRequest, JwtData jwtData) {
     JsonArray access = jwtData.getCons() != null ? jwtData.getCons().getJsonArray("access") : null;
     boolean result = false;
-    LOGGER.debug(access);
+    LOGGER.info(access + "result: {}", result);
     if (access == null) {
       return result;
     }
@@ -88,10 +89,10 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
     LOGGER.info("authorization request for : " + endpoint + " with method : " + method.name());
     LOGGER.info("allowed access : " + access);
 
-    if (!result && access.contains(IudxAccess.API.getAccess())) {
+    if (!result && access.getJsonObject(0).containsKey(IudxAccess.API.getAccess())) {
       result = consumerAuthorizationRules.get(IudxAccess.API.getAccess()).contains(authRequest);
     }
-    if (!result && access.contains(IudxAccess.SUBSCRIPTION.getAccess())) {
+    if (!result && access.getJsonObject(0).containsKey(IudxAccess.SUBSCRIPTION.getAccess())) {
       result =
           consumerAuthorizationRules.get(IudxAccess.SUBSCRIPTION.getAccess()).contains(authRequest);
     }
@@ -108,19 +109,21 @@ public class ConsumerAuthStrategy implements AuthorizationStrategy {
   @Override
   public boolean isAuthorized(
       AuthorizationRequest authRequest, JwtData jwtData, JsonObject quotaConsumed) {
-    JsonArray limitsArray =
-        jwtData.getCons() != null ? jwtData.getCons().getJsonArray("limits") : null;
+    JsonObject accessJson =
+        jwtData.getCons() != null
+            ? jwtData.getCons().getJsonArray("access").getJsonObject(0)
+            : null;
     boolean isUsageWithinLimits = true;
     if (isLimitsEnabled) {
       isUsageWithinLimits = false;
-      // TODO: evaluate allowed vs what consumed
-      for (Object jsonObject : limitsArray) {
-        JsonObject json = (JsonObject) jsonObject;
-        if (json.containsKey("api")) {
-          int consumed = quotaConsumed.getInteger("api");
-          if (consumed < json.getInteger("api")) {
-            isUsageWithinLimits = true;
-          }
+
+      if (accessJson.containsKey("api")) {
+        int dataConsumed = quotaConsumed.getInteger("consumed_data");
+        int apiCount = quotaConsumed.getInteger("api_count");
+        LOGGER.debug("apiCount {} dataConsumed {}", apiCount, dataConsumed);
+        if (apiCount < Integer.parseInt(accessJson.getString("api"))
+            && dataConsumed < Integer.parseInt(accessJson.getString("sub"))) {
+          isUsageWithinLimits = true;
         }
       }
     }

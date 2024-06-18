@@ -4,12 +4,14 @@ import static iudx.resource.server.apiserver.util.Constants.ENDT;
 import static iudx.resource.server.apiserver.util.Constants.STARTT;
 import static iudx.resource.server.authenticator.Constants.ROLE;
 import static iudx.resource.server.metering.util.Constants.*;
+import static iudx.resource.server.metering.util.Constants.DATA_CONSUMATION_DETAIL_QUERY;
 
 import io.vertx.core.json.JsonObject;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -214,5 +216,23 @@ public class QueryBuilder {
     }
     summaryQuery.append(GROUPBY_RESOURCEID);
     return summaryQuery.toString();
+  }
+
+  public String getConsumedDataQuery(JsonObject request) {
+
+    StringBuilder query =
+        new StringBuilder(
+            DATA_CONSUMATION_DETAIL_QUERY
+                .replace("$1", request.getString("userid"))
+                .replace("$2", request.getString("startTime"))
+                .replace("$3", request.getString("endTime")));
+
+    return String.format(query.toString(), buildExclusionQueryPart());
+  }
+
+  public String buildExclusionQueryPart() {
+    return ENDPOINT_EXCLUSION_lIST.stream()
+        .map(endpoint -> "'" + endpoint + "'")
+        .collect(Collectors.joining(", "));
   }
 }

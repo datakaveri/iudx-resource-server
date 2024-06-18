@@ -1,26 +1,9 @@
 package iudx.resource.server.authenticator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import io.vertx.core.Handler;
-import iudx.resource.server.common.Api;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.joda.time.LocalDateTime;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import io.micrometer.core.ipc.http.HttpSender.Method;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -39,25 +22,24 @@ import io.vertx.junit5.VertxTestContext;
 import iudx.resource.server.authenticator.model.JwtData;
 import iudx.resource.server.cache.CacheService;
 import iudx.resource.server.cache.cachelmpl.CacheType;
+import iudx.resource.server.common.Api;
 import iudx.resource.server.configuration.Configuration;
 import iudx.resource.server.database.postgres.PostgresService;
 import iudx.resource.server.metering.MeteringService;
-import org.mockito.stubbing.Answer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.joda.time.LocalDateTime;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith({VertxExtension.class, MockitoExtension.class})
 public class JwtAuthServiceImplTest {
-  @Mock
-  HttpRequest<Buffer> httpRequest;
-  @Mock
-  HttpResponse<Buffer> httpResponse;
-
-  @Mock
-  AsyncResult<HttpResponse<Buffer>> asyncResult;
-  @Mock
-  HttpRequest<Buffer> httpRequestMock;
-  @Mock
-  HttpResponse<Buffer> httpResponseMock;
-
   private static final Logger LOGGER = LogManager.getLogger(JwtAuthServiceImplTest.class);
   private static JsonObject authConfig;
   private static JwtAuthenticationServiceImpl jwtAuthenticationService;
@@ -69,6 +51,16 @@ public class JwtAuthServiceImplTest {
   private static CacheService cacheService;
   private static MeteringService meteringService;
   private static Api apis;
+  @Mock
+  HttpRequest<Buffer> httpRequest;
+  @Mock
+  HttpResponse<Buffer> httpResponse;
+  @Mock
+  AsyncResult<HttpResponse<Buffer>> asyncResult;
+  @Mock
+  HttpRequest<Buffer> httpRequestMock;
+  @Mock
+  HttpResponse<Buffer> httpResponseMock;
 
   @BeforeAll
   @DisplayName("Initialize Vertx and deploy Auth Verticle")
@@ -80,15 +72,15 @@ public class JwtAuthServiceImplTest {
     authConfig.put("dxAuthBasePath", "/auth/v1");
 
     apis = Api.getInstance("/ngsi-ld/v1");
+    String cert = "-----BEGIN CERTIFICATE-----\n" +
+            "MIIBnDCCAT+gAwIBAgIEAmHF8jAMBggqhkjOPQQDAgUAMEIxCTAHBgNVBAYTADEJMAcGA1UECBMAMQkwBwYDVQQHEwAxCTAHBgNVBAoTADEJMAcGA1UECxMAMQkwBwYDVQQDEwAwHhcNMjQwNjA0MDUwMjUyWhcNMzQwNDEzMDUwMjUyWjBCMQkwBwYDVQQGEwAxCTAHBgNVBAgTADEJMAcGA1UEBxMAMQkwBwYDVQQKEwAxCTAHBgNVBAsTADEJMAcGA1UEAxMAMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEh5f7KjNICeuv7WqbeA7M833XFaPolI8FxZ/aCcqjXOE9RKtiat2MJcW4/OElvLTXmsuJqurYEcf6AWpzjNorxqMhMB8wHQYDVR0OBBYEFKbYNWO6YB6Usl/kc6iTYw855Pm4MAwGCCqGSM49BAMCBQADSQAwRgIhAKpRdMvH23COf7EBm2M1thDE26pT8WL0SfP5u9szo0cdAiEAv/0b4E2sU3gIxtkJDx5KUr+kQWxtY5w2+MPQ32G38ig=\n" +
+            "-----END CERTIFICATE-----";
+
     JWTAuthOptions jwtAuthOptions = new JWTAuthOptions();
     jwtAuthOptions.addPubSecKey(
             new PubSecKeyOptions()
                     .setAlgorithm("ES256")
-                    .setBuffer("-----BEGIN PUBLIC KEY-----\n" +
-                            "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE8BKf2HZ3wt6wNf30SIsbyjYPkkTS\n" +
-                            "GGyyM2/MGF/zYTZV9Z28hHwvZgSfnbsrF36BBKnWszlOYW0AieyAUKaKdg==\n" +
-                            "-----END PUBLIC KEY-----\n" +
-                            ""));
+                    .setBuffer(cert));
     jwtAuthOptions.getJWTOptions().setIgnoreExpiration(true);// ignore token expiration only
     // for
     // test
@@ -169,7 +161,7 @@ public class JwtAuthServiceImplTest {
     jwtData.setIat(1627408865);
     jwtData.setIid("ri:foobar.iudx.io");
     jwtData.setRole("consumer");
-    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add(new JsonObject().put("api",10))));
 
     jwtAuthenticationService.validateAccess(jwtData, true, authInfo).onComplete(handler -> {
       if (handler.succeeded()) {
@@ -262,7 +254,7 @@ public class JwtAuthServiceImplTest {
     jwtData.setIat(1627408865);
     jwtData.setIid("rg:example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
     jwtData.setRole("provider");
-    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add(new JsonObject().put("api",10))));
 
     JsonObject revokedTokenRequest=new JsonObject();
     revokedTokenRequest.put("type", CacheType.REVOKED_CLIENT);
@@ -312,7 +304,6 @@ public class JwtAuthServiceImplTest {
     jwtData.setIat(1627408865);
     jwtData.setIid("rg:example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
     jwtData.setRole("provider");
-    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
 
     JsonObject revokedTokenRequest=new JsonObject();
     revokedTokenRequest.put("type", CacheType.REVOKED_CLIENT);
@@ -461,7 +452,8 @@ public class JwtAuthServiceImplTest {
     jwtData.setIat(1627408865);
     jwtData.setIid("rg:example.com/79e7bfa62fad6c765bac69154c2f24c94c95220a/resource-group");
     jwtData.setRole("provider");
-    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add(new JsonObject().put("api",10).put("sub",100))));
+
 
     JsonObject revokedTokenRequest=new JsonObject();
     revokedTokenRequest.put("type", CacheType.REVOKED_CLIENT);
@@ -604,7 +596,7 @@ public class JwtAuthServiceImplTest {
     jwtData.setIid(
             "rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
-    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api").add("sub")));
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add(new JsonObject().put("api",10).put("sub",100))));
 
 
     jwtAuthenticationService.validateAccess(jwtData, true, authInfo).onComplete(handler -> {
@@ -637,7 +629,7 @@ public class JwtAuthServiceImplTest {
     jwtData.setIid(
             "rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
-    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add(new JsonObject().put("api",10).put("sub",100))));
     jwtAuthenticationService.validateAccess(jwtData, false, authInfo).onComplete(handler -> {
       if (handler.succeeded()) {
         testContext.failNow("invalid access provided");
@@ -668,7 +660,7 @@ public class JwtAuthServiceImplTest {
     jwtData.setIid(
             "rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
-    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api").add("sub")));
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add(new JsonObject().put("api",10).put("sub",100))));
 
 
     jwtAuthenticationService.validateAccess(jwtData, true, authInfo).onComplete(handler -> {
@@ -701,7 +693,7 @@ public class JwtAuthServiceImplTest {
     jwtData.setIid(
             "rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
-    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add(new JsonObject().put("api",10))));
     jwtAuthenticationService.validateAccess(jwtData, false, authInfo).onComplete(handler -> {
       if (handler.succeeded()) {
         testContext.failNow("invalid access provided");
@@ -732,7 +724,7 @@ public class JwtAuthServiceImplTest {
     jwtData.setIid(
             "rg:datakaveri.org/04a15c9960ffda227e9546f3f46e629e1fe4132b/rs.iudx.io/pune-env-flood/FWR053");
     jwtData.setRole("consumer");
-    jwtData.setCons(new JsonObject().put("access", new JsonArray().add("api")));
+    jwtData.setCons(new JsonObject().put("access", new JsonArray().add(new JsonObject().put("api",10).put("sub",100))));
 
     jwtAuthenticationService.validateAccess(jwtData, false, authInfo).onComplete(handler -> {
       if (handler.succeeded()) {
