@@ -56,14 +56,14 @@ public class QueryMapper {
     if (params.getId() != null) {
       JsonArray jsonArray = new JsonArray();
       params.getId().forEach(s -> jsonArray.add(s.toString()));
-      json.put(Constants.JSON_ID, jsonArray);
+      json.put(JSON_ID, jsonArray);
       LOGGER.debug("Info : json " + json);
     }
     if (params.getAttrs() != null) {
       isResponseFilter = true;
       JsonArray jsonArray = new JsonArray();
       params.getAttrs().forEach(attribute -> jsonArray.add(attribute));
-      json.put(Constants.JSON_ATTRIBUTE_FILTER, jsonArray);
+      json.put(JSON_ATTRIBUTE_FILTER, jsonArray);
       LOGGER.debug("Info : json " + json);
     }
     if (isGeoQuery(params)) {
@@ -72,23 +72,23 @@ public class QueryMapper {
           && params.getGeometry() != null
           && params.getGeoProperty() != null) {
         isGeoSearch = true;
-        if (params.getGeometry().equalsIgnoreCase(Constants.GEOM_POINT)
-            && params.getGeoRel().getRelation().equals(Constants.JSON_NEAR)
+        if (params.getGeometry().equalsIgnoreCase(GEOM_POINT)
+            && params.getGeoRel().getRelation().equals(JSON_NEAR)
             && params.getGeoRel().getMaxDistance() != null) {
           String[] coords = params.getCoordinates().replaceAll("\\[|\\]", "").split(",");
-          json.put(Constants.JSON_LAT, Double.parseDouble(coords[0]));
-          json.put(Constants.JSON_LON, Double.parseDouble(coords[1]));
-          json.put(Constants.JSON_RADIUS, params.getGeoRel().getMaxDistance());
+          json.put(JSON_LAT, Double.parseDouble(coords[0]));
+          json.put(JSON_LON, Double.parseDouble(coords[1]));
+          json.put(JSON_RADIUS, params.getGeoRel().getMaxDistance());
         } else {
-          json.put(Constants.JSON_GEOMETRY, params.getGeometry());
-          json.put(Constants.JSON_COORDINATES, params.getCoordinates());
+          json.put(JSON_GEOMETRY, params.getGeometry());
+          json.put(JSON_COORDINATES, params.getCoordinates());
           json.put(
-              Constants.JSON_GEOREL,
-              getOrDefault(params.getGeoRel().getRelation(), Constants.JSON_WITHIN));
+              JSON_GEOREL,
+              getOrDefault(params.getGeoRel().getRelation(), JSON_WITHIN));
           if (params.getGeoRel().getMaxDistance() != null) {
-            json.put(Constants.JSON_MAXDISTANCE, params.getGeoRel().getMaxDistance());
+            json.put(JSON_MAXDISTANCE, params.getGeoRel().getMaxDistance());
           } else if (params.getGeoRel().getMinDistance() != null) {
-            json.put(Constants.JSON_MINDISTANCE, params.getGeoRel().getMinDistance());
+            json.put(JSON_MINDISTANCE, params.getGeoRel().getMinDistance());
           }
         }
         LOGGER.debug("Info : json " + json);
@@ -107,22 +107,22 @@ public class QueryMapper {
         && params.getTemporalRelation().getTemprel() != null
         && params.getTemporalRelation().getTime() != null) {
       isTemporal = true;
-      if (params.getTemporalRelation().getTemprel().equalsIgnoreCase(Constants.JSON_DURING)
-          || params.getTemporalRelation().getTemprel().equalsIgnoreCase(Constants.JSON_BETWEEN)) {
+      if (params.getTemporalRelation().getTemprel().equalsIgnoreCase(JSON_DURING)
+          || params.getTemporalRelation().getTemprel().equalsIgnoreCase(JSON_BETWEEN)) {
         LOGGER.debug("Info : inside during ");
 
-        json.put(Constants.JSON_TIME, params.getTemporalRelation().getTime());
-        json.put(Constants.JSON_ENDTIME, params.getTemporalRelation().getEndTime());
-        json.put(Constants.JSON_TIMEREL, params.getTemporalRelation().getTemprel());
+        json.put(JSON_TIME, params.getTemporalRelation().getTime());
+        json.put(JSON_ENDTIME, params.getTemporalRelation().getEndTime());
+        json.put(JSON_TIMEREL, params.getTemporalRelation().getTemprel());
 
         isValidTimeInterval(
-            Constants.JSON_DURING,
-            json.getString(Constants.JSON_TIME),
-            json.getString(Constants.JSON_ENDTIME),
+            JSON_DURING,
+            json.getString(JSON_TIME),
+            json.getString(JSON_ENDTIME),
             isAsyncQuery);
       } else {
-        json.put(Constants.JSON_TIME, params.getTemporalRelation().getTime().toString());
-        json.put(Constants.JSON_TIMEREL, params.getTemporalRelation().getTemprel());
+        json.put(JSON_TIME, params.getTemporalRelation().getTime().toString());
+        json.put(JSON_TIMEREL, params.getTemporalRelation().getTemprel());
       }
       LOGGER.debug("Info : json " + json);
     }
@@ -133,25 +133,25 @@ public class QueryMapper {
       for (String term : qterms) {
         query.add(getQueryTerms(term));
       }
-      json.put(Constants.JSON_ATTR_QUERY, query);
+      json.put(JSON_ATTR_QUERY, query);
       LOGGER.debug("Info : json " + json);
     }
     if (params.getGeoProperty() != null) {
-      json.put(Constants.JSON_GEOPROPERTY, params.getGeoProperty());
+      json.put(JSON_GEOPROPERTY, params.getGeoProperty());
       LOGGER.debug("Info : json " + json);
     }
     if (params.getOptions() != null) {
-      json.put(Constants.IUDXQUERY_OPTIONS, params.getOptions());
+      json.put(IUDXQUERY_OPTIONS, params.getOptions());
       LOGGER.debug("Info : json " + json);
     }
     if (params.getPageFrom() != null) {
-      json.put(Constants.NGSILDQUERY_FROM, params.getPageFrom());
+      json.put(NGSILDQUERY_FROM, params.getPageFrom());
     }
     if (params.getPageSize() != null) {
-      json.put(Constants.NGSILDQUERY_SIZE, params.getPageSize());
+      json.put(NGSILDQUERY_SIZE, params.getPageSize());
     }
 
-    json.put(Constants.JSON_SEARCH_TYPE, getSearchType(isAsyncQuery));
+    json.put(JSON_SEARCH_TYPE, getSearchType(isAsyncQuery));
     LOGGER.debug("Info : json " + json);
     return json;
   }
@@ -163,12 +163,12 @@ public class QueryMapper {
   private void isValidTimeInterval(
       String timeRel, String time, String endTime, boolean isAsyncQuery) {
     long totalDaysAllowed = 0;
-    if (timeRel.equalsIgnoreCase(Constants.JSON_DURING)) {
+    if (timeRel.equalsIgnoreCase(JSON_DURING)) {
       if (isNullorEmpty(time) || isNullorEmpty(endTime)) {
         DxRuntimeException ex =
             new DxRuntimeException(
                 BAD_REQUEST.getValue(),
-                ResponseUrn.INVALID_TEMPORAL_PARAM_URN,
+                INVALID_TEMPORAL_PARAM_URN,
                 "time and endTime both are mandatory for during Query.");
         this.context.fail(400, ex);
       }
@@ -182,25 +182,25 @@ public class QueryMapper {
         DxRuntimeException exc =
             new DxRuntimeException(
                 BAD_REQUEST.getValue(),
-                ResponseUrn.INVALID_TEMPORAL_PARAM_URN,
+                INVALID_TEMPORAL_PARAM_URN,
                 "time and endTime both are mandatory for during Query.");
         this.context.fail(400, exc);
       }
     }
     if (isAsyncQuery
-        && totalDaysAllowed > Constants.VALIDATION_MAX_DAYS_INTERVAL_ALLOWED_FOR_ASYNC) {
+        && totalDaysAllowed > VALIDATION_MAX_DAYS_INTERVAL_ALLOWED_FOR_ASYNC) {
       DxRuntimeException ex =
           new DxRuntimeException(
               BAD_REQUEST.getValue(),
-              ResponseUrn.INVALID_TEMPORAL_PARAM_URN,
+              INVALID_TEMPORAL_PARAM_URN,
               "time interval greater than 1 year is not allowed");
       this.context.fail(400, ex);
     }
-    if (!isAsyncQuery && totalDaysAllowed > Constants.VALIDATION_MAX_DAYS_INTERVAL_ALLOWED) {
+    if (!isAsyncQuery && totalDaysAllowed > VALIDATION_MAX_DAYS_INTERVAL_ALLOWED) {
       DxRuntimeException ex =
           new DxRuntimeException(
               BAD_REQUEST.getValue(),
-              ResponseUrn.INVALID_TEMPORAL_PARAM_URN,
+              INVALID_TEMPORAL_PARAM_URN,
               "time interval greater than 10 days is not allowed");
       this.context.fail(400, ex);
     }
@@ -229,18 +229,18 @@ public class QueryMapper {
   private String getSearchType(boolean isAsyncQuery) {
     StringBuilder searchType = new StringBuilder();
     if (isTemporal) {
-      searchType.append(Constants.JSON_TEMPORAL_SEARCH);
+      searchType.append(JSON_TEMPORAL_SEARCH);
     } else if (!isTemporal && !isAsyncQuery) {
-      searchType.append(Constants.JSON_LATEST_SEARCH);
+      searchType.append(JSON_LATEST_SEARCH);
     }
     if (isGeoSearch) {
-      searchType.append(Constants.JSON_GEO_SEARCH);
+      searchType.append(JSON_GEO_SEARCH);
     }
     if (isResponseFilter) {
-      searchType.append(Constants.JSON_RESPONSE_FILTER_SEARCH);
+      searchType.append(JSON_RESPONSE_FILTER_SEARCH);
     }
     if (isAttributeSearch) {
-      searchType.append(Constants.JSON_ATTRIBUTE_SEARCH);
+      searchType.append(JSON_ATTRIBUTE_SEARCH);
     }
     return searchType.toString().isEmpty()
         ? ""
