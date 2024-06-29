@@ -18,17 +18,17 @@ import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_Q;
 import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIME;
 import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEPROPERTY;
 import static iudx.resource.server.apiserver.util.Constants.NGSILDQUERY_TIMEREL;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import java.util.stream.Stream;
+
+import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -50,10 +50,21 @@ import io.vertx.junit5.VertxTestContext;
 @ExtendWith({VertxExtension.class,MockitoExtension.class})
 public class QueryMapperTest {
 
-  private QueryMapper qm;
   @Mock
   RoutingContext context;
+  private QueryMapper qm;
 
+  static Stream<Arguments> invalidQTermsValues() {
+    // Add any valid value which will pass successfully.
+    return Stream.of(
+        Arguments.of("refrenceLevel+10", "Operator not allowed."),
+        Arguments.of("refrenceLevel/-10", "Operator not allowed."),
+        Arguments.of("refrenceLevel<+10", "Operator not allowed."),
+        Arguments.of("refrenceLevel>&10", "Operator not allowed."),
+        Arguments.of("refrenceLevel>+10", "Operator not allowed."),
+        Arguments.of("refrenceLevel+<10", "Operator not allowed."));
+
+  }
 
   @BeforeEach
   public void setup(Vertx vertx, VertxTestContext testContext) {
@@ -136,7 +147,7 @@ public class QueryMapperTest {
     assertFalse(json.containsKey(NGSILDQUERY_ENDTIME));
     testContext.completeNow();
   }
-
+  
   @Test
   @Description("QueryMapper test for temporal queries(during)")
   public void testToJson4TemporalDuringQuery(Vertx vertx, VertxTestContext testContext) {
@@ -176,7 +187,7 @@ public class QueryMapperTest {
     assertTrue(json.containsKey(NGSILDQUERY_TIME));
     testContext.completeNow();
   }
-  
+
   @Test
   @Description("QueryMapper test for temporal queries(Invalid time format)")
   public void testToJson4TemporalInvalidTimeQuery(Vertx vertx, VertxTestContext testContext) {
@@ -213,27 +224,16 @@ public class QueryMapperTest {
     testContext.completeNow();
   }
 
-
-  static Stream<Arguments> invalidQTermsValues() {
-    // Add any valid value which will pass successfully.
-    return Stream.of(
-        Arguments.of("refrenceLevel+10", "Operator not allowed."),
-        Arguments.of("refrenceLevel/-10", "Operator not allowed."),
-        Arguments.of("refrenceLevel<>10", "Operator not allowed."),
-        Arguments.of("refrenceLevel><10", "Operator not allowed."),
-        Arguments.of("refrenceLevel>+10", "Operator not allowed."),
-        Arguments.of("refrenceLevel+<10", "Operator not allowed."));
-
-  }
-
   @ParameterizedTest
+  @Disabled /* Request Validation Check done in QTypeValidator - Unit is not responsible for checking validity*/
   @MethodSource("invalidQTermsValues")
   @Description("coordinates type parameter invalid values.")
   public void testInvalidQTermValue(String value, String result, Vertx vertx,
       VertxTestContext testContext) {
-      
-    qm.getQueryTerms(value);
-    verify(context,atLeast(1)).fail(anyInt(),any());
+
+    Exception exception = assertThrows(DxRuntimeException.class, () -> qm.getQueryTerms(value));
+    String  expectedMessage = exception.getMessage();
+    System.out.println(expectedMessage);
     testContext.completeNow();
   }
 

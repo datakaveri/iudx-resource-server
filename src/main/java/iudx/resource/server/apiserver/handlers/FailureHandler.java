@@ -29,7 +29,7 @@ public class FailureHandler implements Handler<RoutingContext> {
           new RestResponse.Builder()
               .withType(exception.getUrn().getUrn())
               .withTitle(code.getDescription())
-              .withMessage(code.getDescription())
+              .withMessage(exception.getMessage())
               .build()
               .toJson();
 

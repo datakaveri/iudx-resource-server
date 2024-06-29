@@ -1,19 +1,20 @@
 package iudx.resource.server.apiserver.query;
 
+import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
-import static iudx.resource.server.common.ResponseUrn.INVALID_ATTR_PARAM_URN;
-import static iudx.resource.server.common.ResponseUrn.INVALID_GEO_PARAM_URN;
+import static iudx.resource.server.common.ResponseUrn.*;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import iudx.resource.server.apiserver.exceptions.DxRuntimeException;
 import iudx.resource.server.apiserver.util.Constants;
+import iudx.resource.server.common.HttpStatusCode;
 import iudx.resource.server.common.ResponseUrn;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -246,41 +247,44 @@ public class QueryMapper {
         : searchType.substring(0, searchType.length() - 1).toString();
   }
 
-  JsonObject getQueryTerms(String queryTerms) {
+  JsonObject getQueryTerms(final String queryTerms) {
     JsonObject json = new JsonObject();
-    int length = queryTerms.length();
-    List<Character> allowedSpecialCharacter = Arrays.asList('>', '=', '<', '!');
-    List<String> allowedOperators = Arrays.asList(">", "=", "<", ">=", "<=", "==", "!=");
-    int startIndex = 0;
-    boolean specialCharFound = false;
-    for (int i = 0; i < length; i++) {
-      Character c = queryTerms.charAt(i);
-      if (!(Character.isLetter(c) || Character.isDigit(c)) && !specialCharFound) {
-        if (allowedSpecialCharacter.contains(c)) {
-          json.put(Constants.JSON_ATTRIBUTE, queryTerms.substring(startIndex, i));
-          startIndex = i;
-          specialCharFound = true;
-        } else {
-          LOGGER.debug("Ignore " + c.toString());
-          DxRuntimeException ex =
-              new DxRuntimeException(
-                  BAD_REQUEST.getValue(), INVALID_ATTR_PARAM_URN, "Operator not allowed.");
-          this.context.fail(400, ex);
-        }
+    String jsonOperator = "";
+    String jsonValue = "";
+    String jsonAttribute = "";
+
+    String[] attributes = queryTerms.split(";");
+    LOGGER.info("Attributes : {} ", attributes);
+
+    for (String attr : attributes) {
+
+      String[] attributeQueryTerms =
+          attr.split("((?=>)|(?<=>)|(?=<)|(?<=<)|(?<==)|(?=!)|(?<=!)|(?==)|(?===))");
+      LOGGER.info(Arrays.stream(attributeQueryTerms).collect(Collectors.toList()));
+      LOGGER.info(attributeQueryTerms.length);
+      if (attributeQueryTerms.length == 3) {
+        jsonOperator = attributeQueryTerms[1];
+        jsonValue = attributeQueryTerms[2];
+        json.put(JSON_OPERATOR, jsonOperator).put(JSON_VALUE, jsonValue);
+      } else if (attributeQueryTerms.length == 4) {
+        jsonOperator = attributeQueryTerms[1].concat(attributeQueryTerms[2]);
+        jsonValue = attributeQueryTerms[3];
+        json.put(JSON_OPERATOR, jsonOperator).put(JSON_VALUE, jsonValue);
       } else {
-        if (specialCharFound && (Character.isLetter(c) || Character.isDigit(c))) {
-          json.put(Constants.JSON_OPERATOR, queryTerms.substring(startIndex, i));
-          json.put(Constants.JSON_VALUE, queryTerms.substring(i));
-          break;
-        }
+        throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage());
       }
+      jsonAttribute = attributeQueryTerms[0];
+      json.put(JSON_ATTRIBUTE, jsonAttribute);
     }
-    if (!allowedOperators.contains(json.getString(Constants.JSON_OPERATOR))) {
-      DxRuntimeException ex =
-          new DxRuntimeException(
-              BAD_REQUEST.getValue(), INVALID_ATTR_PARAM_URN, "Operator not allowed.");
-      this.context.fail(400, ex);
-    }
+
     return json;
+  }
+
+  public int failureCode() {
+    return HttpStatusCode.BAD_REQUEST.getValue();
+  }
+
+  public String failureMessage() {
+    return INVALID_PARAM_VALUE_URN.getMessage();
   }
 }
