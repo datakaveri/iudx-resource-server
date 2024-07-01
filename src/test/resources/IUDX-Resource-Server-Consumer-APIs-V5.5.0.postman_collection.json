@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "1e242c76-0800-47be-a499-5caad292c700",
+		"_postman_id": "ce6bc463-6553-42fd-aca1-07f1bfb67acc",
 		"name": "IUDX-Resource-Server-Consumer-APIs-V5.0.0",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "20457128"
+		"_exporter_id": "17194681"
 	},
 	"item": [
 		{
@@ -9482,6 +9482,415 @@
 			]
 		},
 		{
+			"name": "String based Search",
+			"item": [
+				{
+					"name": "200 (Success) String ==",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    const resultsjsonData = body.results[0];",
+									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"id\");",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&offset=0&limit=10&q=license_plate==GJ05BU3663",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "83c2e5c2-3574-4e11-9530-2b1fbdfce832"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "q",
+									"value": "license_plate==GJ05BU3663"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (Success) Multiple String Attributes",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    const resultsjsonData = body.results[0];",
+									"    pm.expect(body).to.have.property(\"results\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"id\");",
+									"});",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&offset=0&limit=10&q=license_plate==GJ05BU3663;route_id==12U",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "83c2e5c2-3574-4e11-9530-2b1fbdfce832"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "q",
+									"value": "license_plate==GJ05BU3663;route_id==12U"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "204 (No Content) String ==",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&offset=0&limit=10&q=license_plate==GJ05BU3661",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "83c2e5c2-3574-4e11-9530-2b1fbdfce832"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "q",
+									"value": "license_plate==GJ05BU3661"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (Invalid Operator) String >",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 400 (Bad Request Data)\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:rs:invalidParameterValue\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&offset=0&limit=10&q=license_plate>GJ05BU3663",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "83c2e5c2-3574-4e11-9530-2b1fbdfce832"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "q",
+									"value": "license_plate>GJ05BU3663"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (Invalid Value) String > Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 400 (Bad Request Data)\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:rs:invalidParameterValue\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&offset=0&limit=10&q=license_plate==!@%23$^%26*()-=_+{}:\"<>?[],./'",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "83c2e5c2-3574-4e11-9530-2b1fbdfce832"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "q",
+									"value": "license_plate==!@%23$^%26*()-=_+{}:\"<>?[],./'"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "400 (Invalid Value) String > Copy 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 400 (Bad Request Data)\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"type\", \"urn:dx:rs:invalidParameterValue\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "{{secureResourceToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&offset=0&limit=10&q=license_!@%23$^==GJ05BU3663",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "83c2e5c2-3574-4e11-9530-2b1fbdfce832"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "q",
+									"value": "license_!@#$^==GJ05BU3663"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Complex Search",
 			"item": [
 				{
@@ -9580,6 +9989,115 @@
 								{
 									"key": "limit",
 									"value": "400",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "200 (success) - Search - circle geom + temporal before + string search",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test the response code",
+									"pm.test(\"response is 200 (OK)\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test the response header",
+									"pm.test(\"Check response header\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\",\"application/json\");",
+									"});",
+									"",
+									"// Test the response",
+									"pm.test(\"Check response body\", function () {    ",
+									"    const body = pm.response.json();",
+									"    pm.expect(body).to.have.property(\"title\", \"Success\");",
+									"    const resultsjsonData = body.results[0];",
+									"    pm.expect(resultsjsonData).to.have.property(\"id\");",
+									"    pm.expect(resultsjsonData).to.have.property(\"speed\");",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"type": "text",
+								"value": "{{secureResourceToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{basePath}}/temporal/entities?id=83c2e5c2-3574-4e11-9530-2b1fbdfce832&geoproperty=location&georel=near;maxDistance=10&geometry=Point&coordinates=[21.178,72.834]&timerel=before&time=2020-10-19T14:00:00Z",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{basePath}}",
+								"temporal",
+								"entities"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "83c2e5c2-3574-4e11-9530-2b1fbdfce832"
+								},
+								{
+									"key": "geoproperty",
+									"value": "location"
+								},
+								{
+									"key": "georel",
+									"value": "near;maxDistance=10"
+								},
+								{
+									"key": "geometry",
+									"value": "Point"
+								},
+								{
+									"key": "coordinates",
+									"value": "[21.178,72.834]"
+								},
+								{
+									"key": "timerel",
+									"value": "before"
+								},
+								{
+									"key": "time",
+									"value": "2020-10-19T14:00:00Z"
+								},
+								{
+									"key": "attrs",
+									"value": "id,location,speed",
+									"disabled": true
+								},
+								{
+									"key": "options",
+									"value": "count",
+									"disabled": true
+								},
+								{
+									"key": "offset",
+									"value": "0",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "400",
+									"disabled": true
+								},
+								{
+									"key": "q",
+									"value": "license_plate==GJ05BU3663",
 									"disabled": true
 								}
 							]
