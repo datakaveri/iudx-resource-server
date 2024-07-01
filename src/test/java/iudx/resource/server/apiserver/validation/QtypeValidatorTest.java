@@ -69,7 +69,7 @@ public class QtypeValidatorTest {
     return Stream.of(
             Arguments.of("referenceLevel>15.0", true),
             Arguments.of(
-                    "id==iisc.ac.in/89a36273d77dac4cf38114fca1bbe64392547f86/rs.iudx.io/pune-env-flood/FWR055",
+                    "license_plate==GJ05BU3663",
                     true),
             Arguments.of(null, false));
   }
@@ -77,7 +77,7 @@ public class QtypeValidatorTest {
   @ParameterizedTest
   @MethodSource("validValues")
   @Description("success for valid q query")
-  public void testValidQValue(String value, boolean required, Vertx vertx,
+  public void testValidQValue(String value, boolean required,
                               VertxTestContext testContext) {
     qTypeValidator = new QtypeValidator(value, required);
     assertTrue(qTypeValidator.isValid());
@@ -86,11 +86,11 @@ public class QtypeValidatorTest {
 
 
   @ParameterizedTest
-  @ValueSource(strings = {"","abcd","abcdeF","---"})
+  @ValueSource(strings = {"","abcd$","abcdeF**","---"})
   @DisplayName("Test isValidValue method : with invalid value")
   public void test_isValidValue_with_invalid_input(String input,VertxTestContext vertxTestContext)
   {
-    assertThrows(DxRuntimeException.class,()-> qTypeValidator.isValidValue(input));
+    assertFalse(qTypeValidator.isValidAttributeValue(input));
     vertxTestContext.completeNow();
   }
 
@@ -100,7 +100,7 @@ public class QtypeValidatorTest {
   @DisplayName("Test isValidValue method : with invalid value")
   public void test_isValidValue_with_valid_input(String input,VertxTestContext vertxTestContext)
   {
-    assertTrue( qTypeValidator.isValidValue(input));
+    assertTrue( qTypeValidator.isValidAttributeValue(input));
     vertxTestContext.completeNow();
   }
 

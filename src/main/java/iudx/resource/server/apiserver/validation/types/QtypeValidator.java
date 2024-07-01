@@ -24,18 +24,14 @@ public final class QtypeValidator implements Validator {
     this.required = required;
   }
 
-  private boolean isValidOperator(final String value) {
-    return VALIDATION_ALLOWED_OPERATORS.contains(value);
-  }
-
-  public boolean isValidValue(final String value) {
-    try {
-      Float.parseFloat(value);
-      return true;
-    } catch (NumberFormatException ex) {
-      LOGGER.info("Passed value in q parameter is not float");
-      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
-    }
+  private boolean isValidOperator(final String value, final boolean isNumericString) {
+    LOGGER.info(value);
+    LOGGER.info(value.equalsIgnoreCase("=="));
+    LOGGER.info(isNumericString);
+    LOGGER.info(VALIDATION_ALLOWED_OPERATORS.contains(value));
+    return isNumericString
+        ? VALIDATION_ALLOWED_OPERATORS.contains(value)
+        : value.equalsIgnoreCase("==");
   }
 
   private boolean isValidId(final JsonObject json) {
@@ -48,42 +44,84 @@ public final class QtypeValidator implements Validator {
     }
   }
 
-  public boolean isValidAttributeValue(final String value) {
-    LOGGER.debug("value,{},{}", value, VALIDATION_Q_ATTR_PATTERN.matcher(value).matches());
+
+  public boolean isValidAttribute(final String value) {
+    LOGGER.info("value,{},{}", value, VALIDATION_Q_ATTR_PATTERN.matcher(value).matches());
     return VALIDATION_Q_ATTR_PATTERN.matcher(value).matches();
   }
 
+  public boolean isValidAttributeValue(final String value) {
+    LOGGER.info("value,{},{}", value, VALIDATION_Q_VALUE_PATTERN.matcher(value).matches());
+    return VALIDATION_Q_VALUE_PATTERN.matcher(value).matches();
+  }
+
+
+
   JsonObject getQueryTerms(final String queryTerms) {
     JsonObject json = new JsonObject();
+    String jsonOperator = "";
+    String jsonValue = "";
+    String jsonAttribute = "";
 
     String[] attributes = queryTerms.split(";");
-    LOGGER.debug(attributes);
+    LOGGER.info("Attributes : {} ", attributes);
 
     for (String attr : attributes) {
 
       String[] attributeQueryTerms =
-          attr.split("((?=>)|(?<=>)|(?=<)|(?<=<)|(?==)|(?<==)|(?=!)|(?<=!))");
-      LOGGER.debug(Arrays.stream(attributeQueryTerms).collect(Collectors.toList()));
-      LOGGER.debug(attributeQueryTerms.length);
+          attr.split("((?=>)|(?<=>)|(?=<)|(?<=<)|(?<==)|(?=!)|(?<=!)|(?==)|(?===))");
+      LOGGER.info(Arrays.stream(attributeQueryTerms).collect(Collectors.toList()));
+      LOGGER.info(attributeQueryTerms.length);
       if (attributeQueryTerms.length == 3) {
-        json.put(JSON_OPERATOR, attributeQueryTerms[1]).put(JSON_VALUE, attributeQueryTerms[2]);
+        jsonOperator = attributeQueryTerms[1];
+        jsonValue = attributeQueryTerms[2];
+        json.put(JSON_OPERATOR, jsonOperator).put(JSON_VALUE, jsonValue);
       } else if (attributeQueryTerms.length == 4) {
-        json.put(JSON_OPERATOR, attributeQueryTerms[1].concat(attributeQueryTerms[2]))
-            .put(JSON_VALUE, attributeQueryTerms[3]);
+        jsonOperator = attributeQueryTerms[1].concat(attributeQueryTerms[2]);
+        jsonValue = attributeQueryTerms[3];
+        json.put(JSON_OPERATOR, jsonOperator).put(JSON_VALUE, jsonValue);
       } else {
         throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
       }
-      json.put(JSON_ATTRIBUTE, attributeQueryTerms[0]);
+      jsonAttribute = attributeQueryTerms[0];
+      json.put(JSON_ATTRIBUTE, jsonAttribute);
+      boolean isNumericString = isNumericString(jsonValue);
+      if (!isValidOperator(jsonOperator, isNumericString)) {
+        LOGGER.info("invalid operator : {} ", jsonOperator);
+        throw new DxRuntimeException(
+            failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(jsonOperator));
+      }
+      if (!isValidAttribute(jsonAttribute)) {
+        LOGGER.info("invalid attribute : {} ", jsonAttribute);
+        throw new DxRuntimeException(
+            failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(jsonAttribute));
+      }
+      if (!isValidAttributeValue(jsonValue)) {
+        LOGGER.info("invalid json value : {} ", jsonValue);
+        throw new DxRuntimeException(
+            failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(jsonValue));
+      }
     }
-
-    LOGGER.debug(json);
 
     return json;
   }
 
+  private boolean isNumericString(String jsonValue) {
+    boolean isNumericString;
+    LOGGER.debug("Parsing value : {} as a float", jsonValue);
+    try {
+      Float.parseFloat(jsonValue);
+      isNumericString = true;
+    } catch (NumberFormatException ne) {
+      LOGGER.info("String based search");
+      isNumericString = false;
+    }
+    return isNumericString;
+  }
+
   @Override
   public boolean isValid() {
-    LOGGER.debug("value : " + value + " required : " + required);
+    LOGGER.info("value : " + value + " required : " + required);
     if (required && (value == null || value.isBlank())) {
       LOGGER.error("Validation error : null or blank value for required mandatory field");
       throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage());
@@ -104,26 +142,11 @@ public final class QtypeValidator implements Validator {
     try {
       qjson = getQueryTerms(value);
     } catch (Exception ex) {
-      LOGGER.error("Validation error : Operator not allowed.");
-      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
+      LOGGER.error("Validation error : Operation not allowed.");
+      throw ex;
     }
-    if (!isValidAttributeValue(qjson.getString(JSON_ATTRIBUTE))) {
-      LOGGER.error("Validation error : Not a valid attribute in <<q>> query");
-      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
-    }
-    if (!isValidOperator(qjson.getString(JSON_OPERATOR))) {
-      LOGGER.error("Validation error : Not a valid Operator in <<q>> query");
-      throw new DxRuntimeException(failureCode(), INVALID_PARAM_VALUE_URN, failureMessage(value));
-    }
-    // if (!isValidAttributeValue(qJson.getString(JSON_VALUE))) {
-    // throw ValidationException.ValidationExceptionFactory
-    // .generateNotMatchValidationException("Not a valid attribute value in <<q>> query");
-    // }
 
-    if (!isValidId(qjson)) {
-      return false;
-    }
-    return true;
+    return isValidId(qjson);
   }
 
   @Override

@@ -281,6 +281,7 @@ public class Constants {
       List.of("during", "between");
 
   public static final Pattern VALIDATION_Q_ATTR_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{1,100}$");
+  public static final Pattern VALIDATION_Q_VALUE_PATTERN = Pattern.compile("^[a-zA-Z0-9_.]{1,100}$");
 
   // subscriptions queries
   public static final String CREATE_SUB_SQL =
