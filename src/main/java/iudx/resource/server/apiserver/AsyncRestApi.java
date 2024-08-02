@@ -5,6 +5,7 @@ import static iudx.resource.server.apiserver.util.Constants.*;
 import static iudx.resource.server.apiserver.util.Constants.ENCRYPTED_DATA;
 import static iudx.resource.server.apiserver.util.RequestType.ASYNC_SEARCH;
 import static iudx.resource.server.apiserver.util.RequestType.ASYNC_STATUS;
+import static iudx.resource.server.authenticator.Constants.ACCESSIBLE_ATTRS;
 import static iudx.resource.server.authenticator.Constants.ROLE;
 import static iudx.resource.server.common.Constants.*;
 import static iudx.resource.server.common.HttpStatusCode.BAD_REQUEST;
@@ -197,6 +198,8 @@ public class AsyncRestApi {
                 groupId = successHandler.getString("resourceGroup");
               }
               json.put("resourceGroup", groupId);
+              JsonArray accessibleAttrs = authInfo.getJsonArray(ACCESSIBLE_ATTRS, new JsonArray());
+              json.put(ACCESSIBLE_ATTRS, accessibleAttrs);
               JsonObject rmqQueryMessage =
                   new JsonObject()
                       .put("searchId", searchId)

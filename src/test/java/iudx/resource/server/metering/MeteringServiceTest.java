@@ -1577,6 +1577,8 @@ public class MeteringServiceTest {
 
     when(asyncResult.succeeded()).thenReturn(true);
     when(asyncResult.result()).thenReturn(postgresJson);
+    when(asyncResult.succeeded()).thenReturn(true);
+    when(asyncResult.result()).thenReturn(postgresJson);
 
     Mockito.doAnswer(
             new Answer<AsyncResult<JsonObject>>() {
@@ -1599,6 +1601,59 @@ public class MeteringServiceTest {
           if (handler.succeeded()) {
             assertEquals(handler.result().getString("type"), "urn:dx:dm:Success");
             vertxTestContext.completeNow();
+          }
+        });
+  }
+
+  @Test
+  @DisplayName("test: getConsumedData success")
+  public void testGetConsumedData(VertxTestContext vertxTestContext) {
+
+    JsonObject meteringCountRequest = new JsonObject();
+    meteringCountRequest.put("startTime", "endDateTime");
+    meteringCountRequest.put("endTime", "startDateTim");
+    meteringCountRequest.put("userid", "userid");
+
+    AsyncResult<JsonObject> asyncResult = mock(AsyncResult.class);
+    postgresService = mock(PostgresService.class);
+    JsonObject jsonObject = new JsonObject().put("consumed_data", 10).put("api_count", 1);
+    JsonArray jsonArray = new JsonArray().add(jsonObject);
+
+    JsonObject postgresJson =
+        new JsonObject()
+            .put("type", "urn:dx:rs:success")
+            .put("title", "Success")
+            .put("result", jsonArray);
+
+    when(asyncResult.succeeded()).thenReturn(true);
+    when(asyncResult.result()).thenReturn(postgresJson);
+    Mockito.doAnswer(
+            new Answer<AsyncResult<JsonObject>>() {
+              @Override
+              public AsyncResult<JsonObject> answer(InvocationOnMock arg1) throws Throwable {
+                ((Handler<AsyncResult<JsonObject>>) arg1.getArgument(1)).handle(asyncResult);
+                return null;
+              }
+            })
+        .when(postgresService)
+        .executeQuery(anyString(), any());
+    meteringService = new MeteringServiceImpl(vertxObj, postgresService, cacheService);
+    meteringService.getConsumedData(
+        meteringCountRequest,
+        handler -> {
+          if (handler.succeeded()) {
+            LOGGER.info(handler.result());
+            assertEquals(handler.result().getString("type"), "urn:dx:rs:success");
+            assertEquals(
+                handler
+                    .result()
+                    .getJsonArray("result")
+                    .getJsonObject(0)
+                    .getInteger("consumed_data"),
+                10);
+            vertxTestContext.completeNow();
+          } else {
+            vertxTestContext.failNow(handler.cause().getMessage());
           }
         });
   }
