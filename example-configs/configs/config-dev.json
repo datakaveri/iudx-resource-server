@@ -27,8 +27,6 @@
             "verticleInstances": 1,
             "audience": "rs.iudx.io",
             "authServerHost": "",
-            "catServerHost": "",
-            "catServerPort": 443,
 	        "jwtIgnoreExpiry": true,
 	        "enableLimits": false
 
