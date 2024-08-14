@@ -349,6 +349,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
                   LOGGER.error("failed - no access provided to endpoint");
                   Response response =
                       new Response.Builder()
+                          .withStatus(401)
                           .withUrn(ResponseUrn.UNAUTHORIZED_ENDPOINT_URN.getUrn())
                           .withTitle(UNAUTHORIZED.getDescription())
                           .withDetail("no access provided to endpoint")
@@ -362,8 +363,14 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
             } else {
               String failureMessage = meteringCountHandler.cause().getMessage();
               LOGGER.error("failed to get metering response: {}", failureMessage);
-              JsonObject result = new JsonObject().put("401", "no access provided to endpoint");
-              promise.fail(result.toString());
+              Response response =
+                  new Response.Builder()
+                      .withStatus(401)
+                      .withUrn(ResponseUrn.UNAUTHORIZED_ENDPOINT_URN.getUrn())
+                      .withTitle(UNAUTHORIZED.getDescription())
+                      .withDetail("no access provided to endpoint")
+                      .build();
+              promise.fail(response.toString());
             }
           });
     } else {
