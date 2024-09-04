@@ -11,8 +11,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.WebClientOptions;
 import iudx.resource.server.authenticator.authorization.AuthorizationContextFactory;
 import iudx.resource.server.authenticator.authorization.AuthorizationRequest;
 import iudx.resource.server.authenticator.authorization.AuthorizationStrategy;
@@ -37,16 +35,11 @@ import org.apache.logging.log4j.Logger;
 public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
   private static final Logger LOGGER = LogManager.getLogger(JwtAuthenticationServiceImpl.class);
-  static WebClient catWebClient;
   final JWTAuth jwtAuth;
-  final String host;
-  final int port;
-  final String path;
   final String audience;
   final CacheService cache;
   final MeteringService meteringService;
   final Api apis;
-  final String catBasePath;
   boolean isLimitsEnabled;
 
   JwtAuthenticationServiceImpl(
@@ -58,17 +51,10 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       final Api apis) {
     this.jwtAuth = jwtAuth;
     this.audience = config.getString("audience");
-    this.host = config.getString("catServerHost");
-    this.port = config.getInteger("catServerPort");
-    this.catBasePath = config.getString("dxCatalogueBasePath");
-    this.path = catBasePath + CAT_SEARCH_PATH;
     if (config.getBoolean("enableLimits") != null && config.getBoolean("enableLimits")) {
       this.isLimitsEnabled = config.getBoolean("enableLimits");
     }
     this.apis = apis;
-    WebClientOptions options = new WebClientOptions();
-    options.setTrustAll(true).setVerifyHost(false).setSsl(true);
-    catWebClient = WebClient.create(vertx, options);
     this.cache = cacheService;
     this.meteringService = meteringService;
   }
