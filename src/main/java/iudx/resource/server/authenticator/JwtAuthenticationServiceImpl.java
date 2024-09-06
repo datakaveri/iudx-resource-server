@@ -18,8 +18,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.authentication.TokenCredentials;
 import io.vertx.ext.auth.jwt.JWTAuth;
-import io.vertx.ext.web.client.WebClient;
-import io.vertx.ext.web.client.WebClientOptions;
 import iudx.resource.server.authenticator.authorization.AuthorizationContextFactory;
 import iudx.resource.server.authenticator.authorization.AuthorizationRequest;
 import iudx.resource.server.authenticator.authorization.AuthorizationStrategy;
@@ -48,7 +46,6 @@ import org.apache.logging.log4j.Logger;
 public class JwtAuthenticationServiceImpl implements AuthenticationService {
 
   private static final Logger LOGGER = LogManager.getLogger(JwtAuthenticationServiceImpl.class);
-  static WebClient catWebClient;
   final JWTAuth jwtAuth;
   final String audience;
   final CacheService cache;
@@ -74,9 +71,6 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
       this.isLimitsEnabled = config.getBoolean("enableLimits");
     }
     this.apis = apis;
-    WebClientOptions options = new WebClientOptions();
-    options.setTrustAll(true).setVerifyHost(false).setSsl(true);
-    catWebClient = WebClient.create(vertx, options);
     this.cache = cacheService;
     this.meteringService = meteringService;
     this.postgresService = postgresService;
