@@ -1,5 +1,6 @@
 package iudx.resource.server.authenticator.model;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import iudx.resource.server.authenticator.authorization.IudxRole;
 
@@ -14,6 +15,33 @@ public class AuthInfo {
   private IudxRole role;
   private JsonObject consumedData;
   private String endPoint;
+  private JsonObject access;
+  private JsonArray attributes;
+  private String accessPolicy;
+
+  public JsonObject getAccess() {
+    return access;
+  }
+
+  public void setAccess(JsonObject access) {
+    this.access = access;
+  }
+
+  public JsonArray getAttributes() {
+    return attributes;
+  }
+
+  public void setAttributes(JsonArray attributes) {
+    this.attributes = attributes;
+  }
+
+  public String getAccessPolicy() {
+    return accessPolicy;
+  }
+
+  public void setAccessPolicy(String accessPolicy) {
+    this.accessPolicy = accessPolicy;
+  }
 
   public String getEndPoint() {
     return endPoint;
@@ -95,7 +123,6 @@ public class AuthInfo {
     this.role = role;
   }
 
-  // Method to convert AuthInfo to JsonObject
   public JsonObject toJson() {
     return new JsonObject()
         .put("userid", userid)
@@ -106,6 +133,9 @@ public class AuthInfo {
         .put("did", did)
         .put("drl", drl)
         .put("role", role != null ? role.toString() : null)
-        .put("consumedData", consumedData);
+        .put("consumedData", consumedData)
+        .put("attributes", attributes)
+        .put("accessPolicy", accessPolicy)
+        .put("access", access);
   }
 }
