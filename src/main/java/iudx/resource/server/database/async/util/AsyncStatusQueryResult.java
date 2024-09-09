@@ -11,6 +11,7 @@ public class AsyncStatusQueryResult {
   private String status;
   private String fileDownloadUrl;
   private String searchId;
+  private int progress;
 
   public AsyncStatusQueryResult() {}
 
@@ -19,6 +20,15 @@ public class AsyncStatusQueryResult {
     setSearchId(json.getString("search_id"));
     setFileDownloadUrl(json.getString("s3_url"));
     setUserId(json.getString("user_id"));
+    setProgress(json.getInteger("progress"));
+  }
+
+  public int getProgress() {
+    return progress;
+  }
+
+  public void setProgress(int progress) {
+    this.progress = progress;
   }
 
   public JsonObject toJson() {

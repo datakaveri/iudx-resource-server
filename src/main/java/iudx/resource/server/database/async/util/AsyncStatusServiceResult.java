@@ -7,40 +7,28 @@ import io.vertx.core.json.JsonObject;
 @DataObject
 @JsonGen
 public class AsyncStatusServiceResult {
-  private String status;
-  private int statusCode;
   private String title;
   private String message;
   private AsyncStatusQueryResult result;
+  private String type;
 
   public AsyncStatusServiceResult() {}
-
   public AsyncStatusServiceResult(JsonObject json) {
     AsyncStatusServiceResultConverter.fromJson(json, this);
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
   }
 
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
     AsyncStatusServiceResultConverter.toJson(this, json);
     return json;
-  }
-
-  public String getStatus() {
-    return status;
-  }
-
-  public AsyncStatusServiceResult setStatus(String status) {
-    this.status = status;
-    return this;
-  }
-
-  public int getStatusCode() {
-    return statusCode;
-  }
-
-  public AsyncStatusServiceResult setStatusCode(int statusCode) {
-    this.statusCode = statusCode;
-    return this;
   }
 
   public String getTitle() {
