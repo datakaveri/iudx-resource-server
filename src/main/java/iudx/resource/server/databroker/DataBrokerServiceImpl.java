@@ -1,5 +1,8 @@
 package iudx.resource.server.databroker;
 
+import static iudx.resource.server.apiserver.util.Constants.ID;
+import static iudx.resource.server.apiserver.util.Constants.RESOURCE_GROUP;
+import static iudx.resource.server.cache.cachelmpl.CacheType.CATALOGUE_CACHE;
 import static iudx.resource.server.databroker.util.Constants.*;
 
 import io.vertx.core.AsyncResult;
@@ -657,34 +660,52 @@ public class DataBrokerServiceImpl implements DataBrokerService {
       JsonObject request, String vhost, Handler<AsyncResult<JsonObject>> handler) {
     JsonObject finalResponse = new JsonObject();
     JsonObject json = new JsonObject();
+    LOGGER.debug("request Json " + request);
+
     if (request != null && !request.isEmpty()) {
       json.put("body", request.toString());
-      String resourceGroupId = request.getString("id");
-      LOGGER.debug("Info : resourceGroupId  " + resourceGroupId);
-      String routingKey = resourceGroupId;
-      if (resourceGroupId != null && !resourceGroupId.isBlank()) {
-        resourceGroupId = resourceGroupId.substring(0, resourceGroupId.lastIndexOf("/"));
-        LOGGER.debug("Info : resourceGroupId  " + resourceGroupId);
-        LOGGER.debug("Info : routingKey  " + routingKey);
-        Buffer buffer = Buffer.buffer(json.toString());
-        webClient
-            .getRabbitmqClient()
-            .basicPublish(
-                resourceGroupId,
-                routingKey,
-                buffer,
-                resultHandler -> {
-                  if (resultHandler.succeeded()) {
-                    finalResponse.put(STATUS, HttpStatus.SC_OK);
-                    LOGGER.info("Success : Message published to queue");
-                    handler.handle(Future.succeededFuture(finalResponse));
-                  } else {
-                    finalResponse.put(TYPE, HttpStatus.SC_BAD_REQUEST);
-                    LOGGER.error("Fail : " + resultHandler.cause().toString());
-                    handler.handle(Future.failedFuture(resultHandler.cause().getMessage()));
+
+      JsonObject cacheRequestJson = new JsonObject();
+      cacheRequestJson.put("type", CATALOGUE_CACHE);
+      cacheRequestJson.put("key", request.getJsonArray("entities").getString(0));
+      cacheService
+          .get(cacheRequestJson)
+          .onComplete(
+              cacheHandler -> {
+                if (cacheHandler.succeeded()) {
+                  JsonObject cacheResult = cacheHandler.result();
+                  String resourceGroupId =
+                      cacheResult.containsKey(RESOURCE_GROUP)
+                          ? cacheResult.getString(RESOURCE_GROUP)
+                          : cacheResult.getString(ID);
+                  LOGGER.debug("Info : resourceGroupId  " + resourceGroupId);
+                  String routingKey = request.getJsonArray("entities").getString(0);
+                  if (resourceGroupId != null && !resourceGroupId.isBlank()) {
+                    LOGGER.debug("Info : routingKey  " + routingKey);
+                    Buffer buffer = Buffer.buffer(json.toString());
+                    webClient
+                        .getRabbitmqClient()
+                        .basicPublish(
+                            resourceGroupId,
+                            routingKey,
+                            buffer,
+                            resultHandler -> {
+                              if (resultHandler.succeeded()) {
+                                finalResponse.put(STATUS, HttpStatus.SC_OK);
+                                LOGGER.info("Success : Message published to queue");
+                                handler.handle(Future.succeededFuture(finalResponse));
+                              } else {
+                                finalResponse.put(TYPE, HttpStatus.SC_BAD_REQUEST);
+                                LOGGER.error("Fail : " + resultHandler.cause().toString());
+                                handler.handle(
+                                    Future.failedFuture(resultHandler.cause().getMessage()));
+                              }
+                            });
                   }
-                });
-      }
+                } else {
+                  LOGGER.error("Item not found");
+                }
+              });
     }
     return this;
   }
