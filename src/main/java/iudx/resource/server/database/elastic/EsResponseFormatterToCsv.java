@@ -36,12 +36,13 @@ public class EsResponseFormatterToCsv extends AbstractEsSearchResponseFormatter 
    *
    * @param searchHits ElasticSearch response searchHits
    */
-  public void flattenRecord(List<Hit<ObjectNode>> searchHits) {
+  public void flattenRecord(List<Hit<ObjectNode>> searchHits, Set<String> headers) {
     for (Hit hit : searchHits) {
       jsonFlatten = new JsonFlatten((JsonNode) hit.source());
       map = jsonFlatten.flatten();
-      Set<String> header = map.keySet();
-      appendToCsvFile(map, header);
+      /*Set<String> header = map.keySet();*/
+      /*appendToCsvFile(map, header);*/
+      appendToCsvFile(map, headers);
     }
   }
 
@@ -50,7 +51,7 @@ public class EsResponseFormatterToCsv extends AbstractEsSearchResponseFormatter 
    *
    * @param searchHits Elastic search scroll response
    */
-  public void getHeader(List<Hit<ObjectNode>> searchHits) {
+  public Set<String> getHeader(List<Hit<ObjectNode>> searchHits) {
     Hit<ObjectNode> firstHit = searchHits.get(0);
     if (jsonFlatten == null) {
       jsonFlatten = new JsonFlatten((JsonNode) firstHit.source());
@@ -58,6 +59,7 @@ public class EsResponseFormatterToCsv extends AbstractEsSearchResponseFormatter 
     map = jsonFlatten.flatten();
     Set<String> header = map.keySet();
     simpleFileWriter(header);
+    return header;
   }
 
   /**
@@ -73,9 +75,13 @@ public class EsResponseFormatterToCsv extends AbstractEsSearchResponseFormatter 
     for (String field : header) {
       Object cell = map.get(field);
       if (cell == null) {
-        stringBuilder.append("" + ",");
+        stringBuilder.append("").append(",");
       } else {
-        stringBuilder.append(cell + ",");
+        String cellValue = cell.toString();
+        if (cellValue.contains(",") || cellValue.contains("\"")) {
+          cellValue = "\"" + cellValue.replace("\"", "\"\"") + "\"";
+        }
+        stringBuilder.append(cellValue).append(",");
       }
     }
 
@@ -106,8 +112,11 @@ public class EsResponseFormatterToCsv extends AbstractEsSearchResponseFormatter 
   }
 
   @Override
-  public void write(List<Hit<ObjectNode>> searchHits) {
-    this.getHeader(searchHits);
+  public void write(List<Hit<ObjectNode>> searchHits) {}
+
+  @Override
+  public Set<String> writeToCsv(List<Hit<ObjectNode>> searchHits) {
+    return this.getHeader(searchHits);
   }
 
   @Override
@@ -120,7 +129,10 @@ public class EsResponseFormatterToCsv extends AbstractEsSearchResponseFormatter 
   }
 
   @Override
-  public void append(List<Hit<ObjectNode>> searchHits) {
-    this.flattenRecord(searchHits);
+  public void append(List<Hit<ObjectNode>> searchHits, boolean appendComma) {}
+
+  @Override
+  public void append(List<Hit<ObjectNode>> searchHits, boolean appendComma, Set<String> headers) {
+    this.flattenRecord(searchHits, headers);
   }
 }

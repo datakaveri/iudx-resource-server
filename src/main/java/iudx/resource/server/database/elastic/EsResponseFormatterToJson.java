@@ -6,8 +6,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class EsResponseFormatterToJson extends AbstractEsSearchResponseFormatter {
+  private static final Logger LOGGER = LogManager.getLogger(EsResponseFormatterToJson.class);
   FileWriter fileWriter;
 
   /**
@@ -34,6 +38,11 @@ public class EsResponseFormatterToJson extends AbstractEsSearchResponseFormatter
   }
 
   @Override
+  public Set<String> writeToCsv(List<Hit<ObjectNode>> searchHits) {
+    return null;
+  }
+
+  @Override
   public void finish() {
     try {
       fileWriter.write(']');
@@ -44,12 +53,13 @@ public class EsResponseFormatterToJson extends AbstractEsSearchResponseFormatter
   }
 
   @Override
-  public void append(List<Hit<ObjectNode>> searchHits) {
+  public void append(List<Hit<ObjectNode>> searchHits, boolean appendComma) {
     try {
-      boolean appendComma = false;
       for (Hit<ObjectNode> sh : searchHits) {
+        assert sh.source() != null;
         if (appendComma) {
-          fileWriter.write("," + sh.source().toString());
+          fileWriter.write(",\n");
+          fileWriter.write(String.valueOf(sh.source()));
         } else {
           fileWriter.write(sh.source().toString());
         }
@@ -60,4 +70,7 @@ public class EsResponseFormatterToJson extends AbstractEsSearchResponseFormatter
       throw new RuntimeException(e);
     }
   }
+
+  @Override
+  public void append(List<Hit<ObjectNode>> searchHits, boolean appendComma, Set<String> headers) {}
 }
