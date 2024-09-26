@@ -48,4 +48,6 @@ public class Constants {
       "select query from s3_upload_url where search_id ='$1'";
 
   public static final String ASYNC_SEARCH_RGX = "(.*)async/status(.*)";
+  public static final String REVOKED_CLIENT_SQL = "SELECT * FROM revoked_tokens WHERE _id='$1'";
+  public static final int JWT_LEEWAY_TIME = 30;
 }
