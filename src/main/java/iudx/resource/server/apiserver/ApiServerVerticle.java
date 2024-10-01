@@ -1471,10 +1471,10 @@ public class ApiServerVerticle extends AbstractVerticle {
     JsonObject requestJson = routingContext.body().asJsonObject();
     HttpServerRequest request = routingContext.request();
     HttpServerResponse response = routingContext.response();
-    String instanceId = request.getHeader(HEADER_HOST);
+    /*String instanceId = request.getHeader(HEADER_HOST);*/
     JsonObject authenticationInfo = new JsonObject();
     authenticationInfo.put(API_ENDPOINT, "/iudx/v1/adapter");
-    requestJson.put(JSON_INSTANCEID, instanceId);
+    /*requestJson.put(JSON_INSTANCEID, instanceId);*/
     if (request.headers().contains(HEADER_TOKEN)) {
       authenticationInfo.put(HEADER_TOKEN, request.getHeader(HEADER_TOKEN));
 
