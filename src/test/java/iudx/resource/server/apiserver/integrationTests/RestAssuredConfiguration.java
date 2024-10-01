@@ -53,7 +53,7 @@ public class RestAssuredConfiguration implements BeforeAllCallback {
           if (testPort != null) {
             port = Integer.parseInt(testPort);
           } else {
-            port = 8443;
+            port = 8081;
           }
         }
 
