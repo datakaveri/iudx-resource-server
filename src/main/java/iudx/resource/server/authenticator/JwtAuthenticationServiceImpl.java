@@ -167,7 +167,7 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
         .compose(
             providerUserHandler -> {
               if (isIngestionEntitiesEndpoint(authenticationInfo)) {
-                return validateProviderUser(providerUserHandler, result.jwtData.getDid());
+                return validateProviderUser(providerUserHandler, result.jwtData);
               } else {
                 return Future.succeededFuture(true);
               }
@@ -465,8 +465,12 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
                 response.forEach(
                     json -> {
                       JsonObject res = (JsonObject) json;
-                      String providerUserId = res.getString("providerUserId");
-                      LOGGER.info("providerUserId: " + providerUserId);
+                      String providerUserId = null;
+                      providerUserId = res.getString("providerUserId");
+                      if (providerUserId == null) {
+                        providerUserId = res.getString("ownerUserId");
+                        LOGGER.info(" owneruserid : " + providerUserId);
+                      }
                       promise.complete(providerUserId);
                     });
 
@@ -480,16 +484,26 @@ public class JwtAuthenticationServiceImpl implements AuthenticationService {
     return promise.future();
   }
 
-  Future<Boolean> validateProviderUser(String providerUserId, String did) {
+  Future<Boolean> validateProviderUser(String providerUserId, JwtData jwtData) {
     LOGGER.trace("validateProviderUser() started");
     Promise<Boolean> promise = Promise.promise();
     try {
-      if (did.equalsIgnoreCase(providerUserId)) {
-        LOGGER.info("success");
-        promise.complete(true);
-      } else {
-        LOGGER.error("fail");
-        promise.fail("incorrect providerUserId");
+      if (jwtData.getRole().equalsIgnoreCase("delegate")) {
+        if (jwtData.getDid().equalsIgnoreCase(providerUserId)) {
+          LOGGER.info("success");
+          promise.complete(true);
+        } else {
+          LOGGER.error("fail");
+          promise.fail("incorrect providerUserId");
+        }
+      } else if (jwtData.getRole().equalsIgnoreCase("provider")) {
+        if (jwtData.getSub().equalsIgnoreCase(providerUserId)) {
+          LOGGER.info("success");
+          promise.complete(true);
+        } else {
+          LOGGER.error("fail");
+          promise.fail("incorrect providerUserId");
+        }
       }
     } catch (Exception e) {
       LOGGER.error("exception occurred while validating provider user : " + e.getMessage());
