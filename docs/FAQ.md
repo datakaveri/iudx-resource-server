@@ -13,17 +13,13 @@
 3. “Request could not be created, as resource was not found” - even if the resource is found while creating access request
 - This error occurs when the resource server URL that the consumer is associated to while requesting the API, does not match with the resource server URL of the resource item
 
-4. Can the constraints given while creating the policy for a resource be different ?
-- Yes, the constraints given to access the resource is defined by DX Resource server and provider could follow the same json structure to add different type of user specific constraints
-
-5. Are there any access restrictions for delegates of the provider or consumer?
-- No, delegates can access all the specific provider or consumer related APIs.
-
-6. What types of search functionalities does the DX Resource Server support?
+4. What types of search functionalities does the DX Resource Server support?
 - The server supports:
     - Spatial Search: Search using Circle, Polygon, Bounding Box (Bbox), and Linestring.
     - Temporal Search: Search based on time, including Before, During, and After criteria.
     - Attribute Search: Search based on specific resource attributes.
+    - Latest Search: Give the packet of latest data available on the server.
+    - Complex Search: Combination of Spatial Search, Temporal Search, Attribute Search
       
-7. Does the DX Resource Server support encrypted data access?
+5. Does the DX Resource Server support encrypted data access?
 - Yes, the DX Resource Server supports encrypted data access.
