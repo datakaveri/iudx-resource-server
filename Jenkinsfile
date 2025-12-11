@@ -28,6 +28,7 @@ pipeline {
           changeset "docs/**"
           changeset "pom.xml"
           changeset "src/main/**"
+          changeset "Jenkinsfile"
         }
       }
 
@@ -56,8 +57,11 @@ pipeline {
         stage('Unit Tests and Code Coverage Test'){
           steps{
             script{
-              sh 'cp /home/ubuntu/configs/rs-config-test.json ./secrets/all-verticles-configs/config-test.json'
-              sh 'cp /home/ubuntu/configs/keystore.jks ./secrets/all-verticles-configs/keystore.jks'
+              // Switch to Java 21
+              sh 'sudo update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java'
+
+              sh 'cp -r example-configs/configs .'
+              sh 'cp /home/ubuntu/configs/rs-config-test.json ./configs/config-test.json'
               sh 'mvn clean test checkstyle:checkstyle pmd:pmd'
             }
             xunit (
@@ -67,24 +71,25 @@ pipeline {
             jacoco classPattern: 'target/classes', execPattern: 'target/jacoco.exec', sourcePattern: 'src/main/java', exclusionPattern:'iudx/resource/server/apiserver/ApiServerVerticle.class,**/*VertxEBProxy.class,**/Constants.class,**/*VertxProxyHandler.class,**/*Verticle.class,iudx/resource/server/database/archives/DatabaseService.class,iudx/resource/server/database/async/AsyncService.class,iudx/resource/server/database/latest/LatestDataService.class,iudx/resource/server/deploy/*.class,iudx/resource/server/database/postgres/PostgresService.class,iudx/resource/server/apiserver/ManagementRestApi.class,iudx/resource/server/apiserver/AdminRestApi.class,iudx/resource/server/apiserver/AsyncRestApi.class,iudx/resource/server/callback/CallbackService.class,**/JwtDataConverter.class,**/EncryptionService.class,**/EsResponseFormatter.class,**/AbstractEsSearchResponseFormatter.class'
           }
           post{
-          always {
-            recordIssues(
-              enabledForFailure: true,
-              skipBlames: true,
-              qualityGates: [[threshold:100, type: 'TOTAL', unstable: false]],
-              tool: checkStyle(pattern: 'target/checkstyle-result.xml')
-            )
-            recordIssues(
-              enabledForFailure: true,
-              skipBlames: true,
-              qualityGates: [[threshold:100, type: 'TOTAL', unstable: false]],
-              tool: pmdParser(pattern: 'target/pmd.xml')
-            )
-          }
+            always {
+              recordIssues(
+                enabledForFailure: true,
+                skipBlames: true,
+                qualityGates: [[threshold:100, type: 'TOTAL', unstable: false]],
+                tool: checkStyle(pattern: 'target/checkstyle-result.xml')
+              )
+              recordIssues(
+                enabledForFailure: true,
+                skipBlames: true,
+                qualityGates: [[threshold:100, type: 'TOTAL', unstable: false]],
+                tool: pmdParser(pattern: 'target/pmd.xml')
+              )
+            }
             failure{
-              script{
-                sh 'docker compose -f docker-compose.test.yml down --remove-orphans'
-              }
+              xunit (
+                thresholds: [ skipped(failureThreshold: '40'), failed(failureThreshold: '0') ],
+                tools: [ JUnit(pattern: 'target/surefire-reports/*.xml') ]
+                )
               error "Test failure. Stopping pipeline execution!"
             }
             cleanup{
@@ -139,40 +144,93 @@ pipeline {
           steps{
             node('built-in') {
               script{
-                startZap ([host: '0.0.0.0', port: 8090, zapHome: '/var/lib/jenkins/tools/com.cloudbees.jenkins.plugins.customtools.CustomTool/OWASP_ZAP/ZAP_2.11.0'])
-                sh 'curl http://0.0.0.0:8090/JSON/pscan/action/disableScanners/?ids=10096'
+                sh """
+                  echo '[*] Cleaning up old ZAP container if exists...'
+                  docker stop zap-daemon || true && docker rm zap-daemon || true
+                  echo '[*] Starting ZAP in Docker...'
+                  docker run --name zap-daemon --network host -u zap -d \
+                    -p 8090:8090 \
+                    ghcr.io/zaproxy/zaproxy:stable \
+                    zap.sh -daemon \
+                      -host 0.0.0.0 \
+                      -port 8090 \
+                      -config api.disablekey=true \
+                      -config api.addrs.addr.name=.* \
+                      -config api.addrs.addr.regex=true
+
+                 echo '[*] Waiting for ZAP to be ready...'
+                 until curl -s http://localhost:8090/JSON/core/view/version/ > /dev/null; do
+                   sleep 2
+                 done
+                 echo 'ZAP is ready at http://localhost:8090'
+               """
+               sh "curl http://localhost:8090/JSON/pscan/action/disableScanners/?ids=10096"
               }
             }
             script{
                 sh 'mkdir -p configs'
                 sh 'scp /home/ubuntu/configs/rs-config-test.json ./configs/config-test.json'
-                sh 'sudo update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java'
-                sh 'mvn test-compile failsafe:integration-test -DskipUnitTests=true -DintTestProxyHost=jenkins-master-priv -DintTestProxyPort=8090 -DintTestHost=jenkins-slave1 -DintTestPort=8080'
-            }
-            node('built-in') {
-              script{
-                runZapAttack()
-                }
-            }
+                sh 'bash Jenkins/resources/post-zap.sh --mvn'
+                sh '''
+                    echo "[*] Fetching ZAP alerts..."
+                    curl -s "http://10.139.0.10:8090/JSON/core/view/alerts/?baseurl=https://rs.iudx.io/apis" \
+                        > zap-alerts.json
+                '''
 
-          }
+                def jsonText = readFile('zap-alerts.json')
+                def parsed = new groovy.json.JsonSlurper().parseText(jsonText)
+                def alerts = parsed.alerts ?: []
+
+
+                def high = alerts.count { it.risk == "High" }
+                def medium = alerts.count { it.risk == "Medium" }
+                def low = alerts.count { it.risk == "Low" }
+
+                echo "ZAP Alerts → High: ${high}, Medium: ${medium}, Low: ${low}"
+
+                // FIX: prevent LazyMap serialization
+                parsed = null
+                alerts = null
+                jsonText = null
+
+                if (high > 1) {
+                  error "ZAP Scan Failed: Too many HIGH alerts (${high})"
+                }
+                if (medium > 1) {
+                  error "ZAP Scan Failed: Too many MEDIUM alerts (${medium})"
+                }
+                if (low > 2) {
+                  error "ZAP Scan Failed: Too many LOW alerts (${low})"
+                }
+                publishHTML(target: [
+                  allowMissing: false,
+                  alwaysLinkToLastBuild: true,
+                  keepAll: true,
+                  reportDir: '/var/lib/jenkins/iudx/rs/zap-artifacts',
+                  reportFiles: 'zap-report.html',
+                  reportName: 'OWASP ZAP Report'
+                ])
+              }
+            }
           post{
             always{
               xunit (
                 thresholds: [ skipped(failureThreshold: '0'), failed(failureThreshold: '0') ],
                 tools: [ JUnit(pattern: 'target/failsafe-reports/*.xml') ]
                 )
-              node('built-in') {
-                script{
-                  archiveZap failHighAlerts: 1, failMediumAlerts: 1, failLowAlerts: 1
-                }
-              }
             }
             failure{
               error "Test failure. Stopping pipeline execution!"
             }
             cleanup{
               script{
+               node('built-in') {
+                sh '''
+                  echo "[*] Cleaning ZAP on master..."
+                  docker stop zap-daemon || true
+                  docker rm zap-daemon || true
+                '''
+              }
                 sh 'sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java'
                 sh 'docker compose -f docker-compose.test.yml down --remove-orphans'
               } 

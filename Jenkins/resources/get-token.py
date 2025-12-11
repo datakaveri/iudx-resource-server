@@ -15,8 +15,7 @@ def token(clientId,clientSecret,data,url):
         headers["Content-Type"] = "application/json"
 
         resp = requests.post(url, headers=headers, data=json.dumps(data))
-        json_object = json.loads(resp.text)
-        print(json_object["results"]["accessToken"])
+        print(resp.text)
 
 # with open("example-config.json") as file:
 with open("/home/ubuntu/configs/rs-token-config.json") as file:
